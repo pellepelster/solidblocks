@@ -1,0 +1,7 @@
+{{ with secret (printf "%s-pki/issue/%s-pki" (env "CLOUD_NAME") (env "CLOUD_NAME")) "alt_names=server.global.nomad" (printf "common_name=%s" (env "CLOUD_NAME")) "ttl=24h" }}
+{
+  "certificate": "{{ .Data.certificate | base64Encode }}",
+  "private_key": "{{ .Data.private_key | base64Encode }}",
+  "issuing_ca": "{{ .Data.issuing_ca | base64Encode }}"
+}
+{{ end }}

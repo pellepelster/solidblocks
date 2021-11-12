@@ -1,0 +1,62 @@
+version: "2"
+services:
+  hcloud-api-mock:
+    image: hcloud-api-mock
+    expose:
+      - "8080"
+    networks:
+      vpcbr:
+        ipv4_address: 12.0.0.254
+
+  cloud-init-test-runner-controller-0:
+    build: cloud-init-test-runner-controller
+    hostname: "controller-0"
+    links:
+      - "hcloud-api-mock"
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    environment:
+      HETZNER_CLOUD_API_URL: http://hcloud-api-mock:8080
+      CONSUL_ADDR: http://consul:8500
+    networks:
+      vpcbr:
+        ipv4_address: 12.0.10.1
+
+  cloud-init-test-runner-controller-1:
+    build: cloud-init-test-runner-controller
+    hostname: "controller-1"
+    links:
+      - "hcloud-api-mock"
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    environment:
+      HETZNER_CLOUD_API_URL: http://hcloud-api-mock:8080
+      CONSUL_ADDR: http://consul:8500
+    networks:
+      vpcbr:
+        ipv4_address: 12.0.10.2
+
+  cloud-init-test-runner-controller-2:
+    build: cloud-init-test-runner-controller
+    hostname: "controller-2"
+    links:
+      - "hcloud-api-mock"
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    environment:
+      HETZNER_CLOUD_API_URL: http://hcloud-api-mock:8080
+      CONSUL_ADDR: http://consul:8500
+    networks:
+      vpcbr:
+        ipv4_address: 12.0.10.3
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 12.0.0.0/16
+          gateway: 12.0.0.1

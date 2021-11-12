@@ -1,0 +1,1 @@
+{{ key "solidblocks/config/mail/host" }}	{{ key "solidblocks/config/mail/username" }}:{{ key "solidblocks/config/mail/password" }}

@@ -1,0 +1,126 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: pelle
+      changes:
+        - createTable:
+            tableName: clouds
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted
+                  type: boolean
+                  constraints:
+                    nullable: false
+        - createIndex:
+            columns:
+              - column:
+                  name: name
+            indexName: idx_clouds_name
+            tableName: clouds
+            unique: true
+        - createTable:
+            tableName: clouds_environments
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cloud
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_clouds_environments_cloud_id
+                    references: clouds(id)
+        - createIndex:
+            columns:
+              - column:
+                  name: cloud
+              - column:
+                  name: name
+            indexName: idx_clouds_environments_name
+            tableName: clouds_environments
+            unique: true
+        - createTable:
+            tableName: tenants
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted
+                  type: boolean
+                  constraints:
+                    nullable: false
+        - createIndex:
+            columns:
+              - column:
+                  name: name
+            indexName: idx_tenants_name
+            tableName: tenants
+            unique: true
+        - createTable:
+            tableName: configuration_values
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: config_value
+                  type: varchar(4096)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tenant
+                  type: uuid
+                  constraints:
+                    nullable: true
+              - column:
+                  name: cloud_environment
+                  type: uuid
+                  constraints:
+                    nullable: true
+              - column:
+                  name: cloud
+                  type: uuid
+                  constraints:
+                    nullable: true

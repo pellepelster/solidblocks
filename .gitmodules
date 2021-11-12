@@ -1,0 +1,3 @@
+[submodule "ctuhl"]
+	path = ctuhl
+	url = git@github.com:pellepelster/ctuhl.git

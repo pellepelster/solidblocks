@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -eux
+
+source /solidblocks/instance/environment
+source /solidblocks/lib/configuration.sh
+source /solidblocks/lib/config.sh
+source /solidblocks/lib/consul.sh
+source /solidblocks/lib/backup.sh
+
+backup_full "management_consul" "${CONSUL_BACKUP_DIR}"

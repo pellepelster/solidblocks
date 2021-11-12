@@ -1,0 +1,4 @@
+click==8.0.1
+requests==2.26.0
+structlog==21.1.0
+hvac==0.11.2

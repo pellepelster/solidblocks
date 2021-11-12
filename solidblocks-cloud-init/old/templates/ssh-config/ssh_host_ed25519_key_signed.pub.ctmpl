@@ -1,0 +1,1 @@
+{{ with secret (printf "%s-host-ssh/sign/%s-host-ssh" (env "CLOUD_NAME") (env "CLOUD_NAME")) "cert_type=host" (printf "public_key=%s" (file "/etc/ssh/ssh_host_ed25519_key.pub")) }}{{ .Data.signed_key }}{{ end }}

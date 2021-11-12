@@ -1,0 +1,2 @@
+#/^(.*@).*$/     ${1}{{ key "solidblocks/config/domain" }}
+/^(.*@).*$/     accounts@solidblocks.de

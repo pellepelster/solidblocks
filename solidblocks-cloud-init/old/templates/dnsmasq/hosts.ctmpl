@@ -1,0 +1,2 @@
+{{ range nodes }}
+{{ .Address }} mail {{ .Node }} {{ .Node }}.{{ key "solidblocks/config/domain" }}{{end}}

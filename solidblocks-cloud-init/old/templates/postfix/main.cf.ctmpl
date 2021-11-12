@@ -1,0 +1,36 @@
+smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
+biff = no
+append_dot_mydomain = no
+#delay_warning_time = 4h
+readme_directory = no
+compatibility_level = 2
+
+# TLS parameters
+#smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+#smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+#smtpd_use_tls=yes
+#smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+#smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+relayhost = [{{ key "solidblocks/config/mail/host" }}]:{{ key "solidblocks/config/mail/port" }}
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/smtp_auth
+#smtpd_tls_security_level = may
+#smtp_use_tls=yes
+#smtp_enforce_tls = yes
+smtp_sasl_security_options = noanonymous
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+
+
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+myhostname = {{ key "solidblocks/config/domain" }}
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = $myhostname, {{ key "solidblocks/config/domain" }}, localhost.localdomain, localhost
+mynetworks = 10.0.0.0/16 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+sender_canonical_maps = regexp:/etc/postfix/sender_canonical

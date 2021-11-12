@@ -1,0 +1,15 @@
+[Unit]
+Description=dnsmasq-solidblocks
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+EnvironmentFile=-/etc/sysconfig/dnsmasq-solidblocks
+EnvironmentFile=-/solidblocks/instance/environment
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/consul-template -config /solidblocks/config/dnsmasq/dnsmasq_consul-template-config.hcl
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

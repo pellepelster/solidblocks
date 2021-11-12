@@ -1,0 +1,16 @@
+source 'https://rubygems.org'
+
+group :development do
+  gem 'bcrypt_pbkdf'
+  gem 'iniparse'
+  gem 'diplomat'
+  gem 'docker-api'
+  gem 'docker-compose'
+  gem 'ed25519'
+  gem 'minitest'
+  gem 'minitest-hooks'
+  gem 'net-ssh'
+  gem 'rubocop'
+  gem 'sinatra'
+  gem 'webmock'
+end

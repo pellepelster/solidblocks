@@ -1,0 +1,5 @@
+require 'minitest/autorun'
+require 'minitest/hooks/default'
+require 'compose_wrapper'
+require 'retry_until'
+require 'diplomat'
