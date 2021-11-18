@@ -27,36 +27,41 @@ class CloudSshConfigCommand :
 
         SpringContextUtil.callBeanAndShutdown(CloudConfigurationManager::class.java) {
 
-            if (!it.hasTenant(name)) {
+            if (!it.hasCloud(name)) {
                 logger.error { "cloud '$name' not found" }
                 exitProcess(1)
             }
 
-            val cloud = it.getTenant(name)
+            val cloud = it.cloudByName(name)
 
             val basePath = Path(System.getProperty("user.home"), ".solidblocks", name)
 
-            if (!basePath.toFile().exists() && !basePath.toFile().mkdirs()) {
-                logger.error { "creating dir '${basePath.toAbsolutePath()}' failed" }
-                exitProcess(1)
-            }
+            for (environment in cloud.environments) {
 
-            val privateKeyFile = File(basePath.toFile(), "${name}_key")
-            privateKeyFile.writeText(cloud.sshConfig.sshPrivateKey)
-            privateKeyFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
+                val environmentPath = Path(basePath.toString(), environment.name);
 
-            val knownHostsFile = File(basePath.toFile(), "${name}_known_hosts")
-            knownHostsFile.writeText("vault-1.$name.${cloud.solidblocksConfig.domain} ${cloud.sshConfig.sshIdentityPublicKey}")
+                if (!environmentPath.toFile().exists() && !environmentPath.toFile().mkdirs()) {
+                    logger.error { "creating dir '${environmentPath.toAbsolutePath()}' failed" }
+                    exitProcess(1)
+                }
 
-            knownHostsFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
+                val privateKeyFile = File(environmentPath.toFile(), "${name}_key")
+                privateKeyFile.writeText(environment.sshConfig.sshPrivateKey)
+                privateKeyFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
-            File(basePath.toFile(), "${name}_key.pub").writeText(cloud.sshConfig.sshPublicKey)
-            File(basePath.toFile(), "ssh_config").writeText(
-                sshConfig(
-                    privateKeyFile.absolutePath,
-                    knownHostsFile.absolutePath
+                val knownHostsFile = File(environmentPath.toFile(), "${name}_known_hosts")
+                knownHostsFile.writeText("vault-1.$environment.${cloud.rootDomain} ${environment.sshConfig.sshIdentityPublicKey}")
+
+                knownHostsFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
+
+                File(environmentPath.toFile(), "${name}_key.pub").writeText(environment.sshConfig.sshPublicKey)
+                File(environmentPath.toFile(), "ssh_config").writeText(
+                        sshConfig(
+                                privateKeyFile.absolutePath,
+                                knownHostsFile.absolutePath
+                        )
                 )
-            )
+            }
         }
     }
 

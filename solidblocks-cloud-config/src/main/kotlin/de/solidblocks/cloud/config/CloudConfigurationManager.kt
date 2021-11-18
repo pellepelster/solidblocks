@@ -13,6 +13,7 @@ import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CLOUDS_ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import de.solidblocks.config.db.tables.references.TENANTS
+import mu.KotlinLogging
 import org.jooq.DSLContext
 import org.jooq.Record5
 import org.jooq.impl.DSL.max
@@ -22,6 +23,8 @@ import java.util.*
 
 @Component
 class CloudConfigurationManager(private val dsl: DSLContext) {
+
+    private val logger = KotlinLogging.logger {}
 
     fun createCloud(name: String, rootDomain: String, configValues: List<CloudConfigValue> = emptyList()): Boolean {
         if (hasCloud(name)) {

@@ -16,3 +16,4 @@ solidblocks-root-infrastructure/**/terraform.tfstate
 solidblocks-root-infrastructure/**/terraform.tfstate.backup
 
 !terraform-state
+solidblocks-cli/derby.log

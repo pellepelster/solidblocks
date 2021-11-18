@@ -8,6 +8,7 @@ import de.solidblocks.cli.cloud.commands.CloudTestCommand
 import de.solidblocks.cli.cloud.commands.config.CloudConfigCommand
 import de.solidblocks.cli.cloud.commands.config.CloudCreateCommand
 import de.solidblocks.cli.cloud.commands.config.CloudDeleteCommand
+import de.solidblocks.cli.cloud.commands.config.CloudEnvironmentCreateCommand
 import de.solidblocks.cli.cloud.commands.config.CloudListCommand
 import de.solidblocks.cli.cloud.commands.config.CloudRotateCommand
 import de.solidblocks.cli.cloud.commands.config.CloudSshConfigCommand
@@ -24,7 +25,8 @@ fun main(args: Array<String>) {
                                 CloudRotateCommand(),
                                 CloudDeleteCommand(),
                                 CloudSshConfigCommand(),
-                                CloudCreateCommand()
+                                CloudCreateCommand(),
+                                CloudEnvironmentCreateCommand()
                         ),
                         CloudTestCommand(), CloudDestroyCommand(), CloudBootstrapCommand()
                 )

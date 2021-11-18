@@ -4,27 +4,16 @@ set -eu
 
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
-function task_execute() {
-  if [[ ! -f "${DIR}/venv/bin/activate" ]]; then
-    task_bootstrap
-  fi
-
-  source "${DIR}/venv/bin/activate"
-
-  export PYTHONPATH="${DIR}/ctuhl/lib/python"
-
-  python "${DIR}/do.py" "$@"
+function task_cli() {
+    "${DIR}/gradlew" solidblocks-cli:run --args="$*"
 }
 
-function task_bootstrap {
-  python3 -m venv "${DIR}/venv"
-  source "${DIR}/venv/bin/activate"
-  pip install --upgrade pip
-  pip install wheel
-  pip install -r "${DIR}/requirements.txt"
-}
+#./do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path $(pwd)/integration-test cloud config create --name blcks --domain blcks.de
+#./do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path $(pwd)/integration-test cloud config create-environment --name blcks --environment dev --hetzner-cloud-api-token $(pass solidblocks/integration-test/hcloud_api_token) --hetzner-dns-api-token $(pass solidblocks/integration-test/dns_api_token)
 
-case ${1:-} in
-  bootstrap) task_bootstrap ;;
-  *) task_execute "$@" ;;
+COMMAND="${1:-}"
+shift || true
+
+case ${COMMAND} in
+  cli) task_cli "$@" ;;
 esac

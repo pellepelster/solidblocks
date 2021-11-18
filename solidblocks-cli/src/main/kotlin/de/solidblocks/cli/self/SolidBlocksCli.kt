@@ -14,14 +14,11 @@ class SolidBlocksCli : CliktCommand() {
 
     private val logger = KotlinLogging.logger {}
 
-    val environment: String by option(help = "cloud environment").required()
-
     val dbPassword: String by option(help = "secret for the solidblocks db").required()
 
     val dbPath: String by option(help = "path for the solidblocks db").required()
 
     override fun run() {
-        currentContext.findOrSetObject { GlobalConfig(this.environment) }
 
         if (!Path(dbPath).isAbsolute) {
             logger.error { "please provide an absolute path for solidblocks db" }
