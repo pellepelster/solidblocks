@@ -16,14 +16,17 @@ class VaultTestFixture(
 
     init {
         val cloudName = UUID.randomUUID().toString()
+        val environmentName = UUID.randomUUID().toString()
+
         cloudConfigurationManager.create(cloudName, "domain1", "email1", emptyList())
 
         provisioner.addProvider(
-            VaultRootClientProvider(
-                cloudName,
-                "http://localhost:${environment.getServicePort("vault1", 8200)}",
-                cloudConfigurationManager
-            )
+                VaultRootClientProvider(
+                        cloudName,
+                        environmentName,
+                        "http://localhost:${environment.getServicePort("vault1", 8200)}",
+                        cloudConfigurationManager
+                )
         )
     }
 }

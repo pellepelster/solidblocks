@@ -35,13 +35,15 @@ class VaultRootClientProviderTest(
     fun testInitAndUnseal() {
 
         val cloudName = UUID.randomUUID().toString()
+        val environmentName = UUID.randomUUID().toString()
         cloudConfigurationManager.create(cloudName, "domain1", "email1", emptyList())
 
         val provider =
             VaultRootClientProvider(
-                cloudName,
-                "http://localhost:${environment.getServicePort("vault1", 8200)}",
-                cloudConfigurationManager
+                    cloudName,
+                    environmentName,
+                    "http://localhost:${environment.getServicePort("vault1", 8200)}",
+                    cloudConfigurationManager
             )
 
         val vaultClient = provider.createClient()

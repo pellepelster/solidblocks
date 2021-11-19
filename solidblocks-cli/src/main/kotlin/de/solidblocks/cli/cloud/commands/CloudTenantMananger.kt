@@ -5,7 +5,6 @@ import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.TenantConfig
-import de.solidblocks.core.Contants.userSshMountName
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.hetzner.cloud.HetznerCloudCredentialsProvider
 import de.solidblocks.provisioner.hetzner.cloud.getHetznerCloudApiToken
@@ -111,7 +110,7 @@ class CloudTenantMananger(
 
         val vaultLayer = provisioner.createLayer("vault")
         //vaultLayer.addResource(hetznerProviderConfig)
-
+        /*
         val userSshMount = VaultMount(userSshMountName(cloud.name), "ssh")
         val userSshBackendRole = VaultSshBackendRole(
                 name = userSshMountName(cloud.name),
@@ -269,6 +268,8 @@ class CloudTenantMananger(
             labels = mapOf("name" to "backup", "role" to "backup")
         )
         controllerLayer.addResource(backupServer)
+
+         */
     }
 
     private fun addVaultLayer(cloud: CloudConfig) {

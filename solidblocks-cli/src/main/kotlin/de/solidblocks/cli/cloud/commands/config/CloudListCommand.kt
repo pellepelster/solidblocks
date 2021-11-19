@@ -1,5 +1,7 @@
 package de.solidblocks.cli.cloud.commands.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.github.ajalt.clikt.core.CliktCommand
 import de.solidblocks.cli.config.SpringContextUtil
 import de.solidblocks.cloud.config.CloudConfigurationManager
@@ -13,15 +15,12 @@ class CloudListCommand :
 
     private val logger = KotlinLogging.logger {}
 
+
     @OptIn(ExperimentalPathApi::class)
     override fun run() {
 
-        SpringContextUtil.bean(CloudConfigurationManager::class.java).listClouds().forEach {
-            println(it.name)
-
-            it.environments.forEach {
-                println(it.name)
-            }
+        SpringContextUtil.bean(CloudConfigurationManager::class.java).listClouds().let {
+            println(ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(it))
         }
     }
 }

@@ -28,6 +28,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
 
     fun createCloud(name: String, rootDomain: String, configValues: List<CloudConfigValue> = emptyList()): Boolean {
         if (hasCloud(name)) {
+            logger.info { "cloud '${name}' already exists" }
             return false
         }
 
@@ -51,12 +52,12 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     fun createEnvironment(cloudName: String, environmentName: String, configValues: List<CloudConfigValue> = emptyList()): Boolean {
-        val cloud = dsl.selectFrom(CLOUDS)
-                .where(CLOUDS.NAME.eq(cloudName)).fetchOne()
-
-        if (cloud == null) {
+        if (!hasCloud(cloudName)) {
+            logger.info { "cloud '${cloudName}' does not exist" }
             return false
         }
+
+        val cloud = cloudByName(cloudName)
 
         val id = UUID.randomUUID()
 
@@ -179,6 +180,28 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 }
     }
 
+
+    fun updateEnvironment(cloudName: String, environmentName: String, values: Map<String, String>): Boolean {
+        return values.map {
+            updateEnvironment(cloudName, environmentName, it.key, it.value)
+        }.all { it }
+    }
+
+    fun updateEnvironment(cloudName: String, environmentName: String, name: String, value: String): Boolean {
+        if (!hasCloud(cloudName)) {
+            logger.info { "cloud '${cloudName}' does not exist" }
+            return false
+        }
+
+        val cloud = cloudByName(cloudName)
+
+        val environment = cloud.environments.firstOrNull { it.name == environmentName } ?: return false
+        setConfiguration(EnvironmentId(environment.id), name, value)
+
+        return true
+    }
+
+
     fun list(cloudName: String? = null): List<TenantConfig> {
 
         val latestVersions =
@@ -244,22 +267,26 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         return listClouds(name).first()
     }
 
-    fun regenerateCloudSecrets(cloudName: String, environmentName: String): Boolean {
-        val cloud = dsl.selectFrom(CLOUDS)
-                .where(CLOUDS.NAME.eq(cloudName)).fetchOne()
+    fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfig {
+        val cloud = cloudByName(cloudName)
+        return cloud.environments.first { it.name == environmentName }
+    }
 
-        if (cloud == null) {
+    fun regenerateCloudSecrets(cloudName: String, environmentName: String): Boolean {
+        if (!hasCloud(cloudName)) {
+            logger.info { "cloud '${cloudName}' does not exist" }
             return false
         }
 
-        val environment = dsl.selectFrom(CLOUDS_ENVIRONMENTS)
-                .where(CLOUDS_ENVIRONMENTS.NAME.eq(environmentName).and(CLOUDS_ENVIRONMENTS.CLOUD.eq(cloud.id))).fetchOne()
+        val cloud = cloudByName(cloudName)
+        val environment = cloud.environments.firstOrNull { it.name == environmentName }
 
         if (environment == null) {
+            logger.info { "environment '${environmentName}' does not exist for cloud '${cloudName}'" }
             return false
         }
 
-        storeSshConfig(EnvironmentId(environment.id!!), createSshConfig(environmentName))
+        storeSshConfig(EnvironmentId(environment.id), createSshConfig(environmentName))
 
         return true
     }
@@ -292,13 +319,6 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         storeSshConfig(TenantId(cloudId), createSshConfig(cloudName))
         storeSeedConfig(cloudId, createSeedConfig(cloudName))
         storeSolidblocksConfig(TenantId(cloudId), createSolidblocksConfig(domain, email))
-    }
-
-    fun update(cloudName: String, configuration: List<CloudConfigValue>) {
-        val cloud = getTenant(cloudName)
-        configuration.forEach {
-            //setConfiguration(cloud.id, it.name, it.value)
-        }
     }
 
     fun delete(cloudName: String) {

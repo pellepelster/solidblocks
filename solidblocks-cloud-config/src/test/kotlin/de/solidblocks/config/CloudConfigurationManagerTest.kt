@@ -41,6 +41,22 @@ class CloudConfigurationManagerTest {
         assertThat(cloudConfig.configValues).anyMatch { it.name == "name1" && it.value == "value1" }
     }
 
+
+    @Test
+    fun testUpdateEnvironment() {
+        cloudConfigurationManager.createCloud("cloud3", "domain1")
+        cloudConfigurationManager.createEnvironment("cloud3", "env3")
+
+        val cloudConfig = cloudConfigurationManager.cloudByName("cloud3")
+        assertThat(cloudConfig.environments[0].configValues).filteredOn { it.name == "my-attribute" }.hasSize(0)
+
+        cloudConfigurationManager.updateEnvironment("cloud3", "env3", "my-attribute", "my-value")
+        val newCloudConfig = cloudConfigurationManager.cloudByName("cloud3")
+
+        assertThat(newCloudConfig.environments[0].configValues).filteredOn { it.name == "my-attribute" }.hasSize(1)
+        assertThat(newCloudConfig.environments[0].configValues).anyMatch { it.name == "my-attribute" && it.value == "my-value" }
+    }
+
     @Test
     fun testRegenerateCloudSecrets() {
         assertThat(cloudConfigurationManager.createCloud("cloud2", "domain2")).isTrue
