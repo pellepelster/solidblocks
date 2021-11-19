@@ -44,8 +44,8 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
     @TaskAction
     fun generate() {
 
-        generate_cloud_init("backup-cloud-init.sh", listOf("lib-cloud-init/shell-script-header.sh", "lib-cloud-init/cloud-init-variables.sh", "lib/configuration.sh", "lib/curl.sh", "lib/package.sh", "lib/network.sh", "lib/vault.sh", "lib-cloud-init/backup-cloud-init-body.sh"))
-        generate_cloud_init("vault-cloud-init.sh", listOf("lib-cloud-init/shell-script-header.sh", "lib/network.sh", "lib/ssh.sh", "lib/storage.sh", "lib/package.sh", "lib-cloud-init/vault-cloud-init-body.sh"))
+        generate_cloud_init("backup-cloud-init.sh", listOf("lib-cloud-init/shell-script-header.sh", "lib-cloud-init/cloud-init-variables.sh", "lib-cloud-init/backup-cloud-init-variables.sh", "lib/configuration.sh", "lib/curl.sh", "lib/package.sh", "lib/network.sh", "lib/vault.sh", "lib-cloud-init/backup-cloud-init-body.sh"))
+        generate_cloud_init("vault-cloud-init.sh", listOf("lib-cloud-init/shell-script-header.sh", "lib-cloud-init/cloud-init-variables.sh", "lib/network.sh", "lib/ssh.sh", "lib/storage.sh", "lib/package.sh", "lib-cloud-init/vault-cloud-init-body.sh"))
 
 
     }
@@ -53,5 +53,3 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
 tasks.register<GenerateTask>("generate")
 
 tasks.getByName("jar").dependsOn("generate")
-tasks.getByName("build").dependsOn("generate")
-tasks.getByName("assemble").dependsOn("generate")

@@ -21,16 +21,16 @@ class ResourceDiff<ReturnType>(
     @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String {
         if (missing) {
-            return "resource '${resource.logName()}' is missing"
+            return "${resource.logName()} is missing"
         }
 
         if (changes.isNotEmpty()) {
-            return "resource '${resource.logName()}' has changes = ${
+            return "${resource.logName()} has changes = ${
                 changes.joinToString(", ")
             }"
         }
 
 
-            return "resource '${resource.logName()}' is up to date"
+            return "${resource.logName()} is up to date"
     }
 }

@@ -30,16 +30,16 @@ ui = true
 
 listener "tcp" {
     address = "0.0.0.0:8200"
-    tls_cert_file = "/storage/local/vault/config/certificates/live/vault.[=environment_name].[=cloud_root_domain]/fullchain.pem"
-    tls_key_file = "/storage/local/vault/config/certificates/live/vault.[=environment_name].[=cloud_root_domain]/privkey.pem"
+    tls_cert_file = "/storage/local/vault/config/certificates/live/vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}/fullchain.pem"
+    tls_key_file = "/storage/local/vault/config/certificates/live/vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}/privkey.pem"
 }
 
 storage "file" {
   path = "/storage/local/vault/data"
 }
 
-api_addr = "https://[=hostname].[=environment_name].[=cloud_root_domain]:8200"
-cluster_addr = "https://vault.[=environment_name].[=cloud_root_domain]:8200"
+api_addr = "https://[=hostname].${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
+cluster_addr = "https://vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
 EOF
 }
 
@@ -53,11 +53,11 @@ certbot certonly \
     --standalone \
     --preferred-challenges http \
     --config-dir /storage/local/vault/config/certificates \
-    --domain vault.[=environment_name].[=cloud_root_domain]
+    --domain vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}
 EOF
 }
 
-#    --domain [=hostname].[=environment_name].[=cloud_root_domain] \
+#    --domain [=hostname].${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN} \
 
 configure_public_ip
 ssh_write_host_identity

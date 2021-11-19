@@ -54,7 +54,7 @@ tasks.test {
 tasks.jar {
     manifest {
         attributes["Commit"] = versioning.info.commit
-        attributes["Solidblocks-Version"] = versioning.info.full
+        attributes["Solidblocks-Version"] = version
     }
 }
 

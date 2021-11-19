@@ -6,7 +6,6 @@ import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
 import de.solidblocks.api.resources.infrastructure.IInfrastructureClientProvider
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.compute.Server
-import de.solidblocks.api.resources.infrastructure.compute.Volume
 import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
 import de.solidblocks.api.resources.infrastructure.network.Network
@@ -207,7 +206,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
                 val diff = this.provisionerRegistry.provisioner<Any, Any>(resource).diff(resource)
 
-                logger.info { "diff for resource ${resource.logName()} returned ${diff.result?.toString() ?: "<none>"} " }
+                logger.info { diff.result?.toString() ?: "no result for resource ${resource.logName()}" }
 
                 allLayerDiffs.computeIfAbsent(layer) { mutableListOf() }.add(diff)
             } catch (e: Exception) {

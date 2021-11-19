@@ -3,5 +3,5 @@
 #######################################
 
 function configure_public_ip() {
-  ip addr add [=public_ip] dev eth0
+  ip addr add ${SOLIDBLOCKS_PUBLIC_IP} dev eth0
 }

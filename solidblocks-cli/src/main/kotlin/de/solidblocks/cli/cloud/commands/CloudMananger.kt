@@ -14,7 +14,9 @@ import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
+import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
 import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
+import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.cli.Contants.BACKUP_POLICY_NAME
 import de.solidblocks.cli.Contants.CONTROLLER_POLICY_NAME
 import de.solidblocks.cli.Contants.hostSshMountName
@@ -38,7 +40,9 @@ import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
 import mu.KotlinLogging
 import org.apache.commons.net.util.SubnetUtils
 import org.springframework.stereotype.Component
+import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.Policy
+import org.springframework.vault.support.VaultTokenRequest
 
 @Component
 class CloudMananger(
@@ -104,36 +108,27 @@ class CloudMananger(
 
         addVaultInfraLayer(location, environmentConfig, rootZone, cloudConfig, network, sshKeys)
 
-        addVaultLayer(cloudConfig, environmentConfig)
-
-
-        addBackupLayer(location, environmentConfig, rootZone, cloudConfig, network, sshKeys)
+        //addVaultLayer(cloudConfig, environmentConfig)
+        //addBackupLayer(location, environmentConfig, rootZone, cloudConfig, network, sshKeys)
     }
 
-    private fun addVaultInfraLayer(location: String, environmentConfig: CloudEnvironmentConfig, rootZone: DnsZone, cloudConfig: CloudConfig, network: Network, sshKeys: Set<SshKey>) {
+    private fun addVaultInfraLayer(location: String, environment: CloudEnvironmentConfig, rootZone: DnsZone, cloud: CloudConfig, network: Network, sshKeys: Set<SshKey>) {
         val vaultInfraLayer = provisioner.createLayer("vaultInfrastructureLayer")
         val vault1Volume = Volume("vault-1_${location}", location)
         vaultInfraLayer.addResource(vault1Volume)
         val vault1FloatingIp = FloatingIp("vault-1", location, mapOf("role" to "vault", "name" to "vault-1"))
 
-        val vault1Record = DnsRecord("vault-1.${environmentConfig.name}", vault1FloatingIp, zone = rootZone)
+        val vault1Record = DnsRecord("vault-1.${environment.name}", vault1FloatingIp, zone = rootZone)
         vaultInfraLayer.addResource(vault1Record)
 
-        val vaultRecord = DnsRecord("vault.${environmentConfig.name}", vault1FloatingIp, zone = rootZone)
+        val vaultRecord = DnsRecord("vault.${environment.name}", vault1FloatingIp, zone = rootZone)
         vaultInfraLayer.addResource(vaultRecord)
 
         val variables = HashMap<String, IDataSource<String>>()
-        variables["cloud_name"] = ConstantDataSource(cloudConfig.name)
-        variables["cloud_root_domain"] = ResourceLookup<DnsZoneRuntime>(rootZone) {
-            it.name
-        }
-        variables["environment_name"] = ConstantDataSource(environmentConfig.name)
+        variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, vault1FloatingIp))
         variables["hostname"] = ConstantDataSource("vault-1")
-        variables["public_ip"] = ResourceLookup<FloatingIpRuntime>(vault1FloatingIp) {
-            it.ipv4
-        }
-        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environmentConfig.sshConfig.sshIdentityPrivateKey))
-        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environmentConfig.sshConfig.sshIdentityPublicKey))
+        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPrivateKey))
+        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPublicKey))
 
         variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(vault1Volume) {
             it.device
@@ -154,48 +149,69 @@ class CloudMananger(
         vaultInfraLayer.addResource(FloatingIpAssignment(server = vault1Server, floatingIp = vault1FloatingIp))
     }
 
-    private fun addBackupLayer(location: String, environmentConfig: CloudEnvironmentConfig, rootZone: DnsZone, cloudConfig: CloudConfig, network: Network, sshKeys: Set<SshKey>) {
-        val backupInfraLayer = provisioner.createLayer("backupInfrastructureLayer")
+    private fun defaultCloudInitVariables(cloud: CloudConfig, environment: CloudEnvironmentConfig, rootZone: DnsZone, floatingIp: FloatingIp): Map<out String, IDataSource<String>> {
+        return mapOf(
+                "solidblocks_cloud" to ConstantDataSource(cloud.name),
+                "solidblocks_version" to ConstantDataSource(solidblocksVersion()),
+                "solidblocks_root_domain" to ResourceLookup<DnsZoneRuntime>(rootZone) {
+                    it.name
+                },
+                "solidblocks_environment" to ConstantDataSource(environment.name),
+                "solidblocks_public_ip" to ResourceLookup<FloatingIpRuntime>(floatingIp) {
+                    it.ipv4
+                }
+        )
+    }
+
+    private fun addBackupLayer(location: String, environment: CloudEnvironmentConfig, rootZone: DnsZone, cloud: CloudConfig, network: Network, sshKeys: Set<SshKey>) {
+        val layer = provisioner.createLayer("backupInfrastructureLayer")
 
         val backupVolume = Volume("backup_${location}", location)
-        backupInfraLayer.addResource(backupVolume)
+        layer.addResource(backupVolume)
 
-        val backupFloatingIp = FloatingIp("backup", location, mapOf("role" to "backup", "name" to "backup"))
-        backupInfraLayer.addResource(backupFloatingIp)
+        val floatingIp = FloatingIp("backup", location, mapOf("role" to "backup", "name" to "backup"))
+        layer.addResource(floatingIp)
 
-        val dnsRecord = DnsRecord("backup.${environmentConfig.name}", backupFloatingIp, zone = rootZone)
-        backupInfraLayer.addResource(dnsRecord)
+        val dnsRecord = DnsRecord("backup.${environment.name}", floatingIp, zone = rootZone)
+        layer.addResource(dnsRecord)
 
         val variables = HashMap<String, IDataSource<String>>()
-        variables["cloud_name"] = ConstantDataSource(cloudConfig.name)
-        variables["cloud_root_domain"] = ResourceLookup<DnsZoneRuntime>(rootZone) {
-            it.name
-        }
-        variables["environment_name"] = ConstantDataSource(environmentConfig.name)
-        variables["hostname"] = ConstantDataSource("backup")
-        variables["public_ip"] = ResourceLookup<FloatingIpRuntime>(backupFloatingIp) {
-            it.ipv4
-        }
-        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environmentConfig.sshConfig.sshIdentityPrivateKey))
-        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environmentConfig.sshConfig.sshIdentityPublicKey))
+        variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, floatingIp))
+
+        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPrivateKey))
+        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPublicKey))
 
         variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(backupVolume) {
             it.device
         }
 
+        variables["vault_token"] = CustomDataSource {
+            val vaultClient =
+                    provisioner.provider(VaultTemplate::class.java).createClient()
+            val result = vaultClient.opsForToken().create(
+                    VaultTokenRequest.builder()
+                            .displayName("backup")
+                            .noParent(true)
+                            .renewable(true)
+                            .policies(listOf(BACKUP_POLICY_NAME))
+                            .build()
+            )
+            result.token.token
+        }
 
-        val backupUserData = UserDataDataSource("lib-cloud-init-generated/backup-cloud-init.sh", variables)
-        val backupServer = Server(
+
+        val userData = UserDataDataSource("lib-cloud-init-generated/backup-cloud-init.sh", variables)
+        val server = Server(
                 "backup",
                 network,
-                backupUserData,
+                userData,
                 sshKeys = sshKeys,
                 location = location,
                 volume = backupVolume,
                 dependencies = listOf(dnsRecord)
         )
-        backupInfraLayer.addResource(backupServer)
-        backupInfraLayer.addResource(FloatingIpAssignment(server = backupServer, floatingIp = backupFloatingIp))
+        layer.addResource(server)
+        layer.addResource(FloatingIpAssignment(server = server, floatingIp = floatingIp))
     }
 
     private fun addVaultLayer(cloud: CloudConfig,
