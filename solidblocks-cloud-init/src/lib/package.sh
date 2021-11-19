@@ -6,6 +6,14 @@ function package_update {
   apt-get update
 }
 
+function update_system() {
+    apt-get \
+        -o Dpkg::Options::="--force-confnew" \
+        --force-yes \
+        -fuy \
+        dist-upgrade
+}
+
 function package_check_and_install {
 	local package=${1}
 	echo -n "checking if package '${package}' is installed..."

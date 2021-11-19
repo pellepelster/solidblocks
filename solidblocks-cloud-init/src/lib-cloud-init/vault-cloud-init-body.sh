@@ -1,43 +1,6 @@
-#!/usr/bin/env bash
-
 VAULT_VERSION="1.3.1"
 VAULT_CHECKSUM="b49de8fd508eb9c2c222fa0f38e23546fb28991af2e8bfdb9bbe381a380f9baa"
 VAULT_URL="https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip"
-
-set -eux
-
-echo "[=ssh_identity_ed25519_key]" | base64 -d > /etc/ssh/ssh_host_ed25519_key
-chmod 600 /etc/ssh/ssh_host_ed25519_key
-echo "[=ssh_identity_ed25519_pub]" | base64 -d > /etc/ssh/ssh_host_ed25519_key.pub
-
-export DEBIAN_FRONTEND=noninteractive
-
-function mount_storage() {
-    echo "[=storage_local_device] /storage/local   ext4   defaults  0 0" >> /etc/fstab
-    mkdir -p "/storage/local"
-    mount "/storage/local"
-}
-
-function configure_public_ip() {
-    ip addr add [=public_ip] dev eth0
-}
-
-function update_system() {
-    apt-get update
-
-    apt-get \
-        -o Dpkg::Options::="--force-confnew" \
-        --force-yes \
-        -fuy \
-        dist-upgrade
-}
-
-function install_prerequisites() {
-    apt-get install --no-install-recommends -qq -y \
-        unzip \
-        curl \
-        certbot
-}
 
 function install_vault() {
     curl -sL "${VAULT_URL}" --output "/tmp/vault.zip"
@@ -97,10 +60,16 @@ EOF
 #    --domain [=hostname].[=environment_name].[=cloud_root_domain] \
 
 configure_public_ip
-
+ssh_write_host_identity
 mount_storage
+
+package_update
 update_system
-install_prerequisites
+package_check_and_install "unzip"
+package_check_and_install "curl"
+package_check_and_install "jq"
+package_check_and_install "certbot"
+
 install_vault
 
 certbot_run > /etc/cron.daily/certbot

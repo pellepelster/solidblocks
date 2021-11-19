@@ -32,24 +32,26 @@ publishing {
 
 abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: ProjectLayout) : DefaultTask() {
 
+    fun generate_cloud_init(target: String, files: List<String>) {
+        val file_contents = files.map { file ->
+            File("${projectLayout.projectDirectory}/src/${file}").readText(Charsets.UTF_8)
+        }
+
+        File("${projectLayout.projectDirectory}/src/lib-cloud-init-generated").mkdirs()
+        File("${projectLayout.projectDirectory}/src/lib-cloud-init-generated/${target}").writeText(file_contents.joinToString("\n"), Charsets.UTF_8)
+    }
+
     @TaskAction
     fun generate() {
 
-        val files = listOf("lib-cloud-init/shell-script-header.sh", "lib-cloud-init/backup-cloud-init-configuration_noescape.sh", "src/lib/configuration.sh", "src/lib/curl.sh", "src/lib/common.sh", "src/lib/network.sh", "src/lib/vault.sh", "lib-cloud-init/backup-cloud-init-body.sh")
+        generate_cloud_init("backup-cloud-init.sh", listOf("lib-cloud-init/shell-script-header.sh", "lib-cloud-init/cloud-init-variables.sh", "lib/configuration.sh", "lib/curl.sh", "lib/package.sh", "lib/network.sh", "lib/vault.sh", "lib-cloud-init/backup-cloud-init-body.sh"))
+        generate_cloud_init("vault-cloud-init.sh", listOf("lib-cloud-init/shell-script-header.sh", "lib/network.sh", "lib/ssh.sh", "lib/storage.sh", "lib/package.sh", "lib-cloud-init/vault-cloud-init-body.sh"))
 
-        val file_contents = files.map { file ->
-            var content = File("${projectLayout.projectDirectory}/${file}").readText(Charsets.UTF_8)
 
-            if (!file.endsWith("_noescape.sh")) {
-                content = content.replace("\${", "\$\${")
-            }
-
-            content
-        }
-
-        File("${projectLayout.projectDirectory}/lib-cloud-init-generated/backup-cloud-init.sh").writeText(file_contents.joinToString("\n"), Charsets.UTF_8)
     }
 }
 tasks.register<GenerateTask>("generate")
 
+tasks.getByName("jar").dependsOn("generate")
 tasks.getByName("build").dependsOn("generate")
+tasks.getByName("assemble").dependsOn("generate")
