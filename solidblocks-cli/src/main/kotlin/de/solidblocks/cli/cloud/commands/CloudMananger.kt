@@ -94,7 +94,12 @@ class CloudMananger(
 
         val vault1Volume = Volume("vault-1_${location}", location)
         val vault1FloatingIp = FloatingIp("vault-1", location, mapOf("role" to "vault", "name" to "vault-1"))
+
         val vault1Record = DnsRecord("vault-1.${environment.name}", vault1FloatingIp, zone = rootZone)
+        vaultLayer.addResource(vault1Record)
+
+        val vaultRecord = DnsRecord("vault.${environment.name}", vault1FloatingIp, zone = rootZone)
+        vaultLayer.addResource(vaultRecord)
 
         val variables = HashMap<String, IDataSource<String>>()
         variables["cloud_name"] = ConstantDataSource(cloudConfig.name)
@@ -127,7 +132,6 @@ class CloudMananger(
         vaultLayer.addResource(vault1Server)
         vaultLayer.addResource(FloatingIpAssignment(server = vault1Server, floatingIp = vault1FloatingIp))
 
-        vaultLayer.addResource(vault1Record)
         vaultLayer.addResource(vault1Volume)
     }
 

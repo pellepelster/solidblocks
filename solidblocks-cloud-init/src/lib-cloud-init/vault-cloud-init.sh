@@ -67,8 +67,8 @@ ui = true
 
 listener "tcp" {
     address = "0.0.0.0:8200"
-    tls_cert_file = "/storage/local/vault/config/certificates/live/[=hostname].[=environment_name].[=cloud_root_domain]/fullchain.pem"
-    tls_key_file = "/storage/local/vault/config/certificates/live/[=hostname].[=environment_name].[=cloud_root_domain]/privkey.pem"
+    tls_cert_file = "/storage/local/vault/config/certificates/live/vault.[=environment_name].[=cloud_root_domain]/fullchain.pem"
+    tls_key_file = "/storage/local/vault/config/certificates/live/vault.[=environment_name].[=cloud_root_domain]/privkey.pem"
 }
 
 storage "file" {
@@ -90,10 +90,11 @@ certbot certonly \
     --standalone \
     --preferred-challenges http \
     --config-dir /storage/local/vault/config/certificates \
-    --domain [=hostname].[=environment_name].[=cloud_root_domain] \
     --domain vault.[=environment_name].[=cloud_root_domain]
 EOF
 }
+
+#    --domain [=hostname].[=environment_name].[=cloud_root_domain] \
 
 configure_public_ip
 
@@ -102,9 +103,9 @@ update_system
 install_prerequisites
 install_vault
 
-#certbot_run > /etc/cron.daily/certbot
-#chmod +x /etc/cron.daily/certbot
-#/etc/cron.daily/certbot
+certbot_run > /etc/cron.daily/certbot
+chmod +x /etc/cron.daily/certbot
+/etc/cron.daily/certbot
 
 mkdir -p /storage/local/vault/config
 mkdir -p /storage/local/vault/data

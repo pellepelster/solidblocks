@@ -16,10 +16,11 @@ class CloudListCommand :
     @OptIn(ExperimentalPathApi::class)
     override fun run() {
 
-        SpringContextUtil.bean(CloudConfigurationManager::class.java).list().forEach {
+        SpringContextUtil.bean(CloudConfigurationManager::class.java).listClouds().forEach {
             println(it.name)
-            it.configurations.forEach {
-                println("${it.name} = ${it.value}")
+
+            it.environments.forEach {
+                println(it.name)
             }
         }
     }

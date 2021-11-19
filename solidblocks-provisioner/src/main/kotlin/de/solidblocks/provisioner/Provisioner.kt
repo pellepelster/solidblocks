@@ -233,7 +233,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     fun destroyAll() {
         this.provisionerRegistry.provisioner(FloatingIpAssignment::class).destroyAll()
         this.provisionerRegistry.provisioner(Server::class).destroyAll()
-        this.provisionerRegistry.provisioner(Volume::class).destroyAll()
+        //this.provisionerRegistry.provisioner(Volume::class).destroyAll()
         this.provisionerRegistry.provisioner(Network::class).destroyAll()
         this.provisionerRegistry.provisioner(SshKey::class).destroyAll()
         this.provisionerRegistry.provisioner(FloatingIp::class).destroyAll()
