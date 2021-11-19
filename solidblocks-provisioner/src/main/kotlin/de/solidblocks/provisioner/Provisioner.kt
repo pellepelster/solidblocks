@@ -207,9 +207,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
                 val diff = this.provisionerRegistry.provisioner<Any, Any>(resource).diff(resource)
 
-                if (diff.result?.hasChanges() == true) {
-                    logger.info { "diff for resource ${resource.logName()} returned ${diff.result?.toString() ?: "<none>"} " }
-                }
+                logger.info { "diff for resource ${resource.logName()} returned ${diff.result?.toString() ?: "<none>"} " }
 
                 allLayerDiffs.computeIfAbsent(layer) { mutableListOf() }.add(diff)
             } catch (e: Exception) {

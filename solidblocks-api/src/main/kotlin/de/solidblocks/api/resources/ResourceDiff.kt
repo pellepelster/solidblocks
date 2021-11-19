@@ -1,11 +1,11 @@
 package de.solidblocks.api.resources
 
 import de.solidblocks.core.IInfrastructureResource
+import de.solidblocks.core.logName
 
 class ResourceDiff<ReturnType>(
     val resource: IInfrastructureResource<ReturnType>,
     val missing: Boolean = false,
-    val unknown: Boolean = false,
     private val error: Boolean = false,
     private val changes: List<ResourceDiffItem> = emptyList()
 ) {
@@ -20,8 +20,17 @@ class ResourceDiff<ReturnType>(
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String {
-        return "missing = $missing, unknown = $unknown, error = $error,  changes = ${
-        changes.joinToString(", ")
-        }"
+        if (missing) {
+            return "resource '${resource.logName()}' is missing"
+        }
+
+        if (changes.isNotEmpty()) {
+            return "resource '${resource.logName()}' has changes = ${
+                changes.joinToString(", ")
+            }"
+        }
+
+
+            return "resource '${resource.logName()}' is up to date"
     }
 }

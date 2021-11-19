@@ -13,9 +13,9 @@ echo "[=ssh_identity_ed25519_pub]" | base64 -d > /etc/ssh/ssh_host_ed25519_key.p
 export DEBIAN_FRONTEND=noninteractive
 
 function mount_storage() {
-    echo "[=storage_local_device] /storage/[=hostname]   ext4   defaults  0 0" >> /etc/fstab
-    mkdir -p "/storage/[=hostname]"
-    mount "/storage/[=hostname]"
+    echo "[=storage_local_device] /storage/local   ext4   defaults  0 0" >> /etc/fstab
+    mkdir -p "/storage/local"
+    mount "/storage/local"
 }
 
 function configure_public_ip() {
@@ -54,8 +54,8 @@ Description=vault
 Restart=always
 User=root
 Group=root
-WorkingDirectory=/storage/[=hostname]/vault
-ExecStart=/usr/local/bin/vault server -config /storage/[=hostname]/vault/config
+WorkingDirectory=/storage/local/vault
+ExecStart=/usr/local/bin/vault server -config /storage/local/vault/config
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -67,12 +67,12 @@ ui = true
 
 listener "tcp" {
     address = "0.0.0.0:8200"
-    tls_cert_file = "/storage/[=hostname]/vault/config/certificates/live/[=hostname].[=environment_name].[=cloud_root_domain]/fullchain.pem"
-    tls_key_file = "/storage/[=hostname]/vault/config/certificates/live/[=hostname].[=environment_name].[=cloud_root_domain]/privkey.pem"
+    tls_cert_file = "/storage/local/vault/config/certificates/live/[=hostname].[=environment_name].[=cloud_root_domain]/fullchain.pem"
+    tls_key_file = "/storage/local/vault/config/certificates/live/[=hostname].[=environment_name].[=cloud_root_domain]/privkey.pem"
 }
 
 storage "file" {
-  path = "/storage/[=hostname]/vault/data"
+  path = "/storage/local/vault/data"
 }
 
 api_addr = "https://[=hostname].[=environment_name].[=cloud_root_domain]:8200"
@@ -89,7 +89,7 @@ certbot certonly \
     --agree-tos --non-interactive \
     --standalone \
     --preferred-challenges http \
-    --config-dir /storage/[=hostname]/vault/config/certificates \
+    --config-dir /storage/local/vault/config/certificates \
     --domain [=hostname].[=environment_name].[=cloud_root_domain] \
     --domain vault.[=environment_name].[=cloud_root_domain]
 EOF
@@ -102,14 +102,14 @@ update_system
 install_prerequisites
 install_vault
 
-certbot_run > /etc/cron.daily/certbot
-chmod +x /etc/cron.daily/certbot
-/etc/cron.daily/certbot
+#certbot_run > /etc/cron.daily/certbot
+#chmod +x /etc/cron.daily/certbot
+#/etc/cron.daily/certbot
 
-mkdir -p /storage/[=hostname]/vault/config
-mkdir -p /storage/[=hostname]/vault/data
+mkdir -p /storage/local/vault/config
+mkdir -p /storage/local/vault/data
 
-vault_config > /storage/[=hostname]/vault/config/vault.hcl
+vault_config > /storage/local/vault/config/vault.hcl
 vault_systemd_config > /etc/systemd/system/vault.service
 
 systemctl daemon-reload
