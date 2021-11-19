@@ -38,7 +38,7 @@ class HetznerDnsZoneResourceProvisioner(val credentialsProvider: HetznerDnsCrede
         TODO("Not yet implemented")
     }
 
-    override fun diff(resource: DnsZone): Result<ResourceDiff<DnsZoneRuntime>> {
+    override fun diff(resource: DnsZone): Result<ResourceDiff> {
         TODO("Not yet implemented")
     }
 }

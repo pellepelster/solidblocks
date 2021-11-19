@@ -84,7 +84,7 @@ class TestResourceProvisioner : IInfrastructureResourceProvisioner<TestResource,
         }
     }
 
-    override fun diff(resource: TestResource): Result<ResourceDiff<String>> {
+    override fun diff(resource: TestResource): Result<ResourceDiff> {
         diffWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
         if (failOnDiff.containsKey(resource.name)) {
             throw RuntimeException()

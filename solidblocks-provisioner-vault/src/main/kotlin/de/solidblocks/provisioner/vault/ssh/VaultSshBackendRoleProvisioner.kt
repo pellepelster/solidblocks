@@ -68,7 +68,7 @@ class VaultSshBackendRoleProvisioner(
         return keysExist
     }
 
-    override fun diff(resource: VaultSshBackendRole): Result<ResourceDiff<VaultSshBackendRoleRuntime>> {
+    override fun diff(resource: VaultSshBackendRole): Result<ResourceDiff> {
         return lookup(resource).mapResourceResult {
 
             val changes = ArrayList<ResourceDiffItem>()

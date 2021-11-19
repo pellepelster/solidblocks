@@ -33,7 +33,7 @@ class HetznerFloatingIpResourceProvisioner(credentialsProvider: HetznerCloudCred
         }
     }
 
-    override fun diff(resource: FloatingIp): Result<ResourceDiff<FloatingIpRuntime>> {
+    override fun diff(resource: FloatingIp): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
                 ResourceDiff(resource, missing = false)

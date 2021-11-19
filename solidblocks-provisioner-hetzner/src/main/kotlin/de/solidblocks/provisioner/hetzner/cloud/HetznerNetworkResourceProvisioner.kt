@@ -41,7 +41,7 @@ class HetznerNetworkResourceProvisioner(credentialsProvider: HetznerCloudCredent
         }
     }
 
-    override fun diff(resource: Network): Result<ResourceDiff<NetworkRuntime>> {
+    override fun diff(resource: Network): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
                 ResourceDiff(resource, false)

@@ -73,7 +73,7 @@ class HetznerVolumeResourceProvisioner(credentialsProvider: HetznerCloudCredenti
         }
     }
 
-    override fun diff(resource: Volume): Result<ResourceDiff<VolumeRuntime>> {
+    override fun diff(resource: Volume): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
                 ResourceDiff(resource, false)

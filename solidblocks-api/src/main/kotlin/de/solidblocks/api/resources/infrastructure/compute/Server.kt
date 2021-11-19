@@ -6,19 +6,19 @@ import de.solidblocks.core.IDataSource
 import de.solidblocks.core.IInfrastructureResource
 
 class Server(
-    val name: String,
-    val network: Network,
-    val userData: UserDataDataSource,
-    val location: String,
-    val volume: Volume? = null,
-    val sshKeys: Set<SshKey> = emptySet(),
-    val dependencies: List<IInfrastructureResource<*>> = emptyList(),
-    val labels: Map<String, String> = emptyMap()
+        val name: String,
+        val network: Network,
+        val userData: UserDataDataSource,
+        val location: String,
+        val volume: Volume? = null,
+        val sshKeys: Set<SshKey> = emptySet(),
+        val dependencies: List<IInfrastructureResource<*, *>> = emptyList(),
+        val labels: Map<String, String> = emptyMap()
 ) :
-    IInfrastructureResource<ServerRuntime> {
+        IInfrastructureResource<Server, ServerRuntime> {
 
-    override fun getParents(): List<IInfrastructureResource<*>> {
-        val result = ArrayList<IInfrastructureResource<*>>()
+    override fun getParents(): List<IInfrastructureResource<*, *>> {
+        val result = ArrayList<IInfrastructureResource<*, *>>()
 
         result.add(network)
         sshKeys.forEach { result.add(it) }

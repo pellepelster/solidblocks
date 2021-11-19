@@ -10,10 +10,7 @@ import de.solidblocks.provisioner.hetzner.cloud.HetznerCloudCredentialsProvider
 import de.solidblocks.provisioner.hetzner.cloud.getHetznerCloudApiToken
 import de.solidblocks.provisioner.hetzner.dns.HetznerDnsCredentialsProvider
 import de.solidblocks.provisioner.hetzner.dns.getHetznerDnsApiToken
-import de.solidblocks.provisioner.vault.mount.VaultMount
 import de.solidblocks.provisioner.vault.provider.VaultClientProvider
-import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
-import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleDefaultExtensions
 import mu.KotlinLogging
 import org.apache.commons.net.util.SubnetUtils
 import org.springframework.stereotype.Component
@@ -105,10 +102,10 @@ class CloudTenantMananger(
         val network = Network(cloud.name, subnet)
         val location = "nbg1"
 
-        val baseLayer = provisioner.createLayer("baseLayer")
+        val baseLayer = provisioner.createResourceGroup("baseLayer")
         baseLayer.addResource(network)
 
-        val vaultLayer = provisioner.createLayer("vault")
+        val vaultLayer = provisioner.createResourceGroup("vault")
         //vaultLayer.addResource(hetznerProviderConfig)
         /*
         val userSshMount = VaultMount(userSshMountName(cloud.name), "ssh")

@@ -36,7 +36,7 @@ class VaultPolicyProvisioner(val provisioner: Provisioner) :
         }
     }
 
-    override fun diff(resource: VaultPolicy): Result<ResourceDiff<VaultPolicyRuntime>> {
+    override fun diff(resource: VaultPolicy): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
 

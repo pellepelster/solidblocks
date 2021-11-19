@@ -37,7 +37,7 @@ class VaultKVProvisioner(val provisioner: Provisioner) :
         }
     }
 
-    override fun diff(resource: VaultKV): Result<ResourceDiff<VaultKVRuntime>> {
+    override fun diff(resource: VaultKV): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
                 val changes = mutableListOf<ResourceDiffItem>()

@@ -1,13 +1,6 @@
 package de.solidblocks.core
 
-object NullResource : IInfrastructureResource<Any> {
-    override fun getParents(): List<IInfrastructureResource<Any>> {
-        return listOf()
-    }
-
-    override fun getParentDataSources(): List<IDataSource<*>> {
-        return listOf()
-    }
+object NullResource : IInfrastructureResource<Any, Any> {
 
     override fun name(): String {
         return "<null resource>"

@@ -61,7 +61,7 @@ class VaultPkiBackendRoleProvisioner(
         return pem.hasBody()
     }
 
-    override fun diff(resource: VaultPkiBackendRole): Result<ResourceDiff<VaultPkiBackendRoleRuntime>> {
+    override fun diff(resource: VaultPkiBackendRole): Result<ResourceDiff> {
         return lookup(resource).mapResourceResult {
 
             val changes = ArrayList<ResourceDiffItem>()

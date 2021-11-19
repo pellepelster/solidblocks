@@ -5,19 +5,19 @@ import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.provisioner.vault.mount.VaultMount
 
 class VaultSshBackendRole(
-    val name: String,
-    val keyType: String,
-    val maxTtl: String,
-    val ttl: String,
-    val allowHostCertificates: Boolean,
-    val allowUserCertificates: Boolean,
-    val allowedUsers: String? = null,
-    val defaultExtensions: VaultSshBackendRoleDefaultExtensions? = null,
-    val mount: VaultMount
+        val name: String,
+        val keyType: String,
+        val maxTtl: String,
+        val ttl: String,
+        val allowHostCertificates: Boolean,
+        val allowUserCertificates: Boolean,
+        val allowedUsers: String? = null,
+        val defaultExtensions: VaultSshBackendRoleDefaultExtensions? = null,
+        val mount: VaultMount
 ) :
-    IInfrastructureResource<VaultSshBackendRoleRuntime> {
+        IInfrastructureResource<VaultSshBackendRole, VaultSshBackendRoleRuntime> {
 
-    override fun getParents(): List<IInfrastructureResource<*>> {
+    override fun getParents(): List<IInfrastructureResource<*, *>> {
         return listOf(mount)
     }
 

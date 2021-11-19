@@ -24,7 +24,7 @@ class VaultMountProvisioner(val provisioner: Provisioner) :
         }
     }
 
-    override fun diff(resource: VaultMount): Result<ResourceDiff<VaultMountRuntime>> {
+    override fun diff(resource: VaultMount): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
                 ResourceDiff(

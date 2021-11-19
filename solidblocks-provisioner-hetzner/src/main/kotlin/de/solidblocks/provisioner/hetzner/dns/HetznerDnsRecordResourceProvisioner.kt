@@ -5,7 +5,6 @@ import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.dns.DnsRecord
 import de.solidblocks.api.resources.dns.DnsRecordRuntime
 import de.solidblocks.core.Result
-import de.solidblocks.core.Result.Companion.onNonNullSuccess
 import de.solidblocks.core.Result.Companion.onSuccess
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.hetzner.cloud.BaseHetznerProvisioner
@@ -49,7 +48,7 @@ class HetznerDnsRecordResourceProvisioner(
         return Result(resource, failed = true, message = "neither floating ip nor server was provided")
     }
 
-    override fun diff(resource: DnsRecord): Result<ResourceDiff<DnsRecordRuntime>> {
+    override fun diff(resource: DnsRecord): Result<ResourceDiff> {
         return onSuccess(
             resource,
             lookup(resource),

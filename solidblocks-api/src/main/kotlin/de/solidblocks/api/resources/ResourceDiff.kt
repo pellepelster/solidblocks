@@ -3,8 +3,8 @@ package de.solidblocks.api.resources
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.core.logName
 
-class ResourceDiff<ReturnType>(
-    val resource: IInfrastructureResource<ReturnType>,
+class ResourceDiff(
+    val resource: IInfrastructureResource<*, *>,
     val missing: Boolean = false,
     private val error: Boolean = false,
     private val changes: List<ResourceDiffItem> = emptyList()

@@ -3,8 +3,6 @@ package de.solidblocks.provisioner.vault.pki
 import de.solidblocks.core.IDataSource
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.provisioner.vault.mount.VaultMount
-import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleDefaultExtensions
-import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleRuntime
 
 /*
             .allowAnyName(true)
@@ -15,18 +13,18 @@ import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleRuntime
             .keyBits(KEY_BITS)
  */
 class VaultPkiBackendRole(
-    val name: String,
-    val allowAnyName: Boolean,
-    val ttl: String,
-    val maxTtl: String,
-    val generateLease: Boolean,
-    val keyType: String,
-    val keyBits: Int,
-    val mount: VaultMount
+        val name: String,
+        val allowAnyName: Boolean,
+        val ttl: String,
+        val maxTtl: String,
+        val generateLease: Boolean,
+        val keyType: String,
+        val keyBits: Int,
+        val mount: VaultMount
 ) :
-    IInfrastructureResource<VaultPkiBackendRoleRuntime> {
+        IInfrastructureResource<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
 
-    override fun getParents(): List<IInfrastructureResource<*>> {
+    override fun getParents(): List<IInfrastructureResource<*, *>> {
         return listOf(mount)
     }
 

@@ -3,6 +3,7 @@ package de.solidblocks.provisioner.hetzner.cloud
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.base.Waiter
 import de.solidblocks.core.IInfrastructureResource
+import de.solidblocks.core.IResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.logName
 import de.solidblocks.core.reduceResults
@@ -12,11 +13,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.client.HttpClientErrorException
 import kotlin.reflect.KFunction
 
-abstract class BaseHetznerProvisioner<ResourceType : IInfrastructureResource<RuntimeType>, RuntimeType, ApiType>(
-    private val createApi: () -> ApiType,
-    private val resourceType: Class<ResourceType>
+abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
+        private val createApi: () -> ApiType,
+        private val resourceType: Class<*>
 ) :
-    IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
+        IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -29,18 +30,18 @@ abstract class BaseHetznerProvisioner<ResourceType : IInfrastructureResource<Run
         return Result(this.resource, function(createApi()))
     }
 
-    fun <RuntimeType, TargetType> checkedApiCall(
-        resource: IInfrastructureResource<RuntimeType>,
-        function: KFunction<Any>,
-        apiCall: (ApiType) -> TargetType?
+    fun <ResourceType : IResource, TargetType> checkedApiCall(
+            resource: ResourceType,
+            function: KFunction<Any>,
+            apiCall: (ApiType) -> TargetType?
     ): Result<TargetType> {
         return checkedApiCall(resource, function.name, apiCall)
     }
 
-    fun <RuntimeType, TargetType> checkedApiCall(
-        resource: IInfrastructureResource<RuntimeType>,
-        action: String,
-        apiCall: (ApiType) -> TargetType?
+    fun <ResourceType : IResource, TargetType> checkedApiCall(
+            resource: ResourceType,
+            action: String,
+            apiCall: (ApiType) -> TargetType?
     ): Result<TargetType> {
 
         return Waiter.defaultWaiter().waitFor {
@@ -90,8 +91,8 @@ abstract class BaseHetznerProvisioner<ResourceType : IInfrastructureResource<Run
     }
 
     fun <RuntimeType> waitForApiCall(
-        resource: IInfrastructureResource<RuntimeType>,
-        apiCall: (ApiType) -> Boolean
+            resource: IInfrastructureResource<ResourceType, RuntimeType>,
+            apiCall: (ApiType) -> Boolean
     ): Result<Boolean> {
 
         return Waiter.defaultWaiter().waitForSuccess {
@@ -133,11 +134,11 @@ abstract class BaseHetznerProvisioner<ResourceType : IInfrastructureResource<Run
         }
     }
 
-    fun <O : IInfrastructureResource<T>, T> waitForActions(
-        resource: IInfrastructureResource<T>,
-        function: KFunction<Any>,
-        actions: List<Action>,
-        call: (ApiType, Action) -> Boolean
+    fun <ResourceType : IResource> waitForActions(
+            resource: ResourceType,
+            function: KFunction<Any>,
+            actions: List<Action>,
+            call: (ApiType, Action) -> Boolean
     ): Result<Boolean> {
 
         val actionCalls = actions.map { action ->
@@ -160,7 +161,7 @@ abstract class BaseHetznerProvisioner<ResourceType : IInfrastructureResource<Run
         }.reduceResults() as Result<Boolean>
     }
 
-    override fun getResourceType(): Class<ResourceType> {
+    override fun getResourceType(): Class<*> {
         return resourceType
     }
 }

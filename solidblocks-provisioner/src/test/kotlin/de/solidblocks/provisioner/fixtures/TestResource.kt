@@ -5,11 +5,11 @@ import de.solidblocks.core.IInfrastructureResource
 import java.util.*
 
 class TestResource(val name: String, private val parents: List<TestResource> = emptyList()) :
-    IInfrastructureResource<String> {
+    IInfrastructureResource<String, String> {
 
     constructor(uuid: UUID, parents: List<TestResource> = emptyList()) : this(uuid.toString(), parents)
 
-    override fun getParents(): List<IInfrastructureResource<*>> {
+    override fun getParents(): List<IInfrastructureResource<*, *>> {
         return parents
     }
 

@@ -20,7 +20,7 @@ class HetznerSshResourceProvisioner(credentialsProvider: HetznerCloudCredentials
 
     private val logger = KotlinLogging.logger {}
 
-    override fun diff(resource: SshKey): Result<ResourceDiff<SshKeyRuntime>> {
+    override fun diff(resource: SshKey): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
                 ResourceDiff(resource)

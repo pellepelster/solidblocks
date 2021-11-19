@@ -25,7 +25,7 @@ class HetznerServerResourceProvisioner(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun diff(resource: Server): Result<ResourceDiff<ServerRuntime>> {
+    override fun diff(resource: Server): Result<ResourceDiff> {
         return this.lookup(resource).mapResourceResultOrElse(
             {
 

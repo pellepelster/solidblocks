@@ -4,6 +4,7 @@ import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.core.IDataSource
 import de.solidblocks.core.IInfrastructureResource
+import de.solidblocks.core.IResource
 import mu.KotlinLogging
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
@@ -21,7 +22,7 @@ open class ProvisionerRegistry(private val applicationContext: ApplicationContex
         return provisioners.any { it.getResourceType() == clazz.java }
     }
 
-    fun <ResourceType, RuntimeType> provisioner(resource: IInfrastructureResource<ResourceType>): IInfrastructureResourceProvisioner<IInfrastructureResource<RuntimeType>, RuntimeType> {
+    fun <ResourceType : IResource, RuntimeType> provisioner(resource: ResourceType): IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
         val provisioners = applicationContext.getBeansOfType(IInfrastructureResourceProvisioner::class.java)
 
         val provisioner = provisioners.values.firstOrNull {
@@ -32,10 +33,10 @@ open class ProvisionerRegistry(private val applicationContext: ApplicationContex
             throw RuntimeException("no provisioner found for resource type '${resource::class.java}'")
         }
 
-        return provisioner as IInfrastructureResourceProvisioner<IInfrastructureResource<RuntimeType>, RuntimeType>
+        return provisioner as IInfrastructureResourceProvisioner<ResourceType, RuntimeType>
     }
 
-    fun <ResourceType : IInfrastructureResource<RuntimeType>, RuntimeType> provisioner(clazz: KClass<ResourceType>): IInfrastructureResourceProvisioner<IInfrastructureResource<RuntimeType>, RuntimeType> {
+    fun <ResourceType, Type : IInfrastructureResource<ResourceType, RuntimeType>, RuntimeType> provisioner1(clazz: KClass<Type>): IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
         val provisioners = applicationContext.getBeansOfType(IInfrastructureResourceProvisioner::class.java)
 
         val provisioner = provisioners.values.firstOrNull {
@@ -46,7 +47,7 @@ open class ProvisionerRegistry(private val applicationContext: ApplicationContex
             throw RuntimeException("no provisioner found for resource type '${clazz.java}'")
         }
 
-        return provisioner as IInfrastructureResourceProvisioner<IInfrastructureResource<RuntimeType>, RuntimeType>
+        return provisioner as IInfrastructureResourceProvisioner<ResourceType, RuntimeType>
     }
 
     fun <DataSourceType : IDataSource<RuntimeType>, RuntimeType> datasource(clazz: KClass<DataSourceType>): IDataSourceLookup<IDataSource<RuntimeType>, RuntimeType> {

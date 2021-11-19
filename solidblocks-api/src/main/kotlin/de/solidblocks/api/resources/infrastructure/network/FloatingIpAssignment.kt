@@ -4,10 +4,10 @@ import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.core.IInfrastructureResource
 
 data class FloatingIpAssignment(val server: Server, val floatingIp: FloatingIp) :
-    IInfrastructureResource<FloatingIpAssignmentRuntime> {
+        IInfrastructureResource<FloatingIpAssignment, FloatingIpAssignmentRuntime> {
 
-    override fun getParents(): List<IInfrastructureResource<*>> {
-        return listOf(server, floatingIp)
+    override fun getParents(): List<IInfrastructureResource<*, *>> {
+        return listOf(server as IInfrastructureResource<*, *>, floatingIp as IInfrastructureResource<*, *>)
     }
 
     override fun name(): String {

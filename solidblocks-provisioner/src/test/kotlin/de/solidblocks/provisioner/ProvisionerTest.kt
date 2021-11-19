@@ -31,7 +31,7 @@ class ProvisionerTest {
         provisioner.clear()
         testResourceProvisioner.failOnLookup(resource)
 
-        val result = provisioner.lookup(resource)
+        val result = provisioner.lookup<TestResource, String>(resource)
 
         assertTrue(result.isEmptyOrFailed())
         assertTrue(testResourceProvisioner.lookupCount(resource) == 1)
@@ -53,7 +53,7 @@ class ProvisionerTest {
         provisioner.clear()
         testResourceProvisioner.diffIsMissing(resource1)
 
-        val layer = provisioner.createLayer("layer1")
+        val layer = provisioner.createResourceGroup("layer1")
         layer.addResource(resource1)
         layer.addResource(resource2)
 
@@ -72,7 +72,7 @@ class ProvisionerTest {
         provisioner.clear()
         testResourceProvisioner.diffIsMissing(resource1)
 
-        val layer = provisioner.createLayer("layer1")
+        val layer = provisioner.createResourceGroup("layer1")
         layer.addResource(resource1)
         layer.addResource(resource2)
 
@@ -90,7 +90,7 @@ class ProvisionerTest {
         provisioner.clear()
         testResourceProvisioner.failOnDiff(resource)
 
-        provisioner.createLayer("layer1").addResource(resource)
+        provisioner.createResourceGroup("layer1").addResource(resource)
 
         val result = provisioner.apply()
 
@@ -108,7 +108,7 @@ class ProvisionerTest {
         testResourceProvisioner.failOnApply(resource)
         testResourceProvisioner.diffIsMissing(resource)
 
-        provisioner.createLayer("layer1").addResource(resource)
+        provisioner.createResourceGroup("layer1").addResource(resource)
 
         val result = provisioner.apply()
 

@@ -41,7 +41,7 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
         }
     }
 
-    override fun diff(resource: FloatingIpAssignment): Result<ResourceDiff<FloatingIpAssignmentRuntime>> {
+    override fun diff(resource: FloatingIpAssignment): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
                 if (it.server != null) {
