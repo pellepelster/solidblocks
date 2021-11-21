@@ -26,7 +26,7 @@ open class ProvisionerRegistry(private val applicationContext: ApplicationContex
         val provisioners = applicationContext.getBeansOfType(IInfrastructureResourceProvisioner::class.java)
 
         val provisioner = provisioners.values.firstOrNull {
-            it.getResourceType() == resource::class.java
+            it.getResourceType().isAssignableFrom(resource::class.java)
         }
 
         if (provisioner == null) {

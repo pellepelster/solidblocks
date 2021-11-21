@@ -19,7 +19,6 @@ import de.solidblocks.core.logName
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.github.resilience4j.retry.RetryRegistry
-import io.vavr.control.Try
 import mu.KotlinLogging
 import org.jgrapht.Graph
 import org.jgrapht.graph.DefaultDirectedGraph
@@ -36,8 +35,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     private val logger = KotlinLogging.logger {}
 
     val retryConfig = RetryConfig.custom<Boolean>()
-            .maxAttempts(3)
-            .waitDuration(Duration.ofMillis(1000))
+            .maxAttempts(15)
+            .waitDuration(Duration.ofMillis(5000))
             .retryOnResult { !it }
             .build()
 
@@ -102,9 +101,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
         val allLayerDiffs = HashMap<ResourceGroup, MutableList<Result<ResourceDiff>>>()
 
-        return resourceGroups.map { layer ->
-
-            if (diffForResourceGroup(layer, allLayerDiffs).failed) {
+        for (resourceGroup in resourceGroups) {
+            if (diffForResourceGroup(resourceGroup, allLayerDiffs).failed) {
                 return false
             }
 
@@ -116,13 +114,13 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                     }"
                 }
 
-                return@map false
+                return false
             }
 
             val diffsForAllLayersWithChanges =
                     allLayerDiffs.flatMap { it.value }.map { it.result!! }.filter { it.hasChanges() }
 
-            val resourcesThatDependOnResourcesWithChanges = layer.resources.filter {
+            val resourcesThatDependOnResourcesWithChanges = resourceGroup.resources.filter {
                 it.getParents().any { parent -> diffsForAllLayersWithChanges.any { it.resource == parent } }
             }
 
@@ -133,22 +131,28 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 )
             }
 
-            return@map apply(allLayerDiffs[layer]!!.map { it.result!! } + o)
-        }.all { it }
+            val result = apply(allLayerDiffs[resourceGroup]!!.map { it.result!! } + o)
+            if (!result) {
+                return false
+            }
+
+        }
+
+        return true
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun apply(diffs: List<ResourceDiff>): Boolean {
 
-        val destroyResults = diffs.filter { it.needsRecreate() }.map {
+        diffs.filter { it.needsRecreate() }.forEach {
             val resource = it.resource as IInfrastructureResource<IResource, Any>
             logger.info { "destroying ${resource.logName()}" }
-            this.provisionerRegistry.provisioner<IResource, Any>(resource).destroy(resource)
-        }
+            val result = this.provisionerRegistry.provisioner<IResource, Any>(resource).destroy(resource)
 
-        destroyResults.filter { it.isEmptyOrFailed() }.forEach {
-            logger.info { "destroy failed for ${it.resource.logName()}, error was: '${it.errorMessage()}'" }
-            false
+            if (result.failed) {
+                logger.error { "destroying ${resource.logName()} failed" }
+                return false
+            }
         }
 
         val results = diffs.filter { it.hasChanges() }.map {
@@ -163,11 +167,6 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 if (result.failed) {
                     logger.error { "applying ${it.resource.logName()} failed, result was: '${result.errorMessage()}'" }
                     return false
-                }
-
-                if (it.resource.getHealthCheck() != null) {
-                    val retryableSupplier = Retry.decorateCheckedSupplier(retryRegistry.retry("healthcheck"), resource::getHealthCheck)
-                    return@map Try.of(retryableSupplier).isSuccess
                 }
 
                 return@map true
@@ -218,8 +217,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
                 resourcesWithHealthChecks.forEach {
                     val decorateFunction: Supplier<Boolean> = Retry.decorateSupplier(retryRegistry.retry("healthcheck")) {
-                        //it.getHealthCheck()!!.check(it)
-                        false
+                        it.getHealthCheck()!!.invoke()
                     }
 
                     val result = decorateFunction.get()
@@ -257,6 +255,11 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
                 val diff = this.provisionerRegistry.provisioner<IResource, Any>(resource).diff(resource)
 
+                if (diff.failed) {
+                    logger.info { "diff failed for ${resource.logName()}" }
+                    return Result(resource = resource, failed = true)
+
+                }
                 logger.info { diff.result?.toString() ?: "no result for resource ${resource.logName()}" }
 
                 allLayerDiffs.computeIfAbsent(resourceGroup) { mutableListOf() }.add(diff)

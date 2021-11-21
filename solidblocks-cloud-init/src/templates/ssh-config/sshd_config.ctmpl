@@ -1,0 +1,14 @@
+PermitRootLogin yes
+PubkeyAuthentication yes
+ChallengeResponseAuthentication no
+UsePAM yes
+
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostCertificate /etc/ssh/ssh_host_ed25519_key_signed.pub
+
+TrustedUserCAKeys /etc/ssh/solidblocks_user_ssh_ca.pub
+
+X11Forwarding no
+PrintMotd no
+
+AcceptEnv LANG LC_*

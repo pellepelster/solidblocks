@@ -23,6 +23,7 @@ import de.solidblocks.cli.Contants.hostSshMountName
 import de.solidblocks.cli.Contants.kvMountName
 import de.solidblocks.cli.Contants.pkiMountName
 import de.solidblocks.cli.Contants.userSshMountName
+import de.solidblocks.cli.cloud.commands.config.getGithubReadOnlyToken
 import de.solidblocks.cloud.config.CloudConfig
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.CloudEnvironmentConfig
@@ -33,6 +34,7 @@ import de.solidblocks.provisioner.hetzner.cloud.HetznerCloudCredentialsProvider
 import de.solidblocks.provisioner.hetzner.cloud.getHetznerCloudApiToken
 import de.solidblocks.provisioner.hetzner.dns.HetznerDnsCredentialsProvider
 import de.solidblocks.provisioner.hetzner.dns.getHetznerDnsApiToken
+import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.mount.VaultMount
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
@@ -44,6 +46,7 @@ import org.springframework.stereotype.Component
 import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.Policy
 import org.springframework.vault.support.VaultTokenRequest
+import java.net.URL
 
 @Component
 class CloudMananger(
@@ -54,16 +57,25 @@ class CloudMananger(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun destroy(environment: String, rootDomain: String, hetznerCloudApiToken: String, hetznerDnsApiToken: String) {
-        cloudCredentialsProvider.addApiToken(hetznerCloudApiToken)
-        dnsCredentialsProvider.addApiToken(hetznerDnsApiToken)
+    fun destroy(cloudName: String, environmentName: String): Boolean {
+        if (!cloudConfigurationManager.hasCloud(cloudName)) {
+            logger.error { "cloud '${cloudName}' not found" }
+            return false
+        }
 
-        //createCloudModel(environment, rootDomain)
+        val cloudConfig = cloudConfigurationManager.cloudByName(cloudName)
+
+        val environment = cloudConfig.environments.filter { it.name == environmentName }.firstOrNull()
+        if (environment == null) {
+            logger.error { "cloud '${cloudName}' has no environment '${environment}'" }
+            return false
+        }
+
+        cloudCredentialsProvider.addApiToken(environment.configValues.getHetznerCloudApiToken()!!.value)
+        dnsCredentialsProvider.addApiToken(environment.configValues.getHetznerDnsApiToken()!!.value)
+
 
         provisioner.destroyAll()
-    }
-
-    fun show(name: String): Boolean {
         return true
     }
 
@@ -112,7 +124,7 @@ class CloudMananger(
         val vaultInfraResourceGroup = createVaultInfraResourceGroup(location, environment, rootZone, cloud, network, sshKeys)
 
         createVaultConfigResourceGroup(vaultInfraResourceGroup, cloud, environment)
-        //addBackupLayer(location, environmentConfig, rootZone, cloudConfig, network, sshKeys)
+        addBackupResourceGroup(location, environment, rootZone, cloud, network, sshKeys)
     }
 
     private fun createVaultInfraResourceGroup(location: String, environment: CloudEnvironmentConfig, rootZone: DnsZone, cloud: CloudConfig, network: Network, sshKeys: Set<SshKey>): ResourceGroup {
@@ -124,22 +136,21 @@ class CloudMananger(
         val vault1Record = DnsRecord("vault-1.${environment.name}", vault1FloatingIp, zone = rootZone)
         resourceGroup.addResource(vault1Record)
 
-        /**
-         * , healthcheck = object : IHealthcheck<DnsRecord> {
-
-        override fun check(resource: DnsRecord): Boolean {
-        val url = "https://${resource.name}.${resource.zone.name}"
-        return try {
-        URL(url).readText()
-        true
-        } catch (e: Exception) {
-        logger.warn { "healthcheck for '${url}' failed" }
-        false
+        val vaultRecord = object : DnsRecord("vault.${environment.name}", vault1FloatingIp, zone = rootZone) {
+            override fun getHealthCheck(): () -> Boolean {
+                return {
+                    val url = "https://${name}.${zone.name}:8200"
+                    try {
+                        URL(url).readText()
+                        logger.info { "url '${url}' is healthy" }
+                        true
+                    } catch (e: Exception) {
+                        logger.warn { "url '${url}' is unhealthy" }
+                        false
+                    }
+                }
+            }
         }
-        }
-        }
-         */
-        val vaultRecord = DnsRecord("vault.${environment.name}", vault1FloatingIp, zone = rootZone)
         resourceGroup.addResource(vaultRecord)
 
         val variables = HashMap<String, IDataSource<String>>()
@@ -269,15 +280,29 @@ class CloudMananger(
         )
         resourceGroup.addResource(hostSshBackendRole)
 
+        val userSshMount = VaultMount(userSshMountName(cloud, environment),
+                "ssh")
+        val userSshBackendRole = VaultSshBackendRole(
+                name = userSshMountName(cloud, environment),
+                keyType = "ca",
+                maxTtl = "168h",
+                ttl = "168h",
+                allowHostCertificates = false,
+                allowUserCertificates = true,
+                mount = userSshMount
+        )
+        resourceGroup.addResource(userSshBackendRole)
+
         val kvMount = VaultMount(kvMountName(cloud, environment), "kv-v2")
         resourceGroup.addResource(kvMount)
 
-        /*
+        //JacksonUtils.toMap()
         val solidblocksConfig =
                 VaultKV("solidblocks/cloud/config",
-                        JacksonUtils.toMap(cloud.solidblocksConfig), kvMount)
-        vaultLayer.addResource(solidblocksConfig)
+                        mapOf("github_token_ro" to environment.configValues.getGithubReadOnlyToken()!!.value), kvMount)
+        resourceGroup.addResource(solidblocksConfig)
 
+        /*
         val hetznerProviderConfig = VaultKV(
                 "solidblocks/providers/hetzner",
 

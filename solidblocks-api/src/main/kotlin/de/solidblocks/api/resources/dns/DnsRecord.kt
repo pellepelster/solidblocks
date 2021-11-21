@@ -4,7 +4,7 @@ import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.core.IInfrastructureResource
 
-data class DnsRecord(
+open class DnsRecord(
         val name: String,
         val floatingIp: FloatingIp? = null,
         val server: Server? = null,

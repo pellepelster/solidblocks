@@ -1,0 +1,15 @@
+[Unit]
+Description=ssh-config
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+EnvironmentFile=-/solidblocks/instance/environment
+EnvironmentFile=-/solidblocks/protected/environment
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/consul-template -config /solidblocks/config/node-manager_consul-template-config.hcl
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

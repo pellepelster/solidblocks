@@ -6,3 +6,6 @@ package_check_and_install "jq"
 package_check_and_install "unzip"
 
 bootstrap_solidblocks
+
+create_root_ssh_key
+consul_template_install

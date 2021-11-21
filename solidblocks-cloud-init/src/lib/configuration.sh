@@ -2,7 +2,7 @@
 # configuration.sh                    #
 #######################################
 
-export DEBUG_LEVEL="${DEBUG_LEVEL:-0}"
+export SOLIDBLOCKS_DEBUG_LEVEL="${SOLIDBLOCKS_DEBUG_LEVEL:-0}"
 
 export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
 export SOLIDBLOCKS_DEVELOPMENT_MODE="${SOLIDBLOCKS_DEVELOPMENT_MODE:-0}"
@@ -16,10 +16,20 @@ function bootstrap_solidblocks() {
   mkdir -p ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
   chmod 700 "${SOLIDBLOCKS_DIR}/protected"
 
+  echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "/solidblocks/instance/environment"
+  echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "/solidblocks/instance/environment"
+  echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "/solidblocks/instance/environment"
+  echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "/solidblocks/instance/environment"
+  echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "/solidblocks/instance/environment"
+  echo "VAULT_ADDR=https://vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200" >> "/solidblocks/instance/environment"
+
+  echo "VAULT_TOKEN=${VAULT_TOKEN}" >> "/solidblocks/protected/environment"
+
+
   local github_owner="pellepelster"
   (
-      local config_file="${SOLIDBLOCKS_DIR}/cloud_init_config.json"
-      vault_read_secret "nodes/cloud_init_config" > ${config_file}
+      local config_file="${SOLIDBLOCKS_DIR}/config/cloud_init_config.json"
+      vault_read_secret "solidblocks/cloud/config" > ${config_file}
 
       local temp_file="$(mktemp)"
 
