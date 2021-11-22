@@ -6,12 +6,12 @@ import de.solidblocks.core.Result
 
 interface IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
 
-    fun lookup(resource: ResourceType): Result<RuntimeType>
-    fun diff(resource: ResourceType): Result<ResourceDiff>
-    fun apply(resource: ResourceType): Result<*>
+    fun diff(resource: ResourceType): Result<ResourceDiff> = TODO("Not yet implemented")
+    fun apply(resource: ResourceType): Result<*> = TODO("Not yet implemented")
 
     fun destroy(resource: ResourceType): Result<*> = Result<Any>(NullResource)
     fun destroyAll(): Result<*> = Result<Any>(NullResource)
 
     fun getResourceType(): Class<*>
+
 }

@@ -3,6 +3,7 @@ package de.solidblocks.provisioner.vault.pki
 import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.vault.pki.dto.PkiBackendRole
@@ -18,17 +19,18 @@ import kotlin.reflect.KProperty1
 
 @Component
 class VaultPkiBackendRoleProvisioner(
-    val provisioner: Provisioner,
+        val provisioner: Provisioner,
 ) :
-    IInfrastructureResourceProvisioner<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
+        IResourceLookupProvider<IVaultPkiBackendRoleLookup, VaultPkiBackendRoleRuntime>,
+        IInfrastructureResourceProvisioner<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
 
     private val compareTtl: (String, String) -> Boolean = { expectedValue, actualValue ->
         val period = MutablePeriod()
 
         val parser = PeriodFormatterBuilder()
-            .appendHours().appendSuffix("h")
-            .appendMinutes().appendSuffix("m")
-            .toParser()
+                .appendHours().appendSuffix("h")
+                .appendMinutes().appendSuffix("m")
+                .toParser()
 
         parser.parseInto(period, expectedValue, 0, Locale.getDefault())
         val expectedSeconds = period.toDurationFrom(Instant.now()).standardSeconds
@@ -38,23 +40,12 @@ class VaultPkiBackendRoleProvisioner(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun lookup(resource: VaultPkiBackendRole): Result<VaultPkiBackendRoleRuntime> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
-
-        val role = vaultClient.read("${resource.mount.name}/roles/${resource.name}", PkiBackendRole::class.java)
-            ?: return Result(resource, null)
-
-        val keysExist = keysExist(vaultClient, resource)
-
-        return Result(resource, VaultPkiBackendRoleRuntime(role.data!!, keysExist))
-    }
-
     private fun keysExist(
-        client: VaultTemplate,
-        resource: VaultPkiBackendRole
+            client: VaultTemplate,
+            resource: IVaultPkiBackendRoleLookup
     ): Boolean {
         val pem = client.doWithVault {
-            val pem = it.getForEntity("${resource.mount.name}/ca/pem", String::class.java)
+            val pem = it.getForEntity("${resource.mount().name()}/ca/pem", String::class.java)
             pem
         }
 
@@ -143,12 +134,12 @@ class VaultPkiBackendRoleProvisioner(
             generate_lease = resource.generateLease,
         )
 
-        val response = vaultClient.write("${resource.mount.name}/roles/${resource.name}", role)
+        val response = vaultClient.write("${resource.mount.name()}/roles/${resource.name}", role)
 
         if (!keysExist(vaultClient, resource)) {
             val response = vaultClient.write(
-                "${resource.mount.name}/root/generate/internal",
-                mapOf("common_name" to "${resource.name} root")
+                    "${resource.mount.name()}/root/generate/internal",
+                    mapOf("common_name" to "${resource.name} root")
             )
         }
 
@@ -157,5 +148,20 @@ class VaultPkiBackendRoleProvisioner(
 
     override fun getResourceType(): Class<VaultPkiBackendRole> {
         return VaultPkiBackendRole::class.java
+    }
+
+    override fun lookup(lookup: IVaultPkiBackendRoleLookup): Result<VaultPkiBackendRoleRuntime> {
+        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+
+        val role = vaultClient.read("${lookup.mount().name()}/roles/${lookup.name()}", PkiBackendRole::class.java)
+                ?: return Result(lookup, null)
+
+        val keysExist = keysExist(vaultClient, lookup)
+
+        return Result(lookup, VaultPkiBackendRoleRuntime(role.data!!, keysExist))
+    }
+
+    override fun getLookupType(): Class<*> {
+        return IVaultPkiBackendRoleLookup::class.java
     }
 }

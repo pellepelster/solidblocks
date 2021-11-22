@@ -1,6 +1,9 @@
 package de.solidblocks.provisioner.hetzner.cloud
 
 import de.solidblocks.api.resources.ResourceDiff
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
+import de.solidblocks.api.resources.infrastructure.compute.IVolumeLookup
 import de.solidblocks.api.resources.infrastructure.compute.Volume
 import de.solidblocks.api.resources.infrastructure.compute.VolumeRuntime
 import de.solidblocks.core.NullResource
@@ -15,10 +18,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerVolumeResourceProvisioner(credentialsProvider: HetznerCloudCredentialsProvider) :
-    BaseHetznerProvisioner<Volume, VolumeRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(credentialsProvider.defaultApiToken()) },
-        Volume::class.java
-    ) {
+        IResourceLookupProvider<IVolumeLookup, VolumeRuntime>,
+        IInfrastructureResourceProvisioner<Volume,
+                VolumeRuntime>,
+        BaseHetznerProvisioner<Volume, VolumeRuntime, HetznerCloudAPI>(
+                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -62,14 +66,6 @@ class HetznerVolumeResourceProvisioner(credentialsProvider: HetznerCloudCredenti
                     actionResult.finished != null
                 }
             }
-        }
-    }
-
-    override fun lookup(resource: Volume): Result<VolumeRuntime> {
-        return checkedApiCall(resource, HetznerCloudAPI::getVolumes) {
-            it.volumes.volumes.firstOrNull { it.name == resource.name }
-        }.mapNonNullResult {
-            VolumeRuntime(it.id.toString(), it.linuxDevice, it.server)
         }
     }
 
@@ -140,5 +136,21 @@ class HetznerVolumeResourceProvisioner(credentialsProvider: HetznerCloudCredenti
         return lookup(resource).mapNonNullResult {
             destroy(it.id.toLong())
         }
+    }
+
+    override fun getResourceType(): Class<*> {
+        return Volume::class.java
+    }
+
+    override fun lookup(lookup: IVolumeLookup): Result<VolumeRuntime> {
+        return checkedApiCall(lookup, HetznerCloudAPI::getVolumes) {
+            it.volumes.volumes.firstOrNull { it.name == lookup.name() }
+        }.mapNonNullResult {
+            VolumeRuntime(it.id.toString(), it.linuxDevice, it.server)
+        }
+    }
+
+    override fun getLookupType(): Class<*> {
+        return IVolumeLookup::class.java
     }
 }

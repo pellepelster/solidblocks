@@ -12,7 +12,7 @@ vault {
 log_level = "debug"
 
 exec {
-  command = "/solidblocks/bin/node_manager.sh"
+  command = "/solidblocks/bin/solidblocks-node-manager.sh"
 }
 
 

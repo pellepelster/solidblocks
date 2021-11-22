@@ -2,7 +2,6 @@ package de.solidblocks.provisioner
 
 import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
-import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
 import de.solidblocks.api.resources.infrastructure.IInfrastructureClientProvider
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.compute.Server
@@ -10,12 +9,7 @@ import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
 import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
-import de.solidblocks.core.IDataSource
-import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.core.IResource
-import de.solidblocks.core.NullResource
-import de.solidblocks.core.Result
-import de.solidblocks.core.logName
+import de.solidblocks.core.*
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.github.resilience4j.retry.RetryRegistry
@@ -65,32 +59,16 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
         return provider as IInfrastructureClientProvider<T>
     }
 
-    fun <ResourceType : IResource, RuntimeType> lookup(resource: ResourceType): Result<RuntimeType> =
+    fun <LookupType : IResourceLookup<RuntimeType>, RuntimeType> lookup(resource: LookupType): Result<RuntimeType> =
             try {
-                this.provisionerRegistry.provisioner<ResourceType, RuntimeType>(resource).lookup(resource)
+                this.provisionerRegistry.datasource(resource).lookup(resource)
             } catch (e: Exception) {
                 logger.error(e) { "lookup for ${resource.logName()} failed" }
                 Result(resource, failed = true, message = e.message)
             }
-
-    fun <ResourceType : IResource, RuntimeType> lookup(resource: IInfrastructureResource<ResourceType, RuntimeType>): Result<RuntimeType> =
-            try {
-                this.provisionerRegistry.provisioner<IInfrastructureResource<ResourceType, RuntimeType>, RuntimeType>(resource).lookup(resource)
-            } catch (e: Exception) {
-                logger.error(e) { "lookup for ${resource.logName()} failed" }
-                Result(resource, failed = true, message = e.message)
-            }
-
-    fun <DataSourceType : IDataSource<ReturnType>, ReturnType> lookup(resource: DataSourceType): Result<ReturnType> {
-        return this.provisionerRegistry.datasource(resource::class).lookup(resource)
-    }
 
     fun <ResourceType : IResource, ReturnType> provisioner(resource: ResourceType): IInfrastructureResourceProvisioner<ResourceType, ReturnType> {
         return this.provisionerRegistry.provisioner(resource)
-    }
-
-    fun <ReturnType, DataSourceType : IDataSource<ReturnType>> datasource(resource: DataSourceType): IDataSourceLookup<IDataSource<ReturnType>, ReturnType> {
-        return this.provisionerRegistry.datasource(resource::class)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -121,7 +99,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                     allLayerDiffs.flatMap { it.value }.map { it.result!! }.filter { it.hasChanges() }
 
             val resourcesThatDependOnResourcesWithChanges = resourceGroup.resources.filter {
-                it.getParents().any { parent -> diffsForAllLayersWithChanges.any { it.resource == parent } }
+                it.getInfraParents().any { parent -> diffsForAllLayersWithChanges.any { it.resource == parent } }
             }
 
             val o = resourcesThatDependOnResourcesWithChanges.map {
@@ -179,27 +157,18 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
         return results.all { it }
     }
 
-    fun lookup(): List<Result<*>> {
-        return resourceGroups.map {
-            val resources = createResourceList(it.resources)
+    private fun getInfraParents(resource: IResource): List<IInfrastructureResource<*, *>> = getParentsInternal(resource).filterIsInstance<IInfrastructureResource<*, *>>()
 
-            return resources.map {
-                val lookup = this.lookup<IResource, Any>(it)
-                logger.info { "lookup of ${it.logName()} returned: ${lookup.result ?: "<none>"}" }
-                lookup
-            }
-        }
+    private fun getParentsInternal(resource: IResource): List<IResource> {
+        val parents = mutableListOf<IResource>()
+        resource.getParents().forEach { getParentsInternal(it, parents) }
+
+        return parents.toList()
     }
 
-    private fun getParents(resource: IInfrastructureResource<*, *>): MutableList<IInfrastructureResource<*, *>> {
-        val parents = mutableListOf<IInfrastructureResource<*, *>>()
-        resource.getParents().forEach { getParents(it, parents) }
-        return parents
-    }
-
-    private fun getParents(resource: IInfrastructureResource<*, *>, parents: MutableList<IInfrastructureResource<*, *>>) {
+    private fun getParentsInternal(resource: IResource, parents: MutableList<IResource>) {
         parents.add(resource)
-        resource.getParents().forEach { getParents(it, parents) }
+        resource.getParents().forEach { getParentsInternal(it, parents) }
     }
 
     private fun diffForResourceGroup(
@@ -233,7 +202,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
         for (resource in resources) {
             try {
-                val parents = getParents(resource)
+                val parents = getInfraParents(resource)
 
                 val nonFailedMissingDiffs =
                         allLayerDiffs.flatMap { it.value }.filter { !it.isEmptyOrFailed() }.map { it.result!! }
@@ -301,7 +270,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
         models.forEach { model ->
             if (!allModels.contains(model)) {
                 allModels.add(model)
-                flattenModels(allModels, model.getParents() as List<IInfrastructureResource<*, *>>)
+                flattenModels(allModels, model.getInfraParents())
             }
         }
     }
@@ -317,7 +286,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
         }
 
         allResources.forEach { source ->
-            source.getParents().forEach { target ->
+            source.getInfraParents().forEach { target ->
                 graph.addEdge(source, target as IInfrastructureResource<*, *>?)
             }
         }

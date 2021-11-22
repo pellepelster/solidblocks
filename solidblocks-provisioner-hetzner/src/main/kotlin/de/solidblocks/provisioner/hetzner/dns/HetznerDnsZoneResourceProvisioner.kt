@@ -1,8 +1,9 @@
 package de.solidblocks.provisioner.hetzner.dns
 
-import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.dns.DnsZone
 import de.solidblocks.api.resources.dns.DnsZoneRuntime
+import de.solidblocks.api.resources.dns.IDnsZoneLookup
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import io.pelle.hetzner.HetznerDnsAPI
@@ -11,34 +12,21 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerDnsZoneResourceProvisioner(val credentialsProvider: HetznerDnsCredentialsProvider) :
-    BaseHetznerProvisioner<DnsZone, DnsZoneRuntime, HetznerDnsAPI>(
-        { HetznerDnsAPI(credentialsProvider.defaultApiToken()) },
-        DnsZone::class.java
-    ) {
+        IResourceLookupProvider<IDnsZoneLookup, DnsZoneRuntime>,
+        BaseHetznerProvisioner<DnsZone, DnsZoneRuntime, HetznerDnsAPI>(
+                { HetznerDnsAPI(credentialsProvider.defaultApiToken()) }) {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun lookup(resource: DnsZone): Result<DnsZoneRuntime> {
-        return checkedApiCall(resource, HetznerDnsAPI::searchZone) {
-            it.searchZone(resource.name)
+    override fun lookup(lookup: IDnsZoneLookup): Result<DnsZoneRuntime> {
+        return checkedApiCall(lookup, HetznerDnsAPI::searchZone) {
+            it.searchZone(lookup.name())
         }.mapNonNullResultNullable {
             DnsZoneRuntime(it.id, it.name)
         }
     }
 
-    override fun apply(resource: DnsZone): Result<*> {
-        TODO("Not yet implemented")
-    }
-
-    override fun destroy(resource: DnsZone): Result<*> {
-        TODO("Not yet implemented")
-    }
-
-    override fun destroyAll(): Result<*> {
-        TODO("Not yet implemented")
-    }
-
-    override fun diff(resource: DnsZone): Result<ResourceDiff> {
-        TODO("Not yet implemented")
+    override fun getLookupType(): Class<*> {
+        return IDnsZoneLookup::class.java
     }
 }

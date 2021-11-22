@@ -1,8 +1,9 @@
 package de.solidblocks.provisioner.vault.pki
 
-import de.solidblocks.core.IDataSource
 import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.provisioner.vault.mount.VaultMount
+import de.solidblocks.core.IResource
+import de.solidblocks.core.IResourceLookup
+import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 /*
             .allowAnyName(true)
@@ -20,19 +21,18 @@ class VaultPkiBackendRole(
         val generateLease: Boolean,
         val keyType: String,
         val keyBits: Int,
-        val mount: VaultMount
+        val mount: IVaultMountLookup
 ) :
+        IVaultPkiBackendRoleLookup,
         IInfrastructureResource<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
 
-    override fun getParents(): List<IInfrastructureResource<*, *>> {
-        return listOf(mount)
+    override fun mount(): IVaultMountLookup {
+        return mount
     }
 
     override fun name(): String {
         return this.name
     }
 
-    override fun getParentDataSources(): List<IDataSource<*>> {
-        return emptyList()
-    }
+    override fun getParents() =  listOf(mount)
 }

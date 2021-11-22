@@ -1,6 +1,6 @@
 package de.solidblocks.provisioner.utils
 
-import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.compute.UserDataDataSource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import java.io.StringWriter
 
 @Component
-class UserDataDataSourceLookup(val provisioner: Provisioner) : IDataSourceLookup<UserDataDataSource, String> {
+class UserDataResourceLookupProvider(val provisioner: Provisioner) : IResourceLookupProvider<UserDataDataSource, String> {
 
     override fun lookup(datasource: UserDataDataSource): Result<String> {
 
@@ -44,7 +44,7 @@ class UserDataDataSourceLookup(val provisioner: Provisioner) : IDataSourceLookup
         return Result(datasource, sw.toString())
     }
 
-    override fun getDatasourceType(): Class<UserDataDataSource> {
+    override fun getLookupType(): Class<UserDataDataSource> {
         return UserDataDataSource::class.java
     }
 }

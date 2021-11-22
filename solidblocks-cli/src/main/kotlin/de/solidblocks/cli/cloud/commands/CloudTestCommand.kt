@@ -16,7 +16,7 @@ class CloudTestCommand :
 
     override fun run() {
         logger.info { "test cloud '$name'" }
-        SpringContextUtil.callBeanAndShutdown(CloudTenantMananger::class.java) {
+        SpringContextUtil.callBeanAndShutdown(TenantMananger::class.java) {
             if (!it.cloudConfigurationManager.hasTenant(name)) {
                 logger.error { "cloud '$name' not found" }
                 exitProcess(1)

@@ -12,7 +12,6 @@ import javax.sql.DataSource
 @ComponentScan(basePackages = ["de.solidblocks"])
 @Import(LiquibaseAutoConfiguration::class)
 open class TestConfiguration {
-    // TODO figure out why liquibase autoconfiguration is broken
     @Bean
     open fun liquibase(dataSource: DataSource): SpringLiquibase? {
         val liquibase = SpringLiquibase()

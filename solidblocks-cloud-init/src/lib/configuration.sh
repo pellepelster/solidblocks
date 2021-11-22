@@ -21,8 +21,8 @@ function bootstrap_solidblocks() {
   echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "/solidblocks/instance/environment"
   echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "/solidblocks/instance/environment"
   echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "/solidblocks/instance/environment"
-  echo "VAULT_ADDR=https://vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200" >> "/solidblocks/instance/environment"
 
+  echo "VAULT_ADDR=${VAULT_ADDR}" >> "/solidblocks/instance/environment"
   echo "VAULT_TOKEN=${VAULT_TOKEN}" >> "/solidblocks/protected/environment"
 
 
@@ -33,6 +33,7 @@ function bootstrap_solidblocks() {
 
       local temp_file="$(mktemp)"
 
+      #TODO verify checksum
       curl_wrapper -u "${github_owner}:$(jq -r ".github_token_ro" "${config_file}")" -L \
         https://maven.pkg.github.com/${github_owner}/solidblocks/solidblocks/solidblocks-cloud-init/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.jar > ${temp_file}
 

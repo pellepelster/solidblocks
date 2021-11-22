@@ -4,6 +4,9 @@ import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.dns.DnsRecord
 import de.solidblocks.api.resources.dns.DnsRecordRuntime
+import de.solidblocks.api.resources.dns.IDnsRecordLookup
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import de.solidblocks.core.Result.Companion.onSuccess
 import de.solidblocks.provisioner.Provisioner
@@ -16,25 +19,15 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerDnsRecordResourceProvisioner(
-    val provisioner: Provisioner,
-    val credentialsProvider: HetznerDnsCredentialsProvider
+        val provisioner: Provisioner,
+        val credentialsProvider: HetznerDnsCredentialsProvider
 ) :
-    BaseHetznerProvisioner<DnsRecord, DnsRecordRuntime, HetznerDnsAPI>(
-        { HetznerDnsAPI(credentialsProvider.defaultApiToken()) },
-        DnsRecord::class.java
-    ) {
+        IResourceLookupProvider<IDnsRecordLookup, DnsRecordRuntime>,
+        IInfrastructureResourceProvisioner<DnsRecord, DnsRecordRuntime>,
+        BaseHetznerProvisioner<DnsRecord, DnsRecordRuntime, HetznerDnsAPI>(
+                { HetznerDnsAPI(credentialsProvider.defaultApiToken()) }) {
 
     private val logger = KotlinLogging.logger {}
-
-    override fun lookup(resource: DnsRecord): Result<DnsRecordRuntime> {
-        return this.provisioner.lookup(resource.zone).mapNonNullResultNullable { zone ->
-            checkedApiCall(resource, HetznerDnsAPI::getRecords) {
-                it.getRecords(zone.id).firstOrNull { it.name == resource.name }
-            }.mapNonNull {
-                DnsRecordRuntime(it.id, it.name, it.value, it.ttl)
-            }
-        }
-    }
 
     fun resolveIp(resource: DnsRecord): Result<String> {
         if (resource.floatingIp != null) {
@@ -97,9 +90,9 @@ class HetznerDnsRecordResourceProvisioner(
 
     override fun apply(resource: DnsRecord): Result<*> {
         return onSuccess(
-            resource,
-            provisioner.lookup(resource.zone),
-            resolveIp(resource)
+                resource,
+                provisioner.lookup(resource.dnsZone),
+                resolveIp(resource)
         ) { first, second ->
 
             val recordRequest = RecordRequest.builder()
@@ -115,20 +108,30 @@ class HetznerDnsRecordResourceProvisioner(
                         it.updateRecord(record.id, recordRequest.build())
                     }
                 },
-                {
-                    checkedApiCall(resource, HetznerDnsAPI::createRecord) {
-                        it.createRecord(recordRequest.build())
+                    {
+                        checkedApiCall(resource, HetznerDnsAPI::createRecord) {
+                            it.createRecord(recordRequest.build())
+                        }
                     }
-                }
             )
         }
     }
 
-    override fun destroy(resource: DnsRecord): Result<*> {
-        TODO("Not yet implemented")
+    override fun getResourceType(): Class<*> {
+        return DnsRecord::class.java
     }
 
-    override fun destroyAll(): Result<*> {
-        TODO("Not yet implemented")
+    override fun lookup(lookup: IDnsRecordLookup): Result<DnsRecordRuntime> {
+        return this.provisioner.lookup(lookup.dnsZone()).mapNonNullResultNullable { zone ->
+            checkedApiCall(lookup, HetznerDnsAPI::getRecords) {
+                it.getRecords(zone.id).firstOrNull { it.name == lookup.name() }
+            }.mapNonNull {
+                DnsRecordRuntime(it.id, it.name, it.value, it.ttl)
+            }
+        }
+    }
+
+    override fun getLookupType(): Class<*> {
+        return IDnsRecordLookup::class.java
     }
 }

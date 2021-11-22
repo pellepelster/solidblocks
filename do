@@ -8,6 +8,10 @@ function task_cli() {
     "${DIR}/gradlew" solidblocks-cli:run --args="$*"
 }
 
+function task_increase_version() {
+    echo "SNAPSHOT-$(date +%Y%m%d%H%M%S)" > "${DIR}/version.txt"
+}
+
 function task_publish() {
   export GITHUB_USERNAME="pellepelster"
   export GITHUB_TOKEN="$(pass solidblocks/github/personal_access_token_rw)"
@@ -23,5 +27,6 @@ shift || true
 
 case ${COMMAND} in
   cli) task_cli "$@" ;;
+  increase-version) task_increase_version "$@" ;;
   publish) task_publish "$@" ;;
 esac

@@ -12,10 +12,11 @@ export SOLIDBLOCKS_PUBLIC_IP="[=solidblocks_public_ip]"
 export SOLIDBLOCKS_VERSION="[=solidblocks_version]"
 
 #######################################
-# backup-cloud-init-variables.sh      #
+# vault-cloud-init-variables.sh       #
 #######################################
 
 export VAULT_TOKEN="[=vault_token]"
+export VAULT_ADDR="[=vault_addr]"
 
 #######################################
 # configuration.sh                    #
@@ -40,8 +41,8 @@ function bootstrap_solidblocks() {
   echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "/solidblocks/instance/environment"
   echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "/solidblocks/instance/environment"
   echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "/solidblocks/instance/environment"
-  echo "VAULT_ADDRESS=https://vault.${SOLIDBLOCKS_CLOUD}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200" >> "/solidblocks/instance/environment"
 
+  echo "VAULT_ADDR=${VAULT_ADDR}" >> "/solidblocks/instance/environment"
   echo "VAULT_TOKEN=${VAULT_TOKEN}" >> "/solidblocks/protected/environment"
 
 
@@ -52,6 +53,7 @@ function bootstrap_solidblocks() {
 
       local temp_file="$(mktemp)"
 
+      #TODO verify checksum
       curl_wrapper -u "${github_owner}:$(jq -r ".github_token_ro" "${config_file}")" -L \
         https://maven.pkg.github.com/${github_owner}/solidblocks/solidblocks/solidblocks-cloud-init/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.jar > ${temp_file}
 
@@ -61,35 +63,6 @@ function bootstrap_solidblocks() {
   )
 }
 
-#######################################
-# consul-template.sh                  #
-#######################################
-
-CONSUL_TEMPLATE_VERSION="0.19.5"
-CONSUL_TEMPLATE_CHECKSUM="e6b376701708b901b0548490e296739aedd1c19423c386eb0b01cfad152162af"
-CONSUL_TEMPLATE_URL="https://releases.hashicorp.com/consul-template/${CONSUL_TEMPLATE_VERSION}/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip"
-
-function consul_template_install() {
-    local target_file="$(mktemp)"
-    download_and_verify_checksum "${CONSUL_TEMPLATE_URL}" "${target_file}" "${CONSUL_TEMPLATE_CHECKSUM}"
-    unzip -o -d /usr/local/bin "${target_file}"
-    rm -rf "${target_file}"
-}
-
-
-function ssh_write_host_identity() {
-  echo "[=ssh_identity_ed25519_key]" | base64 -d > /etc/ssh/ssh_host_ed25519_key
-  chmod 600 /etc/ssh/ssh_host_ed25519_key
-  echo "[=ssh_identity_ed25519_pub]" | base64 -d > /etc/ssh/ssh_host_ed25519_key.pub
-}
-
-function create_root_ssh_key() {
-  local ssh_dir="/root/.ssh"
-  local ssh_private_key="${ssh_dir}/id_ed25519"
-
-  mkdir -p "${ssh_dir}" || true
-  ssh-keygen -t ed25519 -f ${ssh_private_key} -q -N ""
-}
 #######################################
 # curl.sh                             #
 #######################################
@@ -198,5 +171,10 @@ package_check_and_install "unzip"
 
 bootstrap_solidblocks
 
+source "${SOLIDBLOCKS_DIR}/lib/solidblocks-node-manager.sh"
+source "${SOLIDBLOCKS_DIR}/lib/consul-template.sh"
+source "${SOLIDBLOCKS_DIR}/lib/ssh.sh"
+
 create_root_ssh_key
 consul_template_install
+solidblocks_node_manager_install

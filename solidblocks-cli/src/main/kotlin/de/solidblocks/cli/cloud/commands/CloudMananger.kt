@@ -7,10 +7,7 @@ import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.compute.UserDataDataSource
 import de.solidblocks.api.resources.infrastructure.compute.Volume
 import de.solidblocks.api.resources.infrastructure.compute.VolumeRuntime
-import de.solidblocks.api.resources.infrastructure.network.FloatingIp
-import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
-import de.solidblocks.api.resources.infrastructure.network.FloatingIpRuntime
-import de.solidblocks.api.resources.infrastructure.network.Network
+import de.solidblocks.api.resources.infrastructure.network.*
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
@@ -27,7 +24,7 @@ import de.solidblocks.cli.cloud.commands.config.getGithubReadOnlyToken
 import de.solidblocks.cloud.config.CloudConfig
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.CloudEnvironmentConfig
-import de.solidblocks.core.IDataSource
+import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.ResourceGroup
 import de.solidblocks.provisioner.hetzner.cloud.HetznerCloudCredentialsProvider
@@ -86,9 +83,9 @@ class CloudMananger(
             return false
         }
 
-        val cloudConfig = cloudConfigurationManager.cloudByName(cloudName)
+        val cloud = cloudConfigurationManager.cloudByName(cloudName)
 
-        val environment = cloudConfig.environments.filter { it.name == environmentName }.firstOrNull()
+        val environment = cloud.environments.filter { it.name == environmentName }.firstOrNull()
         if (environment == null) {
             logger.error { "cloud '${cloudName}' has no environment '${environment}'" }
             return false
@@ -98,7 +95,7 @@ class CloudMananger(
         cloudCredentialsProvider.addApiToken(environment.configValues.getHetznerCloudApiToken()!!.value)
         dnsCredentialsProvider.addApiToken(environment.configValues.getHetznerDnsApiToken()!!.value)
 
-        createCloudModel(cloudConfig, environment, setOf(SshKey(environment.name, environment.sshConfig.sshPublicKey)))
+        createCloudModel(cloud, environment, setOf(SshKey("${cloud.name}-${environment.name}", environment.sshConfig.sshPublicKey)))
 
         return provisioner.apply()
     }
@@ -113,11 +110,14 @@ class CloudMananger(
         val id = "solidblocks"
         //val rootZone = DnsZone(cloud.solidblocksConfig.domain)
 
-        val subnet = SubnetUtils("10.0.0.0/32").info
-        val network = Network(id, subnet)
 
         val networkResourceGroup = provisioner.createResourceGroup("network")
+
+        val network = Network(id, SubnetUtils("10.1.0.0/16"))
         networkResourceGroup.addResource(network)
+
+        val subnet = Subnet(SubnetUtils("10.1.1.0/24"), network)
+        networkResourceGroup.addResource(subnet)
 
         val location = "nbg1"
 
@@ -133,13 +133,34 @@ class CloudMananger(
         resourceGroup.addResource(vault1Volume)
         val vault1FloatingIp = FloatingIp("vault-1", location, mapOf("role" to "vault", "name" to "vault-1"))
 
-        val vault1Record = DnsRecord("vault-1.${environment.name}", vault1FloatingIp, zone = rootZone)
+        val vault1Record = DnsRecord("vault-1.${environment.name}", vault1FloatingIp, dnsZone = rootZone)
         resourceGroup.addResource(vault1Record)
 
-        val vaultRecord = object : DnsRecord("vault.${environment.name}", vault1FloatingIp, zone = rootZone) {
+        val variables = HashMap<String, IResourceLookup<String>>()
+        variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, vault1FloatingIp))
+        variables["hostname"] = ConstantDataSource("vault-1")
+        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPrivateKey))
+        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPublicKey))
+        variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(vault1Volume) {
+            it.device
+        }
+
+
+        val userData = UserDataDataSource("lib-cloud-init-generated/vault-cloud-init.sh", variables)
+        val vault1Server = Server(
+                "vault-1",
+                network,
+                userData,
+                sshKeys = sshKeys,
+                location = location,
+                volume = vault1Volume
+        )
+        resourceGroup.addResource(vault1Server)
+
+        val vaultRecord = object : DnsRecord("vault.${environment.name}", floatingIp = vault1FloatingIp, dnsZone = rootZone, server = vault1Server) {
             override fun getHealthCheck(): () -> Boolean {
                 return {
-                    val url = "https://${name}.${zone.name}:8200"
+                    val url = "https://${name}.${dnsZone.name()}:8200"
                     try {
                         URL(url).readText()
                         logger.info { "url '${url}' is healthy" }
@@ -153,35 +174,14 @@ class CloudMananger(
         }
         resourceGroup.addResource(vaultRecord)
 
-        val variables = HashMap<String, IDataSource<String>>()
-        variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, vault1FloatingIp))
-        variables["hostname"] = ConstantDataSource("vault-1")
-        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPrivateKey))
-        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPublicKey))
 
-        variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(vault1Volume) {
-            it.device
-        }
-
-
-        val userData = UserDataDataSource("lib-cloud-init-generated/vault-cloud-init.sh", variables)
-        val vault1Server = Server(
-                "vault-1",
-                network,
-                userData,
-                sshKeys = sshKeys,
-                location = location,
-                volume = vault1Volume,
-                dependencies = listOf(vault1Record),
-        )
-        resourceGroup.addResource(vault1Server)
         val floatingIpAssignment = FloatingIpAssignment(server = vault1Server, floatingIp = vault1FloatingIp)
         resourceGroup.addResource(floatingIpAssignment)
 
         return resourceGroup
     }
 
-    private fun defaultCloudInitVariables(cloud: CloudConfig, environment: CloudEnvironmentConfig, rootZone: DnsZone, floatingIp: FloatingIp): Map<out String, IDataSource<String>> {
+    private fun defaultCloudInitVariables(cloud: CloudConfig, environment: CloudEnvironmentConfig, rootZone: DnsZone, floatingIp: FloatingIp): Map<out String, IResourceLookup<String>> {
         return mapOf(
                 "solidblocks_cloud" to ConstantDataSource(cloud.name),
                 "solidblocks_version" to ConstantDataSource(solidblocksVersion()),
@@ -204,19 +204,19 @@ class CloudMananger(
         val floatingIp = FloatingIp("backup", location, mapOf("role" to "backup", "name" to "backup"))
         resourceGroup.addResource(floatingIp)
 
-        val dnsRecord = DnsRecord("backup.${environment.name}", floatingIp, zone = rootZone)
+        val dnsRecord = DnsRecord("backup.${environment.name}", floatingIp, dnsZone = rootZone)
         resourceGroup.addResource(dnsRecord)
 
-        val variables = HashMap<String, IDataSource<String>>()
+        val variables = HashMap<String, IResourceLookup<String>>()
         variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, floatingIp))
 
         variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPrivateKey))
         variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPublicKey))
-
         variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(backupVolume) {
             it.device
         }
 
+        variables["vault_addr"] = ConstantDataSource("https://vault.${environment.name}.${cloud.rootDomain}:8200")
         variables["vault_token"] = CustomDataSource {
             val vaultClient =
                     provisioner.provider(VaultTemplate::class.java).createClient()
@@ -301,16 +301,6 @@ class CloudMananger(
                 VaultKV("solidblocks/cloud/config",
                         mapOf("github_token_ro" to environment.configValues.getGithubReadOnlyToken()!!.value), kvMount)
         resourceGroup.addResource(solidblocksConfig)
-
-        /*
-        val hetznerProviderConfig = VaultKV(
-                "solidblocks/providers/hetzner",
-
-                JacksonUtils.toMap(HetznerProviderConfig(cloud.configurations.getHetzne
-                        rCloudApiToken ()?.value!!)),
-                kvMount
-        )
-        */
 
         val controllerPolicy = VaultPolicy(
                 CONTROLLER_POLICY_NAME,

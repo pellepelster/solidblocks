@@ -1,8 +1,7 @@
 package de.solidblocks.provisioner.vault.ssh
 
-import de.solidblocks.core.IDataSource
 import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.provisioner.vault.mount.VaultMount
+import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 class VaultSshBackendRole(
         val name: String,
@@ -13,19 +12,19 @@ class VaultSshBackendRole(
         val allowUserCertificates: Boolean,
         val allowedUsers: String? = null,
         val defaultExtensions: VaultSshBackendRoleDefaultExtensions? = null,
-        val mount: VaultMount
+        val mount: IVaultMountLookup
 ) :
+        IVaultSshBackendRoleLookup,
         IInfrastructureResource<VaultSshBackendRole, VaultSshBackendRoleRuntime> {
 
-    override fun getParents(): List<IInfrastructureResource<*, *>> {
-        return listOf(mount)
+    override fun mount(): IVaultMountLookup {
+        return mount
     }
 
     override fun name(): String {
         return this.name
     }
 
-    override fun getParentDataSources(): List<IDataSource<*>> {
-        return emptyList()
-    }
+    override fun getParents() = listOf(mount)
+
 }

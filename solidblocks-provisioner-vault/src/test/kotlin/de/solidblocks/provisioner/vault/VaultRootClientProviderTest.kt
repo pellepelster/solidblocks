@@ -48,14 +48,14 @@ class VaultRootClientProviderTest(
 
         val vaultClient = provider.createClient()
 
-        val cloud = cloudConfigurationManager.getTenant(cloudName)
+        val cloud = cloudConfigurationManager.environmentByName("cloud1", "env1")
 
-        assertTrue(cloud.configurations.any { it.name == "vault-unseal-key-0" })
-        assertTrue(cloud.configurations.any { it.name == "vault-unseal-key-1" })
-        assertTrue(cloud.configurations.any { it.name == "vault-unseal-key-2" })
-        assertTrue(cloud.configurations.any { it.name == "vault-unseal-key-3" })
-        assertTrue(cloud.configurations.any { it.name == "vault-unseal-key-4" })
-        assertTrue(cloud.configurations.any { it.name == "vault-root-token" })
+        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-0" })
+        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-1" })
+        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-2" })
+        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-3" })
+        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-4" })
+        assertTrue(cloud.configValues.any { it.name == "vault-root-token" })
 
         assertFalse(vaultClient.opsForSys().unsealStatus.isSealed)
         assertTrue(vaultClient.opsForSys().isInitialized)

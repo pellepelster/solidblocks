@@ -1,9 +1,8 @@
 package de.solidblocks.api.resources.infrastructure.utils
 
-import de.solidblocks.core.IDataSource
-import de.solidblocks.core.IInfrastructureResource
+import de.solidblocks.core.IResourceLookup
 
-class ResourceLookup<RuntimeType>(val resource: IInfrastructureResource<*, *>, val call: (RuntimeType) -> String) : IDataSource<String> {
+class ResourceLookup<RuntimeType>(val resource: IResourceLookup<*>, val call: (RuntimeType) -> String) : IResourceLookup<String> {
     override fun name(): String {
         return "resource.lookup.${resource.name()}"
     }

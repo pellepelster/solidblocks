@@ -8,12 +8,14 @@ open class DnsRecord(
         val name: String,
         val floatingIp: FloatingIp? = null,
         val server: Server? = null,
-        val zone: DnsZone,
+        val dnsZone: IDnsZoneLookup,
         val ttl: Int = 60
-) : IInfrastructureResource<DnsRecord, DnsRecordRuntime> {
+) : IDnsRecordLookup, IInfrastructureResource<DnsRecord, DnsRecordRuntime> {
 
-    override fun getParents(): List<IInfrastructureResource<*, *>> {
-        return listOfNotNull(floatingIp, server)
+    override fun getParents() = listOfNotNull(floatingIp, server)
+
+    override fun dnsZone(): IDnsZoneLookup {
+        return dnsZone
     }
 
     override fun name(): String {

@@ -244,21 +244,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                     val seedConfig = loadSeedConfig(it.value)
                     TenantConfig(
                             id = it.key.id!!,
-                            name = it.key.name!!,
-                            sshConfig = loadSshConfig(it.value),
-                            seedConfig = seedConfig,
-                            solidblocksConfig = loadSolidblocksConfig(
-                                    it.value,
-                                    cloudName = it.key.name!!,
-                                    seedConfig = seedConfig
-                            ),
-                            it.value.map {
-                                CloudConfigValue(
-                                        it.getValue(CONFIGURATION_VALUES.NAME)!!,
-                                        it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
-                                        it.getValue(CONFIGURATION_VALUES.VERSION)!!
-                                )
-                            }
+                            name = it.key.name!!
                     )
                 }
     }

@@ -1,6 +1,9 @@
 package de.solidblocks.provisioner.hetzner.cloud
 
 import de.solidblocks.api.resources.ResourceDiff
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
+import de.solidblocks.api.resources.infrastructure.ssh.ISshKeyLookup
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.api.resources.infrastructure.ssh.SshKeyRuntime
 import de.solidblocks.core.NullResource
@@ -13,30 +16,22 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerSshResourceProvisioner(credentialsProvider: HetznerCloudCredentialsProvider) :
-    BaseHetznerProvisioner<SshKey, SshKeyRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(credentialsProvider.defaultApiToken()) },
-        SshKey::class.java
-    ) {
+        IResourceLookupProvider<ISshKeyLookup, SshKeyRuntime>,
+        IInfrastructureResourceProvisioner<SshKey, SshKeyRuntime>,
+        BaseHetznerProvisioner<SshKey, SshKeyRuntime, HetznerCloudAPI>(
+                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun diff(resource: SshKey): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
-            {
-                ResourceDiff(resource)
-            },
-            {
-                ResourceDiff(resource, true)
-            }
+                {
+                    ResourceDiff(resource)
+                },
+                {
+                    ResourceDiff(resource, true)
+                }
         )
-    }
-
-    override fun lookup(resource: SshKey): Result<SshKeyRuntime> {
-        return checkedApiCall(resource, HetznerCloudAPI::getSSHKeys) {
-            it.sshKeys.sshKeys.filter { it.name == resource.name }.firstOrNull()
-        }.mapNonNullResult {
-            SshKeyRuntime(it.id.toString())
-        }
     }
 
     override fun apply(resource: SshKey): Result<*> {
@@ -68,5 +63,21 @@ class HetznerSshResourceProvisioner(credentialsProvider: HetznerCloudCredentials
         return lookup(resource).mapNonNullResult {
             destroyById(it.id.toLong())
         }
+    }
+
+    override fun getResourceType(): Class<*> {
+        return SshKey::class.java
+    }
+
+    override fun lookup(lookup: ISshKeyLookup): Result<SshKeyRuntime> {
+        return checkedApiCall(lookup, HetznerCloudAPI::getSSHKeys) {
+            it.sshKeys.sshKeys.filter { it.name == lookup.name() }.firstOrNull()
+        }.mapNonNullResult {
+            SshKeyRuntime(it.id.toString())
+        }
+    }
+
+    override fun getLookupType(): Class<*> {
+        return ISshKeyLookup::class.java
     }
 }

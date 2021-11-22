@@ -1,10 +1,7 @@
 package de.solidblocks.cli
 
 import com.github.ajalt.clikt.core.subcommands
-import de.solidblocks.cli.cloud.commands.CloudBootstrapCommand
-import de.solidblocks.cli.cloud.commands.CloudCommand
-import de.solidblocks.cli.cloud.commands.CloudDestroyCommand
-import de.solidblocks.cli.cloud.commands.CloudTestCommand
+import de.solidblocks.cli.cloud.commands.*
 import de.solidblocks.cli.cloud.commands.config.CloudConfigCommand
 import de.solidblocks.cli.cloud.commands.config.CloudCreateCommand
 import de.solidblocks.cli.cloud.commands.config.CloudDeleteCommand
@@ -28,7 +25,7 @@ fun main(args: Array<String>) {
                                 CloudCreateCommand(),
                                 CloudEnvironmentCreateCommand()
                         ),
-                        CloudTestCommand(), CloudDestroyCommand(), CloudBootstrapCommand()
+                        CloudTestCommand(), CloudDestroyCommand(), CloudBootstrapCommand(), TenantBootstrapCommand()
                 )
         )
         .main(args)

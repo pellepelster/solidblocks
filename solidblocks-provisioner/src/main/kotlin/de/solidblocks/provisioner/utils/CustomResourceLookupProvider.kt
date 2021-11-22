@@ -1,18 +1,18 @@
 package de.solidblocks.provisioner.utils
 
-import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
 import de.solidblocks.core.Result
 import org.springframework.stereotype.Component
 
 @Component
-class CustomDataSourceLookup : IDataSourceLookup<CustomDataSource, String> {
+class CustomResourceLookupProvider : IResourceLookupProvider<CustomDataSource, String> {
 
     override fun lookup(datasource: CustomDataSource): Result<String> {
         return Result(datasource, datasource.content.invoke())
     }
 
-    override fun getDatasourceType(): Class<CustomDataSource> {
+    override fun getLookupType(): Class<CustomDataSource> {
         return CustomDataSource::class.java
     }
 }

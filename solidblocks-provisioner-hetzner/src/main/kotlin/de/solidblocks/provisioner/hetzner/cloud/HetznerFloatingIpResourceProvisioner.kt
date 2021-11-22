@@ -1,8 +1,11 @@
 package de.solidblocks.provisioner.hetzner.cloud
 
 import de.solidblocks.api.resources.ResourceDiff
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpRuntime
+import de.solidblocks.api.resources.infrastructure.network.IFloatingIpLookup
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -13,10 +16,10 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerFloatingIpResourceProvisioner(credentialsProvider: HetznerCloudCredentialsProvider) :
-    BaseHetznerProvisioner<FloatingIp, FloatingIpRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(credentialsProvider.defaultApiToken()) },
-        FloatingIp::class.java
-    ) {
+        IResourceLookupProvider<IFloatingIpLookup, FloatingIpRuntime>,
+        IInfrastructureResourceProvisioner<FloatingIp, FloatingIpRuntime>,
+        BaseHetznerProvisioner<FloatingIp, FloatingIpRuntime, HetznerCloudAPI>(
+                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -78,11 +81,19 @@ class HetznerFloatingIpResourceProvisioner(credentialsProvider: HetznerCloudCred
         }
     }
 
-    override fun lookup(resource: FloatingIp): Result<FloatingIpRuntime> {
-        return checkedApiCall(resource, HetznerCloudAPI::getFloatingIPs) {
-            it.floatingIPs.floatingIPs.firstOrNull { it.name == resource.name }
+    override fun getResourceType(): Class<*> {
+        return FloatingIp::class.java
+    }
+
+    override fun lookup(lookup: IFloatingIpLookup): Result<FloatingIpRuntime> {
+        return checkedApiCall(lookup, HetznerCloudAPI::getFloatingIPs) {
+            it.floatingIPs.floatingIPs.firstOrNull { it.name == lookup.name() }
         }.mapNonNullResult {
             FloatingIpRuntime(it.id.toString(), it.ip, it.server)
         }
+    }
+
+    override fun getLookupType(): Class<*> {
+        return IFloatingIpLookup::class.java
     }
 }

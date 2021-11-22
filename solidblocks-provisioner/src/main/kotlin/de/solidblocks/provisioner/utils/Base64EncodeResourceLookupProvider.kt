@@ -1,6 +1,6 @@
 package de.solidblocks.provisioner.utils
 
-import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class Base64EncodeDataSourceLookup(val provisioner: Provisioner) : IDataSourceLookup<Base64Encode, String> {
+class Base64EncodeResourceLookupProvider(val provisioner: Provisioner) : IResourceLookupProvider<Base64Encode, String> {
 
     override fun lookup(datasource: Base64Encode): Result<String> {
         return provisioner.lookup(datasource.datasource).mapNonNullResult {
@@ -16,7 +16,7 @@ class Base64EncodeDataSourceLookup(val provisioner: Provisioner) : IDataSourceLo
         }
     }
 
-    override fun getDatasourceType(): Class<Base64Encode> {
+    override fun getLookupType(): Class<Base64Encode> {
         return Base64Encode::class.java
     }
 }

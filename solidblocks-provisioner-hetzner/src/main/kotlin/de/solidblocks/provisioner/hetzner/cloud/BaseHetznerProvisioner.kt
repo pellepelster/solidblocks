@@ -1,6 +1,5 @@
 package de.solidblocks.provisioner.hetzner.cloud
 
-import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.base.Waiter
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.core.IResource
@@ -15,9 +14,7 @@ import kotlin.reflect.KFunction
 
 abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
         private val createApi: () -> ApiType,
-        private val resourceType: Class<*>
-) :
-        IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -161,7 +158,4 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
         }.reduceResults() as Result<Boolean>
     }
 
-    override fun getResourceType(): Class<*> {
-        return resourceType
-    }
 }

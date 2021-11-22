@@ -3,12 +3,13 @@ package de.solidblocks.provisioner.fixtures
 import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 
 @Component
-class TestResourceProvisioner : IInfrastructureResourceProvisioner<TestResource, String> {
+class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, String>, IInfrastructureResourceProvisioner<TestResource, String> {
 
     val failOnDiff = HashMap<String, Boolean>()
     var diffWasCalled = HashMap<String, AtomicInteger>()
@@ -74,16 +75,6 @@ class TestResourceProvisioner : IInfrastructureResourceProvisioner<TestResource,
         return TestResource::class.java
     }
 
-    override fun lookup(resource: TestResource): Result<String> {
-        lookupWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
-
-        if (failOnLookup.containsKey(resource.name)) {
-            throw RuntimeException()
-        } else {
-            return Result(resource, result = "result")
-        }
-    }
-
     override fun diff(resource: TestResource): Result<ResourceDiff> {
         diffWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
         if (failOnDiff.containsKey(resource.name)) {
@@ -124,5 +115,19 @@ class TestResourceProvisioner : IInfrastructureResourceProvisioner<TestResource,
 
     override fun destroyAll(): Result<*> {
         throw RuntimeException()
+    }
+
+    override fun lookup(lookup: ITestResourceLookup): Result<String> {
+        lookupWasCalled.computeIfAbsent(lookup.name()) { AtomicInteger() }.incrementAndGet()
+
+        if (failOnLookup.containsKey(lookup.name())) {
+            throw RuntimeException()
+        } else {
+            return Result(lookup, result = "result")
+        }
+    }
+
+    override fun getLookupType(): Class<*> {
+        return ITestResourceLookup::class.java
     }
 }

@@ -2,6 +2,9 @@ package de.solidblocks.provisioner.hetzner.cloud
 
 import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
+import de.solidblocks.api.resources.infrastructure.compute.IServerLookup
 import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.compute.ServerRuntime
 import de.solidblocks.core.NullResource
@@ -15,96 +18,80 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerServerResourceProvisioner(
-    private val provisioner: Provisioner,
-    credentialsProvider: HetznerCloudCredentialsProvider
+        private val provisioner: Provisioner,
+        credentialsProvider: HetznerCloudCredentialsProvider
 ) :
-    BaseHetznerProvisioner<Server, ServerRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(credentialsProvider.defaultApiToken()) },
-        Server::class.java
-    ) {
+        IResourceLookupProvider<IServerLookup, ServerRuntime>,
+        IInfrastructureResourceProvisioner<Server,
+                ServerRuntime>,
+        BaseHetznerProvisioner<Server, ServerRuntime, HetznerCloudAPI>(
+                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun diff(resource: Server): Result<ResourceDiff> {
         return this.lookup(resource).mapResourceResultOrElse(
-            {
+                {
 
-                val labels = HetznerLabels(it.labels)
-                val changes = ArrayList<ResourceDiffItem>()
+                    val labels = HetznerLabels(it.labels)
+                    val changes = ArrayList<ResourceDiffItem>()
 
-                if (!labels.hashLabelMatches(
-                        resource::sshKeys.name,
-                        resource.sshKeys.joinToString { "${it.name}=${it.publicKey}" }
-                    )
-                ) {
-                    changes.add(
-                        ResourceDiffItem(
-                            resource::sshKeys,
-                            triggersRecreate = true,
-                            changed = true
-                        )
-                    )
-                }
-
-                val userData = provisioner.lookup(resource.userData)
-
-                if (userData.result != null) {
                     if (!labels.hashLabelMatches(
-                            resource::userData.name,
-                            userData.result!!
-                        )
+                                    resource::sshKeys.name,
+                                    resource.sshKeys.joinToString { "${it.name()}" }
+                            )
                     ) {
                         changes.add(
-                            ResourceDiffItem(
-                                resource::userData,
-                                triggersRecreate = true,
-                                changed = true
-                            )
+                                ResourceDiffItem(
+                                        resource::sshKeys,
+                                        triggersRecreate = true,
+                                        changed = true
+                                )
                         )
                     }
-                }
 
-                if (resource.volume != null && !it.hasVolumes) {
-                    changes.add(
-                        ResourceDiffItem(
-                            resource::volume,
-                            changed = true
+                    val userData = provisioner.lookup(resource.userData)
+
+                    if (userData.result != null) {
+                        if (!labels.hashLabelMatches(
+                                        resource::userData.name,
+                                        userData.result!!
+                                )
+                        ) {
+                            changes.add(
+                                    ResourceDiffItem(
+                                            resource::userData,
+                                            triggersRecreate = true,
+                                            changed = true
+                                    )
+                            )
+                        }
+                    }
+
+                    if (resource.volume != null && !it.hasVolumes) {
+                        changes.add(
+                                ResourceDiffItem(
+                                        resource::volume,
+                                        changed = true
+                                )
                         )
-                    )
-                }
+                    }
 
-                if ("running" != it.status) {
-                    changes.add(
-                        ResourceDiffItem(
-                            "status",
-                            changed = true
+                    if ("running" != it.status) {
+                        changes.add(
+                                ResourceDiffItem(
+                                        "status",
+                                        changed = true
+                                )
                         )
-                    )
-                }
+                    }
 
-                ResourceDiff(resource, changes = changes)
+                    ResourceDiff(resource, changes = changes)
             },
             {
                 ResourceDiff(resource, missing = true)
             }
         )
-    }
-
-    override fun lookup(resource: Server): Result<ServerRuntime> {
-        return checkedApiCall(resource, HetznerCloudAPI::getServers) {
-            it.servers.servers.firstOrNull {
-                it.name == resource.name
-            }
-        }.mapNonNullResult {
-            ServerRuntime(
-                it.id.toString(),
-                it.status,
-                it.labels,
-                it.volumes.isNotEmpty(),
-                it.privateNet.firstOrNull()?.ip,
-                it.publicNet?.ipv4?.ip
-            )
-        }
     }
 
     fun createServer(resource: Server): Result<*> {
@@ -117,12 +104,12 @@ class HetznerServerResourceProvisioner(
         request.startAfterCreate(false)
 
         if (resource.volume != null) {
-            val v = provisioner.lookup(resource.volume!!)
-            if (v.isEmptyOrFailed()) {
-                return v
+            val volumeResult = provisioner.lookup(resource.volume!!)
+            if (volumeResult.isEmptyOrFailed()) {
+                return volumeResult
             }
 
-            request.volume(v.result?.id?.toLong())
+            request.volume(volumeResult.result?.id?.toLong())
         }
 
         val network = this.provisioner.lookup(resource.network)
@@ -135,17 +122,18 @@ class HetznerServerResourceProvisioner(
         request.userData(userData.result)
 
         val labels = HetznerLabels()
-        labels.addHashLabel(resource::sshKeys.name, resource.sshKeys.joinToString { "${it.name}=${it.publicKey}" })
+        labels.addHashLabel(resource::sshKeys.name, resource.sshKeys.joinToString { it.name() })
         labels.addHashLabel(resource::userData.name, userData.result!!)
 
         request.labels(labels.labels() + resource.labels)
 
         val sshKeys = resource.sshKeys.map { this.provisioner.lookup(it) }
+
         if (sshKeys.any { it.failed }) {
             return sshKeys.reduceResults()
         }
 
-        request.sshKeys(sshKeys.filter { !it.isEmptyOrFailed() }.map { it.result?.id?.toLong() })
+        request.sshKeys(sshKeys.map { it.result!!.id.toLong() })
 
         return checkedApiCall(resource, HetznerCloudAPI::createServer) {
             logger.info { "creating server '${resource.name}'" }
@@ -204,5 +192,30 @@ class HetznerServerResourceProvisioner(
                 destroy(server.id)
             }.reduceResults()
         }
+    }
+
+    override fun getResourceType(): Class<*> {
+        return Server::class.java
+    }
+
+    override fun lookup(lookup: IServerLookup): Result<ServerRuntime> {
+        return checkedApiCall(lookup, HetznerCloudAPI::getServers) {
+            it.servers.servers.firstOrNull {
+                it.name == lookup.name()
+            }
+        }.mapNonNullResult {
+            ServerRuntime(
+                    it.id.toString(),
+                    it.status,
+                    it.labels,
+                    it.volumes.isNotEmpty(),
+                    it.privateNet.firstOrNull()?.ip,
+                    it.publicNet?.ipv4?.ip
+            )
+        }
+    }
+
+    override fun getLookupType(): Class<*> {
+        return IServerLookup::class.java
     }
 }

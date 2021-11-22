@@ -1,10 +1,10 @@
 package de.solidblocks.provisioner
 
-import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
-import de.solidblocks.core.IDataSource
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.core.IResource
+import de.solidblocks.core.IResourceLookup
 import mu.KotlinLogging
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
@@ -40,7 +40,7 @@ open class ProvisionerRegistry(private val applicationContext: ApplicationContex
         val provisioners = applicationContext.getBeansOfType(IInfrastructureResourceProvisioner::class.java)
 
         val provisioner = provisioners.values.firstOrNull {
-            it.getResourceType() == clazz.java
+            it.getResourceType().isAssignableFrom(clazz.java)
         }
 
         if (provisioner == null) {
@@ -50,17 +50,17 @@ open class ProvisionerRegistry(private val applicationContext: ApplicationContex
         return provisioner as IInfrastructureResourceProvisioner<ResourceType, RuntimeType>
     }
 
-    fun <DataSourceType : IDataSource<RuntimeType>, RuntimeType> datasource(clazz: KClass<DataSourceType>): IDataSourceLookup<IDataSource<RuntimeType>, RuntimeType> {
-        val datasources = applicationContext.getBeansOfType(IDataSourceLookup::class.java)
+    fun <LookupType : IResourceLookup<RuntimeType>, RuntimeType> datasource(lookup: LookupType): IResourceLookupProvider<IResourceLookup<RuntimeType>, RuntimeType> {
+        val datasources = applicationContext.getBeansOfType(IResourceLookupProvider::class.java)
 
         val datasource = datasources.values.firstOrNull {
-            it.getDatasourceType() == clazz.java
+            it.getLookupType().isAssignableFrom(lookup::class.java)
         }
 
         if (datasource == null) {
-            throw RuntimeException("no data source lookup found for data source type '${clazz.java}'")
+            throw RuntimeException("no resource lookup provider found for type '${lookup::class.java}'")
         }
 
-        return datasource as IDataSourceLookup<IDataSource<RuntimeType>, RuntimeType>
+        return datasource as IResourceLookupProvider<IResourceLookup<RuntimeType>, RuntimeType>
     }
 }

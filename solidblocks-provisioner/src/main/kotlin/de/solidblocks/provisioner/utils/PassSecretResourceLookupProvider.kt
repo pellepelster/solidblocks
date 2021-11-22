@@ -1,14 +1,14 @@
 package de.solidblocks.provisioner.utils
 
-import de.solidblocks.api.resources.infrastructure.IDataSourceLookup
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.utils.PassSecretLookup
 import de.solidblocks.core.Result
 import de.solidblocks.core.utils.PassWrapper
 import org.springframework.stereotype.Component
 
 @Component
-class PassSecretDataSourceLookup(val directoryProvider: PassSecretDirectoryProvider) :
-    IDataSourceLookup<PassSecretLookup, String> {
+class PassSecretResourceLookupProvider(val directoryProvider: PassSecretDirectoryProvider) :
+    IResourceLookupProvider<PassSecretLookup, String> {
 
     private fun passWrapperInstance(): PassWrapper {
         return PassWrapper(directoryProvider.defaultDirectory())
@@ -22,7 +22,7 @@ class PassSecretDataSourceLookup(val directoryProvider: PassSecretDirectoryProvi
         }
     }
 
-    override fun getDatasourceType(): Class<PassSecretLookup> {
+    override fun getLookupType(): Class<PassSecretLookup> {
         return PassSecretLookup::class.java
     }
 }

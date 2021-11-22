@@ -2,8 +2,11 @@ package de.solidblocks.provisioner.hetzner.cloud
 
 import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignmentRuntime
+import de.solidblocks.api.resources.infrastructure.network.IFloatingIpAssignmentLookup
 import de.solidblocks.base.Waiter
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
@@ -16,13 +19,13 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerFloatingIpAssignmentResourceProvisioner(
-    val provisioner: Provisioner,
-    credentialsProvider: HetznerCloudCredentialsProvider
+        val provisioner: Provisioner,
+        credentialsProvider: HetznerCloudCredentialsProvider
 ) :
-    BaseHetznerProvisioner<FloatingIpAssignment, FloatingIpAssignmentRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(credentialsProvider.defaultApiToken()) },
-        FloatingIpAssignment::class.java
-    ) {
+        IResourceLookupProvider<IFloatingIpAssignmentLookup, FloatingIpAssignmentRuntime>,
+        IInfrastructureResourceProvisioner<FloatingIpAssignment, FloatingIpAssignmentRuntime>,
+        BaseHetznerProvisioner<FloatingIpAssignment, FloatingIpAssignmentRuntime, HetznerCloudAPI>(
+                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -104,7 +107,7 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
                 waitForActions(
                     NullResource,
                     HetznerCloudAPI::getActionOfFloatingIP,
-                    listOf(it.action).filterNotNull()
+                        listOf(it.action).filterNotNull()
                 ) { api, action ->
                     val actionResult = api.getActionOfFloatingIP(id, action.id).action
                     logger.info { "waiting for unassign action '${action.command}' to finish for floating ip '$id', current status is '${action.status}'" }
@@ -114,9 +117,18 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
         }
     }
 
-    override fun lookup(resource: FloatingIpAssignment): Result<FloatingIpAssignmentRuntime> {
-        return provisioner.lookup(resource.floatingIp).mapNonNullResultNullable { floatingIp ->
+    override fun getResourceType(): Class<*> {
+        return FloatingIpAssignment::class.java
+    }
+
+    override fun lookup(lookup: IFloatingIpAssignmentLookup): Result<FloatingIpAssignmentRuntime> {
+        return provisioner.lookup(lookup.floatingIp()).mapNonNullResultNullable { floatingIp ->
             FloatingIpAssignmentRuntime(floatingIp.id, floatingIp.server)
         }
     }
+
+    override fun getLookupType(): Class<*> {
+        return IFloatingIpAssignmentLookup::class.java
+    }
+
 }
