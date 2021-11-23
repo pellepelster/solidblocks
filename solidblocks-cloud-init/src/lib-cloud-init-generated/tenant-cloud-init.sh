@@ -45,11 +45,12 @@ function bootstrap_solidblocks() {
 
   echo "VAULT_TOKEN=${VAULT_TOKEN}" >> "/solidblocks/protected/environment"
 
+  vault_read_secret "solidblocks/cloud/config" > ${config_file}
+
 
   local github_owner="pellepelster"
   (
       local config_file="${SOLIDBLOCKS_DIR}/config/cloud_init_config.json"
-      vault_read_secret "solidblocks/cloud/config" > ${config_file}
 
       local temp_file="$(mktemp)"
 

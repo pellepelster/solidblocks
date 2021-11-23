@@ -12,6 +12,22 @@ function task_increase_version() {
     echo "SNAPSHOT-$(date +%Y%m%d%H%M%S)" > "${DIR}/version.txt"
 }
 
+function task_recreate_integration_test() {
+  rm -rf "${DIR}/integration_test"
+
+  ${DIR}/do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path ${DIR}/integration-test cloud config create --name blcks --domain blcks.de
+  ${DIR}/do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path ${DIR}/integration-test \
+    cloud config create-environment \
+      --name blcks \
+      --environment dev \
+      --hetzner-cloud-api-token-read-only $(pass solidblocks/integration-test/hcloud_api_token_ro) \
+      --hetzner-cloud-api-token-read-write $(pass solidblocks/integration-test/hcloud_api_token_rw) \
+      --github-read-only-token $(pass solidblocks/github/personal_access_token_ro) \
+      --hetzner-dns-api-token $(pass solidblocks/integration-test/dns_api_token)
+
+  ${DIR}/do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path ${DIR}/integration-test cloud config ssh-config --name blcks
+}
+
 function task_publish() {
   export GITHUB_USERNAME="pellepelster"
   export GITHUB_TOKEN="$(pass solidblocks/github/personal_access_token_rw)"
@@ -19,8 +35,6 @@ function task_publish() {
   "${DIR}/gradlew" solidblocks-cloud-init:publish
 }
 
-#./do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path $(pwd)/integration-test cloud config create --name blcks --domain blcks.de
-#./do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path $(pwd)/integration-test cloud config create-environment --name blcks --environment dev --hetzner-cloud-api-token $(pass solidblocks/integration-test/hcloud_api_token) --hetzner-dns-api-token $(pass solidblocks/integration-test/dns_api_token)
 
 COMMAND="${1:-}"
 shift || true
@@ -28,5 +42,6 @@ shift || true
 case ${COMMAND} in
   cli) task_cli "$@" ;;
   increase-version) task_increase_version "$@" ;;
+  recreate-integration-test) task_recreate_integration_test "$@" ;;
   publish) task_publish "$@" ;;
 esac

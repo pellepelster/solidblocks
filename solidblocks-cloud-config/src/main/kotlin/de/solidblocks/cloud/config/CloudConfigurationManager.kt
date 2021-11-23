@@ -403,18 +403,9 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     ): SolidblocksConfig {
         return SolidblocksConfig(
                 consulMasterToken = list.configValue(CONFIG_CONSUL_MASTER_TOKEN_KEY).value,
-                dockerRegistry = DockerRegistryConfig(
-                        address = "https://seed.$cloudName.${list.configValue(CONFIG_DOMAIN_KEY).value}",
-                        username = seedConfig.roUsername,
-                        password = seedConfig.roPassword
-                ),
-                rootPassword = list.configValue(CONFIG_ROOT_PASSWORD_KEY).value,
                 apiKey = list.configValue(CONFIG_API_KEY).value,
                 backupPassword = list.configValue(CONFIG_BACKUP_PASSWORD_KEY).value,
                 consulSecret = list.configValue(CONFIG_CONSUL_SECRET_KEY).value,
-                domain = list.configValue(CONFIG_DOMAIN_KEY).value,
-                adminEmail = list.configValue(CONFIG_ADMIN_EMAIL_KEY).value,
-                adminPassword = list.configValue(CONFIG_ADMIN_PASSWORD_KEY).value,
         )
     }
 
@@ -428,13 +419,8 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     private fun storeSolidblocksConfig(id: IdType, config: SolidblocksConfig) {
         setConfiguration(id, CONFIG_CONSUL_MASTER_TOKEN_KEY, config.consulMasterToken)
         setConfiguration(id, CONFIG_CONSUL_SECRET_KEY, config.consulSecret)
-        setConfiguration(id, CONFIG_ROOT_USERNAME_KEY, config.rootUsername)
-        setConfiguration(id, CONFIG_ROOT_PASSWORD_KEY, config.rootPassword)
         setConfiguration(id, CONFIG_API_KEY, config.apiKey)
         setConfiguration(id, CONFIG_BACKUP_PASSWORD_KEY, config.backupPassword)
-        setConfiguration(id, CONFIG_DOMAIN_KEY, config.domain)
-        setConfiguration(id, CONFIG_ADMIN_EMAIL_KEY, config.adminEmail)
-        setConfiguration(id, CONFIG_ADMIN_PASSWORD_KEY, config.adminPassword)
     }
 
     private fun storeSeedConfig(cloudId: UUID, config: SeedConfig) {
@@ -453,13 +439,9 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                         username = "user",
                         password = "password"
                 ),
-                rootPassword = generateRandomPassword(),
                 apiKey = generateRandomPassword(),
                 backupPassword = generateRandomPassword(),
                 consulSecret = generateConsulSecret(),
-                domain = domain,
-                adminEmail = adminEmail,
-                adminPassword = generateRandomPassword()
         )
     }
 

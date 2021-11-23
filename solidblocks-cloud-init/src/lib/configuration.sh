@@ -23,18 +23,26 @@ function bootstrap_solidblocks() {
   echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "/solidblocks/instance/environment"
 
   echo "VAULT_ADDR=${VAULT_ADDR}" >> "/solidblocks/instance/environment"
-  echo "VAULT_TOKEN=${VAULT_TOKEN}" >> "/solidblocks/protected/environment"
+  echo "VAULT_TOKEN=${VAULT_TOKEN}" > "/solidblocks/protected/environment"
 
+  local hetzner_config_file="${SOLIDBLOCKS_DIR}/protected/hetzner.json"
+  vault_read_secret "solidblocks/cloud/providers/hetzner" > ${hetzner_config_file}
+  echo "HETZNER_CLOUD_API_TOKEN_RO=$(jq -r '.hetzner_cloud_api_key_ro' ${hetzner_config_file})" >> "/solidblocks/protected/environment"
 
+  local github_config_file="${SOLIDBLOCKS_DIR}/protected/github.json"
+  vault_read_secret "solidblocks/cloud/providers/github" > ${github_config_file}
+  echo "GITHUB_TOKEN_RO=$(jq -r '.github_token_ro' ${github_config_file})" >> "/solidblocks/protected/environment"
+
+  export $(echo $(cat "/solidblocks/protected/environment" | sed 's/#.*//g'| xargs) | envsubst)
+
+  # TODO move into vault?
   local github_owner="pellepelster"
   (
-      local config_file="${SOLIDBLOCKS_DIR}/config/cloud_init_config.json"
-      vault_read_secret "solidblocks/cloud/config" > ${config_file}
 
       local temp_file="$(mktemp)"
 
       #TODO verify checksum
-      curl_wrapper -u "${github_owner}:$(jq -r ".github_token_ro" "${config_file}")" -L \
+      curl_wrapper -u "${github_owner}:${GITHUB_TOKEN_RO}" -L \
         https://maven.pkg.github.com/${github_owner}/solidblocks/solidblocks/solidblocks-cloud-init/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.jar > ${temp_file}
 
       cd "${SOLIDBLOCKS_DIR}" || exit 1

@@ -8,9 +8,7 @@ import de.solidblocks.cloud.config.CloudEnvironmentConfig
 import de.solidblocks.cloud.config.TenantConfig
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.hetzner.cloud.HetznerCloudCredentialsProvider
-import de.solidblocks.provisioner.hetzner.cloud.getHetznerCloudApiToken
 import de.solidblocks.provisioner.hetzner.dns.HetznerDnsCredentialsProvider
-import de.solidblocks.provisioner.hetzner.dns.getHetznerDnsApiToken
 import mu.KotlinLogging
 import org.apache.commons.net.util.SubnetUtils
 import org.springframework.stereotype.Component
@@ -45,8 +43,6 @@ class TenantMananger(
         }
 
 
-        cloudCredentialsProvider.addApiToken(environment.configValues.getHetznerCloudApiToken()!!.value)
-        dnsCredentialsProvider.addApiToken(environment.configValues.getHetznerDnsApiToken()!!.value)
 
         createTenantModel(cloudConfig, environment, TenantConfig(UUID.randomUUID(), "tenant1"), setOf(SshKey(environment.name, environment.sshConfig.sshPublicKey)))
 

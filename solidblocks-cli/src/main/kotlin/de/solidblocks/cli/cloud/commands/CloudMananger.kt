@@ -13,6 +13,10 @@ import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
 import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
 import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
+import de.solidblocks.base.Constants.ConfigKeys.Companion.GITHUB_TOKEN_RO_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RO_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RW_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_DNS_API_TOKEN_RW_KEY
 import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.cli.Contants.BACKUP_POLICY_NAME
 import de.solidblocks.cli.Contants.CONTROLLER_POLICY_NAME
@@ -20,17 +24,15 @@ import de.solidblocks.cli.Contants.hostSshMountName
 import de.solidblocks.cli.Contants.kvMountName
 import de.solidblocks.cli.Contants.pkiMountName
 import de.solidblocks.cli.Contants.userSshMountName
-import de.solidblocks.cli.cloud.commands.config.getGithubReadOnlyToken
 import de.solidblocks.cloud.config.CloudConfig
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.CloudEnvironmentConfig
+import de.solidblocks.cloud.config.getConfigValue
 import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.ResourceGroup
 import de.solidblocks.provisioner.hetzner.cloud.HetznerCloudCredentialsProvider
-import de.solidblocks.provisioner.hetzner.cloud.getHetznerCloudApiToken
 import de.solidblocks.provisioner.hetzner.dns.HetznerDnsCredentialsProvider
-import de.solidblocks.provisioner.hetzner.dns.getHetznerDnsApiToken
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.mount.VaultMount
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
@@ -68,8 +70,8 @@ class CloudMananger(
             return false
         }
 
-        cloudCredentialsProvider.addApiToken(environment.configValues.getHetznerCloudApiToken()!!.value)
-        dnsCredentialsProvider.addApiToken(environment.configValues.getHetznerDnsApiToken()!!.value)
+        cloudCredentialsProvider.addApiToken(environment.configValues.getConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY)!!.value)
+        dnsCredentialsProvider.addApiToken(environment.configValues.getConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY)!!.value)
 
 
         provisioner.destroyAll()
@@ -92,8 +94,8 @@ class CloudMananger(
         }
 
 
-        cloudCredentialsProvider.addApiToken(environment.configValues.getHetznerCloudApiToken()!!.value)
-        dnsCredentialsProvider.addApiToken(environment.configValues.getHetznerDnsApiToken()!!.value)
+        cloudCredentialsProvider.addApiToken(environment.configValues.getConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY)!!.value)
+        dnsCredentialsProvider.addApiToken(environment.configValues.getConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY)!!.value)
 
         createCloudModel(cloud, environment, setOf(SshKey("${cloud.name}-${environment.name}", environment.sshConfig.sshPublicKey)))
 
@@ -299,19 +301,34 @@ class CloudMananger(
         //JacksonUtils.toMap()
         val solidblocksConfig =
                 VaultKV("solidblocks/cloud/config",
-                        mapOf("github_token_ro" to environment.configValues.getGithubReadOnlyToken()!!.value), kvMount)
+                        mapOf(), kvMount)
         resourceGroup.addResource(solidblocksConfig)
+
+        val hetznerConfig =
+                VaultKV("solidblocks/cloud/providers/hetzner",
+                        mapOf(HETZNER_CLOUD_API_TOKEN_RO_KEY to environment.configValues.getConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY)!!.value), kvMount)
+        resourceGroup.addResource(hetznerConfig)
+
+        val githubConfig =
+                VaultKV("solidblocks/cloud/providers/github",
+                        mapOf(GITHUB_TOKEN_RO_KEY to environment.configValues.getConfigValue(GITHUB_TOKEN_RO_KEY)!!.value), kvMount)
+        resourceGroup.addResource(githubConfig)
 
         val controllerPolicy = VaultPolicy(
                 CONTROLLER_POLICY_NAME,
                 setOf(
 
                         Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/ config").capabilities(Policy.BuiltinCapabilities.READ)
+                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config").capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 
                         Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/providers/hetzner")
+                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/github")
+                                .capabilities(Policy.BuiltinCapabilities.READ)
+                                .build(),
+
+                        Policy.Rule.builder().path(
+                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/hetzner")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 
@@ -346,6 +363,16 @@ class CloudMananger(
 
                         Policy.Rule.builder().path(
                                 "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config")
+                                .capabilities(Policy.BuiltinCapabilities.READ)
+                                .build(),
+
+                        Policy.Rule.builder().path(
+                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/github")
+                                .capabilities(Policy.BuiltinCapabilities.READ)
+                                .build(),
+
+                        Policy.Rule.builder().path(
+                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/hetzner")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 
