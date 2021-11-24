@@ -13,6 +13,8 @@ import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
 import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
 import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
+import de.solidblocks.base.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.CONSUL_SECRET_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.GITHUB_TOKEN_RO_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.GITHUB_USERNAME_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RO_KEY
@@ -99,7 +101,7 @@ class CloudMananger(
         cloudCredentialsProvider.addApiToken(environment.configValues.getConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY)!!.value)
         dnsCredentialsProvider.addApiToken(environment.configValues.getConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY)!!.value)
 
-        createCloudModel(cloud, environment, setOf(SshKey("${cloud.name}-${environment.name}", environment.sshConfig.sshPublicKey)))
+        createCloudModel(cloud, environment, setOf(SshKey("${cloud.name}-${environment.name}", environment.sshSecrets.sshPublicKey)))
 
         return provisioner.apply()
     }
@@ -143,8 +145,8 @@ class CloudMananger(
         val variables = HashMap<String, IResourceLookup<String>>()
         variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, vault1FloatingIp))
         variables["hostname"] = ConstantDataSource("vault-1")
-        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPrivateKey))
-        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPublicKey))
+        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPrivateKey))
+        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPublicKey))
         variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(vault1Volume) {
             it.device
         }
@@ -212,8 +214,8 @@ class CloudMananger(
         val variables = HashMap<String, IResourceLookup<String>>()
         variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, floatingIp))
 
-        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPrivateKey))
-        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshConfig.sshIdentityPublicKey))
+        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPrivateKey))
+        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPublicKey))
         variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(backupVolume) {
             it.device
         }
@@ -324,6 +326,16 @@ class CloudMananger(
                     ), kvMount
                 )
         resourceGroup.addResource(githubConfig)
+
+        val consulConfig =
+                VaultKV(
+                    "solidblocks/cloud/config/consul",
+                    mapOf(
+                        CONSUL_SECRET_KEY to environment.configValues.getConfigValue(CONSUL_SECRET_KEY)!!.value,
+                        CONSUL_MASTER_TOKEN_KEY to environment.configValues.getConfigValue(CONSUL_MASTER_TOKEN_KEY)!!.value
+                    ), kvMount
+                )
+        resourceGroup.addResource(consulConfig)
 
         val controllerPolicy = VaultPolicy(
                 CONTROLLER_POLICY_NAME,

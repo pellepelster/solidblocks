@@ -11,19 +11,17 @@ import org.springframework.stereotype.Component
 import kotlin.io.path.ExperimentalPathApi
 
 @Component
-class CloudRotateCommand :
-    CliktCommand(name = "rotate", help = "rotate cloud secrets") {
+class CloudRotateSecretsCommand :
+    CliktCommand(name = "rotate-secrets", help = "rotate cloud secrets") {
 
-    val name: String by option(help = "name of the cloud").required()
+    val cloud: String by option(help = "name of the cloud").required()
 
-    private val logger = KotlinLogging.logger {}
+    val environment: String by option(help = "cloud environment").required()
 
     @OptIn(ExperimentalPathApi::class)
     override fun run() {
-        val environment = currentContext.findObject<GlobalConfig>()!!.environment
-
         SpringContextUtil.callBeanAndShutdown(CloudConfigurationManager::class.java) {
-            it.regenerateCloudSecrets(name, environment)
+            it.rotateEnvironmentSecrets(cloud, environment)
         }
     }
 }

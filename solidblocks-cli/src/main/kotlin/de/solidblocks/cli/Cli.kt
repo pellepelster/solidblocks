@@ -7,7 +7,7 @@ import de.solidblocks.cli.cloud.commands.config.CloudCreateCommand
 import de.solidblocks.cli.cloud.commands.config.CloudDeleteCommand
 import de.solidblocks.cli.cloud.commands.config.CloudEnvironmentCreateCommand
 import de.solidblocks.cli.cloud.commands.config.CloudListCommand
-import de.solidblocks.cli.cloud.commands.config.CloudRotateCommand
+import de.solidblocks.cli.cloud.commands.config.CloudRotateSecretsCommand
 import de.solidblocks.cli.cloud.commands.config.CloudSshConfigCommand
 import de.solidblocks.cli.self.SolidBlocksCli
 
@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
                 CloudCommand().subcommands(
                         CloudConfigCommand().subcommands(
                                 CloudListCommand(),
-                                CloudRotateCommand(),
+                                CloudRotateSecretsCommand(),
                                 CloudDeleteCommand(),
                                 CloudSshConfigCommand(),
                                 CloudCreateCommand(),

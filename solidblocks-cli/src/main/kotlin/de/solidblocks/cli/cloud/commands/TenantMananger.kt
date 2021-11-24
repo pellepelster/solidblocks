@@ -44,7 +44,7 @@ class TenantMananger(
 
 
 
-        createTenantModel(cloudConfig, environment, TenantConfig(UUID.randomUUID(), "tenant1"), setOf(SshKey(environment.name, environment.sshConfig.sshPublicKey)))
+        createTenantModel(cloudConfig, environment, TenantConfig(UUID.randomUUID(), "tenant1"), setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey)))
 
         return provisioner.apply()
     }

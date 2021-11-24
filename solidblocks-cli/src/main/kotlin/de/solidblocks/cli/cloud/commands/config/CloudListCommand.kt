@@ -13,9 +13,6 @@ import kotlin.io.path.ExperimentalPathApi
 class CloudListCommand :
     CliktCommand(name = "list", help = "list all cloud configurations") {
 
-    private val logger = KotlinLogging.logger {}
-
-
     @OptIn(ExperimentalPathApi::class)
     override fun run() {
 

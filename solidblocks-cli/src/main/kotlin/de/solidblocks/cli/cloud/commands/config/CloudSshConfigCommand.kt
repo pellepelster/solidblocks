@@ -18,7 +18,7 @@ import kotlin.system.exitProcess
 class CloudSshConfigCommand :
     CliktCommand(name = "ssh-config", help = "create ssh config") {
 
-    val name: String by option(help = "name of the cloud").required()
+    val cloud: String by option(help = "name of the cloud").required()
 
     private val logger = KotlinLogging.logger {}
 
@@ -27,14 +27,14 @@ class CloudSshConfigCommand :
 
         SpringContextUtil.callBeanAndShutdown(CloudConfigurationManager::class.java) {
 
-            if (!it.hasCloud(name)) {
-                logger.error { "cloud '$name' not found" }
+            if (!it.hasCloud(cloud)) {
+                logger.error { "cloud '$cloud' not found" }
                 exitProcess(1)
             }
 
-            val cloud = it.cloudByName(name)
+            val cloud = it.cloudByName(cloud)
 
-            val basePath = Path(System.getProperty("user.home"), ".solidblocks", name)
+            val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
 
             for (environment in cloud.environments) {
 
@@ -45,16 +45,16 @@ class CloudSshConfigCommand :
                     exitProcess(1)
                 }
 
-                val privateKeyFile = File(environmentPath.toFile(), "${name}_key")
-                privateKeyFile.writeText(environment.sshConfig.sshPrivateKey)
+                val privateKeyFile = File(environmentPath.toFile(), "${this.cloud}_key")
+                privateKeyFile.writeText(environment.sshSecrets.sshPrivateKey)
                 privateKeyFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
-                val knownHostsFile = File(environmentPath.toFile(), "${name}_known_hosts")
-                knownHostsFile.writeText("vault-1.$environment.${cloud.rootDomain} ${environment.sshConfig.sshIdentityPublicKey}")
+                val knownHostsFile = File(environmentPath.toFile(), "${this.cloud}_known_hosts")
+                knownHostsFile.writeText("vault-1.$environment.${cloud.rootDomain} ${environment.sshSecrets.sshIdentityPublicKey}")
 
                 knownHostsFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
-                File(environmentPath.toFile(), "${name}_key.pub").writeText(environment.sshConfig.sshPublicKey)
+                File(environmentPath.toFile(), "${this.cloud}_key.pub").writeText(environment.sshSecrets.sshPublicKey)
                 File(environmentPath.toFile(), "ssh_config").writeText(
                         sshConfig(
                                 privateKeyFile.absolutePath,

@@ -20,7 +20,7 @@ import kotlin.system.exitProcess
 class CloudEnvironmentCreateCommand :
         CliktCommand(name = "create-environment", help = "create a new cloud environment") {
 
-    val name: String by option(help = "name of the cloud").required()
+    val cloud: String by option(help = "name of the cloud").required()
 
     val environment: String by option(help = "cloud environment").required()
 
@@ -37,16 +37,16 @@ class CloudEnvironmentCreateCommand :
     @OptIn(ExperimentalPathApi::class)
     override fun run() {
 
-        logger.error { "creating environment '${environment}' for cloud '$name'" }
+        logger.error { "creating environment '${environment}' for cloud '$cloud'" }
 
         SpringContextUtil.bean(CloudConfigurationManager::class.java).let {
 
-            if (!it.hasCloud(name)) {
-                logger.error { "cloud '$name' not found" }
+            if (!it.hasCloud(cloud)) {
+                logger.error { "cloud '$cloud' not found" }
                 exitProcess(1)
             }
 
-            if (!it.createEnvironment(name, environment, listOf(
+            if (!it.createEnvironment(cloud, environment, listOf(
                             createConfigValue(GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
                             createConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
                             createConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),

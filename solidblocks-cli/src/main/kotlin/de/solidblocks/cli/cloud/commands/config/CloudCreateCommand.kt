@@ -14,7 +14,7 @@ import kotlin.io.path.ExperimentalPathApi
 class CloudCreateCommand :
     CliktCommand(name = "create", help = "create a new cloud configuration") {
 
-    val name: String by option(help = "name of the cloud").required()
+    val cloud: String by option(help = "name of the cloud").required()
 
     val domain: String by option(help = "root domain for the cloud").required()
 
@@ -23,10 +23,10 @@ class CloudCreateCommand :
     @OptIn(ExperimentalPathApi::class)
     override fun run() {
 
-        logger.error { "creating cloud '$name'" }
+        logger.error { "creating cloud '$cloud'" }
 
         if (!SpringContextUtil.bean(CloudConfigurationManager::class.java).createCloud(
-                        name,
+                        cloud,
                         domain)) {
             throw ProgramResult(1)
         }

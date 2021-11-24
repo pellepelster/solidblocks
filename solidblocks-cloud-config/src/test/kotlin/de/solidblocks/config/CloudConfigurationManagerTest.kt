@@ -34,10 +34,10 @@ class CloudConfigurationManagerTest {
 
         val cloudConfig = cloudConfigurationManager.cloudByName("cloud1")
         assertThat(cloudConfig.environments).hasSize(1)
-        assertThat(cloudConfig.environments[0].sshConfig.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
-        assertThat(cloudConfig.environments[0].sshConfig.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
-        assertThat(cloudConfig.environments[0].sshConfig.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
-        assertThat(cloudConfig.environments[0].sshConfig.sshPublicKey).startsWith("ssh-ed25519 AAAA")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(cloudConfig.configValues).anyMatch { it.name == "name1" && it.value == "value1" }
     }
 
@@ -64,24 +64,24 @@ class CloudConfigurationManagerTest {
 
         val cloudConfig = cloudConfigurationManager.cloudByName("cloud2")
         assertThat(cloudConfig.environments).hasSize(1)
-        assertThat(cloudConfig.environments[0].sshConfig.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
-        assertThat(cloudConfig.environments[0].sshConfig.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
-        assertThat(cloudConfig.environments[0].sshConfig.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
-        assertThat(cloudConfig.environments[0].sshConfig.sshPublicKey).startsWith("ssh-ed25519 AAAA")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(cloudConfig.environments[0].sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
 
-        cloudConfigurationManager.regenerateCloudSecrets("cloud2", "env2")
+        cloudConfigurationManager.rotateEnvironmentSecrets("cloud2", "env2")
 
         val newCloudConfig = cloudConfigurationManager.cloudByName("cloud2")
         assertThat(newCloudConfig.environments).hasSize(1)
-        assertThat(newCloudConfig.environments[0].sshConfig.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
-        assertThat(newCloudConfig.environments[0].sshConfig.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
-        assertThat(newCloudConfig.environments[0].sshConfig.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
-        assertThat(newCloudConfig.environments[0].sshConfig.sshPublicKey).startsWith("ssh-ed25519 AAAA")
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
 
-        assertThat(newCloudConfig.environments[0].sshConfig.sshIdentityPrivateKey).isNotEqualTo(cloudConfig.environments[0].sshConfig.sshIdentityPrivateKey)
-        assertThat(newCloudConfig.environments[0].sshConfig.sshIdentityPublicKey).isNotEqualTo(cloudConfig.environments[0].sshConfig.sshIdentityPublicKey)
-        assertThat(newCloudConfig.environments[0].sshConfig.sshPrivateKey).isNotEqualTo(cloudConfig.environments[0].sshConfig.sshPrivateKey)
-        assertThat(newCloudConfig.environments[0].sshConfig.sshPublicKey).isNotEqualTo(cloudConfig.environments[0].sshConfig.sshPublicKey)
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshIdentityPrivateKey).isNotEqualTo(cloudConfig.environments[0].sshSecrets.sshIdentityPrivateKey)
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshIdentityPublicKey).isNotEqualTo(cloudConfig.environments[0].sshSecrets.sshIdentityPublicKey)
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshPrivateKey).isNotEqualTo(cloudConfig.environments[0].sshSecrets.sshPrivateKey)
+        assertThat(newCloudConfig.environments[0].sshSecrets.sshPublicKey).isNotEqualTo(cloudConfig.environments[0].sshSecrets.sshPublicKey)
     }
 
     /*

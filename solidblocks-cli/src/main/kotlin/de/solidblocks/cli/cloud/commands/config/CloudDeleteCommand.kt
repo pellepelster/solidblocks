@@ -13,12 +13,12 @@ import kotlin.io.path.ExperimentalPathApi
 class CloudDeleteCommand :
     CliktCommand(name = "delete", help = "delete a cloud configuration") {
 
-    val name: String by option(help = "name of the cloud").required()
+    val cloud: String by option(help = "name of the cloud").required()
 
     private val logger = KotlinLogging.logger {}
 
     @OptIn(ExperimentalPathApi::class)
     override fun run() {
-        SpringContextUtil.bean(CloudConfigurationManager::class.java).delete(name)
+        SpringContextUtil.bean(CloudConfigurationManager::class.java).delete(cloud)
     }
 }

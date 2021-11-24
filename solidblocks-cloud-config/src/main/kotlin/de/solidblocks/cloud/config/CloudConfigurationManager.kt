@@ -1,14 +1,13 @@
 package de.solidblocks.cloud.config
 
+import de.solidblocks.base.Constants
+import de.solidblocks.base.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.CONSUL_SECRET_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_IDENTITY_PRIVATE_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_IDENTITY_PUBLIC_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_PRIVATE_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_PUBLIC_KEY
 import de.solidblocks.base.Utils.Companion.generateSshKey
-import de.solidblocks.cloud.config.SeedConfig.Companion.CONFIG_RO_PASSWORD
-import de.solidblocks.cloud.config.SeedConfig.Companion.CONFIG_RO_USERNAME
-import de.solidblocks.cloud.config.SeedConfig.Companion.CONFIG_RW_PASSWORD
-import de.solidblocks.cloud.config.SeedConfig.Companion.CONFIG_RW_USERNAME
-import de.solidblocks.cloud.config.SshConfig.Companion.CONFIG_SSH_IDENTITY_PRIVATE_KEY
-import de.solidblocks.cloud.config.SshConfig.Companion.CONFIG_SSH_IDENTITY_PUBLIC_KEY
-import de.solidblocks.cloud.config.SshConfig.Companion.CONFIG_SSH_PRIVATE_KEY
-import de.solidblocks.cloud.config.SshConfig.Companion.CONFIG_SSH_PUBLIC_KEY
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CLOUDS_ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -62,13 +61,14 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         val id = UUID.randomUUID()
 
         dsl.insertInto(CLOUDS_ENVIRONMENTS)
-                .columns(
-                        CLOUDS_ENVIRONMENTS.ID,
-                        CLOUDS_ENVIRONMENTS.CLOUD,
-                        CLOUDS_ENVIRONMENTS.NAME)
-                .values(id, cloud.id, environmentName).execute()
+            .columns(
+                CLOUDS_ENVIRONMENTS.ID,
+                CLOUDS_ENVIRONMENTS.CLOUD,
+                CLOUDS_ENVIRONMENTS.NAME
+            )
+            .values(id, cloud.id, environmentName).execute()
 
-        storeSshConfig(EnvironmentId(id), createSshConfig(environmentName))
+        generateAndStoreSecrets(id, environmentName)
 
         configValues.forEach {
             setConfiguration(EnvironmentId(id), it.name, it.value)
@@ -166,52 +166,52 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                         { it.into(environments) }, { it.into(latest) }
                 ).map {
                     CloudEnvironmentConfig(
-                            id = it.key.id!!,
-                            name = it.key.name!!,
-                            sshConfig = loadSshConfig(it.value),
-                            it.value.map {
-                                CloudConfigValue(
-                                        it.getValue(CONFIGURATION_VALUES.NAME)!!,
-                                        it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
-                                        it.getValue(CONFIGURATION_VALUES.VERSION)!!
-                                )
-                            }
+                        id = it.key.id!!,
+                        name = it.key.name!!,
+                        sshSecrets = loadSshCredentials(it.value),
+                        it.value.map {
+                            CloudConfigValue(
+                                it.getValue(CONFIGURATION_VALUES.NAME)!!,
+                                it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
+                                it.getValue(CONFIGURATION_VALUES.VERSION)!!
+                            )
+                        }
                     )
-                }
+            }
     }
 
 
+    fun updateEnvironment(cloudName: String, environmentName: String, name: String, value: String): Boolean {
+        return updateEnvironment(cloudName, environmentName, mapOf(name to value))
+    }
+
     fun updateEnvironment(cloudName: String, environmentName: String, values: Map<String, String>): Boolean {
+        val (_, environment) = fetchCloudAndEnvironment(cloudName, environmentName)
+
         return values.map {
-            updateEnvironment(cloudName, environmentName, it.key, it.value)
+            updateEnvironment(environment, it.key, it.value)
         }.all { it }
     }
 
-    fun updateEnvironment(cloudName: String, environmentName: String, name: String, value: String): Boolean {
-        if (!hasCloud(cloudName)) {
-            logger.info { "cloud '${cloudName}' does not exist" }
-            return false
-        }
-
-        val cloud = cloudByName(cloudName)
-
-        val environment = cloud.environments.firstOrNull { it.name == environmentName } ?: return false
+    private fun updateEnvironment(
+        environment: CloudEnvironmentConfig,
+        name: String,
+        value: String
+    ): Boolean {
         setConfiguration(EnvironmentId(environment.id), name, value)
-
         return true
     }
-
 
     fun list(cloudName: String? = null): List<TenantConfig> {
 
         val latestVersions =
-                dsl.select(
-                        CONFIGURATION_VALUES.TENANT,
-                        CONFIGURATION_VALUES.NAME,
-                        max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
-                )
-                        .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
-                        .asTable("latest_versions")
+            dsl.select(
+                CONFIGURATION_VALUES.TENANT,
+                CONFIGURATION_VALUES.NAME,
+                max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
+            )
+                .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
+                .asTable("latest_versions")
 
         val latest = dsl.select(
                 CONFIGURATION_VALUES.TENANT,
@@ -241,7 +241,6 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 .fetchGroups(
                         { it.into(tenants) }, { it.into(latest) }
                 ).map {
-                    val seedConfig = loadSeedConfig(it.value)
                     TenantConfig(
                             id = it.key.id!!,
                             name = it.key.name!!
@@ -258,23 +257,43 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         return cloud.environments.first { it.name == environmentName }
     }
 
-    fun regenerateCloudSecrets(cloudName: String, environmentName: String): Boolean {
+    fun rotateEnvironmentSecrets(cloudName: String, environmentName: String): Boolean {
+        val (_, environment) = fetchCloudAndEnvironment(cloudName, environmentName)
+
+        generateAndStoreSecrets(environment)
+
+        return true
+    }
+
+    private fun generateAndStoreSecrets(id: UUID, name: String) {
+        storeSshCredentials(EnvironmentId(id), generateSshCredentials(name))
+        storeConsulSecrets(EnvironmentId(id), generateConsulSecrets())
+    }
+
+    private fun generateAndStoreSecrets(
+        environment: CloudEnvironmentConfig
+    ) {
+        generateAndStoreSecrets(environment.id, environment.name)
+    }
+
+
+    private fun fetchCloudAndEnvironment(
+        cloudName: String,
+        environmentName: String
+    ): Pair<CloudConfig, CloudEnvironmentConfig> {
+
         if (!hasCloud(cloudName)) {
-            logger.info { "cloud '${cloudName}' does not exist" }
-            return false
+            throw RuntimeException("cloud '${cloudName}' does not exist")
         }
 
         val cloud = cloudByName(cloudName)
         val environment = cloud.environments.firstOrNull { it.name == environmentName }
 
         if (environment == null) {
-            logger.info { "environment '${environmentName}' does not exist for cloud '${cloudName}'" }
-            return false
+            throw RuntimeException("environment '${environmentName}' does not exist for cloud '${cloudName}'")
         }
 
-        storeSshConfig(EnvironmentId(environment.id), createSshConfig(environmentName))
-
-        return true
+        return cloud to environment
     }
 
     fun getTenant(name: String): TenantConfig {
@@ -301,10 +320,6 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         configuration.forEach {
             setConfiguration(TenantId(cloudId), it.name, it.value)
         }
-
-        storeSshConfig(TenantId(cloudId), createSshConfig(cloudName))
-        storeSeedConfig(cloudId, createSeedConfig(cloudName))
-        storeSolidblocksConfig(TenantId(cloudId), createSolidblocksConfig(domain, email))
     }
 
     fun delete(cloudName: String) {
@@ -357,100 +372,57 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         }
     }
 
-    private fun createSshConfig(name: String): SshConfig {
+    private fun generateSshCredentials(name: String): SshSecrets {
         val sshIdentity = generateSshKey(name)
         val sshKey = generateSshKey(name)
 
-        return SshConfig(
-                sshIdentityPrivateKey = sshIdentity.first,
-                sshIdentityPublicKey = sshIdentity.second,
-                sshPrivateKey = sshKey.first,
-                sshPublicKey = sshKey.second,
+        return SshSecrets(
+            sshIdentityPrivateKey = sshIdentity.first,
+            sshIdentityPublicKey = sshIdentity.second,
+            sshPrivateKey = sshKey.first,
+            sshPublicKey = sshKey.second,
         )
     }
 
-    private fun createSeedConfig(cloudName: String): SeedConfig {
-        return SeedConfig(
-                rwUsername = "$cloudName-rw",
-                rwPassword = generateRandomPassword(),
-                roUsername = "$cloudName-ro",
-                roPassword = generateRandomPassword(),
+    private fun loadSshCredentials(list: List<Record5<UUID?, UUID?, String?, String?, Int?>>): SshSecrets {
+        return SshSecrets(
+            sshIdentityPrivateKey = list.configValue(SSH_IDENTITY_PRIVATE_KEY).value,
+            sshIdentityPublicKey = list.configValue(SSH_IDENTITY_PUBLIC_KEY).value,
+            sshPrivateKey = list.configValue(SSH_PRIVATE_KEY).value,
+            sshPublicKey = list.configValue(SSH_PUBLIC_KEY).value,
         )
     }
 
-    private fun loadSeedConfig(list: List<Record5<UUID?, UUID?, String?, String?, Int?>>): SeedConfig {
-        return SeedConfig(
-                rwUsername = list.configValue(CONFIG_RW_USERNAME).value,
-                rwPassword = list.configValue(CONFIG_RW_PASSWORD).value,
-                roUsername = list.configValue(CONFIG_RO_USERNAME).value,
-                roPassword = list.configValue(CONFIG_RO_PASSWORD).value,
+    private fun storeSshCredentials(id: IdType, secrets: SshSecrets) {
+        setConfiguration(id, SSH_IDENTITY_PRIVATE_KEY, secrets.sshIdentityPrivateKey)
+        setConfiguration(id, SSH_IDENTITY_PUBLIC_KEY, secrets.sshIdentityPublicKey)
+        setConfiguration(id, SSH_PRIVATE_KEY, secrets.sshPrivateKey)
+        setConfiguration(id, SSH_PUBLIC_KEY, secrets.sshPublicKey)
+    }
+
+    private fun generateConsulSecrets(): ConsulSecrets {
+        return ConsulSecrets(generateConsulSecret(), generateRandomPassword())
+    }
+
+    private fun loadConsulSecrets(list: List<Record5<UUID?, UUID?, String?, String?, Int?>>): ConsulSecrets {
+        return ConsulSecrets(
+            list.configValue(CONSUL_SECRET_KEY).value,
+            list.configValue(Constants.ConfigKeys.CONSUL_MASTER_TOKEN_KEY).value
         )
     }
 
-    private fun loadSshConfig(list: List<Record5<UUID?, UUID?, String?, String?, Int?>>): SshConfig {
-        return SshConfig(
-                sshIdentityPrivateKey = list.configValue(CONFIG_SSH_IDENTITY_PRIVATE_KEY).value,
-                sshIdentityPublicKey = list.configValue(CONFIG_SSH_IDENTITY_PUBLIC_KEY).value,
-                sshPrivateKey = list.configValue(CONFIG_SSH_PRIVATE_KEY).value,
-                sshPublicKey = list.configValue(CONFIG_SSH_PUBLIC_KEY).value,
-        )
-    }
 
-    private fun loadSolidblocksConfig(
-            list: List<Record5<UUID?, UUID?, String?, String?, Int?>>,
-            seedConfig: SeedConfig,
-            cloudName: String
-    ): SolidblocksConfig {
-        return SolidblocksConfig(
-                consulMasterToken = list.configValue(CONFIG_CONSUL_MASTER_TOKEN_KEY).value,
-                apiKey = list.configValue(CONFIG_API_KEY).value,
-                backupPassword = list.configValue(CONFIG_BACKUP_PASSWORD_KEY).value,
-                consulSecret = list.configValue(CONFIG_CONSUL_SECRET_KEY).value,
-        )
-    }
-
-    private fun storeSshConfig(id: IdType, config: SshConfig) {
-        setConfiguration(id, CONFIG_SSH_IDENTITY_PRIVATE_KEY, config.sshIdentityPrivateKey)
-        setConfiguration(id, CONFIG_SSH_IDENTITY_PUBLIC_KEY, config.sshIdentityPublicKey)
-        setConfiguration(id, CONFIG_SSH_PRIVATE_KEY, config.sshPrivateKey)
-        setConfiguration(id, CONFIG_SSH_PUBLIC_KEY, config.sshPublicKey)
-    }
-
-    private fun storeSolidblocksConfig(id: IdType, config: SolidblocksConfig) {
-        setConfiguration(id, CONFIG_CONSUL_MASTER_TOKEN_KEY, config.consulMasterToken)
-        setConfiguration(id, CONFIG_CONSUL_SECRET_KEY, config.consulSecret)
-        setConfiguration(id, CONFIG_API_KEY, config.apiKey)
-        setConfiguration(id, CONFIG_BACKUP_PASSWORD_KEY, config.backupPassword)
-    }
-
-    private fun storeSeedConfig(cloudId: UUID, config: SeedConfig) {
-        setConfiguration(TenantId(cloudId), CONFIG_RW_USERNAME, config.rwUsername)
-        setConfiguration(TenantId(cloudId), CONFIG_RW_PASSWORD, config.rwPassword)
-        setConfiguration(TenantId(cloudId), CONFIG_RO_USERNAME, config.roUsername)
-        setConfiguration(TenantId(cloudId), CONFIG_RO_PASSWORD, config.roPassword)
-    }
-
-    private fun createSolidblocksConfig(domain: String, adminEmail: String): SolidblocksConfig {
-        return SolidblocksConfig(
-                consulMasterToken = generateRandomPassword(),
-                dockerRegistry =
-                DockerRegistryConfig(
-                        address = "address",
-                        username = "user",
-                        password = "password"
-                ),
-                apiKey = generateRandomPassword(),
-                backupPassword = generateRandomPassword(),
-                consulSecret = generateConsulSecret(),
-        )
+    private fun storeConsulSecrets(id: IdType, secrets: ConsulSecrets) {
+        setConfiguration(id, CONSUL_SECRET_KEY, secrets.consul_secret)
+        setConfiguration(id, CONSUL_MASTER_TOKEN_KEY, secrets.consul_master_token)
     }
 
     private fun List<Record5<UUID?, UUID?, String?, String?, Int?>>.configValue(name: String): CloudConfigValue {
         return this.firstOrNull { it.getValue(CONFIGURATION_VALUES.NAME) == name }?.map {
             CloudConfigValue(
-                    it.getValue(CONFIGURATION_VALUES.NAME)!!,
-                    it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
-                    it.getValue(CONFIGURATION_VALUES.VERSION)!!
+                it.getValue(CONFIGURATION_VALUES.NAME)!!,
+                it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
+                it.getValue(CONFIGURATION_VALUES.VERSION)!!
             )
         }!!
     }
