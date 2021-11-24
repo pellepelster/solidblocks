@@ -14,6 +14,7 @@ import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
 import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
 import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
 import de.solidblocks.base.Constants.ConfigKeys.Companion.GITHUB_TOKEN_RO_KEY
+import de.solidblocks.base.Constants.ConfigKeys.Companion.GITHUB_USERNAME_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RO_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RW_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_DNS_API_TOKEN_RW_KEY
@@ -46,6 +47,7 @@ import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.Policy
 import org.springframework.vault.support.VaultTokenRequest
 import java.net.URL
+import java.time.Duration
 
 @Component
 class CloudMananger(
@@ -206,8 +208,6 @@ class CloudMananger(
         val floatingIp = FloatingIp("backup", location, mapOf("role" to "backup", "name" to "backup"))
         resourceGroup.addResource(floatingIp)
 
-        val dnsRecord = DnsRecord("backup.${environment.name}", floatingIp, dnsZone = rootZone)
-        resourceGroup.addResource(dnsRecord)
 
         val variables = HashMap<String, IResourceLookup<String>>()
         variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, floatingIp))
@@ -219,6 +219,7 @@ class CloudMananger(
         }
 
         variables["vault_addr"] = ConstantDataSource("https://vault.${environment.name}.${cloud.rootDomain}:8200")
+        //TODO create minimal token for bootstrapping and create new one on boot with more privileges?
         variables["vault_token"] = CustomDataSource {
             val vaultClient =
                     provisioner.provider(VaultTemplate::class.java).createClient()
@@ -227,6 +228,7 @@ class CloudMananger(
                             .displayName("backup")
                             .noParent(true)
                             .renewable(true)
+                            .ttl(Duration.ofHours(36))
                             .policies(listOf(BACKUP_POLICY_NAME))
                             .build()
             )
@@ -236,14 +238,18 @@ class CloudMananger(
 
         val userData = UserDataDataSource("lib-cloud-init-generated/backup-cloud-init.sh", variables)
         val server = Server(
-                "backup",
-                network,
-                userData,
-                sshKeys = sshKeys,
-                location = location,
-                volume = backupVolume,
-                dependencies = listOf(dnsRecord)
+            "backup",
+            network,
+            userData,
+            sshKeys = sshKeys,
+            location = location,
+            volume = backupVolume,
         )
+
+        val dnsRecord = DnsRecord("backup.${environment.name}", floatingIp, dnsZone = rootZone, server = server)
+        resourceGroup.addResource(dnsRecord)
+
+
         resourceGroup.addResource(server)
         resourceGroup.addResource(FloatingIpAssignment(server = server, floatingIp = floatingIp))
     }
@@ -310,8 +316,13 @@ class CloudMananger(
         resourceGroup.addResource(hetznerConfig)
 
         val githubConfig =
-                VaultKV("solidblocks/cloud/providers/github",
-                        mapOf(GITHUB_TOKEN_RO_KEY to environment.configValues.getConfigValue(GITHUB_TOKEN_RO_KEY)!!.value), kvMount)
+                VaultKV(
+                    "solidblocks/cloud/providers/github",
+                    mapOf(
+                        GITHUB_TOKEN_RO_KEY to environment.configValues.getConfigValue(GITHUB_TOKEN_RO_KEY)!!.value,
+                        GITHUB_USERNAME_KEY to "pellepelster"
+                    ), kvMount
+                )
         resourceGroup.addResource(githubConfig)
 
         val controllerPolicy = VaultPolicy(
@@ -364,6 +375,11 @@ class CloudMananger(
                         Policy.Rule.builder().path(
                                 "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
+                                .build(),
+
+                        Policy.Rule.builder().path(
+                                "/auth/token/renew-self")
+                                .capabilities(Policy.BuiltinCapabilities.UPDATE)
                                 .build(),
 
                         Policy.Rule.builder().path(

@@ -8,7 +8,7 @@ function task_cli() {
     "${DIR}/gradlew" solidblocks-cli:run --args="$*"
 }
 
-function task_increase_version() {
+function task_increment_version() {
     echo "SNAPSHOT-$(date +%Y%m%d%H%M%S)" > "${DIR}/version.txt"
 }
 
@@ -41,7 +41,7 @@ shift || true
 
 case ${COMMAND} in
   cli) task_cli "$@" ;;
-  increase-version) task_increase_version "$@" ;;
+  increment-version) task_increment_version "$@" ;;
   recreate-integration-test) task_recreate_integration_test "$@" ;;
   publish) task_publish "$@" ;;
 esac

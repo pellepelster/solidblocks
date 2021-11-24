@@ -1,0 +1,1 @@
+VAULT_TOKEN={{with secret "/auth/token/renew-self" (printf "token=%s" (env "VAULT_TOKEN"))}}{{.Auth.ClientToken}}{{ end }}

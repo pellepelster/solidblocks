@@ -1,6 +1,4 @@
 vault {
-  renew_token = true
-
   retry {
     enabled = true
     attempts = 0
@@ -19,6 +17,12 @@ exec {
 template {
   source      = "/solidblocks/templates/ssh-config/known_hosts.ctmpl"
   destination = "/root/.ssh/known_hosts"
+  perms       = 0600
+}
+
+template {
+  source      = "/solidblocks/templates/protected/environment.ctmpl"
+  destination = "/solidblocks/protected/environment"
   perms       = 0600
 }
 
