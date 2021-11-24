@@ -1,11 +1,11 @@
 function mount_storage() {
 
-    while [ ! -b "[=storage_local_device]" ]; do
-      echo "waiting for storage device '[=storage_local_device]'"
+    while [ ! -b "${SOLIDBLOCKS_STORAGE_LOCAL_DEVICE}" ]; do
+      echo "waiting for storage device '${SOLIDBLOCKS_STORAGE_LOCAL_DEVICE}'"
       sleep 5
     done
 
-    echo "[=storage_local_device] /storage/local   ext4   defaults  0 0" >> /etc/fstab
-    mkdir -p "/storage/local"
-    mount "/storage/local"
+    echo "${SOLIDBLOCKS_STORAGE_LOCAL_DEVICE} ${SOLIDBLOCKS_STORAGE_LOCAL_DIR}   ext4   defaults  0 0" >> /etc/fstab
+    mkdir -p "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}"
+    mount "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}"
 }

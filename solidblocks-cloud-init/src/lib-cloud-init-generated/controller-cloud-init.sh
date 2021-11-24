@@ -10,13 +10,14 @@ export SOLIDBLOCKS_CLOUD="[=solidblocks_cloud]"
 export SOLIDBLOCKS_ROOT_DOMAIN="[=solidblocks_root_domain]"
 export SOLIDBLOCKS_PUBLIC_IP="[=solidblocks_public_ip]"
 export SOLIDBLOCKS_VERSION="[=solidblocks_version]"
+export SOLIDBLOCKS_STORAGE_LOCAL_DEVICE="[=storage_local_device]"
 
 #######################################
-# backup-cloud-init-variables.sh      #
+# vault-cloud-init-variables.sh       #
 #######################################
 
 export VAULT_TOKEN="[=vault_token]"
-export VAULT_ADDR="https://vault.[=solidblocks_environment].[=solidblocks_root_domain]:8200"
+export VAULT_ADDR="[=vault_addr]"
 
 #######################################
 # configuration.sh                    #
@@ -29,69 +30,44 @@ export SOLIDBLOCKS_DEVELOPMENT_MODE="${SOLIDBLOCKS_DEVELOPMENT_MODE:-0}"
 export SOLIDBLOCKS_CONFIG_FILE="${SOLIDBLOCKS_DIR}/solidblocks.json"
 export SOLIDBLOCKS_CERTIFICATES_DIR="${SOLIDBLOCKS_DIR}/certificates"
 export SOLIDBLOCKS_GROUP="${SOLIDBLOCKS_GROUP:-solidblocks}"
+export SOLIDBLOCKS_STORAGE_LOCAL_DIR="/storage/local"
 
 function bootstrap_solidblocks() {
+
+  groupadd solidblocks
 
   # shellcheck disable=SC2086
   mkdir -p ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
   chmod 700 "${SOLIDBLOCKS_DIR}/protected"
+  chmod 700 "${SOLIDBLOCKS_DIR}/certificates"
 
-  echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "/solidblocks/instance/environment"
-  echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "/solidblocks/instance/environment"
-  echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "/solidblocks/instance/environment"
-  echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "/solidblocks/instance/environment"
-  echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "/solidblocks/instance/environment"
-  echo "VAULT_ADDR=${VAULT_ADDR}" >> "/solidblocks/instance/environment"
+  echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_HOSTNAME=$(hostname)" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
 
-  echo "VAULT_TOKEN=${VAULT_TOKEN}" >> "/solidblocks/protected/environment"
+  echo "VAULT_ADDR=${VAULT_ADDR}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
 
-  vault_read_secret "solidblocks/cloud/config" > ${config_file}
+  echo "VAULT_TOKEN=${VAULT_TOKEN}" > "${SOLIDBLOCKS_DIR}/protected/initial_environment"
+  echo "GITHUB_TOKEN_RO=$(vault_read_secret "solidblocks/cloud/providers/github" | jq -r '.github_token_ro')" >> "${SOLIDBLOCKS_DIR}/protected/initial_environment"
+  echo "GITHUB_USERNAME=$(vault_read_secret "solidblocks/cloud/providers/github" | jq -r '.github_username')" >> "${SOLIDBLOCKS_DIR}/protected/initial_environment"
 
-
-  local github_owner="pellepelster"
+  export $(xargs < "${SOLIDBLOCKS_DIR}/protected/initial_environment")
   (
-      local config_file="${SOLIDBLOCKS_DIR}/config/cloud_init_config.json"
-
       local temp_file="$(mktemp)"
 
-      curl_wrapper -u "${github_owner}:$(jq -r ".github_token_ro" "${config_file}")" -L \
-        https://maven.pkg.github.com/${github_owner}/solidblocks/solidblocks/solidblocks-cloud-init/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.jar > ${temp_file}
+      #TODO verify checksum
+      curl_wrapper -u "${GITHUB_USERNAME}:${GITHUB_TOKEN_RO}" -L \
+        "https://maven.pkg.github.com/${GITHUB_USERNAME}/solidblocks/solidblocks/solidblocks-cloud-init/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.jar" > "${temp_file}"
 
       cd "${SOLIDBLOCKS_DIR}" || exit 1
-      unzip ${temp_file}
-      rm -rf ${temp_file}
+      unzip "${temp_file}"
+      rm -rf "${temp_file}"
   )
 }
 
-#######################################
-# consul-template.sh                  #
-#######################################
-
-CONSUL_TEMPLATE_VERSION="0.19.5"
-CONSUL_TEMPLATE_CHECKSUM="e6b376701708b901b0548490e296739aedd1c19423c386eb0b01cfad152162af"
-CONSUL_TEMPLATE_URL="https://releases.hashicorp.com/consul-template/${CONSUL_TEMPLATE_VERSION}/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip"
-
-function consul_template_install() {
-    local target_file="$(mktemp)"
-    download_and_verify_checksum "${CONSUL_TEMPLATE_URL}" "${target_file}" "${CONSUL_TEMPLATE_CHECKSUM}"
-    unzip -o -d /usr/local/bin "${target_file}"
-    rm -rf "${target_file}"
-}
-
-
-function ssh_write_host_identity() {
-  echo "[=ssh_identity_ed25519_key]" | base64 -d > /etc/ssh/ssh_host_ed25519_key
-  chmod 600 /etc/ssh/ssh_host_ed25519_key
-  echo "[=ssh_identity_ed25519_pub]" | base64 -d > /etc/ssh/ssh_host_ed25519_key.pub
-}
-
-function create_root_ssh_key() {
-  local ssh_dir="/root/.ssh"
-  local ssh_private_key="${ssh_dir}/id_ed25519"
-
-  mkdir -p "${ssh_dir}" || true
-  ssh-keygen -t ed25519 -f ${ssh_private_key} -q -N ""
-}
 #######################################
 # curl.sh                             #
 #######################################
@@ -187,7 +163,7 @@ function configure_public_ip() {
 
 function vault_read_secret() {
   local path="${1:-}"
-  curl_wrapper -H "X-Vault-Token: ${VAULT_TOKEN}" "https://vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200/v1/${SOLIDBLOCKS_CLOUD}-${SOLIDBLOCKS_ENVIRONMENT}-kv/data/${path}" | jq .data.data
+  curl_wrapper -H "X-Vault-Token: ${VAULT_TOKEN}" "${VAULT_ADDR}/v1/${SOLIDBLOCKS_CLOUD}-${SOLIDBLOCKS_ENVIRONMENT}-kv/data/${path}" | jq .data.data
 }
 
 
@@ -197,8 +173,17 @@ configure_public_ip
 package_update
 package_check_and_install "jq"
 package_check_and_install "unzip"
+package_check_and_install "uuid"
 
 bootstrap_solidblocks
 
+source "${SOLIDBLOCKS_DIR}/lib/solidblocks-node-manager.sh"
+source "${SOLIDBLOCKS_DIR}/lib/consul-template.sh"
+source "${SOLIDBLOCKS_DIR}/lib/hetzner-api.sh"
+source "${SOLIDBLOCKS_DIR}/lib/ssh.sh"
+
+echo "CONTROLLER_NODE_COUNT=[=controller_node_count]" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+
 create_root_ssh_key
 consul_template_install
+solidblocks_node_manager_install "controller"

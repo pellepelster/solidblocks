@@ -5,6 +5,6 @@ set -eux
 systemctl reload sshd
 
 while true; do
-	echo "node management ping"
+	echo "solidblocks backup node manager ping"
 	sleep 30
 done

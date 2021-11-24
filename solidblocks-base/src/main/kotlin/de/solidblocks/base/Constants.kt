@@ -21,4 +21,11 @@ class Constants {
             const val SSH_IDENTITY_PRIVATE_KEY = "ssh_identity_private_key"
         }
     }
+
+    class Vault {
+        companion object {
+            val CONTROLLER_POLICY_NAME = "controller"
+            val BACKUP_POLICY_NAME = "backup"
+        }
+    }
 }

@@ -4,8 +4,8 @@
 
 CONSUL_CHECKSUM="78d127e5b8edd310c3f9f89487fb833a5c7bcb4e09cb731a4d39100fc53b38be"
 CONSUL_URL="https://releases.hashicorp.com/consul/1.6.2/consul_1.6.2_linux_amd64.zip"
-CONSUL_BACKUP_DIR="${STORAGE_LOCAL_DIR}/consul/snapshots"
-CONSUL_DATA_DIR="${STORAGE_LOCAL_DIR}/consul/data"
+CONSUL_BACKUP_DIR="${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/consul/snapshots"
+CONSUL_DATA_DIR="${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/consul/data"
 
 function consul_agent_config {
 cat <<-EOF
@@ -47,7 +47,7 @@ EOF
 function consul_server_config {
 cat <<-EOF
 {
-  "datacenter": "$(config '.cloud_name')",
+  "datacenter": "${SOLIDBLOCKS_CLOUD}-${SOLIDBLOCKS_ENVIRONMENT}",
   "node_id": "$(uuid -v5 ns:DNS "$(hostname -s)")",
   "server": true,
   "ui": true,
@@ -74,14 +74,14 @@ cat <<-EOF
     "https": 8501,
     "grpc": 8502
   },
-  "encrypt": "$(config '.consul_secret')",
+  "encrypt": "$(vault_read_secret solidblocks/cloud/config/consul | jq -r '.consul_secret')",
   "acl": {
     "enabled": true,
     "default_policy": "deny",
     "down_policy": "deny",
     "tokens": {
-      "master": "$(config '.consul_master_token')",
-      "agent": "$(config '.consul_master_token')"
+      "master": "$(vault_read_secret solidblocks/cloud/config/consul | jq -r '.consul_master_token')",
+      "agent": "$(vault_read_secret solidblocks/cloud/config/consul | jq -r '.consul_master_token')"
     }
   },
   "connect": {

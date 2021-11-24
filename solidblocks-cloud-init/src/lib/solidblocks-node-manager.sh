@@ -1,11 +1,12 @@
 #######################################
-# consul-template.sh                  #
+# solidblocks-node-manager.sh         #
 #######################################
 
 function solidblocks_node_manager_install() {
-  cp "${SOLIDBLOCKS_DIR}/config/solidblocks-node-manager.service" /etc/systemd/system
+  local role="${1:-}"
+  cp "${SOLIDBLOCKS_DIR}/config/solidblocks-${role}-node-manager.service" /etc/systemd/system
   systemctl daemon-reload
-  systemctl enable solidblocks-node-manager
-  systemctl start solidblocks-node-manager
+  systemctl enable "solidblocks-${role}-node-manager"
+  systemctl start "solidblocks-${role}-node-manager"
 }
 

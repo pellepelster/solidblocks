@@ -4,10 +4,6 @@ import de.solidblocks.cloud.config.CloudConfig
 import de.solidblocks.cloud.config.CloudEnvironmentConfig
 
 object Contants {
-    val CONTROLLER_POLICY_NAME = "controller"
-
-    val BACKUP_POLICY_NAME = "backup"
-
     fun pkiMountName(cloud: CloudConfig, environment: CloudEnvironmentConfig) = "${cloud.name}-${environment.name}-pki"
 
     fun kvMountName(cloud: CloudConfig, environment: CloudEnvironmentConfig) = "${cloud.name}-${environment.name}-kv"

@@ -10,7 +10,7 @@ vault {
 log_level = "debug"
 
 exec {
-  command = "/solidblocks/bin/solidblocks-node-manager.sh"
+  command = "/solidblocks/bin/solidblocks-backup-node-manager.sh"
 }
 
 
@@ -21,7 +21,7 @@ template {
 }
 
 template {
-  source      = "/solidblocks/templates/protected/environment.ctmpl"
+  source      = "/solidblocks/templates/protected/backup-environment.ctmpl"
   destination = "/solidblocks/protected/environment"
   perms       = 0600
 }
@@ -55,21 +55,3 @@ template {
   destination = "/etc/ssh/solidblocks_user_ssh_ca.pub"
   perms       = 0600
 }
-
-
-/*
-
-template {
-  source      = "/solidblocks/templates/certificates.json.ctmpl"
-  destination = "/solidblocks/certificates/certificates.json"
-  perms       = 0600
-  command     = "/solidblocks/bin/split_certificates.sh"
-
-  wait {
-    min = "2s"
-    max = "4s"
-  }
-}
-
-
-*/

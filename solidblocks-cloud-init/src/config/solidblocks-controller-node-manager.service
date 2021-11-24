@@ -1,5 +1,5 @@
 [Unit]
-Description=solidblocks-node-manager
+Description=solidblocks-controller-node-manager
 Requires=network-online.target
 After=network-online.target
 
@@ -9,7 +9,7 @@ EnvironmentFile=-/solidblocks/protected/initial_environment
 EnvironmentFile=-/solidblocks/protected/environment
 Restart=always
 RestartSec=5
-ExecStart=/usr/local/bin/consul-template -config /solidblocks/config/solidblocks-node-manager_consul-template-config.hcl
+ExecStart=/usr/local/bin/consul-template -config /solidblocks/config/solidblocks-controller-node-manager_consul-template-config.hcl
 KillSignal=SIGINT
 
 [Install]

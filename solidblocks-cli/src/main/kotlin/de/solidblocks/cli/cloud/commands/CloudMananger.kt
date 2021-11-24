@@ -20,9 +20,9 @@ import de.solidblocks.base.Constants.ConfigKeys.Companion.GITHUB_USERNAME_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RO_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RW_KEY
 import de.solidblocks.base.Constants.ConfigKeys.Companion.HETZNER_DNS_API_TOKEN_RW_KEY
+import de.solidblocks.base.Constants.Vault.Companion.BACKUP_POLICY_NAME
+import de.solidblocks.base.Constants.Vault.Companion.CONTROLLER_POLICY_NAME
 import de.solidblocks.base.solidblocksVersion
-import de.solidblocks.cli.Contants.BACKUP_POLICY_NAME
-import de.solidblocks.cli.Contants.CONTROLLER_POLICY_NAME
 import de.solidblocks.cli.Contants.hostSshMountName
 import de.solidblocks.cli.Contants.kvMountName
 import de.solidblocks.cli.Contants.pkiMountName
@@ -127,10 +127,35 @@ class CloudMananger(
 
         val location = "nbg1"
 
-        val vaultInfraResourceGroup = createVaultInfraResourceGroup(location, environment, rootZone, cloud, network, sshKeys)
+        val vaultInfraResourceGroup =
+            createVaultInfraResourceGroup(location, environment, rootZone, cloud, network, sshKeys)
 
         createVaultConfigResourceGroup(vaultInfraResourceGroup, cloud, environment)
-        addBackupResourceGroup(location, environment, rootZone, cloud, network, sshKeys)
+
+        val resourceGroup = provisioner.createResourceGroup("backup")
+        createDefaultServer(
+            ServerSpec(
+                name = "backup",
+                location = location,
+                network = network,
+                role = "backup",
+                sshKeys = sshKeys,
+                vaultPolicyName = BACKUP_POLICY_NAME
+            ), resourceGroup, cloud, environment, rootZone
+        )
+
+        val controllerGroup = provisioner.createResourceGroup("controller")
+        createDefaultServer(
+            ServerSpec(
+                name = "controller-0",
+                location = location,
+                network = network,
+                role = "controller",
+                sshKeys = sshKeys,
+                vaultPolicyName = CONTROLLER_POLICY_NAME,
+                extraVariables = mapOf("controller_node_count" to ConstantDataSource("1"))
+            ), controllerGroup, cloud, environment, rootZone
+        )
     }
 
     private fun createVaultInfraResourceGroup(location: String, environment: CloudEnvironmentConfig, rootZone: DnsZone, cloud: CloudConfig, network: Network, sshKeys: Set<SshKey>): ResourceGroup {
@@ -145,12 +170,9 @@ class CloudMananger(
         val variables = HashMap<String, IResourceLookup<String>>()
         variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, vault1FloatingIp))
         variables["hostname"] = ConstantDataSource("vault-1")
-        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPrivateKey))
-        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPublicKey))
         variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(vault1Volume) {
             it.device
         }
-
 
         val userData = UserDataDataSource("lib-cloud-init-generated/vault-cloud-init.sh", variables)
         val vault1Server = Server(
@@ -180,7 +202,6 @@ class CloudMananger(
         }
         resourceGroup.addResource(vaultRecord)
 
-
         val floatingIpAssignment = FloatingIpAssignment(server = vault1Server, floatingIp = vault1FloatingIp)
         resourceGroup.addResource(floatingIpAssignment)
 
@@ -189,36 +210,53 @@ class CloudMananger(
 
     private fun defaultCloudInitVariables(cloud: CloudConfig, environment: CloudEnvironmentConfig, rootZone: DnsZone, floatingIp: FloatingIp): Map<out String, IResourceLookup<String>> {
         return mapOf(
-                "solidblocks_cloud" to ConstantDataSource(cloud.name),
-                "solidblocks_version" to ConstantDataSource(solidblocksVersion()),
-                "solidblocks_root_domain" to ResourceLookup<DnsZoneRuntime>(rootZone) {
-                    it.name
-                },
-                "solidblocks_environment" to ConstantDataSource(environment.name),
-                "solidblocks_public_ip" to ResourceLookup<FloatingIpRuntime>(floatingIp) {
-                    it.ipv4
-                }
+            "solidblocks_cloud" to ConstantDataSource(cloud.name),
+            "solidblocks_version" to ConstantDataSource(solidblocksVersion()),
+            "solidblocks_root_domain" to ResourceLookup<DnsZoneRuntime>(rootZone) {
+                it.name
+            },
+            "solidblocks_environment" to ConstantDataSource(environment.name),
+            "solidblocks_public_ip" to ResourceLookup<FloatingIpRuntime>(floatingIp) {
+                it.ipv4
+            },
+            "ssh_identity_ed25519_key" to Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPrivateKey)),
+            "ssh_identity_ed25519_pub" to Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPublicKey))
         )
     }
 
-    private fun addBackupResourceGroup(location: String, environment: CloudEnvironmentConfig, rootZone: DnsZone, cloud: CloudConfig, network: Network, sshKeys: Set<SshKey>) {
-        val resourceGroup = provisioner.createResourceGroup("backupInfrastructure")
+    private data class ServerSpec(
+        val name: String,
+        val role: String,
+        val location: String,
+        val vaultPolicyName: String,
+        val network: Network,
+        val sshKeys: Set<SshKey>,
+        val extraVariables: Map<String, IResourceLookup<String>> = emptyMap()
+    )
 
-        val backupVolume = Volume("backup_${location}", location)
-        resourceGroup.addResource(backupVolume)
-
-        val floatingIp = FloatingIp("backup", location, mapOf("role" to "backup", "name" to "backup"))
-        resourceGroup.addResource(floatingIp)
+    private fun createDefaultServer(
+        serverSpec: ServerSpec,
+        resourceGroup: ResourceGroup,
+        cloud: CloudConfig,
+        environment: CloudEnvironmentConfig,
+        rootZone: DnsZone
+    ) {
+        val volume = resourceGroup.addResource(Volume("${serverSpec.name}_${serverSpec.location}", serverSpec.location))
+        val floatingIp = resourceGroup.addResource(
+            FloatingIp(
+                "${serverSpec.name}",
+                serverSpec.location,
+                mapOf("role" to "backup", "name" to "backup")
+            )
+        )
 
 
         val variables = HashMap<String, IResourceLookup<String>>()
         variables.putAll(defaultCloudInitVariables(cloud, environment, rootZone, floatingIp))
-
-        variables["ssh_identity_ed25519_key"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPrivateKey))
-        variables["ssh_identity_ed25519_pub"] = Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPublicKey))
-        variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(backupVolume) {
+        variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(volume) {
             it.device
         }
+        variables.putAll(serverSpec.extraVariables)
 
         variables["vault_addr"] = ConstantDataSource("https://vault.${environment.name}.${cloud.rootDomain}:8200")
         //TODO create minimal token for bootstrapping and create new one on boot with more privileges?
@@ -226,33 +264,39 @@ class CloudMananger(
             val vaultClient =
                     provisioner.provider(VaultTemplate::class.java).createClient()
             val result = vaultClient.opsForToken().create(
-                    VaultTokenRequest.builder()
-                            .displayName("backup")
-                            .noParent(true)
-                            .renewable(true)
-                            .ttl(Duration.ofHours(36))
-                            .policies(listOf(BACKUP_POLICY_NAME))
-                            .build()
+                VaultTokenRequest.builder()
+                    .displayName(serverSpec.name)
+                    .noParent(true)
+                    .renewable(true)
+                    .ttl(Duration.ofHours(36))
+                    .policies(listOf(serverSpec.vaultPolicyName))
+                    .build()
             )
             result.token.token
         }
 
 
-        val userData = UserDataDataSource("lib-cloud-init-generated/backup-cloud-init.sh", variables)
-        val server = Server(
-            "backup",
-            network,
-            userData,
-            sshKeys = sshKeys,
-            location = location,
-            volume = backupVolume,
+        val userData = UserDataDataSource("lib-cloud-init-generated/${serverSpec.role}-cloud-init.sh", variables)
+        val server = resourceGroup.addResource(
+            Server(
+                serverSpec.name,
+                serverSpec.network,
+                userData,
+                sshKeys = serverSpec.sshKeys,
+                location = serverSpec.location,
+                volume = volume,
+                labels = mapOf("role" to serverSpec.role)
+            )
         )
 
-        val dnsRecord = DnsRecord("backup.${environment.name}", floatingIp, dnsZone = rootZone, server = server)
-        resourceGroup.addResource(dnsRecord)
-
-
-        resourceGroup.addResource(server)
+        resourceGroup.addResource(
+            DnsRecord(
+                "${serverSpec.name}.${environment.name}",
+                floatingIp,
+                dnsZone = rootZone,
+                server = server
+            )
+        )
         resourceGroup.addResource(FloatingIpAssignment(server = server, floatingIp = floatingIp))
     }
 
@@ -340,50 +384,72 @@ class CloudMananger(
         val controllerPolicy = VaultPolicy(
                 CONTROLLER_POLICY_NAME,
                 setOf(
+                    Policy.Rule.builder().path(
+                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config"
+                    )
+                        .capabilities(Policy.BuiltinCapabilities.READ)
+                        .build(),
 
-                        Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config").capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                    Policy.Rule.builder().path(
+                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config/consul"
+                    )
+                        .capabilities(Policy.BuiltinCapabilities.READ)
+                        .build(),
 
-                        Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/github")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                    Policy.Rule.builder().path(
+                        "/auth/token/renew-self"
+                    )
+                        .capabilities(Policy.BuiltinCapabilities.UPDATE)
+                        .build(),
 
-                        Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/hetzner")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                    Policy.Rule.builder().path(
+                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/github"
+                    )
+                        .capabilities(Policy.BuiltinCapabilities.READ)
+                        .build(),
 
-                        Policy.Rule.builder().path("${pkiMountName(cloud, environment)}/issue/${pkiMountName(cloud, environment)}")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE)
-                                .build(),
+                    Policy.Rule.builder().path(
+                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/hetzner"
+                    )
+                        .capabilities(Policy.BuiltinCapabilities.READ)
+                        .build(),
 
-                        Policy.Rule.builder().path("${userSshMountName(cloud, environment)}/sign/${userSshMountName(cloud, environment)}")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE,
-                                        Policy.BuiltinCapabilities.CREATE)
-                                .build(),
+                    Policy.Rule.builder()
+                        .path("${pkiMountName(cloud, environment)}/issue/${pkiMountName(cloud, environment)}")
+                        .capabilities(Policy.BuiltinCapabilities.UPDATE)
+                        .build(),
 
-                        Policy.Rule.builder().path("${userSshMountName(cloud, environment)}/config/ca")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                    Policy.Rule.builder()
+                        .path("${userSshMountName(cloud, environment)}/sign/${userSshMountName(cloud, environment)}")
+                        .capabilities(
+                            Policy.BuiltinCapabilities.UPDATE,
+                            Policy.BuiltinCapabilities.CREATE
+                        )
+                        .build(),
 
-                        Policy.Rule.builder().path("${hostSshMountName(cloud, environment)}/sign/${hostSshMountName(cloud, environment)}")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE,
-                                        Policy.BuiltinCapabilities.CREATE)
-                                .build(),
+                    Policy.Rule.builder().path("${userSshMountName(cloud, environment)}/config/ca")
+                        .capabilities(Policy.BuiltinCapabilities.READ)
+                        .build(),
 
-                        Policy.Rule.builder().path("${hostSshMountName(cloud, environment)}/config/ca")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
-                ),
+                    Policy.Rule.builder()
+                        .path("${hostSshMountName(cloud, environment)}/sign/${hostSshMountName(cloud, environment)}")
+                        .capabilities(
+                            Policy.BuiltinCapabilities.UPDATE,
+                            Policy.BuiltinCapabilities.CREATE
+                        )
+                        .build(),
+
+                    Policy.Rule.builder().path("${hostSshMountName(cloud, environment)}/config/ca")
+                        .capabilities(Policy.BuiltinCapabilities.READ)
+                        .build(),
+
+                    )
         )
         resourceGroup.addResource(controllerPolicy)
 
         val backupPolicy = VaultPolicy(
                 BACKUP_POLICY_NAME,
                 setOf(
-
                         Policy.Rule.builder().path(
                                 "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config")
                                 .capabilities(Policy.BuiltinCapabilities.READ)

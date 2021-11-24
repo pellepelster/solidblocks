@@ -9,15 +9,20 @@ export SOLIDBLOCKS_DEVELOPMENT_MODE="${SOLIDBLOCKS_DEVELOPMENT_MODE:-0}"
 export SOLIDBLOCKS_CONFIG_FILE="${SOLIDBLOCKS_DIR}/solidblocks.json"
 export SOLIDBLOCKS_CERTIFICATES_DIR="${SOLIDBLOCKS_DIR}/certificates"
 export SOLIDBLOCKS_GROUP="${SOLIDBLOCKS_GROUP:-solidblocks}"
+export SOLIDBLOCKS_STORAGE_LOCAL_DIR="/storage/local"
 
 function bootstrap_solidblocks() {
+
+  groupadd solidblocks
 
   # shellcheck disable=SC2086
   mkdir -p ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
   chmod 700 "${SOLIDBLOCKS_DIR}/protected"
+  chmod 700 "${SOLIDBLOCKS_DIR}/certificates"
 
   echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_HOSTNAME=$(hostname)" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
@@ -28,7 +33,7 @@ function bootstrap_solidblocks() {
   echo "GITHUB_TOKEN_RO=$(vault_read_secret "solidblocks/cloud/providers/github" | jq -r '.github_token_ro')" >> "${SOLIDBLOCKS_DIR}/protected/initial_environment"
   echo "GITHUB_USERNAME=$(vault_read_secret "solidblocks/cloud/providers/github" | jq -r '.github_username')" >> "${SOLIDBLOCKS_DIR}/protected/initial_environment"
 
-  export $(echo $(cat "${SOLIDBLOCKS_DIR}/protected/initial_environment" | sed 's/#.*//g'| xargs) | envsubst)
+  export $(xargs < "${SOLIDBLOCKS_DIR}/protected/initial_environment")
   (
       local temp_file="$(mktemp)"
 
