@@ -74,14 +74,14 @@ cat <<-EOF
     "https": 8501,
     "grpc": 8502
   },
-  "encrypt": "$(vault_read_secret solidblocks/cloud/config/consul | jq -r '.consul_secret')",
+  "encrypt": "${CONSUL_SECRET}",
   "acl": {
     "enabled": true,
     "default_policy": "deny",
     "down_policy": "deny",
     "tokens": {
-      "master": "$(vault_read_secret solidblocks/cloud/config/consul | jq -r '.consul_master_token')",
-      "agent": "$(vault_read_secret solidblocks/cloud/config/consul | jq -r '.consul_master_token')"
+      "master": "${CONSUL_HTTP_TOKEN}",
+      "agent": "${CONSUL_HTTP_TOKEN}"
     }
   },
   "connect": {

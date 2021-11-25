@@ -2,3 +2,7 @@ VAULT_TOKEN={{with secret "/auth/token/renew-self" (printf "token=%s" (env "VAUL
 {{ with secret (printf "%s-%s-kv/data/solidblocks/cloud/providers/hetzner" (env "SOLIDBLOCKS_CLOUD") (env "SOLIDBLOCKS_ENVIRONMENT")) }}
 HETZNER_CLOUD_API_TOKEN_RO_KEY={{ .Data.data.hetzner_cloud_api_key_ro }}
 {{ end }}
+{{ with secret (printf "%s-%s-kv/data/solidblocks/cloud/config/consul" (env "SOLIDBLOCKS_CLOUD") (env "SOLIDBLOCKS_ENVIRONMENT")) }}
+CONSUL_HTTP_TOKEN={{ .Data.data.consul_master_token }}
+CONSUL_SECRET={{ .Data.data.consul_secret }}
+{{ end }}

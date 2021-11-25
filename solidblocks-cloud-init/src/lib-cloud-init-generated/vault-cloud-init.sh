@@ -31,8 +31,8 @@ function bootstrap_solidblocks() {
 
   # shellcheck disable=SC2086
   mkdir -p ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
-  chmod 700 "${SOLIDBLOCKS_DIR}/protected"
-  chmod 700 "${SOLIDBLOCKS_DIR}/certificates"
+  chmod 770 ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
+  chgrp solidblocks ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
 
   echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"

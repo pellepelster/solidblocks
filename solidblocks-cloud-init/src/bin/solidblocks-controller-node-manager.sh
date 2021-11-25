@@ -16,8 +16,7 @@ export $(xargs < "${SOLIDBLOCKS_DIR}/protected/initial_environment")
 export $(xargs < "${SOLIDBLOCKS_DIR}/protected/environment")
 export $(xargs < "${SOLIDBLOCKS_DIR}/instance/environment")
 
-mkdir -p /etc/consul/
-consul_server_config > /etc/consul/consul-server.json
+consul_server_bootstrap
 
 while true; do
 	echo "solidblocks controller node manager ping"
