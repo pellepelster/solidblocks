@@ -10,7 +10,6 @@ bootstrap_solidblocks
 
 source "${SOLIDBLOCKS_DIR}/lib/solidblocks-node-manager.sh"
 source "${SOLIDBLOCKS_DIR}/lib/consul-template.sh"
-source "${SOLIDBLOCKS_DIR}/lib/hetzner-api.sh"
 source "${SOLIDBLOCKS_DIR}/lib/ssh.sh"
 
 echo "CONTROLLER_NODE_COUNT=[=controller_node_count]" >> "${SOLIDBLOCKS_DIR}/instance/environment"

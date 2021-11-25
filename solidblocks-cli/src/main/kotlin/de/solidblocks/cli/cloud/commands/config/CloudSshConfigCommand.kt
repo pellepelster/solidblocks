@@ -1,32 +1,28 @@
 package de.solidblocks.cli.cloud.commands.config
 
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.cli.config.SpringContextUtil
+import de.solidblocks.cli.self.BaseSpringCommand
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import mu.KotlinLogging
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import java.io.File
 import java.nio.file.attribute.PosixFilePermissions
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
 import kotlin.io.path.setPosixFilePermissions
 import kotlin.system.exitProcess
 
 @Component
 class CloudSshConfigCommand :
-    CliktCommand(name = "ssh-config", help = "create ssh config") {
+        BaseSpringCommand(name = "ssh-config", help = "create ssh config") {
 
     val cloud: String by option(help = "name of the cloud").required()
 
     private val logger = KotlinLogging.logger {}
 
-    @OptIn(ExperimentalPathApi::class)
-    override fun run() {
-
-        SpringContextUtil.callBeanAndShutdown(CloudConfigurationManager::class.java) {
-
+    override fun run(applicationContext: ApplicationContext) {
+        applicationContext.getBean(CloudConfigurationManager::class.java).let {
             if (!it.hasCloud(cloud)) {
                 logger.error { "cloud '$cloud' not found" }
                 exitProcess(1)
@@ -65,7 +61,7 @@ class CloudSshConfigCommand :
         }
     }
 
-    fun sshConfig(privateKeyFile: String, knownHostsFile: String): String {
+    private fun sshConfig(privateKeyFile: String, knownHostsFile: String): String {
         return """
             Host *
                 User root

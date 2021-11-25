@@ -10,7 +10,8 @@ class VaultSshBackendRole(
         val ttl: String,
         val allowHostCertificates: Boolean,
         val allowUserCertificates: Boolean,
-        val allowedUsers: String? = null,
+        val allowedUsers: List<String> = emptyList(),
+        val defaultUser: String? = null,
         val defaultExtensions: VaultSshBackendRoleDefaultExtensions? = null,
         val mount: IVaultMountLookup
 ) :

@@ -1,11 +1,8 @@
 package de.solidblocks.provisioner
 
 import de.solidblocks.provisioner.fixtures.TestConfiguration
-import de.solidblocks.provisioner.fixtures.TestInfrastructureClientProvider
 import de.solidblocks.provisioner.fixtures.TestResource
 import de.solidblocks.provisioner.fixtures.TestResourceProvisioner
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.core.Is
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -14,13 +11,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.util.*
 
 @SpringBootTest(classes = [TestConfiguration::class])
-class ProvisionerTest {
+class ProvisionerTest(
+    @Autowired
+    val provisioner: Provisioner,
 
     @Autowired
-    private lateinit var provisioner: Provisioner
-
-    @Autowired
-    private lateinit var testResourceProvisioner: TestResourceProvisioner
+    val testResourceProvisioner: TestResourceProvisioner
+) {
 
     @Test
     fun handlesFailingResourceLookups() {
@@ -35,12 +32,6 @@ class ProvisionerTest {
 
         assertTrue(result.isEmptyOrFailed())
         assertTrue(testResourceProvisioner.lookupCount(resource) == 1)
-    }
-
-    @Test
-    fun testProvider() {
-        provisioner.addProvider(TestInfrastructureClientProvider())
-        assertThat(provisioner.provider(String::class.java).createClient(), Is.`is`("provider"))
     }
 
     @Test

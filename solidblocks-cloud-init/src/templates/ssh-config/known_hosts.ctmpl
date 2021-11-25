@@ -1,3 +1,3 @@
 {{ with secret (printf "%s-%s-host-ssh/config/ca" (env "SOLIDBLOCKS_CLOUD") (env "SOLIDBLOCKS_ENVIRONMENT")) }}
-@cert-authority *.{{ env "ROOT_DOMAIN" }} {{ .Data.public_key }}
+@cert-authority *.{{ env "SOLIDBLOCKS_ENVIRONMENT" }}.{{ env "SOLIDBLOCKS_ROOT_DOMAIN" }} {{ .Data.public_key }}
 {{ end }}

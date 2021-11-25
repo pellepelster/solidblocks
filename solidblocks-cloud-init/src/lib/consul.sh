@@ -10,7 +10,7 @@ CONSUL_DATA_DIR="${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/consul/data"
 function consul_agent_config {
 cat <<-EOF
 {
-  "datacenter": "$(config '.cloud_name')",
+  "datacenter": "${SOLIDBLOCKS_CLOUD}-${SOLIDBLOCKS_ENVIRONMENT}",
   "node_id": "$(uuid -v5 ns:DNS "$(hostname -s)")",
   "advertise_addr": "$(hetzner_get_own_private_ip)",
   "client_addr": "$(hetzner_get_own_private_ip)",
@@ -175,7 +175,7 @@ function wait_for_consul_cluster_to_settle() {
       sleep 5
     done
 
-    until CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN:-$(config .consul_master_token)} consul lock solidblocks/instance/test whoami; do
+    until consul lock solidblocks/instance/test whoami; do
       echo "waiting for consul cluster to settle (lock)"
       sleep 5
     done
@@ -210,11 +210,11 @@ function consul_server_bootstrap() {
     wait_for_consul_cluster_to_settle
 
     if [[ -v SOLIDBLOCKS_BACKUP_RESTORE ]] && [[ $(backup_info "$(backup_url)") ]]; then
-        if CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN:-$(config .consul_master_token)} consul info | grep -q "leader = true"; then
+        if consul info | grep -q "leader = true"; then
             backup_restore "node_$(hostname)_management_consul_*" "${CONSUL_BACKUP_DIR}"
 
             if [[ -f "${CONSUL_BACKUP_DIR}/consul.snapshot" ]]; then
-                CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN:-$(config .consul_master_token)} consul snapshot restore "${CONSUL_BACKUP_DIR}/consul.snapshot"
+                consul snapshot restore "${CONSUL_BACKUP_DIR}/consul.snapshot"
             fi
             consul_kv_put "solidblocks/instance/${SOLIDBLOCKS_INSTANCE_ID}/consul_restart"
         else

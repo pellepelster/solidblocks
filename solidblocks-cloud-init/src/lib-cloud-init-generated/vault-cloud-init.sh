@@ -11,6 +11,7 @@ export SOLIDBLOCKS_ROOT_DOMAIN="[=solidblocks_root_domain]"
 export SOLIDBLOCKS_PUBLIC_IP="[=solidblocks_public_ip]"
 export SOLIDBLOCKS_VERSION="[=solidblocks_version]"
 export SOLIDBLOCKS_STORAGE_LOCAL_DEVICE="[=storage_local_device]"
+export SOLIDBLOCKS_HOSTNAME="[=solidblocks_hostname]"
 
 #######################################
 # configuration.sh                    #
@@ -36,7 +37,7 @@ function bootstrap_solidblocks() {
 
   echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
-  echo "SOLIDBLOCKS_HOSTNAME=$(hostname)" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_HOSTNAME=${SOLIDBLOCKS_HOSTNAME}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
@@ -200,7 +201,7 @@ storage "file" {
   path = "/storage/local/vault/data"
 }
 
-api_addr = "https://[=hostname].${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
+api_addr = "https://${SOLIDBLOCKS_HOSTNAME}.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
 cluster_addr = "https://vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
 EOF
 }
@@ -214,12 +215,13 @@ certbot certonly \
     --agree-tos --non-interactive \
     --standalone \
     --preferred-challenges http \
+    --expand \
     --config-dir /storage/local/vault/config/certificates \
+    --domain ${SOLIDBLOCKS_HOSTNAME}.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN} \
     --domain vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}
 EOF
 }
 
-#    --domain [=hostname].${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN} \
 
 configure_public_ip
 ssh_write_host_identity

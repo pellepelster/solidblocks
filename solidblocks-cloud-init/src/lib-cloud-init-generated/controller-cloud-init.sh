@@ -11,6 +11,7 @@ export SOLIDBLOCKS_ROOT_DOMAIN="[=solidblocks_root_domain]"
 export SOLIDBLOCKS_PUBLIC_IP="[=solidblocks_public_ip]"
 export SOLIDBLOCKS_VERSION="[=solidblocks_version]"
 export SOLIDBLOCKS_STORAGE_LOCAL_DEVICE="[=storage_local_device]"
+export SOLIDBLOCKS_HOSTNAME="[=solidblocks_hostname]"
 
 #######################################
 # vault-cloud-init-variables.sh       #
@@ -43,7 +44,7 @@ function bootstrap_solidblocks() {
 
   echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
-  echo "SOLIDBLOCKS_HOSTNAME=$(hostname)" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+  echo "SOLIDBLOCKS_HOSTNAME=${SOLIDBLOCKS_HOSTNAME}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_CLOUD=${SOLIDBLOCKS_CLOUD}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ROOT_DOMAIN=${SOLIDBLOCKS_ROOT_DOMAIN}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_VERSION=${SOLIDBLOCKS_VERSION}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
@@ -179,7 +180,6 @@ bootstrap_solidblocks
 
 source "${SOLIDBLOCKS_DIR}/lib/solidblocks-node-manager.sh"
 source "${SOLIDBLOCKS_DIR}/lib/consul-template.sh"
-source "${SOLIDBLOCKS_DIR}/lib/hetzner-api.sh"
 source "${SOLIDBLOCKS_DIR}/lib/ssh.sh"
 
 echo "CONTROLLER_NODE_COUNT=[=controller_node_count]" >> "${SOLIDBLOCKS_DIR}/instance/environment"

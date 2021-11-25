@@ -1,0 +1,9 @@
+version: '3'
+services:
+  consul:
+    image: consul
+    ports:
+      - "8500:8500"
+    environment:
+      - 'CONSUL_LOCAL_CONFIG={ "acl": { "enabled": true, "default_policy": "deny", "down_policy": "deny", "tokens": { "master": "master-token", "agent": "agent-token" } } }'
+    command: [ "consul", "agent", "-ui", "-server", "--data-dir", "/tmp/", "-bootstrap-expect", "1", "-client", "0.0.0.0", "-config-file", "/consul/config/local.json" ]

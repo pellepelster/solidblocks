@@ -10,6 +10,7 @@ data class SshBackendRole(
     val allow_host_certificates: Boolean?,
     val allow_user_certificates: Boolean?,
     val allowed_users: String? = null,
+    val default_user: String? = null,
     val default_extensions: SshBackendRoleDefaultExtensions? = null
 
 )

@@ -7,6 +7,7 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
+import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.vault.core.VaultKeyValueOperations
@@ -14,7 +15,7 @@ import org.springframework.vault.core.VaultKeyValueOperationsSupport
 import org.springframework.vault.core.VaultTemplate
 
 @Component
-class VaultKVProvisioner(val provisioner: Provisioner) :
+class VaultKVProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
         IResourceLookupProvider<IVaultKVLookup, VaultKVRuntime>,
         IInfrastructureResourceProvisioner<VaultKV, VaultKVRuntime> {
 
@@ -51,7 +52,7 @@ class VaultKVProvisioner(val provisioner: Provisioner) :
     private fun kvOperations(
             mount: IVaultMountLookup
     ): VaultKeyValueOperations {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultRootClientProvider.createClient()
         return vaultClient.opsForKeyValue(mount.name(), VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
     }
 

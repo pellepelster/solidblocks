@@ -1,10 +1,12 @@
 package de.solidblocks.cli
 
 import com.github.ajalt.clikt.core.subcommands
-import de.solidblocks.cli.cloud.commands.*
+import de.solidblocks.cli.cloud.commands.CloudBootstrapCommand
+import de.solidblocks.cli.cloud.commands.CloudCommand
+import de.solidblocks.cli.cloud.commands.CloudDestroyCommand
+import de.solidblocks.cli.cloud.commands.TenantBootstrapCommand
 import de.solidblocks.cli.cloud.commands.config.CloudConfigCommand
 import de.solidblocks.cli.cloud.commands.config.CloudCreateCommand
-import de.solidblocks.cli.cloud.commands.config.CloudDeleteCommand
 import de.solidblocks.cli.cloud.commands.config.CloudEnvironmentCreateCommand
 import de.solidblocks.cli.cloud.commands.config.CloudListCommand
 import de.solidblocks.cli.cloud.commands.config.CloudRotateSecretsCommand
@@ -20,12 +22,11 @@ fun main(args: Array<String>) {
                         CloudConfigCommand().subcommands(
                                 CloudListCommand(),
                                 CloudRotateSecretsCommand(),
-                                CloudDeleteCommand(),
                                 CloudSshConfigCommand(),
                                 CloudCreateCommand(),
                                 CloudEnvironmentCreateCommand()
                         ),
-                        CloudTestCommand(), CloudDestroyCommand(), CloudBootstrapCommand(), TenantBootstrapCommand()
+                        CloudDestroyCommand(), CloudBootstrapCommand(), TenantBootstrapCommand()
                 )
         )
         .main(args)

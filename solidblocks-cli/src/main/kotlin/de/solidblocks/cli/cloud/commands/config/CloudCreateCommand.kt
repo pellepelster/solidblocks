@@ -1,34 +1,39 @@
 package de.solidblocks.cli.cloud.commands.config
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.cli.config.SpringContextUtil
+import de.solidblocks.cli.config.CliApplication
+import de.solidblocks.cli.config.CliApplicationCloudCreate
+import de.solidblocks.cli.self.BaseSpringCommand
 import de.solidblocks.cloud.config.CloudConfigurationManager
-import mu.KotlinLogging
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
-import kotlin.io.path.ExperimentalPathApi
+import kotlin.system.exitProcess
 
 @Component
 class CloudCreateCommand :
-    CliktCommand(name = "create", help = "create a new cloud configuration") {
+    BaseSpringCommand(
+        name = "create",
+        help = "create a new cloud configuration",
+        cliClass = CliApplicationCloudCreate::class.java
+    ) {
 
     val cloud: String by option(help = "name of the cloud").required()
 
     val domain: String by option(help = "root domain for the cloud").required()
 
-    private val logger = KotlinLogging.logger {}
-
-    @OptIn(ExperimentalPathApi::class)
-    override fun run() {
-
-        logger.error { "creating cloud '$cloud'" }
-
-        if (!SpringContextUtil.bean(CloudConfigurationManager::class.java).createCloud(
-                        cloud,
-                        domain)) {
-            throw ProgramResult(1)
+    override fun run(applicationContext: ApplicationContext) {
+        if (!applicationContext.getBean(CloudConfigurationManager::class.java).createCloud(
+                cloud,
+                domain
+            )
+        ) {
+            exitProcess(1)
         }
+    }
+
+
+    override fun extraArgs(): Map<String, String> {
+        return mapOf("spring.profiles.active" to "CloudCreate")
     }
 }

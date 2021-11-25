@@ -2,7 +2,6 @@ package de.solidblocks.provisioner
 
 import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
-import de.solidblocks.api.resources.infrastructure.IInfrastructureClientProvider
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.network.FloatingIp
@@ -37,26 +36,11 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     val retryRegistry: RetryRegistry = RetryRegistry.of(retryConfig)
 
     private val resourceGroups = mutableListOf<ResourceGroup>()
-    private val providers = mutableListOf<IInfrastructureClientProvider<*>>()
 
     fun createResourceGroup(name: String, dependsOn: Set<ResourceGroup> = emptySet()): ResourceGroup {
         return ResourceGroup(name, dependsOn).apply {
             resourceGroups.add(this)
         }
-    }
-
-    fun addProvider(provider: IInfrastructureClientProvider<*>) {
-        providers.add(provider)
-    }
-
-    fun <T> provider(type: Class<T>): IInfrastructureClientProvider<T> {
-        val provider = providers.firstOrNull { it.providerType() == type }
-
-        if (provider == null) {
-            throw RuntimeException("no provider found of type '${type.name}'")
-        }
-
-        return provider as IInfrastructureClientProvider<T>
     }
 
     fun <LookupType : IResourceLookup<RuntimeType>, RuntimeType> lookup(resource: LookupType): Result<RuntimeType> =

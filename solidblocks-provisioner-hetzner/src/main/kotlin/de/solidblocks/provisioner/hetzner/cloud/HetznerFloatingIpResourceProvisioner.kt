@@ -6,6 +6,8 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpRuntime
 import de.solidblocks.api.resources.infrastructure.network.IFloatingIpLookup
+import de.solidblocks.cloud.config.CloudConfigurationContext
+import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -15,11 +17,11 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class HetznerFloatingIpResourceProvisioner(credentialsProvider: HetznerCloudCredentialsProvider) :
-        IResourceLookupProvider<IFloatingIpLookup, FloatingIpRuntime>,
-        IInfrastructureResourceProvisioner<FloatingIp, FloatingIpRuntime>,
-        BaseHetznerProvisioner<FloatingIp, FloatingIpRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
+class HetznerFloatingIpResourceProvisioner(cloudContext: CloudConfigurationContext) :
+    IResourceLookupProvider<IFloatingIpLookup, FloatingIpRuntime>,
+    IInfrastructureResourceProvisioner<FloatingIp, FloatingIpRuntime>,
+    BaseHetznerProvisioner<FloatingIp, FloatingIpRuntime, HetznerCloudAPI>(
+        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

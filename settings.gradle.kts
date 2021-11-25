@@ -9,5 +9,6 @@ include(
     "solidblocks-base",
     "solidblocks-core",
     "solidblocks-cloud-init",
-    "solidblocks-cloud-config"
+    "solidblocks-cloud-config",
+    "solidblocks-provisioner-consul"
 )

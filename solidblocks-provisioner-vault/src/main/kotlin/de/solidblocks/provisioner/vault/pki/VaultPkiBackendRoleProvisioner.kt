@@ -7,6 +7,7 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.vault.pki.dto.PkiBackendRole
+import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import mu.KotlinLogging
 import org.joda.time.Instant
 import org.joda.time.MutablePeriod
@@ -19,6 +20,7 @@ import kotlin.reflect.KProperty1
 
 @Component
 class VaultPkiBackendRoleProvisioner(
+        val vaultRootClientProvider: VaultRootClientProvider,
         val provisioner: Provisioner,
 ) :
         IResourceLookupProvider<IVaultPkiBackendRoleLookup, VaultPkiBackendRoleRuntime>,
@@ -123,7 +125,7 @@ class VaultPkiBackendRoleProvisioner(
     }
 
     override fun apply(resource: VaultPkiBackendRole): Result<*> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultRootClientProvider.createClient()
 
         val role = PkiBackendRole(
             key_type = resource.keyType,
@@ -151,7 +153,7 @@ class VaultPkiBackendRoleProvisioner(
     }
 
     override fun lookup(lookup: IVaultPkiBackendRoleLookup): Result<VaultPkiBackendRoleRuntime> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultRootClientProvider.createClient()
 
         val role = vaultClient.read("${lookup.mount().name()}/roles/${lookup.name()}", PkiBackendRole::class.java)
                 ?: return Result(lookup, null)

@@ -1,13 +1,13 @@
 package de.solidblocks.cloud.config
 
-import de.solidblocks.base.Constants
-import de.solidblocks.base.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
-import de.solidblocks.base.Constants.ConfigKeys.Companion.CONSUL_SECRET_KEY
-import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_IDENTITY_PRIVATE_KEY
-import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_IDENTITY_PUBLIC_KEY
-import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_PRIVATE_KEY
-import de.solidblocks.base.Constants.ConfigKeys.Companion.SSH_PUBLIC_KEY
 import de.solidblocks.base.Utils.Companion.generateSshKey
+import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
+import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_SECRET_KEY
+import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_PRIVATE_KEY
+import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_PUBLIC_KEY
+import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PRIVATE_KEY
+import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PUBLIC_KEY
+import de.solidblocks.cloud.config.model.*
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CLOUDS_ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -27,9 +27,11 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
 
     fun createCloud(name: String, rootDomain: String, configValues: List<CloudConfigValue> = emptyList()): Boolean {
         if (hasCloud(name)) {
-            logger.info { "cloud '${name}' already exists" }
+            logger.error { "cloud '${name}' already exists" }
             return false
         }
+
+        logger.info { "creating cloud '$name'" }
 
         val id = UUID.randomUUID()
 
@@ -41,7 +43,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 )
                 .values(id, name, false).execute()
 
-        setConfiguration(CloudId(id), CloudConfig.ROOT_DOMAIN_KEY, rootDomain)
+        setConfiguration(CloudId(id), CloudConfiguration.ROOT_DOMAIN_KEY, rootDomain)
 
         configValues.forEach {
             setConfiguration(CloudId(id), it.name, it.value)
@@ -55,6 +57,8 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
             logger.info { "cloud '${cloudName}' does not exist" }
             return false
         }
+
+        logger.info { "creating environment '${environmentName}' for cloud '${cloudName}'" }
 
         val cloud = cloudByName(cloudName)
 
@@ -81,8 +85,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         return dsl.fetchCount(CLOUDS, CLOUDS.NAME.eq(name).and(CLOUDS.DELETED.isFalse)) == 1
     }
 
-    fun listClouds(name: String? = null): List<CloudConfig> {
-
+    fun listClouds(name: String? = null): List<CloudConfiguration> {
         val latestVersions =
                 dsl.select(
                         CONFIGURATION_VALUES.CLOUD,
@@ -118,10 +121,10 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 .fetchGroups(
                         { it.into(clouds) }, { it.into(latest) }
                 ).map {
-                    CloudConfig(
+                    CloudConfiguration(
                             id = it.key.id!!,
                             name = it.key.name!!,
-                            rootDomain = it.value.configValue(CloudConfig.ROOT_DOMAIN_KEY).value,
+                            rootDomain = it.value.configValue(CloudConfiguration.ROOT_DOMAIN_KEY).value,
                             it.value.map {
                                 CloudConfigValue(
                                         it.getValue(CONFIGURATION_VALUES.NAME)!!,
@@ -134,7 +137,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 }
     }
 
-    fun listEnvironments(id: CloudId): List<CloudEnvironmentConfig> {
+    fun listEnvironments(id: CloudId): List<CloudEnvironmentConfiguration> {
 
         val latestVersions =
                 dsl.select(
@@ -165,7 +168,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 .fetchGroups(
                         { it.into(environments) }, { it.into(latest) }
                 ).map {
-                    CloudEnvironmentConfig(
+                    CloudEnvironmentConfiguration(
                         id = it.key.id!!,
                         name = it.key.name!!,
                         sshSecrets = loadSshCredentials(it.value),
@@ -194,7 +197,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     private fun updateEnvironment(
-        environment: CloudEnvironmentConfig,
+        environment: CloudEnvironmentConfiguration,
         name: String,
         value: String
     ): Boolean {
@@ -248,11 +251,17 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 }
     }
 
-    fun cloudByName(name: String): CloudConfig {
-        return listClouds(name).first()
+    fun cloudByName(name: String): CloudConfiguration {
+        val cloud = listClouds(name)
+
+        if (cloud.isEmpty()) {
+            throw RuntimeException("cloud '${name}' not found")
+        }
+
+        return cloud.first()
     }
 
-    fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfig {
+    fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfiguration {
         val cloud = cloudByName(cloudName)
         return cloud.environments.first { it.name == environmentName }
     }
@@ -271,7 +280,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     private fun generateAndStoreSecrets(
-        environment: CloudEnvironmentConfig
+        environment: CloudEnvironmentConfiguration
     ) {
         generateAndStoreSecrets(environment.id, environment.name)
     }
@@ -280,7 +289,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     private fun fetchCloudAndEnvironment(
         cloudName: String,
         environmentName: String
-    ): Pair<CloudConfig, CloudEnvironmentConfig> {
+    ): Pair<CloudConfiguration, CloudEnvironmentConfiguration> {
 
         if (!hasCloud(cloudName)) {
             throw RuntimeException("cloud '${cloudName}' does not exist")
@@ -407,7 +416,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     private fun loadConsulSecrets(list: List<Record5<UUID?, UUID?, String?, String?, Int?>>): ConsulSecrets {
         return ConsulSecrets(
             list.configValue(CONSUL_SECRET_KEY).value,
-            list.configValue(Constants.ConfigKeys.CONSUL_MASTER_TOKEN_KEY).value
+            list.configValue(CONSUL_MASTER_TOKEN_KEY).value
         )
     }
 

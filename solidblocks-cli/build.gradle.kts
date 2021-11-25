@@ -1,3 +1,5 @@
+import Constants.SPRING_BOOT_VERSION
+
 plugins {
     id("solidblocks.kotlin-application-conventions")
 }
@@ -10,7 +12,7 @@ dependencies {
     implementation(project(":solidblocks-provisioner-vault"))
     implementation(project(":solidblocks-base"))
 
-    implementation("org.springframework.boot:spring-boot-starter:2.4.5")
+    implementation("org.springframework.boot:spring-boot-starter:${SPRING_BOOT_VERSION}")
 
     implementation("org.apache.derby:derby:10.15.2.0")
     implementation("org.apache.derby:derbytools:10.15.2.0")
@@ -19,7 +21,7 @@ dependencies {
     implementation("org.apache.commons:commons-text")
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
-    testImplementation("org.springframework.boot:spring-boot-test:2.4.5")
+    testImplementation("org.springframework.boot:spring-boot-test:${SPRING_BOOT_VERSION}")
     testImplementation("org.springframework:spring-test:5.3.6")
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("org.testcontainers:testcontainers:1.15.3")

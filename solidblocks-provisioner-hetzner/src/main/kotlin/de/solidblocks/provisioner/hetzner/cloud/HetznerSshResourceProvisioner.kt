@@ -6,6 +6,8 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.ssh.ISshKeyLookup
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.api.resources.infrastructure.ssh.SshKeyRuntime
+import de.solidblocks.cloud.config.CloudConfigurationContext
+import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -15,11 +17,11 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class HetznerSshResourceProvisioner(credentialsProvider: HetznerCloudCredentialsProvider) :
+class HetznerSshResourceProvisioner(cloudContext: CloudConfigurationContext) :
         IResourceLookupProvider<ISshKeyLookup, SshKeyRuntime>,
         IInfrastructureResourceProvisioner<SshKey, SshKeyRuntime>,
         BaseHetznerProvisioner<SshKey, SshKeyRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
+                { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

@@ -1,5 +1,6 @@
 package de.solidblocks.provisioner.vault
 
+import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import org.junit.ClassRule
@@ -15,7 +16,7 @@ import java.util.*
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
-@SpringBootTest(classes = [TestConfiguration::class])
+@SpringBootTest(classes = [TestApplicationContext::class])
 @AutoConfigureTestDatabase
 class VaultRootClientProviderTest(
     @Autowired
@@ -36,26 +37,27 @@ class VaultRootClientProviderTest(
 
         val cloudName = UUID.randomUUID().toString()
         val environmentName = UUID.randomUUID().toString()
-        cloudConfigurationManager.create(cloudName, "domain1", "email1", emptyList())
+        cloudConfigurationManager.createCloud(cloudName, "domain1")
+        cloudConfigurationManager.createEnvironment(cloudName, environmentName)
 
+        val context = CloudConfigurationContext(cloudConfigurationManager.cloudByName(cloudName), cloudConfigurationManager.environmentByName(cloudName, environmentName))
         val provider =
-            VaultRootClientProvider(
-                    cloudName,
-                    environmentName,
-                    "http://localhost:${environment.getServicePort("vault1", 8200)}",
-                    cloudConfigurationManager
-            )
+                VaultRootClientProvider(
+                        context,
+                        cloudConfigurationManager,
+                        "http://localhost:8200"
+                )
 
         val vaultClient = provider.createClient()
 
-        val cloud = cloudConfigurationManager.environmentByName("cloud1", "env1")
+        val environment = cloudConfigurationManager.environmentByName(cloudName, environmentName)
 
-        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-0" })
-        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-1" })
-        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-2" })
-        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-3" })
-        assertTrue(cloud.configValues.any { it.name == "vault-unseal-key-4" })
-        assertTrue(cloud.configValues.any { it.name == "vault-root-token" })
+        assertTrue(environment.configValues.any { it.name == "vault-unseal-key-0" })
+        assertTrue(environment.configValues.any { it.name == "vault-unseal-key-1" })
+        assertTrue(environment.configValues.any { it.name == "vault-unseal-key-2" })
+        assertTrue(environment.configValues.any { it.name == "vault-unseal-key-3" })
+        assertTrue(environment.configValues.any { it.name == "vault-unseal-key-4" })
+        assertTrue(environment.configValues.any { it.name == "vault-root-token" })
 
         assertFalse(vaultClient.opsForSys().unsealStatus.isSealed)
         assertTrue(vaultClient.opsForSys().isInitialized)

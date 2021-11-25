@@ -6,6 +6,8 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.compute.IVolumeLookup
 import de.solidblocks.api.resources.infrastructure.compute.Volume
 import de.solidblocks.api.resources.infrastructure.compute.VolumeRuntime
+import de.solidblocks.cloud.config.CloudConfigurationContext
+import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -17,12 +19,12 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class HetznerVolumeResourceProvisioner(credentialsProvider: HetznerCloudCredentialsProvider) :
+class HetznerVolumeResourceProvisioner(cloudContext: CloudConfigurationContext) :
         IResourceLookupProvider<IVolumeLookup, VolumeRuntime>,
         IInfrastructureResourceProvisioner<Volume,
                 VolumeRuntime>,
         BaseHetznerProvisioner<Volume, VolumeRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
+                { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

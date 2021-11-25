@@ -18,6 +18,7 @@ function hetzner_controller_private_ips {
 
     while [[ "$(echo "${result}" | jq -r '.servers | length')" != "${CONTROLLER_NODE_COUNT}" ]]; do
         result="$(hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/servers?label_selector=role=controller")"
+        sleep 10
     done
 
     echo "${result}" | jq -cr '.servers | map(.private_net[0].ip)'
@@ -29,6 +30,7 @@ function hetzner_get_private_ip {
 
     while [[ ! ${result} =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; do
         result="$(hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/servers?name=${name}" | jq -r '.servers[0].private_net[0].ip')"
+        sleep 10
     done
 
     echo "${result}"

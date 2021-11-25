@@ -8,6 +8,8 @@ import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignmentRuntime
 import de.solidblocks.api.resources.infrastructure.network.IFloatingIpAssignmentLookup
 import de.solidblocks.base.Waiter
+import de.solidblocks.cloud.config.CloudConfigurationContext
+import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RW_KEY
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -19,13 +21,13 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerFloatingIpAssignmentResourceProvisioner(
-        val provisioner: Provisioner,
-        credentialsProvider: HetznerCloudCredentialsProvider
+    val provisioner: Provisioner,
+    val cloudContext: CloudConfigurationContext
 ) :
-        IResourceLookupProvider<IFloatingIpAssignmentLookup, FloatingIpAssignmentRuntime>,
-        IInfrastructureResourceProvisioner<FloatingIpAssignment, FloatingIpAssignmentRuntime>,
-        BaseHetznerProvisioner<FloatingIpAssignment, FloatingIpAssignmentRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
+    IResourceLookupProvider<IFloatingIpAssignmentLookup, FloatingIpAssignmentRuntime>,
+    IInfrastructureResourceProvisioner<FloatingIpAssignment, FloatingIpAssignmentRuntime>,
+    BaseHetznerProvisioner<FloatingIpAssignment, FloatingIpAssignmentRuntime, HetznerCloudAPI>(
+        { HetznerCloudAPI(cloudContext.configurationValue(HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

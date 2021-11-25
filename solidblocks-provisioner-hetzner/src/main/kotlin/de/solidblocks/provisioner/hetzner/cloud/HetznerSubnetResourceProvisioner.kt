@@ -6,6 +6,8 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.network.ISubnetLookup
 import de.solidblocks.api.resources.infrastructure.network.Subnet
 import de.solidblocks.api.resources.infrastructure.network.SubnetRuntime
+import de.solidblocks.cloud.config.CloudConfigurationContext
+import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
@@ -16,11 +18,12 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerSubnetResourceProvisioner(private val provisioner: Provisioner,
-                                       credentialsProvider: HetznerCloudCredentialsProvider) :
+                                       cloudContext: CloudConfigurationContext
+) :
         IResourceLookupProvider<ISubnetLookup, SubnetRuntime>,
         IInfrastructureResourceProvisioner<Subnet, SubnetRuntime>,
         BaseHetznerProvisioner<Subnet, SubnetRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(credentialsProvider.defaultApiToken()) }) {
+                { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

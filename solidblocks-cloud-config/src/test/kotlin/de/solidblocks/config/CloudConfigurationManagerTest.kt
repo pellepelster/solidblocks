@@ -1,6 +1,6 @@
 package de.solidblocks.config
 
-import de.solidblocks.cloud.config.CloudConfigValue
+import de.solidblocks.cloud.config.model.CloudConfigValue
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

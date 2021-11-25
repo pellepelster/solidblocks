@@ -13,19 +13,20 @@ function task_increment_version() {
 }
 
 function task_recreate_integration_test() {
-  rm -rf "${DIR}/integration_test"
+  local db_dir="${DIR}/integration-test"
+  rm -rf "${db_dir}"
 
-  ${DIR}/do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path ${DIR}/integration-test cloud config create --name blcks --domain blcks.de
-  ${DIR}/do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path ${DIR}/integration-test \
+  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" cloud config create --cloud blcks --domain blcks.de
+  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
     cloud config create-environment \
-      --name blcks \
+      --cloud blcks \
       --environment dev \
-      --hetzner-cloud-api-token-read-only $(pass solidblocks/integration-test/hcloud_api_token_ro) \
-      --hetzner-cloud-api-token-read-write $(pass solidblocks/integration-test/hcloud_api_token_rw) \
-      --github-read-only-token $(pass solidblocks/github/personal_access_token_ro) \
-      --hetzner-dns-api-token $(pass solidblocks/integration-test/dns_api_token)
+      --hetzner-cloud-api-token-read-only "$(pass solidblocks/integration-test/hcloud_api_token_ro)" \
+      --hetzner-cloud-api-token-read-write "$(pass solidblocks/integration-test/hcloud_api_token_rw)" \
+      --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
+      --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
 
-  ${DIR}/do cli --db-password $(pass solidblocks/integration-test/db_password) --db-path ${DIR}/integration-test cloud config ssh-config --name blcks
+  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" cloud config ssh-config --cloud blcks
 }
 
 function task_publish() {

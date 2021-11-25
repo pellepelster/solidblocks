@@ -1,5 +1,4 @@
-import org.jooq.meta.jaxb.Property
-import org.jooq.meta.jaxb.Target
+import Constants.SPRING_BOOT_VERSION
 
 plugins {
     id("nu.studer.jooq") version "5.2.1"
@@ -10,18 +9,17 @@ dependencies {
 
     implementation(project(":solidblocks-base"))
 
-    api("org.springframework.boot:spring-boot-starter-jdbc:2.4.5")
+    api("org.springframework.boot:spring-boot-starter-jdbc:${SPRING_BOOT_VERSION}")
     api("org.liquibase:liquibase-core:4.3.5")
-
-    implementation("org.jooq:jooq:3.14.11")
+    api("org.jooq:jooq:3.14.11")
 
     jooqGenerator("org.jooq:jooq-meta-extensions-liquibase")
     jooqGenerator("org.liquibase:liquibase-core")
     jooqGenerator("org.yaml:snakeyaml:1.28")
     jooqGenerator("org.slf4j:slf4j-jdk14:1.7.30")
 
-    testImplementation("org.springframework.boot:spring-boot-test:2.4.5")
-    testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:2.4.5")
+    testImplementation("org.springframework.boot:spring-boot-test:${SPRING_BOOT_VERSION}")
+    testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:${SPRING_BOOT_VERSION}")
     testImplementation("com.h2database:h2:1.4.200")
     testImplementation("org.springframework:spring-test:5.3.6")
     testImplementation("org.hamcrest:hamcrest:2.2")

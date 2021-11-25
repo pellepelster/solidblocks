@@ -6,13 +6,13 @@ import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvis
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
+import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
-import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.Policy
 
 @Component
-class VaultPolicyProvisioner(val provisioner: Provisioner) :
+class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
         IResourceLookupProvider<IVaultPolicyLookup, VaultPolicyRuntime>,
         IInfrastructureResourceProvisioner<VaultPolicy, VaultPolicyRuntime> {
 
@@ -41,13 +41,13 @@ class VaultPolicyProvisioner(val provisioner: Provisioner) :
     }
 
     override fun apply(resource: VaultPolicy): Result<*> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultClientProvider.createClient()
         vaultClient.opsForSys().createOrUpdatePolicy(resource.name, Policy.of(resource.rules))
         return Result<Any>(resource)
     }
 
     override fun lookup(lookup: IVaultPolicyLookup): Result<VaultPolicyRuntime> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultClientProvider.createClient()
 
         return try {
             val policy = vaultClient.opsForSys().getPolicy(lookup.name())

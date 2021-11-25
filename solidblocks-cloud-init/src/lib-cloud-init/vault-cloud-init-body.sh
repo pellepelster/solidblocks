@@ -38,7 +38,7 @@ storage "file" {
   path = "/storage/local/vault/data"
 }
 
-api_addr = "https://[=hostname].${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
+api_addr = "https://${SOLIDBLOCKS_HOSTNAME}.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
 cluster_addr = "https://vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}:8200"
 EOF
 }
@@ -52,12 +52,13 @@ certbot certonly \
     --agree-tos --non-interactive \
     --standalone \
     --preferred-challenges http \
+    --expand \
     --config-dir /storage/local/vault/config/certificates \
+    --domain ${SOLIDBLOCKS_HOSTNAME}.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN} \
     --domain vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}
 EOF
 }
 
-#    --domain [=hostname].${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN} \
 
 configure_public_ip
 ssh_write_host_identity

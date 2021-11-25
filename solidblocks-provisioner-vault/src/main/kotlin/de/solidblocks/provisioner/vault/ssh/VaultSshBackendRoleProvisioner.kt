@@ -7,6 +7,7 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.base.Utils
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
+import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRole
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRoleDefaultExtensions
 import mu.KotlinLogging
@@ -21,9 +22,7 @@ import kotlin.reflect.KProperty0
 import kotlin.reflect.KProperty1
 
 @Component
-class VaultSshBackendRoleProvisioner(
-        val provisioner: Provisioner,
-) :
+class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
         IResourceLookupProvider<IVaultSshBackendRoleLookup, VaultSshBackendRoleRuntime>,
         IInfrastructureResourceProvisioner<VaultSshBackendRole, VaultSshBackendRoleRuntime> {
 
@@ -39,6 +38,10 @@ class VaultSshBackendRoleProvisioner(
         val expectedSeconds = period.toDurationFrom(Instant.now()).standardSeconds
 
         actualValue.toLong() == expectedSeconds
+    }
+
+    private val compare: (String, String) -> Boolean = { expectedValue, actualValue ->
+        expectedValue == actualValue
     }
 
     private val logger = KotlinLogging.logger {}
@@ -95,6 +98,24 @@ class VaultSshBackendRoleProvisioner(
                         compareTtl
                     )
                 )
+                /*
+                changes.add(
+                    createDiff(
+                        resource,
+                        it,
+                        VaultSshBackendRole::allowedUsers to it.backendRole::allowed_users,
+                        compare
+                    )
+                )
+
+                changes.add(
+                    createDiff(
+                        resource,
+                        it,
+                        VaultSshBackendRole::allowedUsers to it.backendRole::allowed_users,
+                        compare
+                    )
+                )*/
             }
 
             ResourceDiff(resource, missing = missing, changes = changes)
@@ -130,21 +151,22 @@ class VaultSshBackendRoleProvisioner(
     }
 
     override fun apply(resource: VaultSshBackendRole): Result<*> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultRootClientProvider.createClient()
 
         val role = SshBackendRole(
-            key_type = resource.keyType,
-            max_ttl = resource.maxTtl,
-            ttl = resource.ttl,
-            allow_host_certificates = resource.allowHostCertificates,
-            allow_user_certificates = resource.allowUserCertificates,
-            allowed_users = resource.allowedUsers,
-            default_extensions = resource.defaultExtensions?.let {
-                SshBackendRoleDefaultExtensions(
-                    it.permitPty,
-                    it.permitPortForwarding
-                )
-            }
+                key_type = resource.keyType,
+                max_ttl = resource.maxTtl,
+                ttl = resource.ttl,
+                allow_host_certificates = resource.allowHostCertificates,
+                allow_user_certificates = resource.allowUserCertificates,
+                allowed_users = resource.allowedUsers.joinToString(separator = ","),
+                default_user = resource.defaultUser,
+                default_extensions = resource.defaultExtensions?.let {
+                    SshBackendRoleDefaultExtensions(
+                            it.permitPty,
+                            it.permitPortForwarding
+                    )
+                }
         )
 
         val response = vaultClient.write("${resource.mount.name()}/roles/${resource.name}", role)
@@ -165,7 +187,7 @@ class VaultSshBackendRoleProvisioner(
     }
 
     override fun lookup(lookup: IVaultSshBackendRoleLookup): Result<VaultSshBackendRoleRuntime> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultRootClientProvider.createClient()
 
         val role = vaultClient.read("${lookup.mount().name()}/roles/${lookup.name()}", SshBackendRole::class.java)
                 ?: return Result(lookup, null)

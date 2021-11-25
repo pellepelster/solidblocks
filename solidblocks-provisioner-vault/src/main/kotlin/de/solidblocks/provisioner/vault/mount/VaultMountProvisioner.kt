@@ -5,12 +5,13 @@ import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvis
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
+import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.vault.core.VaultTemplate
 
 @Component
-class VaultMountProvisioner(val provisioner: Provisioner) :
+class VaultMountProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
         IResourceLookupProvider<IVaultMountLookup, VaultMountRuntime>,
         IInfrastructureResourceProvisioner<VaultMount, VaultMountRuntime> {
 
@@ -33,7 +34,7 @@ class VaultMountProvisioner(val provisioner: Provisioner) :
     }
 
     override fun apply(resource: VaultMount): Result<*> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultRootClientProvider.createClient()
 
         val mount = org.springframework.vault.support.VaultMount.create(resource.type)
         vaultClient.opsForSys().mount(resource.name, mount)
@@ -46,7 +47,7 @@ class VaultMountProvisioner(val provisioner: Provisioner) :
     }
 
     override fun lookup(lookup: IVaultMountLookup): Result<VaultMountRuntime> {
-        val vaultClient = provisioner.provider(VaultTemplate::class.java).createClient()
+        val vaultClient = vaultRootClientProvider.createClient()
 
         return if (vaultClient.opsForSys().mounts.keys.any { it == "${lookup.name()}/" }) {
             Result(lookup, VaultMountRuntime())
