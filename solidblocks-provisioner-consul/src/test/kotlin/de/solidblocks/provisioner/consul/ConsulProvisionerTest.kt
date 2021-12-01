@@ -4,6 +4,9 @@ import de.solidblocks.provisioner.consul.policy.ConsulPolicy
 import de.solidblocks.provisioner.consul.policy.ConsulPolicyProvisioner
 import de.solidblocks.provisioner.consul.policy.ConsulRuleBuilder
 import de.solidblocks.provisioner.consul.policy.Privileges
+import de.solidblocks.provisioner.consul.token.ConsulToken
+import de.solidblocks.provisioner.consul.token.ConsulTokenLookup
+import de.solidblocks.provisioner.consul.token.ConsulTokenProvisioner
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.ClassRule
 import org.junit.jupiter.api.Test
@@ -12,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
 import java.io.File
+import java.util.*
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
@@ -19,33 +23,54 @@ class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerCompos
 class ConsulProvisionerTest {
 
     @Autowired
-    private lateinit var provisioner: ConsulPolicyProvisioner
+    private lateinit var policyProvisioner: ConsulPolicyProvisioner
+
+    @Autowired
+    private lateinit var tokenProvisioner: ConsulTokenProvisioner
 
     @ClassRule
     var environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
                     .apply {
                         withExposedService("consul", 8500)
-                                .waitingFor("consul", LogMessageWaitStrategy().withRegEx(".*federation state pruning.*"))
-                        start()
+                                .waitingFor("consul", LogMessageWaitStrategy()
+                                        .withRegEx(".*federation state pruning.*"))
+                                .start()
                     }
 
 
     @Test
-    fun testAclDiffAndApply() {
+    fun testPolicyDiffAndApply() {
 
         val rules = ConsulRuleBuilder().addKeyPrefix("prefix1", Privileges.write)
         val acl = ConsulPolicy("acl1", rules.asPolicy())
 
-        val result = provisioner.diff(acl)
+        val result = policyProvisioner.diff(acl)
         assertThat(result.result?.missing).isTrue
 
-        provisioner.apply(acl)
+        policyProvisioner.apply(acl)
 
-        val afterApplyResult = provisioner.diff(acl)
+        val afterApplyResult = policyProvisioner.diff(acl)
         assertThat(afterApplyResult.result?.missing).isFalse
 
         // update is always enforced to ensure rules are up-to-date
-        assertThat(provisioner.diff(acl).result?.hasChanges()).isTrue
+        assertThat(policyProvisioner.diff(acl).result?.hasChanges()).isTrue
+    }
+
+    @Test
+    fun testTokenDiffAndApply() {
+
+        val rules = ConsulRuleBuilder().addKeyPrefix("prefix1", Privileges.write)
+        val acl = ConsulPolicy("token_acl1", rules.asPolicy())
+        policyProvisioner.apply(acl)
+
+        val token1Id = UUID.randomUUID()
+        val token1 = ConsulToken(token1Id, "token1", listOf(acl))
+        tokenProvisioner.apply(token1)
+
+
+        val token1Lookup = tokenProvisioner.lookup(ConsulTokenLookup(token1Id))
+        assertThat(token1Lookup.result!!.id).isEqualTo(token1Id)
+
     }
 }
