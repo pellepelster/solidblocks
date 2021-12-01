@@ -5,7 +5,7 @@ import de.solidblocks.cloud.config.CloudConfigurationManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.test.context.TestPropertySource
+import org.springframework.context.annotation.Primary
 import java.util.*
 
 @Configuration
@@ -13,6 +13,7 @@ import java.util.*
 open class TestApplicationContext {
 
     @Bean
+    @Primary
     open fun cloudConfigurationContext(cloudConfigurationManager: CloudConfigurationManager): CloudConfigurationContext {
 
         val cloudName = UUID.randomUUID().toString()

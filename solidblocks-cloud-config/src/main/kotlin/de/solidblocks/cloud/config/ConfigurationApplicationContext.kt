@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile
 open class ConfigurationApplicationContext {
 
     @Bean
-    @Profile("!CloudCreate")
+    @Profile("!CloudCreate and !test")
     open fun cloudConfigurationContext(
         @Value("\${cloud.name}") cloudName: String,
         @Value("\${environment.name}") environmentName: String,

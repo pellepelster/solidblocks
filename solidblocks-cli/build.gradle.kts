@@ -14,8 +14,8 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter:${SPRING_BOOT_VERSION}")
 
-    implementation("org.apache.derby:derby:10.15.2.0")
-    implementation("org.apache.derby:derbytools:10.15.2.0")
+    api("org.apache.derby:derby:10.15.2.0")
+    api("org.apache.derby:derbytools:10.15.2.0")
 
     implementation("com.hierynomus:sshj:0.31.0")
     implementation("org.apache.commons:commons-text")

@@ -27,7 +27,6 @@ import java.io.File
 import java.util.*
 
 @SpringBootTest(classes = [TestApplicationContext::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
-@AutoConfigureTestDatabase
 @TestPropertySource(properties = ["vault_addr=http://localhost:8200"])
 @Testcontainers
 open class VaultProvisionerTest(

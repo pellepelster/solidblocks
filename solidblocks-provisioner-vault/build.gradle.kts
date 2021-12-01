@@ -15,5 +15,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:${SPRING_BOOT_VERSION}")
     testImplementation("org.testcontainers:testcontainers:1.15.3")
     testImplementation("org.mockito:mockito-core:3.+")
-    testImplementation("com.h2database:h2:1.4.200")
+    testImplementation("org.apache.derby:derbytools:10.15.2.0")
+    testImplementation("org.apache.derby:derby:10.15.2.0")
 }

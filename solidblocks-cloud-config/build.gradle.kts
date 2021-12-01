@@ -20,7 +20,10 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-test:${SPRING_BOOT_VERSION}")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:${SPRING_BOOT_VERSION}")
-    testImplementation("com.h2database:h2:1.4.200")
+
+    testImplementation("org.apache.derby:derbytools:10.15.2.0")
+    testImplementation("org.apache.derby:derby:10.15.2.0")
+
     testImplementation("org.springframework:spring-test:5.3.6")
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("org.assertj:assertj-core:3.21.0")

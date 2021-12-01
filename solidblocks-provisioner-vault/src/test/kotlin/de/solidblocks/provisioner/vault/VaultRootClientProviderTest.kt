@@ -1,6 +1,5 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import org.junit.ClassRule
@@ -8,29 +7,42 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.autoconfigure.data.jdbc.AutoConfigureDataJdbc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.TestPropertySource
 import org.testcontainers.containers.DockerComposeContainer
 import java.io.File
 import java.util.*
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
-@SpringBootTest(classes = [TestApplicationContext::class])
-@AutoConfigureTestDatabase
+@SpringBootTest(classes = [TestApplicationContext::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
+@AutoConfigureDataJdbc
+@TestPropertySource(
+        locations = ["/application.yml"],
+        properties = ["vault_addr=http://localhost:8200"]
+)
 class VaultRootClientProviderTest(
-    @Autowired
-    val cloudConfigurationManager: CloudConfigurationManager
+        @Autowired
+        val cloudConfigurationManager: CloudConfigurationManager,
+        @Autowired
+        val provider: VaultRootClientProvider
 ) {
+
+
+    @Value("\${vault_addr}")
+    var bar: String? = null
+
 
     @ClassRule
     var environment: DockerComposeContainer<*> =
-        KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
-            .apply {
-                withExposedService("vault1", 8200)
-                withExposedService("vault2", 8200)
-                start()
-            }
+            KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
+                    .apply {
+                        withExposedService("vault1", 8200)
+                        withExposedService("vault2", 8200)
+                        start()
+                    }
 
     @Test
     fun testInitAndUnseal() {
@@ -40,15 +52,7 @@ class VaultRootClientProviderTest(
         cloudConfigurationManager.createCloud(cloudName, "domain1")
         cloudConfigurationManager.createEnvironment(cloudName, environmentName)
 
-        val context = CloudConfigurationContext(cloudConfigurationManager.cloudByName(cloudName), cloudConfigurationManager.environmentByName(cloudName, environmentName))
-        val provider =
-                VaultRootClientProvider(
-                        context,
-                        cloudConfigurationManager
-                )
-
         val vaultClient = provider.createClient()
-
         val environment = cloudConfigurationManager.environmentByName(cloudName, environmentName)
 
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-0" })
