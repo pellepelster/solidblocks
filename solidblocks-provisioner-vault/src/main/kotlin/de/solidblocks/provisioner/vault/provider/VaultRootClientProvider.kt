@@ -4,7 +4,6 @@ import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.Constants.Vault.Companion.vaultAddr
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
@@ -16,7 +15,6 @@ import java.net.URI
 class VaultRootClientProvider(
         val configurationContext: CloudConfigurationContext,
         val configurationManager: CloudConfigurationManager,
-        @Value("\${vault_addr:#{null}}") val vaultAddr: String?
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -25,17 +23,15 @@ class VaultRootClientProvider(
 
     fun createClient(): VaultTemplate {
 
+        val vaultAddr = vaultAddr(configurationContext.cloud, configurationContext.environment)
+
         if (vaultTemplate != null) {
             return vaultTemplate!!
         }
 
         var vaultTemplate = VaultTemplate(
                 VaultEndpoint.from(
-                        URI.create(
-                                listOf(vaultAddr, vaultAddr(
-                                        configurationContext.cloud,
-                                        configurationContext.environment
-                                )).firstNotNullOf { it })
+                        URI.create(vaultAddr)
                 )
         )
 

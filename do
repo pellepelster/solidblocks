@@ -16,7 +16,11 @@ function task_recreate_integration_test() {
   local db_dir="${DIR}/integration-test"
   rm -rf "${db_dir}"
 
-  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" cloud config create --cloud blcks --domain blcks.de
+  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
+    cloud config create \
+    --cloud blcks \
+    --domain blcks.de
+
   "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
     cloud config create-environment \
       --cloud blcks \
@@ -26,7 +30,10 @@ function task_recreate_integration_test() {
       --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
       --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
 
-  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" cloud config ssh-config --cloud blcks
+  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
+    cloud config ssh-config \
+    --cloud blcks \
+    --environment dev
 }
 
 function task_publish() {

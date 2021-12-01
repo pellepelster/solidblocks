@@ -4,6 +4,7 @@ import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.compute.Server
+import de.solidblocks.api.resources.infrastructure.compute.Volume
 import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
 import de.solidblocks.api.resources.infrastructure.network.Network
@@ -238,10 +239,14 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
         return result
     }
 
-    fun destroyAll() {
+    fun destroyAll(destroyVolumes: Boolean) {
         this.provisionerRegistry.provisioner1(FloatingIpAssignment::class).destroyAll()
         this.provisionerRegistry.provisioner1(Server::class).destroyAll()
-        //this.provisionerRegistry.provisioner(Volume::class).destroyAll()
+
+        if (destroyVolumes) {
+            this.provisionerRegistry.provisioner1(Volume::class).destroyAll()
+        }
+
         this.provisionerRegistry.provisioner1(Network::class).destroyAll()
         this.provisionerRegistry.provisioner1(SshKey::class).destroyAll()
         this.provisionerRegistry.provisioner1(FloatingIp::class).destroyAll()

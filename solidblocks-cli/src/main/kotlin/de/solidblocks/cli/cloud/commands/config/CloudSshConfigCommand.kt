@@ -1,8 +1,5 @@
 package de.solidblocks.cli.cloud.commands.config
 
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.cli.self.BaseSpringCommand
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import mu.KotlinLogging
 import org.springframework.context.ApplicationContext
@@ -15,9 +12,8 @@ import kotlin.system.exitProcess
 
 @Component
 class CloudSshConfigCommand :
-        BaseSpringCommand(name = "ssh-config", help = "create ssh config") {
+    BaseCloudSpringCommand(name = "ssh-config", help = "create ssh config") {
 
-    val cloud: String by option(help = "name of the cloud").required()
 
     private val logger = KotlinLogging.logger {}
 

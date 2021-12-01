@@ -7,11 +7,7 @@ import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.compute.UserDataDataSource
 import de.solidblocks.api.resources.infrastructure.compute.Volume
 import de.solidblocks.api.resources.infrastructure.compute.VolumeRuntime
-import de.solidblocks.api.resources.infrastructure.network.FloatingIp
-import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
-import de.solidblocks.api.resources.infrastructure.network.FloatingIpRuntime
-import de.solidblocks.api.resources.infrastructure.network.Network
-import de.solidblocks.api.resources.infrastructure.network.Subnet
+import de.solidblocks.api.resources.infrastructure.network.*
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
@@ -22,6 +18,7 @@ import de.solidblocks.cli.Contants.hostSshMountName
 import de.solidblocks.cli.Contants.kvMountName
 import de.solidblocks.cli.Contants.pkiMountName
 import de.solidblocks.cli.Contants.userSshMountName
+import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_SECRET_KEY
@@ -49,32 +46,19 @@ import org.springframework.vault.support.Policy
 import org.springframework.vault.support.VaultTokenRequest
 import java.net.URL
 import java.time.Duration
-import kotlin.system.exitProcess
 
 @Component
 class CloudMananger(
-        val vaultRootClientProvider: VaultRootClientProvider,
-        val provisioner: Provisioner,
-        val cloudConfigurationManager: CloudConfigurationManager
+    val vaultRootClientProvider: VaultRootClientProvider,
+    val provisioner: Provisioner,
+    val cloudConfigurationManager: CloudConfigurationManager,
+    val configurationContext: CloudConfigurationContext
 ) {
     private val logger = KotlinLogging.logger {}
 
 
-    fun destroy(cloudName: String, environmentName: String): Boolean {
-        if (!cloudConfigurationManager.hasCloud(cloudName)) {
-            logger.error { "cloud '${cloudName}' not found" }
-            return false
-        }
-
-        val cloudConfig = cloudConfigurationManager.cloudByName(cloudName)
-
-        val environment = cloudConfig.environments.filter { it.name == environmentName }.firstOrNull()
-        if (environment == null) {
-            logger.error { "cloud '${cloudName}' has no environment '${environment}'" }
-            return false
-        }
-
-        provisioner.destroyAll()
+    fun destroy(destroyVolumes: Boolean): Boolean {
+        provisioner.destroyAll(destroyVolumes)
         return true
     }
 
@@ -122,32 +106,52 @@ class CloudMananger(
         val location = "nbg1"
 
         val vaultResourceGroup = provisioner.createResourceGroup("vault")
-        createDefaultServer(
+        val floatingIp = createDefaultServer(
             ServerSpec(
-                    name = "vault-0",
-                    location = location,
-                    network = network,
-                    role = "vault",
-                    sshKeys = sshKeys,
-                    dnsHealthCheckPort = 8200
+                name = "vault-0",
+                location = location,
+                network = network,
+                role = "vault",
+                sshKeys = sshKeys,
+                dnsHealthCheckPort = 8200
             ), vaultResourceGroup, cloud, environment, rootZone
         )
+
+        vaultResourceGroup.addResource(object : DnsRecord(
+            name = "vault.${environment.name}",
+            floatingIp = floatingIp,
+            dnsZone = rootZone
+        ) {
+            override fun getHealthCheck(): () -> Boolean {
+                return health@{
+                    val url = "https://${name}.${dnsZone.name()}:8200"
+                    try {
+                        URL(url).readText()
+                        logger.info { "url '${url}' is healthy" }
+                        return@health true
+                    } catch (e: Exception) {
+                        logger.warn { "url '${url}' is unhealthy" }
+                        return@health false
+                    }
+                }
+            }
+        })
 
         createVaultConfigResourceGroup(vaultResourceGroup, cloud, environment)
 
         val controllerNodeCount = 1
         val controllerGroup = provisioner.createResourceGroup("controller")
         createDefaultServer(
-                ServerSpec(
-                        name = "controller-0",
-                        location = location,
-                        network = network,
-                        role = "controller",
-                        sshKeys = sshKeys,
-                        vaultPolicyName = CONTROLLER_POLICY_NAME,
-                        dnsHealthCheckPort = 8500,
-                        extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
-                ), controllerGroup, cloud, environment, rootZone
+            ServerSpec(
+                name = "controller-0",
+                location = location,
+                network = network,
+                role = "controller",
+                sshKeys = sshKeys,
+                vaultPolicyName = CONTROLLER_POLICY_NAME,
+                dnsHealthCheckPort = 8500,
+                extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
+            ), controllerGroup, cloud, environment, rootZone
         )
 
         val resourceGroup = provisioner.createResourceGroup("backup")
@@ -205,7 +209,7 @@ class CloudMananger(
         cloud: CloudConfiguration,
         environment: CloudEnvironmentConfiguration,
         rootZone: DnsZone
-    ) {
+    ): FloatingIp {
         val volume = resourceGroup.addResource(
             Volume(
                 "${cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
@@ -296,6 +300,8 @@ class CloudMananger(
         })
 
         resourceGroup.addResource(FloatingIpAssignment(server = server, floatingIp = floatingIp))
+
+        return floatingIp
     }
 
     private fun createVaultConfigResourceGroup(parentResourceGroup: ResourceGroup,
