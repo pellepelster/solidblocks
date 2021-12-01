@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":solidblocks-provisioner"))
     implementation(project(":solidblocks-base"))
     implementation(project(":solidblocks-cloud-config"))
-    implementation("com.ecwid.consul:consul-api:1.4.5")
+    implementation("com.orbitz.consul:consul-client:1.5.3")
 
     testImplementation("org.assertj:assertj-core:3.21.0")
     testImplementation("org.springframework:spring-test:5.3.6")

@@ -44,8 +44,7 @@ class VaultRootClientProviderTest(
         val provider =
                 VaultRootClientProvider(
                         context,
-                        cloudConfigurationManager,
-                        "http://localhost:8200"
+                        cloudConfigurationManager
                 )
 
         val vaultClient = provider.createClient()

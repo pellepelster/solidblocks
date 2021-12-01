@@ -1,7 +1,6 @@
 package de.solidblocks.provisioner.consul
 
-import com.ecwid.consul.v1.ConsulClient
-import de.solidblocks.provisioner.consul.provider.ConsulClientWrapper
+import com.orbitz.consul.Consul
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -13,8 +12,8 @@ open class TestConfiguration {
 
     @Bean
     @Primary
-    open fun consulClientWrapper(): ConsulClientWrapper {
-        return ConsulClientWrapper(ConsulClient(), "master-token")
+    open fun consulClientWrapper(): Consul {
+        return Consul.builder().withTokenAuth("master-token").build()
     }
 
 }

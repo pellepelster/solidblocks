@@ -1,44 +1,46 @@
 package de.solidblocks.provisioner.consul.acl
 
-import de.solidblocks.provisioner.consul.acl.Privileges.write
+import de.solidblocks.provisioner.consul.policy.Privileges.write
+import de.solidblocks.provisioner.consul.policy.ConsulRuleBuilder
+import de.solidblocks.provisioner.consul.policy.Privileges
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class ConsulPolicyBuilderTest {
+class ConsulRuleBuilderTest {
 
     @Test
     fun testKeyPrefix() {
-        val builder = ConsulPolicyBuilder().addKeyPrefix("path1", write)
+        val builder = ConsulRuleBuilder().addKeyPrefix("path1", write)
         assertThat(builder.asPolicy()).isEqualTo("key_prefix \"path1\" { policy = \"write\" } \n")
     }
 
     @Test
     fun testNodePrefix() {
-        val builder = ConsulPolicyBuilder().addNodePrefix("", Privileges.read)
+        val builder = ConsulRuleBuilder().addNodePrefix("", Privileges.read)
         assertThat(builder.asPolicy()).isEqualTo("node_prefix \"\" { policy = \"read\" } \n")
     }
 
     @Test
     fun testEventPrefix() {
-        val builder = ConsulPolicyBuilder().addEventPrefix("", Privileges.read)
+        val builder = ConsulRuleBuilder().addEventPrefix("", Privileges.read)
         assertThat(builder.asPolicy()).isEqualTo("event_prefix \"\" { policy = \"read\" } \n")
     }
 
     @Test
     fun testEvent() {
-        val builder = ConsulPolicyBuilder().addEvent("", Privileges.read)
+        val builder = ConsulRuleBuilder().addEvent("", Privileges.read)
         assertThat(builder.asPolicy()).isEqualTo("event \"\" { policy = \"read\" } \n")
     }
 
     @Test
     fun testAgentPrefix() {
-        val builder = ConsulPolicyBuilder().addAgentPrefix("", Privileges.read)
+        val builder = ConsulRuleBuilder().addAgentPrefix("", Privileges.read)
         assertThat(builder.asPolicy()).isEqualTo("agent_prefix \"\" { policy = \"read\" } \n")
     }
 
     @Test
     fun testSessionPrefix() {
-        val builder = ConsulPolicyBuilder().addSessionPrefix("", Privileges.read)
+        val builder = ConsulRuleBuilder().addSessionPrefix("", Privileges.read)
         assertThat(builder.asPolicy()).isEqualTo("session_prefix \"\" { policy = \"read\" } \n")
     }
 }
