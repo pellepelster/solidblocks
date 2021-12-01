@@ -83,7 +83,7 @@ open class VaultProvisionerTest(
         mountProvisioner.apply(mount)
 
         val newRole = VaultPkiBackendRole(
-                name = "solidblocks-pki",
+                id = "solidblocks-pki",
                 allowAnyName = true,
                 generateLease = true,
                 maxTtl = "168h",
@@ -116,7 +116,7 @@ open class VaultProvisionerTest(
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultPkiBackendRole(
-                name = "solidblocks-pki",
+                id = "solidblocks-pki",
                 allowAnyName = true,
                 generateLease = true,
                 maxTtl = "170h",
@@ -177,7 +177,7 @@ open class VaultProvisionerTest(
         mountProvisioner.apply(mount)
 
         val newRole = VaultSshBackendRole(
-                name = "solidblocks-host-ssh",
+                id = "solidblocks-host-ssh",
                 keyType = "ca",
                 maxTtl = "168h",
                 ttl = "168h",
@@ -208,7 +208,7 @@ open class VaultProvisionerTest(
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultSshBackendRole(
-                name = "solidblocks-host-ssh",
+                id = "solidblocks-host-ssh",
                 keyType = "ca",
                 maxTtl = "170h",
                 ttl = "170h",

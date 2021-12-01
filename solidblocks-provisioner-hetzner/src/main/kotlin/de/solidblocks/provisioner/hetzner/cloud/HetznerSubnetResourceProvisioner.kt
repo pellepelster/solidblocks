@@ -58,9 +58,9 @@ class HetznerSubnetResourceProvisioner(private val provisioner: Provisioner,
 
     override fun lookup(lookup: ISubnetLookup): Result<SubnetRuntime> {
         return checkedApiCall(lookup, HetznerCloudAPI::getNetworksByName) {
-            it.getNetworksByName(lookup.network().name()).networks.firstOrNull()
+            it.getNetworksByName(lookup.network().id()).networks.firstOrNull()
         }.mapNonNullResultNullable {
-            val subnet = it.subnets.firstOrNull { subnet -> subnet.ipRange == lookup.name() }
+            val subnet = it.subnets.firstOrNull { subnet -> subnet.ipRange == lookup.id() }
 
             if (subnet != null) {
                 return@mapNonNullResultNullable SubnetRuntime(subnet.ipRange)

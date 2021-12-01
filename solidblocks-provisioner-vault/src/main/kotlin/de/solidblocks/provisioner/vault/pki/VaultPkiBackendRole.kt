@@ -1,8 +1,6 @@
 package de.solidblocks.provisioner.vault.pki
 
 import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.core.IResource
-import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 /*
@@ -14,7 +12,7 @@ import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
             .keyBits(KEY_BITS)
  */
 class VaultPkiBackendRole(
-        val name: String,
+        val id: String,
         val allowAnyName: Boolean,
         val ttl: String,
         val maxTtl: String,
@@ -30,9 +28,7 @@ class VaultPkiBackendRole(
         return mount
     }
 
-    override fun name(): String {
-        return this.name
-    }
+    override fun id() = id
 
     override fun getParents() =  listOf(mount)
 }

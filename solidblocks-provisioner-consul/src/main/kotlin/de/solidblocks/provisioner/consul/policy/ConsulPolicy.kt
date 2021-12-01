@@ -2,12 +2,12 @@ package de.solidblocks.provisioner.consul.policy
 
 import de.solidblocks.core.IInfrastructureResource
 
-class ConsulPolicy(val name: String, val rules: String) :
+class ConsulPolicy(val id: String, val rules: String) :
         IConsulPolicyLookup,
         IInfrastructureResource<ConsulPolicy, ConsulPolicyRuntime> {
 
-    override fun name(): String {
-        return name
+    override fun id(): String {
+        return id
     }
 
 }

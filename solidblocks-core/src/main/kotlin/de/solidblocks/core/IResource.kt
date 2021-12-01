@@ -2,7 +2,7 @@ package de.solidblocks.core
 
 @OptIn(ExperimentalStdlibApi::class)
 fun IResource.logName(): String {
-    return "${this.javaClass.simpleName.lowercase()} resource '${this.name()}'"
+    return "${this.javaClass.simpleName.lowercase()} resource '${this.id()}'"
 }
 
 fun IResource.getInfraParents(): List<IInfrastructureResource<*, *>> {
@@ -14,5 +14,5 @@ interface IResource {
 
     fun getParents(): List<IResource> = emptyList()
 
-    fun name(): String
+    fun id(): String
 }

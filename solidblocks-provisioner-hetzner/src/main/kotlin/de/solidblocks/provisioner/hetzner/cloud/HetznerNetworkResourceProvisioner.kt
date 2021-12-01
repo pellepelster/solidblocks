@@ -30,7 +30,7 @@ class HetznerNetworkResourceProvisioner(cloudContext: CloudConfigurationContext)
     ): Result<*> {
 
         val request = NetworkRequest.builder()
-        request.name(resource.name)
+        request.name(resource.id)
         request.ipRange(resource.ipRange.info.cidrSignature)
 
         return checkedApiCall(resource, HetznerCloudAPI::createNetwork) {
@@ -80,7 +80,7 @@ class HetznerNetworkResourceProvisioner(cloudContext: CloudConfigurationContext)
 
     override fun lookup(lookup: INetworkLookup): Result<NetworkRuntime> {
         return checkedApiCall(lookup, HetznerCloudAPI::getNetworksByName) {
-            it.getNetworksByName(lookup.name()).networks.firstOrNull()
+            it.getNetworksByName(lookup.id()).networks.firstOrNull()
         }.mapNonNullResult {
             NetworkRuntime(it.id.toString())
         }

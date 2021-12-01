@@ -1,10 +1,9 @@
 package de.solidblocks.provisioner.fixtures
 
 import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.core.IResourceLookup
 import java.util.*
 
-class TestResource(val name: String, private val parents: List<TestResource> = emptyList()) :
+class TestResource(val id: String, private val parents: List<TestResource> = emptyList()) :
         ITestResourceLookup,
         IInfrastructureResource<String, String> {
 
@@ -12,8 +11,8 @@ class TestResource(val name: String, private val parents: List<TestResource> = e
 
     override fun getParents() = parents
 
-    override fun name(): String {
-        return name
+    override fun id(): String {
+        return id
     }
 
 }

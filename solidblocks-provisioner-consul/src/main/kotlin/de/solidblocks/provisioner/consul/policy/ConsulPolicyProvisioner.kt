@@ -27,7 +27,7 @@ class ConsulPolicyProvisioner(val consulClient: Consul) :
     }
 
     override fun apply(resource: ConsulPolicy): Result<*> {
-        val policy = ImmutablePolicy.builder().name(resource.name).rules(resource.rules)
+        val policy = ImmutablePolicy.builder().name(resource.id).rules(resource.rules)
         consulClient.aclClient().createPolicy(policy.build())
 
         return Result<ConsulPolicy>(resource = resource, failed = false)
@@ -36,7 +36,7 @@ class ConsulPolicyProvisioner(val consulClient: Consul) :
     override fun diff(resource: ConsulPolicy): Result<ResourceDiff> {
         val policies = consulClient.aclClient().listPolicies()
 
-        val policy = policies.firstOrNull { it.name() == resource.name }
+        val policy = policies.firstOrNull { it.name() == resource.id }
                 ?: return Result(
                         failed = false,
                         resource = resource,

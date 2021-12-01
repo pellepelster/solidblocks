@@ -4,9 +4,9 @@ import de.solidblocks.core.IResourceLookup
 import de.solidblocks.core.IInfrastructureResource
 import org.apache.commons.net.util.SubnetUtils
 
-data class Network(val name: String, val ipRange: SubnetUtils) : INetworkLookup, IInfrastructureResource<Network, NetworkRuntime> {
+data class Network(val id: String, val ipRange: SubnetUtils) : INetworkLookup, IInfrastructureResource<Network, NetworkRuntime> {
 
-    override fun name(): String {
-        return this.name
+    override fun id(): String {
+        return this.id
     }
 }

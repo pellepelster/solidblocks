@@ -5,7 +5,7 @@ import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.core.IInfrastructureResource
 
 open class DnsRecord(
-        val name: String,
+        val id: String,
         val floatingIp: FloatingIp? = null,
         val server: Server? = null,
         val dnsZone: IDnsZoneLookup,
@@ -18,8 +18,8 @@ open class DnsRecord(
         return dnsZone
     }
 
-    override fun name(): String {
-        return this.name
+    override fun id(): String {
+        return this.id
     }
 
 }

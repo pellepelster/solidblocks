@@ -22,7 +22,7 @@ class HetznerDnsZoneResourceProvisioner(cloudContext: CloudConfigurationContext)
 
     override fun lookup(lookup: IDnsZoneLookup): Result<DnsZoneRuntime> {
         return checkedApiCall(lookup, HetznerDnsAPI::searchZone) {
-            it.searchZone(lookup.name())
+            it.searchZone(lookup.id())
         }.mapNonNullResultNullable {
             DnsZoneRuntime(it.id, it.name)
         }

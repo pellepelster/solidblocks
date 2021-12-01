@@ -2,7 +2,7 @@ package de.solidblocks.core
 
 object NullResource : IInfrastructureResource<Any, Any> {
 
-    override fun name(): String {
+    override fun id(): String {
         return "<null resource>"
     }
 }

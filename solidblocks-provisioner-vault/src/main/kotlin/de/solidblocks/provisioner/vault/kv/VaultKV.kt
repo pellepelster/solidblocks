@@ -17,7 +17,7 @@ class VaultKV(val path: String, val data: Map<String, Any>, val mount: IVaultMou
         return path
     }
 
-    override fun name(): String {
-        return "${mount.name()}.${this.path}"
+    override fun id(): String {
+        return "${mount.id()}.${this.path}"
     }
 }

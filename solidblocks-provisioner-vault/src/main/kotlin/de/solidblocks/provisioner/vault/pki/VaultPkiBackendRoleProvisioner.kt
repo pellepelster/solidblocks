@@ -47,7 +47,7 @@ class VaultPkiBackendRoleProvisioner(
             resource: IVaultPkiBackendRoleLookup
     ): Boolean {
         val pem = client.doWithVault {
-            val pem = it.getForEntity("${resource.mount().name()}/ca/pem", String::class.java)
+            val pem = it.getForEntity("${resource.mount().id()}/ca/pem", String::class.java)
             pem
         }
 
@@ -136,12 +136,12 @@ class VaultPkiBackendRoleProvisioner(
             generate_lease = resource.generateLease,
         )
 
-        val response = vaultClient.write("${resource.mount.name()}/roles/${resource.name}", role)
+        val response = vaultClient.write("${resource.mount.id()}/roles/${resource.id}", role)
 
         if (!keysExist(vaultClient, resource)) {
             val response = vaultClient.write(
-                    "${resource.mount.name()}/root/generate/internal",
-                    mapOf("common_name" to "${resource.name} root")
+                    "${resource.mount.id()}/root/generate/internal",
+                    mapOf("common_name" to "${resource.id} root")
             )
         }
 
@@ -155,7 +155,7 @@ class VaultPkiBackendRoleProvisioner(
     override fun lookup(lookup: IVaultPkiBackendRoleLookup): Result<VaultPkiBackendRoleRuntime> {
         val vaultClient = vaultRootClientProvider.createClient()
 
-        val role = vaultClient.read("${lookup.mount().name()}/roles/${lookup.name()}", PkiBackendRole::class.java)
+        val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", PkiBackendRole::class.java)
                 ?: return Result(lookup, null)
 
         val keysExist = keysExist(vaultClient, lookup)

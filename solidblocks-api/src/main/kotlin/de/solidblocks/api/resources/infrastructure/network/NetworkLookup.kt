@@ -1,8 +1,8 @@
 package de.solidblocks.api.resources.infrastructure.network
 
-data class NetworkLookup(val name: String) : INetworkLookup {
+data class NetworkLookup(val id: String) : INetworkLookup {
 
-    override fun name(): String {
-        return this.name
+    override fun id(): String {
+        return this.id
     }
 }

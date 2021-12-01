@@ -53,7 +53,7 @@ class VaultKVProvisioner(val vaultRootClientProvider: VaultRootClientProvider, v
             mount: IVaultMountLookup
     ): VaultKeyValueOperations {
         val vaultClient = vaultRootClientProvider.createClient()
-        return vaultClient.opsForKeyValue(mount.name(), VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
+        return vaultClient.opsForKeyValue(mount.id(), VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
     }
 
     override fun lookup(lookup: IVaultKVLookup): Result<VaultKVRuntime> {

@@ -8,7 +8,6 @@ import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
-import org.springframework.vault.core.VaultTemplate
 
 @Component
 class VaultMountProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
@@ -37,7 +36,7 @@ class VaultMountProvisioner(val vaultRootClientProvider: VaultRootClientProvider
         val vaultClient = vaultRootClientProvider.createClient()
 
         val mount = org.springframework.vault.support.VaultMount.create(resource.type)
-        vaultClient.opsForSys().mount(resource.name, mount)
+        vaultClient.opsForSys().mount(resource.id, mount)
 
         return Result<Any>(resource)
     }
@@ -49,7 +48,7 @@ class VaultMountProvisioner(val vaultRootClientProvider: VaultRootClientProvider
     override fun lookup(lookup: IVaultMountLookup): Result<VaultMountRuntime> {
         val vaultClient = vaultRootClientProvider.createClient()
 
-        return if (vaultClient.opsForSys().mounts.keys.any { it == "${lookup.name()}/" }) {
+        return if (vaultClient.opsForSys().mounts.keys.any { it == "${lookup.id()}/" }) {
             Result(lookup, VaultMountRuntime())
         } else {
             Result(lookup)

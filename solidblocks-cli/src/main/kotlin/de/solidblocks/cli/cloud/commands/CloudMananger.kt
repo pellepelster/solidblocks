@@ -7,7 +7,11 @@ import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.compute.UserDataDataSource
 import de.solidblocks.api.resources.infrastructure.compute.Volume
 import de.solidblocks.api.resources.infrastructure.compute.VolumeRuntime
-import de.solidblocks.api.resources.infrastructure.network.*
+import de.solidblocks.api.resources.infrastructure.network.FloatingIp
+import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
+import de.solidblocks.api.resources.infrastructure.network.FloatingIpRuntime
+import de.solidblocks.api.resources.infrastructure.network.Network
+import de.solidblocks.api.resources.infrastructure.network.Subnet
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
@@ -118,13 +122,13 @@ class CloudMananger(
         )
 
         vaultResourceGroup.addResource(object : DnsRecord(
-            name = "vault.${environment.name}",
-            floatingIp = floatingIp,
-            dnsZone = rootZone
+                id = "vault.${environment.name}",
+                floatingIp = floatingIp,
+                dnsZone = rootZone
         ) {
             override fun getHealthCheck(): () -> Boolean {
                 return health@{
-                    val url = "https://${name}.${dnsZone.name()}:8200"
+                    val url = "https://${this.id}.${dnsZone.id()}:8200"
                     try {
                         URL(url).readText()
                         logger.info { "url '${url}' is healthy" }
@@ -254,31 +258,31 @@ class CloudMananger(
         val userData = UserDataDataSource("lib-cloud-init-generated/${serverSpec.role}-cloud-init.sh", variables)
         val server = resourceGroup.addResource(
             Server(
-                name = "${cloud.name}-${environment.name}-${serverSpec.name}",
-                network = serverSpec.network,
-                userData = userData,
-                sshKeys = serverSpec.sshKeys,
-                location = serverSpec.location,
-                volume = volume,
-                labels = mapOf("role" to serverSpec.role)
+                    id = "${cloud.name}-${environment.name}-${serverSpec.name}",
+                    network = serverSpec.network,
+                    userData = userData,
+                    sshKeys = serverSpec.sshKeys,
+                    location = serverSpec.location,
+                    volume = volume,
+                    labels = mapOf("role" to serverSpec.role)
             )
         )
 
         resourceGroup.addResource(
             DnsRecord(
-                name = "${cloud.name}-${environment.name}-${serverSpec.name}",
-                floatingIp = floatingIp,
-                dnsZone = rootZone,
-                server = server
+                    id = "${cloud.name}-${environment.name}-${serverSpec.name}",
+                    floatingIp = floatingIp,
+                    dnsZone = rootZone,
+                    server = server
             )
         )
 
 
         resourceGroup.addResource(object : DnsRecord(
-            name = "${serverSpec.name}.${environment.name}",
-            floatingIp = floatingIp,
-            dnsZone = rootZone,
-            server = server
+                id = "${serverSpec.name}.${environment.name}",
+                floatingIp = floatingIp,
+                dnsZone = rootZone,
+                server = server
         ) {
             override fun getHealthCheck(): () -> Boolean {
                 return health@{
@@ -286,7 +290,7 @@ class CloudMananger(
                         return@health true
                     }
 
-                    val url = "https://${name}.${dnsZone.name()}:${serverSpec.dnsHealthCheckPort}"
+                    val url = "https://${this.id}.${dnsZone.id()}:${serverSpec.dnsHealthCheckPort}"
                     try {
                         URL(url).readText()
                         logger.info { "url '${url}' is healthy" }
@@ -313,7 +317,7 @@ class CloudMananger(
 
         val hostPkiMount = VaultMount(pkiMountName(cloud, environment), "pki")
         val hostPkiBackendRole = VaultPkiBackendRole(
-                name = pkiMountName(cloud, environment),
+                id = pkiMountName(cloud, environment),
                 allowAnyName = true,
                 generateLease = true,
                 maxTtl = "168h",
@@ -327,7 +331,7 @@ class CloudMananger(
         val hostSshMount = VaultMount(hostSshMountName(cloud, environment),
                 "ssh")
         val hostSshBackendRole = VaultSshBackendRole(
-                name = hostSshMountName(cloud, environment),
+                id = hostSshMountName(cloud, environment),
                 keyType = "ca",
                 maxTtl = "168h",
                 ttl = "168h",
@@ -340,15 +344,15 @@ class CloudMananger(
         val userSshMount = VaultMount(userSshMountName(cloud, environment),
                 "ssh")
         val userSshBackendRole = VaultSshBackendRole(
-            name = userSshMountName(cloud, environment),
-            keyType = "ca",
-            maxTtl = "168h",
-            ttl = "168h",
-            allowedUsers = listOf("root"),
-            defaultUser = "root",
-            allowHostCertificates = false,
-            allowUserCertificates = true,
-            mount = userSshMount
+                id = userSshMountName(cloud, environment),
+                keyType = "ca",
+                maxTtl = "168h",
+                ttl = "168h",
+                allowedUsers = listOf("root"),
+                defaultUser = "root",
+                allowHostCertificates = false,
+                allowUserCertificates = true,
+                mount = userSshMount
         )
         resourceGroup.addResource(userSshBackendRole)
 

@@ -40,7 +40,7 @@ class HetznerServerResourceProvisioner(
 
                     if (!labels.hashLabelMatches(
                                     resource::sshKeys.name,
-                                    resource.sshKeys.joinToString { "${it.name()}" }
+                                    resource.sshKeys.joinToString { "${it.id()}" }
                             )
                     ) {
                         changes.add(
@@ -99,7 +99,7 @@ class HetznerServerResourceProvisioner(
     fun createServer(resource: Server): Result<*> {
         val request = ServerRequest.builder()
 
-        request.name(resource.name)
+        request.name(resource.id)
         request.serverType("cx11")
         request.location(resource.location)
         request.image("debian-10")
@@ -124,7 +124,7 @@ class HetznerServerResourceProvisioner(
         request.userData(userData.result)
 
         val labels = HetznerLabels()
-        labels.addHashLabel(resource::sshKeys.name, resource.sshKeys.joinToString { it.name() })
+        labels.addHashLabel(resource::sshKeys.name, resource.sshKeys.joinToString { it.id() })
         labels.addHashLabel(resource::userData.name, userData.result!!)
 
         request.labels(labels.labels() + resource.labels)
@@ -136,12 +136,12 @@ class HetznerServerResourceProvisioner(
         }
 
         sshKeys.forEach {
-            logger.info { "adding sshkey '${it.resource.name()}' to server '${resource.name}'" }
+            logger.info { "adding sshkey '${it.resource.id()}' to server '${resource.id}'" }
         }
         request.sshKeys(sshKeys.map { it.result!!.id.toLong() })
 
         return checkedApiCall(resource, HetznerCloudAPI::createServer) {
-            logger.info { "creating server '${resource.name}'" }
+            logger.info { "creating server '${resource.id}'" }
             it.createServer(request.build())
         }.mapNonNullResult {
             waitForActions(resource, HetznerCloudAPI::getActionOfServer, it.nextActions) { api, action ->
@@ -167,7 +167,7 @@ class HetznerServerResourceProvisioner(
                 }.mapNonNullResult {
                     waitForActions(resource, HetznerCloudAPI::getActionOfServer, listOf(it.action)) { api, action ->
                         val actionResult = api.getActionOfServer(serverRuntime.id.toLong(), action.id).action
-                        logger.info { "waiting for action '${action.command}' to finish for server '${resource.name}', current status is '${action.status}'" }
+                        logger.info { "waiting for action '${action.command}' to finish for server '${resource.id}', current status is '${action.status}'" }
                         actionResult.finished != null
                     }
                 }
@@ -206,7 +206,7 @@ class HetznerServerResourceProvisioner(
     override fun lookup(lookup: IServerLookup): Result<ServerRuntime> {
         return checkedApiCall(lookup, HetznerCloudAPI::getServers) {
             it.servers.servers.firstOrNull {
-                it.name == lookup.name()
+                it.name == lookup.id()
             }
         }.mapNonNullResult {
             ServerRuntime(

@@ -13,7 +13,7 @@ data class FloatingIpAssignment(val server: IServerLookup, val floatingIp: IFloa
         return floatingIp
     }
 
-    override fun name(): String {
-        return "${this.server.name()}-${this.floatingIp.name()}"
+    override fun id(): String {
+        return "${this.server.id()}-${this.floatingIp.id()}"
     }
 }

@@ -9,7 +9,7 @@ data class Subnet(val subnet: SubnetUtils, val network: INetworkLookup) : ISubne
         return network
     }
 
-    override fun name(): String {
+    override fun id(): String {
         return subnet.info.cidrSignature
     }
 }

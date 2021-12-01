@@ -5,7 +5,7 @@ import de.solidblocks.core.IResourceLookup
 class UserDataDataSource(val resourceFile: String, val variables: HashMap<String, IResourceLookup<String>>) :
     IResourceLookup<String> {
 
-    override fun name(): String {
+    override fun id(): String {
         return resourceFile
     }
 }

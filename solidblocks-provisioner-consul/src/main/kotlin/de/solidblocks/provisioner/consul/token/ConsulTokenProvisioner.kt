@@ -27,7 +27,7 @@ class ConsulTokenProvisioner(val consulClient: Consul) :
     }
 
     override fun apply(resource: ConsulToken): Result<*> {
-        val policies = resource.policies.map { ImmutablePolicyLink.builder().name(it.name).build() }
+        val policies = resource.policies.map { ImmutablePolicyLink.builder().name(it.id).build() }
         val token = ImmutableToken.builder().addAllPolicies(policies).description(resource.description).id(resource.id.toString())
         consulClient.aclClient().createToken(token.build())
 

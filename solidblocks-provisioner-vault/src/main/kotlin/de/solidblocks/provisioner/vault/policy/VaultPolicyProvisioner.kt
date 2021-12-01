@@ -42,7 +42,7 @@ class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, v
 
     override fun apply(resource: VaultPolicy): Result<*> {
         val vaultClient = vaultClientProvider.createClient()
-        vaultClient.opsForSys().createOrUpdatePolicy(resource.name, Policy.of(resource.rules))
+        vaultClient.opsForSys().createOrUpdatePolicy(resource.id, Policy.of(resource.rules))
         return Result<Any>(resource)
     }
 
@@ -50,7 +50,7 @@ class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, v
         val vaultClient = vaultClientProvider.createClient()
 
         return try {
-            val policy = vaultClient.opsForSys().getPolicy(lookup.name())
+            val policy = vaultClient.opsForSys().getPolicy(lookup.id())
 
             if (null == policy) {
                 Result(lookup)

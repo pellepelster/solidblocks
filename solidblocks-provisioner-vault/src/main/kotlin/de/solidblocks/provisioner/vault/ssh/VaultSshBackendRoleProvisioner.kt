@@ -52,7 +52,7 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
     ): Boolean {
         var keysExist = true
         try {
-            client.read("${resource.mount().name()}/config/ca", Object::class.java)
+            client.read("${resource.mount().id()}/config/ca", Object::class.java)
         } catch (e: VaultException) {
             if (e.message?.contains("keys haven't been configured yet") == true) {
                 keysExist = false
@@ -169,12 +169,12 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
                 }
         )
 
-        val response = vaultClient.write("${resource.mount.name()}/roles/${resource.name}", role)
+        val response = vaultClient.write("${resource.mount.id()}/roles/${resource.id}", role)
 
         if (!keysExist(vaultClient, resource)) {
-            val key = Utils.generateSshKey(resource.mount.name())
+            val key = Utils.generateSshKey(resource.mount.id())
             vaultClient.write(
-                    "${resource.mount.name()}/config/ca",
+                    "${resource.mount.id()}/config/ca",
                     mapOf("private_key" to key.first, "public_key" to key.second)
             )
         }
@@ -189,7 +189,7 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
     override fun lookup(lookup: IVaultSshBackendRoleLookup): Result<VaultSshBackendRoleRuntime> {
         val vaultClient = vaultRootClientProvider.createClient()
 
-        val role = vaultClient.read("${lookup.mount().name()}/roles/${lookup.name()}", SshBackendRole::class.java)
+        val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", SshBackendRole::class.java)
                 ?: return Result(lookup, null)
 
         val keysExist = keysExist(vaultClient, lookup)

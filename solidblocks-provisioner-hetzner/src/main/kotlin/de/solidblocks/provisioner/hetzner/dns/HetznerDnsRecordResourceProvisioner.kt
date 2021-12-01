@@ -69,20 +69,20 @@ class HetznerDnsRecordResourceProvisioner(
 
             if (first.ttl != resource.ttl) {
                 changes.add(
-                    ResourceDiffItem(
-                        resource::ttl,
-                        actualValue = first.ttl.toString(),
-                        expectedValue = resource.ttl.toString()
-                    )
+                        ResourceDiffItem(
+                                resource::ttl,
+                                actualValue = first.ttl.toString(),
+                                expectedValue = resource.ttl.toString()
+                        )
                 )
             }
-            if (first.name != resource.name) {
+            if (first.name != resource.id) {
                 changes.add(
-                    ResourceDiffItem(
-                        resource::name,
-                        actualValue = first.name,
-                        expectedValue = resource.name
-                    )
+                        ResourceDiffItem(
+                                name = resource.id(),
+                                actualValue = first.name,
+                                expectedValue = resource.id
+                        )
                 )
             }
 
@@ -98,7 +98,7 @@ class HetznerDnsRecordResourceProvisioner(
         ) { first, second ->
 
             val recordRequest = RecordRequest.builder()
-            recordRequest.name(resource.name)
+            recordRequest.name(resource.id)
             recordRequest.type(RecordType.A)
             recordRequest.value(second)
             recordRequest.ttl(resource.ttl)
@@ -126,7 +126,7 @@ class HetznerDnsRecordResourceProvisioner(
     override fun lookup(lookup: IDnsRecordLookup): Result<DnsRecordRuntime> {
         return this.provisioner.lookup(lookup.dnsZone()).mapNonNullResultNullable { zone ->
             checkedApiCall(lookup, HetznerDnsAPI::getRecords) {
-                it.getRecords(zone.id).firstOrNull { it.name == lookup.name() }
+                it.getRecords(zone.id).firstOrNull { it.name == lookup.id() }
             }.mapNonNull {
                 DnsRecordRuntime(it.id, it.name, it.value, it.ttl)
             }

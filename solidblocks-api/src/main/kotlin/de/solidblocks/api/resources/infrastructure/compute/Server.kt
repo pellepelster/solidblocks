@@ -5,7 +5,7 @@ import de.solidblocks.api.resources.infrastructure.ssh.ISshKeyLookup
 import de.solidblocks.core.IInfrastructureResource
 
 class Server(
-        val name: String,
+        val id: String,
         val network: INetworkLookup,
         val userData: UserDataDataSource,
         val location: String,
@@ -19,7 +19,7 @@ class Server(
 
     override fun getParents() = listOfNotNull(userData, network, volume) + sshKeys + dependencies
 
-    override fun name(): String {
-        return this.name
+    override fun id(): String {
+        return this.id
     }
 }

@@ -27,31 +27,31 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
     var diffNeedsRecreate = HashMap<String, AtomicInteger>()
 
     fun failOnLookup(resource: TestResource) {
-        failOnLookup[resource.name] = true
+        failOnLookup[resource.id] = true
     }
 
     fun lookupCount(resource: TestResource): Int {
-        return lookupWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.get()
+        return lookupWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.get()
     }
 
     fun failOnApply(resource: TestResource) {
-        failOnApply[resource.name] = true
+        failOnApply[resource.id] = true
     }
 
     fun diffIsMissing(resource: TestResource) {
-        diffIsMissing[resource.name] = true
+        diffIsMissing[resource.id] = true
     }
 
     fun applyCount(resource: TestResource): Int {
-        return applyWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.get()
+        return applyWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.get()
     }
 
     fun failOnDiff(resource: TestResource) {
-        failOnDiff[resource.name] = true
+        failOnDiff[resource.id] = true
     }
 
     fun diffCount(resource: TestResource): Int {
-        return diffWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.get()
+        return diffWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.get()
     }
 
     fun reset() {
@@ -76,27 +76,27 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
     }
 
     override fun diff(resource: TestResource): Result<ResourceDiff> {
-        diffWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
-        if (failOnDiff.containsKey(resource.name)) {
+        diffWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.incrementAndGet()
+        if (failOnDiff.containsKey(resource.id)) {
             throw RuntimeException()
         } else {
             val changes = ArrayList<ResourceDiffItem>()
 
-            if (diffNeedsRecreate.containsKey(resource.name)) {
+            if (diffNeedsRecreate.containsKey(resource.id)) {
                 changes.add(ResourceDiffItem("something", triggersRecreate = true))
             }
 
             return Result(
                 resource,
-                result = ResourceDiff(resource, missing = diffIsMissing.containsKey(resource.name), changes = changes)
+                result = ResourceDiff(resource, missing = diffIsMissing.containsKey(resource.id), changes = changes)
             )
         }
     }
 
     override fun apply(resource: TestResource): Result<*> {
-        applyWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
+        applyWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.incrementAndGet()
 
-        if (failOnApply.containsKey(resource.name)) {
+        if (failOnApply.containsKey(resource.id)) {
             throw RuntimeException()
         } else {
             return Result(resource, result = "result")
@@ -104,9 +104,9 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
     }
 
     override fun destroy(resource: TestResource): Result<*> {
-        destroyWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
+        destroyWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.incrementAndGet()
 
-        if (failOnDestroy.containsKey(resource.name)) {
+        if (failOnDestroy.containsKey(resource.id)) {
             throw RuntimeException()
         } else {
             return Result(resource, result = "result")
@@ -118,9 +118,9 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
     }
 
     override fun lookup(lookup: ITestResourceLookup): Result<String> {
-        lookupWasCalled.computeIfAbsent(lookup.name()) { AtomicInteger() }.incrementAndGet()
+        lookupWasCalled.computeIfAbsent(lookup.id()) { AtomicInteger() }.incrementAndGet()
 
-        if (failOnLookup.containsKey(lookup.name())) {
+        if (failOnLookup.containsKey(lookup.id())) {
             throw RuntimeException()
         } else {
             return Result(lookup, result = "result")

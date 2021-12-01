@@ -4,7 +4,7 @@ import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 class VaultSshBackendRole(
-        val name: String,
+        val id: String,
         val keyType: String,
         val maxTtl: String,
         val ttl: String,
@@ -22,8 +22,8 @@ class VaultSshBackendRole(
         return mount
     }
 
-    override fun name(): String {
-        return this.name
+    override fun id(): String {
+        return this.id
     }
 
     override fun getParents() = listOf(mount)

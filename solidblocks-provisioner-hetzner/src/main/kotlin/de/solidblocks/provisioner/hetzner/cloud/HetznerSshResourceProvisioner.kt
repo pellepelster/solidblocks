@@ -37,7 +37,7 @@ class HetznerSshResourceProvisioner(cloudContext: CloudConfigurationContext) :
     }
 
     override fun apply(resource: SshKey): Result<*> {
-        val request = SSHKeyRequest.builder().name(resource.name).publicKey(resource.publicKey)
+        val request = SSHKeyRequest.builder().name(resource.id).publicKey(resource.publicKey)
 
         return checkedApiCall(resource, HetznerCloudAPI::createSSHKey) {
             it.createSSHKey(request.build())
@@ -73,7 +73,7 @@ class HetznerSshResourceProvisioner(cloudContext: CloudConfigurationContext) :
 
     override fun lookup(lookup: ISshKeyLookup): Result<SshKeyRuntime> {
         return checkedApiCall(lookup, HetznerCloudAPI::getSSHKeys) {
-            it.sshKeys.sshKeys.filter { it.name == lookup.name() }.firstOrNull()
+            it.sshKeys.sshKeys.filter { it.name == lookup.id() }.firstOrNull()
         }.mapNonNullResult {
             SshKeyRuntime(it.id.toString())
         }

@@ -8,8 +8,6 @@ import java.util.*
 class ConsulToken(val id: UUID, val description: String, val policies: List<ConsulPolicy>) :
         IConsulTokenLookup,
         IInfrastructureResource<ConsulToken, ConsulPolicyRuntime> {
-    override fun id() = id
-
-    override fun name(): String = id.toString()
+    override fun id() = id.toString()
 
 }
