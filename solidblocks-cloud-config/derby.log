@@ -1,10 +1,10 @@
 ----------------------------------------------------------------
-Wed Dec 01 22:08:45 CET 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance a816c00e-017d-77d4-0bc0-000002768058 
-on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
+Thu Dec 02 11:03:32 CET 2021:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance a816c00e-017d-7a99-6084-000000e13060 
+on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/f9d6a0c6-18ee-44a9-bd23-567758c5fe44 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5bc2b487 
 Loaded from file:/home/pelle/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.15.2.0/b64da6681994f33ba5783ffae55cdb44885b9e70/derby-10.15.2.0.jar
 java.vendor=Private Build
-java.runtime.version=16.0.1+9-Ubuntu-1
+java.runtime.version=15.0.3+3-Ubuntu-1
 user.dir=/home/pelle/git/solidblocks/solidblocks-cloud-config
 os.name=Linux
 os.arch=amd64
@@ -12,15 +12,12 @@ os.version=5.13.0-7620-generic
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''
 ----------------------------------------------------------------
-Wed Dec 01 22:08:46 CET 2021:
-Shutting down instance a816c00e-017d-77d4-0bc0-000002768058 on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-----------------------------------------------------------------
-Wed Dec 01 22:08:47 CET 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance 90478154-017d-77d4-0bc0-000002768058 
-on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
+Thu Dec 02 11:03:32 CET 2021:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance 36e280fc-017d-7a99-6084-000000e13060 
+on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/9796d3b0-0430-4644-8ee3-d2e28d4cc9b6 with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5bc2b487 
 Loaded from file:/home/pelle/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.15.2.0/b64da6681994f33ba5783ffae55cdb44885b9e70/derby-10.15.2.0.jar
 java.vendor=Private Build
-java.runtime.version=16.0.1+9-Ubuntu-1
+java.runtime.version=15.0.3+3-Ubuntu-1
 user.dir=/home/pelle/git/solidblocks/solidblocks-cloud-config
 os.name=Linux
 os.arch=amd64
@@ -28,79 +25,12 @@ os.version=5.13.0-7620-generic
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''
 ----------------------------------------------------------------
-Wed Dec 01 22:08:48 CET 2021:
-Shutting down instance 90478154-017d-77d4-0bc0-000002768058 on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-----------------------------------------------------------------
-Wed Dec 01 22:08:48 CET 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance 19e1419a-017d-77d4-0bc0-000002768058 
-on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
+Thu Dec 02 11:03:32 CET 2021:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance bcff41ea-017d-7a99-6084-000000e13060 
+on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/29e19baa-aae6-46b9-9944-503044e2225c with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5bc2b487 
 Loaded from file:/home/pelle/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.15.2.0/b64da6681994f33ba5783ffae55cdb44885b9e70/derby-10.15.2.0.jar
 java.vendor=Private Build
-java.runtime.version=16.0.1+9-Ubuntu-1
-user.dir=/home/pelle/git/solidblocks/solidblocks-cloud-config
-os.name=Linux
-os.arch=amd64
-os.version=5.13.0-7620-generic
-derby.system.home=null
-Database Class Loader started - derby.database.classpath=''
-----------------------------------------------------------------
-Wed Dec 01 22:08:48 CET 2021:
-Shutting down instance 19e1419a-017d-77d4-0bc0-000002768058 on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-----------------------------------------------------------------
-Wed Dec 01 22:08:48 CET 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance 44dd41c7-017d-77d4-0bc0-000002768058 
-on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-Loaded from file:/home/pelle/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.15.2.0/b64da6681994f33ba5783ffae55cdb44885b9e70/derby-10.15.2.0.jar
-java.vendor=Private Build
-java.runtime.version=16.0.1+9-Ubuntu-1
-user.dir=/home/pelle/git/solidblocks/solidblocks-cloud-config
-os.name=Linux
-os.arch=amd64
-os.version=5.13.0-7620-generic
-derby.system.home=null
-Database Class Loader started - derby.database.classpath=''
-----------------------------------------------------------------
-Wed Dec 01 22:08:49 CET 2021:
-Shutting down instance 44dd41c7-017d-77d4-0bc0-000002768058 on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-----------------------------------------------------------------
-Wed Dec 01 22:08:49 CET 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance d1d381f4-017d-77d4-0bc0-000002768058 
-on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-Loaded from file:/home/pelle/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.15.2.0/b64da6681994f33ba5783ffae55cdb44885b9e70/derby-10.15.2.0.jar
-java.vendor=Private Build
-java.runtime.version=16.0.1+9-Ubuntu-1
-user.dir=/home/pelle/git/solidblocks/solidblocks-cloud-config
-os.name=Linux
-os.arch=amd64
-os.version=5.13.0-7620-generic
-derby.system.home=null
-Database Class Loader started - derby.database.classpath=''
-----------------------------------------------------------------
-Wed Dec 01 22:08:49 CET 2021:
-Shutting down instance d1d381f4-017d-77d4-0bc0-000002768058 on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-----------------------------------------------------------------
-Wed Dec 01 22:08:49 CET 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance 10c40221-017d-77d4-0bc0-000002768058 
-on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-Loaded from file:/home/pelle/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.15.2.0/b64da6681994f33ba5783ffae55cdb44885b9e70/derby-10.15.2.0.jar
-java.vendor=Private Build
-java.runtime.version=16.0.1+9-Ubuntu-1
-user.dir=/home/pelle/git/solidblocks/solidblocks-cloud-config
-os.name=Linux
-os.arch=amd64
-os.version=5.13.0-7620-generic
-derby.system.home=null
-Database Class Loader started - derby.database.classpath=''
-----------------------------------------------------------------
-Wed Dec 01 22:08:50 CET 2021:
-Shutting down instance 10c40221-017d-77d4-0bc0-000002768058 on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-----------------------------------------------------------------
-Wed Dec 01 22:08:50 CET 2021:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.15.2.0 - (1873585): instance 51aec24e-017d-77d4-0bc0-000002768058 
-on database directory memory:/home/pelle/git/solidblocks/solidblocks-cloud-config/solidblocks with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5ffd2b27 
-Loaded from file:/home/pelle/.gradle/caches/modules-2/files-2.1/org.apache.derby/derby/10.15.2.0/b64da6681994f33ba5783ffae55cdb44885b9e70/derby-10.15.2.0.jar
-java.vendor=Private Build
-java.runtime.version=16.0.1+9-Ubuntu-1
+java.runtime.version=15.0.3+3-Ubuntu-1
 user.dir=/home/pelle/git/solidblocks/solidblocks-cloud-config
 os.name=Linux
 os.arch=amd64

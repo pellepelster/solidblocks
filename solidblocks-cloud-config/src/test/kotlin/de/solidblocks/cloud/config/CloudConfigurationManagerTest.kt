@@ -1,34 +1,31 @@
-package de.solidblocks.config
+package de.solidblocks.cloud.config
 
-import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.model.CloudConfigValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.jdbc.AutoConfigureDataJdbc
-import org.springframework.context.annotation.Profile
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @ExtendWith(SpringExtension::class)
-@AutoConfigureDataJdbc
-@ContextConfiguration( classes = [TestConfiguration::class])
-@TestPropertySource(
-        locations = ["/application.yml"],
-)
-@Profile("test")
-open class CloudConfigurationManagerTest {
-
-    @Autowired
-    private lateinit var cloudConfigurationManager: CloudConfigurationManager
+@ContextConfiguration(classes = [TestApplicationContext::class, LiquibaseAutoConfiguration::class])
+@AutoConfigureTestDatabase
+open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManager: CloudConfigurationManager) {
 
     @Test
     fun testCreateCloud() {
         assertThat(cloudConfigurationManager.hasCloud("cloud1")).isFalse
 
-        assertThat(cloudConfigurationManager.createCloud("cloud1", "domain1", listOf(CloudConfigValue("name1", "value1")))).isTrue
+        assertThat(
+            cloudConfigurationManager.createCloud(
+                "cloud1",
+                "domain1",
+                listOf(CloudConfigValue("name1", "value1"))
+            )
+        ).isTrue
         assertThat(cloudConfigurationManager.hasCloud("cloud1")).isTrue
         assertThat(cloudConfigurationManager.createCloud("cloud1", "domain1")).isFalse
 

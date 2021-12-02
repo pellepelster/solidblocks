@@ -15,10 +15,14 @@ import org.hamcrest.core.Is
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.vault.support.Policy
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.junit.jupiter.Container
@@ -26,8 +30,9 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
 import java.util.*
 
-@SpringBootTest(classes = [TestApplicationContext::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
-@TestPropertySource(properties = ["vault_addr=http://localhost:8200"])
+@ExtendWith(SpringExtension::class)
+@ContextConfiguration(classes = [TestApplicationContext::class, LiquibaseAutoConfiguration::class])
+@AutoConfigureTestDatabase
 @Testcontainers
 open class VaultProvisionerTest(
         @Autowired
@@ -46,14 +51,22 @@ open class VaultProvisionerTest(
         val kvProvisioner: VaultKVProvisioner,
 ) {
 
-    @Container
-    private final var environment: DockerComposeContainer<*> =
+    companion object {
+        @Container
+        val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
-                    .apply {
-                        withExposedService("vault1", 8200)
-                        withExposedService("vault2", 8200)
-                        start()
-                    }
+                .apply {
+                    withExposedService("vault", 8200)
+                    start()
+                }
+
+
+        @JvmStatic
+        @DynamicPropertySource
+        fun properties(registry: DynamicPropertyRegistry) {
+            registry.add("vault.addr") { "http://localhost:${environment.getServicePort("vault", 8200)}" }
+        }
+    }
 
     @Test
     fun testMountDiffAndApply() {

@@ -16,7 +16,7 @@ import java.net.URI
 class VaultRootClientProvider(
         val configurationContext: CloudConfigurationContext,
         val configurationManager: CloudConfigurationManager,
-        @Value("\${vault_addr:null}")
+        @Value("\${vault.addr:null}")
         val vaultAddrOverride: String? = null
 ) {
 

@@ -8,18 +8,24 @@ import de.solidblocks.provisioner.consul.token.ConsulToken
 import de.solidblocks.provisioner.consul.token.ConsulTokenLookup
 import de.solidblocks.provisioner.consul.token.ConsulTokenProvisioner
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.ClassRule
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
+import org.springframework.test.context.TestPropertySource
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
 import java.util.*
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
-@SpringBootTest(classes = [TestConfiguration::class], properties = ["spring.main.allow-bean-definition-overriding=true"])
+@SpringBootTest(classes = [TestApplicationContext::class])
+@TestPropertySource(properties = ["vault_addr=http://localhost:8200"])
+@Testcontainers
 class ConsulProvisionerTest {
 
     @Autowired
@@ -28,16 +34,26 @@ class ConsulProvisionerTest {
     @Autowired
     private lateinit var tokenProvisioner: ConsulTokenProvisioner
 
-    @ClassRule
-    var environment: DockerComposeContainer<*> =
+    companion object {
+        @Container
+        val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
-                    .apply {
-                        withExposedService("consul", 8500)
-                                .waitingFor("consul", LogMessageWaitStrategy()
-                                        .withRegEx(".*federation state pruning.*"))
-                                .start()
-                    }
+                .apply {
+                    withExposedService("consul", 8500)
+                        .waitingFor(
+                            "consul", LogMessageWaitStrategy()
+                                .withRegEx(".*federation state pruning.*")
+                        )
+                        .start()
+                }
 
+        @JvmStatic
+        @DynamicPropertySource
+        fun properties(registry: DynamicPropertyRegistry) {
+            registry.add("consul.addr") { "http://localhost:${environment.getServicePort("consul", 8500)}" }
+        }
+
+    }
 
     @Test
     fun testPolicyDiffAndApply() {

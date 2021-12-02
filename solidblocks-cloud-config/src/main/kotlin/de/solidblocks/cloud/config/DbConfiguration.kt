@@ -28,5 +28,4 @@ open class DbConfiguration {
         jooqConfiguration.set(connectionProvider)
         return jooqConfiguration
     }
-
 }

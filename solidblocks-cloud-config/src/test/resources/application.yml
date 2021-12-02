@@ -1,8 +1,0 @@
-spring:
-    datasource:
-        driver-class-name: org.apache.derby.jdbc.EmbeddedDriver
-        url: jdbc:derby:memory:solidblocks;create=true;user=solidblocks
-    liquibase:
-        # this forces a separate data source for liquibase, avoiding shutdown of main datasource by liquibase after migration
-        driver-class-name: org.apache.derby.jdbc.EmbeddedDriver
-        url: jdbc:derby:memory:solidblocks;create=true;user=solidblocks

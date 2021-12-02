@@ -1,15 +1,6 @@
 version: '3'
 services:
-  vault1:
-    image: vault
-    ports:
-      - "8200:8200"
-    environment:
-      - VAULT_LOCAL_CONFIG=storage "file" { path = "tmp" } listener "tcp" { tls_disable = true address = "0.0.0.0:8200" }
-    cap_add:
-      - IPC_LOCK
-    command: server
-  vault2:
+  vault:
     image: vault
     ports:
       - "8200"
