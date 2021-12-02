@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class ResourceLookupProvider<RuntimeType>(private val provisioner: Provisioner) :
-        IResourceLookupProvider<ResourceLookup<RuntimeType>, String> {
+    IResourceLookupProvider<ResourceLookup<RuntimeType>, String> {
 
     override fun lookup(lookup: ResourceLookup<RuntimeType>): de.solidblocks.core.Result<String> {
         return this.provisioner.lookup(lookup.resource).mapResourceResult {

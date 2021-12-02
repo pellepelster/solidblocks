@@ -18,5 +18,4 @@ open class TestApplicationContext {
     open fun consulClientWrapper(@Value("\${consul.addr}") consulAddr: String): Consul {
         return Consul.builder().withUrl(consulAddr).withTokenAuth("master-token").build()
     }
-
 }

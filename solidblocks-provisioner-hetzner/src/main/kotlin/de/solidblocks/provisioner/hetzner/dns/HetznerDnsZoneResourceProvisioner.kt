@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerDnsZoneResourceProvisioner(cloudContext: CloudConfigurationContext) :
-        IResourceLookupProvider<IDnsZoneLookup, DnsZoneRuntime>,
-        BaseHetznerProvisioner<DnsZone, DnsZoneRuntime, HetznerDnsAPI>(
-                { HetznerDnsAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_DNS_API_TOKEN_RW_KEY)) }) {
+    IResourceLookupProvider<IDnsZoneLookup, DnsZoneRuntime>,
+    BaseHetznerProvisioner<DnsZone, DnsZoneRuntime, HetznerDnsAPI>(
+        { HetznerDnsAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_DNS_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

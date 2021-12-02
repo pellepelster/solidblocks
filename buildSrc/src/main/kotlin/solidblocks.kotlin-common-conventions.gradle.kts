@@ -68,6 +68,8 @@ tasks.jar {
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     outputToConsole.set(true)
     outputColorName.set("RED")
+    disabledRules.set(listOf("no-wildcard-imports", "redundant-curly-braces"))
+
     reporters {
         reporter(ReporterType.PLAIN_GROUP_BY_FILE)
     }

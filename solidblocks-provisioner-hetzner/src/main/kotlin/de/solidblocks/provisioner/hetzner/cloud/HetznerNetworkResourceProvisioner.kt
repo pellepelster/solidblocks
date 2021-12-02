@@ -20,8 +20,8 @@ import org.springframework.stereotype.Component
 class HetznerNetworkResourceProvisioner(cloudContext: CloudConfigurationContext) :
     IResourceLookupProvider<INetworkLookup, NetworkRuntime>,
     IInfrastructureResourceProvisioner<Network,
-            NetworkRuntime>, BaseHetznerProvisioner<Network, NetworkRuntime, HetznerCloudAPI>(
-    { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+        NetworkRuntime>, BaseHetznerProvisioner<Network, NetworkRuntime, HetznerCloudAPI>(
+        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

@@ -69,20 +69,20 @@ class HetznerDnsRecordResourceProvisioner(
 
             if (first.ttl != resource.ttl) {
                 changes.add(
-                        ResourceDiffItem(
-                                resource::ttl,
-                                actualValue = first.ttl.toString(),
-                                expectedValue = resource.ttl.toString()
-                        )
+                    ResourceDiffItem(
+                        resource::ttl,
+                        actualValue = first.ttl.toString(),
+                        expectedValue = resource.ttl.toString()
+                    )
                 )
             }
             if (first.name != resource.id) {
                 changes.add(
-                        ResourceDiffItem(
-                                name = resource.id(),
-                                actualValue = first.name,
-                                expectedValue = resource.id
-                        )
+                    ResourceDiffItem(
+                        name = resource.id(),
+                        actualValue = first.name,
+                        expectedValue = resource.id
+                    )
                 )
             }
 
@@ -92,9 +92,9 @@ class HetznerDnsRecordResourceProvisioner(
 
     override fun apply(resource: DnsRecord): Result<*> {
         return onSuccess(
-                resource,
-                provisioner.lookup(resource.dnsZone),
-                resolveIp(resource)
+            resource,
+            provisioner.lookup(resource.dnsZone),
+            resolveIp(resource)
         ) { first, second ->
 
             val recordRequest = RecordRequest.builder()
@@ -110,11 +110,11 @@ class HetznerDnsRecordResourceProvisioner(
                         it.updateRecord(record.id, recordRequest.build())
                     }
                 },
-                    {
-                        checkedApiCall(resource, HetznerDnsAPI::createRecord) {
-                            it.createRecord(recordRequest.build())
-                        }
+                {
+                    checkedApiCall(resource, HetznerDnsAPI::createRecord) {
+                        it.createRecord(recordRequest.build())
                     }
+                }
             )
         }
     }

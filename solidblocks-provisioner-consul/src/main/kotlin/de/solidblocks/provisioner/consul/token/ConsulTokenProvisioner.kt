@@ -13,8 +13,8 @@ import java.util.*
 
 @Component
 class ConsulTokenProvisioner(val consulClient: Consul) :
-        IResourceLookupProvider<IConsulTokenLookup, ConsulTokenRuntime>,
-        IInfrastructureResourceProvisioner<ConsulToken, ConsulTokenRuntime> {
+    IResourceLookupProvider<IConsulTokenLookup, ConsulTokenRuntime>,
+    IInfrastructureResourceProvisioner<ConsulToken, ConsulTokenRuntime> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -36,9 +36,9 @@ class ConsulTokenProvisioner(val consulClient: Consul) :
 
     override fun diff(resource: ConsulToken): Result<ResourceDiff> {
         return Result(
-                failed = false,
-                resource = resource,
-                result = ResourceDiff(resource = resource, missing = true)
+            failed = false,
+            resource = resource,
+            result = ResourceDiff(resource = resource, missing = true)
         )
     }
 

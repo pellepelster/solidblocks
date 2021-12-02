@@ -11,4 +11,3 @@ data class PkiBackendRole(
     val allow_any_name: Boolean?,
     val generate_lease: Boolean?,
 )
-

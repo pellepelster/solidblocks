@@ -12,17 +12,17 @@ import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
             .keyBits(KEY_BITS)
  */
 class VaultPkiBackendRole(
-        val id: String,
-        val allowAnyName: Boolean,
-        val ttl: String,
-        val maxTtl: String,
-        val generateLease: Boolean,
-        val keyType: String,
-        val keyBits: Int,
-        val mount: IVaultMountLookup
+    val id: String,
+    val allowAnyName: Boolean,
+    val ttl: String,
+    val maxTtl: String,
+    val generateLease: Boolean,
+    val keyType: String,
+    val keyBits: Int,
+    val mount: IVaultMountLookup
 ) :
-        IVaultPkiBackendRoleLookup,
-        IInfrastructureResource<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
+    IVaultPkiBackendRoleLookup,
+    IInfrastructureResource<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
 
     override fun mount(): IVaultMountLookup {
         return mount
@@ -30,5 +30,5 @@ class VaultPkiBackendRole(
 
     override fun id() = id
 
-    override fun getParents() =  listOf(mount)
+    override fun getParents() = listOf(mount)
 }

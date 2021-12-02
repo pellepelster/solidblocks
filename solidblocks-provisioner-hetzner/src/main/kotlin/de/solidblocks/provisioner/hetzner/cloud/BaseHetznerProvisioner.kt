@@ -13,7 +13,7 @@ import org.springframework.web.client.HttpClientErrorException
 import kotlin.reflect.KFunction
 
 abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
-        private val createApi: () -> ApiType,
+    private val createApi: () -> ApiType,
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -28,17 +28,17 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
     }
 
     fun <ResourceType : IResource, TargetType> checkedApiCall(
-            resource: ResourceType,
-            function: KFunction<Any>,
-            apiCall: (ApiType) -> TargetType?
+        resource: ResourceType,
+        function: KFunction<Any>,
+        apiCall: (ApiType) -> TargetType?
     ): Result<TargetType> {
         return checkedApiCall(resource, function.name, apiCall)
     }
 
     fun <ResourceType : IResource, TargetType> checkedApiCall(
-            resource: ResourceType,
-            action: String,
-            apiCall: (ApiType) -> TargetType?
+        resource: ResourceType,
+        action: String,
+        apiCall: (ApiType) -> TargetType?
     ): Result<TargetType> {
 
         return Waiter.defaultWaiter().waitFor {
@@ -88,8 +88,8 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
     }
 
     fun <RuntimeType> waitForApiCall(
-            resource: IInfrastructureResource<ResourceType, RuntimeType>,
-            apiCall: (ApiType) -> Boolean
+        resource: IInfrastructureResource<ResourceType, RuntimeType>,
+        apiCall: (ApiType) -> Boolean
     ): Result<Boolean> {
 
         return Waiter.defaultWaiter().waitForSuccess {
@@ -132,10 +132,10 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
     }
 
     fun <ResourceType : IResource> waitForActions(
-            resource: ResourceType,
-            function: KFunction<Any>,
-            actions: List<Action>,
-            call: (ApiType, Action) -> Boolean
+        resource: ResourceType,
+        function: KFunction<Any>,
+        actions: List<Action>,
+        call: (ApiType, Action) -> Boolean
     ): Result<Boolean> {
 
         val actionCalls = actions.map { action ->
@@ -157,5 +157,4 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(
             it.invoke()
         }.reduceResults() as Result<Boolean>
     }
-
 }

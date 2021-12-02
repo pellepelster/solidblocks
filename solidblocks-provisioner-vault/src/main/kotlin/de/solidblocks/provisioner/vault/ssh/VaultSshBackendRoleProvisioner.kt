@@ -23,16 +23,16 @@ import kotlin.reflect.KProperty1
 
 @Component
 class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
-        IResourceLookupProvider<IVaultSshBackendRoleLookup, VaultSshBackendRoleRuntime>,
-        IInfrastructureResourceProvisioner<VaultSshBackendRole, VaultSshBackendRoleRuntime> {
+    IResourceLookupProvider<IVaultSshBackendRoleLookup, VaultSshBackendRoleRuntime>,
+    IInfrastructureResourceProvisioner<VaultSshBackendRole, VaultSshBackendRoleRuntime> {
 
     private val compareTtl: (String, String) -> Boolean = { expectedValue, actualValue ->
         val period = MutablePeriod()
 
         val parser = PeriodFormatterBuilder()
-                .appendHours().appendSuffix("h")
-                .appendMinutes().appendSuffix("m")
-                .toParser()
+            .appendHours().appendSuffix("h")
+            .appendMinutes().appendSuffix("m")
+            .toParser()
 
         parser.parseInto(period, expectedValue, 0, Locale.getDefault())
         val expectedSeconds = period.toDurationFrom(Instant.now()).standardSeconds
@@ -47,8 +47,8 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
     private val logger = KotlinLogging.logger {}
 
     private fun keysExist(
-            client: VaultTemplate,
-            resource: IVaultSshBackendRoleLookup
+        client: VaultTemplate,
+        resource: IVaultSshBackendRoleLookup
     ): Boolean {
         var keysExist = true
         try {
@@ -154,19 +154,19 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
         val vaultClient = vaultRootClientProvider.createClient()
 
         val role = SshBackendRole(
-                key_type = resource.keyType,
-                max_ttl = resource.maxTtl,
-                ttl = resource.ttl,
-                allow_host_certificates = resource.allowHostCertificates,
-                allow_user_certificates = resource.allowUserCertificates,
-                allowed_users = resource.allowedUsers.joinToString(separator = ","),
-                default_user = resource.defaultUser,
-                default_extensions = resource.defaultExtensions?.let {
-                    SshBackendRoleDefaultExtensions(
-                            it.permitPty,
-                            it.permitPortForwarding
-                    )
-                }
+            key_type = resource.keyType,
+            max_ttl = resource.maxTtl,
+            ttl = resource.ttl,
+            allow_host_certificates = resource.allowHostCertificates,
+            allow_user_certificates = resource.allowUserCertificates,
+            allowed_users = resource.allowedUsers.joinToString(separator = ","),
+            default_user = resource.defaultUser,
+            default_extensions = resource.defaultExtensions?.let {
+                SshBackendRoleDefaultExtensions(
+                    it.permitPty,
+                    it.permitPortForwarding
+                )
+            }
         )
 
         val response = vaultClient.write("${resource.mount.id()}/roles/${resource.id}", role)
@@ -174,8 +174,8 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
         if (!keysExist(vaultClient, resource)) {
             val key = Utils.generateSshKey(resource.mount.id())
             vaultClient.write(
-                    "${resource.mount.id()}/config/ca",
-                    mapOf("private_key" to key.first, "public_key" to key.second)
+                "${resource.mount.id()}/config/ca",
+                mapOf("private_key" to key.first, "public_key" to key.second)
             )
         }
 
@@ -190,7 +190,7 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
         val vaultClient = vaultRootClientProvider.createClient()
 
         val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", SshBackendRole::class.java)
-                ?: return Result(lookup, null)
+            ?: return Result(lookup, null)
 
         val keysExist = keysExist(vaultClient, lookup)
 

@@ -20,75 +20,75 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerServerResourceProvisioner(
-        private val provisioner: Provisioner,
-        cloudContext: CloudConfigurationContext
+    private val provisioner: Provisioner,
+    cloudContext: CloudConfigurationContext
 ) :
-        IResourceLookupProvider<IServerLookup, ServerRuntime>,
-        IInfrastructureResourceProvisioner<Server,
-                ServerRuntime>,
-        BaseHetznerProvisioner<Server, ServerRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+    IResourceLookupProvider<IServerLookup, ServerRuntime>,
+    IInfrastructureResourceProvisioner<Server,
+        ServerRuntime>,
+    BaseHetznerProvisioner<Server, ServerRuntime, HetznerCloudAPI>(
+        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun diff(resource: Server): Result<ResourceDiff> {
         return this.lookup(resource).mapResourceResultOrElse(
-                {
+            {
 
-                    val labels = HetznerLabels(it.labels)
-                    val changes = ArrayList<ResourceDiffItem>()
+                val labels = HetznerLabels(it.labels)
+                val changes = ArrayList<ResourceDiffItem>()
 
+                if (!labels.hashLabelMatches(
+                        resource::sshKeys.name,
+                        resource.sshKeys.joinToString { "${it.id()}" }
+                    )
+                ) {
+                    changes.add(
+                        ResourceDiffItem(
+                            resource::sshKeys,
+                            triggersRecreate = true,
+                            changed = true
+                        )
+                    )
+                }
+
+                val userData = provisioner.lookup(resource.userData)
+
+                if (userData.result != null) {
                     if (!labels.hashLabelMatches(
-                                    resource::sshKeys.name,
-                                    resource.sshKeys.joinToString { "${it.id()}" }
-                            )
+                            resource::userData.name,
+                            userData.result!!
+                        )
                     ) {
                         changes.add(
-                                ResourceDiffItem(
-                                        resource::sshKeys,
-                                        triggersRecreate = true,
-                                        changed = true
-                                )
-                        )
-                    }
-
-                    val userData = provisioner.lookup(resource.userData)
-
-                    if (userData.result != null) {
-                        if (!labels.hashLabelMatches(
-                                        resource::userData.name,
-                                        userData.result!!
-                                )
-                        ) {
-                            changes.add(
-                                    ResourceDiffItem(
-                                            resource::userData,
-                                            triggersRecreate = true,
-                                            changed = true
-                                    )
+                            ResourceDiffItem(
+                                resource::userData,
+                                triggersRecreate = true,
+                                changed = true
                             )
-                        }
-                    }
-
-                    if (resource.volume != null && !it.hasVolumes) {
-                        changes.add(
-                                ResourceDiffItem(
-                                        resource::volume,
-                                        changed = true
-                                )
                         )
                     }
+                }
 
-                    if ("running" != it.status) {
-                        changes.add(
-                                ResourceDiffItem(
-                                        "status",
-                                        changed = true
-                                )
+                if (resource.volume != null && !it.hasVolumes) {
+                    changes.add(
+                        ResourceDiffItem(
+                            resource::volume,
+                            changed = true
                         )
-                    }
+                    )
+                }
 
-                    ResourceDiff(resource, changes = changes)
+                if ("running" != it.status) {
+                    changes.add(
+                        ResourceDiffItem(
+                            "status",
+                            changed = true
+                        )
+                    )
+                }
+
+                ResourceDiff(resource, changes = changes)
             },
             {
                 ResourceDiff(resource, missing = true)
@@ -210,12 +210,12 @@ class HetznerServerResourceProvisioner(
             }
         }.mapNonNullResult {
             ServerRuntime(
-                    it.id.toString(),
-                    it.status,
-                    it.labels,
-                    it.volumes.isNotEmpty(),
-                    it.privateNet.firstOrNull()?.ip,
-                    it.publicNet?.ipv4?.ip
+                it.id.toString(),
+                it.status,
+                it.labels,
+                it.volumes.isNotEmpty(),
+                it.privateNet.firstOrNull()?.ip,
+                it.publicNet?.ipv4?.ip
             )
         }
     }

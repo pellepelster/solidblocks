@@ -35,20 +35,20 @@ import java.util.*
 @AutoConfigureTestDatabase
 @Testcontainers
 open class VaultProvisionerTest(
-        @Autowired
-        val mountProvisioner: VaultMountProvisioner,
+    @Autowired
+    val mountProvisioner: VaultMountProvisioner,
 
-        @Autowired
-        val roleProvisioner: VaultPkiBackendRoleProvisioner,
+    @Autowired
+    val roleProvisioner: VaultPkiBackendRoleProvisioner,
 
-        @Autowired
-        val sshBackendRoleProvisioner: VaultSshBackendRoleProvisioner,
+    @Autowired
+    val sshBackendRoleProvisioner: VaultSshBackendRoleProvisioner,
 
-        @Autowired
-        val policyProvisioner: VaultPolicyProvisioner,
+    @Autowired
+    val policyProvisioner: VaultPolicyProvisioner,
 
-        @Autowired
-        val kvProvisioner: VaultKVProvisioner,
+    @Autowired
+    val kvProvisioner: VaultKVProvisioner,
 ) {
 
     companion object {
@@ -59,7 +59,6 @@ open class VaultProvisionerTest(
                     withExposedService("vault", 8200)
                     start()
                 }
-
 
         @JvmStatic
         @DynamicPropertySource
@@ -95,14 +94,14 @@ open class VaultProvisionerTest(
         mountProvisioner.apply(mount)
 
         val newRole = VaultPkiBackendRole(
-                id = "solidblocks-pki",
-                allowAnyName = true,
-                generateLease = true,
-                maxTtl = "168h",
-                ttl = "168h",
-                keyBits = 521,
-                keyType = "ec",
-                mount = mount
+            id = "solidblocks-pki",
+            allowAnyName = true,
+            generateLease = true,
+            maxTtl = "168h",
+            ttl = "168h",
+            keyBits = 521,
+            keyType = "ec",
+            mount = mount
         )
 
         // initially the role is missing
@@ -128,21 +127,20 @@ open class VaultProvisionerTest(
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultPkiBackendRole(
-                id = "solidblocks-pki",
-                allowAnyName = true,
-                generateLease = true,
-                maxTtl = "170h",
-                ttl = "170h",
-                keyBits = 521,
-                keyType = "ec",
-                mount = mount
+            id = "solidblocks-pki",
+            allowAnyName = true,
+            generateLease = true,
+            maxTtl = "170h",
+            ttl = "170h",
+            keyBits = 521,
+            keyType = "ec",
+            mount = mount
         )
 
         // changes due to updated ttl's
         val updateDiff = roleProvisioner.diff(updateRole)
         assertTrue(updateDiff.result?.hasChanges()!!)
     }
-
 
     @Test
     fun testDiffAndApplySsh() {
@@ -189,13 +187,13 @@ open class VaultProvisionerTest(
         mountProvisioner.apply(mount)
 
         val newRole = VaultSshBackendRole(
-                id = "solidblocks-host-ssh",
-                keyType = "ca",
-                maxTtl = "168h",
-                ttl = "168h",
-                allowHostCertificates = true,
-                allowUserCertificates = false,
-                mount = mount
+            id = "solidblocks-host-ssh",
+            keyType = "ca",
+            maxTtl = "168h",
+            ttl = "168h",
+            allowHostCertificates = true,
+            allowUserCertificates = false,
+            mount = mount
         )
 
         // initially the role is missing
@@ -220,13 +218,13 @@ open class VaultProvisionerTest(
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultSshBackendRole(
-                id = "solidblocks-host-ssh",
-                keyType = "ca",
-                maxTtl = "170h",
-                ttl = "170h",
-                allowHostCertificates = true,
-                allowUserCertificates = false,
-                mount = mount
+            id = "solidblocks-host-ssh",
+            keyType = "ca",
+            maxTtl = "170h",
+            ttl = "170h",
+            allowHostCertificates = true,
+            allowUserCertificates = false,
+            mount = mount
         )
 
         // changes due to updated ttl's
@@ -248,8 +246,8 @@ open class VaultProvisionerTest(
         assertFalse(diffAfter.result?.hasChanges()!!)
 
         val policyWithRules = VaultPolicy(
-                name,
-                setOf(Policy.Rule.builder().path("mypath").capability(Policy.BuiltinCapabilities.READ).build())
+            name,
+            setOf(Policy.Rule.builder().path("mypath").capability(Policy.BuiltinCapabilities.READ).build())
         )
         val diffBeforeWithRules = policyProvisioner.diff(policyWithRules)
         assertTrue(diffBeforeWithRules.result?.hasChanges()!!)
@@ -259,6 +257,4 @@ open class VaultProvisionerTest(
         val diffAfterWithRules = policyProvisioner.diff(policyWithRules)
         assertFalse(diffAfterWithRules.result?.hasChanges()!!)
     }
-
-
 }

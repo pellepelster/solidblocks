@@ -14,7 +14,7 @@ dependencies {
 
     implementation("org.springframework:spring-context:5.3.6")
 
-    testImplementation("org.springframework.boot:spring-boot-test:${SPRING_BOOT_VERSION}")
+    testImplementation("org.springframework.boot:spring-boot-test:$SPRING_BOOT_VERSION")
     testImplementation("org.springframework:spring-test:5.3.6")
     testImplementation("junit:junit:4.13.2")
 }

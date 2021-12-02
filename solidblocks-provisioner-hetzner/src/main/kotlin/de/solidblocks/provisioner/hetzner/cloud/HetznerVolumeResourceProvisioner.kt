@@ -20,11 +20,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerVolumeResourceProvisioner(cloudContext: CloudConfigurationContext) :
-        IResourceLookupProvider<IVolumeLookup, VolumeRuntime>,
-        IInfrastructureResourceProvisioner<Volume,
-                VolumeRuntime>,
-        BaseHetznerProvisioner<Volume, VolumeRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+    IResourceLookupProvider<IVolumeLookup, VolumeRuntime>,
+    IInfrastructureResourceProvisioner<Volume,
+        VolumeRuntime>,
+    BaseHetznerProvisioner<Volume, VolumeRuntime, HetznerCloudAPI>(
+        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 

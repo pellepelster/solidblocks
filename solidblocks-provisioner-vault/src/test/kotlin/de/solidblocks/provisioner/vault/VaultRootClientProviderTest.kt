@@ -62,7 +62,6 @@ class VaultRootClientProviderTest(
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-3" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-4" })
 
-
         val vaultClient = provider.createClient()
         val environment = cloudConfigurationManager.environmentByName(
             configurationContext.cloudName,

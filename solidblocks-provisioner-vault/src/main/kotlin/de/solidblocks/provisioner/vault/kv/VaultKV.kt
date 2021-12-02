@@ -4,8 +4,8 @@ import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 class VaultKV(val path: String, val data: Map<String, Any>, val mount: IVaultMountLookup) :
-        IVaultKVLookup,
-        IInfrastructureResource<VaultKV, VaultKVRuntime> {
+    IVaultKVLookup,
+    IInfrastructureResource<VaultKV, VaultKVRuntime> {
 
     override fun getParents() = listOf(mount)
 

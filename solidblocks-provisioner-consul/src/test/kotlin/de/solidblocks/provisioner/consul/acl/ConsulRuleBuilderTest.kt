@@ -1,8 +1,8 @@
 package de.solidblocks.provisioner.consul.acl
 
-import de.solidblocks.provisioner.consul.policy.Privileges.write
 import de.solidblocks.provisioner.consul.policy.ConsulRuleBuilder
 import de.solidblocks.provisioner.consul.policy.Privileges
+import de.solidblocks.provisioner.consul.policy.Privileges.write
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

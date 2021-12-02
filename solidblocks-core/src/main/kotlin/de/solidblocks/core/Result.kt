@@ -32,10 +32,10 @@ class Result<Type>(
         fun <T> of(result: T): Result<T> = Result(NullResource, result = result)
 
         fun <Type1, Type2, ReturnType> onNonNullSuccess(
-                resource: IResource,
-                first: Result<Type1>,
-                second: Result<Type2>,
-                block: (result1: Type1, result2: Type2) -> ReturnType
+            resource: IResource,
+            first: Result<Type1>,
+            second: Result<Type2>,
+            block: (result1: Type1, result2: Type2) -> ReturnType
         ): Result<ReturnType> {
 
             if (first.isEmptyOrFailed() || second.isEmptyOrFailed()) {
@@ -86,14 +86,13 @@ class Result<Type>(
         }
     }
 
-
     fun isEmptyOrFailed(): Boolean {
         return result == null || failed
     }
 
     fun errorMessage(): String {
         return "result for action '${action ?: "<unknown>"}' with ${resource.logName()} was '$result', failed = $failed, error message was '${message ?: "<none>"} \n ${
-            this.nestedResults.map { it.errorMessage() }.joinToString("\n")
+        this.nestedResults.map { it.errorMessage() }.joinToString("\n")
         }"
     }
 

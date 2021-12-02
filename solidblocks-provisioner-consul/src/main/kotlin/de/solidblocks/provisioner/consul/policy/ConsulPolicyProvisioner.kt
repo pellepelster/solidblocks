@@ -12,11 +12,10 @@ import org.springframework.stereotype.Component
 
 @Component
 class ConsulPolicyProvisioner(val consulClient: Consul) :
-        IResourceLookupProvider<IConsulPolicyLookup, ConsulPolicyRuntime>,
-        IInfrastructureResourceProvisioner<ConsulPolicy, ConsulPolicyRuntime> {
+    IResourceLookupProvider<IConsulPolicyLookup, ConsulPolicyRuntime>,
+    IInfrastructureResourceProvisioner<ConsulPolicy, ConsulPolicyRuntime> {
 
     private val logger = KotlinLogging.logger {}
-
 
     override fun getResourceType(): Class<ConsulPolicy> {
         return ConsulPolicy::class.java
@@ -37,17 +36,17 @@ class ConsulPolicyProvisioner(val consulClient: Consul) :
         val policies = consulClient.aclClient().listPolicies()
 
         val policy = policies.firstOrNull { it.name() == resource.id }
-                ?: return Result(
-                        failed = false,
-                        resource = resource,
-                        result = ResourceDiff(resource = resource, missing = true)
-                )
+            ?: return Result(
+                failed = false,
+                resource = resource,
+                result = ResourceDiff(resource = resource, missing = true)
+            )
 
         // rules currently not available in api
         return Result(
-                failed = false,
-                resource = resource,
-                result = ResourceDiff(resource = resource, changes = listOf(ResourceDiffItem(name = "rules", changed = true)))
+            failed = false,
+            resource = resource,
+            result = ResourceDiff(resource = resource, changes = listOf(ResourceDiffItem(name = "rules", changed = true)))
         )
     }
 

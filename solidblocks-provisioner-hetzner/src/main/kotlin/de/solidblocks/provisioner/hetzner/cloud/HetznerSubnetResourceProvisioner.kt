@@ -17,38 +17,38 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class HetznerSubnetResourceProvisioner(private val provisioner: Provisioner,
-                                       cloudContext: CloudConfigurationContext
+class HetznerSubnetResourceProvisioner(
+    private val provisioner: Provisioner,
+    cloudContext: CloudConfigurationContext
 ) :
-        IResourceLookupProvider<ISubnetLookup, SubnetRuntime>,
-        IInfrastructureResourceProvisioner<Subnet, SubnetRuntime>,
-        BaseHetznerProvisioner<Subnet, SubnetRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+    IResourceLookupProvider<ISubnetLookup, SubnetRuntime>,
+    IInfrastructureResourceProvisioner<Subnet, SubnetRuntime>,
+    BaseHetznerProvisioner<Subnet, SubnetRuntime, HetznerCloudAPI>(
+        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun apply(resource: Subnet): Result<*> {
         val request = AddSubnetToNetworkRequest.builder()
-                .networkZone("eu-central")
-                .ipRange(resource.subnet.info.cidrSignature)
-                .type(SubnetType.server.toString())
+            .networkZone("eu-central")
+            .ipRange(resource.subnet.info.cidrSignature)
+            .type(SubnetType.server.toString())
 
         return this.provisioner.lookup(resource.network).mapNonNullResult { networkRuntime ->
             checkedApiCall(resource, HetznerCloudAPI::addSubnetToNetwork) {
                 it.addSubnetToNetwork(networkRuntime.id.toLong(), request.build())
             }
-
         }
     }
 
     override fun diff(resource: Subnet): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
-                {
-                    ResourceDiff(resource, false)
-                },
-                {
-                    ResourceDiff(resource, true)
-                }
+            {
+                ResourceDiff(resource, false)
+            },
+            {
+                ResourceDiff(resource, true)
+            }
         )
     }
 

@@ -11,6 +11,6 @@ dependencies {
     api("commons-net:commons-net:3.1")
     api("joda-time:joda-time:2.10.10")
 
-    implementation("org.springframework.boot:spring-boot-starter-webflux:${SPRING_BOOT_VERSION}")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:$SPRING_BOOT_VERSION")
     testImplementation("org.hamcrest:hamcrest:2.2")
 }

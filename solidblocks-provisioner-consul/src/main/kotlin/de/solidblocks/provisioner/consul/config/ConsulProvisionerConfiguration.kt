@@ -5,7 +5,6 @@ import de.solidblocks.cloud.config.CloudConfigurationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-
 @Configuration
 open class ConsulProvisionerConfiguration {
 
@@ -13,5 +12,4 @@ open class ConsulProvisionerConfiguration {
     open fun consulClientWrapper(cloudConfigurationContext: CloudConfigurationContext): Consul {
         return Consul.builder().withAclToken("xxx").build()
     }
-
 }

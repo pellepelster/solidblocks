@@ -14,10 +14,10 @@ import java.net.URI
 
 @Component
 class VaultRootClientProvider(
-        val configurationContext: CloudConfigurationContext,
-        val configurationManager: CloudConfigurationManager,
-        @Value("\${vault.addr:null}")
-        val vaultAddrOverride: String? = null
+    val configurationContext: CloudConfigurationContext,
+    val configurationManager: CloudConfigurationManager,
+    @Value("\${vault.addr:null}")
+    val vaultAddrOverride: String? = null
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -45,7 +45,7 @@ class VaultRootClientProvider(
         }
 
         val environment = configurationManager.environmentByName(configurationContext.cloudName, configurationContext.environmentName)
-                ?: throw RuntimeException("environment '${configurationContext.environmentName}' not found for cloud '${configurationContext.cloudName}'")
+            ?: throw RuntimeException("environment '${configurationContext.environmentName}' not found for cloud '${configurationContext.cloudName}'")
 
         val unsealStatus = vaultTemplate.opsForSys().unsealStatus
         if (unsealStatus.isSealed) {
@@ -57,11 +57,11 @@ class VaultRootClientProvider(
         }
 
         val rootToken = environment.configValues.firstOrNull { it.name == "vault-root-token" }
-                ?: throw RuntimeException("vault at '$vaultAddr is initialized, but no vault root token found for cloud '${configurationContext.cloudName}'")
+            ?: throw RuntimeException("vault at '$vaultAddr is initialized, but no vault root token found for cloud '${configurationContext.cloudName}'")
 
         vaultTemplate = VaultTemplate(
-                VaultEndpoint.from(URI.create(vaultAddr)),
-                TokenAuthentication(rootToken.value)
+            VaultEndpoint.from(URI.create(vaultAddr)),
+            TokenAuthentication(rootToken.value)
         )
 
         return vaultTemplate

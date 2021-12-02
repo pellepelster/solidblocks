@@ -20,19 +20,19 @@ import kotlin.reflect.KProperty1
 
 @Component
 class VaultPkiBackendRoleProvisioner(
-        val vaultRootClientProvider: VaultRootClientProvider,
-        val provisioner: Provisioner,
+    val vaultRootClientProvider: VaultRootClientProvider,
+    val provisioner: Provisioner,
 ) :
-        IResourceLookupProvider<IVaultPkiBackendRoleLookup, VaultPkiBackendRoleRuntime>,
-        IInfrastructureResourceProvisioner<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
+    IResourceLookupProvider<IVaultPkiBackendRoleLookup, VaultPkiBackendRoleRuntime>,
+    IInfrastructureResourceProvisioner<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
 
     private val compareTtl: (String, String) -> Boolean = { expectedValue, actualValue ->
         val period = MutablePeriod()
 
         val parser = PeriodFormatterBuilder()
-                .appendHours().appendSuffix("h")
-                .appendMinutes().appendSuffix("m")
-                .toParser()
+            .appendHours().appendSuffix("h")
+            .appendMinutes().appendSuffix("m")
+            .toParser()
 
         parser.parseInto(period, expectedValue, 0, Locale.getDefault())
         val expectedSeconds = period.toDurationFrom(Instant.now()).standardSeconds
@@ -43,8 +43,8 @@ class VaultPkiBackendRoleProvisioner(
     private val logger = KotlinLogging.logger {}
 
     private fun keysExist(
-            client: VaultTemplate,
-            resource: IVaultPkiBackendRoleLookup
+        client: VaultTemplate,
+        resource: IVaultPkiBackendRoleLookup
     ): Boolean {
         val pem = client.doWithVault {
             val pem = it.getForEntity("${resource.mount().id()}/ca/pem", String::class.java)
@@ -140,8 +140,8 @@ class VaultPkiBackendRoleProvisioner(
 
         if (!keysExist(vaultClient, resource)) {
             val response = vaultClient.write(
-                    "${resource.mount.id()}/root/generate/internal",
-                    mapOf("common_name" to "${resource.id} root")
+                "${resource.mount.id()}/root/generate/internal",
+                mapOf("common_name" to "${resource.id} root")
             )
         }
 
@@ -156,7 +156,7 @@ class VaultPkiBackendRoleProvisioner(
         val vaultClient = vaultRootClientProvider.createClient()
 
         val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", PkiBackendRole::class.java)
-                ?: return Result(lookup, null)
+            ?: return Result(lookup, null)
 
         val keysExist = keysExist(vaultClient, lookup)
 

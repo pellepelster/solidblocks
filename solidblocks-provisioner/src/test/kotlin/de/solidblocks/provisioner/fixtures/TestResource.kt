@@ -4,8 +4,8 @@ import de.solidblocks.core.IInfrastructureResource
 import java.util.*
 
 class TestResource(val id: String, private val parents: List<TestResource> = emptyList()) :
-        ITestResourceLookup,
-        IInfrastructureResource<String, String> {
+    ITestResourceLookup,
+    IInfrastructureResource<String, String> {
 
     constructor(uuid: UUID, parents: List<TestResource> = emptyList()) : this(uuid.toString(), parents)
 
@@ -14,5 +14,4 @@ class TestResource(val id: String, private val parents: List<TestResource> = emp
     override fun id(): String {
         return id
     }
-
 }

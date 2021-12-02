@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component
 
 @Component
 class VaultMountProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
-        IResourceLookupProvider<IVaultMountLookup, VaultMountRuntime>,
-        IInfrastructureResourceProvisioner<VaultMount, VaultMountRuntime> {
+    IResourceLookupProvider<IVaultMountLookup, VaultMountRuntime>,
+    IInfrastructureResourceProvisioner<VaultMount, VaultMountRuntime> {
 
     private val logger = KotlinLogging.logger {}
 
     override fun diff(resource: VaultMount): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
-                {
-                    ResourceDiff(
-                            resource
-                    )
-                },
-                {
-                    ResourceDiff(
-                            resource,
-                            missing = true
-                    )
-                }
+            {
+                ResourceDiff(
+                    resource
+                )
+            },
+            {
+                ResourceDiff(
+                    resource,
+                    missing = true
+                )
+            }
         )
     }
 

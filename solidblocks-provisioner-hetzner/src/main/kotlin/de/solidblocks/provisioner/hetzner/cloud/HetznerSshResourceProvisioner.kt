@@ -18,21 +18,21 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerSshResourceProvisioner(cloudContext: CloudConfigurationContext) :
-        IResourceLookupProvider<ISshKeyLookup, SshKeyRuntime>,
-        IInfrastructureResourceProvisioner<SshKey, SshKeyRuntime>,
-        BaseHetznerProvisioner<SshKey, SshKeyRuntime, HetznerCloudAPI>(
-                { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+    IResourceLookupProvider<ISshKeyLookup, SshKeyRuntime>,
+    IInfrastructureResourceProvisioner<SshKey, SshKeyRuntime>,
+    BaseHetznerProvisioner<SshKey, SshKeyRuntime, HetznerCloudAPI>(
+        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun diff(resource: SshKey): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
-                {
-                    ResourceDiff(resource)
-                },
-                {
-                    ResourceDiff(resource, true)
-                }
+            {
+                ResourceDiff(resource)
+            },
+            {
+                ResourceDiff(resource, true)
+            }
         )
     }
 

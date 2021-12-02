@@ -13,8 +13,8 @@ import org.springframework.vault.support.Policy
 
 @Component
 class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
-        IResourceLookupProvider<IVaultPolicyLookup, VaultPolicyRuntime>,
-        IInfrastructureResourceProvisioner<VaultPolicy, VaultPolicyRuntime> {
+    IResourceLookupProvider<IVaultPolicyLookup, VaultPolicyRuntime>,
+    IInfrastructureResourceProvisioner<VaultPolicy, VaultPolicyRuntime> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -24,7 +24,7 @@ class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, v
 
     override fun diff(resource: VaultPolicy): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
-                {
+            {
 
                 val changes = mutableListOf<ResourceDiffItem>()
 

@@ -12,12 +12,11 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.vault.core.VaultKeyValueOperations
 import org.springframework.vault.core.VaultKeyValueOperationsSupport
-import org.springframework.vault.core.VaultTemplate
 
 @Component
 class VaultKVProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
-        IResourceLookupProvider<IVaultKVLookup, VaultKVRuntime>,
-        IInfrastructureResourceProvisioner<VaultKV, VaultKVRuntime> {
+    IResourceLookupProvider<IVaultKVLookup, VaultKVRuntime>,
+    IInfrastructureResourceProvisioner<VaultKV, VaultKVRuntime> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -27,7 +26,7 @@ class VaultKVProvisioner(val vaultRootClientProvider: VaultRootClientProvider, v
 
     override fun diff(resource: VaultKV): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
-                {
+            {
                 val changes = mutableListOf<ResourceDiffItem>()
 
                 if (it.data != resource.data) {
@@ -50,7 +49,7 @@ class VaultKVProvisioner(val vaultRootClientProvider: VaultRootClientProvider, v
     }
 
     private fun kvOperations(
-            mount: IVaultMountLookup
+        mount: IVaultMountLookup
     ): VaultKeyValueOperations {
         val vaultClient = vaultRootClientProvider.createClient()
         return vaultClient.opsForKeyValue(mount.id(), VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)

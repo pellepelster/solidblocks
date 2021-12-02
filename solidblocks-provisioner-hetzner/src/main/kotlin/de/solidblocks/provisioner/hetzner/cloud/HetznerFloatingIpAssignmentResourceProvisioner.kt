@@ -109,7 +109,7 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
                 waitForActions(
                     NullResource,
                     HetznerCloudAPI::getActionOfFloatingIP,
-                        listOf(it.action).filterNotNull()
+                    listOf(it.action).filterNotNull()
                 ) { api, action ->
                     val actionResult = api.getActionOfFloatingIP(id, action.id).action
                     logger.info { "waiting for unassign action '${action.command}' to finish for floating ip '$id', current status is '${action.status}'" }
@@ -132,5 +132,4 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
     override fun getLookupType(): Class<*> {
         return IFloatingIpAssignmentLookup::class.java
     }
-
 }

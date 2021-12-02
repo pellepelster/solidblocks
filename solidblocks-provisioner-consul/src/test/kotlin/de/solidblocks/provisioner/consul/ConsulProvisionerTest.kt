@@ -41,7 +41,8 @@ class ConsulProvisionerTest {
                 .apply {
                     withExposedService("consul", 8500)
                         .waitingFor(
-                            "consul", LogMessageWaitStrategy()
+                            "consul",
+                            LogMessageWaitStrategy()
                                 .withRegEx(".*federation state pruning.*")
                         )
                         .start()
@@ -52,7 +53,6 @@ class ConsulProvisionerTest {
         fun properties(registry: DynamicPropertyRegistry) {
             registry.add("consul.addr") { "http://localhost:${environment.getServicePort("consul", 8500)}" }
         }
-
     }
 
     @Test
@@ -84,9 +84,7 @@ class ConsulProvisionerTest {
         val token1 = ConsulToken(token1Id, "token1", listOf(acl))
         tokenProvisioner.apply(token1)
 
-
         val token1Lookup = tokenProvisioner.lookup(ConsulTokenLookup(token1Id))
         assertThat(token1Lookup.result!!.id).isEqualTo(token1Id)
-
     }
 }

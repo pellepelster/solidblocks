@@ -22,17 +22,16 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.function.Supplier
 
-
 @Component
 class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
     private val logger = KotlinLogging.logger {}
 
     val retryConfig = RetryConfig.custom<Boolean>()
-            .maxAttempts(15)
-            .waitDuration(Duration.ofMillis(5000))
-            .retryOnResult { !it }
-            .build()
+        .maxAttempts(15)
+        .waitDuration(Duration.ofMillis(5000))
+        .retryOnResult { !it }
+        .build()
 
     val retryRegistry: RetryRegistry = RetryRegistry.of(retryConfig)
 
@@ -45,12 +44,12 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     }
 
     fun <LookupType : IResourceLookup<RuntimeType>, RuntimeType> lookup(resource: LookupType): Result<RuntimeType> =
-            try {
-                this.provisionerRegistry.datasource(resource).lookup(resource)
-            } catch (e: Exception) {
-                logger.error(e) { "lookup for ${resource.logName()} failed" }
-                Result(resource, failed = true, message = e.message)
-            }
+        try {
+            this.provisionerRegistry.datasource(resource).lookup(resource)
+        } catch (e: Exception) {
+            logger.error(e) { "lookup for ${resource.logName()} failed" }
+            Result(resource, failed = true, message = e.message)
+        }
 
     fun <ResourceType : IResource, ReturnType> provisioner(resource: ResourceType): IInfrastructureResourceProvisioner<ResourceType, ReturnType> {
         return this.provisionerRegistry.provisioner(resource)
@@ -73,7 +72,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
             if (allFailedDiffs.isNotEmpty()) {
                 logger.error {
                     "diffing the following resources failed: ${
-                        allFailedDiffs.map { it.resource.logName() }
+                    allFailedDiffs.map { it.resource.logName() }
                     }"
                 }
 
@@ -81,7 +80,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
             }
 
             val diffsForAllLayersWithChanges =
-                    allLayerDiffs.flatMap { it.value }.map { it.result!! }.filter { it.hasChanges() }
+                allLayerDiffs.flatMap { it.value }.map { it.result!! }.filter { it.hasChanges() }
 
             val resourcesThatDependOnResourcesWithChanges = resourceGroup.resources.filter {
                 it.getInfraParents().any { parent -> diffsForAllLayersWithChanges.any { it.resource == parent } }
@@ -89,8 +88,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
             val o = resourcesThatDependOnResourcesWithChanges.map {
                 ResourceDiff(
-                        it,
-                        changes = listOf(ResourceDiffItem("parent", changed = true))
+                    it,
+                    changes = listOf(ResourceDiffItem("parent", changed = true))
                 )
             }
 
@@ -98,7 +97,6 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
             if (!result) {
                 return false
             }
-
         }
 
         return true
@@ -157,8 +155,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     }
 
     private fun diffForResourceGroup(
-            resourceGroup: ResourceGroup,
-            allLayerDiffs: HashMap<ResourceGroup, MutableList<Result<ResourceDiff>>>
+        resourceGroup: ResourceGroup,
+        allLayerDiffs: HashMap<ResourceGroup, MutableList<Result<ResourceDiff>>>
     ): Result<List<String>> {
         logger.info { "creating diff for resource group '${resourceGroup.name}'" }
 
@@ -190,18 +188,18 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 val parents = getInfraParents(resource)
 
                 val nonFailedMissingDiffs =
-                        allLayerDiffs.flatMap { it.value }.filter { !it.isEmptyOrFailed() }.map { it.result!! }
-                                .filter { it.missing }
+                    allLayerDiffs.flatMap { it.value }.filter { !it.isEmptyOrFailed() }.map { it.result!! }
+                        .filter { it.missing }
 
                 val missingParents =
-                        parents.filter { parent -> nonFailedMissingDiffs.any { it.resource == parent } }
+                    parents.filter { parent -> nonFailedMissingDiffs.any { it.resource == parent } }
 
                 if (missingParents.isNotEmpty()) {
                     logger.info {
                         "skipping diff for ${resource.logName()} the following dependencies were missing: ${
-                            missingParents.joinToString(
-                                    ", "
-                            ) { it.logName() }
+                        missingParents.joinToString(
+                            ", "
+                        ) { it.logName() }
                         } "
                     }
                     continue
@@ -212,7 +210,6 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 if (diff.failed) {
                     logger.info { "diff failed for ${resource.logName()}" }
                     return Result(resource = resource, failed = true)
-
                 }
                 logger.info { diff.result?.toString() ?: "no result for resource ${resource.logName()}" }
 
@@ -253,8 +250,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     }
 
     private fun flattenModels(
-            allModels: ArrayList<IInfrastructureResource<*, *>>,
-            models: List<IInfrastructureResource<*, *>>
+        allModels: ArrayList<IInfrastructureResource<*, *>>,
+        models: List<IInfrastructureResource<*, *>>
     ) {
         models.forEach { model ->
             if (!allModels.contains(model)) {
