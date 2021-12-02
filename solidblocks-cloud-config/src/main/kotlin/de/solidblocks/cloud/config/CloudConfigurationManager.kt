@@ -7,7 +7,12 @@ import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_P
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_PUBLIC_KEY
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PRIVATE_KEY
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PUBLIC_KEY
-import de.solidblocks.cloud.config.model.*
+import de.solidblocks.cloud.config.model.CloudConfigValue
+import de.solidblocks.cloud.config.model.CloudConfiguration
+import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
+import de.solidblocks.cloud.config.model.ConsulSecrets
+import de.solidblocks.cloud.config.model.SshSecrets
+import de.solidblocks.cloud.config.model.TenantConfig
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CLOUDS_ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -22,6 +27,14 @@ import java.util.*
 
 @Component
 class CloudConfigurationManager(private val dsl: DSLContext) {
+
+    sealed class IdType(private val id: UUID)
+
+    class CloudId(val id: UUID) : IdType(id)
+
+    class EnvironmentId(val id: UUID) : IdType(id)
+
+    class TenantId(val id: UUID) : IdType(id)
 
     private val logger = KotlinLogging.logger {}
 
@@ -53,23 +66,17 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     fun createEnvironment(cloudName: String, environmentName: String, configValues: List<CloudConfigValue> = emptyList()): Boolean {
-        if (!hasCloud(cloudName)) {
-            logger.info { "cloud '${cloudName}' does not exist" }
-            return false
-        }
+        val cloud = getCloud(cloudName) ?: return false
 
         logger.info { "creating environment '${environmentName}' for cloud '${cloudName}'" }
-
-        val cloud = cloudByName(cloudName)
-
         val id = UUID.randomUUID()
 
         dsl.insertInto(CLOUDS_ENVIRONMENTS)
-            .columns(
-                CLOUDS_ENVIRONMENTS.ID,
-                CLOUDS_ENVIRONMENTS.CLOUD,
-                CLOUDS_ENVIRONMENTS.NAME
-            )
+                .columns(
+                        CLOUDS_ENVIRONMENTS.ID,
+                        CLOUDS_ENVIRONMENTS.CLOUD,
+                        CLOUDS_ENVIRONMENTS.NAME
+                )
             .values(id, cloud.id, environmentName).execute()
 
         generateAndStoreSecrets(id, environmentName)
@@ -136,16 +143,16 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 }
     }
 
-    public fun listEnvironments(cloud: CloudConfiguration): List<CloudEnvironmentConfiguration> {
+    fun listEnvironments(cloud: CloudConfiguration): List<CloudEnvironmentConfiguration> {
 
         val latestVersions =
-            dsl.select(
-                CONFIGURATION_VALUES.CLOUD_ENVIRONMENT,
-                CONFIGURATION_VALUES.NAME,
-                max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
-            )
-                .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT, CONFIGURATION_VALUES.NAME)
-                .asTable("latest_versions")
+                dsl.select(
+                        CONFIGURATION_VALUES.CLOUD_ENVIRONMENT,
+                        CONFIGURATION_VALUES.NAME,
+                        max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
+                )
+                        .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT, CONFIGURATION_VALUES.NAME)
+                        .asTable("latest_versions")
 
         val latest = dsl.select(
                 CONFIGURATION_VALUES.CLOUD_ENVIRONMENT,
@@ -191,7 +198,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     fun updateEnvironment(cloudName: String, environmentName: String, values: Map<String, String>): Boolean {
-        val environment = fetchEnvironment(cloudName, environmentName)
+        val environment = getEnvironment(cloudName, environmentName) ?: return false
 
         return values.map {
             updateEnvironment(environment, it.key, it.value)
@@ -207,26 +214,27 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         return true
     }
 
-    fun cloudByName(name: String): CloudConfiguration {
-        val cloud = listClouds(name)
+    fun getCloud(name: String): CloudConfiguration? {
 
-        if (cloud.isEmpty()) {
-            throw RuntimeException("cloud '${name}' not found")
+        val cloud = listClouds(name).firstOrNull()
+
+        if (cloud == null) {
+            logger.info { "cloud '${name}' does not exist" }
         }
 
-        return cloud.first()
+        return cloud
     }
 
-    fun list(cloudName: String? = null): List<TenantConfig> {
+    fun listTenants(cloudName: String? = null): List<TenantConfig> {
 
         val latestVersions =
-            dsl.select(
-                CONFIGURATION_VALUES.TENANT,
-                CONFIGURATION_VALUES.NAME,
-                max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
-            )
-                .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
-                .asTable("latest_versions")
+                dsl.select(
+                        CONFIGURATION_VALUES.TENANT,
+                        CONFIGURATION_VALUES.NAME,
+                        max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
+                )
+                        .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
+                        .asTable("latest_versions")
 
         val latest = dsl.select(
                 CONFIGURATION_VALUES.TENANT,
@@ -263,13 +271,14 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 }
     }
 
-    fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfiguration {
-        val cloud = cloudByName(cloudName)
+    fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfiguration? {
+        val cloud = getCloud(cloudName) ?: return null
+
         return listEnvironments(cloud).first { it.name == environmentName }
     }
 
     fun rotateEnvironmentSecrets(cloudName: String, environmentName: String): Boolean {
-        val environment = fetchEnvironment(cloudName, environmentName)
+        val environment = getEnvironment(cloudName, environmentName) ?: return false
         generateAndStoreSecrets(environment)
 
         return true
@@ -281,57 +290,48 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     private fun generateAndStoreSecrets(
-        environment: CloudEnvironmentConfiguration
+            environment: CloudEnvironmentConfiguration
     ) {
         generateAndStoreSecrets(environment.id, environment.name)
     }
 
 
-    fun fetchEnvironment(
-        cloudName: String,
-        environmentName: String
-    ): CloudEnvironmentConfiguration {
-        val cloud = cloudByName(cloudName)
+    fun getEnvironment(
+            cloudName: String,
+            environmentName: String
+    ): CloudEnvironmentConfiguration? {
+        val cloud = getCloud(cloudName) ?: return null
         return listEnvironments(cloud).first { it.name == environmentName }
     }
 
-    fun getTenant(name: String): TenantConfig {
-        return list(name).first()
+    fun getTenant(name: String): TenantConfig? {
+        return listTenants(name).firstOrNull()
     }
 
-    fun hasTenant(name: String): Boolean {
-        return dsl.fetchCount(TENANTS, TENANTS.NAME.eq(name).and(TENANTS.DELETED.isFalse)) == 1
-    }
+    fun createTenant(name: String, cloudName: String, environmentName: String): Boolean {
 
-
-    fun create(cloudName: String, domain: String, email: String, configuration: List<CloudConfigValue>) {
-
-        val cloudId = UUID.randomUUID()
+        val id = UUID.randomUUID()
+        val environment = getEnvironment(cloudName, environmentName) ?: return false
 
         dsl.insertInto(TENANTS)
                 .columns(
                         TENANTS.ID,
                         TENANTS.NAME,
                         TENANTS.DELETED,
+                        TENANTS.ENVRIONMENT,
                 )
-                .values(cloudId, cloudName, false).execute()
+                .values(id, name, false, environment.id).execute()
 
-        configuration.forEach {
-            setConfiguration(TenantId(cloudId), it.name, it.value)
-        }
+        return true
     }
 
-    fun delete(cloudName: String) {
+    /*
+    fun deleteTenant(cloudName: String) {
         getTenant(cloudName).let {
             val result = dsl.update(TENANTS).set(TENANTS.DELETED, true).where(TENANTS.ID.eq(it.id)).execute()
             result.toString()
         }
-    }
-
-    sealed class IdType(private val id: UUID)
-    class CloudId(val id: UUID) : IdType(id)
-    class EnvironmentId(val id: UUID) : IdType(id)
-    class TenantId(val id: UUID) : IdType(id)
+    }*/
 
     private fun setConfiguration(id: IdType, name: String, value: String?) {
 

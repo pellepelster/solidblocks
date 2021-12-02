@@ -4,10 +4,10 @@ import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.cloud.config.model.getConfigValue
 
-class CloudConfigurationContext(val cloud: CloudConfiguration, val environment: CloudEnvironmentConfiguration) {
+class CloudConfigurationContext(val environment: CloudEnvironmentConfiguration) {
 
     val cloudName: String
-        get() = cloud.name
+        get() = environment.cloud.name
 
     val environmentName: String
         get() = environment.name

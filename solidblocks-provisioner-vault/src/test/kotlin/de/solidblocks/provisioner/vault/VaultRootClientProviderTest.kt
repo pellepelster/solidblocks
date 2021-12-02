@@ -56,7 +56,7 @@ class VaultRootClientProviderTest(
             configurationContext.cloudName,
             configurationContext.environmentName
         )
-        assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-0" })
+        assertTrue(environmentBefore!!.configValues.none { it.name == "vault-unseal-key-0" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-1" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-2" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-3" })
@@ -69,7 +69,7 @@ class VaultRootClientProviderTest(
             configurationContext.environmentName
         )
 
-        assertTrue(environment.configValues.any { it.name == "vault-unseal-key-0" })
+        assertTrue(environment!!.configValues.any { it.name == "vault-unseal-key-0" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-1" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-2" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-3" })

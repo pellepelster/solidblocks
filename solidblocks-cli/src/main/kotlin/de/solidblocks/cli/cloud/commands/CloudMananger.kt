@@ -31,7 +31,6 @@ import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.GITHUB_USERNAM
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RO_KEY
 import de.solidblocks.cloud.config.Constants.Vault.Companion.BACKUP_POLICY_NAME
 import de.solidblocks.cloud.config.Constants.Vault.Companion.CONTROLLER_POLICY_NAME
-import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.cloud.config.model.getConfigValue
 import de.solidblocks.core.IResourceLookup
@@ -67,7 +66,8 @@ class CloudMananger(
     }
 
     fun bootstrap(cloudName: String, environmentName: String): Boolean {
-        val environment = cloudConfigurationManager.fetchEnvironment(cloudName, environmentName)
+        val environment = cloudConfigurationManager.getEnvironment(cloudName, environmentName)
+                ?: return false
 
         logger.info { "creating/updating environment '${cloudName}' for cloud '$environmentName'" }
 

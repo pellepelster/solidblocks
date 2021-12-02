@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.config
 
-import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 
 class Constants {
@@ -30,8 +29,8 @@ class Constants {
             val CONTROLLER_POLICY_NAME = "controller"
             val BACKUP_POLICY_NAME = "backup"
 
-            fun vaultAddr(cloud: CloudConfiguration, environment: CloudEnvironmentConfiguration) =
-                "https://vault.${environment.name}.${cloud.rootDomain}:8200"
+            fun vaultAddr(environment: CloudEnvironmentConfiguration) =
+                    "https://vault.${environment.name}.${environment.cloud.rootDomain}:8200"
         }
     }
 }

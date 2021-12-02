@@ -34,3 +34,4 @@ val PK_TENANTS: UniqueKey<TenantsRecord> = Internal.createUniqueKey(Tenants.TENA
 // -------------------------------------------------------------------------
 
 val FK_CLOUDS_ENVIRONMENTS_CLOUD_ID: ForeignKey<CloudsEnvironmentsRecord, CloudsRecord> = Internal.createForeignKey(CloudsEnvironments.CLOUDS_ENVIRONMENTS, DSL.name("FK_CLOUDS_ENVIRONMENTS_CLOUD_ID"), arrayOf(CloudsEnvironments.CLOUDS_ENVIRONMENTS.CLOUD), de.solidblocks.config.db.keys.PK_CLOUDS, arrayOf(Clouds.CLOUDS.ID), true)
+val FK_TENANTS_CLOUDS_ENVIRONMENT_ID: ForeignKey<TenantsRecord, CloudsEnvironmentsRecord> = Internal.createForeignKey(Tenants.TENANTS, DSL.name("FK_TENANTS_CLOUDS_ENVIRONMENT_ID"), arrayOf(Tenants.TENANTS.ENVRIONMENT), de.solidblocks.config.db.keys.PK_CLOUDS_ENVIRONMENTS, arrayOf(CloudsEnvironments.CLOUDS_ENVIRONMENTS.ID), true)

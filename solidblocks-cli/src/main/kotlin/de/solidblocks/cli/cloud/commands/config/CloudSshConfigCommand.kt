@@ -28,13 +28,10 @@ class CloudSshConfigCommand :
     override fun run() {
         runSpringApplication {
             it.getBean(CloudConfigurationManager::class.java).let {
-                if (!it.hasCloud(cloud)) {
-                    logger.error { "cloud '$cloud' not found" }
-                    exitProcess(1)
-                }
+                val cloud = it.getCloud(cloud) ?: exitProcess(1)
 
                 val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
-                for (environment in it.listEnvironments(it.cloudByName(cloud))) {
+                for (environment in it.listEnvironments(cloud)) {
 
                     val environmentPath = Path(basePath.toString(), environment.name)
 

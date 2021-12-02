@@ -25,7 +25,7 @@ class VaultRootClientProvider(
     private var vaultTemplate: VaultTemplate? = null
 
     fun createClient(): VaultTemplate {
-        val vaultAddr = if (vaultAddrOverride != null) vaultAddrOverride else vaultAddr(configurationContext.cloud, configurationContext.environment)
+        val vaultAddr = if (vaultAddrOverride != null) vaultAddrOverride else vaultAddr(configurationContext.environment)
 
         if (vaultTemplate != null) {
             return vaultTemplate!!
@@ -45,6 +45,7 @@ class VaultRootClientProvider(
         }
 
         val environment = configurationManager.environmentByName(configurationContext.cloudName, configurationContext.environmentName)
+                ?: throw RuntimeException("environment '${configurationContext.environmentName}' not found for cloud '${configurationContext.cloudName}'")
 
         val unsealStatus = vaultTemplate.opsForSys().unsealStatus
         if (unsealStatus.isSealed) {

@@ -6,6 +6,7 @@ package de.solidblocks.config.db.tables
 
 import de.solidblocks.config.db.DefaultSchema
 import de.solidblocks.config.db.indexes.IDX_TENANTS_NAME
+import de.solidblocks.config.db.keys.FK_TENANTS_CLOUDS_ENVIRONMENT_ID
 import de.solidblocks.config.db.keys.PK_TENANTS
 import de.solidblocks.config.db.tables.records.TenantsRecord
 
@@ -18,7 +19,7 @@ import org.jooq.ForeignKey
 import org.jooq.Index
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row3
+import org.jooq.Row4
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
@@ -78,6 +79,11 @@ open class Tenants(
      */
     val DELETED: TableField<TenantsRecord, Boolean?> = createField(DSL.name("DELETED"), SQLDataType.BOOLEAN.nullable(false), this, "")
 
+    /**
+     * The column <code>TENANTS.ENVRIONMENT</code>.
+     */
+    val ENVRIONMENT: TableField<TenantsRecord, UUID?> = createField(DSL.name("ENVRIONMENT"), SQLDataType.UUID.nullable(false), this, "")
+
     private constructor(alias: Name, aliased: Table<TenantsRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<TenantsRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
 
@@ -101,6 +107,15 @@ open class Tenants(
     override fun getIndexes(): List<Index> = listOf(IDX_TENANTS_NAME)
     override fun getPrimaryKey(): UniqueKey<TenantsRecord> = PK_TENANTS
     override fun getKeys(): List<UniqueKey<TenantsRecord>> = listOf(PK_TENANTS)
+    override fun getReferences(): List<ForeignKey<TenantsRecord, *>> = listOf(FK_TENANTS_CLOUDS_ENVIRONMENT_ID)
+
+    private lateinit var _cloudsEnvironments: CloudsEnvironments
+    fun cloudsEnvironments(): CloudsEnvironments {
+        if (!this::_cloudsEnvironments.isInitialized)
+            _cloudsEnvironments = CloudsEnvironments(this, FK_TENANTS_CLOUDS_ENVIRONMENT_ID)
+
+        return _cloudsEnvironments;
+    }
     override fun `as`(alias: String): Tenants = Tenants(DSL.name(alias), this)
     override fun `as`(alias: Name): Tenants = Tenants(alias, this)
 
@@ -115,7 +130,7 @@ open class Tenants(
     override fun rename(name: Name): Tenants = Tenants(name, null)
 
     // -------------------------------------------------------------------------
-    // Row3 type methods
+    // Row4 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row3<UUID?, String?, Boolean?> = super.fieldsRow() as Row3<UUID?, String?, Boolean?>
+    override fun fieldsRow(): Row4<UUID?, String?, Boolean?, UUID?> = super.fieldsRow() as Row4<UUID?, String?, Boolean?, UUID?>
 }

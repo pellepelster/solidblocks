@@ -5,7 +5,11 @@ import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.DbConfiguration
 import de.solidblocks.provisioner.Provisioner
 import liquibase.integration.spring.SpringLiquibase
-import org.springframework.context.annotation.*
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Import
 import java.util.*
 import javax.sql.DataSource
 
@@ -28,8 +32,7 @@ open class TestApplicationContext {
         cloudConfigurationManager.createEnvironment(cloudName, environmentName)
 
         return CloudConfigurationContext(
-            cloudConfigurationManager.cloudByName(cloudName),
-            cloudConfigurationManager.environmentByName(cloudName, environmentName)
+            cloudConfigurationManager.environmentByName(cloudName, environmentName)!!
         )
     }
 

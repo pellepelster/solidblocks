@@ -78,6 +78,14 @@ databaseChangeLog:
                   type: boolean
                   constraints:
                     nullable: false
+              - column:
+                  name: envrionment
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_tenants_clouds_environment_id
+                    references: clouds_environments(id)
+
         - createIndex:
             columns:
               - column:
