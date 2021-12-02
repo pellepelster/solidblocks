@@ -7,5 +7,5 @@ data class CloudEnvironmentConfiguration(
     val name: String,
     val sshSecrets: SshSecrets,
     val configValues: List<CloudConfigValue>,
-) {
-}
+    val cloud: CloudConfiguration
+)

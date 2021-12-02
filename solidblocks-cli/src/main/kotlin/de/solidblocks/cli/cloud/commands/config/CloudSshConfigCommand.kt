@@ -13,7 +13,6 @@ import kotlin.system.exitProcess
 class CloudSshConfigCommand :
     BaseCloudSpringCommand(name = "ssh-config", help = "create ssh config") {
 
-
     private val logger = KotlinLogging.logger {}
 
     private fun sshConfig(privateKeyFile: String, knownHostsFile: String): String {
@@ -34,13 +33,10 @@ class CloudSshConfigCommand :
                     exitProcess(1)
                 }
 
-                val cloud = it.cloudByName(cloud)
-
                 val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
+                for (environment in it.listEnvironments(it.cloudByName(cloud))) {
 
-                for (environment in cloud.environments) {
-
-                    val environmentPath = Path(basePath.toString(), environment.name);
+                    val environmentPath = Path(basePath.toString(), environment.name)
 
                     if (!environmentPath.toFile().exists() && !environmentPath.toFile().mkdirs()) {
                         logger.error { "creating dir '${environmentPath.toAbsolutePath()}' failed" }
@@ -52,7 +48,7 @@ class CloudSshConfigCommand :
                     privateKeyFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
                     val knownHostsFile = File(environmentPath.toFile(), "${this.cloud}_known_hosts")
-                    knownHostsFile.writeText("vault-1.$environment.${cloud.rootDomain} ${environment.sshSecrets.sshIdentityPublicKey}")
+                    knownHostsFile.writeText("vault-1.$environment.${environment.cloud.rootDomain} ${environment.sshSecrets.sshIdentityPublicKey}")
 
                     knownHostsFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
@@ -68,7 +64,6 @@ class CloudSshConfigCommand :
                     )
                 }
             }
-
         }
     }
 }

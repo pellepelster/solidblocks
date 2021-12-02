@@ -4,11 +4,11 @@ import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 
 object Contants {
-    fun pkiMountName(cloud: CloudConfiguration, environment: CloudEnvironmentConfiguration) = "${cloud.name}-${environment.name}-pki"
+    fun pkiMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-pki"
 
-    fun kvMountName(cloud: CloudConfiguration, environment: CloudEnvironmentConfiguration) = "${cloud.name}-${environment.name}-kv"
+    fun kvMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-kv"
 
-    fun hostSshMountName(cloud: CloudConfiguration, environment: CloudEnvironmentConfiguration) = "${cloud.name}-${environment.name}-host-ssh"
+    fun hostSshMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-host-ssh"
 
-    fun userSshMountName(cloud: CloudConfiguration, environment: CloudEnvironmentConfiguration) = "${cloud.name}-${environment.name}-user-ssh"
+    fun userSshMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-user-ssh"
 }

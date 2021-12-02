@@ -131,55 +131,57 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                                         it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
                                         it.getValue(CONFIGURATION_VALUES.VERSION)!!
                                 )
-                            },
-                            listEnvironments(CloudId(it.key.id!!))
+                            }
                     )
                 }
     }
 
-    fun listEnvironments(id: CloudId): List<CloudEnvironmentConfiguration> {
+    public fun listEnvironments(cloud: CloudConfiguration): List<CloudEnvironmentConfiguration> {
 
         val latestVersions =
-                dsl.select(
-                        CONFIGURATION_VALUES.CLOUD_ENVIRONMENT,
-                        CONFIGURATION_VALUES.NAME,
-                        max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
-                )
-                        .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT, CONFIGURATION_VALUES.NAME)
-                        .asTable("latest_versions")
+            dsl.select(
+                CONFIGURATION_VALUES.CLOUD_ENVIRONMENT,
+                CONFIGURATION_VALUES.NAME,
+                max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
+            )
+                .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT, CONFIGURATION_VALUES.NAME)
+                .asTable("latest_versions")
 
         val latest = dsl.select(
                 CONFIGURATION_VALUES.CLOUD_ENVIRONMENT,
                 CONFIGURATION_VALUES.ID,
                 CONFIGURATION_VALUES.NAME,
                 CONFIGURATION_VALUES.CONFIG_VALUE,
-                CONFIGURATION_VALUES.VERSION
+            CONFIGURATION_VALUES.VERSION
         ).from(
-                CONFIGURATION_VALUES.rightJoin(latestVersions).on(
-                        CONFIGURATION_VALUES.NAME.eq(latestVersions.field(CONFIGURATION_VALUES.NAME))
-                                .and(CONFIGURATION_VALUES.VERSION.eq(latestVersions.field(CONFIGURATION_VALUES.VERSION)))
-                                .and(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT.eq(latestVersions.field(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT)))
-                )
+            CONFIGURATION_VALUES.rightJoin(latestVersions).on(
+                CONFIGURATION_VALUES.NAME.eq(latestVersions.field(CONFIGURATION_VALUES.NAME))
+                    .and(CONFIGURATION_VALUES.VERSION.eq(latestVersions.field(CONFIGURATION_VALUES.VERSION)))
+                    .and(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT.eq(latestVersions.field(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT)))
+            )
         ).asTable("latest_configurations")
         val environments = CLOUDS_ENVIRONMENTS.`as`("clouds")
 
-        return dsl.selectFrom(environments.leftJoin(latest).on(environments.ID.eq(latest.field(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT))))
-                .where(environments.CLOUD.eq(id.id))
-                .fetchGroups(
-                        { it.into(environments) }, { it.into(latest) }
-                ).map {
-                    CloudEnvironmentConfiguration(
-                        id = it.key.id!!,
-                        name = it.key.name!!,
-                        sshSecrets = loadSshCredentials(it.value),
-                        it.value.map {
-                            CloudConfigValue(
-                                it.getValue(CONFIGURATION_VALUES.NAME)!!,
-                                it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
-                                it.getValue(CONFIGURATION_VALUES.VERSION)!!
-                            )
-                        }
-                    )
+        return dsl.selectFrom(
+            environments.leftJoin(latest).on(environments.ID.eq(latest.field(CONFIGURATION_VALUES.CLOUD_ENVIRONMENT)))
+        )
+            .where(environments.CLOUD.eq(cloud.id))
+            .fetchGroups(
+                { it.into(environments) }, { it.into(latest) }
+            ).map {
+                CloudEnvironmentConfiguration(
+                    id = it.key.id!!,
+                    name = it.key.name!!,
+                    sshSecrets = loadSshCredentials(it.value),
+                    configValues = it.value.map {
+                        CloudConfigValue(
+                            it.getValue(CONFIGURATION_VALUES.NAME)!!,
+                            it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
+                            it.getValue(CONFIGURATION_VALUES.VERSION)!!
+                        )
+                    },
+                    cloud = cloud
+                )
             }
     }
 
@@ -189,7 +191,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     fun updateEnvironment(cloudName: String, environmentName: String, values: Map<String, String>): Boolean {
-        val (_, environment) = fetchCloudAndEnvironment(cloudName, environmentName)
+        val environment = fetchEnvironment(cloudName, environmentName)
 
         return values.map {
             updateEnvironment(environment, it.key, it.value)
@@ -203,6 +205,16 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     ): Boolean {
         setConfiguration(EnvironmentId(environment.id), name, value)
         return true
+    }
+
+    fun cloudByName(name: String): CloudConfiguration {
+        val cloud = listClouds(name)
+
+        if (cloud.isEmpty()) {
+            throw RuntimeException("cloud '${name}' not found")
+        }
+
+        return cloud.first()
     }
 
     fun list(cloudName: String? = null): List<TenantConfig> {
@@ -251,24 +263,13 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 }
     }
 
-    fun cloudByName(name: String): CloudConfiguration {
-        val cloud = listClouds(name)
-
-        if (cloud.isEmpty()) {
-            throw RuntimeException("cloud '${name}' not found")
-        }
-
-        return cloud.first()
-    }
-
     fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfiguration {
         val cloud = cloudByName(cloudName)
-        return cloud.environments.first { it.name == environmentName }
+        return listEnvironments(cloud).first { it.name == environmentName }
     }
 
     fun rotateEnvironmentSecrets(cloudName: String, environmentName: String): Boolean {
-        val (_, environment) = fetchCloudAndEnvironment(cloudName, environmentName)
-
+        val environment = fetchEnvironment(cloudName, environmentName)
         generateAndStoreSecrets(environment)
 
         return true
@@ -286,23 +287,12 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
 
-    private fun fetchCloudAndEnvironment(
+    fun fetchEnvironment(
         cloudName: String,
         environmentName: String
-    ): Pair<CloudConfiguration, CloudEnvironmentConfiguration> {
-
-        if (!hasCloud(cloudName)) {
-            throw RuntimeException("cloud '${cloudName}' does not exist")
-        }
-
+    ): CloudEnvironmentConfiguration {
         val cloud = cloudByName(cloudName)
-        val environment = cloud.environments.firstOrNull { it.name == environmentName }
-
-        if (environment == null) {
-            throw RuntimeException("environment '${environmentName}' does not exist for cloud '${cloudName}'")
-        }
-
-        return cloud to environment
+        return listEnvironments(cloud).first { it.name == environmentName }
     }
 
     fun getTenant(name: String): TenantConfig {

@@ -67,33 +67,20 @@ class CloudMananger(
     }
 
     fun bootstrap(cloudName: String, environmentName: String): Boolean {
-
-        if (!cloudConfigurationManager.hasCloud(cloudName)) {
-            logger.error { "cloud '${cloudName}' not found" }
-            return false
-        }
-
-        val cloud = cloudConfigurationManager.cloudByName(cloudName)
-
-        val environment = cloud.environments.filter { it.name == environmentName }.firstOrNull()
-        if (environment == null) {
-            logger.error { "cloud '${cloudName}' has no environment '${environment}'" }
-            return false
-        }
+        val environment = cloudConfigurationManager.fetchEnvironment(cloudName, environmentName)
 
         logger.info { "creating/updating environment '${cloudName}' for cloud '$environmentName'" }
 
-        createCloudModel(cloud, environment, setOf(SshKey("${cloud.name}-${environment.name}", environment.sshSecrets.sshPublicKey)))
+        createCloudModel(environment, setOf(SshKey("${environment.cloud.name}-${environment.name}", environment.sshSecrets.sshPublicKey)))
 
         return provisioner.apply()
     }
 
     private fun createCloudModel(
-        cloud: CloudConfiguration,
         environment: CloudEnvironmentConfiguration,
         sshKeys: Set<SshKey> = emptySet()
     ) {
-        val rootZone = DnsZone(cloud.rootDomain)
+        val rootZone = DnsZone(environment.cloud.rootDomain)
 
         val id = "solidblocks"
         //val rootZone = DnsZone(cloud.solidblocksConfig.domain)
@@ -118,7 +105,7 @@ class CloudMananger(
                 role = "vault",
                 sshKeys = sshKeys,
                 dnsHealthCheckPort = 8200
-            ), vaultResourceGroup, cloud, environment, rootZone
+            ), vaultResourceGroup, environment, rootZone
         )
 
         vaultResourceGroup.addResource(object : DnsRecord(
@@ -141,7 +128,7 @@ class CloudMananger(
             }
         })
 
-        createVaultConfigResourceGroup(vaultResourceGroup, cloud, environment)
+        createVaultConfigResourceGroup(vaultResourceGroup, environment)
 
         val controllerNodeCount = 1
         val controllerGroup = provisioner.createResourceGroup("controller")
@@ -155,7 +142,7 @@ class CloudMananger(
                 vaultPolicyName = CONTROLLER_POLICY_NAME,
                 dnsHealthCheckPort = 8500,
                 extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
-            ), controllerGroup, cloud, environment, rootZone
+            ), controllerGroup, environment, rootZone
         )
 
         val resourceGroup = provisioner.createResourceGroup("backup")
@@ -168,20 +155,19 @@ class CloudMananger(
                         sshKeys = sshKeys,
                         vaultPolicyName = BACKUP_POLICY_NAME,
                         extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
-                ), resourceGroup, cloud, environment, rootZone
+                ), resourceGroup, environment, rootZone
         )
 
     }
 
     private fun defaultCloudInitVariables(
         name: String,
-        cloud: CloudConfiguration,
         environment: CloudEnvironmentConfiguration,
         rootZone: DnsZone,
         floatingIp: FloatingIp
     ): Map<out String, IResourceLookup<String>> {
         return mapOf(
-            "solidblocks_cloud" to ConstantDataSource(cloud.name),
+            "solidblocks_cloud" to ConstantDataSource(environment.cloud.name),
             "solidblocks_hostname" to ConstantDataSource(name),
             "solidblocks_version" to ConstantDataSource(solidblocksVersion()),
             "solidblocks_root_domain" to ResourceLookup<DnsZoneRuntime>(rootZone) {
@@ -210,32 +196,31 @@ class CloudMananger(
     private fun createDefaultServer(
         serverSpec: ServerSpec,
         resourceGroup: ResourceGroup,
-        cloud: CloudConfiguration,
         environment: CloudEnvironmentConfiguration,
         rootZone: DnsZone
     ): FloatingIp {
         val volume = resourceGroup.addResource(
             Volume(
-                "${cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
+                "${environment.cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
                 serverSpec.location
             )
         )
         val floatingIp = resourceGroup.addResource(
             FloatingIp(
-                "${cloud.name}-${environment.name}-${serverSpec.name}",
+                "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                 serverSpec.location,
                 mapOf("role" to serverSpec.role, "name" to serverSpec.name)
             )
         )
 
         val variables = HashMap<String, IResourceLookup<String>>()
-        variables.putAll(defaultCloudInitVariables(serverSpec.name, cloud, environment, rootZone, floatingIp))
+        variables.putAll(defaultCloudInitVariables(serverSpec.name, environment, rootZone, floatingIp))
         variables["storage_local_device"] = ResourceLookup<VolumeRuntime>(volume) {
             it.device
         }
         variables.putAll(serverSpec.extraVariables)
 
-        variables["vault_addr"] = ConstantDataSource("https://vault.${environment.name}.${cloud.rootDomain}:8200")
+        variables["vault_addr"] = ConstantDataSource("https://vault.${environment.name}.${environment.cloud.rootDomain}:8200")
         //TODO create minimal token for bootstrapping and create new one on boot with more privileges?
         if (serverSpec.vaultPolicyName != null) {
             variables["vault_token"] = CustomDataSource {
@@ -258,7 +243,7 @@ class CloudMananger(
         val userData = UserDataDataSource("lib-cloud-init-generated/${serverSpec.role}-cloud-init.sh", variables)
         val server = resourceGroup.addResource(
             Server(
-                    id = "${cloud.name}-${environment.name}-${serverSpec.name}",
+                    id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                     network = serverSpec.network,
                     userData = userData,
                     sshKeys = serverSpec.sshKeys,
@@ -270,7 +255,7 @@ class CloudMananger(
 
         resourceGroup.addResource(
             DnsRecord(
-                    id = "${cloud.name}-${environment.name}-${serverSpec.name}",
+                    id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                     floatingIp = floatingIp,
                     dnsZone = rootZone,
                     server = server
@@ -309,15 +294,14 @@ class CloudMananger(
     }
 
     private fun createVaultConfigResourceGroup(parentResourceGroup: ResourceGroup,
-                                               cloud: CloudConfiguration,
                                                environment: CloudEnvironmentConfiguration
     ) {
 
         val resourceGroup = provisioner.createResourceGroup("vaultConfig", setOf(parentResourceGroup))
 
-        val hostPkiMount = VaultMount(pkiMountName(cloud, environment), "pki")
+        val hostPkiMount = VaultMount(pkiMountName(environment), "pki")
         val hostPkiBackendRole = VaultPkiBackendRole(
-                id = pkiMountName(cloud, environment),
+                id = pkiMountName(environment),
                 allowAnyName = true,
                 generateLease = true,
                 maxTtl = "168h",
@@ -328,10 +312,10 @@ class CloudMananger(
         )
         resourceGroup.addResource(hostPkiBackendRole)
 
-        val hostSshMount = VaultMount(hostSshMountName(cloud, environment),
+        val hostSshMount = VaultMount(hostSshMountName(environment),
                 "ssh")
         val hostSshBackendRole = VaultSshBackendRole(
-                id = hostSshMountName(cloud, environment),
+                id = hostSshMountName(environment),
                 keyType = "ca",
                 maxTtl = "168h",
                 ttl = "168h",
@@ -341,10 +325,10 @@ class CloudMananger(
         )
         resourceGroup.addResource(hostSshBackendRole)
 
-        val userSshMount = VaultMount(userSshMountName(cloud, environment),
+        val userSshMount = VaultMount(userSshMountName(environment),
                 "ssh")
         val userSshBackendRole = VaultSshBackendRole(
-                id = userSshMountName(cloud, environment),
+                id = userSshMountName(environment),
                 keyType = "ca",
                 maxTtl = "168h",
                 ttl = "168h",
@@ -356,7 +340,7 @@ class CloudMananger(
         )
         resourceGroup.addResource(userSshBackendRole)
 
-        val kvMount = VaultMount(kvMountName(cloud, environment), "kv-v2")
+        val kvMount = VaultMount(kvMountName(environment), "kv-v2")
         resourceGroup.addResource(kvMount)
 
         //JacksonUtils.toMap()
@@ -394,13 +378,13 @@ class CloudMananger(
                 CONTROLLER_POLICY_NAME,
                 setOf(
                     Policy.Rule.builder().path(
-                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config"
+                        "${kvMountName(environment)}/data/solidblocks/cloud/config"
                     )
                         .capabilities(Policy.BuiltinCapabilities.READ)
                         .build(),
 
                     Policy.Rule.builder().path(
-                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config/consul"
+                        "${kvMountName(environment)}/data/solidblocks/cloud/config/consul"
                     )
                         .capabilities(Policy.BuiltinCapabilities.READ)
                         .build(),
@@ -412,43 +396,43 @@ class CloudMananger(
                         .build(),
 
                     Policy.Rule.builder().path(
-                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/github"
+                        "${kvMountName(environment)}/data/solidblocks/cloud/providers/github"
                     )
                         .capabilities(Policy.BuiltinCapabilities.READ)
                         .build(),
 
                     Policy.Rule.builder().path(
-                        "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/hetzner"
+                        "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner"
                     )
                         .capabilities(Policy.BuiltinCapabilities.READ)
                         .build(),
 
                     Policy.Rule.builder()
-                        .path("${pkiMountName(cloud, environment)}/issue/${pkiMountName(cloud, environment)}")
+                        .path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
                         .capabilities(Policy.BuiltinCapabilities.UPDATE)
                         .build(),
 
                     Policy.Rule.builder()
-                        .path("${userSshMountName(cloud, environment)}/sign/${userSshMountName(cloud, environment)}")
+                        .path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
                         .capabilities(
                             Policy.BuiltinCapabilities.UPDATE,
                             Policy.BuiltinCapabilities.CREATE
                         )
                         .build(),
 
-                    Policy.Rule.builder().path("${userSshMountName(cloud, environment)}/config/ca")
+                    Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
                         .capabilities(Policy.BuiltinCapabilities.READ)
                         .build(),
 
                     Policy.Rule.builder()
-                        .path("${hostSshMountName(cloud, environment)}/sign/${hostSshMountName(cloud, environment)}")
+                        .path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
                         .capabilities(
                             Policy.BuiltinCapabilities.UPDATE,
                             Policy.BuiltinCapabilities.CREATE
                         )
                         .build(),
 
-                    Policy.Rule.builder().path("${hostSshMountName(cloud, environment)}/config/ca")
+                    Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
                         .capabilities(Policy.BuiltinCapabilities.READ)
                         .build(),
 
@@ -460,12 +444,12 @@ class CloudMananger(
                 BACKUP_POLICY_NAME,
                 setOf(
                         Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config")
+                                "${kvMountName(environment)}/data/solidblocks/cloud/config")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 
                         Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/config/consul"
+                                "${kvMountName(environment)}/data/solidblocks/cloud/config/consul"
                         )
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
@@ -476,34 +460,34 @@ class CloudMananger(
                                 .build(),
 
                         Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/github")
+                                "${kvMountName(environment)}/data/solidblocks/cloud/providers/github")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 
                         Policy.Rule.builder().path(
-                                "${kvMountName(cloud, environment)}/data/solidblocks/cloud/providers/hetzner")
+                                "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 
-                        Policy.Rule.builder().path("${pkiMountName(cloud, environment)}/issue/${pkiMountName(cloud, environment)}")
+                        Policy.Rule.builder().path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
                                 .capabilities(Policy.BuiltinCapabilities.UPDATE)
                                 .build(),
 
-                        Policy.Rule.builder().path("${userSshMountName(cloud, environment)}/sign/${userSshMountName(cloud, environment)}")
+                        Policy.Rule.builder().path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
                                 .capabilities(Policy.BuiltinCapabilities.UPDATE,
                                         Policy.BuiltinCapabilities.CREATE)
                                 .build(),
 
-                        Policy.Rule.builder().path("${userSshMountName(cloud, environment)}/config/ca")
+                        Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 
-                        Policy.Rule.builder().path("${hostSshMountName(cloud, environment)}/sign/${hostSshMountName(cloud, environment)}")
+                        Policy.Rule.builder().path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
                                 .capabilities(Policy.BuiltinCapabilities.UPDATE,
                                         Policy.BuiltinCapabilities.CREATE)
                                 .build(),
 
-                        Policy.Rule.builder().path("${hostSshMountName(cloud, environment)}/config/ca")
+                        Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
                                 .capabilities(Policy.BuiltinCapabilities.READ)
                                 .build(),
 

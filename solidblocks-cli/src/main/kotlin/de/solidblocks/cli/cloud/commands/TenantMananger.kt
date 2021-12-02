@@ -2,7 +2,6 @@ package de.solidblocks.cli.cloud.commands
 
 import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
-import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.cloud.config.model.TenantConfig
@@ -24,28 +23,19 @@ class TenantMananger(
     }
 
     fun bootstrap(cloudName: String, environmentName: String): Boolean {
-
-        if (!cloudConfigurationManager.hasCloud(cloudName)) {
-            logger.error { "cloud '${cloudName}' not found" }
-            return false
-        }
-
-        val cloudConfig = cloudConfigurationManager.cloudByName(cloudName)
-
-        val environment = cloudConfig.environments.filter { it.name == environmentName }.firstOrNull()
-        if (environment == null) {
-            logger.error { "cloud '${cloudName}' has no environment '${environment}'" }
-            return false
-        }
+        val environment = cloudConfigurationManager.fetchEnvironment(cloudName, environmentName)
 
 
-        createTenantModel(cloudConfig, environment, TenantConfig(UUID.randomUUID(), "tenant1"), setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey)))
+        createTenantModel(
+            environment,
+            TenantConfig(UUID.randomUUID(), "tenant1"),
+            setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey))
+        )
 
         return provisioner.apply()
     }
 
     private fun createTenantModel(
-        cloud: CloudConfiguration,
         environment: CloudEnvironmentConfiguration,
         tenant: TenantConfig,
         sshKeys: Set<SshKey> = emptySet()
