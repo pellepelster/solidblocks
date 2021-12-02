@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Profile
 @Profile("!CloudCreate")
 open class CliApplication {
     @Bean
-    @Profile("!CloudCreate and !test")
     open fun cloudConfigurationContext(
         @Value("\${cloud.name}") cloudName: String,
         @Value("\${environment.name}") environmentName: String,

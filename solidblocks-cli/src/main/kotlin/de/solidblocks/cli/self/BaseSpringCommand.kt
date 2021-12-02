@@ -14,20 +14,18 @@ abstract class BaseSpringCommand(
 ) :
     CliktCommand(name = name, help = help) {
 
-    override fun run() {
+    open fun runSpringApplication(
+        arguments: Map<String, String> = emptyMap(), context: (applicationContext: ApplicationContext) -> Unit
+    ) {
         val config = currentContext.findOrSetObject { mutableMapOf<String, String>() }
         val dbPassword = config[DB_PASSWORD_KEY]
         val dbPath = config[DB_PATH_KEY]
 
-        val args = mapOf("db.path" to dbPath, "db.password" to dbPassword) + extraArgs()
+        val args = mapOf("db.path" to dbPath, "db.password" to dbPassword) + arguments
         val argumentList = args.map { "--${it.key}=${it.value}" }
 
-        run(SpringApplication.run(cliClass, *argumentList.toTypedArray()))
+        context.invoke(SpringApplication.run(cliClass, *argumentList.toTypedArray()))
     }
-
-    open fun extraArgs() = emptyMap<String, String>()
-
-    abstract fun run(applicationContext: ApplicationContext)
 
 }
 

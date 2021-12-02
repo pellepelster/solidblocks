@@ -14,11 +14,9 @@ class CloudBootstrapCommand : BaseSpringCommand(name = "bootstrap", help = "boot
 
     val environment: String by option(help = "cloud environment").required()
 
-    override fun extraArgs(): Map<String, String> {
-        return mapOf("cloud.name" to cloud, "environment.name" to environment)
-    }
-
-    override fun run(applicationContext: ApplicationContext) {
-        applicationContext.getBean(CloudMananger::class.java).bootstrap(cloud, environment)
+    override fun run() {
+        runSpringApplication(mapOf("cloud.name" to cloud, "environment.name" to environment)) {
+            it.getBean(CloudMananger::class.java).bootstrap(cloud, environment)
+        }
     }
 }

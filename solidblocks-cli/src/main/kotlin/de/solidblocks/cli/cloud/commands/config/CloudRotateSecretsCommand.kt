@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.cli.self.BaseSpringCommand
 import de.solidblocks.cloud.config.CloudConfigurationManager
-import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,7 +14,9 @@ class CloudRotateSecretsCommand :
 
     val environment: String by option(help = "cloud environment").required()
 
-    override fun run(applicationContext: ApplicationContext) {
-        applicationContext.getBean(CloudConfigurationManager::class.java).rotateEnvironmentSecrets(cloud, environment)
+    override fun run() {
+        runSpringApplication {
+            it.getBean(CloudConfigurationManager::class.java).rotateEnvironmentSecrets(cloud, environment)
+        }
     }
 }
