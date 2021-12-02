@@ -13,5 +13,4 @@ interface IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
     fun destroyAll(): Result<*> = Result<Any>(NullResource)
 
     fun getResourceType(): Class<*>
-
 }

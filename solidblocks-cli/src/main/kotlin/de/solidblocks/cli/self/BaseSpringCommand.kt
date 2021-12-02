@@ -15,7 +15,8 @@ abstract class BaseSpringCommand(
     CliktCommand(name = name, help = help) {
 
     open fun runSpringApplication(
-        arguments: Map<String, String> = emptyMap(), context: (applicationContext: ApplicationContext) -> Unit
+        arguments: Map<String, String> = emptyMap(),
+        context: (applicationContext: ApplicationContext) -> Unit
     ) {
         val config = currentContext.findOrSetObject { mutableMapOf<String, String>() }
         val dbPassword = config[DB_PASSWORD_KEY]
@@ -26,6 +27,4 @@ abstract class BaseSpringCommand(
 
         context.invoke(SpringApplication.run(cliClass, *argumentList.toTypedArray()))
     }
-
 }
-

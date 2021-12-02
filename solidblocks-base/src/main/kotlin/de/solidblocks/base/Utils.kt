@@ -8,7 +8,7 @@ import org.bouncycastle.util.io.pem.PemObject
 import org.bouncycastle.util.io.pem.PemWriter
 import java.io.StringWriter
 import java.security.SecureRandom
-import java.util.*
+import java.util.Base64
 
 class Utils {
     companion object {

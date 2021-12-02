@@ -30,7 +30,7 @@ class Constants {
             val BACKUP_POLICY_NAME = "backup"
 
             fun vaultAddr(environment: CloudEnvironmentConfiguration) =
-                    "https://vault.${environment.name}.${environment.cloud.rootDomain}:8200"
+                "https://vault.${environment.name}.${environment.cloud.rootDomain}:8200"
         }
     }
 }

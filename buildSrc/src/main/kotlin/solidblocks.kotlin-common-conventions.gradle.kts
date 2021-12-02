@@ -1,10 +1,11 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("net.nemerosa.versioning")
-    //id("org.jlleitschuh.gradle.ktlint")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 repositories {
@@ -64,7 +65,6 @@ tasks.jar {
     }
 }
 
-/*
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     outputToConsole.set(true)
     outputColorName.set("RED")
@@ -76,4 +76,3 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         //exclude("XX/target/XX")
     }
 }
-*/

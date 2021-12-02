@@ -20,11 +20,11 @@ open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManage
         assertThat(cloudConfigurationManager.hasCloud("cloud1")).isFalse
 
         assertThat(
-                cloudConfigurationManager.createCloud(
-                        "cloud1",
-                        "domain1",
-                        listOf(CloudConfigValue("name1", "value1"))
-                )
+            cloudConfigurationManager.createCloud(
+                "cloud1",
+                "domain1",
+                listOf(CloudConfigValue("name1", "value1"))
+            )
         ).isTrue
         assertThat(cloudConfigurationManager.hasCloud("cloud1")).isTrue
         assertThat(cloudConfigurationManager.createCloud("cloud1", "domain1")).isFalse
@@ -42,7 +42,6 @@ open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManage
         assertThat(environment.sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(environment.cloud.configValues).anyMatch { it.name == "name1" && it.value == "value1" }
     }
-
 
     @Test
     fun testCreateAndUpdateEnvironment() {

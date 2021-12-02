@@ -1,6 +1,5 @@
 package de.solidblocks.api.resources.infrastructure.network
 
-import de.solidblocks.core.IResourceLookup
 import de.solidblocks.core.IInfrastructureResource
 import org.apache.commons.net.util.SubnetUtils
 

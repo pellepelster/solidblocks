@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class CloudRotateSecretsCommand :
-        BaseSpringCommand(name = "rotate-secrets", help = "rotate cloud secrets") {
+    BaseSpringCommand(name = "rotate-secrets", help = "rotate cloud secrets") {
 
     val cloud: String by option(help = "name of the cloud").required()
 

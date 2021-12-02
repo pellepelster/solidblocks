@@ -21,5 +21,4 @@ open class TestApplicationContext {
 
         return liquibase
     }
-
 }

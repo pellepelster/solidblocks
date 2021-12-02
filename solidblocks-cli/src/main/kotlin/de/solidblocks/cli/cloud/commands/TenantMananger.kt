@@ -13,8 +13,8 @@ import java.util.*
 
 @Component
 class TenantMananger(
-        val provisioner: Provisioner,
-        val cloudConfigurationManager: CloudConfigurationManager
+    val provisioner: Provisioner,
+    val cloudConfigurationManager: CloudConfigurationManager
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -25,11 +25,10 @@ class TenantMananger(
     fun bootstrap(cloudName: String, environmentName: String): Boolean {
         val environment = cloudConfigurationManager.getEnvironment(cloudName, environmentName) ?: return false
 
-
         createTenantModel(
-                environment,
-                TenantConfig(UUID.randomUUID(), "tenant1"),
-                setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey))
+            environment,
+            TenantConfig(UUID.randomUUID(), "tenant1"),
+            setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey))
         )
 
         return provisioner.apply()
@@ -46,5 +45,4 @@ class TenantMananger(
         val networkResourceGroup = provisioner.createResourceGroup("network")
         networkResourceGroup.addResource(network)
     }
-
 }

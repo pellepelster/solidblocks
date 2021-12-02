@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.config.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import de.solidblocks.cloud.config.model.DockerRegistryConfig
 
 const val CONFIG_API_KEY = "api_key"
 const val CONFIG_BACKUP_PASSWORD_KEY = "backup_password"
@@ -17,4 +16,4 @@ data class SolidblocksConfig(
     @JsonProperty(CONFIG_BACKUP_PASSWORD_KEY)
     val backupPassword: String,
 
-    )
+)

@@ -6,5 +6,4 @@ class PassSecret(val key: String, val value: String) : IInfrastructureResource<P
     override fun id(): String {
         return key
     }
-
 }

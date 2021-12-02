@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":solidblocks-provisioner-vault"))
     implementation(project(":solidblocks-base"))
 
-    implementation("org.springframework.boot:spring-boot-starter:${SPRING_BOOT_VERSION}")
+    implementation("org.springframework.boot:spring-boot-starter:$SPRING_BOOT_VERSION")
 
     api("org.apache.derby:derby:10.15.2.0")
     api("org.apache.derby:derbytools:10.15.2.0")
@@ -21,7 +21,7 @@ dependencies {
     implementation("org.apache.commons:commons-text")
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
-    testImplementation("org.springframework.boot:spring-boot-test:${SPRING_BOOT_VERSION}")
+    testImplementation("org.springframework.boot:spring-boot-test:$SPRING_BOOT_VERSION")
     testImplementation("org.springframework:spring-test:5.3.6")
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("org.testcontainers:testcontainers:1.15.3")

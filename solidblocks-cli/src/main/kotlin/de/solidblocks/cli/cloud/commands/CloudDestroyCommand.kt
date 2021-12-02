@@ -14,5 +14,4 @@ class CloudDestroyCommand :
             it.getBean(CloudMananger::class.java).destroy(destroyVolumes)
         }
     }
-
 }

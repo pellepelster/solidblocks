@@ -4,7 +4,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.cli.self.BaseSpringCommand
 import mu.KotlinLogging
-import org.springframework.context.ApplicationContext
 
 class CloudBootstrapCommand : BaseSpringCommand(name = "bootstrap", help = "bootstrap a cloud") {
 

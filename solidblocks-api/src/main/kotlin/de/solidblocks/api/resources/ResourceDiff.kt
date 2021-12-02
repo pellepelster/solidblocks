@@ -26,11 +26,10 @@ class ResourceDiff(
 
         if (changes.isNotEmpty()) {
             return "${resource.logName()} has changes = ${
-                changes.joinToString(", ")
+            changes.joinToString(", ")
             }"
         }
 
-
-            return "${resource.logName()} is up to date"
+        return "${resource.logName()} is up to date"
     }
 }

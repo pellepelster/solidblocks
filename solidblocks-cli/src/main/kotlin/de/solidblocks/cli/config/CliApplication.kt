@@ -17,9 +17,8 @@ open class CliApplication {
         cloudConfigurationManager: CloudConfigurationManager
     ): CloudConfigurationContext {
         val environment = cloudConfigurationManager.environmentByName(cloudName, environmentName)
-                ?: throw RuntimeException("environment '${environmentName}' and/or cloud '${cloudName}' not found")
+            ?: throw RuntimeException("environment '$environmentName' and/or cloud '$cloudName' not found")
 
         return CloudConfigurationContext(environment)
     }
-
 }

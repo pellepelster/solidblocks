@@ -3,13 +3,10 @@
  */
 package de.solidblocks.config.db.tables.references
 
-
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.CloudsEnvironments
 import de.solidblocks.config.db.tables.ConfigurationValues
 import de.solidblocks.config.db.tables.Tenants
-
-
 
 /**
  * The table <code>CLOUDS</code>.

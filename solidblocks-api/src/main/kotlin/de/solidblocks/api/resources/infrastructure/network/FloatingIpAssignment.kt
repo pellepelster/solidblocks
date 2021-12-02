@@ -4,8 +4,8 @@ import de.solidblocks.api.resources.infrastructure.compute.IServerLookup
 import de.solidblocks.core.IInfrastructureResource
 
 data class FloatingIpAssignment(val server: IServerLookup, val floatingIp: IFloatingIpLookup) :
-        IFloatingIpAssignmentLookup,
-        IInfrastructureResource<FloatingIpAssignment, FloatingIpAssignmentRuntime> {
+    IFloatingIpAssignmentLookup,
+    IInfrastructureResource<FloatingIpAssignment, FloatingIpAssignmentRuntime> {
 
     override fun getParents() = listOf(server, floatingIp)
 

@@ -1,6 +1,5 @@
 package de.solidblocks.cli
 
-import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 
 object Contants {

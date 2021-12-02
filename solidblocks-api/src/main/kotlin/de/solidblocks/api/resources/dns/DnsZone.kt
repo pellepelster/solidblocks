@@ -7,5 +7,4 @@ data class DnsZone(val id: String) : IDnsZoneLookup, IInfrastructureResource<Dns
     override fun id(): String {
         return this.id
     }
-
 }

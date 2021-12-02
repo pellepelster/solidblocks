@@ -18,16 +18,16 @@ fun main(args: Array<String>) {
 
     SolidBlocksCli()
         .subcommands(
-                CloudCommand().subcommands(
-                        CloudConfigCommand().subcommands(
-                                CloudListCommand(),
-                                CloudRotateSecretsCommand(),
-                                CloudSshConfigCommand(),
-                                CloudCreateCommand(),
-                                CloudEnvironmentCreateCommand()
-                        ),
-                        CloudDestroyCommand(), CloudBootstrapCommand(), TenantBootstrapCommand()
-                )
+            CloudCommand().subcommands(
+                CloudConfigCommand().subcommands(
+                    CloudListCommand(),
+                    CloudRotateSecretsCommand(),
+                    CloudSshConfigCommand(),
+                    CloudCreateCommand(),
+                    CloudEnvironmentCreateCommand()
+                ),
+                CloudDestroyCommand(), CloudBootstrapCommand(), TenantBootstrapCommand()
+            )
         )
         .main(args)
 }

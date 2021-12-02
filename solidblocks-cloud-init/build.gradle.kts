@@ -34,11 +34,11 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
 
     fun generate_cloud_init(target: String, files: List<String>) {
         val file_contents = files.map { file ->
-            File("${projectLayout.projectDirectory}/src/${file}").readText(Charsets.UTF_8)
+            File("${projectLayout.projectDirectory}/src/$file").readText(Charsets.UTF_8)
         }
 
         File("${projectLayout.projectDirectory}/src/lib-cloud-init-generated").mkdirs()
-        File("${projectLayout.projectDirectory}/src/lib-cloud-init-generated/${target}").writeText(file_contents.joinToString("\n"), Charsets.UTF_8)
+        File("${projectLayout.projectDirectory}/src/lib-cloud-init-generated/$target").writeText(file_contents.joinToString("\n"), Charsets.UTF_8)
     }
 
     @TaskAction
@@ -85,8 +85,6 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
                 "lib-cloud-init/vault-cloud-init-body.sh"
             )
         )
-
-
     }
 }
 tasks.register<GenerateTask>("generate")

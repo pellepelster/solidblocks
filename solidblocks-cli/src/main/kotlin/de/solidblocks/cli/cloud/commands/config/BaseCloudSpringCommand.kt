@@ -23,6 +23,4 @@ abstract class BaseCloudSpringCommand(
     ) {
         super.runSpringApplication(arguments + mapOf("cloud.name" to cloud, "environment.name" to environment), context)
     }
-
 }
-

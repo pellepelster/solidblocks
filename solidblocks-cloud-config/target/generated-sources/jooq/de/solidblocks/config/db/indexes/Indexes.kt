@@ -3,16 +3,12 @@
  */
 package de.solidblocks.config.db.indexes
 
-
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.CloudsEnvironments
 import de.solidblocks.config.db.tables.Tenants
-
 import org.jooq.Index
 import org.jooq.impl.DSL
 import org.jooq.impl.Internal
-
-
 
 // -------------------------------------------------------------------------
 // INDEX definitions

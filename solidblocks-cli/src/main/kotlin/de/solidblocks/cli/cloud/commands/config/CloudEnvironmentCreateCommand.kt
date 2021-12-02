@@ -13,7 +13,6 @@ import de.solidblocks.cloud.config.model.createConfigValue
 import org.springframework.stereotype.Component
 import kotlin.system.exitProcess
 
-
 @Component
 class CloudEnvironmentCreateCommand :
     BaseSpringCommand(
@@ -38,18 +37,18 @@ class CloudEnvironmentCreateCommand :
         runSpringApplication(mapOf("spring.profiles.active" to "CloudCreate")) {
             it.getBean(CloudConfigurationManager::class.java).let {
                 if (!it.createEnvironment(
-                        cloud, environment, listOf(
-                            createConfigValue(GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
-                            createConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
-                            createConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
-                            createConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
-                        )
+                        cloud, environment,
+                        listOf(
+                                createConfigValue(GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
+                                createConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
+                                createConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
+                                createConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
+                            )
                     )
                 ) {
                     exitProcess(1)
                 }
             }
-
         }
     }
 }

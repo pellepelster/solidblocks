@@ -59,7 +59,6 @@ class CloudMananger(
 ) {
     private val logger = KotlinLogging.logger {}
 
-
     fun destroy(destroyVolumes: Boolean): Boolean {
         provisioner.destroyAll(destroyVolumes)
         return true
@@ -67,9 +66,9 @@ class CloudMananger(
 
     fun bootstrap(cloudName: String, environmentName: String): Boolean {
         val environment = cloudConfigurationManager.getEnvironment(cloudName, environmentName)
-                ?: return false
+            ?: return false
 
-        logger.info { "creating/updating environment '${cloudName}' for cloud '$environmentName'" }
+        logger.info { "creating/updating environment '$cloudName' for cloud '$environmentName'" }
 
         createCloudModel(environment, setOf(SshKey("${environment.cloud.name}-${environment.name}", environment.sshSecrets.sshPublicKey)))
 
@@ -83,8 +82,7 @@ class CloudMananger(
         val rootZone = DnsZone(environment.cloud.rootDomain)
 
         val id = "solidblocks"
-        //val rootZone = DnsZone(cloud.solidblocksConfig.domain)
-
+        // val rootZone = DnsZone(cloud.solidblocksConfig.domain)
 
         val networkResourceGroup = provisioner.createResourceGroup("network")
 
@@ -105,28 +103,29 @@ class CloudMananger(
                 role = "vault",
                 sshKeys = sshKeys,
                 dnsHealthCheckPort = 8200
-            ), vaultResourceGroup, environment, rootZone
+            ),
+            vaultResourceGroup, environment, rootZone
         )
 
         vaultResourceGroup.addResource(object : DnsRecord(
-                id = "vault.${environment.name}",
-                floatingIp = floatingIp,
-                dnsZone = rootZone
+            id = "vault.${environment.name}",
+            floatingIp = floatingIp,
+            dnsZone = rootZone
         ) {
-            override fun getHealthCheck(): () -> Boolean {
-                return health@{
-                    val url = "https://${this.id}.${dnsZone.id()}:8200"
-                    try {
-                        URL(url).readText()
-                        logger.info { "url '${url}' is healthy" }
-                        return@health true
-                    } catch (e: Exception) {
-                        logger.warn { "url '${url}' is unhealthy" }
-                        return@health false
+                override fun getHealthCheck(): () -> Boolean {
+                    return health@{
+                        val url = "https://${this.id}.${dnsZone.id()}:8200"
+                        try {
+                            URL(url).readText()
+                            logger.info { "url '$url' is healthy" }
+                            return@health true
+                        } catch (e: Exception) {
+                            logger.warn { "url '$url' is unhealthy" }
+                            return@health false
+                        }
                     }
                 }
-            }
-        })
+            })
 
         createVaultConfigResourceGroup(vaultResourceGroup, environment)
 
@@ -142,22 +141,23 @@ class CloudMananger(
                 vaultPolicyName = CONTROLLER_POLICY_NAME,
                 dnsHealthCheckPort = 8500,
                 extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
-            ), controllerGroup, environment, rootZone
+            ),
+            controllerGroup, environment, rootZone
         )
 
         val resourceGroup = provisioner.createResourceGroup("backup")
         createDefaultServer(
-                ServerSpec(
-                        name = "backup",
-                        location = location,
-                        network = network,
-                        role = "backup",
-                        sshKeys = sshKeys,
-                        vaultPolicyName = BACKUP_POLICY_NAME,
-                        extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
-                ), resourceGroup, environment, rootZone
+            ServerSpec(
+                name = "backup",
+                location = location,
+                network = network,
+                role = "backup",
+                sshKeys = sshKeys,
+                vaultPolicyName = BACKUP_POLICY_NAME,
+                extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
+            ),
+            resourceGroup, environment, rootZone
         )
-
     }
 
     private fun defaultCloudInitVariables(
@@ -221,11 +221,11 @@ class CloudMananger(
         variables.putAll(serverSpec.extraVariables)
 
         variables["vault_addr"] = ConstantDataSource("https://vault.${environment.name}.${environment.cloud.rootDomain}:8200")
-        //TODO create minimal token for bootstrapping and create new one on boot with more privileges?
+        // TODO create minimal token for bootstrapping and create new one on boot with more privileges?
         if (serverSpec.vaultPolicyName != null) {
             variables["vault_token"] = CustomDataSource {
                 val vaultClient =
-                        vaultRootClientProvider.createClient()
+                    vaultRootClientProvider.createClient()
                 val result = vaultClient.opsForToken().create(
                     VaultTokenRequest.builder()
                         .displayName(serverSpec.name)
@@ -239,262 +239,277 @@ class CloudMananger(
             }
         }
 
-
         val userData = UserDataDataSource("lib-cloud-init-generated/${serverSpec.role}-cloud-init.sh", variables)
         val server = resourceGroup.addResource(
             Server(
-                    id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
-                    network = serverSpec.network,
-                    userData = userData,
-                    sshKeys = serverSpec.sshKeys,
-                    location = serverSpec.location,
-                    volume = volume,
-                    labels = mapOf("role" to serverSpec.role)
+                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
+                network = serverSpec.network,
+                userData = userData,
+                sshKeys = serverSpec.sshKeys,
+                location = serverSpec.location,
+                volume = volume,
+                labels = mapOf("role" to serverSpec.role)
             )
         )
 
         resourceGroup.addResource(
             DnsRecord(
-                    id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
-                    floatingIp = floatingIp,
-                    dnsZone = rootZone,
-                    server = server
-            )
-        )
-
-
-        resourceGroup.addResource(object : DnsRecord(
-                id = "${serverSpec.name}.${environment.name}",
+                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                 floatingIp = floatingIp,
                 dnsZone = rootZone,
                 server = server
-        ) {
-            override fun getHealthCheck(): () -> Boolean {
-                return health@{
-                    if (serverSpec.dnsHealthCheckPort == null) {
-                        return@health true
-                    }
+            )
+        )
 
-                    val url = "https://${this.id}.${dnsZone.id()}:${serverSpec.dnsHealthCheckPort}"
-                    try {
-                        URL(url).readText()
-                        logger.info { "url '${url}' is healthy" }
-                        return@health true
-                    } catch (e: Exception) {
-                        logger.warn { "url '${url}' is unhealthy" }
-                        return@health false
+        resourceGroup.addResource(object : DnsRecord(
+            id = "${serverSpec.name}.${environment.name}",
+            floatingIp = floatingIp,
+            dnsZone = rootZone,
+            server = server
+        ) {
+                override fun getHealthCheck(): () -> Boolean {
+                    return health@{
+                        if (serverSpec.dnsHealthCheckPort == null) {
+                            return@health true
+                        }
+
+                        val url = "https://${this.id}.${dnsZone.id()}:${serverSpec.dnsHealthCheckPort}"
+                        try {
+                            URL(url).readText()
+                            logger.info { "url '$url' is healthy" }
+                            return@health true
+                        } catch (e: Exception) {
+                            logger.warn { "url '$url' is unhealthy" }
+                            return@health false
+                        }
                     }
                 }
-            }
-        })
+            })
 
         resourceGroup.addResource(FloatingIpAssignment(server = server, floatingIp = floatingIp))
 
         return floatingIp
     }
 
-    private fun createVaultConfigResourceGroup(parentResourceGroup: ResourceGroup,
-                                               environment: CloudEnvironmentConfiguration
+    private fun createVaultConfigResourceGroup(
+        parentResourceGroup: ResourceGroup,
+        environment: CloudEnvironmentConfiguration
     ) {
 
         val resourceGroup = provisioner.createResourceGroup("vaultConfig", setOf(parentResourceGroup))
 
         val hostPkiMount = VaultMount(pkiMountName(environment), "pki")
         val hostPkiBackendRole = VaultPkiBackendRole(
-                id = pkiMountName(environment),
-                allowAnyName = true,
-                generateLease = true,
-                maxTtl = "168h",
-                ttl = "168h",
-                keyBits = 521,
-                keyType = "ec",
-                mount = hostPkiMount
+            id = pkiMountName(environment),
+            allowAnyName = true,
+            generateLease = true,
+            maxTtl = "168h",
+            ttl = "168h",
+            keyBits = 521,
+            keyType = "ec",
+            mount = hostPkiMount
         )
         resourceGroup.addResource(hostPkiBackendRole)
 
-        val hostSshMount = VaultMount(hostSshMountName(environment),
-                "ssh")
+        val hostSshMount = VaultMount(
+            hostSshMountName(environment),
+            "ssh"
+        )
         val hostSshBackendRole = VaultSshBackendRole(
-                id = hostSshMountName(environment),
-                keyType = "ca",
-                maxTtl = "168h",
-                ttl = "168h",
-                allowHostCertificates = true,
-                allowUserCertificates = false,
-                mount = hostSshMount
+            id = hostSshMountName(environment),
+            keyType = "ca",
+            maxTtl = "168h",
+            ttl = "168h",
+            allowHostCertificates = true,
+            allowUserCertificates = false,
+            mount = hostSshMount
         )
         resourceGroup.addResource(hostSshBackendRole)
 
-        val userSshMount = VaultMount(userSshMountName(environment),
-                "ssh")
+        val userSshMount = VaultMount(
+            userSshMountName(environment),
+            "ssh"
+        )
         val userSshBackendRole = VaultSshBackendRole(
-                id = userSshMountName(environment),
-                keyType = "ca",
-                maxTtl = "168h",
-                ttl = "168h",
-                allowedUsers = listOf("root"),
-                defaultUser = "root",
-                allowHostCertificates = false,
-                allowUserCertificates = true,
-                mount = userSshMount
+            id = userSshMountName(environment),
+            keyType = "ca",
+            maxTtl = "168h",
+            ttl = "168h",
+            allowedUsers = listOf("root"),
+            defaultUser = "root",
+            allowHostCertificates = false,
+            allowUserCertificates = true,
+            mount = userSshMount
         )
         resourceGroup.addResource(userSshBackendRole)
 
         val kvMount = VaultMount(kvMountName(environment), "kv-v2")
         resourceGroup.addResource(kvMount)
 
-        //JacksonUtils.toMap()
+        // JacksonUtils.toMap()
         val solidblocksConfig =
-                VaultKV("solidblocks/cloud/config",
-                        mapOf(), kvMount)
+            VaultKV(
+                "solidblocks/cloud/config",
+                mapOf(), kvMount
+            )
         resourceGroup.addResource(solidblocksConfig)
 
         val hetznerConfig =
-                VaultKV("solidblocks/cloud/providers/hetzner",
-                        mapOf(HETZNER_CLOUD_API_TOKEN_RO_KEY to environment.configValues.getConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY)!!.value), kvMount)
+            VaultKV(
+                "solidblocks/cloud/providers/hetzner",
+                mapOf(HETZNER_CLOUD_API_TOKEN_RO_KEY to environment.configValues.getConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY)!!.value), kvMount
+            )
         resourceGroup.addResource(hetznerConfig)
 
         val githubConfig =
-                VaultKV(
-                    "solidblocks/cloud/providers/github",
-                    mapOf(
-                        GITHUB_TOKEN_RO_KEY to environment.configValues.getConfigValue(GITHUB_TOKEN_RO_KEY)!!.value,
-                        GITHUB_USERNAME_KEY to "pellepelster"
-                    ), kvMount
-                )
+            VaultKV(
+                "solidblocks/cloud/providers/github",
+                mapOf(
+                    GITHUB_TOKEN_RO_KEY to environment.configValues.getConfigValue(GITHUB_TOKEN_RO_KEY)!!.value,
+                    GITHUB_USERNAME_KEY to "pellepelster"
+                ),
+                kvMount
+            )
         resourceGroup.addResource(githubConfig)
 
         val consulConfig =
-                VaultKV(
-                    "solidblocks/cloud/config/consul",
-                    mapOf(
-                        CONSUL_SECRET_KEY to environment.configValues.getConfigValue(CONSUL_SECRET_KEY)!!.value,
-                        CONSUL_MASTER_TOKEN_KEY to environment.configValues.getConfigValue(CONSUL_MASTER_TOKEN_KEY)!!.value
-                    ), kvMount
-                )
+            VaultKV(
+                "solidblocks/cloud/config/consul",
+                mapOf(
+                    CONSUL_SECRET_KEY to environment.configValues.getConfigValue(CONSUL_SECRET_KEY)!!.value,
+                    CONSUL_MASTER_TOKEN_KEY to environment.configValues.getConfigValue(CONSUL_MASTER_TOKEN_KEY)!!.value
+                ),
+                kvMount
+            )
         resourceGroup.addResource(consulConfig)
 
         val controllerPolicy = VaultPolicy(
-                CONTROLLER_POLICY_NAME,
-                setOf(
-                    Policy.Rule.builder().path(
-                        "${kvMountName(environment)}/data/solidblocks/cloud/config"
+            CONTROLLER_POLICY_NAME,
+            setOf(
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/config"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
+
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/config/consul"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
+
+                Policy.Rule.builder().path(
+                    "/auth/token/renew-self"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.UPDATE)
+                    .build(),
+
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/providers/github"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
+
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
+
+                Policy.Rule.builder()
+                    .path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
+                    .capabilities(Policy.BuiltinCapabilities.UPDATE)
+                    .build(),
+
+                Policy.Rule.builder()
+                    .path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
+                    .capabilities(
+                        Policy.BuiltinCapabilities.UPDATE,
+                        Policy.BuiltinCapabilities.CREATE
                     )
-                        .capabilities(Policy.BuiltinCapabilities.READ)
-                        .build(),
+                    .build(),
 
-                    Policy.Rule.builder().path(
-                        "${kvMountName(environment)}/data/solidblocks/cloud/config/consul"
+                Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
+
+                Policy.Rule.builder()
+                    .path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
+                    .capabilities(
+                        Policy.BuiltinCapabilities.UPDATE,
+                        Policy.BuiltinCapabilities.CREATE
                     )
-                        .capabilities(Policy.BuiltinCapabilities.READ)
-                        .build(),
+                    .build(),
 
-                    Policy.Rule.builder().path(
-                        "/auth/token/renew-self"
-                    )
-                        .capabilities(Policy.BuiltinCapabilities.UPDATE)
-                        .build(),
+                Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
 
-                    Policy.Rule.builder().path(
-                        "${kvMountName(environment)}/data/solidblocks/cloud/providers/github"
-                    )
-                        .capabilities(Policy.BuiltinCapabilities.READ)
-                        .build(),
-
-                    Policy.Rule.builder().path(
-                        "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner"
-                    )
-                        .capabilities(Policy.BuiltinCapabilities.READ)
-                        .build(),
-
-                    Policy.Rule.builder()
-                        .path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
-                        .capabilities(Policy.BuiltinCapabilities.UPDATE)
-                        .build(),
-
-                    Policy.Rule.builder()
-                        .path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
-                        .capabilities(
-                            Policy.BuiltinCapabilities.UPDATE,
-                            Policy.BuiltinCapabilities.CREATE
-                        )
-                        .build(),
-
-                    Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
-                        .capabilities(Policy.BuiltinCapabilities.READ)
-                        .build(),
-
-                    Policy.Rule.builder()
-                        .path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
-                        .capabilities(
-                            Policy.BuiltinCapabilities.UPDATE,
-                            Policy.BuiltinCapabilities.CREATE
-                        )
-                        .build(),
-
-                    Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
-                        .capabilities(Policy.BuiltinCapabilities.READ)
-                        .build(),
-
-                    )
+            )
         )
         resourceGroup.addResource(controllerPolicy)
 
         val backupPolicy = VaultPolicy(
-                BACKUP_POLICY_NAME,
-                setOf(
-                        Policy.Rule.builder().path(
-                                "${kvMountName(environment)}/data/solidblocks/cloud/config")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+            BACKUP_POLICY_NAME,
+            setOf(
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/config"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
 
-                        Policy.Rule.builder().path(
-                                "${kvMountName(environment)}/data/solidblocks/cloud/config/consul"
-                        )
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/config/consul"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
 
-                        Policy.Rule.builder().path(
-                                "/auth/token/renew-self")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE)
-                                .build(),
+                Policy.Rule.builder().path(
+                    "/auth/token/renew-self"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.UPDATE)
+                    .build(),
 
-                        Policy.Rule.builder().path(
-                                "${kvMountName(environment)}/data/solidblocks/cloud/providers/github")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/providers/github"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
 
-                        Policy.Rule.builder().path(
-                                "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                Policy.Rule.builder().path(
+                    "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner"
+                )
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
 
-                        Policy.Rule.builder().path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE)
-                                .build(),
+                Policy.Rule.builder().path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
+                    .capabilities(Policy.BuiltinCapabilities.UPDATE)
+                    .build(),
 
-                        Policy.Rule.builder().path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE,
-                                        Policy.BuiltinCapabilities.CREATE)
-                                .build(),
+                Policy.Rule.builder().path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
+                    .capabilities(
+                        Policy.BuiltinCapabilities.UPDATE,
+                        Policy.BuiltinCapabilities.CREATE
+                    )
+                    .build(),
 
-                        Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
 
-                        Policy.Rule.builder().path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE,
-                                        Policy.BuiltinCapabilities.CREATE)
-                                .build(),
+                Policy.Rule.builder().path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
+                    .capabilities(
+                        Policy.BuiltinCapabilities.UPDATE,
+                        Policy.BuiltinCapabilities.CREATE
+                    )
+                    .build(),
 
-                        Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
-                                .capabilities(Policy.BuiltinCapabilities.READ)
-                                .build(),
+                Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
+                    .capabilities(Policy.BuiltinCapabilities.READ)
+                    .build(),
 
-                        ),
+            ),
         )
         resourceGroup.addResource(backupPolicy)
     }
-
-
 }

@@ -3,7 +3,6 @@
  */
 package de.solidblocks.config.db.keys
 
-
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.CloudsEnvironments
 import de.solidblocks.config.db.tables.ConfigurationValues
@@ -12,13 +11,10 @@ import de.solidblocks.config.db.tables.records.CloudsEnvironmentsRecord
 import de.solidblocks.config.db.tables.records.CloudsRecord
 import de.solidblocks.config.db.tables.records.ConfigurationValuesRecord
 import de.solidblocks.config.db.tables.records.TenantsRecord
-
 import org.jooq.ForeignKey
 import org.jooq.UniqueKey
 import org.jooq.impl.DSL
 import org.jooq.impl.Internal
-
-
 
 // -------------------------------------------------------------------------
 // UNIQUE and PRIMARY KEY definitions
