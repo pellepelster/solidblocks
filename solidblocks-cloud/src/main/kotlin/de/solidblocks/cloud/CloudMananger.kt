@@ -1,4 +1,4 @@
-package de.solidblocks.cli.cloud.commands
+package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.dns.DnsRecord
 import de.solidblocks.api.resources.dns.DnsZone
@@ -18,10 +18,10 @@ import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
 import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
 import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
 import de.solidblocks.base.solidblocksVersion
-import de.solidblocks.cli.Contants.hostSshMountName
-import de.solidblocks.cli.Contants.kvMountName
-import de.solidblocks.cli.Contants.pkiMountName
-import de.solidblocks.cli.Contants.userSshMountName
+import de.solidblocks.cloud.Contants.hostSshMountName
+import de.solidblocks.cloud.Contants.kvMountName
+import de.solidblocks.cloud.Contants.pkiMountName
+import de.solidblocks.cloud.Contants.userSshMountName
 import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY

@@ -1,7 +1,8 @@
-package de.solidblocks.cli.cloud.commands.config
+package de.solidblocks.cli.commands.cloud
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import de.solidblocks.cli.cloud.commands.BaseCloudSpringCommand
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import org.springframework.stereotype.Component
 

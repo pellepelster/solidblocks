@@ -1,4 +1,4 @@
-package de.solidblocks.cli.cloud.commands.config
+package de.solidblocks.cli.commands.environments
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component
 import kotlin.system.exitProcess
 
 @Component
-class CloudEnvironmentCreateCommand :
+class EnvironmentCreateCommand :
     BaseSpringCommand(
-        name = "create-environment",
-        help = "create a new cloud environment",
+        name = "create",
+        help = "create new environment",
         cliClass = CliApplicationCloudCreate::class.java
     ) {
 

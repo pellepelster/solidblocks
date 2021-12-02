@@ -1,4 +1,4 @@
-package de.solidblocks.cli
+package de.solidblocks.cloud
 
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 

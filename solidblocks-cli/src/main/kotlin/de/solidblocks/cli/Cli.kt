@@ -1,16 +1,18 @@
 package de.solidblocks.cli
 
 import com.github.ajalt.clikt.core.subcommands
-import de.solidblocks.cli.cloud.commands.CloudBootstrapCommand
-import de.solidblocks.cli.cloud.commands.CloudCommand
-import de.solidblocks.cli.cloud.commands.CloudDestroyCommand
-import de.solidblocks.cli.cloud.commands.TenantBootstrapCommand
-import de.solidblocks.cli.cloud.commands.config.CloudConfigCommand
-import de.solidblocks.cli.cloud.commands.config.CloudCreateCommand
-import de.solidblocks.cli.cloud.commands.config.CloudEnvironmentCreateCommand
-import de.solidblocks.cli.cloud.commands.config.CloudListCommand
-import de.solidblocks.cli.cloud.commands.config.CloudRotateSecretsCommand
-import de.solidblocks.cli.cloud.commands.config.CloudSshConfigCommand
+import de.solidblocks.cli.commands.cloud.CloudCommand
+import de.solidblocks.cli.commands.cloud.CloudCreateCommand
+import de.solidblocks.cli.commands.cloud.CloudListCommand
+import de.solidblocks.cli.commands.environments.EnvironmentBootstrapCommand
+import de.solidblocks.cli.commands.environments.EnvironmentCommand
+import de.solidblocks.cli.commands.environments.EnvironmentCreateCommand
+import de.solidblocks.cli.commands.environments.EnvironmentDestroyCommand
+import de.solidblocks.cli.commands.environments.EnvironmentRotateSecretsCommand
+import de.solidblocks.cli.commands.environments.EnvironmentSshConfigCommand
+import de.solidblocks.cli.commands.tenants.TenantBootstrapCommand
+import de.solidblocks.cli.commands.tenants.TenantCommand
+import de.solidblocks.cli.commands.tenants.TenantCreateCommand
 import de.solidblocks.cli.self.SolidBlocksCli
 
 fun main(args: Array<String>) {
@@ -19,14 +21,20 @@ fun main(args: Array<String>) {
     SolidBlocksCli()
         .subcommands(
             CloudCommand().subcommands(
-                CloudConfigCommand().subcommands(
-                    CloudListCommand(),
-                    CloudRotateSecretsCommand(),
-                    CloudSshConfigCommand(),
-                    CloudCreateCommand(),
-                    CloudEnvironmentCreateCommand()
-                ),
-                CloudDestroyCommand(), CloudBootstrapCommand(), TenantBootstrapCommand()
+                CloudListCommand(), CloudCreateCommand()
+            ),
+
+            EnvironmentCommand().subcommands(
+                EnvironmentCreateCommand(),
+                EnvironmentBootstrapCommand(),
+                EnvironmentDestroyCommand(),
+                EnvironmentRotateSecretsCommand(),
+                EnvironmentSshConfigCommand()
+            ),
+
+            TenantCommand().subcommands(
+                TenantCreateCommand(),
+                TenantBootstrapCommand()
             )
         )
         .main(args)

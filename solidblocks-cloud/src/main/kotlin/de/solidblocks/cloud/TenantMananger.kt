@@ -1,4 +1,4 @@
-package de.solidblocks.cli.cloud.commands
+package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey

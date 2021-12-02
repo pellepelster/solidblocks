@@ -5,12 +5,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":solidblocks-provisioner-hetzner"))
+    implementation(project(":solidblocks-cloud"))
     implementation(project(":solidblocks-cloud-config"))
-    implementation(project(":solidblocks-cloud-init"))
-    implementation(project(":solidblocks-provisioner"))
-    implementation(project(":solidblocks-provisioner-vault"))
-    implementation(project(":solidblocks-base"))
+    implementation(project(":solidblocks-core"))
 
     implementation("org.springframework.boot:spring-boot-starter:$SPRING_BOOT_VERSION")
 

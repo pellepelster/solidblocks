@@ -17,12 +17,12 @@ function task_recreate_integration_test() {
   rm -rf "${db_dir}"
 
   "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
-    cloud config create \
+    cloud create \
     --cloud blcks \
     --domain blcks.de
 
   "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
-    cloud config create-environment \
+    environment create \
       --cloud blcks \
       --environment dev \
       --hetzner-cloud-api-token-read-only "$(pass solidblocks/integration-test/hcloud_api_token_ro)" \
@@ -31,7 +31,7 @@ function task_recreate_integration_test() {
       --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
 
   "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
-    cloud config ssh-config \
+    environment ssh-config \
     --cloud blcks \
     --environment dev
 }

@@ -1,5 +1,6 @@
-package de.solidblocks.cli.cloud.commands.config
+package de.solidblocks.cli.commands.environments
 
+import de.solidblocks.cli.cloud.commands.BaseCloudSpringCommand
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
@@ -10,7 +11,7 @@ import kotlin.io.path.setPosixFilePermissions
 import kotlin.system.exitProcess
 
 @Component
-class CloudSshConfigCommand :
+class EnvironmentSshConfigCommand :
     BaseCloudSpringCommand(name = "ssh-config", help = "create ssh config") {
 
     private val logger = KotlinLogging.logger {}

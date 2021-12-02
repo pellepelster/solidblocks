@@ -8,6 +8,7 @@ include(
     "solidblocks-provisioner-vault",
     "solidblocks-base",
     "solidblocks-core",
+    "solidblocks-cloud",
     "solidblocks-cloud-init",
     "solidblocks-cloud-config",
     "solidblocks-provisioner-consul"

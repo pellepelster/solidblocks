@@ -1,4 +1,4 @@
-package de.solidblocks.cli.cloud.commands.config
+package de.solidblocks.cli.commands.cloud
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
@@ -12,7 +12,7 @@ import kotlin.system.exitProcess
 class CloudCreateCommand :
     BaseSpringCommand(
         name = "create",
-        help = "create a new cloud configuration",
+        help = "create a new cloud",
         cliClass = CliApplicationCloudCreate::class.java
     ) {
 

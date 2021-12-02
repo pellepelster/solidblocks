@@ -1,4 +1,4 @@
-package de.solidblocks.cli.cloud.commands.config
+package de.solidblocks.cli.cloud.commands
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
