@@ -18,6 +18,7 @@ class TenantCreateCommand :
     override fun run() {
         runSpringApplication {
             it.getBean(CloudConfigurationManager::class.java).let {
+                it.createTenant(tenant, cloud, environment)
             }
         }
     }

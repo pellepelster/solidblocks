@@ -25,7 +25,9 @@ class VaultRootClientProvider(
     private var vaultTemplate: VaultTemplate? = null
 
     fun createClient(): VaultTemplate {
-        val vaultAddr = if (vaultAddrOverride != null) vaultAddrOverride else vaultAddr(configurationContext.environment)
+        val vaultAddr = listOfNotNull(vaultAddrOverride, vaultAddr(configurationContext.environment)).first()
+
+        logger.info { "creating vault client for '$vaultAddr'" }
 
         if (vaultTemplate != null) {
             return vaultTemplate!!

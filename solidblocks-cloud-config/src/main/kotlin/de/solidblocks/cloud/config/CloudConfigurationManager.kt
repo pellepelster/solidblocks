@@ -12,7 +12,7 @@ import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.cloud.config.model.ConsulSecrets
 import de.solidblocks.cloud.config.model.SshSecrets
-import de.solidblocks.cloud.config.model.TenantConfig
+import de.solidblocks.cloud.config.model.TenantConfiguration
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CLOUDS_ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -224,16 +224,16 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         return cloud
     }
 
-    fun listTenants(cloudName: String? = null): List<TenantConfig> {
+    fun listTenants(cloudName: String? = null, environmentId: UUID): List<TenantConfiguration> {
 
         val latestVersions =
-            dsl.select(
-                CONFIGURATION_VALUES.TENANT,
-                CONFIGURATION_VALUES.NAME,
-                max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
-            )
-                .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
-                .asTable("latest_versions")
+                dsl.select(
+                        CONFIGURATION_VALUES.TENANT,
+                        CONFIGURATION_VALUES.NAME,
+                        max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
+                )
+                        .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
+                        .asTable("latest_versions")
 
         val latest = dsl.select(
             CONFIGURATION_VALUES.TENANT,
@@ -243,30 +243,31 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
             CONFIGURATION_VALUES.VERSION
         ).from(
             CONFIGURATION_VALUES.rightJoin(latestVersions).on(
-                CONFIGURATION_VALUES.NAME.eq(latestVersions.field(CONFIGURATION_VALUES.NAME))
-                    .and(
-                        CONFIGURATION_VALUES.VERSION.eq(latestVersions.field(CONFIGURATION_VALUES.VERSION))
-                            .and(CONFIGURATION_VALUES.TENANT.eq(latestVersions.field(CONFIGURATION_VALUES.TENANT)))
-                    )
+                    CONFIGURATION_VALUES.NAME.eq(latestVersions.field(CONFIGURATION_VALUES.NAME))
+                            .and(
+                                    CONFIGURATION_VALUES.VERSION.eq(latestVersions.field(CONFIGURATION_VALUES.VERSION))
+                                            .and(CONFIGURATION_VALUES.TENANT.eq(latestVersions.field(CONFIGURATION_VALUES.TENANT)))
+                            )
             )
         ).asTable("latest_configurations")
         val tenants = TENANTS.`as`("tenants")
 
         var condition = tenants.DELETED.isFalse
+        condition = condition.and(tenants.ENVRIONMENT.eq(environmentId))
 
         if (cloudName != null) {
             condition = condition.and(tenants.NAME.eq(cloudName))
         }
 
         return dsl.selectFrom(tenants.leftJoin(latest).on(tenants.ID.eq(latest.field(CONFIGURATION_VALUES.TENANT))))
-            .where(condition)
-            .fetchGroups(
-                { it.into(tenants) }, { it.into(latest) }
-            ).map {
-                TenantConfig(
-                    id = it.key.id!!,
-                    name = it.key.name!!
-                )
+                .where(condition)
+                .fetchGroups(
+                        { it.into(tenants) }, { it.into(latest) }
+                ).map {
+                    TenantConfiguration(
+                            id = it.key.id!!,
+                            name = it.key.name!!
+                    )
             }
     }
 
@@ -295,15 +296,16 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     fun getEnvironment(
-        cloudName: String,
-        environmentName: String
+            cloudName: String,
+            environmentName: String
     ): CloudEnvironmentConfiguration? {
         val cloud = getCloud(cloudName) ?: return null
         return listEnvironments(cloud).first { it.name == environmentName }
     }
 
-    fun getTenant(name: String): TenantConfig? {
-        return listTenants(name).firstOrNull()
+    fun getTenant(name: String, cloudName: String, environmentName: String): TenantConfiguration? {
+        val environment = getEnvironment(cloudName, environmentName) ?: return null
+        return listTenants(name, environment.id).firstOrNull()
     }
 
     fun createTenant(name: String, cloudName: String, environmentName: String): Boolean {
@@ -312,8 +314,8 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         val environment = getEnvironment(cloudName, environmentName) ?: return false
 
         dsl.insertInto(TENANTS)
-            .columns(
-                TENANTS.ID,
+                .columns(
+                        TENANTS.ID,
                 TENANTS.NAME,
                 TENANTS.DELETED,
                 TENANTS.ENVRIONMENT,

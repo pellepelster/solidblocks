@@ -3,13 +3,11 @@ package de.solidblocks.cloud
 import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
-import de.solidblocks.cloud.config.model.TenantConfig
+import de.solidblocks.cloud.config.model.TenantConfiguration
 import de.solidblocks.provisioner.Provisioner
 import mu.KotlinLogging
 import org.apache.commons.net.util.SubnetUtils
 import org.springframework.stereotype.Component
-import java.util.*
 
 @Component
 class TenantMananger(
@@ -18,26 +16,25 @@ class TenantMananger(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun destroy(cloudName: String, environmentName: String): Boolean {
+    fun destroy(): Boolean {
         return true
     }
 
-    fun bootstrap(cloudName: String, environmentName: String): Boolean {
+    fun bootstrap(tenantName: String, cloudName: String, environmentName: String): Boolean {
         val environment = cloudConfigurationManager.getEnvironment(cloudName, environmentName) ?: return false
+        val tenant = cloudConfigurationManager.getTenant(tenantName, cloudName, environmentName) ?: return false
 
         createTenantModel(
-            environment,
-            TenantConfig(UUID.randomUUID(), "tenant1"),
-            setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey))
+                tenant,
+                setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey))
         )
 
         return provisioner.apply()
     }
 
     private fun createTenantModel(
-        environment: CloudEnvironmentConfiguration,
-        tenant: TenantConfig,
-        sshKeys: Set<SshKey> = emptySet()
+            tenant: TenantConfiguration,
+            sshKeys: Set<SshKey> = emptySet()
     ) {
         val subnet = SubnetUtils("10.0.1.0/24").info
         val network = Network(tenant.name, SubnetUtils("10.0.1.0/24"))

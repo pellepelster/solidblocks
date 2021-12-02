@@ -2,7 +2,7 @@ package de.solidblocks.cloud.config.model
 
 import java.util.*
 
-data class TenantConfig(
+data class TenantConfiguration(
     val id: UUID,
     val name: String
 )

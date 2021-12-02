@@ -34,6 +34,12 @@ function task_recreate_integration_test() {
     environment ssh-config \
     --cloud blcks \
     --environment dev
+
+  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
+    tenant create \
+    --cloud blcks \
+    --environment dev \
+    --tenant tenant1
 }
 
 function task_publish() {

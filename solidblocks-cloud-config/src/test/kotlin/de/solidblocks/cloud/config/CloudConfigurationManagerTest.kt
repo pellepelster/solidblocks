@@ -63,11 +63,11 @@ open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManage
         cloudConfigurationManager.createCloud("cloud4", "domain1")
         cloudConfigurationManager.createEnvironment("cloud4", "env4")
 
-        assertThat(cloudConfigurationManager.getTenant("tenant4")).isNull()
+        assertThat(cloudConfigurationManager.getTenant("tenant4", "cloud4", "env4")).isNull()
 
         cloudConfigurationManager.createTenant("tenant4", "cloud4", "env4")
 
-        val tenant = cloudConfigurationManager.getTenant("tenant4")
+        val tenant = cloudConfigurationManager.getTenant("tenant4", "cloud4", "env4")
 
         assertThat(tenant!!.name).isEqualTo("tenant4")
     }
