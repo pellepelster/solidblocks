@@ -12,7 +12,7 @@ class Server(
     val volume: IVolumeLookup? = null,
     val sshKeys: Set<ISshKeyLookup> = emptySet(),
     val dependencies: List<IInfrastructureResource<*, *>> = emptyList(),
-    val labels: Map<String, String> = emptyMap()
+    val labels: Map<String, String>
 ) :
     IServerLookup,
     IInfrastructureResource<Server, ServerRuntime> {

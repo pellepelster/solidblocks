@@ -85,6 +85,7 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         request.size(16L)
         request.location(resource.location)
         request.format("ext4")
+        request.labels(resource.labels)
 
         return checkedApiCall(resource, HetznerCloudAPI::createVolume) {
             logger.info { "creating volume '${resource.id}'" }

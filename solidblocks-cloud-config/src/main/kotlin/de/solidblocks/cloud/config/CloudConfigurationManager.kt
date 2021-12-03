@@ -224,7 +224,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         return cloud
     }
 
-    fun listTenants(cloudName: String? = null, environmentId: UUID): List<TenantConfiguration> {
+    fun listTenants(cloudName: String? = null, environment: CloudEnvironmentConfiguration): List<TenantConfiguration> {
 
         val latestVersions =
                 dsl.select(
@@ -253,7 +253,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         val tenants = TENANTS.`as`("tenants")
 
         var condition = tenants.DELETED.isFalse
-        condition = condition.and(tenants.ENVRIONMENT.eq(environmentId))
+        condition = condition.and(tenants.ENVRIONMENT.eq(environment.id))
 
         if (cloudName != null) {
             condition = condition.and(tenants.NAME.eq(cloudName))
@@ -266,7 +266,8 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
                 ).map {
                     TenantConfiguration(
                             id = it.key.id!!,
-                            name = it.key.name!!
+                            name = it.key.name!!,
+                            environment = environment
                     )
             }
     }
@@ -297,7 +298,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
 
     fun getTenant(name: String, cloudName: String, environmentName: String): TenantConfiguration? {
         val environment = environmentByName(cloudName, environmentName) ?: return null
-        return listTenants(name, environment.id).firstOrNull()
+        return listTenants(name, environment).firstOrNull()
     }
 
     fun createTenant(name: String, cloudName: String, environmentName: String): Boolean {
