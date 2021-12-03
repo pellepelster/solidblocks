@@ -7,8 +7,6 @@ import de.solidblocks.api.resources.dns.DnsRecordRuntime
 import de.solidblocks.api.resources.dns.IDnsRecordLookup
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
-import de.solidblocks.cloud.config.CloudConfigurationContext
-import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.Result
 import de.solidblocks.core.Result.Companion.onSuccess
 import de.solidblocks.provisioner.Provisioner
@@ -21,13 +19,12 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerDnsRecordResourceProvisioner(
-    val provisioner: Provisioner,
-    val cloudContext: CloudConfigurationContext
+        val provisioner: Provisioner,
+        val hetznerDnsAPI: HetznerDnsAPI
 ) :
-    IResourceLookupProvider<IDnsRecordLookup, DnsRecordRuntime>,
-    IInfrastructureResourceProvisioner<DnsRecord, DnsRecordRuntime>,
-    BaseHetznerProvisioner<DnsRecord, DnsRecordRuntime, HetznerDnsAPI>(
-        { HetznerDnsAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_DNS_API_TOKEN_RW_KEY)) }) {
+        IResourceLookupProvider<IDnsRecordLookup, DnsRecordRuntime>,
+        IInfrastructureResourceProvisioner<DnsRecord, DnsRecordRuntime>,
+        BaseHetznerProvisioner<DnsRecord, DnsRecordRuntime, HetznerDnsAPI>(hetznerDnsAPI) {
 
     private val logger = KotlinLogging.logger {}
 

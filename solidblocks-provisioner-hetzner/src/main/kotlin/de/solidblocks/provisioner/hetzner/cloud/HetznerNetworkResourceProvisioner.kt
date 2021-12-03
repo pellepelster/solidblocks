@@ -6,8 +6,6 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.network.INetworkLookup
 import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.network.NetworkRuntime
-import de.solidblocks.cloud.config.CloudConfigurationContext
-import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -17,21 +15,20 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class HetznerNetworkResourceProvisioner(cloudContext: CloudConfigurationContext) :
-    IResourceLookupProvider<INetworkLookup, NetworkRuntime>,
-    IInfrastructureResourceProvisioner<Network,
-        NetworkRuntime>, BaseHetznerProvisioner<Network, NetworkRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
+        IResourceLookupProvider<INetworkLookup, NetworkRuntime>,
+        IInfrastructureResourceProvisioner<Network,
+                NetworkRuntime>, BaseHetznerProvisioner<Network, NetworkRuntime, HetznerCloudAPI>(hetznerCloudAPI) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun apply(
-        resource: Network
+            resource: Network
     ): Result<*> {
 
         val request = NetworkRequest.builder()
         request.name(resource.id)
-        request.ipRange(resource.ipRange.info.cidrSignature)
+        request.ipRange(resource.ipRange)
 
         return checkedApiCall(resource, HetznerCloudAPI::createNetwork) {
             it.createNetwork(request.build())

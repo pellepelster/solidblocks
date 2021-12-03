@@ -36,6 +36,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testImplementation("org.testcontainers:testcontainers:1.15.3")
     testImplementation("org.testcontainers:junit-jupiter:1.15.3")
+    testImplementation("org.assertj:assertj-core:3.21.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }

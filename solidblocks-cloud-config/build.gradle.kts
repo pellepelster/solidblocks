@@ -26,7 +26,6 @@ dependencies {
 
     testImplementation("org.springframework:spring-test:5.3.6")
     testImplementation("org.hamcrest:hamcrest:2.2")
-    testImplementation("org.assertj:assertj-core:3.21.0")
 }
 
 jooq {

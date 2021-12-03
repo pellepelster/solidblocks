@@ -22,6 +22,8 @@ import de.solidblocks.cloud.Contants.hostSshMountName
 import de.solidblocks.cloud.Contants.kvMountName
 import de.solidblocks.cloud.Contants.pkiMountName
 import de.solidblocks.cloud.Contants.userSshMountName
+import de.solidblocks.cloud.NetworkUtils.solidblocksNetwork
+import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
@@ -43,7 +45,6 @@ import de.solidblocks.provisioner.vault.policy.VaultPolicy
 import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
 import mu.KotlinLogging
-import org.apache.commons.net.util.SubnetUtils
 import org.springframework.stereotype.Component
 import org.springframework.vault.support.Policy
 import org.springframework.vault.support.VaultTokenRequest
@@ -86,10 +87,10 @@ class CloudMananger(
 
         val networkResourceGroup = provisioner.createResourceGroup("network")
 
-        val network = Network(id, SubnetUtils("10.1.0.0/16"))
+        val network = Network(id, solidblocksNetwork())
         networkResourceGroup.addResource(network)
 
-        val subnet = Subnet(SubnetUtils("10.1.1.0/24"), network)
+        val subnet = Subnet(subnetForNetwork(solidblocksNetwork()), network)
         networkResourceGroup.addResource(subnet)
 
         val location = "nbg1"

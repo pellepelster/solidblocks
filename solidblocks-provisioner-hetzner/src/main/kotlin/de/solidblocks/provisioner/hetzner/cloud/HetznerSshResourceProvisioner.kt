@@ -6,8 +6,6 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.ssh.ISshKeyLookup
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.api.resources.infrastructure.ssh.SshKeyRuntime
-import de.solidblocks.cloud.config.CloudConfigurationContext
-import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -17,21 +15,20 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
 @Component
-class HetznerSshResourceProvisioner(cloudContext: CloudConfigurationContext) :
-    IResourceLookupProvider<ISshKeyLookup, SshKeyRuntime>,
-    IInfrastructureResourceProvisioner<SshKey, SshKeyRuntime>,
-    BaseHetznerProvisioner<SshKey, SshKeyRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+class HetznerSshResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
+        IResourceLookupProvider<ISshKeyLookup, SshKeyRuntime>,
+        IInfrastructureResourceProvisioner<SshKey, SshKeyRuntime>,
+        BaseHetznerProvisioner<SshKey, SshKeyRuntime, HetznerCloudAPI>(hetznerCloudAPI) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun diff(resource: SshKey): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
-            {
-                ResourceDiff(resource)
-            },
-            {
-                ResourceDiff(resource, true)
+                {
+                    ResourceDiff(resource)
+                },
+                {
+                    ResourceDiff(resource, true)
             }
         )
     }

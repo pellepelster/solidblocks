@@ -10,7 +10,6 @@ dependencies {
     implementation(project(":solidblocks-cloud-config"))
     implementation("com.orbitz.consul:consul-client:1.5.3")
 
-    testImplementation("org.assertj:assertj-core:3.21.0")
     testImplementation("org.springframework:spring-test:5.3.6")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:$SPRING_BOOT_VERSION")
     testImplementation("org.springframework.boot:spring-boot-test:$SPRING_BOOT_VERSION")

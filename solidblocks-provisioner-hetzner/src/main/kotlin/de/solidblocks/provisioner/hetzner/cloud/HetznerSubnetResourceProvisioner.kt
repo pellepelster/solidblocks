@@ -7,7 +7,6 @@ import de.solidblocks.api.resources.infrastructure.network.ISubnetLookup
 import de.solidblocks.api.resources.infrastructure.network.Subnet
 import de.solidblocks.api.resources.infrastructure.network.SubnetRuntime
 import de.solidblocks.cloud.config.CloudConfigurationContext
-import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
@@ -18,21 +17,20 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerSubnetResourceProvisioner(
-    private val provisioner: Provisioner,
-    cloudContext: CloudConfigurationContext
+        hetznerCloudAPI: HetznerCloudAPI,
+        private val provisioner: Provisioner,
 ) :
-    IResourceLookupProvider<ISubnetLookup, SubnetRuntime>,
-    IInfrastructureResourceProvisioner<Subnet, SubnetRuntime>,
-    BaseHetznerProvisioner<Subnet, SubnetRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+        IResourceLookupProvider<ISubnetLookup, SubnetRuntime>,
+        IInfrastructureResourceProvisioner<Subnet, SubnetRuntime>,
+        BaseHetznerProvisioner<Subnet, SubnetRuntime, HetznerCloudAPI>(hetznerCloudAPI) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun apply(resource: Subnet): Result<*> {
         val request = AddSubnetToNetworkRequest.builder()
-            .networkZone("eu-central")
-            .ipRange(resource.subnet.info.cidrSignature)
-            .type(SubnetType.server.toString())
+                .networkZone("eu-central")
+                .ipRange(resource.subnet)
+                .type(SubnetType.server.toString())
 
         return this.provisioner.lookup(resource.network).mapNonNullResult { networkRuntime ->
             checkedApiCall(resource, HetznerCloudAPI::addSubnetToNetwork) {

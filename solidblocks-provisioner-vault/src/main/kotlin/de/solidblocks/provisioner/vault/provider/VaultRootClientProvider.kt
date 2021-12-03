@@ -2,7 +2,7 @@ package de.solidblocks.provisioner.vault.provider
 
 import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.cloud.config.Constants.Vault.Companion.vaultAddr
+import de.solidblocks.cloud.config.Constants.Vault.Companion.vaultAddress
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -14,9 +14,9 @@ import java.net.URI
 
 @Component
 class VaultRootClientProvider(
-    val configurationContext: CloudConfigurationContext,
-    val configurationManager: CloudConfigurationManager,
-    @Value("\${vault.addr:null}")
+        val configurationContext: CloudConfigurationContext,
+        val configurationManager: CloudConfigurationManager,
+        @Value("\${vault.addr:}")
     val vaultAddrOverride: String? = null
 ) {
 
@@ -25,10 +25,9 @@ class VaultRootClientProvider(
     private var vaultTemplate: VaultTemplate? = null
 
     fun createClient(): VaultTemplate {
-        val vaultAddr = listOfNotNull(vaultAddrOverride, vaultAddr(configurationContext.environment)).first()
+        val vaultAddr = if (!vaultAddrOverride.isNullOrEmpty()) vaultAddrOverride else vaultAddress(configurationContext.environment)
 
         logger.info { "creating vault client for '$vaultAddr'" }
-
         if (vaultTemplate != null) {
             return vaultTemplate!!
         }

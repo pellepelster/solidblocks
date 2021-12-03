@@ -7,8 +7,6 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.compute.IServerLookup
 import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.compute.ServerRuntime
-import de.solidblocks.cloud.config.CloudConfigurationContext
-import de.solidblocks.cloud.config.Constants
 import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
 import de.solidblocks.core.reduceResults
@@ -20,23 +18,22 @@ import org.springframework.stereotype.Component
 
 @Component
 class HetznerServerResourceProvisioner(
-    private val provisioner: Provisioner,
-    cloudContext: CloudConfigurationContext
+        hetznerCloudAPI: HetznerCloudAPI,
+        private val provisioner: Provisioner,
 ) :
-    IResourceLookupProvider<IServerLookup, ServerRuntime>,
-    IInfrastructureResourceProvisioner<Server,
-        ServerRuntime>,
-    BaseHetznerProvisioner<Server, ServerRuntime, HetznerCloudAPI>(
-        { HetznerCloudAPI(cloudContext.configurationValue(Constants.ConfigKeys.HETZNER_CLOUD_API_TOKEN_RW_KEY)) }) {
+        IResourceLookupProvider<IServerLookup, ServerRuntime>,
+        IInfrastructureResourceProvisioner<Server,
+                ServerRuntime>,
+        BaseHetznerProvisioner<Server, ServerRuntime, HetznerCloudAPI>(hetznerCloudAPI) {
 
     private val logger = KotlinLogging.logger {}
 
     override fun diff(resource: Server): Result<ResourceDiff> {
         return this.lookup(resource).mapResourceResultOrElse(
-            {
+                {
 
-                val labels = HetznerLabels(it.labels)
-                val changes = ArrayList<ResourceDiffItem>()
+                    val labels = HetznerLabels(it.labels)
+                    val changes = ArrayList<ResourceDiffItem>()
 
                 if (!labels.hashLabelMatches(
                         resource::sshKeys.name,
