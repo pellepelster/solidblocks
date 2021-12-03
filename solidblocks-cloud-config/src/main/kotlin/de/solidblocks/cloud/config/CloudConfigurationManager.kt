@@ -197,7 +197,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     fun updateEnvironment(cloudName: String, environmentName: String, values: Map<String, String>): Boolean {
-        val environment = getEnvironment(cloudName, environmentName) ?: return false
+        val environment = environmentByName(cloudName, environmentName) ?: return false
 
         return values.map {
             updateEnvironment(environment, it.key, it.value)
@@ -278,7 +278,7 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     }
 
     fun rotateEnvironmentSecrets(cloudName: String, environmentName: String): Boolean {
-        val environment = getEnvironment(cloudName, environmentName) ?: return false
+        val environment = environmentByName(cloudName, environmentName) ?: return false
         generateAndStoreSecrets(environment)
 
         return true
@@ -295,23 +295,15 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         generateAndStoreSecrets(environment.id, environment.name)
     }
 
-    fun getEnvironment(
-            cloudName: String,
-            environmentName: String
-    ): CloudEnvironmentConfiguration? {
-        val cloud = getCloud(cloudName) ?: return null
-        return listEnvironments(cloud).first { it.name == environmentName }
-    }
-
     fun getTenant(name: String, cloudName: String, environmentName: String): TenantConfiguration? {
-        val environment = getEnvironment(cloudName, environmentName) ?: return null
+        val environment = environmentByName(cloudName, environmentName) ?: return null
         return listTenants(name, environment.id).firstOrNull()
     }
 
     fun createTenant(name: String, cloudName: String, environmentName: String): Boolean {
 
         val id = UUID.randomUUID()
-        val environment = getEnvironment(cloudName, environmentName) ?: return false
+        val environment = environmentByName(cloudName, environmentName) ?: return false
 
         dsl.insertInto(TENANTS)
                 .columns(

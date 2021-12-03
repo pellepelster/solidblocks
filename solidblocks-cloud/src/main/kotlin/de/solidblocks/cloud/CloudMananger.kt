@@ -66,7 +66,7 @@ class CloudMananger(
     }
 
     fun bootstrap(cloudName: String, environmentName: String): Boolean {
-        val environment = cloudConfigurationManager.getEnvironment(cloudName, environmentName)
+        val environment = cloudConfigurationManager.environmentByName(cloudName, environmentName)
             ?: return false
 
         logger.info { "creating/updating environment '$cloudName' for cloud '$environmentName'" }
