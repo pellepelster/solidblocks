@@ -61,12 +61,12 @@ class VaultKVProvisioner(val vaultRootClientProvider: VaultRootClientProvider, v
             val result = kvOperations.get(lookup.path())
 
             if (null == result) {
-                Result(lookup)
+                Result()
             } else {
-                Result(lookup, VaultKVRuntime(result.data as Map<String, Any>))
+                Result(VaultKVRuntime(result.data as Map<String, Any>))
             }
         } catch (e: Exception) {
-            Result(lookup, failed = true, message = e.message)
+            Result(failed = true, message = e.message)
         }
     }
 

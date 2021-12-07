@@ -9,7 +9,12 @@ import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
 import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
-import de.solidblocks.core.*
+import de.solidblocks.core.IInfrastructureResource
+import de.solidblocks.core.IResource
+import de.solidblocks.core.IResourceLookup
+import de.solidblocks.core.Result
+import de.solidblocks.core.getInfraParents
+import de.solidblocks.core.logName
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.github.resilience4j.retry.RetryRegistry
@@ -48,7 +53,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
             this.provisionerRegistry.datasource(resource).lookup(resource)
         } catch (e: Exception) {
             logger.error(e) { "lookup for ${resource.logName()} failed" }
-            Result(resource, failed = true, message = e.message)
+            Result(failed = true, message = e.message)
         }
 
     fun <ResourceType : IResource, ReturnType> provisioner(resource: ResourceType): IInfrastructureResourceProvisioner<ResourceType, ReturnType> {
@@ -57,30 +62,20 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
     @OptIn(ExperimentalStdlibApi::class)
     fun apply(): Boolean {
+
         logger.info {
             "applying resource groups ${resourceGroups.joinToString(", ") { it.name }}"
         }
 
-        val allLayerDiffs = HashMap<ResourceGroup, MutableList<Result<ResourceDiff>>>()
+        val allLayerDiffs = HashMap<ResourceGroup, List<ResourceDiff>>()
 
         for (resourceGroup in resourceGroups) {
-            if (diffForResourceGroup(resourceGroup, allLayerDiffs).failed) {
-                return false
-            }
 
-            val allFailedDiffs = allLayerDiffs.flatMap { it.value }.filter { it.isEmptyOrFailed() }
-            if (allFailedDiffs.isNotEmpty()) {
-                logger.error {
-                    "diffing the following resources failed: ${
-                    allFailedDiffs.map { it.resource.logName() }
-                    }"
-                }
-
-                return false
-            }
+            val diffs = diffForResourceGroup(resourceGroup, allLayerDiffs) ?: return false
+            allLayerDiffs[resourceGroup] = diffs
 
             val diffsForAllLayersWithChanges =
-                allLayerDiffs.flatMap { it.value }.map { it.result!! }.filter { it.hasChanges() }
+                allLayerDiffs.flatMap { it.value }.filter { it.hasChanges() }
 
             val resourcesThatDependOnResourcesWithChanges = resourceGroup.resources.filter {
                 it.getInfraParents().any { parent -> diffsForAllLayersWithChanges.any { it.resource == parent } }
@@ -93,7 +88,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 )
             }
 
-            val result = apply(allLayerDiffs[resourceGroup]!!.map { it.result!! } + o)
+            val resourcesToApply = allLayerDiffs[resourceGroup]!! + o
+            val result = apply(resourcesToApply)
             if (!result) {
                 return false
             }
@@ -105,20 +101,19 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     @OptIn(ExperimentalStdlibApi::class)
     private fun apply(diffs: List<ResourceDiff>): Boolean {
 
-        diffs.filter { it.needsRecreate() }.forEach {
-            val resource = it.resource as IInfrastructureResource<IResource, Any>
+        for (diffToDestroy in diffs.filter { it.needsRecreate() }) {
+            val resource = diffToDestroy.resource as IInfrastructureResource<IResource, Any>
+
             logger.info { "destroying ${resource.logName()}" }
             val result = this.provisionerRegistry.provisioner<IResource, Any>(resource).destroy(resource)
-
-            if (result.failed) {
+            if (!result) {
                 logger.error { "destroying ${resource.logName()} failed" }
                 return false
             }
         }
 
-        val results = diffs.filter { it.hasChanges() }.map {
-
-            val resource = it.resource as IInfrastructureResource<Any, Any>
+        for (diffWithChange in diffs.filter { it.hasChanges() }) {
+            val resource = diffWithChange.resource as IInfrastructureResource<Any, Any>
 
             logger.info { "applying ${resource.logName()}" }
 
@@ -126,18 +121,16 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 val result = this.provisionerRegistry.provisioner<IResource, Any>(resource).apply(resource)
 
                 if (result.failed) {
-                    logger.error { "applying ${it.resource.logName()} failed, result was: '${result.errorMessage()}'" }
+                    logger.error { "applying ${diffWithChange.resource.logName()} failed, result was: '${result.errorMessage()}'" }
                     return false
                 }
-
-                return@map true
             } catch (e: Exception) {
-                logger.error(e) { "apply failed for resource ${it.resource.logName()}" }
+                logger.error(e) { "apply failed for resource ${diffWithChange.resource.logName()}" }
                 return false
             }
         }
 
-        return results.all { it }
+        return true
     }
 
     private fun getInfraParents(resource: IResource): List<IInfrastructureResource<*, *>> = getParentsInternal(resource).filterIsInstance<IInfrastructureResource<*, *>>()
@@ -156,8 +149,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
     private fun diffForResourceGroup(
         resourceGroup: ResourceGroup,
-        allLayerDiffs: HashMap<ResourceGroup, MutableList<Result<ResourceDiff>>>
-    ): Result<List<String>> {
+        allLayerDiffs: Map<ResourceGroup, List<ResourceDiff>>
+    ): List<ResourceDiff>? {
         logger.info { "creating diff for resource group '${resourceGroup.name}'" }
 
         resourceGroup.dependsOn.forEach { parentResourceGroup ->
@@ -175,7 +168,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                     val result = decorateFunction.get()
                     if (!result) {
                         logger.error { "healthcheck for ${it.logName()} failed" }
-                        return Result(resource = it, failed = true)
+                        return null
                     }
                 }
             }
@@ -183,44 +176,43 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
 
         val resources = createResourceList(resourceGroup.resources)
 
+        val result = mutableListOf<ResourceDiff>()
         for (resource in resources) {
-            try {
-                val parents = getInfraParents(resource)
+            val parents = getInfraParents(resource)
 
-                val nonFailedMissingDiffs =
-                    allLayerDiffs.flatMap { it.value }.filter { !it.isEmptyOrFailed() }.map { it.result!! }
-                        .filter { it.missing }
+            val nonFailedMissingDiffs =
+                allLayerDiffs.flatMap { it.value }.filter { it.missing }
 
-                val missingParents =
-                    parents.filter { parent -> nonFailedMissingDiffs.any { it.resource == parent } }
+            val missingParents =
+                parents.filter { parent -> nonFailedMissingDiffs.any { it.resource == parent } }
 
-                if (missingParents.isNotEmpty()) {
-                    logger.info {
-                        "skipping diff for ${resource.logName()} the following dependencies were missing: ${
-                        missingParents.joinToString(
-                            ", "
-                        ) { it.logName() }
-                        } "
-                    }
-                    continue
+            if (missingParents.isNotEmpty()) {
+                logger.info {
+                    "skipping diff for ${resource.logName()} the following dependencies were missing: ${
+                    missingParents.joinToString(
+                        ", "
+                    ) { it.logName() }
+                    } "
                 }
+                continue
+            }
 
+            try {
                 val diff = this.provisionerRegistry.provisioner<IResource, Any>(resource).diff(resource)
 
-                if (diff.failed) {
-                    logger.info { "diff failed for ${resource.logName()}" }
-                    return Result(resource = resource, failed = true)
+                if (diff.isEmptyOrFailed()) {
+                    logger.info { "diff empty or failed for ${resource.logName()}" }
+                    return null
                 }
-                logger.info { diff.result?.toString() ?: "no result for resource ${resource.logName()}" }
 
-                allLayerDiffs.computeIfAbsent(resourceGroup) { mutableListOf() }.add(diff)
+                result.add(diff.result!!)
             } catch (e: Exception) {
                 logger.error(e) { "diff failed for resource ${resource.logName()}" }
-                allLayerDiffs.computeIfAbsent(resourceGroup) { mutableListOf() }.add(Result(resource, failed = true))
+                return null
             }
         }
 
-        return Result(resource = NullResource, failed = false)
+        return result
     }
 
     private fun createResourceList(resources: ArrayList<IInfrastructureResource<*, *>>): ArrayList<IInfrastructureResource<*, *>> {

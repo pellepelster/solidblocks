@@ -10,14 +10,14 @@ function hetzner_api_call() {
 }
 
 function hetzner_controller_public_ips {
-    hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/servers?label_selector=role=controller" | jq -cr '.servers | map(.public_net.ipv4.ip)'
+    hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/servers?label_selector=solidblocks/role=controller" | jq -cr '.servers | map(.public_net.ipv4.ip)'
 }
 
 function hetzner_controller_private_ips {
     local result=""
 
     while [[ "$(echo "${result}" | jq -r '.servers | length')" != "${CONTROLLER_NODE_COUNT}" ]]; do
-        result="$(hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/servers?label_selector=role=controller")"
+        result="$(hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/servers?label_selector=solidblocks/role=controller")"
         sleep 10
     done
 
@@ -55,7 +55,7 @@ function hetzner_get_own_role {
 
 function hetzner_floating_ips_for_role {
     local role=${1:-}
-    hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/floating_ips?label_selector=role=${role}" | jq -cr '.floating_ips  | map(.ip)'
+    hetzner_api_call "${HETZNER_CLOUD_API_URL}/v1/floating_ips?label_selector=solidblocks/role=${role}" | jq -cr '.floating_ips  | map(.ip)'
 }
 
 function hetzner_floating_ip_for_server {

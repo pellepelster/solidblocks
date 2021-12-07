@@ -37,12 +37,11 @@ class HetznerDnsRecordResourceProvisioner(
             return provisioner.lookup(resource.server!!).mapResourceResult { it?.privateIp }
         }
 
-        return Result(resource, failed = true, message = "neither floating ip nor server was provided")
+        return Result(failed = true, message = "neither floating ip nor server was provided")
     }
 
     override fun diff(resource: DnsRecord): Result<ResourceDiff> {
         return onSuccess(
-            resource,
             lookup(resource),
             resolveIp(resource)
         ) { first, second ->
@@ -89,7 +88,6 @@ class HetznerDnsRecordResourceProvisioner(
 
     override fun apply(resource: DnsRecord): Result<*> {
         return onSuccess(
-            resource,
             provisioner.lookup(resource.dnsZone),
             resolveIp(resource)
         ) { first, second ->
@@ -103,12 +101,12 @@ class HetznerDnsRecordResourceProvisioner(
 
             lookup(resource).mapResourceResultOrElse(
                 { record ->
-                    checkedApiCall(resource, HetznerDnsAPI::updateRecord) {
+                    checkedApiCall(HetznerDnsAPI::updateRecord) {
                         it.updateRecord(record.id, recordRequest.build())
                     }
                 },
                 {
-                    checkedApiCall(resource, HetznerDnsAPI::createRecord) {
+                    checkedApiCall(HetznerDnsAPI::createRecord) {
                         it.createRecord(recordRequest.build())
                     }
                 }
@@ -121,12 +119,16 @@ class HetznerDnsRecordResourceProvisioner(
     }
 
     override fun lookup(lookup: IDnsRecordLookup): Result<DnsRecordRuntime> {
-        return this.provisioner.lookup(lookup.dnsZone()).mapNonNullResultNullable { zone ->
-            checkedApiCall(lookup, HetznerDnsAPI::getRecords) {
-                it.getRecords(zone.id).firstOrNull { it.name == lookup.id() }
-            }.mapNonNull {
-                DnsRecordRuntime(it.id, it.name, it.value, it.ttl)
-            }
+        val result = this.provisioner.lookup(lookup.dnsZone())
+
+        if (result.isEmptyOrFailed()) {
+            return Result(failed = true)
+        }
+
+        return checkedApiCall(HetznerDnsAPI::getRecords) {
+            it.getRecords(result.result!!.id).firstOrNull { it.name == lookup.id() }
+        }.mapNonNullResult {
+            DnsRecordRuntime(it.id, it.name, it.value, it.ttl)
         }
     }
 

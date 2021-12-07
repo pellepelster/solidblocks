@@ -3,6 +3,7 @@ package de.solidblocks.cloud
 import de.solidblocks.api.resources.infrastructure.network.Network
 import de.solidblocks.api.resources.infrastructure.network.Subnet
 import de.solidblocks.api.resources.infrastructure.ssh.SshKey
+import de.solidblocks.cloud.Contants.networkName
 import de.solidblocks.cloud.NetworkUtils.nextNetwork
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.config.CloudConfigurationManager
@@ -14,9 +15,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class TenantMananger(
-        val provisioner: Provisioner,
-        val cloudConfigurationManager: CloudConfigurationManager,
-        val hetznerCloudApi: HetznerCloudAPI
+    val provisioner: Provisioner,
+    val cloudConfigurationManager: CloudConfigurationManager,
+    val hetznerCloudApi: HetznerCloudAPI
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -29,16 +30,16 @@ class TenantMananger(
         val tenant = cloudConfigurationManager.getTenant(tenantName, cloudName, environmentName) ?: return false
 
         createTenantModel(
-                tenant,
-                setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey))
+            tenant,
+            setOf(SshKey(environment.name, environment.sshSecrets.sshPublicKey))
         )
 
         return provisioner.apply()
     }
 
     private fun createTenantModel(
-            tenant: TenantConfiguration,
-            sshKeys: Set<SshKey> = emptySet()
+        tenant: TenantConfiguration,
+        sshKeys: Set<SshKey> = emptySet()
     ) {
 
         val currentNetworks = hetznerCloudApi.allNetworks.networks.map { it.ipRange }
@@ -51,11 +52,10 @@ class TenantMananger(
 
         val networkResourceGroup = provisioner.createResourceGroup("network")
 
-        val network = Network(tenant.name, nextNetwork)
+        val network = Network(networkName(tenant), nextNetwork)
         networkResourceGroup.addResource(network)
 
         val subnet = Subnet(subnetForNetwork(nextNetwork), network)
         networkResourceGroup.addResource(subnet)
-
     }
 }

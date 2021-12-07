@@ -6,8 +6,10 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.network.ISubnetLookup
 import de.solidblocks.api.resources.infrastructure.network.Subnet
 import de.solidblocks.api.resources.infrastructure.network.SubnetRuntime
-import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.core.Result
+import de.solidblocks.core.Result.Companion.emptyResult
+import de.solidblocks.core.Result.Companion.failedResult
+import de.solidblocks.core.Result.Companion.resultOf
 import de.solidblocks.provisioner.Provisioner
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import me.tomsdevsn.hetznercloud.objects.general.SubnetType
@@ -33,21 +35,20 @@ class HetznerSubnetResourceProvisioner(
                 .type(SubnetType.server.toString())
 
         return this.provisioner.lookup(resource.network).mapNonNullResult { networkRuntime ->
-            checkedApiCall(resource, HetznerCloudAPI::addSubnetToNetwork) {
+            checkedApiCall(HetznerCloudAPI::addSubnetToNetwork) {
                 it.addSubnetToNetwork(networkRuntime.id.toLong(), request.build())
             }
         }
     }
 
     override fun diff(resource: Subnet): Result<ResourceDiff> {
-        return lookup(resource).mapResourceResultOrElse(
-            {
-                ResourceDiff(resource, false)
-            },
-            {
-                ResourceDiff(resource, true)
-            }
-        )
+        val result = lookup(resource)
+
+        if (result.isEmpty()) {
+            return resultOf(ResourceDiff(resource, true))
+        }
+
+        return resultOf(ResourceDiff(resource, false))
     }
 
     override fun getResourceType(): Class<*> {
@@ -55,17 +56,21 @@ class HetznerSubnetResourceProvisioner(
     }
 
     override fun lookup(lookup: ISubnetLookup): Result<SubnetRuntime> {
-        return checkedApiCall(lookup, HetznerCloudAPI::getNetworksByName) {
+        val result = checkedApiCall(HetznerCloudAPI::getNetworksByName) {
             it.getNetworksByName(lookup.network().id()).networks.firstOrNull()
-        }.mapNonNullResultNullable {
-            val subnet = it.subnets.firstOrNull { subnet -> subnet.ipRange == lookup.id() }
-
-            if (subnet != null) {
-                return@mapNonNullResultNullable SubnetRuntime(subnet.ipRange)
-            }
-
-            null
         }
+
+        if (result.isEmptyOrFailed()) {
+            return failedResult()
+        }
+
+        val subnet = result.result!!.subnets.firstOrNull { subnet -> subnet.ipRange == lookup.id() }
+
+        if (subnet != null) {
+            return Result(result = SubnetRuntime(subnet.ipRange))
+        }
+
+        return emptyResult()
     }
 
     override fun getLookupType(): Class<*> {

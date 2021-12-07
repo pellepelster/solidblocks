@@ -49,9 +49,9 @@ class VaultMountProvisioner(val vaultRootClientProvider: VaultRootClientProvider
         val vaultClient = vaultRootClientProvider.createClient()
 
         return if (vaultClient.opsForSys().mounts.keys.any { it == "${lookup.id()}/" }) {
-            Result(lookup, VaultMountRuntime())
+            Result(VaultMountRuntime())
         } else {
-            Result(lookup)
+            Result()
         }
     }
 

@@ -179,7 +179,7 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
             )
         }
 
-        return Result(resource, response)
+        return Result(response)
     }
 
     override fun getResourceType(): Class<VaultSshBackendRole> {
@@ -190,11 +190,11 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
         val vaultClient = vaultRootClientProvider.createClient()
 
         val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", SshBackendRole::class.java)
-            ?: return Result(lookup, null)
+                ?: return Result(null)
 
         val keysExist = keysExist(vaultClient, lookup)
 
-        return Result(lookup, VaultSshBackendRoleRuntime(role.data!!, keysExist))
+        return Result(VaultSshBackendRoleRuntime(role.data!!, keysExist))
     }
 
     override fun getLookupType(): Class<*> {

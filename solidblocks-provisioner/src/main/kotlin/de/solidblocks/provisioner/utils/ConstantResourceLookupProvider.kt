@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class ConstantResourceLookupProvider : IResourceLookupProvider<ConstantDataSource, String> {
 
     override fun lookup(datasource: ConstantDataSource): Result<String> {
-        return Result(datasource, datasource.content)
+        return Result(datasource.content)
     }
 
     override fun getLookupType(): Class<ConstantDataSource> {

@@ -6,10 +6,7 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.network.FloatingIp
 import de.solidblocks.api.resources.infrastructure.network.FloatingIpRuntime
 import de.solidblocks.api.resources.infrastructure.network.IFloatingIpLookup
-import de.solidblocks.cloud.config.CloudConfigurationContext
-import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
-import de.solidblocks.core.reduceResults
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import me.tomsdevsn.hetznercloud.objects.request.FloatingIPRequest
 import mu.KotlinLogging
@@ -23,16 +20,16 @@ class HetznerFloatingIpResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
 
     private val logger = KotlinLogging.logger {}
 
-    override fun destroyAll(): Result<*> {
+    override fun destroyAll(): Boolean {
         logger.info { "destroying all floating ips" }
 
-        return checkedApiCall(NullResource, HetznerCloudAPI::getFloatingIPs) {
+        return checkedApiCall(HetznerCloudAPI::getFloatingIPs) {
             it.floatingIPs.floatingIPs
-        }.mapNonNullResult {
+        }.mapSuccessNonNullBoolean {
             it.map {
                 logger.info { "destroying floating ip '${it.name}'" }
                 destroy(it.id)
-            }.reduceResults()
+            }.all { it }
         }
     }
 
@@ -54,13 +51,12 @@ class HetznerFloatingIpResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         request.type("ipv4")
         request.labels(resource.labels)
 
-        return checkedApiCall(resource, HetznerCloudAPI::createFloatingIP) {
+        return checkedApiCall(HetznerCloudAPI::createFloatingIP) {
             it.createFloatingIP(request.build())
         }.mapNonNullResult {
             waitForActions(
-                resource,
-                HetznerCloudAPI::getActionOfFloatingIP,
-                listOf(it.action).filterNotNull()
+                    HetznerCloudAPI::getActionOfFloatingIP,
+                    listOf(it.action).filterNotNull()
             ) { api, action ->
                 val actionResult = api.getActionOfFloatingIP(it.floatingIP.id, action.id).action
                 logger.info { "waiting for action '${action.command}' to finish for floating ip '${it.floatingIP.name}', current status is '${action.status}'" }
@@ -69,15 +65,17 @@ class HetznerFloatingIpResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         }
     }
 
-    override fun destroy(resource: FloatingIp): Result<*> {
-        return lookup(resource).mapNonNullResult {
+    override fun destroy(resource: FloatingIp): Boolean {
+        return lookup(resource).mapSuccessNonNullBoolean {
             destroy(it.id.toLong())
         }
     }
 
-    private fun destroy(id: Long): Result<*> {
-        return checkedApiCall(NullResource, HetznerCloudAPI::deleteFloatingIP) {
+    private fun destroy(id: Long): Boolean {
+        return checkedApiCall(HetznerCloudAPI::deleteFloatingIP) {
             it.deleteFloatingIP(id)
+        }.mapSuccessNonNullBoolean {
+            true
         }
     }
 
@@ -86,7 +84,7 @@ class HetznerFloatingIpResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     }
 
     override fun lookup(lookup: IFloatingIpLookup): Result<FloatingIpRuntime> {
-        return checkedApiCall(lookup, HetznerCloudAPI::getFloatingIPs) {
+        return checkedApiCall(HetznerCloudAPI::getFloatingIPs) {
             it.floatingIPs.floatingIPs.firstOrNull { it.name == lookup.id() }
         }.mapNonNullResult {
             FloatingIpRuntime(it.id.toString(), it.ip, it.server)

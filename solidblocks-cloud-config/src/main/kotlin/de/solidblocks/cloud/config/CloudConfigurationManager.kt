@@ -227,13 +227,13 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
     fun listTenants(cloudName: String? = null, environment: CloudEnvironmentConfiguration): List<TenantConfiguration> {
 
         val latestVersions =
-                dsl.select(
-                        CONFIGURATION_VALUES.TENANT,
-                        CONFIGURATION_VALUES.NAME,
-                        max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
-                )
-                        .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
-                        .asTable("latest_versions")
+            dsl.select(
+                CONFIGURATION_VALUES.TENANT,
+                CONFIGURATION_VALUES.NAME,
+                max(CONFIGURATION_VALUES.VERSION).`as`(CONFIGURATION_VALUES.VERSION)
+            )
+                .from(CONFIGURATION_VALUES).groupBy(CONFIGURATION_VALUES.TENANT, CONFIGURATION_VALUES.NAME)
+                .asTable("latest_versions")
 
         val latest = dsl.select(
             CONFIGURATION_VALUES.TENANT,
@@ -243,11 +243,11 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
             CONFIGURATION_VALUES.VERSION
         ).from(
             CONFIGURATION_VALUES.rightJoin(latestVersions).on(
-                    CONFIGURATION_VALUES.NAME.eq(latestVersions.field(CONFIGURATION_VALUES.NAME))
-                            .and(
-                                    CONFIGURATION_VALUES.VERSION.eq(latestVersions.field(CONFIGURATION_VALUES.VERSION))
-                                            .and(CONFIGURATION_VALUES.TENANT.eq(latestVersions.field(CONFIGURATION_VALUES.TENANT)))
-                            )
+                CONFIGURATION_VALUES.NAME.eq(latestVersions.field(CONFIGURATION_VALUES.NAME))
+                    .and(
+                        CONFIGURATION_VALUES.VERSION.eq(latestVersions.field(CONFIGURATION_VALUES.VERSION))
+                            .and(CONFIGURATION_VALUES.TENANT.eq(latestVersions.field(CONFIGURATION_VALUES.TENANT)))
+                    )
             )
         ).asTable("latest_configurations")
         val tenants = TENANTS.`as`("tenants")
@@ -260,15 +260,15 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         }
 
         return dsl.selectFrom(tenants.leftJoin(latest).on(tenants.ID.eq(latest.field(CONFIGURATION_VALUES.TENANT))))
-                .where(condition)
-                .fetchGroups(
-                        { it.into(tenants) }, { it.into(latest) }
-                ).map {
-                    TenantConfiguration(
-                            id = it.key.id!!,
-                            name = it.key.name!!,
-                            environment = environment
-                    )
+            .where(condition)
+            .fetchGroups(
+                { it.into(tenants) }, { it.into(latest) }
+            ).map {
+                TenantConfiguration(
+                    id = it.key.id!!,
+                    name = it.key.name!!,
+                    environment = environment
+                )
             }
     }
 
@@ -307,8 +307,8 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
         val environment = environmentByName(cloudName, environmentName) ?: return false
 
         dsl.insertInto(TENANTS)
-                .columns(
-                        TENANTS.ID,
+            .columns(
+                TENANTS.ID,
                 TENANTS.NAME,
                 TENANTS.DELETED,
                 TENANTS.ENVRIONMENT,

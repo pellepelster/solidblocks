@@ -7,9 +7,7 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.compute.IServerLookup
 import de.solidblocks.api.resources.infrastructure.compute.Server
 import de.solidblocks.api.resources.infrastructure.compute.ServerRuntime
-import de.solidblocks.core.NullResource
 import de.solidblocks.core.Result
-import de.solidblocks.core.reduceResults
 import de.solidblocks.provisioner.Provisioner
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import me.tomsdevsn.hetznercloud.objects.request.ServerRequest
@@ -129,19 +127,16 @@ class HetznerServerResourceProvisioner(
         val sshKeys = resource.sshKeys.map { this.provisioner.lookup(it) }
 
         if (sshKeys.any { it.failed }) {
-            return sshKeys.reduceResults()
+            return Result<Any>(failed = true)
         }
 
-        sshKeys.forEach {
-            logger.info { "adding sshkey '${it.resource.id()}' to server '${resource.id}'" }
-        }
         request.sshKeys(sshKeys.map { it.result!!.id.toLong() })
 
-        return checkedApiCall(resource, HetznerCloudAPI::createServer) {
+        return checkedApiCall(HetznerCloudAPI::createServer) {
             logger.info { "creating server '${resource.id}'" }
             it.createServer(request.build())
         }.mapNonNullResult {
-            waitForActions(resource, HetznerCloudAPI::getActionOfServer, it.nextActions) { api, action ->
+            waitForActions(HetznerCloudAPI::getActionOfServer, it.nextActions) { api, action ->
                 val actionResult = api.getActionOfServer(it.server.id, action.id).action
                 logger.info { "waiting for action '${action.command}' to finish for server '${it.server.name}', current status is '${action.status}'" }
                 actionResult.finished != null
@@ -150,19 +145,23 @@ class HetznerServerResourceProvisioner(
     }
 
     override fun apply(resource: Server): Result<*> {
-        return lookup(resource).mapNullResult {
-            createServer(resource)
-        }.mapNonNullResult {
+        val lookup = lookup(resource)
+
+        if (!lookup.isEmpty()) {
+            TODO("update not implemented")
+        }
+
+        return createServer(resource).mapNonNullResult {
             this.lookup(resource).mapNonNullResult { serverRuntime ->
                 waitForApiCall(resource) {
                     val server = it.getServerById(serverRuntime.id.toLong()).server
                     "initializing" != server.status
                 }
 
-                checkedApiCall(resource, HetznerCloudAPI::powerOnServer) {
+                checkedApiCall(HetznerCloudAPI::powerOnServer) {
                     it.powerOnServer(serverRuntime.id.toLong())
                 }.mapNonNullResult {
-                    waitForActions(resource, HetznerCloudAPI::getActionOfServer, listOf(it.action)) { api, action ->
+                    waitForActions(HetznerCloudAPI::getActionOfServer, listOf(it.action)) { api, action ->
                         val actionResult = api.getActionOfServer(serverRuntime.id.toLong(), action.id).action
                         logger.info { "waiting for action '${action.command}' to finish for server '${resource.id}', current status is '${action.status}'" }
                         actionResult.finished != null
@@ -172,27 +171,27 @@ class HetznerServerResourceProvisioner(
         }
     }
 
-    override fun destroy(resource: Server): Result<*> {
+    override fun destroy(resource: Server): Boolean {
         return lookup(resource).mapNonNullResult {
             destroy(it.id.toLong())
-        }
+        }.mapSuccessNonNullBoolean { true }
     }
 
-    private fun destroy(id: Long): Result<*> {
-        return checkedApiCall(NullResource, HetznerCloudAPI::deleteServer) {
+    private fun destroy(id: Long): Boolean {
+        return checkedApiCall(HetznerCloudAPI::deleteServer) {
             it.deleteServer(id)
-        }
+        }.mapSuccessNonNullBoolean { true }
     }
 
-    override fun destroyAll(): Result<*> {
+    override fun destroyAll(): Boolean {
         logger.info { "destroying all servers" }
-        return checkedApiCall(NullResource, HetznerCloudAPI::getServers) {
+        return checkedApiCall(HetznerCloudAPI::getServers) {
             it.servers.servers
-        }.mapNonNullResult {
+        }.mapSuccessNonNullBoolean {
             it.map { server ->
                 logger.info { "destroying server '${server.name}'" }
                 destroy(server.id)
-            }.reduceResults()
+            }.any { it }
         }
     }
 
@@ -201,7 +200,7 @@ class HetznerServerResourceProvisioner(
     }
 
     override fun lookup(lookup: IServerLookup): Result<ServerRuntime> {
-        return checkedApiCall(lookup, HetznerCloudAPI::getServers) {
+        return checkedApiCall(HetznerCloudAPI::getServers) {
             it.servers.servers.firstOrNull {
                 it.name == lookup.id()
             }

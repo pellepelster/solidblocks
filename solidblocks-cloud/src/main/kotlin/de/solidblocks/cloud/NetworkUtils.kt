@@ -25,5 +25,4 @@ object NetworkUtils {
         val newSubnets: IPAddress = subnet.setPrefixLength(subnet.prefixLength + NETWORK_BIT_SHIFT, false)
         return newSubnets.prefixBlockIterator().asSequence().map { it.toString() }.toList().first()
     }
-
 }

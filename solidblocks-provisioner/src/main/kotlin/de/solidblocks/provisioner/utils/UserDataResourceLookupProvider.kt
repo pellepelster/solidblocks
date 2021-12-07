@@ -3,7 +3,6 @@ package de.solidblocks.provisioner.utils
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.compute.UserDataDataSource
 import de.solidblocks.core.Result
-import de.solidblocks.core.reduceResults
 import de.solidblocks.provisioner.Provisioner
 import freemarker.template.Configuration
 import freemarker.template.Configuration.SQUARE_BRACKET_INTERPOLATION_SYNTAX
@@ -29,7 +28,7 @@ class UserDataResourceLookupProvider(val provisioner: Provisioner) : IResourceLo
         }
 
         if (lookups.any { it.second.isEmptyOrFailed() }) {
-            return lookups.map { it.second }.reduceResults() as Result<String>
+            return Result(failed = true)
         }
 
         lookups.forEach {
@@ -41,7 +40,7 @@ class UserDataResourceLookupProvider(val provisioner: Provisioner) : IResourceLo
         val sw = StringWriter()
         template.process(input, sw)
 
-        return Result(datasource, sw.toString())
+        return Result(sw.toString())
     }
 
     override fun getLookupType(): Class<UserDataDataSource> {

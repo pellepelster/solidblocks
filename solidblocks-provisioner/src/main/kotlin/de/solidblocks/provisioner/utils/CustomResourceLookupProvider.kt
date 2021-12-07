@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class CustomResourceLookupProvider : IResourceLookupProvider<CustomDataSource, String> {
 
     override fun lookup(datasource: CustomDataSource): Result<String> {
-        return Result(datasource, datasource.content.invoke())
+        return Result(datasource.content.invoke())
     }
 
     override fun getLookupType(): Class<CustomDataSource> {

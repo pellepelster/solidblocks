@@ -31,19 +31,18 @@ class ConsulTokenProvisioner(val consulClient: Consul) :
         val token = ImmutableToken.builder().addAllPolicies(policies).description(resource.description).id(resource.id.toString())
         consulClient.aclClient().createToken(token.build())
 
-        return Result<ConsulToken>(resource = resource, failed = false)
+        return Result<ConsulToken>(failed = false)
     }
 
     override fun diff(resource: ConsulToken): Result<ResourceDiff> {
         return Result(
             failed = false,
-            resource = resource,
             result = ResourceDiff(resource = resource, missing = true)
         )
     }
 
     override fun lookup(lookup: IConsulTokenLookup): Result<ConsulTokenRuntime> {
         val token = consulClient.aclClient().readToken(lookup.id().toString()) ?: return Result.emptyResult()
-        return Result.of(ConsulTokenRuntime(UUID.fromString(token.accessorId())))
+        return Result.resultOf(ConsulTokenRuntime(UUID.fromString(token.accessorId())))
     }
 }

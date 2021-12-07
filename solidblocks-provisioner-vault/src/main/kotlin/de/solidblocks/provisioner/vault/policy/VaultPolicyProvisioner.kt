@@ -53,12 +53,12 @@ class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, v
             val policy = vaultClient.opsForSys().getPolicy(lookup.id())
 
             if (null == policy) {
-                Result(lookup)
+                Result()
             } else {
-                Result(lookup, VaultPolicyRuntime(policy.rules))
+                Result(VaultPolicyRuntime(policy.rules))
             }
         } catch (e: Exception) {
-            Result(lookup, failed = true, message = e.message)
+            Result(failed = true, message = e.message)
         }
     }
 

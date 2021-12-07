@@ -16,9 +16,9 @@ class PassSecretResourceLookupProvider(val directoryProvider: PassSecretDirector
 
     override fun lookup(datasource: PassSecretLookup): Result<String> {
         return try {
-            Result(datasource, passWrapperInstance().getSecret(datasource.key))
+            Result(passWrapperInstance().getSecret(datasource.key))
         } catch (e: Exception) {
-            Result(datasource, failed = true, message = e.message)
+            Result(failed = true, message = e.message)
         }
     }
 

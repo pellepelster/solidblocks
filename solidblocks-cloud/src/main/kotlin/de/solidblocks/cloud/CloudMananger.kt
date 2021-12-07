@@ -21,11 +21,11 @@ import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.cloud.Contants.defaultLabels
 import de.solidblocks.cloud.Contants.hostSshMountName
 import de.solidblocks.cloud.Contants.kvMountName
+import de.solidblocks.cloud.Contants.networkName
 import de.solidblocks.cloud.Contants.pkiMountName
 import de.solidblocks.cloud.Contants.userSshMountName
 import de.solidblocks.cloud.NetworkUtils.solidblocksNetwork
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
-import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_SECRET_KEY
@@ -57,7 +57,6 @@ class CloudMananger(
     val vaultRootClientProvider: VaultRootClientProvider,
     val provisioner: Provisioner,
     val cloudConfigurationManager: CloudConfigurationManager,
-    val configurationContext: CloudConfigurationContext
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -83,12 +82,11 @@ class CloudMananger(
     ) {
         val rootZone = DnsZone(environment.cloud.rootDomain)
 
-        val id = "solidblocks"
         // val rootZone = DnsZone(cloud.solidblocksConfig.domain)
 
         val networkResourceGroup = provisioner.createResourceGroup("network")
 
-        val network = Network(id, solidblocksNetwork())
+        val network = Network(networkName(environment), solidblocksNetwork())
         networkResourceGroup.addResource(network)
 
         val subnet = Subnet(subnetForNetwork(solidblocksNetwork()), network)
@@ -99,12 +97,12 @@ class CloudMananger(
         val vaultResourceGroup = provisioner.createResourceGroup("vault")
         val floatingIp = createDefaultServer(
             ServerSpec(
-                    name = "vault-0",
-                    location = location,
-                    network = network,
-                    role = Role.vault,
-                    sshKeys = sshKeys,
-                    dnsHealthCheckPort = 8200
+                name = "vault-0",
+                location = location,
+                network = network,
+                role = Role.vault,
+                sshKeys = sshKeys,
+                dnsHealthCheckPort = 8200
             ),
             vaultResourceGroup, environment, rootZone
         )
@@ -135,14 +133,14 @@ class CloudMananger(
         val controllerGroup = provisioner.createResourceGroup("controller")
         createDefaultServer(
             ServerSpec(
-                    name = "controller-0",
-                    location = location,
-                    network = network,
-                    role = Role.controller,
-                    sshKeys = sshKeys,
-                    vaultPolicyName = CONTROLLER_POLICY_NAME,
-                    dnsHealthCheckPort = 8500,
-                    extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
+                name = "controller-0",
+                location = location,
+                network = network,
+                role = Role.controller,
+                sshKeys = sshKeys,
+                vaultPolicyName = CONTROLLER_POLICY_NAME,
+                dnsHealthCheckPort = 8500,
+                extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
             ),
             controllerGroup, environment, rootZone
         )
@@ -150,13 +148,13 @@ class CloudMananger(
         val resourceGroup = provisioner.createResourceGroup("backup")
         createDefaultServer(
             ServerSpec(
-                    name = "backup",
-                    location = location,
-                    network = network,
-                    role = Role.backup,
-                    sshKeys = sshKeys,
-                    vaultPolicyName = BACKUP_POLICY_NAME,
-                    extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
+                name = "backup",
+                location = location,
+                network = network,
+                role = Role.backup,
+                sshKeys = sshKeys,
+                vaultPolicyName = BACKUP_POLICY_NAME,
+                extraVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString()))
             ),
             resourceGroup, environment, rootZone
         )
@@ -185,14 +183,14 @@ class CloudMananger(
     }
 
     private data class ServerSpec(
-            val name: String,
-            val role: Role,
-            val location: String,
-            val vaultPolicyName: String? = null,
-            val network: Network,
-            val sshKeys: Set<SshKey>,
-            val dnsHealthCheckPort: Int? = null,
-            val extraVariables: Map<String, IResourceLookup<String>> = emptyMap()
+        val name: String,
+        val role: Role,
+        val location: String,
+        val vaultPolicyName: String? = null,
+        val network: Network,
+        val sshKeys: Set<SshKey>,
+        val dnsHealthCheckPort: Int? = null,
+        val extraVariables: Map<String, IResourceLookup<String>> = emptyMap()
     )
 
     private fun createDefaultServer(
@@ -203,16 +201,16 @@ class CloudMananger(
     ): FloatingIp {
         val volume = resourceGroup.addResource(
             Volume(
-                    id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
-                    location = serverSpec.location,
-                    labels = defaultLabels(environment, serverSpec.role)
+                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
+                location = serverSpec.location,
+                labels = defaultLabels(environment, serverSpec.role)
             )
         )
         val floatingIp = resourceGroup.addResource(
             FloatingIp(
-                    id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
-                    location = serverSpec.location,
-                    labels = defaultLabels(environment, serverSpec.role)
+                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
+                location = serverSpec.location,
+                labels = defaultLabels(environment, serverSpec.role)
             )
         )
 
@@ -251,7 +249,7 @@ class CloudMananger(
                 sshKeys = serverSpec.sshKeys,
                 location = serverSpec.location,
                 volume = volume,
-                    labels = defaultLabels(environment, serverSpec.role)
+                labels = defaultLabels(environment, serverSpec.role)
             )
         )
 

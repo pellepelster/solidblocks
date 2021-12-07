@@ -18,9 +18,9 @@ class HetznerDnsZoneResourceProvisioner(hetznerDnsAPI: HetznerDnsAPI) :
     private val logger = KotlinLogging.logger {}
 
     override fun lookup(lookup: IDnsZoneLookup): Result<DnsZoneRuntime> {
-        return checkedApiCall(lookup, HetznerDnsAPI::searchZone) {
+        return checkedApiCall(HetznerDnsAPI::searchZone) {
             it.searchZone(lookup.id())
-        }.mapNonNullResultNullable {
+        }.mapNonNullResult {
             DnsZoneRuntime(it.id, it.name)
         }
     }

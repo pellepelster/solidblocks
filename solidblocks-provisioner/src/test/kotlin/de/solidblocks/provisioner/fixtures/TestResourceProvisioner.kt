@@ -87,7 +87,6 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
             }
 
             return Result(
-                resource,
                 result = ResourceDiff(resource, missing = diffIsMissing.containsKey(resource.id), changes = changes)
             )
         }
@@ -99,22 +98,18 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
         if (failOnApply.containsKey(resource.id)) {
             throw RuntimeException()
         } else {
-            return Result(resource, result = "result")
+            return Result(result = "result")
         }
     }
 
-    override fun destroy(resource: TestResource): Result<*> {
+    override fun destroy(resource: TestResource): Boolean {
         destroyWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.incrementAndGet()
 
         if (failOnDestroy.containsKey(resource.id)) {
             throw RuntimeException()
         } else {
-            return Result(resource, result = "result")
+            return true
         }
-    }
-
-    override fun destroyAll(): Result<*> {
-        throw RuntimeException()
     }
 
     override fun lookup(lookup: ITestResourceLookup): Result<String> {
@@ -123,7 +118,7 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
         if (failOnLookup.containsKey(lookup.id())) {
             throw RuntimeException()
         } else {
-            return Result(lookup, result = "result")
+            return Result(result = "result")
         }
     }
 

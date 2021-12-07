@@ -145,7 +145,7 @@ class VaultPkiBackendRoleProvisioner(
             )
         }
 
-        return Result(resource, response)
+        return Result(response)
     }
 
     override fun getResourceType(): Class<VaultPkiBackendRole> {
@@ -156,11 +156,11 @@ class VaultPkiBackendRoleProvisioner(
         val vaultClient = vaultRootClientProvider.createClient()
 
         val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", PkiBackendRole::class.java)
-            ?: return Result(lookup, null)
+            ?: return Result(null)
 
         val keysExist = keysExist(vaultClient, lookup)
 
-        return Result(lookup, VaultPkiBackendRoleRuntime(role.data!!, keysExist))
+        return Result(VaultPkiBackendRoleRuntime(role.data!!, keysExist))
     }
 
     override fun getLookupType(): Class<*> {

@@ -1,5 +1,6 @@
 package de.solidblocks.provisioner.hetzner.cloud
 
+import de.solidblocks.base.Constants.LABEL_PREFIX
 import java.security.MessageDigest
 
 class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
@@ -15,22 +16,21 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
     private val messageDigest = MessageDigest
         .getInstance("SHA-256")
 
-    private val labelPrefix = "solidblocks"
 
     fun labels(): Map<String, String> {
         return labels
     }
 
     fun addLabel(key: String, value: String) {
-        this.labels["$labelPrefix/$key"] = value
+        this.labels["$LABEL_PREFIX/$key"] = value
     }
 
     fun addHashLabel(key: String, value: String) {
-        this.labels["$labelPrefix/$key"] = hetznerLabelValueHashString(value)
+        this.labels["$LABEL_PREFIX/$key"] = hetznerLabelValueHashString(value)
     }
 
     fun hashLabelMatches(key: String, value: String): Boolean {
-        return this.labels["$labelPrefix/$key"] == hetznerLabelValueHashString(value)
+        return this.labels["${LABEL_PREFIX}/$key"] == hetznerLabelValueHashString(value)
     }
 
     private fun hetznerLabelValueHashString(input: String): String {
