@@ -38,7 +38,7 @@ import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.cloud.config.model.getConfigValue
 import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.Provisioner
-import de.solidblocks.provisioner.ResourceGroup
+import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.mount.VaultMount
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
@@ -194,10 +194,10 @@ class CloudMananger(
     )
 
     private fun createDefaultServer(
-        serverSpec: ServerSpec,
-        resourceGroup: ResourceGroup,
-        environment: CloudEnvironmentConfiguration,
-        rootZone: DnsZone
+            serverSpec: ServerSpec,
+            resourceGroup: ResourceGroup,
+            environment: CloudEnvironmentConfiguration,
+            rootZone: DnsZone
     ): FloatingIp {
         val volume = resourceGroup.addResource(
             Volume(
@@ -293,8 +293,8 @@ class CloudMananger(
     }
 
     private fun createVaultConfigResourceGroup(
-        parentResourceGroup: ResourceGroup,
-        environment: CloudEnvironmentConfiguration
+            parentResourceGroup: ResourceGroup,
+            environment: CloudEnvironmentConfiguration
     ) {
 
         val resourceGroup = provisioner.createResourceGroup("vaultConfig", setOf(parentResourceGroup))

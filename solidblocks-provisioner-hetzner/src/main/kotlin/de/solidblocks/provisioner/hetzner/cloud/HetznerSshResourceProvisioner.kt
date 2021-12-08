@@ -34,19 +34,19 @@ class HetznerSshResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     override fun apply(resource: SshKey): Result<*> {
         val request = SSHKeyRequest.builder().name(resource.id).publicKey(resource.publicKey)
 
-        return checkedApiCall(HetznerCloudAPI::createSSHKey) {
+        return checkedApiCall {
             it.createSSHKey(request.build())
         }
     }
 
     private fun destroyById(id: Long): Boolean {
-        return checkedApiCall(HetznerCloudAPI::deleteSSHKey) {
+        return checkedApiCall {
             it.deleteSSHKey(id)
-        }.mapSuccessNonNullBoolean { true }
+        }.mapSuccessBoolean()
     }
 
     override fun destroyAll(): Boolean {
-        return checkedApiCall(HetznerCloudAPI::getSSHKeys) {
+        return checkedApiCall {
             it.sshKeys.sshKeys
         }.mapSuccessNonNullBoolean {
             it.map { sshKey ->
@@ -67,7 +67,7 @@ class HetznerSshResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     }
 
     override fun lookup(lookup: ISshKeyLookup): Result<SshKeyRuntime> {
-        return checkedApiCall(HetznerCloudAPI::getSSHKeys) {
+        return checkedApiCall {
             it.sshKeys.sshKeys.filter { it.name == lookup.id() }.firstOrNull()
         }.mapNonNullResult {
             SshKeyRuntime(it.id.toString())

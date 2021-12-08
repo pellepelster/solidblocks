@@ -63,7 +63,7 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
     }
 
     override fun diff(resource: VaultSshBackendRole): Result<ResourceDiff> {
-        return lookup(resource).mapResourceResult {
+        return lookup(resource).mapResult {
 
             val changes = ArrayList<ResourceDiffItem>()
             val missing = it == null

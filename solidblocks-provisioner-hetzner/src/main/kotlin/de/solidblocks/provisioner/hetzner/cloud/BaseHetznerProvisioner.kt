@@ -1,14 +1,11 @@
 package de.solidblocks.provisioner.hetzner.cloud
 
 import de.solidblocks.base.Waiter
-import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.core.Result
-import de.solidblocks.core.logName
 import me.tomsdevsn.hetznercloud.objects.general.Action
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.HttpClientErrorException
-import kotlin.reflect.KFunction
 
 abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val hetznerCloudAPI: ApiType) {
 
@@ -24,23 +21,15 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
     }
 
     fun <TargetType> checkedApiCall(
-            function: KFunction<Any>,
             apiCall: (ApiType) -> TargetType?
     ): Result<TargetType> {
-        return checkedApiCall(function.name, apiCall)
-    }
-
-    fun <TargetType> checkedApiCall(
-            action: String,
-            apiCall: (ApiType) -> TargetType?
-    ): Result<TargetType> {
-        return Waiter.defaultWaiter().waitFor {
+        return Waiter.defaultWaiter().waitForResult {
             try {
-                return@waitFor Result(action = action, result = apiCall(hetznerCloudAPI))
+                return@waitForResult Result(result = apiCall(hetznerCloudAPI))
             } catch (e: HttpClientErrorException) {
                 if (e.statusCode == HttpStatus.LOCKED) {
                     logger.warn { "hetzner api request returned resource is locked" }
-                    return@waitFor Result(
+                    return@waitForResult Result(
                             failed = true,
                             retryable = true,
                             message = e.message
@@ -50,7 +39,7 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
                 if (e.statusCode == HttpStatus.TOO_MANY_REQUESTS) {
                     logger.warn { "hetzner api request failed (too many requests): '${e.message}'" }
 
-                    return@waitFor Result(
+                    return@waitForResult Result(
                         failed = true,
                         retryable = true,
                         message = "HTTP 429"
@@ -59,7 +48,7 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
 
                 if (e.statusCode == HttpStatus.NOT_FOUND) {
                     logger.warn { "hetzner api request returned not found: '${e.message}'" }
-                    return@waitFor Result(
+                    return@waitForResult Result(
                         failed = false,
                         retryable = false,
                         message = "HTTP 404"
@@ -67,64 +56,46 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
                 }
 
                 logger.error(e) { "hetzner api request failed '${e.message}'" }
-                return@waitFor Result(failed = true, message = e.message)
+                return@waitForResult Result(failed = true, message = e.message)
             } catch (e: Exception) {
                 logger.error(e) { "hetzner api request failed '${e.message}'" }
-                return@waitFor Result(failed = true, message = e.message)
+                return@waitForResult Result(failed = true, message = e.message)
             }
         }
     }
 
-    fun <RuntimeType> waitForApiCall(
-        resource: IInfrastructureResource<ResourceType, RuntimeType>,
+    fun waitForRetryableApiCall(
         apiCall: (ApiType) -> Boolean
-    ): Result<Boolean> {
+    ): Boolean {
         return Waiter.defaultWaiter().waitFor {
             try {
-                val result = apiCall(hetznerCloudAPI)
-                return@waitFor Result(result = result, failed = !result, retryable = true)
+                return@waitFor !apiCall(hetznerCloudAPI)
             } catch (e: HttpClientErrorException) {
                 if (e.statusCode == HttpStatus.TOO_MANY_REQUESTS) {
                     logger.warn { "hetzner api request failed (too many requests): '${e.message}'" }
-                    return@waitFor Result<Boolean>(
-                        failed = true,
-                        retryable = true,
-                        message = e.message
-                    )
+                    return@waitFor true
                 }
 
                 if (e.statusCode == HttpStatus.LOCKED) {
-                    logger.warn { "hetzner api request returned resource is locked for ${resource.logName()}" }
-                    return@waitFor Result<Boolean>(
-                        failed = true,
-                        retryable = true,
-                        message = e.message
-                    )
+                    logger.warn { "hetzner api request returned resource is locked" }
+                    return@waitFor true
                 }
 
-                if (e.statusCode == HttpStatus.NOT_FOUND) {
-                    logger.warn { "hetzner api request returned not found: '${e.message}'" }
-                    return@waitFor Result<Boolean>(failed = true, message = e.message)
-                }
-
-                logger.error(e) { "hetzner api request failed '${e.message}'" }
-                return@waitFor Result(failed = true, message = e.message)
             } catch (e: Exception) {
                 logger.error(e) { "hetzner api request failed '${e.message}'" }
-                return@waitFor Result(failed = true, message = e.message)
             }
+
+            return@waitFor false
         }
     }
 
     fun waitForActions(
-            function: KFunction<Any>,
-            actions: List<Action>,
-            call: (ApiType, Action) -> Boolean
+        actions: List<Action>,
+        call: (ApiType, Action) -> Boolean
     ): Result<Boolean> {
-
         val actionCalls = actions.map { action ->
             val actionCall: () -> Result<Boolean> = {
-                checkedApiCall(function) { api ->
+                checkedApiCall { api ->
                     call(api, action)
                 }
             }
@@ -141,10 +112,10 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
             it.invoke()
         }
 
-        if (results.any { it.isEmptyOrFailed() }) {
+        if (results.any { it.failed }) {
             return Result(failed = true)
         }
 
-        return Result()
+        return Result(failed = false)
     }
 }

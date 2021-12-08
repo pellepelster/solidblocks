@@ -3,11 +3,10 @@ package de.solidblocks.core
 import mu.KotlinLogging
 
 class Result<Type>(
-    var result: Type? = null,
-    var failed: Boolean = false,
-    var retryable: Boolean = false,
-    var message: String? = null,
-    var action: String? = null,
+        var result: Type? = null,
+        var failed: Boolean = false,
+        var retryable: Boolean = false,
+        var message: String? = null
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -53,7 +52,7 @@ class Result<Type>(
     }
 
     fun errorMessage(): String {
-        return "result for action '${action ?: "<unknown>"}' was '${result.toString()}', failed = $failed, error message was '${message ?: "<none>"}"
+        return "result was '${result.toString()}', failed = $failed, error message was '${message ?: "<none>"}"
     }
 
     fun <TargetType> mapNonNullResult(
@@ -72,8 +71,8 @@ class Result<Type>(
         }
     }
 
-    fun <TargetType> mapResourceResult(
-        block: (result: Type?) -> TargetType?,
+    fun <TargetType> mapResult(
+            block: (result: Type?) -> TargetType?,
     ): Result<TargetType> {
 
         if (this.failed) {
@@ -113,6 +112,16 @@ class Result<Type>(
         }
 
         return block(result!!)
+    }
+
+    fun mapSuccessBoolean(
+    ): Boolean {
+
+        if (this.failed) {
+            return false
+        }
+
+        return true
     }
 
 }

@@ -70,7 +70,7 @@ class ConsulProvisionerTest {
         assertThat(afterApplyResult.result?.missing).isFalse
 
         // update is always enforced to ensure rules are up-to-date
-        assertThat(policyProvisioner.diff(acl).result?.hasChanges()).isTrue
+        assertThat(policyProvisioner.diff(acl).result?.hasChangesOrMissing()).isTrue
     }
 
     @Test

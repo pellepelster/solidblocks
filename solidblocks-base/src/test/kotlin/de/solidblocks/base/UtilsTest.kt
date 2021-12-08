@@ -17,18 +17,18 @@ class UtilsTest {
 
     @Test
     fun testWaiter() {
-        val failedResult = Waiter.DEFAULT_WAITER.waitFor { Result<Any>(NullResource, failed = true) }
+        val failedResult = Waiter.defaultWaiter().waitForResult { Result<Any>(NullResource, failed = true) }
         assertThat(failedResult.failed).isTrue
 
-        val successResult = Waiter.DEFAULT_WAITER.waitFor { Result<Any>(NullResource, failed = false) }
+        val successResult = Waiter.defaultWaiter().waitForResult { Result<Any>(NullResource, failed = false) }
         assertThat(successResult.failed).isFalse
 
         val atomic = AtomicInteger(0)
-        val retryResult = Waiter.SHORT_WAITER.waitFor {
+        val retryResult = Waiter.shortWaiter().waitForResult {
             if (atomic.incrementAndGet() < 3) {
-                return@waitFor Result<Any>(NullResource, retryable = true)
+                return@waitForResult Result<Any>(NullResource, retryable = true)
             } else {
-                return@waitFor Result<Any>(NullResource, failed = false)
+                return@waitForResult Result<Any>(NullResource, failed = false)
             }
         }
         assertThat(retryResult.failed).isFalse

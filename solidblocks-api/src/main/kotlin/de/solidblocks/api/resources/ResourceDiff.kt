@@ -3,7 +3,8 @@ package de.solidblocks.api.resources
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.core.logName
 
-class ResourceDiff(
+
+    class ResourceDiff(
     val resource: IInfrastructureResource<*, *>,
     val missing: Boolean = false,
     private val error: Boolean = false,
@@ -14,8 +15,16 @@ class ResourceDiff(
         return changes.any { it.triggersRecreate }
     }
 
+    fun hasChangesOrMissing(): Boolean {
+        return isMissing() || hasChanges()
+    }
+
+    fun isMissing(): Boolean {
+        return missing
+    }
+
     fun hasChanges(): Boolean {
-        return missing || changes.any { it.hasChanges() }
+        return changes.any { it.hasChanges() }
     }
 
     @OptIn(ExperimentalStdlibApi::class)

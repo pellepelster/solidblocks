@@ -26,12 +26,12 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     override fun destroyAll(): Boolean {
         logger.info { "destroying all volumes" }
 
-        return checkedApiCall(HetznerCloudAPI::getVolumes) {
+        return checkedApiCall {
             it.volumes.volumes
         }.mapSuccessNonNullBoolean {
 
             it.filterNot { it.protection.delete }.map { volume ->
-                ensureDetached(volume.id).mapResourceResult {
+                ensureDetached(volume.id).mapResult {
                     logger.info { "destroying volume '${volume.name}'" }
                     destroy(volume.id)
                 }
@@ -40,13 +40,13 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     }
 
     private fun destroy(id: Long): Result<*> {
-        return checkedApiCall(HetznerCloudAPI::deleteVolume) {
+        return checkedApiCall {
             it.deleteVolume(id)
         }
     }
 
     private fun ensureDetached(id: Long): Result<*> {
-        return checkedApiCall(HetznerCloudAPI::getVolume) {
+        return checkedApiCall {
             it.getVolume(id)
         }.mapNonNullResult {
 
@@ -54,10 +54,10 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
                 return@mapNonNullResult it
             }
 
-            checkedApiCall(HetznerCloudAPI::detachVolume) {
+            checkedApiCall {
                 it.detachVolume(id).action
             }.mapNonNullResult {
-                waitForActions(HetznerCloudAPI::getActionOfVolume, listOf(it)) { api, action ->
+                waitForActions(listOf(it)) { api, action ->
                     val actionResult = api.getActionOfVolume(id, action.id).action
                     logger.info { "waiting for action '${action.command}' to finish, current status is '${action.status}'" }
                     actionResult.finished != null
@@ -85,13 +85,10 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         request.format("ext4")
         request.labels(resource.labels)
 
-        return checkedApiCall(HetznerCloudAPI::createVolume) {
+        return checkedApiCall {
             logger.info { "creating volume '${resource.id}'" }
             val v = it.createVolume(request.build())
-            val p = it.changeVolumeProtection(
-                v.volume.id,
-                ChangeProtectionRequest.builder().delete(true).build()
-            )
+            val p = it.changeVolumeProtection(v.volume.id, ChangeProtectionRequest.builder().delete(true).build())
 
             v.volume.id to ArrayList(v.nextActions).let {
                 it.add(p.action)
@@ -99,12 +96,9 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
             }
         }.mapNonNullResult { r ->
             logger.info {
-                "volume '${resource.id}' created, waiting for actions '${
-                r.second.map { it.command }.joinToString(", ")
-                }' to finish"
+                "volume '${resource.id}' created, waiting for actions '${r.second.map { it.command }.joinToString(", ")}' to finish"
             }
             waitForActions(
-                HetznerCloudAPI::getActionOfVolume,
                 r.second
             ) { api, action ->
                 val actionResult = api.getActionOfVolume(r.first, action.id).action
@@ -115,14 +109,14 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     }
 
     override fun apply(resource: Volume): Result<*> {
-        return lookup(resource).mapResourceResult { volume ->
+        return lookup(resource).mapResult { volume ->
 
             if (volume == null) {
-                return@mapResourceResult createVolume(resource)
+                return@mapResult createVolume(resource)
             }
 
             val request = UpdateVolumeRequest.builder()
-            checkedApiCall(HetznerCloudAPI::createVolume) {
+            checkedApiCall {
                 logger.info { "updating volume '${resource.id}'" }
                 it.updateVolume(volume.id.toLong(), request.build())
             }
@@ -140,7 +134,7 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     }
 
     override fun lookup(lookup: IVolumeLookup): Result<VolumeRuntime> {
-        return checkedApiCall(HetznerCloudAPI::getVolumes) {
+        return checkedApiCall {
             it.volumes.volumes.firstOrNull { it.name == lookup.id() }
         }.mapNonNullResult {
             VolumeRuntime(it.id.toString(), it.linuxDevice, it.server)

@@ -132,11 +132,11 @@ class HetznerServerResourceProvisioner(
 
         request.sshKeys(sshKeys.map { it.result!!.id.toLong() })
 
-        return checkedApiCall(HetznerCloudAPI::createServer) {
+        return checkedApiCall {
             logger.info { "creating server '${resource.id}'" }
             it.createServer(request.build())
         }.mapNonNullResult {
-            waitForActions(HetznerCloudAPI::getActionOfServer, it.nextActions) { api, action ->
+            waitForActions(it.nextActions) { api, action ->
                 val actionResult = api.getActionOfServer(it.server.id, action.id).action
                 logger.info { "waiting for action '${action.command}' to finish for server '${it.server.name}', current status is '${action.status}'" }
                 actionResult.finished != null
@@ -145,28 +145,30 @@ class HetznerServerResourceProvisioner(
     }
 
     override fun apply(resource: Server): Result<*> {
-        val lookup = lookup(resource)
+        var existingServer = lookup(resource)
 
-        if (!lookup.isEmpty()) {
-            TODO("update not implemented")
+        if (existingServer.isEmpty()) {
+            logger.info { "server '${resource.id}' not found, creating" }
+            createServer(resource)
+
+            existingServer = lookup(resource)
         }
 
-        return createServer(resource).mapNonNullResult {
-            this.lookup(resource).mapNonNullResult { serverRuntime ->
-                waitForApiCall(resource) {
-                    val server = it.getServerById(serverRuntime.id.toLong()).server
-                    "initializing" != server.status
-                }
 
-                checkedApiCall(HetznerCloudAPI::powerOnServer) {
-                    it.powerOnServer(serverRuntime.id.toLong())
-                }.mapNonNullResult {
-                    waitForActions(HetznerCloudAPI::getActionOfServer, listOf(it.action)) { api, action ->
-                        val actionResult = api.getActionOfServer(serverRuntime.id.toLong(), action.id).action
-                        logger.info { "waiting for action '${action.command}' to finish for server '${resource.id}', current status is '${action.status}'" }
-                        actionResult.finished != null
-                    }
-                }
+        waitForRetryableApiCall {
+            val server = it.getServerById(existingServer.result!!.id.toLong()).server
+            logger.info { "waiting for server initialization to finish, current status is '${server.status}'" }
+            "initializing" != server.status
+        }
+
+        return checkedApiCall {
+            logger.info { "powering on server '${resource.id}'" }
+            it.powerOnServer(existingServer.result!!.id.toLong())
+        }.mapNonNullResult {
+            waitForActions(listOf(it.action)) { api, action ->
+                val actionResult = api.getActionOfServer(existingServer.result!!.id.toLong(), action.id).action
+                logger.info { "waiting for action '${action.command}' to finish for server '${resource.id}', current status is '${action.status}'" }
+                actionResult.finished != null
             }
         }
     }
@@ -178,14 +180,14 @@ class HetznerServerResourceProvisioner(
     }
 
     private fun destroy(id: Long): Boolean {
-        return checkedApiCall(HetznerCloudAPI::deleteServer) {
+        return checkedApiCall {
             it.deleteServer(id)
         }.mapSuccessNonNullBoolean { true }
     }
 
     override fun destroyAll(): Boolean {
         logger.info { "destroying all servers" }
-        return checkedApiCall(HetznerCloudAPI::getServers) {
+        return checkedApiCall {
             it.servers.servers
         }.mapSuccessNonNullBoolean {
             it.map { server ->
@@ -200,18 +202,18 @@ class HetznerServerResourceProvisioner(
     }
 
     override fun lookup(lookup: IServerLookup): Result<ServerRuntime> {
-        return checkedApiCall(HetznerCloudAPI::getServers) {
+        return checkedApiCall {
             it.servers.servers.firstOrNull {
                 it.name == lookup.id()
             }
         }.mapNonNullResult {
             ServerRuntime(
-                it.id.toString(),
-                it.status,
-                it.labels,
-                it.volumes.isNotEmpty(),
-                it.privateNet.firstOrNull()?.ip,
-                it.publicNet?.ipv4?.ip
+                    it.id.toString(),
+                    it.status,
+                    it.labels,
+                    it.volumes.isNotEmpty(),
+                    it.privateNet.firstOrNull()?.ip,
+                    it.publicNet?.ipv4?.ip
             )
         }
     }

@@ -55,7 +55,7 @@ class VaultPkiBackendRoleProvisioner(
     }
 
     override fun diff(resource: VaultPkiBackendRole): Result<ResourceDiff> {
-        return lookup(resource).mapResourceResult {
+        return lookup(resource).mapResult {
 
             val changes = ArrayList<ResourceDiffItem>()
             val missing = it == null

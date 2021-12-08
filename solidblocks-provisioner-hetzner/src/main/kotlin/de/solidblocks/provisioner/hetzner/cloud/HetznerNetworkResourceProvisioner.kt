@@ -28,7 +28,7 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         request.name(resource.id)
         request.ipRange(resource.ipRange)
 
-        return checkedApiCall(HetznerCloudAPI::createNetwork) {
+        return checkedApiCall {
             it.createNetwork(request.build())
         }
     }
@@ -45,7 +45,7 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     }
 
     private fun destroy(id: Long): Result<*> {
-        return checkedApiCall(HetznerCloudAPI::deleteNetwork) {
+        return checkedApiCall {
             it.deleteNetwork(id)
         }
     }
@@ -53,7 +53,7 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     override fun destroyAll(): Boolean {
         logger.info { "destroying all networks" }
 
-        return checkedApiCall(HetznerCloudAPI::getAllNetworks) {
+        return checkedApiCall {
             it.allNetworks.networks
         }.mapSuccessNonNullBoolean {
             it.map { network ->
@@ -74,7 +74,7 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     }
 
     override fun lookup(lookup: INetworkLookup): Result<NetworkRuntime> {
-        return checkedApiCall(HetznerCloudAPI::getNetworksByName) {
+        return checkedApiCall {
             it.getNetworksByName(lookup.id()).networks.firstOrNull()
         }.mapNonNullResult {
             NetworkRuntime(it.id.toString())

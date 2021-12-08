@@ -28,8 +28,8 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
     override fun destroyAll(): Boolean {
         logger.info { "unassigning all floating ips" }
 
-        return Waiter.defaultWaiter().waitFor {
-            checkedApiCall(HetznerCloudAPI::getFloatingIPs) {
+        return Waiter.defaultWaiter().waitForResult {
+            checkedApiCall {
                 it.floatingIPs.floatingIPs
             }
         }.mapSuccessNonNullBoolean {
@@ -65,11 +65,10 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
                 val request = AssignFloatingIPRequest.builder()
                 request.serverID(server.id.toLong())
 
-                checkedApiCall(HetznerCloudAPI::assignFloatingIP) {
+                checkedApiCall {
                     it.assignFloatingIP(floatingIp.id.toLong(), request.build())
                 }.mapNonNullResult {
                     waitForActions(
-                        HetznerCloudAPI::getActionOfFloatingIP,
                         listOf(it.action).filterNotNull()
                     ) { api, action ->
                         val actionResult = api.getActionOfFloatingIP(floatingIp.id.toLong(), action.id).action
@@ -88,7 +87,7 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
     }
 
     private fun destroy(id: Long): Boolean {
-        return checkedApiCall(HetznerCloudAPI::getFloatingIP) {
+        return checkedApiCall {
             it.getFloatingIP(id)
         }.mapSuccessNonNullBoolean {
 
@@ -96,11 +95,10 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
                 return@mapSuccessNonNullBoolean true
             }
 
-            checkedApiCall(HetznerCloudAPI::unassignFloatingIP) {
+            checkedApiCall {
                 it.unassignFloatingIP(id)
             }.mapSuccessNonNullBoolean {
                 waitForActions(
-                        HetznerCloudAPI::getActionOfFloatingIP,
                         listOf(it.action).filterNotNull()
                 ) { api, action ->
                     val actionResult = api.getActionOfFloatingIP(id, action.id).action

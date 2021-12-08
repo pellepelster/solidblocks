@@ -30,11 +30,11 @@ class HetznerDnsRecordResourceProvisioner(
 
     fun resolveIp(resource: DnsRecord): Result<String> {
         if (resource.floatingIp != null) {
-            return provisioner.lookup(resource.floatingIp!!).mapResourceResult { it?.ipv4 }
+            return provisioner.lookup(resource.floatingIp!!).mapResult { it?.ipv4 }
         }
 
         if (resource.server != null) {
-            return provisioner.lookup(resource.server!!).mapResourceResult { it?.privateIp }
+            return provisioner.lookup(resource.server!!).mapResult { it?.privateIp }
         }
 
         return Result(failed = true, message = "neither floating ip nor server was provided")
@@ -101,12 +101,12 @@ class HetznerDnsRecordResourceProvisioner(
 
             lookup(resource).mapResourceResultOrElse(
                 { record ->
-                    checkedApiCall(HetznerDnsAPI::updateRecord) {
+                    checkedApiCall {
                         it.updateRecord(record.id, recordRequest.build())
                     }
                 },
                 {
-                    checkedApiCall(HetznerDnsAPI::createRecord) {
+                    checkedApiCall {
                         it.createRecord(recordRequest.build())
                     }
                 }
@@ -125,7 +125,7 @@ class HetznerDnsRecordResourceProvisioner(
             return Result(failed = true)
         }
 
-        return checkedApiCall(HetznerDnsAPI::getRecords) {
+        return checkedApiCall {
             it.getRecords(result.result!!.id).firstOrNull { it.name == lookup.id() }
         }.mapNonNullResult {
             DnsRecordRuntime(it.id, it.name, it.value, it.ttl)

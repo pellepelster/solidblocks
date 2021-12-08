@@ -7,7 +7,6 @@ plugins {
 dependencies {
     api(project(":solidblocks-api"))
     implementation("org.freemarker:freemarker:2.3.31")
-    implementation("org.jgrapht:jgrapht-core:1.5.1")
 
     implementation("io.github.resilience4j:resilience4j-kotlin:1.3.1")
     implementation("io.github.resilience4j:resilience4j-retry:1.3.1")

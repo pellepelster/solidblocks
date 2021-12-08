@@ -10,15 +10,30 @@ import java.util.*
 
 class Waiter(maxAttempts: Int, delay: Duration) {
 
-    private val config: RetryConfig = RetryConfig.custom<Result<Any>>()
+    private val resultConfig = RetryConfig.custom<Result<Any>>()
         .maxAttempts(maxAttempts)
         .waitDuration(delay)
         .retryOnResult { it.retryable }
         .build()
 
+    private val resultRegistry: RetryRegistry = RetryRegistry.of(resultConfig)
+
+    private val config = RetryConfig.custom<Boolean>()
+        .maxAttempts(maxAttempts)
+        .waitDuration(delay)
+        .retryOnResult { it }
+        .build()
     private val registry: RetryRegistry = RetryRegistry.of(config)
 
-    fun <T> waitFor(callable: () -> Result<T>): Result<T> {
+    fun <T> waitForResult(callable: () -> Result<T>): Result<T> {
+
+        val retry = resultRegistry.retry(UUID.randomUUID().toString())
+        val supplier = Retry.decorateSupplier(retry, callable)
+
+        return Try.ofSupplier(supplier).get()
+    }
+
+    fun waitFor(callable: () -> Boolean): Boolean {
 
         val retry = registry.retry(UUID.randomUUID().toString())
         val supplier = Retry.decorateSupplier(retry, callable)
@@ -27,12 +42,16 @@ class Waiter(maxAttempts: Int, delay: Duration) {
     }
 
     companion object {
-        val SHORT_WAITER = Waiter(6 * 5, Duration.ofSeconds(1))
+        private val SHORT_WAITER = Waiter(6 * 5, Duration.ofSeconds(1))
 
-        val DEFAULT_WAITER = Waiter(6 * 5, Duration.ofSeconds(10))
+        private val DEFAULT_WAITER = Waiter(6 * 5, Duration.ofSeconds(10))
 
         fun defaultWaiter(): Waiter {
             return DEFAULT_WAITER
+        }
+
+        fun shortWaiter(): Waiter {
+            return SHORT_WAITER
         }
     }
 }

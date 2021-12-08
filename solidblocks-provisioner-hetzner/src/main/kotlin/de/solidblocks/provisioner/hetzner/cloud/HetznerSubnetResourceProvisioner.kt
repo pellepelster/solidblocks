@@ -35,7 +35,7 @@ class HetznerSubnetResourceProvisioner(
                 .type(SubnetType.server.toString())
 
         return this.provisioner.lookup(resource.network).mapNonNullResult { networkRuntime ->
-            checkedApiCall(HetznerCloudAPI::addSubnetToNetwork) {
+            checkedApiCall {
                 it.addSubnetToNetwork(networkRuntime.id.toLong(), request.build())
             }
         }
@@ -56,7 +56,7 @@ class HetznerSubnetResourceProvisioner(
     }
 
     override fun lookup(lookup: ISubnetLookup): Result<SubnetRuntime> {
-        val result = checkedApiCall(HetznerCloudAPI::getNetworksByName) {
+        val result = checkedApiCall {
             it.getNetworksByName(lookup.network().id()).networks.firstOrNull()
         }
 

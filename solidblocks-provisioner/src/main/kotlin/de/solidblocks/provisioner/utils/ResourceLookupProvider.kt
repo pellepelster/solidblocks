@@ -10,7 +10,7 @@ class ResourceLookupProvider<RuntimeType>(private val provisioner: Provisioner) 
     IResourceLookupProvider<ResourceLookup<RuntimeType>, String> {
 
     override fun lookup(lookup: ResourceLookup<RuntimeType>): de.solidblocks.core.Result<String> {
-        return this.provisioner.lookup(lookup.resource).mapResourceResult {
+        return this.provisioner.lookup(lookup.resource).mapResult {
             lookup.call(it as RuntimeType)
         }
     }
