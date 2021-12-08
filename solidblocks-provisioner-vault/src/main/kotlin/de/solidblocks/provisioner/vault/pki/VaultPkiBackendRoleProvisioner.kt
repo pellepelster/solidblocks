@@ -5,24 +5,17 @@ import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
-import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.vault.pki.dto.PkiBackendRole
-import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import mu.KotlinLogging
 import org.joda.time.Instant
 import org.joda.time.MutablePeriod
 import org.joda.time.format.PeriodFormatterBuilder
-import org.springframework.stereotype.Component
 import org.springframework.vault.core.VaultTemplate
 import java.util.*
 import kotlin.reflect.KProperty0
 import kotlin.reflect.KProperty1
 
-@Component
-class VaultPkiBackendRoleProvisioner(
-    val vaultRootClientProvider: VaultRootClientProvider,
-    val provisioner: Provisioner,
-) :
+class VaultPkiBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
     IResourceLookupProvider<IVaultPkiBackendRoleLookup, VaultPkiBackendRoleRuntime>,
     IInfrastructureResourceProvisioner<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
 
@@ -125,8 +118,6 @@ class VaultPkiBackendRoleProvisioner(
     }
 
     override fun apply(resource: VaultPkiBackendRole): Result<*> {
-        val vaultClient = vaultRootClientProvider.createClient()
-
         val role = PkiBackendRole(
             key_type = resource.keyType,
             key_bits = resource.keyBits,
@@ -135,11 +126,12 @@ class VaultPkiBackendRoleProvisioner(
             allow_any_name = resource.allowAnyName,
             generate_lease = resource.generateLease,
         )
+        val vaultTemplate = vaultTemplateProvider.invoke()
 
-        val response = vaultClient.write("${resource.mount.id()}/roles/${resource.id}", role)
+        val response = vaultTemplate.write("${resource.mount.id()}/roles/${resource.id}", role)
 
-        if (!keysExist(vaultClient, resource)) {
-            val response = vaultClient.write(
+        if (!keysExist(vaultTemplate, resource)) {
+            val response = vaultTemplate.write(
                 "${resource.mount.id()}/root/generate/internal",
                 mapOf("common_name" to "${resource.id} root")
             )
@@ -153,12 +145,12 @@ class VaultPkiBackendRoleProvisioner(
     }
 
     override fun lookup(lookup: IVaultPkiBackendRoleLookup): Result<VaultPkiBackendRoleRuntime> {
-        val vaultClient = vaultRootClientProvider.createClient()
+        val vaultTemplate = vaultTemplateProvider.invoke()
 
-        val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", PkiBackendRole::class.java)
+        val role = vaultTemplate.read("${lookup.mount().id()}/roles/${lookup.id()}", PkiBackendRole::class.java)
             ?: return Result(null)
 
-        val keysExist = keysExist(vaultClient, lookup)
+        val keysExist = keysExist(vaultTemplate, lookup)
 
         return Result(VaultPkiBackendRoleRuntime(role.data!!, keysExist))
     }

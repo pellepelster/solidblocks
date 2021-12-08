@@ -5,10 +5,8 @@ import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
-import org.springframework.stereotype.Component
 import java.util.concurrent.atomic.AtomicInteger
 
-@Component
 class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, String>, IInfrastructureResourceProvisioner<TestResource, String> {
 
     val failOnDiff = HashMap<String, Boolean>()

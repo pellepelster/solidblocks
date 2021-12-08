@@ -1,0 +1,11 @@
+
+
+useradd --create-home --home-dir "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/blcks-dev" blcks-dev
+mkdir -p "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/blcks-dev/.ssh"
+
+
+echo "@cert-authority . ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKmyZ8Oznn2dTB1ceq7TJOtmy8dUGLrV8ZxVbfonCnQp" > "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/blcks-dev/.ssh/known_hosts"
+chown -R blcks-dev "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/blcks-dev/.ssh"
+
+
+

@@ -7,12 +7,7 @@ import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_P
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_PUBLIC_KEY
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PRIVATE_KEY
 import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PUBLIC_KEY
-import de.solidblocks.cloud.config.model.CloudConfigValue
-import de.solidblocks.cloud.config.model.CloudConfiguration
-import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
-import de.solidblocks.cloud.config.model.ConsulSecrets
-import de.solidblocks.cloud.config.model.SshSecrets
-import de.solidblocks.cloud.config.model.TenantConfiguration
+import de.solidblocks.cloud.config.model.*
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CLOUDS_ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -21,11 +16,9 @@ import mu.KotlinLogging
 import org.jooq.DSLContext
 import org.jooq.Record5
 import org.jooq.impl.DSL.max
-import org.springframework.stereotype.Component
 import java.security.SecureRandom
 import java.util.*
 
-@Component
 class CloudConfigurationManager(private val dsl: DSLContext) {
 
     sealed class IdType(private val id: UUID)
@@ -272,10 +265,11 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
             }
     }
 
-    fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfiguration? {
-        val cloud = getCloud(cloudName) ?: return null
+    fun environmentByName(cloudName: String, environmentName: String): CloudEnvironmentConfiguration {
+        val cloud = getCloud(cloudName) ?: throw RuntimeException("cloud '$cloudName' not found")
 
-        return listEnvironments(cloud).first { it.name == environmentName }
+        return listEnvironments(cloud).firstOrNull { it.name == environmentName }
+            ?: throw RuntimeException("environment '$environmentName' not found")
     }
 
     fun rotateEnvironmentSecrets(cloudName: String, environmentName: String): Boolean {

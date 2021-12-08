@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Profile
 
 @SpringBootApplication(scanBasePackages = ["de.solidblocks"])
 @Profile("!CloudCreate")
+// @ConditionalOnProperty("cloud.name")
 open class CliApplication {
     @Bean
     open fun cloudConfigurationContext(

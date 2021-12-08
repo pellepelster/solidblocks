@@ -30,8 +30,8 @@ ui = true
 
 listener "tcp" {
     address = "0.0.0.0:8200"
-    tls_cert_file = "/storage/local/vault/config/certificates/live/vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}/fullchain.pem"
-    tls_key_file = "/storage/local/vault/config/certificates/live/vault.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}/privkey.pem"
+    tls_cert_file = "/storage/local/vault/config/certificates/live/${SOLIDBLOCKS_HOSTNAME}.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}/fullchain.pem"
+    tls_key_file = "/storage/local/vault/config/certificates/live/${SOLIDBLOCKS_HOSTNAME}.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}/privkey.pem"
 }
 
 storage "file" {

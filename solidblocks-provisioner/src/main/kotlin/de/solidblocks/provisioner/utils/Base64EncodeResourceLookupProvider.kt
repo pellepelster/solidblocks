@@ -4,10 +4,8 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
-import org.springframework.stereotype.Component
 import java.util.*
 
-@Component
 class Base64EncodeResourceLookupProvider(val provisioner: Provisioner) : IResourceLookupProvider<Base64Encode, String> {
 
     override fun lookup(datasource: Base64Encode): Result<String> {

@@ -3,9 +3,7 @@ package de.solidblocks.provisioner.utils
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
 import de.solidblocks.provisioner.Provisioner
-import org.springframework.stereotype.Component
 
-@Component
 class ResourceLookupProvider<RuntimeType>(private val provisioner: Provisioner) :
     IResourceLookupProvider<ResourceLookup<RuntimeType>, String> {
 

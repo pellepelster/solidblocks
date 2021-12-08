@@ -21,7 +21,7 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
     }
 
     fun <TargetType> checkedApiCall(
-            apiCall: (ApiType) -> TargetType?
+        apiCall: (ApiType) -> TargetType?
     ): Result<TargetType> {
         return Waiter.defaultWaiter().waitForResult {
             try {
@@ -30,9 +30,9 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
                 if (e.statusCode == HttpStatus.LOCKED) {
                     logger.warn { "hetzner api request returned resource is locked" }
                     return@waitForResult Result(
-                            failed = true,
-                            retryable = true,
-                            message = e.message
+                        failed = true,
+                        retryable = true,
+                        message = e.message
                     )
                 }
 
@@ -80,7 +80,6 @@ abstract class BaseHetznerProvisioner<ResourceType, RuntimeType, ApiType>(val he
                     logger.warn { "hetzner api request returned resource is locked" }
                     return@waitFor true
                 }
-
             } catch (e: Exception) {
                 logger.error(e) { "hetzner api request failed '${e.message}'" }
             }

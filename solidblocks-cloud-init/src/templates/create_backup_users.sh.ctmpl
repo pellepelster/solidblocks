@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -eux
+
+#################################
+# generated file, do not change #
+#################################
+
+source /solidblocks/lib/configuration.sh
+
+{{ range $pairs, $cloud := ls "/solidblocks/clouds/" }}
+
+useradd --create-home --home-dir "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/{{ $cloud.Key }}" {{ $cloud.Key }}
+mkdir -p "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/{{ $cloud.Key }}/.ssh"
+
+{{ with secret (printf "%s-user-ssh/config/ca" (.Key)) }}
+echo "@cert-authority {{ env "SOLIDBLOCKS_ENVIRONMENT" }}.{{ env "SOLIDBLOCKS_ROOT_DOMAIN" }} {{ .Data.public_key }}" > "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/{{ $cloud.Key }}/.ssh/known_hosts"
+chown -R {{ $cloud.Key }} "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/{{ $cloud.Key }}/.ssh"
+{{ end }}
+
+{{ end }}

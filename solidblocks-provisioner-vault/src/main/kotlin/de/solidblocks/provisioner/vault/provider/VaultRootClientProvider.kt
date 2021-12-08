@@ -1,34 +1,32 @@
 package de.solidblocks.provisioner.vault.provider
 
-import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.cloud.config.Constants.Vault.Companion.vaultAddress
+import de.solidblocks.provisioner.vault.Vault.Constants.Companion.vaultAddress
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
 import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.VaultInitializationRequest
 import java.net.URI
 
-@Component
 class VaultRootClientProvider(
-        val configurationContext: CloudConfigurationContext,
-        val configurationManager: CloudConfigurationManager,
-        @Value("\${vault.addr:}")
-    val vaultAddrOverride: String? = null
+    val cloudName: String,
+    val environmentName: String,
+    val configurationManager: CloudConfigurationManager,
+    val vaultAddress: String? = null
 ) {
-
     private val logger = KotlinLogging.logger {}
 
     private var vaultTemplate: VaultTemplate? = null
 
     fun createClient(): VaultTemplate {
-        val vaultAddr = if (!vaultAddrOverride.isNullOrEmpty()) vaultAddrOverride else vaultAddress(configurationContext.environment)
 
-        logger.info { "creating vault client for '$vaultAddr'" }
+        val configurationContext = configurationManager.environmentByName(cloudName, environmentName)
+
+        val vaultAddr = if (!vaultAddress.isNullOrEmpty()) vaultAddress else vaultAddress(configurationContext)
+
         if (vaultTemplate != null) {
+            logger.info { "creating vault client for '$vaultAddr'" }
             return vaultTemplate!!
         }
 
@@ -41,12 +39,11 @@ class VaultRootClientProvider(
             val request = VaultInitializationRequest.create(5, 3)
             val response = vaultTemplate.opsForSys().initialize(request)
 
-            configurationManager.updateEnvironment(configurationContext.cloudName, configurationContext.environmentName, response.keys.mapIndexed { i, key -> "vault-unseal-key-$i" to key }.toMap())
-            configurationManager.updateEnvironment(configurationContext.cloudName, configurationContext.environmentName, "vault-root-token", response.rootToken.token)
+            configurationManager.updateEnvironment(cloudName, environmentName, response.keys.mapIndexed { i, key -> "vault-unseal-key-$i" to key }.toMap())
+            configurationManager.updateEnvironment(cloudName, environmentName, "vault-root-token", response.rootToken.token)
         }
 
-        val environment = configurationManager.environmentByName(configurationContext.cloudName, configurationContext.environmentName)
-            ?: throw RuntimeException("environment '${configurationContext.environmentName}' not found for cloud '${configurationContext.cloudName}'")
+        val environment = configurationManager.environmentByName(cloudName, environmentName)
 
         val unsealStatus = vaultTemplate.opsForSys().unsealStatus
         if (unsealStatus.isSealed) {
@@ -58,7 +55,7 @@ class VaultRootClientProvider(
         }
 
         val rootToken = environment.configValues.firstOrNull { it.name == "vault-root-token" }
-            ?: throw RuntimeException("vault at '$vaultAddr is initialized, but no vault root token found for cloud '${configurationContext.cloudName}'")
+            ?: throw RuntimeException("vault at '$vaultAddr is initialized, but no vault root token found for cloud '$cloudName'")
 
         vaultTemplate = VaultTemplate(
             VaultEndpoint.from(URI.create(vaultAddr)),

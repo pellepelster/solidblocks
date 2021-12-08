@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":solidblocks-base"))
     implementation(project(":solidblocks-core"))
     implementation(project(":solidblocks-provisioner-vault"))
+    implementation(project(":solidblocks-provisioner-consul"))
     implementation("com.github.seancfoley:ipaddress:5.3.3")
 }
 

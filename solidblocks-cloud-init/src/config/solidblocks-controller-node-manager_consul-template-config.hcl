@@ -13,7 +13,6 @@ exec {
   command = "/solidblocks/bin/solidblocks-controller-node-manager.sh"
 }
 
-
 template {
   source      = "/solidblocks/templates/ssh-config/known_hosts.ctmpl"
   destination = "/root/.ssh/known_hosts"

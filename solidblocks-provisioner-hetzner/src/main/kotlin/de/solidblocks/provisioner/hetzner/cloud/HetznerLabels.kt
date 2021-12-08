@@ -16,7 +16,6 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
     private val messageDigest = MessageDigest
         .getInstance("SHA-256")
 
-
     fun labels(): Map<String, String> {
         return labels
     }
@@ -30,7 +29,7 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
     }
 
     fun hashLabelMatches(key: String, value: String): Boolean {
-        return this.labels["${LABEL_PREFIX}/$key"] == hetznerLabelValueHashString(value)
+        return this.labels["$LABEL_PREFIX/$key"] == hetznerLabelValueHashString(value)
     }
 
     private fun hetznerLabelValueHashString(input: String): String {

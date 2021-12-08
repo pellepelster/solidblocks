@@ -1,0 +1,8 @@
+package de.solidblocks.provisioner.hetzner.dns.record
+
+data class DnsRecordRuntime(val id: String, val name: String, val value: String, val ttl: Int?) {
+
+    fun id(): String {
+        return id
+    }
+}

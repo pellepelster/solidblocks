@@ -3,10 +3,10 @@ package de.solidblocks.core
 import mu.KotlinLogging
 
 class Result<Type>(
-        var result: Type? = null,
-        var failed: Boolean = false,
-        var retryable: Boolean = false,
-        var message: String? = null
+    var result: Type? = null,
+    var failed: Boolean = false,
+    var retryable: Boolean = false,
+    var message: String? = null
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -19,9 +19,9 @@ class Result<Type>(
         fun <T> resultOf(result: T): Result<T> = Result(result = result)
 
         fun <Type1, Type2, ReturnType> onSuccess(
-                first: Result<Type1>,
-                second: Result<Type2>,
-                block: (result1: Type1?, result2: Type2?) -> ReturnType
+            first: Result<Type1>,
+            second: Result<Type2>,
+            block: (result1: Type1?, result2: Type2?) -> ReturnType
         ): Result<ReturnType> {
 
             if (first.failed || second.failed) {
@@ -30,11 +30,13 @@ class Result<Type>(
 
             return try {
                 Result(
-                        result = block(first.result, second.result))
+                    result = block(first.result, second.result)
+                )
             } catch (e: RuntimeException) {
                 return Result(
-                        failed = true,
-                        message = e.message)
+                    failed = true,
+                    message = e.message
+                )
             }
         }
     }
@@ -52,7 +54,7 @@ class Result<Type>(
     }
 
     fun errorMessage(): String {
-        return "result was '${result.toString()}', failed = $failed, error message was '${message ?: "<none>"}"
+        return "result was '$result', failed = $failed, error message was '${message ?: "<none>"}"
     }
 
     fun <TargetType> mapNonNullResult(
@@ -72,7 +74,7 @@ class Result<Type>(
     }
 
     fun <TargetType> mapResult(
-            block: (result: Type?) -> TargetType?,
+        block: (result: Type?) -> TargetType?,
     ): Result<TargetType> {
 
         if (this.failed) {
@@ -104,7 +106,7 @@ class Result<Type>(
     }
 
     fun mapSuccessNonNullBoolean(
-            block: (result: Type) -> Boolean,
+        block: (result: Type) -> Boolean,
     ): Boolean {
 
         if (this.failed) {
@@ -114,8 +116,7 @@ class Result<Type>(
         return block(result!!)
     }
 
-    fun mapSuccessBoolean(
-    ): Boolean {
+    fun mapSuccessBoolean(): Boolean {
 
         if (this.failed) {
             return false
@@ -123,5 +124,4 @@ class Result<Type>(
 
         return true
     }
-
 }

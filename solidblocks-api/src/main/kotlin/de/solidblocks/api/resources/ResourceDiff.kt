@@ -3,8 +3,7 @@ package de.solidblocks.api.resources
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.core.logName
 
-
-    class ResourceDiff(
+class ResourceDiff(
     val resource: IInfrastructureResource<*, *>,
     val missing: Boolean = false,
     private val error: Boolean = false,

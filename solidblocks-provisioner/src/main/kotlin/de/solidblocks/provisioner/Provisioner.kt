@@ -5,29 +5,23 @@ import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.api.resources.allChangedOrMissingResources
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
-import de.solidblocks.api.resources.infrastructure.compute.Server
-import de.solidblocks.api.resources.infrastructure.compute.Volume
-import de.solidblocks.api.resources.infrastructure.network.FloatingIp
-import de.solidblocks.api.resources.infrastructure.network.FloatingIpAssignment
-import de.solidblocks.api.resources.infrastructure.network.Network
-import de.solidblocks.api.resources.infrastructure.ssh.SshKey
-import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.core.IResource
-import de.solidblocks.core.IResourceLookup
-import de.solidblocks.core.Result
-import de.solidblocks.core.getAllInfraParents
-import de.solidblocks.core.getInfraParents
-import de.solidblocks.core.logName
+import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
+import de.solidblocks.base.ProvisionerRegistry
+import de.solidblocks.core.*
+import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIp
+import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIpAssignment
+import de.solidblocks.provisioner.hetzner.cloud.network.Network
+import de.solidblocks.provisioner.hetzner.cloud.server.Server
+import de.solidblocks.provisioner.hetzner.cloud.ssh.SshKey
+import de.solidblocks.provisioner.hetzner.cloud.volume.Volume
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.github.resilience4j.retry.RetryRegistry
 import mu.KotlinLogging
-import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.function.Supplier
 
-@Component
-class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
+class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : InfrastructureProvisioner {
 
     private val logger = KotlinLogging.logger {}
 
@@ -47,7 +41,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
         }
     }
 
-    fun <LookupType : IResourceLookup<RuntimeType>, RuntimeType> lookup(resource: LookupType): Result<RuntimeType> =
+    override fun <LookupType : IResourceLookup<RuntimeType>, RuntimeType> lookup(resource: LookupType): Result<RuntimeType> =
         try {
             this.provisionerRegistry.datasource(resource).lookup(resource)
         } catch (e: Exception) {
@@ -73,7 +67,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
             val diffs = diffForResourceGroup(resourceGroup, allLayerDiffs) ?: return false
             logger.info {
                 "resource group '${resourceGroup.name}', changed resources: ${
-                    diffs.filter { it.hasChanges() }.joinToString(", ") { it.resource.id() }
+                diffs.filter { it.hasChanges() }.joinToString(", ") { it.toString() }
                 }, missing resources: ${diffs.filter { it.isMissing() }.joinToString(", ") { it.resource.id() }}"
             }
 
@@ -139,8 +133,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
     }
 
     private fun diffForResourceGroup(
-            resourceGroup: ResourceGroup,
-            allLayerDiffs: Map<ResourceGroup, List<ResourceDiff>>
+        resourceGroup: ResourceGroup,
+        allLayerDiffs: Map<ResourceGroup, List<ResourceDiff>>
     ): List<ResourceDiff>? {
         logger.info { "creating diff for resource group '${resourceGroup.name}'" }
 
@@ -157,9 +151,9 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 if (missingOrChangedParents.isNotEmpty()) {
                     logger.info {
                         "skipping healthcheck for ${resourcesWithHealthCheck.id()} the following dependencies were missing or changed: ${
-                            missingOrChangedParents.joinToString(
-                                    ", "
-                            ) { it.id() }
+                        missingOrChangedParents.joinToString(
+                            ", "
+                        ) { it.id() }
                         } "
                     }
 
@@ -169,43 +163,42 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) {
                 logger.info { "running healthcheck for '${resourcesWithHealthCheck.id()}" }
 
                 val decorateFunction: Supplier<Boolean> =
-                        Retry.decorateSupplier(retryRegistry.retry("healthcheck")) {
-                            resourcesWithHealthCheck.getHealthCheck()!!.invoke()
-                        }
+                    Retry.decorateSupplier(retryRegistry.retry("healthcheck")) {
+                        resourcesWithHealthCheck.getHealthCheck()!!.invoke()
+                    }
 
                 val result = decorateFunction.get()
                 if (!result) {
                     logger.error { "healthcheck for ${resourcesWithHealthCheck.id()} failed" }
                     return null
                 }
-
             }
         }
 
-        val resources = resourceGroup.hierarchicalResourceList()
+        val resources = resourceGroup.hierarchicalResourceList().toSet()
         val result = mutableListOf<ResourceDiff>()
 
         for (resource in resources) {
             val allInfraParents = resource.getAllInfraParents()
-            val missingOrChangedParents = allInfraParents.filter { changedOrMissingResources.contains(it) }
+            val missingOrChangedParents = allInfraParents.filter { changedOrMissingResources.contains(it) } + result.filter { it.hasChangesOrMissing() }.map { it.resource }
 
             if (missingOrChangedParents.isNotEmpty()) {
                 logger.info {
                     "skipping diff for ${resource.id()} the following dependencies were missing or changed: ${
-                        missingOrChangedParents.joinToString(
-                                ", "
-                        ) { it.id() }
+                    missingOrChangedParents.joinToString(
+                        ", "
+                    ) { it.id() }
                     } "
                 }
                 continue
             }
 
             try {
-                logger.info { "creating diff for resource '${resource.id()}'" }
+                logger.info { "creating diff for ${resource.logName()}" }
                 val diff = this.provisionerRegistry.provisioner<IResource, Any>(resource).diff(resource)
 
-                if (diff.isEmptyOrFailed()) {
-                    logger.info { "diff empty or failed for ${resource.logName()}" }
+                if (diff.failed) {
+                    logger.info { "diff failed for ${resource.logName()}" }
                     return null
                 }
 

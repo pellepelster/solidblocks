@@ -8,10 +8,8 @@ import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvis
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import mu.KotlinLogging
-import org.springframework.stereotype.Component
 
-@Component
-class ConsulPolicyProvisioner(val consulClient: Consul) :
+class ConsulPolicyProvisioner(val consul: Consul) :
     IResourceLookupProvider<IConsulPolicyLookup, ConsulPolicyRuntime>,
     IInfrastructureResourceProvisioner<ConsulPolicy, ConsulPolicyRuntime> {
 
@@ -26,14 +24,20 @@ class ConsulPolicyProvisioner(val consulClient: Consul) :
     }
 
     override fun apply(resource: ConsulPolicy): Result<*> {
+
+        val currentPolicy = lookup(resource)
+        if (!currentPolicy.isEmpty()) {
+            return Result<Any>(failed = false)
+        }
+
         val policy = ImmutablePolicy.builder().name(resource.id).rules(resource.rules)
-        consulClient.aclClient().createPolicy(policy.build())
+        consul.aclClient().createPolicy(policy.build())
 
         return Result<ConsulPolicy>(failed = false)
     }
 
     override fun diff(resource: ConsulPolicy): Result<ResourceDiff> {
-        val policies = consulClient.aclClient().listPolicies()
+        val policies = consul.aclClient().listPolicies()
 
         val policy = policies.firstOrNull { it.name() == resource.id }
             ?: return Result(
@@ -49,6 +53,13 @@ class ConsulPolicyProvisioner(val consulClient: Consul) :
     }
 
     override fun lookup(lookup: IConsulPolicyLookup): Result<ConsulPolicyRuntime> {
-        TODO("Not yet implemented")
+        val policies = consul.aclClient().listPolicies()
+
+        val policy = policies.firstOrNull { it.name() == lookup.id() }
+        if (policy == null) {
+            return Result(failed = false)
+        }
+
+        return Result(ConsulPolicyRuntime(policy.id()))
     }
 }

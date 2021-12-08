@@ -5,14 +5,11 @@ import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
-import de.solidblocks.provisioner.Provisioner
-import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import mu.KotlinLogging
-import org.springframework.stereotype.Component
+import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.Policy
 
-@Component
-class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
+class VaultPolicyProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
     IResourceLookupProvider<IVaultPolicyLookup, VaultPolicyRuntime>,
     IInfrastructureResourceProvisioner<VaultPolicy, VaultPolicyRuntime> {
 
@@ -41,16 +38,16 @@ class VaultPolicyProvisioner(val vaultClientProvider: VaultRootClientProvider, v
     }
 
     override fun apply(resource: VaultPolicy): Result<*> {
-        val vaultClient = vaultClientProvider.createClient()
-        vaultClient.opsForSys().createOrUpdatePolicy(resource.id, Policy.of(resource.rules))
+        val vaultTemplate = vaultTemplateProvider.invoke()
+
+        vaultTemplate.opsForSys().createOrUpdatePolicy(resource.id, Policy.of(resource.rules))
         return Result<Any>(resource)
     }
 
     override fun lookup(lookup: IVaultPolicyLookup): Result<VaultPolicyRuntime> {
-        val vaultClient = vaultClientProvider.createClient()
-
         return try {
-            val policy = vaultClient.opsForSys().getPolicy(lookup.id())
+            val vaultTemplate = vaultTemplateProvider.invoke()
+            val policy = vaultTemplate.opsForSys().getPolicy(lookup.id())
 
             if (null == policy) {
                 Result()

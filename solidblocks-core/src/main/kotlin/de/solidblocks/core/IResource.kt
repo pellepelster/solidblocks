@@ -9,7 +9,6 @@ fun IResource.getInfraParents(): List<IInfrastructureResource<*, *>> {
     return this.getParents().filterIsInstance<IInfrastructureResource<*, *>>()
 }
 
-
 fun IResource.getAllInfraParents(): List<IInfrastructureResource<*, *>> = getParentsInternal(this).filterIsInstance<IInfrastructureResource<*, *>>()
 
 private fun getParentsInternal(resource: IResource): List<IResource> {
@@ -23,8 +22,6 @@ private fun getParentsInternal(resource: IResource, parents: MutableList<IResour
     parents.add(resource)
     resource.getParents().forEach { getParentsInternal(it, parents) }
 }
-
-
 
 interface IResource {
 

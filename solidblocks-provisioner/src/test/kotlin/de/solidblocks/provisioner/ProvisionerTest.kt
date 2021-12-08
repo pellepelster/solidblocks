@@ -1,26 +1,27 @@
 package de.solidblocks.provisioner
 
-import de.solidblocks.provisioner.fixtures.TestConfiguration
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
+import de.solidblocks.base.ProvisionerRegistry
+import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.fixtures.TestResource
 import de.solidblocks.provisioner.fixtures.TestResourceProvisioner
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import java.util.*
 
-@SpringBootTest(classes = [TestConfiguration::class])
-class ProvisionerTest(
-    @Autowired
-    val provisioner: Provisioner,
-
-    @Autowired
-    val testResourceProvisioner: TestResourceProvisioner
-) {
+class ProvisionerTest {
 
     @Test
     fun handlesFailingResourceLookups() {
+
+        val testResourceProvisioner = TestResourceProvisioner()
+
+        val provisionerRegistry = ProvisionerRegistry()
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+        provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        val provisioner = Provisioner(provisionerRegistry)
 
         val resource = TestResource(UUID.randomUUID())
 
@@ -28,14 +29,21 @@ class ProvisionerTest(
         provisioner.clear()
         testResourceProvisioner.failOnLookup(resource)
 
-        val result = provisioner.lookup<TestResource, String>(resource)
+        val result = provisioner.lookup(resource)
 
-        assertTrue(result.isEmptyOrFailed())
-        assertTrue(testResourceProvisioner.lookupCount(resource) == 1)
+        assertThat(result.isEmptyOrFailed()).isTrue
+        assertThat(testResourceProvisioner.lookupCount(resource)).isEqualTo(1)
     }
 
     @Test
     fun resourcesAreAppliedWhenParentChanges() {
+        val testResourceProvisioner = TestResourceProvisioner()
+
+        val provisionerRegistry = ProvisionerRegistry()
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+        provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        val provisioner = Provisioner(provisionerRegistry)
 
         val resource1 = TestResource(UUID.randomUUID())
         val resource2 = TestResource(UUID.randomUUID(), listOf(resource1))
@@ -48,13 +56,19 @@ class ProvisionerTest(
         layer.addResource(resource1)
         layer.addResource(resource2)
 
-        assertTrue(provisioner.apply())
-
-        assertTrue(testResourceProvisioner.applyCount(resource2) == 1)
+        assertThat(provisioner.apply()).isTrue
+        assertThat(testResourceProvisioner.applyCount(resource2)).isEqualTo(1)
     }
 
     @Test
     fun diffIsOmittedWhenParentsAreMissing() {
+        val testResourceProvisioner = TestResourceProvisioner()
+
+        val provisionerRegistry = ProvisionerRegistry()
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+        provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        val provisioner = Provisioner(provisionerRegistry)
 
         val resource1 = TestResource(UUID.randomUUID())
         val resource2 = TestResource(UUID.randomUUID(), listOf(resource1))
@@ -67,13 +81,19 @@ class ProvisionerTest(
         layer.addResource(resource1)
         layer.addResource(resource2)
 
-        assertTrue(provisioner.apply())
-
-        assertTrue(testResourceProvisioner.diffCount(resource2) == 0)
+        assertThat(provisioner.apply()).isTrue
+        assertThat(testResourceProvisioner.diffCount(resource2)).isEqualTo(0)
     }
 
     @Test
     fun handlesFailingResourceDiffs() {
+        val testResourceProvisioner = TestResourceProvisioner()
+
+        val provisionerRegistry = ProvisionerRegistry()
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+        provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        val provisioner = Provisioner(provisionerRegistry)
 
         val resource = TestResource(UUID.randomUUID())
 
@@ -85,12 +105,19 @@ class ProvisionerTest(
 
         val result = provisioner.apply()
 
-        assertFalse(result)
-        assertTrue(testResourceProvisioner.diffCount(resource) == 1)
+        assertThat(result).isFalse
+        assertThat(testResourceProvisioner.diffCount(resource)).isEqualTo(1)
     }
 
     @Test
     fun handlesFailingResourceApply() {
+        val testResourceProvisioner = TestResourceProvisioner()
+
+        val provisionerRegistry = ProvisionerRegistry()
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+        provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        val provisioner = Provisioner(provisionerRegistry)
 
         val resource = TestResource(UUID.randomUUID())
 
@@ -103,7 +130,7 @@ class ProvisionerTest(
 
         val result = provisioner.apply()
 
-        assertFalse(result)
-        assertTrue(testResourceProvisioner.applyCount(resource) == 1)
+        assertThat(result).isFalse
+        assertThat(testResourceProvisioner.applyCount(resource)).isEqualTo(1)
     }
 }

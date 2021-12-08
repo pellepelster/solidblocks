@@ -1,3 +1,3 @@
 package de.solidblocks.provisioner.consul.policy
 
-data class ConsulPolicyRuntime(val data: Map<String, Any>)
+data class ConsulPolicyRuntime(val id: String)

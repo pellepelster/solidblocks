@@ -15,7 +15,6 @@ fun Map<ResourceGroup, List<ResourceDiff>>.allChangedOrMissingDiffs() = this.all
 
 fun Map<ResourceGroup, List<ResourceDiff>>.allChangedOrMissingResources() = this.allChangedOrMissingDiffs().map { it.resource }
 
-
 data class ResourceGroup(val name: String, val dependsOn: Set<ResourceGroup> = emptySet(), val resources: ArrayList<IInfrastructureResource<*, *>> = ArrayList()) {
 
     fun <T : IInfrastructureResource<*, *>> addResource(resource: T): T {
@@ -57,8 +56,8 @@ data class ResourceGroup(val name: String, val dependsOn: Set<ResourceGroup> = e
     }
 
     private fun flattenModels(
-            allModels: ArrayList<IInfrastructureResource<*, *>>,
-            models: List<IInfrastructureResource<*, *>>
+        allModels: ArrayList<IInfrastructureResource<*, *>>,
+        models: List<IInfrastructureResource<*, *>>
     ) {
         models.forEach { model ->
             if (!allModels.contains(model)) {

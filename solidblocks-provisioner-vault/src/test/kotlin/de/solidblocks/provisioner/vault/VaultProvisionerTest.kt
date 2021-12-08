@@ -1,5 +1,7 @@
 package de.solidblocks.provisioner.vault
 
+import de.solidblocks.cloud.config.CloudConfigurationManager
+import de.solidblocks.cloud.config.SolidblocksDatabase
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.kv.VaultKVProvisioner
 import de.solidblocks.provisioner.vault.mount.VaultMount
@@ -8,21 +10,15 @@ import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRoleProvisioner
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
 import de.solidblocks.provisioner.vault.policy.VaultPolicyProvisioner
+import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleProvisioner
+import junit.framework.Assert.assertFalse
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.Is
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
-import org.springframework.test.context.junit.jupiter.SpringExtension
+import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.Policy
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.junit.jupiter.Container
@@ -30,28 +26,13 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
 import java.util.*
 
-@ExtendWith(SpringExtension::class)
-@ContextConfiguration(classes = [TestApplicationContext::class, LiquibaseAutoConfiguration::class])
-@AutoConfigureTestDatabase
 @Testcontainers
-open class VaultProvisionerTest(
-    @Autowired
-    val mountProvisioner: VaultMountProvisioner,
-
-    @Autowired
-    val roleProvisioner: VaultPkiBackendRoleProvisioner,
-
-    @Autowired
-    val sshBackendRoleProvisioner: VaultSshBackendRoleProvisioner,
-
-    @Autowired
-    val policyProvisioner: VaultPolicyProvisioner,
-
-    @Autowired
-    val kvProvisioner: VaultKVProvisioner,
-) {
+class VaultProvisionerTest {
 
     companion object {
+
+        private var vaultClient: VaultTemplate? = null
+
         @Container
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
@@ -60,15 +41,35 @@ open class VaultProvisionerTest(
                     start()
                 }
 
-        @JvmStatic
-        @DynamicPropertySource
-        fun properties(registry: DynamicPropertyRegistry) {
-            registry.add("vault.addr") { "http://localhost:${environment.getServicePort("vault", 8200)}" }
+        private fun vaultAddress() = "http://localhost:${environment.getServicePort("vault", 8200)}"
+
+        fun vaultTemplateProvider(): () -> VaultTemplate {
+
+            if (vaultClient == null) {
+                val db = SolidblocksDatabase("jdbc:derby:memory:myDB;create=true")
+                db.ensureDBSchema()
+
+                val configurationManager = CloudConfigurationManager(db.dsl)
+
+                val cloudName = UUID.randomUUID().toString()
+                val environmentName = UUID.randomUUID().toString()
+
+                configurationManager.createCloud(cloudName, "domain1", emptyList())
+                configurationManager.createEnvironment(cloudName, environmentName)
+
+                vaultClient = VaultRootClientProvider(cloudName, environmentName, configurationManager, vaultAddress()).createClient()
+            }
+
+            return { vaultClient!! }
         }
     }
 
     @Test
     fun testMountDiffAndApply() {
+
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+        val kvProvisioner = VaultKVProvisioner(vaultTemplateProvider())
+
         val mount = VaultMount(UUID.randomUUID().toString(), "kv-v2")
         val result = mountProvisioner.apply(mount)
         assertFalse(result.failed)
@@ -90,6 +91,10 @@ open class VaultProvisionerTest(
 
     @Test
     fun testPkiBackendRoleDiffAndApply() {
+
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+        val roleProvisioner = VaultPkiBackendRoleProvisioner(vaultTemplateProvider())
+
         val mount = VaultMount(UUID.randomUUID().toString(), "pki")
         mountProvisioner.apply(mount)
 
@@ -144,6 +149,9 @@ open class VaultProvisionerTest(
 
     @Test
     fun testDiffAndApplySsh() {
+
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "ssh")
 
         val diffBefore = mountProvisioner.diff(mount)
@@ -157,6 +165,9 @@ open class VaultProvisionerTest(
 
     @Test
     fun testDiffAndApplyKv2() {
+
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "kv-v2")
 
         val diffBefore = mountProvisioner.diff(mount)
@@ -170,6 +181,9 @@ open class VaultProvisionerTest(
 
     @Test
     fun testDiffAndApplyPki() {
+
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+
         val mount = VaultMount("${UUID.randomUUID()}-pki", "pki")
 
         val diffBefore = mountProvisioner.diff(mount)
@@ -183,6 +197,9 @@ open class VaultProvisionerTest(
 
     @Test
     fun testSSHBackendRoleDiffAndApply() {
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+        val sshBackendRoleProvisioner = VaultSshBackendRoleProvisioner(vaultTemplateProvider())
+
         val mount = VaultMount(UUID.randomUUID().toString(), "ssh")
         mountProvisioner.apply(mount)
 
@@ -234,6 +251,9 @@ open class VaultProvisionerTest(
 
     @Test
     fun testPolicyDiffAndApply() {
+
+        val policyProvisioner = VaultPolicyProvisioner(vaultTemplateProvider())
+
         val name = UUID.randomUUID().toString()
         val emptyPolicy = VaultPolicy(name, emptySet())
 

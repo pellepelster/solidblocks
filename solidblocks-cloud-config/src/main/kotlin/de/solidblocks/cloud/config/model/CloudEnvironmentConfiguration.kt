@@ -8,4 +8,6 @@ data class CloudEnvironmentConfiguration(
     val sshSecrets: SshSecrets,
     val configValues: List<CloudConfigValue>,
     val cloud: CloudConfiguration
-)
+) {
+    fun getConfigValue(key: String) = configValues.getConfigValue(key)!!.value
+}

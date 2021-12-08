@@ -3,9 +3,9 @@ package de.solidblocks.cli
 import com.github.ajalt.clikt.core.subcommands
 import de.solidblocks.cli.commands.cloud.CloudCommand
 import de.solidblocks.cli.commands.cloud.CloudCreateCommand
-import de.solidblocks.cli.commands.cloud.CloudListCommand
 import de.solidblocks.cli.commands.environments.EnvironmentBootstrapCommand
 import de.solidblocks.cli.commands.environments.EnvironmentCommand
+import de.solidblocks.cli.commands.environments.EnvironmentConfigCommand
 import de.solidblocks.cli.commands.environments.EnvironmentCreateCommand
 import de.solidblocks.cli.commands.environments.EnvironmentDestroyCommand
 import de.solidblocks.cli.commands.environments.EnvironmentRotateSecretsCommand
@@ -21,11 +21,12 @@ fun main(args: Array<String>) {
     SolidBlocksCli()
         .subcommands(
             CloudCommand().subcommands(
-                CloudListCommand(), CloudCreateCommand()
+                EnvironmentConfigCommand(), CloudCreateCommand()
             ),
 
             EnvironmentCommand().subcommands(
                 EnvironmentCreateCommand(),
+                EnvironmentConfigCommand(),
                 EnvironmentBootstrapCommand(),
                 EnvironmentDestroyCommand(),
                 EnvironmentRotateSecretsCommand(),

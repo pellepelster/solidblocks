@@ -6,23 +6,19 @@ import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvis
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.base.Utils
 import de.solidblocks.core.Result
-import de.solidblocks.provisioner.Provisioner
-import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRole
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRoleDefaultExtensions
 import mu.KotlinLogging
 import org.joda.time.Instant
 import org.joda.time.MutablePeriod
 import org.joda.time.format.PeriodFormatterBuilder
-import org.springframework.stereotype.Component
 import org.springframework.vault.VaultException
 import org.springframework.vault.core.VaultTemplate
 import java.util.*
 import kotlin.reflect.KProperty0
 import kotlin.reflect.KProperty1
 
-@Component
-class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClientProvider, val provisioner: Provisioner) :
+class VaultSshBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
     IResourceLookupProvider<IVaultSshBackendRoleLookup, VaultSshBackendRoleRuntime>,
     IInfrastructureResourceProvisioner<VaultSshBackendRole, VaultSshBackendRoleRuntime> {
 
@@ -151,8 +147,6 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
     }
 
     override fun apply(resource: VaultSshBackendRole): Result<*> {
-        val vaultClient = vaultRootClientProvider.createClient()
-
         val role = SshBackendRole(
             key_type = resource.keyType,
             max_ttl = resource.maxTtl,
@@ -169,11 +163,13 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
             }
         )
 
-        val response = vaultClient.write("${resource.mount.id()}/roles/${resource.id}", role)
+        val vaultTemplate = vaultTemplateProvider.invoke()
 
-        if (!keysExist(vaultClient, resource)) {
+        val response = vaultTemplate.write("${resource.mount.id()}/roles/${resource.id}", role)
+
+        if (!keysExist(vaultTemplate, resource)) {
             val key = Utils.generateSshKey(resource.mount.id())
-            vaultClient.write(
+            vaultTemplate.write(
                 "${resource.mount.id()}/config/ca",
                 mapOf("private_key" to key.first, "public_key" to key.second)
             )
@@ -187,12 +183,12 @@ class VaultSshBackendRoleProvisioner(val vaultRootClientProvider: VaultRootClien
     }
 
     override fun lookup(lookup: IVaultSshBackendRoleLookup): Result<VaultSshBackendRoleRuntime> {
-        val vaultClient = vaultRootClientProvider.createClient()
+        val vaultTemplate = vaultTemplateProvider.invoke()
 
-        val role = vaultClient.read("${lookup.mount().id()}/roles/${lookup.id()}", SshBackendRole::class.java)
-                ?: return Result(null)
+        val role = vaultTemplate.read("${lookup.mount().id()}/roles/${lookup.id()}", SshBackendRole::class.java)
+            ?: return Result(null)
 
-        val keysExist = keysExist(vaultClient, lookup)
+        val keysExist = keysExist(vaultTemplate, lookup)
 
         return Result(VaultSshBackendRoleRuntime(role.data!!, keysExist))
     }

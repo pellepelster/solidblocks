@@ -3,20 +3,13 @@ package de.solidblocks.cloud.config
 import de.solidblocks.cloud.config.model.CloudConfigValue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit.jupiter.SpringExtension
 
-@ExtendWith(SpringExtension::class)
-@ContextConfiguration(classes = [TestApplicationContext::class, LiquibaseAutoConfiguration::class])
-@AutoConfigureTestDatabase
-open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManager: CloudConfigurationManager) {
+open class CloudConfigurationManagerTest {
 
     @Test
     fun testCreateCloud() {
+        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+
         assertThat(cloudConfigurationManager.hasCloud("cloud1")).isFalse
 
         assertThat(
@@ -45,6 +38,8 @@ open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManage
 
     @Test
     fun testCreateAndUpdateEnvironment() {
+        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+
         cloudConfigurationManager.createCloud("cloud3", "domain1")
         cloudConfigurationManager.createEnvironment("cloud3", "env3")
 
@@ -60,6 +55,8 @@ open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManage
 
     @Test
     fun testCreateAndUpdateTenant() {
+        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+
         cloudConfigurationManager.createCloud("cloud4", "domain1")
         cloudConfigurationManager.createEnvironment("cloud4", "env4")
 
@@ -74,6 +71,8 @@ open class CloudConfigurationManagerTest(@Autowired val cloudConfigurationManage
 
     @Test
     fun testRegenerateCloudSecrets() {
+        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+
         assertThat(cloudConfigurationManager.createCloud("cloud2", "domain2")).isTrue
         cloudConfigurationManager.createEnvironment("cloud2", "env2")
 

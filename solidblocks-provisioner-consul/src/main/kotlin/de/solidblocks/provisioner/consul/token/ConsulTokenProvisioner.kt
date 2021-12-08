@@ -1,6 +1,7 @@
 package de.solidblocks.provisioner.consul.token
 
 import com.orbitz.consul.Consul
+import com.orbitz.consul.ConsulException
 import com.orbitz.consul.model.acl.ImmutablePolicyLink
 import com.orbitz.consul.model.acl.ImmutableToken
 import de.solidblocks.api.resources.ResourceDiff
@@ -8,11 +9,9 @@ import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvis
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import mu.KotlinLogging
-import org.springframework.stereotype.Component
 import java.util.*
 
-@Component
-class ConsulTokenProvisioner(val consulClient: Consul) :
+class ConsulTokenProvisioner(val consul: Consul) :
     IResourceLookupProvider<IConsulTokenLookup, ConsulTokenRuntime>,
     IInfrastructureResourceProvisioner<ConsulToken, ConsulTokenRuntime> {
 
@@ -27,9 +26,16 @@ class ConsulTokenProvisioner(val consulClient: Consul) :
     }
 
     override fun apply(resource: ConsulToken): Result<*> {
+
+        val currentToken = lookup(resource)
+
+        if (!currentToken.isEmpty()) {
+            return Result<Any>(failed = false)
+        }
+
         val policies = resource.policies.map { ImmutablePolicyLink.builder().name(it.id).build() }
         val token = ImmutableToken.builder().addAllPolicies(policies).description(resource.description).id(resource.id.toString())
-        consulClient.aclClient().createToken(token.build())
+        consul.aclClient().createToken(token.build())
 
         return Result<ConsulToken>(failed = false)
     }
@@ -42,7 +48,13 @@ class ConsulTokenProvisioner(val consulClient: Consul) :
     }
 
     override fun lookup(lookup: IConsulTokenLookup): Result<ConsulTokenRuntime> {
-        val token = consulClient.aclClient().readToken(lookup.id().toString()) ?: return Result.emptyResult()
-        return Result.resultOf(ConsulTokenRuntime(UUID.fromString(token.accessorId())))
+        try {
+            val token = consul.aclClient().readToken(lookup.id())
+                ?: return Result.emptyResult()
+            return Result.resultOf(ConsulTokenRuntime(UUID.fromString(token.accessorId()), token.secretId()))
+        } catch (e: ConsulException) {
+        }
+
+        return Result.failedResult()
     }
 }

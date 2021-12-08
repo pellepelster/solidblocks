@@ -2,8 +2,8 @@
 # consul.sh                           #
 #######################################
 
-CONSUL_CHECKSUM="78d127e5b8edd310c3f9f89487fb833a5c7bcb4e09cb731a4d39100fc53b38be"
-CONSUL_URL="https://releases.hashicorp.com/consul/1.6.2/consul_1.6.2_linux_amd64.zip"
+CONSUL_CHECKSUM="2be6414cdce1540c022acda76da55ef6bbd51c537dc2e3d4020652e72daec62d"
+CONSUL_URL="https://releases.hashicorp.com/consul/1.10.4/consul_1.10.4_linux_amd64.zip"
 CONSUL_BACKUP_DIR="${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/consul/snapshots"
 CONSUL_DATA_DIR="${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/consul/data"
 

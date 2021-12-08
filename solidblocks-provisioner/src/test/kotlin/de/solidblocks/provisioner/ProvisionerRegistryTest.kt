@@ -1,27 +1,27 @@
 package de.solidblocks.provisioner
 
-import de.solidblocks.provisioner.fixtures.TestConfiguration
+import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
+import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
+import de.solidblocks.base.ProvisionerRegistry
+import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.fixtures.TestResource
 import de.solidblocks.provisioner.fixtures.TestResourceProvisioner
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 
-@SpringBootTest(classes = [TestConfiguration::class])
 class ProvisionerRegistryTest {
-
-    @Autowired
-    private lateinit var provisionerRegistry: ProvisionerRegistry
-
-    @Autowired
-    private lateinit var testResourceProvisioner: TestResourceProvisioner
 
     @Test
     fun testSupportsResource() {
-        assertTrue(provisionerRegistry.supportsResource(TestResource::class))
-        assertFalse(provisionerRegistry.supportsResource(String::class))
+        val testResourceProvisioner = TestResourceProvisioner()
+        val provisionerRegistry = ProvisionerRegistry()
+
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+
+        setOf(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        assertThat(provisionerRegistry.supportsResource(TestResource::class)).isTrue
+        assertThat(provisionerRegistry.supportsResource(String::class)).isFalse
     }
 
     @Test

@@ -2,37 +2,21 @@ package de.solidblocks.provisioner.vault
 
 import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
+import de.solidblocks.cloud.config.SolidblocksDatabase
 import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
+import java.util.*
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
-@ExtendWith(SpringExtension::class)
-@ContextConfiguration(classes = [TestApplicationContext::class, LiquibaseAutoConfiguration::class])
-@AutoConfigureTestDatabase
 @Testcontainers
-class VaultRootClientProviderTest(
-    @Autowired
-    val cloudConfigurationManager: CloudConfigurationManager,
-    @Autowired
-    val configurationContext: CloudConfigurationContext,
-    @Autowired
-    val provider: VaultRootClientProvider
-) {
+class VaultRootClientProviderTest {
 
     companion object {
         @Container
@@ -43,19 +27,30 @@ class VaultRootClientProviderTest(
                     start()
                 }
 
-        @JvmStatic
-        @DynamicPropertySource
-        fun properties(registry: DynamicPropertyRegistry) {
-            registry.add("vault.addr") { "http://localhost:${environment.getServicePort("vault", 8200)}" }
-        }
+        fun vaultAddress() = "http://localhost:${environment.getServicePort("vault", 8200)}"
     }
 
     @Test
     fun testInitAndUnseal() {
-        val environmentBefore = cloudConfigurationManager.environmentByName(
-            configurationContext.cloudName,
-            configurationContext.environmentName
+
+        val db = SolidblocksDatabase("jdbc:derby:memory:myDB;create=true")
+        db.ensureDBSchema()
+
+        val configurationManager = CloudConfigurationManager(db.dsl)
+
+        val cloudName = UUID.randomUUID().toString()
+        val environmentName = UUID.randomUUID().toString()
+
+        configurationManager.createCloud(cloudName, "domain1", emptyList())
+        configurationManager.createEnvironment(cloudName, environmentName)
+
+        val cloudConfigurationContext = CloudConfigurationContext(
+            configurationManager.environmentByName(cloudName, environmentName)!!
         )
+
+        val provider = VaultRootClientProvider(cloudName, environmentName, configurationManager, vaultAddress())
+
+        val environmentBefore = configurationManager.environmentByName(cloudName, environmentName)
         assertTrue(environmentBefore!!.configValues.none { it.name == "vault-unseal-key-0" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-1" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-2" })
@@ -63,10 +58,7 @@ class VaultRootClientProviderTest(
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-4" })
 
         val vaultClient = provider.createClient()
-        val environment = cloudConfigurationManager.environmentByName(
-            configurationContext.cloudName,
-            configurationContext.environmentName
-        )
+        val environment = configurationManager.environmentByName(cloudName, environmentName)
 
         assertTrue(environment!!.configValues.any { it.name == "vault-unseal-key-0" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-1" })

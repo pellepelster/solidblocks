@@ -16,5 +16,4 @@ class ResourceGroupTest {
         assertThat(resourceList[0].id()).isEqualTo("resource2")
         assertThat(resourceList[1].id()).isEqualTo("resource1")
     }
-
 }

@@ -1,49 +1,66 @@
 package de.solidblocks.provisioner.utils
 
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
-import de.solidblocks.api.resources.infrastructure.compute.UserDataDataSource
+import de.solidblocks.core.IResourceLookup
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.Provisioner
+import de.solidblocks.provisioner.hetzner.cloud.server.UserData
+import de.solidblocks.provisioner.hetzner.cloud.server.UserDataRuntime
 import freemarker.template.Configuration
 import freemarker.template.Configuration.SQUARE_BRACKET_INTERPOLATION_SYNTAX
 import freemarker.template.TemplateExceptionHandler
-import org.springframework.stereotype.Component
 import java.io.StringWriter
 
-@Component
-class UserDataResourceLookupProvider(val provisioner: Provisioner) : IResourceLookupProvider<UserDataDataSource, String> {
+class UserDataResourceLookupProvider(val provisioner: Provisioner) : IResourceLookupProvider<UserData, UserDataRuntime> {
 
-    override fun lookup(datasource: UserDataDataSource): Result<String> {
+    val cfg = Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS)
 
-        val cfg = Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS)
-
+    init {
         cfg.setClassForTemplateLoading(this::class.java, "/")
         cfg.interpolationSyntax = SQUARE_BRACKET_INTERPOLATION_SYNTAX
         cfg.templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
+    }
 
-        val input = HashMap<String, String>()
+    override fun lookup(userData: UserData): Result<UserDataRuntime> {
 
-        val lookups = datasource.variables.map {
+        val staticInput = resolveVariables(userData.staticVariables)
+        val ephemeraInput = resolveVariables(userData.ephemeralVariables)
+
+        if (staticInput == null || ephemeraInput == null) {
+            return Result.failedResult()
+        }
+
+        val staticUserData = StringWriter().let {
+            val template = cfg.getTemplate(userData.resourceFile)
+            template.process(staticInput + userData.ephemeralVariables.map { it.key to "static" }.toMap(), it)
+            it.toString()
+        }
+
+        val ephemeraUserData = StringWriter().let {
+            val template = cfg.getTemplate(userData.resourceFile)
+            template.process(staticInput + ephemeraInput, it)
+            it.toString()
+        }
+
+        return Result(UserDataRuntime(staticUserData, ephemeraUserData))
+    }
+
+    override fun getLookupType(): Class<UserData> {
+        return UserData::class.java
+    }
+
+    private fun resolveVariables(variables: HashMap<String, IResourceLookup<String>>): Map<String, String>? {
+
+        val lookups = variables.map {
             it.key to provisioner.lookup(it.value)
         }
 
         if (lookups.any { it.second.isEmptyOrFailed() }) {
-            return Result(failed = true)
+            return null
         }
 
-        lookups.forEach {
-            input[it.first] = it.second.result!!
+        return lookups.associate { (key, value) ->
+            key to value.result!!
         }
-
-        val template = cfg.getTemplate(datasource.resourceFile)
-
-        val sw = StringWriter()
-        template.process(input, sw)
-
-        return Result(sw.toString())
-    }
-
-    override fun getLookupType(): Class<UserDataDataSource> {
-        return UserDataDataSource::class.java
     }
 }

@@ -7,17 +7,19 @@ import de.solidblocks.cloud.config.model.TenantConfiguration
 
 object Contants {
 
-    fun pkiMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-pki"
+    fun cloudId(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}"
 
-    fun kvMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-kv"
+    fun pkiMountName(environment: CloudEnvironmentConfiguration) = "${cloudId(environment)}-pki"
 
-    fun hostSshMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-host-ssh"
+    fun kvMountName(environment: CloudEnvironmentConfiguration) = "${cloudId(environment)}-kv"
 
-    fun userSshMountName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}-user-ssh"
+    fun hostSshMountName(environment: CloudEnvironmentConfiguration) = "${cloudId(environment)}-host-ssh"
 
-    fun networkName(environment: CloudEnvironmentConfiguration) = "${environment.cloud.name}-${environment.name}"
+    fun userSshMountName(environment: CloudEnvironmentConfiguration) = "${cloudId(environment)}-user-ssh"
 
-    fun networkName(tenant: TenantConfiguration) = "${tenant.environment.cloud.name}-${tenant.environment.name}-${tenant.name}"
+    fun networkName(environment: CloudEnvironmentConfiguration) = cloudId(environment)
+
+    fun networkName(tenant: TenantConfiguration) = "${tenant.environment.cloud.name}-${cloudId(tenant.environment)}"
 
     fun defaultLabels(role: Role) = mapOf("$LABEL_PREFIX/role" to role.toString())
 

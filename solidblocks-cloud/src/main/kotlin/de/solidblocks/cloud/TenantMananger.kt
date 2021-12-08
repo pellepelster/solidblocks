@@ -1,19 +1,17 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.api.resources.infrastructure.network.Network
-import de.solidblocks.api.resources.infrastructure.network.Subnet
-import de.solidblocks.api.resources.infrastructure.ssh.SshKey
 import de.solidblocks.cloud.Contants.networkName
 import de.solidblocks.cloud.NetworkUtils.nextNetwork
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.model.TenantConfiguration
 import de.solidblocks.provisioner.Provisioner
+import de.solidblocks.provisioner.hetzner.cloud.network.Network
+import de.solidblocks.provisioner.hetzner.cloud.network.Subnet
+import de.solidblocks.provisioner.hetzner.cloud.ssh.SshKey
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import mu.KotlinLogging
-import org.springframework.stereotype.Component
 
-@Component
 class TenantMananger(
     val provisioner: Provisioner,
     val cloudConfigurationManager: CloudConfigurationManager,

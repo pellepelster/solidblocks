@@ -1,7 +1,5 @@
 package de.solidblocks.cloud.config
 
-import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
-
 class Constants {
     class ConfigKeys {
         companion object {
@@ -21,16 +19,6 @@ class Constants {
 
             const val SSH_IDENTITY_PUBLIC_KEY = "ssh_identity_public_key"
             const val SSH_IDENTITY_PRIVATE_KEY = "ssh_identity_private_key"
-        }
-    }
-
-    class Vault {
-        companion object {
-            val CONTROLLER_POLICY_NAME = "controller"
-            val BACKUP_POLICY_NAME = "backup"
-
-            fun vaultAddress(environment: CloudEnvironmentConfiguration) =
-                "https://vault.${environment.name}.${environment.cloud.rootDomain}:8200"
         }
     }
 }
