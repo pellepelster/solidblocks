@@ -26,5 +26,5 @@ class VaultSshBackendRole(
         return this.id
     }
 
-    override fun getParents() = listOf(mount)
+    override fun getParents() = setOf(mount)
 }

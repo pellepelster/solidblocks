@@ -149,28 +149,29 @@ class CloudMananger(
             controllerGroup, environment, rootZone
         )
 
-        controllerGroup.addResource(object : DnsRecord(
+        val consulDns = object : DnsRecord(
             id = "consul.${environment.name}",
             floatingIp = controllerFLoatingIp,
             dnsZone = rootZone
         ) {
-                override fun getHealthCheck(): () -> Boolean {
-                    return health@{
-                        val url = "http://${this.id}.${dnsZone.id()}:8500"
-                        try {
-                            URL(url).readText()
-                            logger.info { "url '$url' is healthy" }
-                            return@health true
-                        } catch (e: Exception) {
-                            logger.warn { "url '$url' is unhealthy" }
-                            return@health false
-                        }
+            override fun getHealthCheck(): () -> Boolean {
+                return health@{
+                    val url = "http://${this.id}.${dnsZone.id()}:8500"
+                    try {
+                        URL(url).readText()
+                        logger.info { "url '$url' is healthy" }
+                        return@health true
+                    } catch (e: Exception) {
+                        logger.warn { "url '$url' is unhealthy" }
+                        return@health false
                     }
                 }
-            })
+            }
+        }
+        controllerGroup.addResource(consulDns)
 
         val controllerConfigGroup = provisioner.createResourceGroup("controllerConfig", dependsOn = setOf(controllerGroup))
-        controllerConfigGroup.addResource(ConsulKv("solidblocks/clouds/${cloudId(environment)}"))
+        controllerConfigGroup.addResource(ConsulKv("solidblocks/clouds/${cloudId(environment)}", dependsOn = setOf(consulDns)))
 
         val backupResourceGroup = provisioner.createResourceGroup("backup", setOf(controllerConfigGroup))
 
@@ -178,7 +179,7 @@ class CloudMananger(
         backupResourceGroup.addResource(acl)
 
         val backupTokenId = UUID.randomUUID()
-        val backupToken = ConsulToken(backupTokenId, "backup", listOf(acl))
+        val backupToken = ConsulToken(backupTokenId, "backup", setOf(acl))
         backupResourceGroup.addResource(backupToken)
 
         createDefaultServer(

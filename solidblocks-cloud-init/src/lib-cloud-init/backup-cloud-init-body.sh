@@ -1,5 +1,6 @@
 
 configure_public_ip
+mount_storage
 
 package_update
 package_check_and_install "jq"
@@ -27,6 +28,9 @@ certbot certonly \
     --expand \
     --config-dir ${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/${SOLIDBLOCKS_HOSTNAME}/certbot \
     --domain ${SOLIDBLOCKS_HOSTNAME}.${SOLIDBLOCKS_ENVIRONMENT}.${SOLIDBLOCKS_ROOT_DOMAIN}
+
+chgrp -R solidblocks "${SOLIDBLOCKS_STORAGE_LOCAL_DIR}/${SOLIDBLOCKS_HOSTNAME}/certbot"
+
 EOF
 }
 

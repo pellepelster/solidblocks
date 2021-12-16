@@ -25,7 +25,7 @@ private fun getParentsInternal(resource: IResource, parents: MutableList<IResour
 
 interface IResource {
 
-    fun getParents(): List<IResource> = emptyList()
+    fun getParents(): Set<IResource> = emptySet()
 
     fun id(): String
 }

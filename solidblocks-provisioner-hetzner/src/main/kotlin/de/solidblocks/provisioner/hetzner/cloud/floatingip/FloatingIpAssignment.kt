@@ -7,7 +7,7 @@ data class FloatingIpAssignment(val server: IServerLookup, val floatingIp: IFloa
     IFloatingIpAssignmentLookup,
     IInfrastructureResource<FloatingIpAssignment, FloatingIpAssignmentRuntime> {
 
-    override fun getParents() = listOf(server, floatingIp)
+    override fun getParents() = setOf(server, floatingIp)
 
     override fun floatingIp(): IFloatingIpLookup {
         return floatingIp

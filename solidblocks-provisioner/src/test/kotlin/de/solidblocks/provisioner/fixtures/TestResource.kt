@@ -3,11 +3,11 @@ package de.solidblocks.provisioner.fixtures
 import de.solidblocks.core.IInfrastructureResource
 import java.util.*
 
-class TestResource(val id: String, private val parents: List<TestResource> = emptyList()) :
+class TestResource(val id: String, private val parents: Set<TestResource> = emptySet()) :
     ITestResourceLookup,
     IInfrastructureResource<String, String> {
 
-    constructor(uuid: UUID, parents: List<TestResource> = emptyList()) : this(uuid.toString(), parents)
+    constructor(uuid: UUID, parents: Set<TestResource> = emptySet()) : this(uuid.toString(), parents)
 
     override fun getParents() = parents
 

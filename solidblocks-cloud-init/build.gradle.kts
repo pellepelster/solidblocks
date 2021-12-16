@@ -55,6 +55,7 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
                 "lib/package.sh",
                 "lib/network.sh",
                 "lib/vault.sh",
+                "lib/storage.sh",
                 "lib-cloud-init/controller-cloud-init-body.sh"
             )
         )
@@ -69,6 +70,7 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
                 "lib/package.sh",
                 "lib/network.sh",
                 "lib/vault.sh",
+                "lib/storage.sh",
                 "lib-cloud-init/backup-cloud-init-body.sh"
             )
         )

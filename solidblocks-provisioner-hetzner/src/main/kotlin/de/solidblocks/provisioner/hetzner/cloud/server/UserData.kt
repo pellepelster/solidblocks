@@ -12,7 +12,7 @@ class UserData(val resourceFile: String, val staticVariables: HashMap<String, IR
         return resourceFile
     }
 
-    override fun getParents(): List<IResource> {
-        return ephemeralVariables.values.toList() + staticVariables.values.toList()
+    override fun getParents(): Set<IResource> {
+        return ephemeralVariables.values.toSet() + staticVariables.values.toSet()
     }
 }

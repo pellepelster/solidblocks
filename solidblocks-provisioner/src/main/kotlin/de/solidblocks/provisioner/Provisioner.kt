@@ -213,16 +213,16 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
     }
 
     fun destroyAll(destroyVolumes: Boolean) {
-        this.provisionerRegistry.provisioner1(FloatingIpAssignment::class).destroyAll()
-        this.provisionerRegistry.provisioner1(Server::class).destroyAll()
+        this.provisionerRegistry.provisioner(FloatingIpAssignment::class).destroyAll()
+        this.provisionerRegistry.provisioner(Server::class).destroyAll()
 
         if (destroyVolumes) {
-            this.provisionerRegistry.provisioner1(Volume::class).destroyAll()
+            this.provisionerRegistry.provisioner(Volume::class).destroyAll()
         }
 
-        this.provisionerRegistry.provisioner1(Network::class).destroyAll()
-        this.provisionerRegistry.provisioner1(SshKey::class).destroyAll()
-        this.provisionerRegistry.provisioner1(FloatingIp::class).destroyAll()
+        this.provisionerRegistry.provisioner(Network::class).destroyAll()
+        this.provisionerRegistry.provisioner(SshKey::class).destroyAll()
+        this.provisionerRegistry.provisioner(FloatingIp::class).destroyAll()
     }
 
     fun clear() {

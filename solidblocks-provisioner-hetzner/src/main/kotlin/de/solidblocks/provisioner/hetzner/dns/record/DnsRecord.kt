@@ -13,7 +13,7 @@ open class DnsRecord(
     val ttl: Int = 60
 ) : IDnsRecordLookup, IInfrastructureResource<DnsRecord, DnsRecordRuntime> {
 
-    override fun getParents() = listOfNotNull(floatingIp, server)
+    override fun getParents() = setOfNotNull(floatingIp, server)
 
     override fun dnsZone(): IDnsZoneLookup {
         return dnsZone

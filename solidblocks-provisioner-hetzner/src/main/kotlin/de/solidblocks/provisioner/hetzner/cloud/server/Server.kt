@@ -18,7 +18,7 @@ class Server(
     IServerLookup,
     IInfrastructureResource<Server, ServerRuntime> {
 
-    override fun getParents() = listOfNotNull(userData, network, volume) + sshKeys + dependencies
+    override fun getParents() = setOfNotNull(userData, network, volume) + sshKeys + dependencies
 
     override fun id(): String {
         return this.id

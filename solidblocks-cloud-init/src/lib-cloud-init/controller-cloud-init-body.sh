@@ -1,5 +1,6 @@
 
 configure_public_ip
+mount_storage
 
 package_update
 package_check_and_install "jq"

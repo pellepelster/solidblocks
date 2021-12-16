@@ -46,7 +46,7 @@ class ProvisionerTest {
         val provisioner = Provisioner(provisionerRegistry)
 
         val resource1 = TestResource(UUID.randomUUID())
-        val resource2 = TestResource(UUID.randomUUID(), listOf(resource1))
+        val resource2 = TestResource(UUID.randomUUID(), setOf(resource1))
 
         testResourceProvisioner.reset()
         provisioner.clear()
@@ -71,7 +71,7 @@ class ProvisionerTest {
         val provisioner = Provisioner(provisionerRegistry)
 
         val resource1 = TestResource(UUID.randomUUID())
-        val resource2 = TestResource(UUID.randomUUID(), listOf(resource1))
+        val resource2 = TestResource(UUID.randomUUID(), setOf(resource1))
 
         testResourceProvisioner.reset()
         provisioner.clear()

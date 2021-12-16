@@ -30,5 +30,5 @@ class VaultPkiBackendRole(
 
     override fun id() = id
 
-    override fun getParents() = listOf(mount)
+    override fun getParents() = setOf(mount)
 }

@@ -87,7 +87,7 @@ class ConsulProvisionerTest {
         policyProvisioner.apply(acl)
 
         val token1Id = UUID.randomUUID()
-        val token1 = ConsulToken(token1Id, "token1", listOf(acl))
+        val token1 = ConsulToken(token1Id, "token1", setOf(acl))
 
         val tokenProvisioner = ConsulTokenProvisioner(consulClient())
 

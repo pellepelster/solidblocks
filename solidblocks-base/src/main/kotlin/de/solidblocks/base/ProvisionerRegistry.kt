@@ -32,7 +32,7 @@ open class ProvisionerRegistry {
         return provisioner as IInfrastructureResourceProvisioner<ResourceType, RuntimeType>
     }
 
-    fun <ResourceType, Type : IInfrastructureResource<ResourceType, RuntimeType>, RuntimeType> provisioner1(clazz: KClass<Type>): IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
+    fun <ResourceType, Type : IInfrastructureResource<ResourceType, RuntimeType>, RuntimeType> provisioner(clazz: KClass<Type>): IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
         val provisioner = provisioners.firstOrNull {
             it.getResourceType().isAssignableFrom(clazz.java)
         }

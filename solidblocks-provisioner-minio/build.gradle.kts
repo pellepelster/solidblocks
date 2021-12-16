@@ -7,8 +7,7 @@ dependencies {
     implementation(project(":solidblocks-base"))
     implementation(project(":solidblocks-cloud-config"))
 
-    // TODO remove last spring dependency
-    api("org.springframework.vault:spring-vault-core:2.3.2")
+    implementation("io.minio:minio:8.3.4")
 
     testImplementation("org.testcontainers:testcontainers:1.15.3")
     testImplementation("org.apache.derby:derbytools:10.15.2.0")

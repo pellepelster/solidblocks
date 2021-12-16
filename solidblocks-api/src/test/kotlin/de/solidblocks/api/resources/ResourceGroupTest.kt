@@ -9,7 +9,7 @@ class ResourceGroupTest {
     fun testHierarchicalResourceList() {
 
         val resourceGroup = ResourceGroup("group1")
-        resourceGroup.addResource(TestResource("resource1", listOf(TestResource("resource2"))))
+        resourceGroup.addResource(TestResource("resource1", setOf(TestResource("resource2"))))
 
         val resourceList = resourceGroup.hierarchicalResourceList()
 

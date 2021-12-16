@@ -7,7 +7,7 @@ class VaultKV(val path: String, val data: Map<String, Any>, val mount: IVaultMou
     IVaultKVLookup,
     IInfrastructureResource<VaultKV, VaultKVRuntime> {
 
-    override fun getParents() = listOf(mount)
+    override fun getParents() = setOf(mount)
 
     override fun mount(): IVaultMountLookup {
         return mount
