@@ -1,17 +1,15 @@
-package de.solidblocks.provisioner.utils
+package de.solidblocks.provisioner.hetzner.cloud.server
 
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
+import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.core.IResourceLookup
 import de.solidblocks.core.Result
-import de.solidblocks.provisioner.Provisioner
-import de.solidblocks.provisioner.hetzner.cloud.server.UserData
-import de.solidblocks.provisioner.hetzner.cloud.server.UserDataRuntime
 import freemarker.template.Configuration
 import freemarker.template.Configuration.SQUARE_BRACKET_INTERPOLATION_SYNTAX
 import freemarker.template.TemplateExceptionHandler
 import java.io.StringWriter
 
-class UserDataResourceLookupProvider(val provisioner: Provisioner) : IResourceLookupProvider<UserData, UserDataRuntime> {
+class UserDataResourceLookupProvider(val provisioner: InfrastructureProvisioner) : IResourceLookupProvider<UserData, UserDataRuntime> {
 
     val cfg = Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS)
 

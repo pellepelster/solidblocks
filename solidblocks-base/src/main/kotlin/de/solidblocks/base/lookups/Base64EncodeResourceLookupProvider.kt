@@ -1,12 +1,12 @@
-package de.solidblocks.provisioner.utils
+package de.solidblocks.base.lookups
 
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
-import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
+import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.core.Result
-import de.solidblocks.provisioner.Provisioner
 import java.util.*
 
-class Base64EncodeResourceLookupProvider(val provisioner: Provisioner) : IResourceLookupProvider<Base64Encode, String> {
+class Base64EncodeResourceLookupProvider(val provisioner: InfrastructureProvisioner) :
+    IResourceLookupProvider<Base64Encode, String> {
 
     override fun lookup(datasource: Base64Encode): Result<String> {
         return provisioner.lookup(datasource.datasource).mapNonNullResult {

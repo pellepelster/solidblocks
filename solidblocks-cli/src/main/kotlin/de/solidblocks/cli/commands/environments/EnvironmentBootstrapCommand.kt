@@ -1,6 +1,7 @@
 package de.solidblocks.cli.commands.environments
 
 import de.solidblocks.base.ProvisionerRegistry
+import de.solidblocks.base.lookups.Lookups
 import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
 import de.solidblocks.cloud.CloudMananger
 import de.solidblocks.cloud.config.CloudConfigurationManager
@@ -8,7 +9,6 @@ import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.consul.Consul
 import de.solidblocks.provisioner.hetzner.Hetzner
-import de.solidblocks.provisioner.utils.Lookups
 import de.solidblocks.provisioner.vault.Vault
 import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 
@@ -26,6 +26,7 @@ class EnvironmentBootstrapCommand : BaseCloudEnvironmentCommand(name = "bootstra
         val provisioner = Provisioner(provisionerRegistry)
 
         Hetzner.registerProvisioners(provisionerRegistry, environmentConfiguration, provisioner)
+        Hetzner.registerLookups(provisionerRegistry, provisioner)
         Lookups.registerLookups(provisionerRegistry, provisioner)
         Vault.registerProvisioners(
             provisionerRegistry,

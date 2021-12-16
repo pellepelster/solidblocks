@@ -1,16 +1,16 @@
-package de.solidblocks.provisioner.utils
+package de.solidblocks.base.lookups
 
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
+import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.base.ProvisionerRegistry
 import de.solidblocks.core.IResourceLookup
-import de.solidblocks.provisioner.Provisioner
 
 class Lookups {
 
     companion object {
         fun registerLookups(
             provisionerRegistry: ProvisionerRegistry,
-            provisioner: Provisioner
+            provisioner: InfrastructureProvisioner
         ) {
             provisionerRegistry.addLookupProvider(
                 Base64EncodeResourceLookupProvider(provisioner) as IResourceLookupProvider<IResourceLookup<Any>, Any>
@@ -26,10 +26,6 @@ class Lookups {
 
             provisionerRegistry.addLookupProvider(
                 ResourceLookupProvider<Any>(provisioner) as IResourceLookupProvider<IResourceLookup<Any>, Any>
-            )
-
-            provisionerRegistry.addLookupProvider(
-                UserDataResourceLookupProvider(provisioner) as IResourceLookupProvider<IResourceLookup<Any>, Any>
             )
         }
     }

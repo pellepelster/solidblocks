@@ -1,10 +1,10 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
-import de.solidblocks.api.resources.infrastructure.utils.Base64Encode
-import de.solidblocks.api.resources.infrastructure.utils.ConstantDataSource
-import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
-import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
+import de.solidblocks.base.lookups.Base64Encode
+import de.solidblocks.base.lookups.ConstantDataSource
+import de.solidblocks.base.lookups.CustomDataSource
+import de.solidblocks.base.lookups.ResourceLookup
 import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.cloud.Contants.cloudId
 import de.solidblocks.cloud.Contants.defaultLabels

@@ -1,4 +1,4 @@
-package de.solidblocks.api.resources.infrastructure.utils
+package de.solidblocks.base.lookups
 
 import de.solidblocks.core.IResource
 import de.solidblocks.core.IResourceLookup

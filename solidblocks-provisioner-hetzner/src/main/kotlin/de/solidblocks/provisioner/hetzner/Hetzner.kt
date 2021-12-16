@@ -13,6 +13,7 @@ import de.solidblocks.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpReso
 import de.solidblocks.provisioner.hetzner.cloud.network.HetznerNetworkResourceProvisioner
 import de.solidblocks.provisioner.hetzner.cloud.network.HetznerSubnetResourceProvisioner
 import de.solidblocks.provisioner.hetzner.cloud.server.HetznerServerResourceProvisioner
+import de.solidblocks.provisioner.hetzner.cloud.server.UserDataResourceLookupProvider
 import de.solidblocks.provisioner.hetzner.cloud.ssh.HetznerSshResourceProvisioner
 import de.solidblocks.provisioner.hetzner.cloud.volume.HetznerVolumeResourceProvisioner
 import de.solidblocks.provisioner.hetzner.dns.record.HetznerDnsRecordResourceProvisioner
@@ -39,6 +40,15 @@ class Hetzner {
 
         fun createDnsApi(environmentConfiguration: CloudEnvironmentConfiguration): HetznerDnsAPI {
             return HetznerDnsAPI(environmentConfiguration.getConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY))
+        }
+
+        fun registerLookups(
+            provisionerRegistry: ProvisionerRegistry,
+            provisioner: InfrastructureProvisioner
+        ) {
+            provisionerRegistry.addLookupProvider(
+                UserDataResourceLookupProvider(provisioner) as IResourceLookupProvider<IResourceLookup<Any>, Any>
+            )
         }
 
         fun registerProvisioners(

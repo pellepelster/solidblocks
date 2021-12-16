@@ -1,6 +1,5 @@
 package de.solidblocks.base
 
 object Constants {
-
-    val LABEL_PREFIX = "solidblocks"
+    const val LABEL_PREFIX = "solidblocks"
 }

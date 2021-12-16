@@ -1,7 +1,6 @@
-package de.solidblocks.provisioner.utils
+package de.solidblocks.base.lookups
 
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
-import de.solidblocks.api.resources.infrastructure.utils.CustomDataSource
 import de.solidblocks.core.Result
 
 class CustomResourceLookupProvider : IResourceLookupProvider<CustomDataSource, String> {

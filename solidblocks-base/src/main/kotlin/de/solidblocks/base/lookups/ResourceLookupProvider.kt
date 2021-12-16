@@ -1,10 +1,9 @@
-package de.solidblocks.provisioner.utils
+package de.solidblocks.base.lookups
 
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
-import de.solidblocks.api.resources.infrastructure.utils.ResourceLookup
-import de.solidblocks.provisioner.Provisioner
+import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 
-class ResourceLookupProvider<RuntimeType>(private val provisioner: Provisioner) :
+class ResourceLookupProvider<RuntimeType>(private val provisioner: InfrastructureProvisioner) :
     IResourceLookupProvider<ResourceLookup<RuntimeType>, String> {
 
     override fun lookup(lookup: ResourceLookup<RuntimeType>): de.solidblocks.core.Result<String> {
