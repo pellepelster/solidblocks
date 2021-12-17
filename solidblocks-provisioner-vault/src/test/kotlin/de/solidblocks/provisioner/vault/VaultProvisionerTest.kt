@@ -10,14 +10,16 @@ import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRoleProvisioner
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
 import de.solidblocks.provisioner.vault.policy.VaultPolicyProvisioner
-import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleProvisioner
+import de.solidblocks.test.SolidblocksTestDatabaseExtension
+import de.solidblocks.vault.VaultRootClientProvider
 import junit.framework.Assert.assertFalse
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.Is
 import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.Policy
 import org.testcontainers.containers.DockerComposeContainer
@@ -27,6 +29,7 @@ import java.io.File
 import java.util.*
 
 @Testcontainers
+@ExtendWith(SolidblocksTestDatabaseExtension::class)
 class VaultProvisionerTest {
 
     companion object {
@@ -37,19 +40,17 @@ class VaultProvisionerTest {
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
                 .apply {
+                    withPull(true)
                     withExposedService("vault", 8200)
                     start()
                 }
 
         private fun vaultAddress() = "http://localhost:${environment.getServicePort("vault", 8200)}"
 
-        fun vaultTemplateProvider(): () -> VaultTemplate {
+        fun vaultTemplateProvider(solidblocksDatabase: SolidblocksDatabase): () -> VaultTemplate {
 
             if (vaultClient == null) {
-                val db = SolidblocksDatabase("jdbc:derby:memory:myDB;create=true")
-                db.ensureDBSchema()
-
-                val configurationManager = CloudConfigurationManager(db.dsl)
+                val configurationManager = CloudConfigurationManager(solidblocksDatabase.dsl)
 
                 val cloudName = UUID.randomUUID().toString()
                 val environmentName = UUID.randomUUID().toString()
@@ -65,10 +66,10 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testMountDiffAndApply() {
+    fun testMountDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
-        val kvProvisioner = VaultKVProvisioner(vaultTemplateProvider())
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val kvProvisioner = VaultKVProvisioner(vaultTemplateProvider(solidblocksDatabase))
 
         val mount = VaultMount(UUID.randomUUID().toString(), "kv-v2")
         val result = mountProvisioner.apply(mount)
@@ -90,10 +91,10 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testPkiBackendRoleDiffAndApply() {
+    fun testPkiBackendRoleDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
-        val roleProvisioner = VaultPkiBackendRoleProvisioner(vaultTemplateProvider())
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val roleProvisioner = VaultPkiBackendRoleProvisioner(vaultTemplateProvider(solidblocksDatabase))
 
         val mount = VaultMount(UUID.randomUUID().toString(), "pki")
         mountProvisioner.apply(mount)
@@ -148,9 +149,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testDiffAndApplySsh() {
+    fun testDiffAndApplySsh(solidblocksDatabase: SolidblocksDatabase) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
 
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "ssh")
 
@@ -164,9 +165,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testDiffAndApplyKv2() {
+    fun testDiffAndApplyKv2(solidblocksDatabase: SolidblocksDatabase) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
 
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "kv-v2")
 
@@ -180,9 +181,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testDiffAndApplyPki() {
+    fun testDiffAndApplyPki(solidblocksDatabase: SolidblocksDatabase) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
 
         val mount = VaultMount("${UUID.randomUUID()}-pki", "pki")
 
@@ -196,9 +197,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testSSHBackendRoleDiffAndApply() {
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider())
-        val sshBackendRoleProvisioner = VaultSshBackendRoleProvisioner(vaultTemplateProvider())
+    fun testSSHBackendRoleDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val sshBackendRoleProvisioner = VaultSshBackendRoleProvisioner(vaultTemplateProvider(solidblocksDatabase))
 
         val mount = VaultMount(UUID.randomUUID().toString(), "ssh")
         mountProvisioner.apply(mount)
@@ -250,9 +251,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testPolicyDiffAndApply() {
+    fun testPolicyDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
 
-        val policyProvisioner = VaultPolicyProvisioner(vaultTemplateProvider())
+        val policyProvisioner = VaultPolicyProvisioner(vaultTemplateProvider(solidblocksDatabase))
 
         val name = UUID.randomUUID().toString()
         val emptyPolicy = VaultPolicy(name, emptySet())

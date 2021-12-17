@@ -3,9 +3,10 @@ plugins {
 }
 
 dependencies {
-    api(project(":solidblocks-api"))
-    api(project(":solidblocks-base"))
-    api(project(":solidblocks-provisioner-hetzner"))
+    implementation(project(":solidblocks-api"))
+    implementation(project(":solidblocks-base"))
+    implementation(project(":solidblocks-core"))
+    implementation(project(":solidblocks-provisioner-hetzner"))
 
     implementation("io.github.resilience4j:resilience4j-kotlin:1.3.1")
     implementation("io.github.resilience4j:resilience4j-retry:1.3.1")

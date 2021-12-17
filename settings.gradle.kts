@@ -13,4 +13,7 @@ include(
         "solidblocks-provisioner-minio",
         "solidblocks-provisioner-hetzner",
         "solidblocks-provisioner-vault",
+        "solidblocks-service-vault",
+        "solidblocks-vault",
+        "solidblocks-test",
 )

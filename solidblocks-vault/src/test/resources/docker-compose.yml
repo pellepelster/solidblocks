@@ -1,0 +1,11 @@
+version: '3'
+services:
+  vault:
+    image: vault
+    ports:
+      - "8200"
+    environment:
+      - VAULT_LOCAL_CONFIG=storage "file" { path = "/tmp/vault-test" } listener "tcp" { tls_disable = true address = "0.0.0.0:8200" }
+    cap_add:
+      - IPC_LOCK
+    command: server

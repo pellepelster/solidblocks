@@ -1,7 +1,7 @@
 package de.solidblocks.cli.commands.environments
 
 import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
-import de.solidblocks.cloud.config.CloudConfigurationManager
+import de.solidblocks.cloud.SolidblocksAppplicationContext
 import mu.KotlinLogging
 import java.io.File
 import java.nio.file.attribute.PosixFilePermissions
@@ -25,9 +25,10 @@ class EnvironmentSshConfigCommand :
     }
 
     override fun run() {
-        val configurationManager = CloudConfigurationManager(solidblocksDatabase().dsl)
 
-        configurationManager.let {
+        val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
+
+        context.configurationManager.let {
             val cloud = it.getCloud(cloud) ?: exitProcess(1)
 
             val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)

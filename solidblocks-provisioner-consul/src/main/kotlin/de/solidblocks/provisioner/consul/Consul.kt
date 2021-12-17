@@ -3,7 +3,7 @@ package de.solidblocks.provisioner.consul
 import com.orbitz.consul.Consul
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.base.ProvisionerRegistry
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
+import de.solidblocks.cloud.config.ConfigConstants.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.provisioner.consul.Consul.Constants.Companion.consulAddress
 import de.solidblocks.provisioner.consul.kv.ConsulKvProvisioner

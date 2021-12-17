@@ -7,7 +7,13 @@ import de.solidblocks.api.resources.allChangedOrMissingResources
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.base.ProvisionerRegistry
-import de.solidblocks.core.*
+import de.solidblocks.core.IInfrastructureResource
+import de.solidblocks.core.IResource
+import de.solidblocks.core.IResourceLookup
+import de.solidblocks.core.Result
+import de.solidblocks.core.getAllInfraParents
+import de.solidblocks.core.getInfraParents
+import de.solidblocks.core.logName
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIp
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIpAssignment
 import de.solidblocks.provisioner.hetzner.cloud.network.Network
@@ -190,6 +196,9 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
                     ) { it.id() }
                     } "
                 }
+
+                result.add(ResourceDiff(resource, missing = true))
+
                 continue
             }
 
@@ -227,5 +236,9 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
 
     fun clear() {
         resourceGroups.clear()
+    }
+
+    fun addResourceGroup(resourceGroup: ResourceGroup) {
+        resourceGroups.add(resourceGroup)
     }
 }

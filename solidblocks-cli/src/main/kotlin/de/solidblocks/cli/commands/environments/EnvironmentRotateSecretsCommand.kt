@@ -1,13 +1,13 @@
 package de.solidblocks.cli.commands.environments
 
 import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
-import de.solidblocks.cloud.config.CloudConfigurationManager
+import de.solidblocks.cloud.SolidblocksAppplicationContext
 
 class EnvironmentRotateSecretsCommand :
     BaseCloudEnvironmentCommand(name = "rotate-secrets", help = "rotate secrets") {
 
     override fun run() {
-        val configurationManager = CloudConfigurationManager(solidblocksDatabase().dsl)
-        configurationManager.rotateEnvironmentSecrets(cloud, environment)
+        val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
+        context.configurationManager.rotateEnvironmentSecrets(cloud, environment)
     }
 }

@@ -4,6 +4,9 @@ services:
   minio:
     image: quay.io/minio/minio
     command: server --console-address ":9001" /tmp
+    ports:
+      - "9000"
+      - "9001"
     expose:
       - "9000"
       - "9001"

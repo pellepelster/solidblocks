@@ -1,3 +1,4 @@
+import Constants.junitJupiterVersion
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
@@ -18,7 +19,6 @@ versioning {
 val versionFile = File("$rootDir/version.txt")
 version = versionFile.readText().trim()
 
-val junitJupiterVersion = "5.7.1"
 
 dependencies {
     constraints {
@@ -27,24 +27,34 @@ dependencies {
     }
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
+    implementation("joda-time:joda-time:2.10.10")
+
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
+
     testImplementation("org.testcontainers:testcontainers:1.15.3")
     testImplementation("org.testcontainers:junit-jupiter:1.15.3")
+
     testImplementation("org.assertj:assertj-core:3.21.0")
 
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("org.apache.derby:derbytools:10.15.2.0")
+    testImplementation("org.apache.derby:derby:10.15.2.0")
+
+
 }
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
         suppressWarnings = true
-        jvmTarget = "15"
+        jvmTarget = "16"
         allWarningsAsErrors = false
         noJdk = false
     }

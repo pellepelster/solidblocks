@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":solidblocks-cloud-config"))
     implementation(project(":solidblocks-cloud"))
     implementation(project(":solidblocks-provisioner"))
+    implementation(project(":solidblocks-vault"))
     implementation(project(":solidblocks-provisioner-vault"))
     implementation(project(":solidblocks-provisioner-consul"))
     implementation(project(":solidblocks-provisioner-hetzner"))

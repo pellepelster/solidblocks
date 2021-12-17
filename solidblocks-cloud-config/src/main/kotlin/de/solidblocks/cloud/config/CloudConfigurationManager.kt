@@ -1,13 +1,18 @@
 package de.solidblocks.cloud.config
 
 import de.solidblocks.base.Utils.Companion.generateSshKey
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_MASTER_TOKEN_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.CONSUL_SECRET_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_PRIVATE_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_IDENTITY_PUBLIC_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PRIVATE_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.SSH_PUBLIC_KEY
-import de.solidblocks.cloud.config.model.*
+import de.solidblocks.cloud.config.ConfigConstants.CONSUL_MASTER_TOKEN_KEY
+import de.solidblocks.cloud.config.ConfigConstants.CONSUL_SECRET_KEY
+import de.solidblocks.cloud.config.ConfigConstants.SSH_IDENTITY_PRIVATE_KEY
+import de.solidblocks.cloud.config.ConfigConstants.SSH_IDENTITY_PUBLIC_KEY
+import de.solidblocks.cloud.config.ConfigConstants.SSH_PRIVATE_KEY
+import de.solidblocks.cloud.config.ConfigConstants.SSH_PUBLIC_KEY
+import de.solidblocks.cloud.config.model.CloudConfigValue
+import de.solidblocks.cloud.config.model.CloudConfiguration
+import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
+import de.solidblocks.cloud.config.model.ConsulSecrets
+import de.solidblocks.cloud.config.model.SshSecrets
+import de.solidblocks.cloud.config.model.TenantConfiguration
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CLOUDS_ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -23,11 +28,11 @@ class CloudConfigurationManager(private val dsl: DSLContext) {
 
     sealed class IdType(private val id: UUID)
 
-    class CloudId(val id: UUID) : IdType(id)
+    private class CloudId(val id: UUID) : IdType(id)
 
-    class EnvironmentId(val id: UUID) : IdType(id)
+    private class EnvironmentId(val id: UUID) : IdType(id)
 
-    class TenantId(val id: UUID) : IdType(id)
+    private class TenantId(val id: UUID) : IdType(id)
 
     private val logger = KotlinLogging.logger {}
 

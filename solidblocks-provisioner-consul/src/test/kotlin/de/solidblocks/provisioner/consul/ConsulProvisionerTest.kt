@@ -28,6 +28,7 @@ class ConsulProvisionerTest {
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
                 .apply {
+                    withPull(true)
                     withExposedService("consul", 8500)
                         .waitingFor(
                             "consul",

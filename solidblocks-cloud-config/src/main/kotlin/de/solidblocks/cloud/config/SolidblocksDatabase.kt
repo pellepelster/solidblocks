@@ -7,20 +7,28 @@ import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
 import liquibase.exception.DatabaseException
-import liquibase.resource.ClassLoaderResourceAccessor
+import liquibase.resource.FileSystemResourceAccessor
+import mu.KotlinLogging
 import org.jooq.impl.DataSourceConnectionProvider
 import org.jooq.impl.DefaultConfiguration
 import org.jooq.impl.DefaultDSLContext
+import java.nio.file.Files
 import java.sql.SQLException
 import javax.sql.DataSource
+import kotlin.io.path.writeText
 
 class SolidblocksDatabase(jdbcUrl: String) {
+
+    private val logger = KotlinLogging.logger {}
 
     val dsl: DefaultDSLContext
 
     private val datasource: DataSource
 
     init {
+
+        logger.info { "initializing database '$jdbcUrl'" }
+
         val config = HikariConfig()
         config.jdbcUrl = jdbcUrl
 
@@ -36,7 +44,13 @@ class SolidblocksDatabase(jdbcUrl: String) {
     fun ensureDBSchema() {
         try {
             val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(datasource.connection))
-            val liquibase = Liquibase("classpath:/db/changelog/db.changelog-master.yaml", ClassLoaderResourceAccessor(), database)
+
+            val changelogContent = SolidblocksDatabase::class.java.getResource("/db/changelog/db.changelog-master.yaml").readText()
+            val changelogDir = Files.createTempDirectory("solidblocks")
+            val changelogFile = Files.createTempFile(changelogDir, "changelog", ".yml")
+            changelogFile.writeText(changelogContent)
+
+            val liquibase = Liquibase(changelogFile.toFile().toString(), FileSystemResourceAccessor(changelogDir.toFile()), database)
             liquibase.log
             liquibase.update(Contexts())
         } catch (e: SQLException) {

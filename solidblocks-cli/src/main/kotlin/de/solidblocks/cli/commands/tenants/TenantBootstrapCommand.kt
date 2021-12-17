@@ -2,12 +2,8 @@ package de.solidblocks.cli.commands.tenants
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.base.ProvisionerRegistry
 import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
-import de.solidblocks.cloud.TenantMananger
-import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.provisioner.Provisioner
-import de.solidblocks.provisioner.hetzner.Hetzner
+import de.solidblocks.cloud.SolidblocksAppplicationContext
 import mu.KotlinLogging
 
 class TenantBootstrapCommand : BaseCloudEnvironmentCommand(name = "bootstrap", help = "bootstrap a tenant") {
@@ -18,18 +14,20 @@ class TenantBootstrapCommand : BaseCloudEnvironmentCommand(name = "bootstrap", h
 
     override fun run() {
 
-        val configurationManager = CloudConfigurationManager(solidblocksDatabase().dsl)
-        val provisionerRegistry = ProvisionerRegistry()
+        val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
+
+        /*
         val provisioner = Provisioner(provisionerRegistry)
 
         val environmentConfiguration = configurationManager.environmentByName(cloud, environment)
 
-        val tenantManager = TenantMananger(
+        val tenantManager = TenantManager(
             provisioner,
             configurationManager,
             Hetzner.createCloudApi(environmentConfiguration)
         )
 
         tenantManager.bootstrap(cloud, environment, tenant)
+         */
     }
 }

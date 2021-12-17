@@ -3,11 +3,11 @@ package de.solidblocks.cli.commands.environments
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.cli.commands.BaseCloudDbCommand
-import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.GITHUB_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.HETZNER_CLOUD_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.config.Constants.ConfigKeys.Companion.HETZNER_DNS_API_TOKEN_RW_KEY
+import de.solidblocks.cloud.SolidblocksAppplicationContext
+import de.solidblocks.cloud.config.ConfigConstants.GITHUB_TOKEN_RO_KEY
+import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
+import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
+import de.solidblocks.cloud.config.ConfigConstants.HETZNER_DNS_API_TOKEN_RW_KEY
 import de.solidblocks.cloud.config.model.createConfigValue
 import kotlin.system.exitProcess
 
@@ -27,9 +27,9 @@ class EnvironmentCreateCommand :
     val githubReadOnlyToken: String by option(help = "Github read only API token").required()
 
     override fun run() {
-        val configurationManager = CloudConfigurationManager(solidblocksDatabase().dsl)
+        val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        val result = configurationManager.createEnvironment(
+        val result = context.configurationManager.createEnvironment(
             cloud, environment,
             listOf(
                 createConfigValue(GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),

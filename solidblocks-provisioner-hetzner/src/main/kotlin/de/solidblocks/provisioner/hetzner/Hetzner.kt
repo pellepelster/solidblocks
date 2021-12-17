@@ -4,10 +4,10 @@ import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvis
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.base.ProvisionerRegistry
+import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
+import de.solidblocks.cloud.config.ConfigConstants.HETZNER_DNS_API_TOKEN_RW_KEY
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.core.IResourceLookup
-import de.solidblocks.provisioner.hetzner.Hetzner.Constants.Companion.HETZNER_CLOUD_API_TOKEN_RW_KEY
-import de.solidblocks.provisioner.hetzner.Hetzner.Constants.Companion.HETZNER_DNS_API_TOKEN_RW_KEY
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpAssignmentResourceProvisioner
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpResourceProvisioner
 import de.solidblocks.provisioner.hetzner.cloud.network.HetznerNetworkResourceProvisioner
@@ -22,16 +22,6 @@ import io.pelle.hetzner.HetznerDnsAPI
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 
 class Hetzner {
-
-    class Constants {
-        companion object {
-
-            const val HETZNER_CLOUD_API_TOKEN_RO_KEY = "hetzner_cloud_api_key_ro"
-            const val HETZNER_CLOUD_API_TOKEN_RW_KEY = "hetzner_cloud_api_key_rw"
-
-            const val HETZNER_DNS_API_TOKEN_RW_KEY = "hetzner_dns_api_key_rw"
-        }
-    }
 
     companion object {
         fun createCloudApi(environmentConfiguration: CloudEnvironmentConfiguration): HetznerCloudAPI {

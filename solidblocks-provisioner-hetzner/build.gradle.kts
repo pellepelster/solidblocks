@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(project(":solidblocks-cloud-config"))
     implementation(project(":solidblocks-api"))
+    implementation(project(":solidblocks-core"))
     implementation(project(":solidblocks-base"))
     implementation("org.freemarker:freemarker:2.3.31")
 

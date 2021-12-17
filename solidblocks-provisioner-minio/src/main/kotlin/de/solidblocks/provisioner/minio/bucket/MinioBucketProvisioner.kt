@@ -32,15 +32,13 @@ class MinioBucketProvisioner(val minioClient: MinioClient) :
     }
 
     override fun apply(resource: MinioBucket): Result<*> {
-
         minioClient.makeBucket(MakeBucketArgs.builder().bucket(resource.name).build())
-
         return Result<Any>(resource)
     }
 
     override fun lookup(resource: IMinioBucketLookup): Result<MinioBucketRuntime> {
         return try {
-            val bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(UUID.randomUUID().toString()).build())
+            val bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(resource.name()).build())
 
             if (bucketExists) {
                 Result.resultOf(MinioBucketRuntime(resource.name()))

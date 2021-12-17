@@ -3,7 +3,7 @@ package de.solidblocks.cli.commands.tenants
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
-import de.solidblocks.cloud.config.CloudConfigurationManager
+import de.solidblocks.cloud.SolidblocksAppplicationContext
 
 class TenantCreateCommand :
     BaseCloudEnvironmentCommand(
@@ -14,7 +14,7 @@ class TenantCreateCommand :
     val tenant: String by option(help = "tenant name").required()
 
     override fun run() {
-        val configurationManager = CloudConfigurationManager(solidblocksDatabase().dsl)
-        configurationManager.createTenant(tenant, cloud, environment)
+        val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
+        context.configurationManager.createTenant(tenant, cloud, environment)
     }
 }

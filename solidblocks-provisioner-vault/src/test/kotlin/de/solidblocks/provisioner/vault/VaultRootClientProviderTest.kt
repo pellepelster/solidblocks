@@ -3,10 +3,12 @@ package de.solidblocks.provisioner.vault
 import de.solidblocks.cloud.config.CloudConfigurationContext
 import de.solidblocks.cloud.config.CloudConfigurationManager
 import de.solidblocks.cloud.config.SolidblocksDatabase
-import de.solidblocks.provisioner.vault.provider.VaultRootClientProvider
+import de.solidblocks.test.SolidblocksTestDatabaseExtension
+import de.solidblocks.vault.VaultRootClientProvider
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -16,6 +18,7 @@ import java.util.*
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
 @Testcontainers
+@ExtendWith(SolidblocksTestDatabaseExtension::class)
 class VaultRootClientProviderTest {
 
     companion object {
@@ -23,6 +26,7 @@ class VaultRootClientProviderTest {
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
                 .apply {
+                    withPull(true)
                     withExposedService("vault", 8200)
                     start()
                 }
@@ -31,12 +35,9 @@ class VaultRootClientProviderTest {
     }
 
     @Test
-    fun testInitAndUnseal() {
+    fun testInitAndUnseal(solidblocksDatabase: SolidblocksDatabase) {
 
-        val db = SolidblocksDatabase("jdbc:derby:memory:myDB;create=true")
-        db.ensureDBSchema()
-
-        val configurationManager = CloudConfigurationManager(db.dsl)
+        val configurationManager = CloudConfigurationManager(solidblocksDatabase.dsl)
 
         val cloudName = UUID.randomUUID().toString()
         val environmentName = UUID.randomUUID().toString()
@@ -51,7 +52,7 @@ class VaultRootClientProviderTest {
         val provider = VaultRootClientProvider(cloudName, environmentName, configurationManager, vaultAddress())
 
         val environmentBefore = configurationManager.environmentByName(cloudName, environmentName)
-        assertTrue(environmentBefore!!.configValues.none { it.name == "vault-unseal-key-0" })
+        assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-0" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-1" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-2" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-3" })
@@ -60,7 +61,7 @@ class VaultRootClientProviderTest {
         val vaultClient = provider.createClient()
         val environment = configurationManager.environmentByName(cloudName, environmentName)
 
-        assertTrue(environment!!.configValues.any { it.name == "vault-unseal-key-0" })
+        assertTrue(environment.configValues.any { it.name == "vault-unseal-key-0" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-1" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-2" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-3" })

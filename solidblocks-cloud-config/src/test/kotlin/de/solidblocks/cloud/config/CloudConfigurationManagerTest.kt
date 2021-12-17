@@ -1,14 +1,17 @@
 package de.solidblocks.cloud.config
 
 import de.solidblocks.cloud.config.model.CloudConfigValue
+import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
-open class CloudConfigurationManagerTest {
+@ExtendWith(SolidblocksTestDatabaseExtension::class)
+class CloudConfigurationManagerTest {
 
     @Test
-    fun testCreateCloud() {
-        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+    fun testCreateCloud(solidblocksDatabase: SolidblocksDatabase) {
+        val cloudConfigurationManager = CloudConfigurationManager(solidblocksDatabase.dsl)
 
         assertThat(cloudConfigurationManager.hasCloud("cloud1")).isFalse
 
@@ -29,7 +32,7 @@ open class CloudConfigurationManagerTest {
         cloudConfigurationManager.createEnvironment("cloud1", "env1")
 
         val environment = cloudConfigurationManager.environmentByName("cloud1", "env1")
-        assertThat(environment!!.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(environment.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(environment.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(environment.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(environment.sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
@@ -37,25 +40,25 @@ open class CloudConfigurationManagerTest {
     }
 
     @Test
-    fun testCreateAndUpdateEnvironment() {
-        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+    fun testCreateAndUpdateEnvironment(solidblocksDatabase: SolidblocksDatabase) {
+        val cloudConfigurationManager = CloudConfigurationManager(solidblocksDatabase.dsl)
 
         cloudConfigurationManager.createCloud("cloud3", "domain1")
         cloudConfigurationManager.createEnvironment("cloud3", "env3")
 
         val environment = cloudConfigurationManager.environmentByName("cloud3", "env3")
-        assertThat(environment!!.configValues).filteredOn { it.name == "my-attribute" }.hasSize(0)
+        assertThat(environment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(0)
 
         cloudConfigurationManager.updateEnvironment("cloud3", "env3", "my-attribute", "my-value")
         val updatedEnvironment = cloudConfigurationManager.environmentByName("cloud3", "env3")
 
-        assertThat(updatedEnvironment!!.configValues).filteredOn { it.name == "my-attribute" }.hasSize(1)
+        assertThat(updatedEnvironment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(1)
         assertThat(updatedEnvironment.configValues).anyMatch { it.name == "my-attribute" && it.value == "my-value" }
     }
 
     @Test
-    fun testCreateAndUpdateTenant() {
-        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+    fun testCreateAndUpdateTenant(solidblocksDatabase: SolidblocksDatabase) {
+        val cloudConfigurationManager = CloudConfigurationManager(solidblocksDatabase.dsl)
 
         cloudConfigurationManager.createCloud("cloud4", "domain1")
         cloudConfigurationManager.createEnvironment("cloud4", "env4")
@@ -70,14 +73,14 @@ open class CloudConfigurationManagerTest {
     }
 
     @Test
-    fun testRegenerateCloudSecrets() {
-        val cloudConfigurationManager = CloudConfigurationManager(SolidblocksDatabase("jdbc:derby:memory:myDB;create=true").dsl)
+    fun testRegenerateCloudSecrets(solidblocksDatabase: SolidblocksDatabase) {
+        val cloudConfigurationManager = CloudConfigurationManager(solidblocksDatabase.dsl)
 
         assertThat(cloudConfigurationManager.createCloud("cloud2", "domain2")).isTrue
         cloudConfigurationManager.createEnvironment("cloud2", "env2")
 
         val newEnv2 = cloudConfigurationManager.environmentByName("cloud2", "env2")
-        assertThat(newEnv2!!.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(newEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(newEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(newEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(newEnv2.sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
@@ -85,7 +88,7 @@ open class CloudConfigurationManagerTest {
         cloudConfigurationManager.rotateEnvironmentSecrets("cloud2", "env2")
 
         val updatedEnv2 = cloudConfigurationManager.environmentByName("cloud2", "env2")
-        assertThat(updatedEnv2!!.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
+        assertThat(updatedEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(updatedEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(updatedEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(updatedEnv2.sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
