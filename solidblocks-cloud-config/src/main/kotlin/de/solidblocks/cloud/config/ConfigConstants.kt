@@ -2,11 +2,15 @@ package de.solidblocks.cloud.config
 
 import de.solidblocks.base.Constants.LABEL_PREFIX
 import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.config.model.CloudConfiguration
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
 import de.solidblocks.cloud.config.model.TenantConfiguration
 
 object ConfigConstants {
+
+    fun serviceId(reference: ServiceReference) =
+        "${cloudId(reference.cloud, reference.environment)}-${reference.service}"
 
     fun cloudId(cloudName: String, environmentName: String) = "$cloudName-$environmentName"
 
@@ -20,11 +24,14 @@ object ConfigConstants {
 
     fun defaultLabels(role: Role) = mapOf("$LABEL_PREFIX/role" to role.toString())
 
-    fun defaultLabels(cloud: CloudConfiguration, role: Role) = defaultLabels(role) + mapOf("$LABEL_PREFIX/cloud" to cloud.name)
+    fun defaultLabels(cloud: CloudConfiguration, role: Role) =
+        defaultLabels(role) + mapOf("$LABEL_PREFIX/cloud" to cloud.name)
 
-    fun defaultLabels(environment: CloudEnvironmentConfiguration, role: Role) = mapOf("$LABEL_PREFIX/environment" to environment.name) + defaultLabels(environment.cloud, role)
+    fun defaultLabels(environment: CloudEnvironmentConfiguration, role: Role) =
+        mapOf("$LABEL_PREFIX/environment" to environment.name) + defaultLabels(environment.cloud, role)
 
-    fun defaultLabels(tenant: TenantConfiguration, role: Role) = mapOf("$LABEL_PREFIX/tenant" to tenant.name) + defaultLabels(tenant.environment, role)
+    fun defaultLabels(tenant: TenantConfiguration, role: Role) =
+        mapOf("$LABEL_PREFIX/tenant" to tenant.name) + defaultLabels(tenant.environment, role)
 
     const val GITHUB_TOKEN_RO_KEY = "github_token_ro"
     const val GITHUB_USERNAME_KEY = "github_username"

@@ -116,7 +116,7 @@ class CloudManager(
                 }
             })
 
-        provisioner.addResourceGroup(VaultConfig.createVaultConfig(setOf(vaultResourceGroup), environment))
+        provisioner.addResourceGroup(VaultCloudConfiguration.createVaultConfig(setOf(vaultResourceGroup), environment))
 
         val controllerNodeCount = 1
         val controllerGroup = provisioner.createResourceGroup("controller")

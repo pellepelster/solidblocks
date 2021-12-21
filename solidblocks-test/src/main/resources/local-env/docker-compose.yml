@@ -9,7 +9,7 @@ services:
     cap_add:
       - IPC_LOCK
     command: server
-  backup:
+  minio:
     image: minio/minio
     ports:
       - "9001"

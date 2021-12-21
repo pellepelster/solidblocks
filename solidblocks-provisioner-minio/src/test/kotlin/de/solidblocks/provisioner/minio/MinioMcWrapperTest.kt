@@ -9,6 +9,9 @@ import java.util.*
 
 class MinioMcWrapperTest {
 
+    val minioAddress: String
+        get() = "http://localhost:${environment.getServicePort("minio", 9000)}"
+
     @Container
     val environment: DockerComposeContainer<*> =
         KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
@@ -18,9 +21,7 @@ class MinioMcWrapperTest {
                 start()
             }
 
-    private fun minioAddress() = "http://localhost:${MinioProvisionerTest.environment.getServicePort("minio", 9000)}"
-
-    private val wrapper = MinioMcWrapper(minioAddress(), "admin", "c3344fa0-5eb2-11ec-95ba-77ffa3cedca9")
+    private val wrapper = MinioMcWrapper(minioAddress, "admin", "c3344fa0-5eb2-11ec-95ba-77ffa3cedca9")
 
     @Test
     fun testPolicies() {

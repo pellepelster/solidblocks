@@ -4,15 +4,22 @@ import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
+import de.solidblocks.provisioner.minio.MinioCredentials
+import de.solidblocks.provisioner.minio.createMinioClient
 import io.minio.BucketExistsArgs
 import io.minio.MakeBucketArgs
 import io.minio.MinioClient
 import mu.KotlinLogging
-import java.util.*
 
-class MinioBucketProvisioner(val minioClient: MinioClient) :
+class MinioBucketProvisioner(minioCredentialsProvider: () -> MinioCredentials) :
     IResourceLookupProvider<IMinioBucketLookup, MinioBucketRuntime>,
     IInfrastructureResourceProvisioner<MinioBucket, MinioBucketRuntime> {
+
+    private val minioClient: MinioClient
+
+    init {
+        minioClient = createMinioClient(minioCredentialsProvider)
+    }
 
     private val logger = KotlinLogging.logger {}
 
@@ -46,6 +53,7 @@ class MinioBucketProvisioner(val minioClient: MinioClient) :
                 Result.emptyResult()
             }
         } catch (e: Exception) {
+            logger.error(e) { "error creating bucket '${resource.name()}'" }
             Result(failed = true, message = e.message)
         }
     }

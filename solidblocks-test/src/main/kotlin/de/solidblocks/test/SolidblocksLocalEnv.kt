@@ -1,8 +1,10 @@
 package de.solidblocks.test
 
 import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.base.ServiceReference
+import de.solidblocks.cloud.MinioCloudConfiguration.createServiceBackupConfig
 import de.solidblocks.cloud.SolidblocksAppplicationContext
-import de.solidblocks.cloud.VaultConfig.Companion.createVaultConfig
+import de.solidblocks.cloud.VaultCloudConfiguration.createVaultConfig
 import de.solidblocks.cloud.config.ConfigConstants.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.config.ConfigConstants.CONSUL_SECRET_KEY
 import de.solidblocks.cloud.config.ConfigConstants.GITHUB_TOKEN_RO_KEY
@@ -11,6 +13,7 @@ import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RO_KE
 import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
 import de.solidblocks.cloud.config.ConfigConstants.HETZNER_DNS_API_TOKEN_RW_KEY
 import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
+import de.solidblocks.provisioner.minio.MinioCredentials
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
 import de.solidblocks.vault.VaultConstants
 import mu.KotlinLogging
@@ -36,16 +39,17 @@ class SolidblocksLocalEnv {
     val rootToken: String get() = environmentConfiguration.getConfigValue(VaultConstants.ROOT_TOKEN_KEY)
 
     init {
-        val dockerComposeContent = SolidblocksLocalEnv::class.java.getResource("/local-env/docker-compose.yml").readBytes()
+        val dockerComposeContent =
+            SolidblocksLocalEnv::class.java.getResource("/local-env/docker-compose.yml").readBytes()
 
-        val tempFile = Files.createTempFile("SolidblocksLocalEnv", "dockercompose")
+        val tempFile = Files.createTempFile("solidblocks-local-env-dockercompose", ".yml")
         tempFile.writeBytes(dockerComposeContent)
 
         dockerEnvironment = KDockerComposeContainer(tempFile.toFile())
             .apply {
                 withPull(true)
                 withExposedService("vault", 8200)
-                withExposedService("backup", 9001)
+                withExposedService("minio", 9000)
             }
     }
 
@@ -55,11 +59,19 @@ class SolidblocksLocalEnv {
     val vaultAddress: String
         get() = "http://localhost:${dockerEnvironment.getServicePort("vault", 8200)}"
 
-    fun backupAddress() = "http://localhost:${dockerEnvironment.getServicePort("backup", 9001)}"
+    val minioAddress: String
+        get() = "http://localhost:${dockerEnvironment.getServicePort("minio", 9000)}"
+
+    val environmentConfiguration: CloudEnvironmentConfiguration
+        get() =
+            appplicationContext.environmentConfiguration(cloud, environment)
+
+    val minioCredentialProvider: () -> MinioCredentials
+        get() = { MinioCredentials(minioAddress, "admin", "a9776029-2852-4d60-af81-621b91da711d") }
 
     fun start() {
         dockerEnvironment.start()
-        appplicationContext = SolidblocksAppplicationContext(TEST_DB_JDBC_URL, vaultAddress)
+        appplicationContext = SolidblocksAppplicationContext(TEST_DB_JDBC_URL, vaultAddress, minioCredentialProvider)
     }
 
     fun stop() {
@@ -95,7 +107,13 @@ class SolidblocksLocalEnv {
         return provisioner.apply()
     }
 
-    val environmentConfiguration: CloudEnvironmentConfiguration
-        get() =
-            appplicationContext.environmentConfiguration(cloud, environment)
+    fun bootstrapService(reference: ServiceReference): Boolean {
+        val provisioner = appplicationContext.createProvisioner(cloud, environment)
+
+        provisioner.addResourceGroup(createServiceBackupConfig(emptySet(), reference))
+
+        return provisioner.apply()
+    }
+
+    fun createServiceReference(service: String) = ServiceReference(cloud, environment, service)
 }

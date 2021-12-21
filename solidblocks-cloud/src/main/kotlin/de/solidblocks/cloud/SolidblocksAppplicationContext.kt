@@ -7,10 +7,16 @@ import de.solidblocks.cloud.config.SolidblocksDatabase
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.consul.Consul
 import de.solidblocks.provisioner.hetzner.Hetzner
+import de.solidblocks.provisioner.minio.Minio
+import de.solidblocks.provisioner.minio.MinioCredentials
 import de.solidblocks.provisioner.vault.Vault
 import de.solidblocks.vault.VaultRootClientProvider
 
-class SolidblocksAppplicationContext(jdbcUrl: String, val vaultAddressOverride: String? = null) {
+class SolidblocksAppplicationContext(
+    jdbcUrl: String,
+    val vaultAddressOverride: String? = null,
+    val minioCredentialsProvider: (() -> MinioCredentials)?
+) {
 
     private var vaultRootClientProvider: VaultRootClientProvider? = null
 
@@ -24,7 +30,8 @@ class SolidblocksAppplicationContext(jdbcUrl: String, val vaultAddressOverride: 
 
     fun vaultRootClientProvider(cloud: String, environment: String): VaultRootClientProvider {
         if (vaultRootClientProvider == null) {
-            vaultRootClientProvider = VaultRootClientProvider(cloud, environment, configurationManager, vaultAddressOverride)
+            vaultRootClientProvider =
+                VaultRootClientProvider(cloud, environment, configurationManager, vaultAddressOverride)
         }
 
         return vaultRootClientProvider!!
@@ -43,12 +50,18 @@ class SolidblocksAppplicationContext(jdbcUrl: String, val vaultAddressOverride: 
         Hetzner.registerProvisioners(provisionerRegistry, environmentConfiguration, provisioner)
         Hetzner.registerLookups(provisionerRegistry, provisioner)
         Lookups.registerLookups(provisionerRegistry, provisioner)
-        Vault.registerProvisioners(
-            provisionerRegistry
-        ) {
+        Consul.registerProvisioners(provisionerRegistry, Consul.consulClient(environmentConfiguration))
+
+        Vault.registerProvisioners(provisionerRegistry) {
             vaultRootClientProvider(cloud, environment).createClient()
         }
-        Consul.registerProvisioners(provisionerRegistry, Consul.consulClient(environmentConfiguration))
+
+        Minio.registerProvisioners(
+            provisionerRegistry,
+            minioCredentialsProvider ?: {
+                MinioCredentials(Minio.minioAddress(environmentConfiguration), "xx", "ss")
+            }
+        )
 
         return provisioner
     }

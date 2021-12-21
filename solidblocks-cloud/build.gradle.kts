@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":solidblocks-vault"))
     implementation(project(":solidblocks-provisioner-vault"))
     implementation(project(":solidblocks-provisioner-consul"))
+    implementation(project(":solidblocks-provisioner-minio"))
     implementation("com.github.seancfoley:ipaddress:5.3.3")
 }
 

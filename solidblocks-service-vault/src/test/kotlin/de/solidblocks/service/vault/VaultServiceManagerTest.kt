@@ -18,30 +18,43 @@ import java.nio.file.attribute.PosixFilePermissions
 import java.util.*
 
 @ExtendWith(SolidblocksLocalEnvExtension::class)
-class VaultRootClientProviderTest {
+class VaultServiceManagerTest {
 
     private val logger = KotlinLogging.logger {}
 
     @Test
     fun testKeepsDataAfterRestart(solidblocksLocalEnv: SolidblocksLocalEnv) {
+
+        val reference = solidblocksLocalEnv.createServiceReference("vault")
+        assertThat(solidblocksLocalEnv.bootstrapService(reference)).isTrue
+
         val testDir = "/tmp/${UUID.randomUUID()}"
 
         logger.info { "creating test dir '$testDir'" }
         File(testDir).mkdirs()
         Files.setPosixFilePermissions(File(testDir).toPath(), PosixFilePermissions.fromString("rwxrwxrwx"))
 
-        val service = VaultServiceManager(solidblocksLocalEnv.reference.asService("service1"), testDir, VaultManager(solidblocksLocalEnv.vaultAddress, solidblocksLocalEnv.rootToken, solidblocksLocalEnv.reference))
+        val service = VaultServiceManager(
+            solidblocksLocalEnv.reference.asService("service1"),
+            testDir,
+            VaultManager(solidblocksLocalEnv.vaultAddress, solidblocksLocalEnv.rootToken, solidblocksLocalEnv.reference)
+        )
 
         assertThat(service.start()).isTrue
 
-        val vaultTemplate = VaultTemplate(VaultEndpoint.from(URI.create(service.vaultAddress)), TokenAuthentication(service.loadCredentials()!!.rootToken))
-        vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2).put("test", mapOf("foo" to "bar"))
+        val vaultTemplate = VaultTemplate(
+            VaultEndpoint.from(URI.create(service.vaultAddress)),
+            TokenAuthentication(service.loadCredentials()!!.rootToken)
+        )
+        vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
+            .put("test", mapOf("foo" to "bar"))
         service.stop()
 
         assertThat(service.isRunning()).isFalse
         assertThat(service.start()).isTrue
 
-        val testData = vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2).get("test", Map::class.java)
+        val testData = vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
+            .get("test", Map::class.java)
         assertThat(testData!!.data).isEqualTo(mapOf("foo" to "bar"))
 
         service.backup()

@@ -6,6 +6,9 @@ plugins {
 
 dependencies {
 
+    implementation(project(":solidblocks-vault"))
+    implementation(project(":solidblocks-base"))
+
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
     implementation("com.github.docker-java:docker-java-core:3.2.12")
     implementation("com.github.docker-java:docker-java-transport-zerodep:3.2.12")
@@ -17,9 +20,8 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-retry:1.7.1")
 
     implementation("org.springframework.vault:spring-vault-core:2.3.2")
-    implementation(project(":solidblocks-vault"))
 
-    testImplementation(project(":solidblocks-base"))
+    testImplementation(project(":solidblocks-core"))
     testImplementation(project(":solidblocks-provisioner"))
     testImplementation(project(":solidblocks-cloud"))
     testImplementation(project(":solidblocks-cloud-config"))

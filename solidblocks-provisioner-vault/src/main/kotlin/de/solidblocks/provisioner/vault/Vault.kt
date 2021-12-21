@@ -9,44 +9,41 @@ import de.solidblocks.provisioner.vault.policy.VaultPolicyProvisioner
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleProvisioner
 import org.springframework.vault.core.VaultTemplate
 
-class Vault {
+object Vault {
 
-    companion object {
+    fun registerProvisioners(
+        provisionerRegistry: ProvisionerRegistry,
+        vaultTemplateProvider: () -> VaultTemplate,
+    ) {
 
-        fun registerProvisioners(
-            provisionerRegistry: ProvisionerRegistry,
-            vaultTemplateProvider: () -> VaultTemplate,
-        ) {
+        provisionerRegistry.addProvisioner(
+            VaultSshBackendRoleProvisioner(
+                vaultTemplateProvider
+            ) as IInfrastructureResourceProvisioner<Any, Any>
+        )
 
-            provisionerRegistry.addProvisioner(
-                VaultSshBackendRoleProvisioner(
-                    vaultTemplateProvider
-                ) as IInfrastructureResourceProvisioner<Any, Any>
-            )
+        provisionerRegistry.addProvisioner(
+            VaultPolicyProvisioner(
+                vaultTemplateProvider
+            ) as IInfrastructureResourceProvisioner<Any, Any>
+        )
 
-            provisionerRegistry.addProvisioner(
-                VaultPolicyProvisioner(
-                    vaultTemplateProvider
-                ) as IInfrastructureResourceProvisioner<Any, Any>
-            )
+        provisionerRegistry.addProvisioner(
+            VaultPkiBackendRoleProvisioner(
+                vaultTemplateProvider
+            ) as IInfrastructureResourceProvisioner<Any, Any>
+        )
 
-            provisionerRegistry.addProvisioner(
-                VaultPkiBackendRoleProvisioner(
-                    vaultTemplateProvider
-                ) as IInfrastructureResourceProvisioner<Any, Any>
-            )
+        provisionerRegistry.addProvisioner(
+            VaultMountProvisioner(
+                vaultTemplateProvider
+            ) as IInfrastructureResourceProvisioner<Any, Any>
+        )
 
-            provisionerRegistry.addProvisioner(
-                VaultMountProvisioner(
-                    vaultTemplateProvider
-                ) as IInfrastructureResourceProvisioner<Any, Any>
-            )
-
-            provisionerRegistry.addProvisioner(
-                VaultKVProvisioner(
-                    vaultTemplateProvider
-                ) as IInfrastructureResourceProvisioner<Any, Any>
-            )
-        }
+        provisionerRegistry.addProvisioner(
+            VaultKVProvisioner(
+                vaultTemplateProvider
+            ) as IInfrastructureResourceProvisioner<Any, Any>
+        )
     }
 }

@@ -3,13 +3,7 @@ package de.solidblocks.service.vault
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.dockerjava.api.DockerClient
-import com.github.dockerjava.api.model.Bind
-import com.github.dockerjava.api.model.Capability
-import com.github.dockerjava.api.model.ExposedPort
-import com.github.dockerjava.api.model.HostConfig
-import com.github.dockerjava.api.model.PortBinding
-import com.github.dockerjava.api.model.Ports
-import com.github.dockerjava.api.model.Volume
+import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
@@ -40,7 +34,11 @@ import kotlin.io.path.writeBytes
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class RaftAutopilotResponse(val healthy: Boolean, val leader: String)
 
-class VaultServiceManager(val reference: ServiceReference, val storageDir: String, val solidblocksVaultManager: VaultManager) {
+class VaultServiceManager(
+    val reference: ServiceReference,
+    val storageDir: String,
+    val solidblocksVaultManager: VaultManager
+) {
 
     private val DOCKER_IMAGE = "solidblocks-service-vault"
 
@@ -60,13 +58,17 @@ class VaultServiceManager(val reference: ServiceReference, val storageDir: Strin
 
     val dockerClient: DockerClient
 
-    val config = RetryConfig.custom<Boolean>().retryOnResult { it == false }.maxAttempts(20).waitDuration(Duration.ofSeconds(1))
+    val config =
+        RetryConfig.custom<Boolean>().retryOnResult { it == false }.maxAttempts(20).waitDuration(Duration.ofSeconds(1))
 
     val retry = Retry.of("healthcheck", config.build())
 
     init {
         val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
-        dockerClient = DockerClientImpl.getInstance(config, ZerodepDockerHttpClient.Builder().dockerHost(URI.create("unix:///var/run/docker.sock")).build())
+        dockerClient = DockerClientImpl.getInstance(
+            config,
+            ZerodepDockerHttpClient.Builder().dockerHost(URI.create("unix:///var/run/docker.sock")).build()
+        )
     }
 
     val vaultAddress: String
@@ -125,7 +127,10 @@ class VaultServiceManager(val reference: ServiceReference, val storageDir: Strin
                 HostConfig.newHostConfig()
                     .withCapAdd(Capability.IPC_LOCK)
                     .withPortBindings(PortBinding(bindPort, ExposedPort(8200)))
-                    .withBinds(Bind(storageDir, Volume("/storage/local")), Bind(vaultConfigFile.toString(), Volume("/solidblocks/config/vault.json")))
+                    .withBinds(
+                        Bind(storageDir, Volume("/storage/local")),
+                        Bind(vaultConfigFile.toString(), Volume("/solidblocks/config/vault.json"))
+                    )
             ).exec()
         dockerClient.startContainerCmd(result.id).exec()
 
@@ -182,7 +187,8 @@ class VaultServiceManager(val reference: ServiceReference, val storageDir: Strin
         val result = retry.executeCallable {
             logger.info { "waiting for raft to settle" }
             try {
-                val response = vaultTemplate.read("/sys/storage/raft/autopilot/state", RaftAutopilotResponse::class.java)
+                val response =
+                    vaultTemplate.read("/sys/storage/raft/autopilot/state", RaftAutopilotResponse::class.java)
 
                 if (response == null || response.data == null) {
                     return@executeCallable false
@@ -203,7 +209,8 @@ class VaultServiceManager(val reference: ServiceReference, val storageDir: Strin
         return result
     }
 
-    private fun serviceContainers() = dockerClient.listContainersCmd().exec().filter { it.labels[SERVICE_LABEL_KEY] == "vault" }
+    private fun serviceContainers() =
+        dockerClient.listContainersCmd().exec().filter { it.labels[SERVICE_LABEL_KEY] == "vault" }
 
     fun stop() {
         serviceContainers().forEach {
