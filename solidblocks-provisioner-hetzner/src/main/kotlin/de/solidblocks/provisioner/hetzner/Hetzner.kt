@@ -4,9 +4,9 @@ import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvis
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.base.ProvisionerRegistry
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_DNS_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
+import de.solidblocks.cloud.model.ModelConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
+import de.solidblocks.cloud.model.ModelConstants.HETZNER_DNS_API_TOKEN_RW_KEY
+import de.solidblocks.cloud.model.model.EnvironmentModel
 import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpAssignmentResourceProvisioner
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpResourceProvisioner
@@ -23,11 +23,11 @@ import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 
 object Hetzner {
 
-    fun createCloudApi(environmentConfiguration: CloudEnvironmentConfiguration): HetznerCloudAPI {
+    fun createCloudApi(environmentConfiguration: EnvironmentModel): HetznerCloudAPI {
         return HetznerCloudAPI(environmentConfiguration.getConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY))
     }
 
-    fun createDnsApi(environmentConfiguration: CloudEnvironmentConfiguration): HetznerDnsAPI {
+    fun createDnsApi(environmentConfiguration: EnvironmentModel): HetznerDnsAPI {
         return HetznerDnsAPI(environmentConfiguration.getConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY))
     }
 
@@ -42,7 +42,7 @@ object Hetzner {
 
     fun registerProvisioners(
         provisionerRegistry: ProvisionerRegistry,
-        environmentConfiguration: CloudEnvironmentConfiguration,
+        environmentConfiguration: EnvironmentModel,
         provisioner: InfrastructureProvisioner
     ) {
 

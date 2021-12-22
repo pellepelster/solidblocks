@@ -10,6 +10,9 @@ class EnvironmentConfigCommand :
 
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
-        println(ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(context.configurationManager.environmentByName(cloud, environment)))
+        println(
+            ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+                .writeValueAsString(context.environmentRepository.getEnvironment(cloud, environment))
+        )
     }
 }

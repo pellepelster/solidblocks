@@ -15,6 +15,6 @@ class TenantCreateCommand :
 
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
-        context.configurationManager.createTenant(tenant, cloud, environment)
+        // context.configurationManager.createTenant(tenant, cloud, environment)
     }
 }

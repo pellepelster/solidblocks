@@ -3,17 +3,12 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":solidblocks-provisioner-hetzner"))
-    implementation(project(":solidblocks-cloud-config"))
-    implementation(project(":solidblocks-cloud-init"))
-    implementation(project(":solidblocks-provisioner"))
-    implementation(project(":solidblocks-base"))
-    implementation(project(":solidblocks-api"))
-    implementation(project(":solidblocks-core"))
-    implementation(project(":solidblocks-vault"))
-    implementation(project(":solidblocks-provisioner-vault"))
-    implementation(project(":solidblocks-provisioner-consul"))
-    implementation(project(":solidblocks-provisioner-minio"))
+    api(project(":solidblocks-cloud-model"))
+    api(project(":solidblocks-provisioner"))
+    api(project(":solidblocks-provisioner-hetzner"))
+    api(project(":solidblocks-provisioner-vault"))
+    api(project(":solidblocks-provisioner-consul"))
+    api(project(":solidblocks-provisioner-minio"))
     implementation("com.github.seancfoley:ipaddress:5.3.3")
 }
 

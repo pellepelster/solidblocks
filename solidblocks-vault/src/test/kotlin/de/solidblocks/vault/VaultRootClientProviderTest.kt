@@ -1,7 +1,8 @@
 package de.solidblocks.vault
 
-import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.cloud.config.SolidblocksDatabase
+import de.solidblocks.cloud.model.CloudRepository
+import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.test.KDockerComposeContainer
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
 import org.assertj.core.api.Assertions.assertThat
@@ -28,18 +29,20 @@ class VaultRootClientProviderTest {
 
     @Test
     fun testCreateClient() {
-        val db = SolidblocksDatabase(TEST_DB_JDBC_URL)
+        val db = SolidblocksDatabase(TEST_DB_JDBC_URL())
         db.ensureDBSchema()
 
-        val configurationManager = CloudConfigurationManager(db.dsl)
+        val cloudRepository = CloudRepository(db.dsl)
+        val environmentRepository = EnvironmentRepository(db.dsl, cloudRepository)
 
         val cloudName = UUID.randomUUID().toString()
         val environmentName = UUID.randomUUID().toString()
 
-        configurationManager.createCloud(cloudName, "domain1", emptyList())
-        configurationManager.createEnvironment(cloudName, environmentName)
+        cloudRepository.createCloud(cloudName, "domain1", emptyList())
+        environmentRepository.createEnvironment(cloudName, environmentName)
 
-        val vaultClientProvider = VaultRootClientProvider(cloudName, environmentName, configurationManager, vaultAddress())
+        val vaultClientProvider =
+            VaultRootClientProvider(cloudName, environmentName, environmentRepository, vaultAddress())
         assertThat(vaultClientProvider.createClient().list("/")).hasSize(0)
     }
 }

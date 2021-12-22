@@ -1,8 +1,8 @@
 package de.solidblocks.vault
 
 import de.solidblocks.base.EnvironmentReference
-import de.solidblocks.cloud.config.ConfigConstants.cloudId
-import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
+import de.solidblocks.cloud.model.ModelConstants.cloudId
+import de.solidblocks.cloud.model.model.EnvironmentModel
 
 object VaultConstants {
 
@@ -16,18 +16,18 @@ object VaultConstants {
 
     fun pkiMountName(cloudName: String, environmentName: String) = "${cloudId(cloudName, environmentName)}-pki"
 
-    fun pkiMountName(environment: CloudEnvironmentConfiguration) = pkiMountName(environment.cloud.name, environment.name)
+    fun pkiMountName(environment: EnvironmentModel) = pkiMountName(environment.cloud.name, environment.name)
 
     fun kvMountName(reference: EnvironmentReference) = "${cloudId(reference)}-kv"
 
-    fun kvMountName(environment: CloudEnvironmentConfiguration) = kvMountName(environment.reference)
+    fun kvMountName(environment: EnvironmentModel) = kvMountName(environment.reference)
 
     fun servicePath(service: String) = "solidblocks/services/$service"
 
-    fun hostSshMountName(environment: CloudEnvironmentConfiguration) = "${cloudId(environment)}-host-ssh"
+    fun hostSshMountName(environment: EnvironmentModel) = "${cloudId(environment)}-host-ssh"
 
-    fun userSshMountName(environment: CloudEnvironmentConfiguration) = "${cloudId(environment)}-user-ssh"
+    fun userSshMountName(environment: EnvironmentModel) = "${cloudId(environment)}-user-ssh"
 
-    fun vaultAddress(environment: CloudEnvironmentConfiguration) =
+    fun vaultAddress(environment: EnvironmentModel) =
         "https://vault.${environment.name}.${environment.cloud.rootDomain}:8200"
 }

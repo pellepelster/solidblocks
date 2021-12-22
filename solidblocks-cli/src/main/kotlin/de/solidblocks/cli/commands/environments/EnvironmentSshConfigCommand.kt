@@ -28,39 +28,40 @@ class EnvironmentSshConfigCommand :
 
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        context.configurationManager.let {
-            val cloud = it.getCloud(cloud) ?: exitProcess(1)
+        if (!context.environmentRepository.hasEnvironment(cloud, environment)) {
+            logger.info { "environment '$environment' and/or cloud '$cloud' does no exist" }
+            exitProcess(1)
+        }
 
-            val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
-            for (environment in it.listEnvironments(cloud)) {
+        val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
+        for (environment in context.cloudManager.listEnvironments(cloud)) {
 
-                val environmentPath = Path(basePath.toString(), environment.name)
+            val environmentPath = Path(basePath.toString(), environment.name)
 
-                if (!environmentPath.toFile().exists() && !environmentPath.toFile().mkdirs()) {
-                    logger.error { "creating dir '${environmentPath.toAbsolutePath()}' failed" }
-                    exitProcess(1)
-                }
-
-                val privateKeyFile = File(environmentPath.toFile(), "${this.cloud}_key")
-                privateKeyFile.writeText(environment.sshSecrets.sshPrivateKey)
-                privateKeyFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
-
-                val knownHostsFile = File(environmentPath.toFile(), "${this.cloud}_known_hosts")
-                knownHostsFile.writeText("vault-1.$environment.${environment.cloud.rootDomain} ${environment.sshSecrets.sshIdentityPublicKey}")
-
-                knownHostsFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
-
-                File(
-                    environmentPath.toFile(),
-                    "${this.cloud}_key.pub"
-                ).writeText(environment.sshSecrets.sshPublicKey)
-                File(environmentPath.toFile(), "ssh_config").writeText(
-                    sshConfig(
-                        privateKeyFile.absolutePath,
-                        knownHostsFile.absolutePath
-                    )
-                )
+            if (!environmentPath.toFile().exists() && !environmentPath.toFile().mkdirs()) {
+                logger.error { "creating dir '${environmentPath.toAbsolutePath()}' failed" }
+                exitProcess(1)
             }
+
+            val privateKeyFile = File(environmentPath.toFile(), "${this.cloud}_key")
+            privateKeyFile.writeText(environment.sshSecrets.sshPrivateKey)
+            privateKeyFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
+
+            val knownHostsFile = File(environmentPath.toFile(), "${this.cloud}_known_hosts")
+            knownHostsFile.writeText("vault-1.$environment.${environment.cloud.rootDomain} ${environment.sshSecrets.sshIdentityPublicKey}")
+
+            knownHostsFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
+
+            File(
+                environmentPath.toFile(),
+                "${this.cloud}_key.pub"
+            ).writeText(environment.sshSecrets.sshPublicKey)
+            File(environmentPath.toFile(), "ssh_config").writeText(
+                sshConfig(
+                    privateKeyFile.absolutePath,
+                    knownHostsFile.absolutePath
+                )
+            )
         }
     }
 }

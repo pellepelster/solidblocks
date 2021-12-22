@@ -21,7 +21,8 @@ class MinioMcWrapperTest {
                 start()
             }
 
-    private val wrapper = MinioMcWrapper(minioAddress, "admin", "c3344fa0-5eb2-11ec-95ba-77ffa3cedca9")
+    private val wrapper =
+        MinioMcWrapper { MinioCredentials(minioAddress, "admin", "c3344fa0-5eb2-11ec-95ba-77ffa3cedca9") }
 
     @Test
     fun testPolicies() {
@@ -67,10 +68,12 @@ class MinioMcWrapperTest {
 
     @Test
     fun testUserList() {
-        val newUserName = UUID.randomUUID().toString()
-        assertThat(wrapper.listUsers()).noneMatch { it.accessKey == newUserName }
+        val newAccessKey = UUID.randomUUID().toString()
+        assertThat(wrapper.listUsers()).noneMatch { it.accessKey == newAccessKey }
 
-        wrapper.addUser(newUserName, UUID.randomUUID().toString())
-        assertThat(wrapper.listUsers()).anyMatch { it.accessKey == newUserName }
+        wrapper.addUser(newAccessKey, UUID.randomUUID().toString())
+        assertThat(wrapper.listUsers()).anyMatch { it.accessKey == newAccessKey }
+
+        val user = wrapper.getUser(newAccessKey)
     }
 }

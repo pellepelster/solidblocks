@@ -13,11 +13,11 @@ import java.util.*
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeBytes
 
-class MinioMcWrapper(val minioUrl: String, val accessKey: String, val secretKey: String) {
+class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredentials) {
 
-    val instanceId = UUID.randomUUID()
+    private val instanceId = UUID.randomUUID()
 
-    val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jacksonObjectMapper()
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class MinioUser(
@@ -73,8 +73,8 @@ class MinioMcWrapper(val minioUrl: String, val accessKey: String, val secretKey:
         return objectMapper.readValue(result.stdout, MinioGenericResult::class.java).status == "success"
     }
 
-    fun assignPolicy(policyName: String, userName: String): Boolean {
-        val result = runMc("admin", "policy", "set", "ALIAS", policyName, "user=$userName", "--json")
+    fun assignPolicy(policyName: String, accessKey: String): Boolean {
+        val result = runMc("admin", "policy", "set", "ALIAS", policyName, "user=$accessKey", "--json")
         return objectMapper.readValue(result.stdout, MinioGenericResult::class.java).status == "success"
     }
 
@@ -83,9 +83,10 @@ class MinioMcWrapper(val minioUrl: String, val accessKey: String, val secretKey:
         val file = File("/tmp/mc_$instanceId")
         FileFromClasspath.ensureFile("/mc", file)
 
+        val credentials = minioCredentialsProvider.invoke()
         val alias = "temp"
-        val uri = URI.create(minioUrl)
-        val url = "${uri.scheme}://$accessKey:$secretKey@${uri.host}:${uri.port}/${uri.path}"
+        val uri = URI.create(credentials.address)
+        val url = "${uri.scheme}://${credentials.accessKey}:${credentials.secretKey}@${uri.host}:${uri.port}/${uri.path}"
 
         val result = CommandExecutor().run(
             environment = mapOf(
@@ -98,7 +99,7 @@ class MinioMcWrapper(val minioUrl: String, val accessKey: String, val secretKey:
         )
 
         if (result.error) {
-            throw RuntimeException(result.stderr)
+            throw RuntimeException(result.stderr + result.stdout)
         }
 
         return result
@@ -114,6 +115,14 @@ class MinioMcWrapper(val minioUrl: String, val accessKey: String, val secretKey:
 
     fun listUsers(): List<MinioUser> {
         val result = runMc("admin", "user", "list", "ALIAS", "--json")
+
+        return result.stdout.byteInputStream().let {
+            objectMapper.readValues(JsonFactory().createParser(it), MinioUser::class.java)
+        }.iterator().asSequence().toList()
+    }
+
+    fun getUser(accessKey: String): List<MinioUser> {
+        val result = runMc("admin", "user", "info", "ALIAS", accessKey, "--json")
 
         return result.stdout.byteInputStream().let {
             objectMapper.readValues(JsonFactory().createParser(it), MinioUser::class.java)

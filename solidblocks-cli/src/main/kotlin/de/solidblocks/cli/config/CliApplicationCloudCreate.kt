@@ -1,7 +1,7 @@
 package de.solidblocks.cli.config
 
-import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.cloud.config.SolidblocksDatabase
+import de.solidblocks.cloud.model.CloudRepository
+import de.solidblocks.cloud.model.SolidblocksDatabase
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Profile
 @Profile("CloudCreate")
 open class CliApplicationCloudCreate {
     @Bean
-    open fun cloudConfigurationManager(dsl: DSLContext): CloudConfigurationManager {
-        return CloudConfigurationManager(dsl)
+    open fun cloudConfigurationManager(dsl: DSLContext): CloudRepository {
+        return CloudRepository(dsl)
     }
 }

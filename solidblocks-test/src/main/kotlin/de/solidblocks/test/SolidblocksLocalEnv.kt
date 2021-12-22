@@ -1,19 +1,21 @@
 package de.solidblocks.test
 
+import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.MinioCloudConfiguration.createServiceBackupConfig
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createVaultConfig
-import de.solidblocks.cloud.config.ConfigConstants.CONSUL_MASTER_TOKEN_KEY
-import de.solidblocks.cloud.config.ConfigConstants.CONSUL_SECRET_KEY
-import de.solidblocks.cloud.config.ConfigConstants.GITHUB_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.ConfigConstants.GITHUB_USERNAME_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_DNS_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
+import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
+import de.solidblocks.cloud.model.ModelConstants.CONSUL_SECRET_KEY
+import de.solidblocks.cloud.model.ModelConstants.GITHUB_TOKEN_RO_KEY
+import de.solidblocks.cloud.model.ModelConstants.GITHUB_USERNAME_KEY
+import de.solidblocks.cloud.model.ModelConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
+import de.solidblocks.cloud.model.ModelConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
+import de.solidblocks.cloud.model.ModelConstants.HETZNER_DNS_API_TOKEN_RW_KEY
+import de.solidblocks.cloud.model.ModelConstants.serviceId
+import de.solidblocks.cloud.model.model.EnvironmentModel
 import de.solidblocks.provisioner.minio.MinioCredentials
+import de.solidblocks.provisioner.minio.bucket.MinioBucket
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
 import de.solidblocks.vault.VaultConstants
 import mu.KotlinLogging
@@ -36,7 +38,7 @@ class SolidblocksLocalEnv {
 
     lateinit var appplicationContext: SolidblocksAppplicationContext
 
-    val rootToken: String get() = environmentConfiguration.getConfigValue(VaultConstants.ROOT_TOKEN_KEY)
+    val rootToken: String get() = environmentModel.getConfigValue(VaultConstants.ROOT_TOKEN_KEY)
 
     init {
         val dockerComposeContent =
@@ -62,16 +64,16 @@ class SolidblocksLocalEnv {
     val minioAddress: String
         get() = "http://localhost:${dockerEnvironment.getServicePort("minio", 9000)}"
 
-    val environmentConfiguration: CloudEnvironmentConfiguration
+    val environmentModel: EnvironmentModel
         get() =
-            appplicationContext.environmentConfiguration(cloud, environment)
+            appplicationContext.environmentRepository.getEnvironment(cloud, environment)
 
     val minioCredentialProvider: () -> MinioCredentials
         get() = { MinioCredentials(minioAddress, "admin", "a9776029-2852-4d60-af81-621b91da711d") }
 
     fun start() {
         dockerEnvironment.start()
-        appplicationContext = SolidblocksAppplicationContext(TEST_DB_JDBC_URL, vaultAddress, minioCredentialProvider)
+        appplicationContext = SolidblocksAppplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider)
     }
 
     fun stop() {
@@ -81,9 +83,11 @@ class SolidblocksLocalEnv {
     fun bootstrap(): Boolean {
         logger.info { "bootstrapping test env" }
 
-        appplicationContext.configurationManager.let {
-
+        appplicationContext.cloudRepository.let {
             it.createCloud(cloud, "test.env", emptyList())
+        }
+
+        appplicationContext.environmentRepository.let {
             it.createEnvironment(cloud, environment)
             it.updateEnvironment(
                 cloud, environment,
@@ -99,7 +103,7 @@ class SolidblocksLocalEnv {
             )
         }
 
-        val environmentConfiguration = appplicationContext.environmentConfiguration(cloud, environment)
+        val environmentConfiguration = appplicationContext.environmentRepository.getEnvironment(cloud, environment)
         val provisioner = appplicationContext.createProvisioner(cloud, environment)
 
         provisioner.addResourceGroup(createVaultConfig(emptySet(), environmentConfiguration))
@@ -107,12 +111,17 @@ class SolidblocksLocalEnv {
         return provisioner.apply()
     }
 
-    fun bootstrapService(reference: ServiceReference): Boolean {
+    fun bootstrapService(reference: ServiceReference): String {
         val provisioner = appplicationContext.createProvisioner(cloud, environment)
 
-        provisioner.addResourceGroup(createServiceBackupConfig(emptySet(), reference))
+        val group = ResourceGroup("${serviceId(reference)}-backup")
 
-        return provisioner.apply()
+        val bucket = MinioBucket(serviceId(reference))
+        group.addResource(bucket)
+
+        provisioner.apply()
+
+        return provisioner.lookup(bucket).result!!.name
     }
 
     fun createServiceReference(service: String) = ServiceReference(cloud, environment, service)

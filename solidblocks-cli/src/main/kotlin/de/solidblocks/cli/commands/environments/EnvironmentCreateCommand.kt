@@ -4,11 +4,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 import de.solidblocks.cloud.SolidblocksAppplicationContext
-import de.solidblocks.cloud.config.ConfigConstants.GITHUB_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_DNS_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.config.model.createConfigValue
 import kotlin.system.exitProcess
 
 class EnvironmentCreateCommand :
@@ -29,14 +24,13 @@ class EnvironmentCreateCommand :
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        val result = context.configurationManager.createEnvironment(
-            cloud, environment,
-            listOf(
-                createConfigValue(GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
-                createConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
-                createConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
-                createConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
-            )
+        val result = context.cloudManager.createEnvironment(
+            cloud,
+            environment,
+            githubReadOnlyToken,
+            hetznerCloudApiTokenReadOnly,
+            hetznerCloudApiTokenReadWrite,
+            hetznerDnsApiToken
         )
 
         if (!result) {

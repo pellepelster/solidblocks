@@ -21,10 +21,7 @@ dependencies {
 
     implementation("org.springframework.vault:spring-vault-core:2.3.2")
 
-    testImplementation(project(":solidblocks-core"))
-    testImplementation(project(":solidblocks-provisioner"))
-    testImplementation(project(":solidblocks-cloud"))
-    testImplementation(project(":solidblocks-cloud-config"))
+    testImplementation(project(":solidblocks-cloud-model"))
     testImplementation(project(":solidblocks-test"))
 }
 

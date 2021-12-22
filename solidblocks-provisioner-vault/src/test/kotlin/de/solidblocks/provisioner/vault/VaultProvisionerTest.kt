@@ -1,7 +1,8 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.cloud.config.CloudConfigurationManager
-import de.solidblocks.cloud.config.SolidblocksDatabase
+import de.solidblocks.cloud.model.CloudRepository
+import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.kv.VaultKVProvisioner
 import de.solidblocks.provisioner.vault.mount.VaultMount
@@ -50,15 +51,21 @@ class VaultProvisionerTest {
         fun vaultTemplateProvider(solidblocksDatabase: SolidblocksDatabase): () -> VaultTemplate {
 
             if (vaultClient == null) {
-                val configurationManager = CloudConfigurationManager(solidblocksDatabase.dsl)
+                val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
+                val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
                 val cloudName = UUID.randomUUID().toString()
                 val environmentName = UUID.randomUUID().toString()
 
-                configurationManager.createCloud(cloudName, "domain1", emptyList())
-                configurationManager.createEnvironment(cloudName, environmentName)
+                cloudRepository.createCloud(cloudName, "domain1", emptyList())
+                environmentRepository.createEnvironment(cloudName, environmentName)
 
-                vaultClient = VaultRootClientProvider(cloudName, environmentName, configurationManager, vaultAddress()).createClient()
+                vaultClient = VaultRootClientProvider(
+                    cloudName,
+                    environmentName,
+                    environmentRepository,
+                    vaultAddress()
+                ).createClient()
             }
 
             return { vaultClient!! }

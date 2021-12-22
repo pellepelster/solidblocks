@@ -1,14 +1,14 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
-import de.solidblocks.cloud.config.ConfigConstants
-import de.solidblocks.cloud.config.ConfigConstants.CONSUL_MASTER_TOKEN_KEY
-import de.solidblocks.cloud.config.ConfigConstants.CONSUL_SECRET_KEY
-import de.solidblocks.cloud.config.ConfigConstants.GITHUB_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.ConfigConstants.GITHUB_USERNAME_KEY
-import de.solidblocks.cloud.config.ConfigConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
-import de.solidblocks.cloud.config.model.CloudEnvironmentConfiguration
-import de.solidblocks.cloud.config.model.getConfigValue
+import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
+import de.solidblocks.cloud.model.ModelConstants.CONSUL_SECRET_KEY
+import de.solidblocks.cloud.model.ModelConstants.GITHUB_TOKEN_RO_KEY
+import de.solidblocks.cloud.model.ModelConstants.GITHUB_USERNAME_KEY
+import de.solidblocks.cloud.model.ModelConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
+import de.solidblocks.cloud.model.model.EnvironmentModel
+import de.solidblocks.cloud.model.model.getConfigValue
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.mount.VaultMount
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
@@ -25,7 +25,7 @@ object VaultCloudConfiguration {
 
     fun createVaultConfig(
         parentResourceGroups: Set<ResourceGroup>,
-        environment: CloudEnvironmentConfiguration
+        environment: EnvironmentModel
     ): ResourceGroup {
         val resourceGroup = ResourceGroup("vaultConfig", parentResourceGroups)
 
@@ -66,8 +66,8 @@ object VaultCloudConfiguration {
             keyType = "ca",
             maxTtl = "168h",
             ttl = "168h",
-            allowedUsers = listOf(ConfigConstants.cloudId(environment)),
-            defaultUser = ConfigConstants.cloudId(environment),
+            allowedUsers = listOf(ModelConstants.cloudId(environment)),
+            defaultUser = ModelConstants.cloudId(environment),
             allowHostCertificates = false,
             allowUserCertificates = true,
             mount = userSshMount

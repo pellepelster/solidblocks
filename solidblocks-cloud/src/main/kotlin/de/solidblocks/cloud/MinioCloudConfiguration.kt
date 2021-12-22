@@ -2,7 +2,7 @@ package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.config.ConfigConstants.serviceId
+import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.provisioner.minio.bucket.MinioBucket
 
 object MinioCloudConfiguration {

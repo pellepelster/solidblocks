@@ -1,6 +1,6 @@
 package de.solidblocks.test
 
-import de.solidblocks.cloud.config.SolidblocksDatabase
+import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -12,7 +12,7 @@ class SolidblocksTestDatabaseExtension : ParameterResolver, BeforeAllCallback {
     val solidblocksDatabase: SolidblocksDatabase
 
     init {
-        solidblocksDatabase = SolidblocksDatabase(TEST_DB_JDBC_URL)
+        solidblocksDatabase = SolidblocksDatabase(TEST_DB_JDBC_URL())
     }
 
     override fun beforeAll(context: ExtensionContext) {

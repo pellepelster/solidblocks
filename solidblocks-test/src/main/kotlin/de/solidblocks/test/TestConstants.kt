@@ -1,5 +1,7 @@
 package de.solidblocks.test
 
+import java.util.*
+
 object TestConstants {
-    const val TEST_DB_JDBC_URL = "jdbc:derby:memory:myDB;create=true"
+    fun TEST_DB_JDBC_URL() = "jdbc:derby:memory:${UUID.randomUUID()};create=true"
 }

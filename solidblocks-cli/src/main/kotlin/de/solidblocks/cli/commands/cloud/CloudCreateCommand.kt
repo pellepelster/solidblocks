@@ -14,6 +14,6 @@ class CloudCreateCommand :
 
     override fun run() {
         val applicationContext = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
-        applicationContext.configurationManager.createCloud(cloud, domain)
+        applicationContext.cloudManager.createCloud(cloud, domain)
     }
 }

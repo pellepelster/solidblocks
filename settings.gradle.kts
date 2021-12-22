@@ -1,13 +1,13 @@
 rootProject.name = "solidblocks"
 
 include(
-        "solidblocks-cli",
         "solidblocks-api",
-        "solidblocks-base",
         "solidblocks-core",
+        "solidblocks-base",
         "solidblocks-cloud",
+        "solidblocks-cli",
         "solidblocks-cloud-init",
-        "solidblocks-cloud-config",
+        "solidblocks-cloud-model",
         "solidblocks-provisioner",
         "solidblocks-provisioner-consul",
         "solidblocks-provisioner-minio",

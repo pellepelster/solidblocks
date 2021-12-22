@@ -3,10 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":solidblocks-cloud-config"))
-    implementation(project(":solidblocks-api"))
-    implementation(project(":solidblocks-core"))
-    implementation(project(":solidblocks-base"))
+    implementation(project(":solidblocks-cloud-model"))
     implementation("org.freemarker:freemarker:2.3.31")
 
     api("me.tomsdevsn:hetznercloud-api:2.13.0")

@@ -13,12 +13,12 @@ class FileFromClasspath {
         fun ensureFile(classpathSource: String, targetFile: File) {
 
             if (!targetFile.exists()) {
-                logger.warn { "file '$targetFile' not found" }
+                logger.info { "file '$targetFile' not found" }
 
                 val sourceFile = FileFromClasspath::class.java.getResourceAsStream(classpathSource)
                     ?: throw RuntimeException("could not load '$classpathSource' from classpath")
 
-                logger.warn { "copying '$classpathSource' from classpath to '$targetFile'" }
+                logger.info { "copying '$classpathSource' from classpath to '$targetFile'" }
 
                 Files.copy(sourceFile, targetFile.toPath())
                 Files.setPosixFilePermissions(targetFile.toPath(), PosixFilePermissions.fromString("rwxr-xr-x"))

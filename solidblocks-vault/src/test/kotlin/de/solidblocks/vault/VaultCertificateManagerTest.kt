@@ -19,7 +19,7 @@ class VaultCertificateManagerTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun testIssueCertificates(solidblocksLocalEnv: SolidblocksLocalEnv) {
-        val rootToken = solidblocksLocalEnv.environmentConfiguration.getConfigValue(ROOT_TOKEN_KEY)
+        val rootToken = solidblocksLocalEnv.environmentModel.getConfigValue(ROOT_TOKEN_KEY)
 
         val vaultManager = VaultCertificateManager(
             address = solidblocksLocalEnv.vaultAddress,

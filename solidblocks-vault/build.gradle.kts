@@ -5,8 +5,7 @@ plugins {
 dependencies {
 
     implementation("org.springframework.vault:spring-vault-core:2.3.2")
-    implementation(project(":solidblocks-cloud-config"))
-    implementation(project(":solidblocks-base"))
+    implementation(project(":solidblocks-cloud-model"))
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
