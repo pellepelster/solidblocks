@@ -12,8 +12,8 @@ import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants.cloudId
 import de.solidblocks.cloud.model.ModelConstants.defaultLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
-import de.solidblocks.cloud.model.model.EnvironmentModel
-import de.solidblocks.cloud.model.model.Role
+import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import de.solidblocks.cloud.model.entities.Role
 import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.consul.kv.ConsulKv
@@ -59,7 +59,6 @@ class CloudProvisioner(
 
     fun bootstrap(): Boolean {
         val environment = environmentRepository.getEnvironment(cloudName, environmentName)
-            ?: throw RuntimeException("environment '$environmentName' not found for cloud '$cloudName'")
 
         logger.info { "creating/updating environment '$cloudName' for cloud '$environmentName'" }
 
@@ -72,7 +71,7 @@ class CloudProvisioner(
     }
 
     private fun createCloudModel(
-        environment: EnvironmentModel,
+        environment: EnvironmentEntity,
         sshKeys: Set<SshKey> = emptySet()
     ) {
         val rootZone = DnsZone(environment.cloud.rootDomain)
@@ -194,7 +193,7 @@ class CloudProvisioner(
 
     private fun defaultCloudInitVariables(
         name: String,
-        environment: EnvironmentModel,
+        environment: EnvironmentEntity,
         rootZone: DnsZone,
         floatingIp: FloatingIp
     ): Map<out String, IResourceLookup<String>> {
@@ -229,7 +228,7 @@ class CloudProvisioner(
     private fun createDefaultServer(
         serverSpec: ServerSpec,
         resourceGroup: ResourceGroup,
-        environment: EnvironmentModel,
+        environment: EnvironmentEntity,
         rootZone: DnsZone
     ): FloatingIp {
         val volume = resourceGroup.addResource(

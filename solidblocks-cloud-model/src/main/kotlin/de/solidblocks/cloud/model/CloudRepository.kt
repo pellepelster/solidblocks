@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.cloud.model.model.CloudConfigValue
-import de.solidblocks.cloud.model.model.CloudModel
+import de.solidblocks.cloud.model.entities.CloudConfigValue
+import de.solidblocks.cloud.model.entities.CloudEntity
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import org.jooq.DSLContext
@@ -9,7 +9,7 @@ import java.util.*
 
 class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
 
-    fun createCloud(name: String, rootDomain: String, configValues: List<CloudConfigValue> = emptyList()): CloudModel {
+    fun createCloud(name: String, rootDomain: String, configValues: List<CloudConfigValue> = emptyList()): CloudEntity {
         logger.info { "creating cloud '$name'" }
 
         val id = UUID.randomUUID()
@@ -21,20 +21,20 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             )
             .values(id, name, false).execute()
 
-        setConfiguration(CloudId(id), CloudModel.ROOT_DOMAIN_KEY, rootDomain)
+        setConfiguration(CloudId(id), CloudEntity.ROOT_DOMAIN_KEY, rootDomain)
 
         configValues.forEach {
             setConfiguration(CloudId(id), it.name, it.value)
         }
 
-        return getCloud(name)!!
+        return getCloud(name)
     }
 
     fun hasCloud(name: String): Boolean {
         return dsl.fetchCount(CLOUDS, CLOUDS.NAME.eq(name).and(CLOUDS.DELETED.isFalse)) == 1
     }
 
-    fun listClouds(name: String? = null): List<CloudModel> {
+    fun listClouds(name: String? = null): List<CloudEntity> {
         val latest = latestConfigurationValues(CONFIGURATION_VALUES.CLOUD)
 
         val clouds = CLOUDS.`as`("clouds")
@@ -50,10 +50,10 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             .fetchGroups(
                 { it.into(clouds) }, { it.into(latest) }
             ).map {
-                CloudModel(
+                CloudEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
-                    rootDomain = it.value.configValue(CloudModel.ROOT_DOMAIN_KEY).value,
+                    rootDomain = it.value.configValue(CloudEntity.ROOT_DOMAIN_KEY).value,
                     it.value.map {
                         CloudConfigValue(
                             it.getValue(CONFIGURATION_VALUES.NAME)!!,
@@ -65,7 +65,7 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             }
     }
 
-    fun getCloud(name: String): CloudModel {
+    fun getCloud(name: String): CloudEntity {
         return listClouds(name).first()
     }
 }

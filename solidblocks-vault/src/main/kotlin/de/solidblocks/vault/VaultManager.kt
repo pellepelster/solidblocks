@@ -7,11 +7,12 @@ import mu.KotlinLogging
 
 data class VaultWriteRequest(val data: Map<*, *>)
 
-class VaultManager(address: String, val _token: String, private val reference: EnvironmentReference) : BaseVaultManager(address, _token) {
+class VaultManager(address: String, val _token: String, private val reference: EnvironmentReference) :
+    BaseVaultManager(address, _token) {
 
     private val logger = KotlinLogging.logger {}
 
-    val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jacksonObjectMapper()
 
     private fun kvPath(path: String) = "/${kvMountName(reference)}/data/$path"
 
@@ -23,7 +24,7 @@ class VaultManager(address: String, val _token: String, private val reference: E
     fun <T> loadKv(path: String, clazz: Class<T>): T? {
         val response = vaultTemplate.read(kvPath(path))
 
-        if (response.data == null) {
+        if (response == null || response.data == null) {
             logger.error { "no data returned for '${kvPath(path)}'" }
             return null
         }

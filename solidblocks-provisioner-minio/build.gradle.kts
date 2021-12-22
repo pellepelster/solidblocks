@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":solidblocks-provisioner"))
-    implementation(project(":solidblocks-cloud-model"))
+    api(project(":solidblocks-provisioner"))
+    api(project(":solidblocks-cloud-model"))
 
     implementation("io.minio:minio:8.3.4")
 

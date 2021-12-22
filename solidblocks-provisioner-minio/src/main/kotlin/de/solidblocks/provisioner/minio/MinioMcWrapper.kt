@@ -20,6 +20,30 @@ class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredential
     private val objectMapper = jacksonObjectMapper()
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    data class MinioErrorResponse(
+        val status: String,
+        val error: MinioError,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class MinioError(
+        val message: String,
+        val cause: MinioErrorCause,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class MinioErrorCause(
+        val message: String,
+        val error: MinioErrorCode
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class MinioErrorCode(
+        @JsonProperty("Code")
+        val code: String,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class MinioUser(
         val status: String,
         val accessKey: String,
@@ -86,7 +110,8 @@ class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredential
         val credentials = minioCredentialsProvider.invoke()
         val alias = "temp"
         val uri = URI.create(credentials.address)
-        val url = "${uri.scheme}://${credentials.accessKey}:${credentials.secretKey}@${uri.host}:${uri.port}/${uri.path}"
+        val url =
+            "${uri.scheme}://${credentials.accessKey}:${credentials.secretKey}@${uri.host}:${uri.port}/${uri.path}"
 
         val result = CommandExecutor().run(
             environment = mapOf(
@@ -97,10 +122,6 @@ class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredential
                 else it
             }
         )
-
-        if (result.error) {
-            throw RuntimeException(result.stderr + result.stdout)
-        }
 
         return result
     }
@@ -113,6 +134,10 @@ class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredential
         }.iterator().asSequence().toList()
     }
 
+    fun getPolicy(policy: String): MinioPolicy? {
+        return listPolicies().firstOrNull { it.policy == policy }
+    }
+
     fun listUsers(): List<MinioUser> {
         val result = runMc("admin", "user", "list", "ALIAS", "--json")
 
@@ -121,11 +146,20 @@ class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredential
         }.iterator().asSequence().toList()
     }
 
-    fun getUser(accessKey: String): List<MinioUser> {
+    fun getUser(accessKey: String): MinioUser? {
         val result = runMc("admin", "user", "info", "ALIAS", accessKey, "--json")
+
+        if (result.exitCode > 0) {
+            val error = objectMapper.readValue(result.stdout, MinioErrorResponse::class.java)
+            if (error.error.cause.error.code == "XMinioAdminNoSuchUser") {
+                return null
+            }
+
+            throw RuntimeException(result.stdout + result.stderr)
+        }
 
         return result.stdout.byteInputStream().let {
             objectMapper.readValues(JsonFactory().createParser(it), MinioUser::class.java)
-        }.iterator().asSequence().toList()
+        }.iterator().asSequence().firstOrNull()
     }
 }

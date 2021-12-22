@@ -1,13 +1,23 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.EnvironmentRepository
-import de.solidblocks.cloud.model.ModelConstants
-import de.solidblocks.cloud.model.model.EnvironmentModel
-import de.solidblocks.cloud.model.model.createConfigValue
+import de.solidblocks.api.resources.ResourceGroup
+import de.solidblocks.base.ServiceReference
+import de.solidblocks.cloud.model.*
+import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import de.solidblocks.cloud.model.entities.createConfigValue
+import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_CLOUD_API_TOKEN_RO_KEY
+import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_CLOUD_API_TOKEN_RW_KEY
+import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_DNS_API_TOKEN_RW_KEY
+import de.solidblocks.provisioner.minio.Minio.MINIO_SERVICE_SECRET_KEY_KEY
+import de.solidblocks.provisioner.minio.bucket.MinioBucket
 import mu.KotlinLogging
+import java.util.*
 
-class CloudManager(val cloudRepository: CloudRepository, val environmentRepository: EnvironmentRepository) {
+class CloudManager(
+    val cloudRepository: CloudRepository,
+    val environmentRepository: EnvironmentRepository,
+    val serviceRepository: ServiceRepository
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -45,13 +55,35 @@ class CloudManager(val cloudRepository: CloudRepository, val environmentReposito
             cloud, environment,
             listOf(
                 createConfigValue(ModelConstants.GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
-                createConfigValue(ModelConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
-                createConfigValue(ModelConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
-                createConfigValue(ModelConstants.HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
+                createConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
+                createConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
+                createConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
             )
         )
 
         return true
+    }
+
+    fun bootstrapService(reference: ServiceReference): String {
+
+        val service = serviceRepository.createService(
+            reference.cloud, reference.environment, reference.service,
+            mapOf(
+                MINIO_SERVICE_SECRET_KEY_KEY to UUID.randomUUID().toString()
+            )
+        )
+        val provisioner = serviceRepository.createService(reference.cloud, reference.environment, reference.service)
+
+        val group = ResourceGroup("${ModelConstants.serviceId(reference)}-backup")
+
+        val bucket = MinioBucket(ModelConstants.serviceId(reference))
+        group.addResource(bucket)
+
+        // provisioner.apply()
+
+        // return provisioner.lookup(bucket).result!!.name
+
+        return ""
     }
 
     fun rotateEnvironmentSecrets(cloud: String, environment: String): Boolean {
@@ -65,8 +97,8 @@ class CloudManager(val cloudRepository: CloudRepository, val environmentReposito
         return true
     }
 
-    fun listEnvironments(cloud: String): List<EnvironmentModel> {
-        val cloud = cloudRepository.getCloud(cloud) ?: throw RuntimeException("cloud '$cloud' not found")
+    fun listEnvironments(cloud: String): List<EnvironmentEntity> {
+        val cloud = cloudRepository.getCloud(cloud)
         return environmentRepository.listEnvironments(cloud)
     }
 }

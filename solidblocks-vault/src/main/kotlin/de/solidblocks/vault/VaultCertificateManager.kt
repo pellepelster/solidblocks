@@ -1,5 +1,6 @@
 package de.solidblocks.vault
 
+import de.solidblocks.base.ServiceReference
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
@@ -32,7 +33,12 @@ data class Certificate(val publicRaw: String) {
 }
 
 @OptIn(ExperimentalTime::class)
-class VaultCertificateManager(private val address: String, token: String, val cloud: String, val environment: String, val service: String, val minCertificateLifetime: Duration = Duration.hours(2)) {
+class VaultCertificateManager(
+    private val address: String,
+    token: String,
+    val reference: ServiceReference,
+    val minCertificateLifetime: Duration = Duration.hours(2)
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -70,7 +76,15 @@ class VaultCertificateManager(private val address: String, token: String, val cl
 
     fun issueCertificate(): Certificate? = try {
         logger.info { "issuing certificate" }
-        val response = vaultTemplate.write("${VaultConstants.pkiMountName(cloud, environment)}/issue/${VaultConstants.pkiMountName(cloud, environment)}", mapOf("common_name" to service))
+        val response = vaultTemplate.write(
+            "${
+            VaultConstants.pkiMountName(
+                reference.cloud,
+                reference.environment
+            )
+            }/issue/${VaultConstants.pkiMountName(reference.cloud, reference.environment)}",
+            mapOf("common_name" to reference.service)
+        )
 
         val certificate = response.data.get("certificate").toString()
         val privateKey = response.data.get("private_key").toString()
@@ -81,7 +95,7 @@ class VaultCertificateManager(private val address: String, token: String, val cl
         logger.info { "issued certificate '${result.public.serialNumber}' valid until ${result.public.notAfter}" }
         result
     } catch (e: Exception) {
-        logger.error { "failed to issue certificate for service '$service'" }
+        logger.error { "failed to issue certificate for service '${reference.service}'" }
         null
     }
 

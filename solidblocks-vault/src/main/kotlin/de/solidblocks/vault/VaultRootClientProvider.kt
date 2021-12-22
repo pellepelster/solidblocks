@@ -23,7 +23,6 @@ class VaultRootClientProvider(
         }
 
         val environment = environmentRepository.getEnvironment(cloudName, environmentName)
-            ?: throw RuntimeException("environment '$environmentName' not found for cloud '$cloudName'")
 
         return VaultConstants.vaultAddress(environment)
     }
@@ -34,7 +33,6 @@ class VaultRootClientProvider(
 
     private fun getVaultCredentials(): VaultCredentials {
         val environment = environmentRepository.getEnvironment(cloudName, environmentName)
-            ?: throw RuntimeException("environment '$environmentName' not found for cloud '$cloudName'")
 
         val rootToken = environment.configValues.firstOrNull { it.name == ROOT_TOKEN_KEY }
             ?: throw RuntimeException("vault at '${vaultAddress()}' is initialized, but no vault root token found for cloud '$cloudName'")

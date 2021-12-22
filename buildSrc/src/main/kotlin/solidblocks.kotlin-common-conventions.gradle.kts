@@ -33,18 +33,16 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
+
     implementation("joda-time:joda-time:2.10.10")
 
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
-
     testImplementation("org.testcontainers:testcontainers:1.15.3")
     testImplementation("org.testcontainers:junit-jupiter:1.15.3")
-
     testImplementation("org.assertj:assertj-core:3.21.0")
-
     testImplementation("org.apache.derby:derbytools:10.15.2.0")
     testImplementation("org.apache.derby:derby:10.15.2.0")
 

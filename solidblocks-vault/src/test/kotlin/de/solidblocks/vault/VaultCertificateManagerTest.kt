@@ -24,9 +24,7 @@ class VaultCertificateManagerTest {
         val vaultManager = VaultCertificateManager(
             address = solidblocksLocalEnv.vaultAddress,
             token = rootToken,
-            cloud = solidblocksLocalEnv.cloud,
-            environment = solidblocksLocalEnv.environment,
-            service = "service1",
+            solidblocksLocalEnv.reference.toService("service1"),
             minCertificateLifetime = Duration.Companion.days(300)
         )
 

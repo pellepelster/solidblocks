@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.cloud.model.model.CloudConfigValue
+import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.config.db.tables.records.ConfigurationValuesRecord
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import mu.KotlinLogging
@@ -20,6 +20,8 @@ abstract class BaseRepository(val dsl: DSLContext) {
     protected class EnvironmentId(val id: UUID) : IdType(id)
 
     protected class TenantId(val id: UUID) : IdType(id)
+
+    protected class ServiceId(val id: UUID) : IdType(id)
 
     protected val logger = KotlinLogging.logger {}
 
@@ -48,7 +50,7 @@ abstract class BaseRepository(val dsl: DSLContext) {
                             .and(referenceColumn.eq(latestVersions.field(referenceColumn)))
                     )
             )
-        ).asTable("latest_configurations")
+        ).where(referenceColumn.isNotNull).asTable("latest_configurations")
 
         return latest
     }
@@ -57,23 +59,26 @@ abstract class BaseRepository(val dsl: DSLContext) {
 
         var tenantId: UUID? = null
         var cloudId: UUID? = null
-        var cloudEnvironmentId: UUID? = null
+        var serviceId: UUID? = null
+        var environmentId: UUID? = null
 
         when (id) {
             is CloudId -> cloudId = id.id
-            is EnvironmentId -> cloudEnvironmentId = id.id
+            is EnvironmentId -> environmentId = id.id
             is TenantId -> tenantId = id.id
+            is ServiceId -> serviceId = id.id
         }
 
         val condition = when (id) {
             is CloudId -> CONFIGURATION_VALUES.CLOUD.eq(id.id)
-            is TenantId -> CONFIGURATION_VALUES.TENANT.eq(id.id)
             is EnvironmentId -> CONFIGURATION_VALUES.ENVIRONMENT.eq(id.id)
+            is TenantId -> CONFIGURATION_VALUES.TENANT.eq(id.id)
+            is ServiceId -> CONFIGURATION_VALUES.SERVICE.eq(id.id)
         }
 
         if (value != null) {
             // unfortunately derby does not support limits .limit(1).offset(0)
-            val cloud = dsl.selectFrom(CONFIGURATION_VALUES)
+            val current = dsl.selectFrom(CONFIGURATION_VALUES)
                 .where(CONFIGURATION_VALUES.NAME.eq(name).and(condition))
                 .orderBy(CONFIGURATION_VALUES.VERSION.desc()).fetch()
 
@@ -83,15 +88,15 @@ abstract class BaseRepository(val dsl: DSLContext) {
                 CONFIGURATION_VALUES.CLOUD,
                 CONFIGURATION_VALUES.ENVIRONMENT,
                 CONFIGURATION_VALUES.TENANT,
+                CONFIGURATION_VALUES.SERVICE,
                 CONFIGURATION_VALUES.NAME,
                 CONFIGURATION_VALUES.CONFIG_VALUE
             ).values(
                 UUID.randomUUID(),
-                cloud.firstOrNull()?.let { it.version!! + 1 }
+                current.firstOrNull()?.let { it.version!! + 1 }
                     ?: 0,
-                cloudId, cloudEnvironmentId, tenantId, name, value
-            )
-                .execute()
+                cloudId, environmentId, tenantId, serviceId, name, value
+            ).execute()
         }
     }
 

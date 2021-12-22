@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.cloud.model.model.EnvironmentModel
-import de.solidblocks.cloud.model.model.TenantModel
+import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import de.solidblocks.config.db.tables.references.TENANTS
 import org.jooq.DSLContext
@@ -9,12 +9,12 @@ import java.util.*
 
 class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
 
-    fun getTenant(cloudName: String, environmentName: String, name: String): TenantModel {
+    fun getTenant(cloudName: String, environmentName: String, name: String): TenantEntity {
         val environment = environmentRepository.getEnvironment(cloudName, environmentName)
         return listTenants(name, environment).first()
     }
 
-    fun listTenants(name: String? = null, environment: EnvironmentModel): List<TenantModel> {
+    fun listTenants(name: String? = null, environment: EnvironmentEntity): List<TenantEntity> {
 
         val latest = latestConfigurationValues(CONFIGURATION_VALUES.TENANT)
 
@@ -32,7 +32,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
             .fetchGroups(
                 { it.into(tenants) }, { it.into(latest) }
             ).map {
-                TenantModel(
+                TenantEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
                     environment = environment
@@ -40,7 +40,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
             }
     }
 
-    fun createTenant(cloudName: String, environmentName: String, name: String): TenantModel? {
+    fun createTenant(cloudName: String, environmentName: String, name: String): TenantEntity? {
 
         val id = UUID.randomUUID()
         val environment = environmentRepository.getEnvironment(cloudName, environmentName) ?: return null

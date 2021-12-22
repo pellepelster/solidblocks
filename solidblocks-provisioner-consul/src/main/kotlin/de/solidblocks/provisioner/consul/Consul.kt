@@ -4,7 +4,7 @@ import com.orbitz.consul.Consul
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.base.ProvisionerRegistry
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
-import de.solidblocks.cloud.model.model.EnvironmentModel
+import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.provisioner.consul.kv.ConsulKvProvisioner
 import de.solidblocks.provisioner.consul.policy.ConsulPolicyProvisioner
 import de.solidblocks.provisioner.consul.token.ConsulTokenProvisioner
@@ -12,10 +12,10 @@ import de.solidblocks.provisioner.consul.token.ConsulTokenProvisioner
 object Consul {
 
     // TODO use https and cloud pki for connections
-    fun consulAddress(environment: EnvironmentModel) =
+    fun consulAddress(environment: EnvironmentEntity) =
         "http://consul.${environment.name}.${environment.cloud.rootDomain}:8500"
 
-    fun consulClient(environmentConfiguration: EnvironmentModel): Consul {
+    fun consulClient(environmentConfiguration: EnvironmentEntity): Consul {
         return Consul.builder()
             .withUrl(consulAddress(environmentConfiguration))
             .withAclToken(environmentConfiguration.getConfigValue(CONSUL_MASTER_TOKEN_KEY))

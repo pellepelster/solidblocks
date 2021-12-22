@@ -11,7 +11,7 @@ import org.springframework.vault.core.VaultKeyValueOperations
 import org.springframework.vault.core.VaultKeyValueOperationsSupport
 import org.springframework.vault.core.VaultTemplate
 
-class VaultKVProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
+class VaultKVProvisioner(private val vaultTemplateProvider: () -> VaultTemplate) :
     IResourceLookupProvider<IVaultKVLookup, VaultKVRuntime>,
     IInfrastructureResourceProvisioner<VaultKV, VaultKVRuntime> {
 

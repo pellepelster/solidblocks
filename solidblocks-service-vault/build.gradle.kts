@@ -8,12 +8,17 @@ dependencies {
 
     implementation(project(":solidblocks-vault"))
     implementation(project(":solidblocks-base"))
+    implementation(project(":solidblocks-cloud-model"))
+    implementation(project(":solidblocks-service-vault-api"))
 
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
     implementation("com.github.docker-java:docker-java-core:3.2.12")
     implementation("com.github.docker-java:docker-java-transport-zerodep:3.2.12")
 
+    implementation("io.minio:minio:8.3.4")
+
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:1.0.9")
     implementation("io.github.resilience4j:resilience4j-kotlin:1.7.1")

@@ -37,7 +37,7 @@ class MinioUserProvisioner(minioCredentialsProvider: () -> MinioCredentials) :
     }
 
     override fun apply(resource: MinioUser): Result<*> {
-        minioMcWrapper.addUser(resource.name, UUID.randomUUID().toString())
+        minioMcWrapper.addUser(resource.name, resource.secretKey)
         return Result<Any>(resource)
     }
 

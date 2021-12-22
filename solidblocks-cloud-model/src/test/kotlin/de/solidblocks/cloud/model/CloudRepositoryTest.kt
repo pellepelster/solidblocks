@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.cloud.model.model.CloudConfigValue
+import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.exception.DataAccessException

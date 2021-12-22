@@ -21,7 +21,7 @@ class SolidblocksLocalEnvExtension : ParameterResolver, BeforeAllCallback, After
     override fun beforeAll(context: ExtensionContext) {
         solidblocksLocalEnv.start()
 
-        if (!solidblocksLocalEnv.bootstrap()) {
+        if (!solidblocksLocalEnv.createCloud()) {
             solidblocksLocalEnv.stop()
             throw RuntimeException("failed to provision local environment")
         }

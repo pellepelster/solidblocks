@@ -6,7 +6,7 @@ import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants.networkName
 import de.solidblocks.cloud.model.TenantRepository
-import de.solidblocks.cloud.model.model.TenantModel
+import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.hetzner.cloud.network.Network
 import de.solidblocks.provisioner.hetzner.cloud.network.Subnet
@@ -42,7 +42,7 @@ class TenantProvisioner(
     }
 
     private fun createTenantModel(
-        tenant: TenantModel,
+        tenant: TenantEntity,
         sshKeys: Set<SshKey> = emptySet()
     ) {
 

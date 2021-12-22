@@ -6,9 +6,9 @@ import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_SECRET_KEY
 import de.solidblocks.cloud.model.ModelConstants.GITHUB_TOKEN_RO_KEY
 import de.solidblocks.cloud.model.ModelConstants.GITHUB_USERNAME_KEY
-import de.solidblocks.cloud.model.ModelConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
-import de.solidblocks.cloud.model.model.EnvironmentModel
-import de.solidblocks.cloud.model.model.getConfigValue
+import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import de.solidblocks.cloud.model.entities.getConfigValue
+import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_CLOUD_API_TOKEN_RO_KEY
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.mount.VaultMount
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
@@ -25,7 +25,7 @@ object VaultCloudConfiguration {
 
     fun createVaultConfig(
         parentResourceGroups: Set<ResourceGroup>,
-        environment: EnvironmentModel
+        environment: EnvironmentEntity
     ): ResourceGroup {
         val resourceGroup = ResourceGroup("vaultConfig", parentResourceGroups)
 

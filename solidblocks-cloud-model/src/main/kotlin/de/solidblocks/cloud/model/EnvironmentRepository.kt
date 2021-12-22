@@ -7,7 +7,7 @@ import de.solidblocks.cloud.model.ModelConstants.SSH_IDENTITY_PRIVATE_KEY
 import de.solidblocks.cloud.model.ModelConstants.SSH_IDENTITY_PUBLIC_KEY
 import de.solidblocks.cloud.model.ModelConstants.SSH_PRIVATE_KEY
 import de.solidblocks.cloud.model.ModelConstants.SSH_PUBLIC_KEY
-import de.solidblocks.cloud.model.model.*
+import de.solidblocks.cloud.model.entities.*
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import de.solidblocks.config.db.tables.references.ENVIRONMENTS
 import org.jooq.DSLContext
@@ -21,8 +21,8 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
         cloud: String,
         environment: String,
         configValues: List<CloudConfigValue> = emptyList()
-    ): EnvironmentModel? {
-        val cloud = cloudRepository.getCloud(cloud) ?: return null
+    ): EnvironmentEntity {
+        val cloud = cloudRepository.getCloud(cloud)
 
         logger.info { "creating environment '$environment' for cloud '$cloud'" }
         val id = UUID.randomUUID()
@@ -44,7 +44,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
         return getEnvironment(cloud.name, environment)
     }
 
-    fun listEnvironments(cloud: CloudModel): List<EnvironmentModel> {
+    fun listEnvironments(cloud: CloudEntity): List<EnvironmentEntity> {
 
         val latest = latestConfigurationValues(CONFIGURATION_VALUES.ENVIRONMENT)
 
@@ -57,7 +57,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
             .fetchGroups(
                 { it.into(environments) }, { it.into(latest) }
             ).map {
-                EnvironmentModel(
+                EnvironmentEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
                     sshSecrets = loadSshCredentials(it.value),
@@ -86,7 +86,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
     }
 
     private fun updateEnvironment(
-        environment: EnvironmentModel,
+        environment: EnvironmentEntity,
         name: String,
         value: String
     ): Boolean {
@@ -94,7 +94,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
         return true
     }
 
-    fun getEnvironment(cloudName: String, environment: String): EnvironmentModel {
+    fun getEnvironment(cloudName: String, environment: String): EnvironmentEntity {
         val cloud = cloudRepository.getCloud(cloudName)
 
         return listEnvironments(cloud).first { it.name == environment }
@@ -158,7 +158,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
         setConfiguration(id, SSH_PUBLIC_KEY, secrets.sshPublicKey)
     }
 
-    private fun generateAndStoreSecrets(environment: EnvironmentModel) {
+    private fun generateAndStoreSecrets(environment: EnvironmentEntity) {
         generateAndStoreSecrets(environment.id, environment.name)
     }
 

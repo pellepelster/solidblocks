@@ -1,22 +1,15 @@
 package de.solidblocks.test
 
-import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createVaultConfig
-import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
-import de.solidblocks.cloud.model.ModelConstants.CONSUL_SECRET_KEY
-import de.solidblocks.cloud.model.ModelConstants.GITHUB_TOKEN_RO_KEY
-import de.solidblocks.cloud.model.ModelConstants.GITHUB_USERNAME_KEY
-import de.solidblocks.cloud.model.ModelConstants.HETZNER_CLOUD_API_TOKEN_RO_KEY
-import de.solidblocks.cloud.model.ModelConstants.HETZNER_CLOUD_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.model.ModelConstants.HETZNER_DNS_API_TOKEN_RW_KEY
-import de.solidblocks.cloud.model.ModelConstants.serviceId
-import de.solidblocks.cloud.model.model.EnvironmentModel
+import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.provisioner.minio.MinioCredentials
-import de.solidblocks.provisioner.minio.bucket.MinioBucket
+import de.solidblocks.service.vault.VaultService
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
+import de.solidblocks.vault.Certificate
+import de.solidblocks.vault.VaultCertificateManager
 import de.solidblocks.vault.VaultConstants
 import mu.KotlinLogging
 import org.testcontainers.containers.DockerComposeContainer
@@ -36,7 +29,9 @@ class SolidblocksLocalEnv {
 
     val environment = "env1"
 
-    lateinit var appplicationContext: SolidblocksAppplicationContext
+    private val certificateManagers: MutableMap<ServiceReference, VaultCertificateManager> = mutableMapOf()
+
+    private lateinit var appplicationContext: SolidblocksAppplicationContext
 
     val rootToken: String get() = environmentModel.getConfigValue(VaultConstants.ROOT_TOKEN_KEY)
 
@@ -64,7 +59,7 @@ class SolidblocksLocalEnv {
     val minioAddress: String
         get() = "http://localhost:${dockerEnvironment.getServicePort("minio", 9000)}"
 
-    val environmentModel: EnvironmentModel
+    val environmentModel: EnvironmentEntity
         get() =
             appplicationContext.environmentRepository.getEnvironment(cloud, environment)
 
@@ -80,49 +75,53 @@ class SolidblocksLocalEnv {
         dockerEnvironment.stop()
     }
 
-    fun bootstrap(): Boolean {
-        logger.info { "bootstrapping test env" }
+    fun createCloud(): Boolean {
+        logger.info { "creating test env ($cloud/$environment)" }
 
-        appplicationContext.cloudRepository.let {
-            it.createCloud(cloud, "test.env", emptyList())
+        appplicationContext.cloudManager.createCloud(cloud, "test.env")
+        appplicationContext.cloudManager.createEnvironment(
+            cloud, environment,
+            "<none>",
+            "<none>",
+            "<none>",
+            "<none>"
+        )
+
+        val environment = appplicationContext.environmentRepository.getEnvironment(cloud, environment)
+        val provisioner = appplicationContext.createProvisioner(cloud, this.environment)
+
+        provisioner.addResourceGroup(createVaultConfig(emptySet(), environment))
+
+        val result = provisioner.apply()
+
+        if (!result) {
+            logger.error { "provisioning test env ($cloud/$environment) failed" }
+            return false
         }
 
-        appplicationContext.environmentRepository.let {
-            it.createEnvironment(cloud, environment)
-            it.updateEnvironment(
-                cloud, environment,
-                mapOf(
-                    CONSUL_SECRET_KEY to "<none>",
-                    CONSUL_MASTER_TOKEN_KEY to "<none>",
-                    GITHUB_TOKEN_RO_KEY to "<none>",
-                    GITHUB_USERNAME_KEY to "<none>",
-                    HETZNER_DNS_API_TOKEN_RW_KEY to "<none>",
-                    HETZNER_CLOUD_API_TOKEN_RW_KEY to "<none>",
-                    HETZNER_CLOUD_API_TOKEN_RO_KEY to "<none>",
-                )
-            )
-        }
+        logger.info { "vault is available at '$vaultAddress' with root token '$rootToken'" }
+        logger.info { "minio is available at '$minioAddress' with access key '${minioCredentialProvider.invoke().accessKey}' and secret key '${minioCredentialProvider.invoke().secretKey}'" }
 
-        val environmentConfiguration = appplicationContext.environmentRepository.getEnvironment(cloud, environment)
-        val provisioner = appplicationContext.createProvisioner(cloud, environment)
-
-        provisioner.addResourceGroup(createVaultConfig(emptySet(), environmentConfiguration))
-
-        return provisioner.apply()
+        return result
     }
 
-    fun bootstrapService(reference: ServiceReference): String {
-        val provisioner = appplicationContext.createProvisioner(cloud, environment)
+    fun createVaultService(service: String): Boolean {
 
-        val group = ResourceGroup("${serviceId(reference)}-backup")
+        val service = VaultService(
+            ServiceReference(cloud, environment, service),
+            appplicationContext.serviceRepository
+        )
 
-        val bucket = MinioBucket(serviceId(reference))
-        group.addResource(bucket)
+        service.createService()
 
-        provisioner.apply()
+        val provisioner = appplicationContext.createProvisioner(cloud, this.environment)
+        service.bootstrapService(provisioner)
 
-        return provisioner.lookup(bucket).result!!.name
+        return true
     }
 
-    fun createServiceReference(service: String) = ServiceReference(cloud, environment, service)
+    fun createCertificate(reference: ServiceReference): Certificate? {
+        certificateManagers[reference] = VaultCertificateManager(vaultAddress, rootToken, reference)
+        return certificateManagers[reference]!!.issueCertificate()
+    }
 }

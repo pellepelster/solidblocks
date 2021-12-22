@@ -25,6 +25,11 @@ class MinioMcWrapperTest {
         MinioMcWrapper { MinioCredentials(minioAddress, "admin", "c3344fa0-5eb2-11ec-95ba-77ffa3cedca9") }
 
     @Test
+    fun testGetNonExistingUser() {
+        assertThat(wrapper.getUser(UUID.randomUUID().toString())).isNull()
+    }
+
+    @Test
     fun testPolicies() {
         assertThat(wrapper.listPolicies()).contains(
             MinioMcWrapper.MinioPolicy(

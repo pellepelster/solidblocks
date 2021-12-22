@@ -1,5 +1,6 @@
 package de.solidblocks.vault
 
+import de.solidblocks.base.ServiceReference
 import de.solidblocks.test.KDockerComposeContainer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -37,7 +38,7 @@ class InitializingVaultManagerTest {
         assertThat(initializingVaultManager.unseal(result)).isTrue
         assertThat(initializingVaultManager.isSealed()).isFalse
 
-        val vaultManager = VaultCertificateManager(vaultAddress(), result.rootToken, "cloud1", "env1", "service1")
+        val vaultManager = VaultCertificateManager(vaultAddress(), result.rootToken, ServiceReference("cloud1", "env1", "service1"))
         vaultManager.seal()
 
         assertThat(initializingVaultManager.isSealed()).isTrue

@@ -3,11 +3,21 @@ package de.solidblocks.service.vault
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.dockerjava.api.DockerClient
-import com.github.dockerjava.api.model.*
+import com.github.dockerjava.api.model.Bind
+import com.github.dockerjava.api.model.Capability
+import com.github.dockerjava.api.model.ExposedPort
+import com.github.dockerjava.api.model.HostConfig
+import com.github.dockerjava.api.model.PortBinding
+import com.github.dockerjava.api.model.Ports
+import com.github.dockerjava.api.model.Volume
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
+import de.solidblocks.base.Constants.SERVICE_LABEL_KEY
 import de.solidblocks.base.ServiceReference
+import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
+import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.service.vault.config.RaftStorage
 import de.solidblocks.service.vault.config.Tcp
 import de.solidblocks.service.vault.config.Vault
@@ -16,9 +26,21 @@ import de.solidblocks.vault.VaultCredentials
 import de.solidblocks.vault.VaultManager
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
+import io.minio.GetObjectArgs
+import io.minio.ListObjectsArgs
+import io.minio.MinioClient
+import io.minio.PutObjectArgs
+import io.minio.Result
+import io.minio.messages.Item
+import io.minio.messages.Tags
 import mu.KotlinLogging
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.logging.HttpLoggingInterceptor
+import okio.BufferedSink
+import okio.source
 import org.springframework.vault.VaultException
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
@@ -27,17 +49,21 @@ import java.io.File
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermissions
 import java.time.Duration
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.io.path.writeBytes
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class RaftAutopilotResponse(val healthy: Boolean, val leader: String)
 
 class VaultServiceManager(
-    val reference: ServiceReference,
-    val storageDir: String,
-    val solidblocksVaultManager: VaultManager
+    private val reference: ServiceReference,
+    private val storageDir: String,
+    private val minioAddress: String,
+    solidblocksVaultAddress: String,
+    solidblocksVaultToken: String,
 ) {
 
     private val DOCKER_IMAGE = "solidblocks-service-vault"
@@ -45,8 +71,6 @@ class VaultServiceManager(
     private val USER_ID = 4000
 
     private val GROUP_ID = 4000
-
-    private val SERVICE_LABEL_KEY = "service"
 
     private val bindPort = Ports.Binding.bindPort(8200)
 
@@ -58,10 +82,12 @@ class VaultServiceManager(
 
     val dockerClient: DockerClient
 
-    val config =
+    val solidblocksVaultManager: VaultManager
+
+    val retryConfig =
         RetryConfig.custom<Boolean>().retryOnResult { it == false }.maxAttempts(20).waitDuration(Duration.ofSeconds(1))
 
-    val retry = Retry.of("healthcheck", config.build())
+    val retry = Retry.of("healthcheck", retryConfig.build())
 
     init {
         val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
@@ -69,6 +95,21 @@ class VaultServiceManager(
             config,
             ZerodepDockerHttpClient.Builder().dockerHost(URI.create("unix:///var/run/docker.sock")).build()
         )
+
+        solidblocksVaultManager = VaultManager(
+            solidblocksVaultAddress,
+            solidblocksVaultToken,
+            reference.toEnvironment()
+        )
+    }
+
+    fun loadConfiguration(): VaultServiceConfiguration? {
+        val configPath = ModelConstants.serviceConfigPath(reference)
+        return solidblocksVaultManager.loadKv(configPath, VaultServiceConfiguration::class.java).also {
+            if (it == null) {
+                logger.error { "could not load service configuration from '$configPath'" }
+            }
+        }
     }
 
     val vaultAddress: String
@@ -106,7 +147,6 @@ class VaultServiceManager(
             // return false
         }
 
-        val permissions = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxrwxrwx"))
         val tempDir = Files.createTempDirectory("${reference.cloud}-${reference.environment}-${reference.service}")
 
         val vaultConfig = Vault(
@@ -222,6 +262,8 @@ class VaultServiceManager(
     fun isRunning(): Boolean = serviceContainers().isNotEmpty()
 
     fun backup(): Boolean {
+
+        val minioClient = createMinioClient() ?: return false
         val credentials = loadCredentials() ?: return false
 
         val client = OkHttpClient()
@@ -230,12 +272,86 @@ class VaultServiceManager(
             .addHeader("X-Vault-Token", credentials.rootToken)
             .build()
 
-        val bytes = client.newCall(request).execute().use {
-            it.body!!.bytes()
+        val now = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
+
+        val snapshotName = "${serviceId(reference)}-raft-snapshot-$now"
+        client.newCall(request).execute().body?.byteStream().use {
+            if (it == null) {
+                logger.error { "could not get backup snapshot from vault '$vaultAddress" }
+                return false
+            }
+
+            minioClient.putObject(
+                PutObjectArgs.builder().bucket(serviceBucketName(reference)).`object`(snapshotName)
+                    .tags(
+                        Tags.newBucketTags(
+                            mapOf(
+                                "timestamp" to now,
+                                "service" to reference.service,
+                                "environment" to reference.environment,
+                                "cloud" to reference.cloud
+                            )
+                        )
+                    )
+                    .stream(it, -1, 10 * 1024 * 1024).build()
+            )
         }
 
-        bytes.toString()
-
         return true
+    }
+
+    private fun createMinioClient(): MinioClient? {
+
+        val client = loadConfiguration()?.let {
+            MinioClient.builder()
+                .endpoint(minioAddress)
+                .credentials(it.minioAccessKey, it.minioSecretKey)
+                .build()
+        }
+
+        if (client == null) {
+            logger.error { "could not create minio client" }
+            return null
+        }
+
+        return client
+    }
+
+    fun restore(): Boolean {
+
+        val logging = HttpLoggingInterceptor()
+        logging.level = (HttpLoggingInterceptor.Level.BASIC)
+
+        val client = OkHttpClient().newBuilder().addInterceptor(logging).build()
+
+        val minioClient = createMinioClient() ?: return false
+        val credentials = loadCredentials() ?: return false
+
+        val maybeItem =
+            minioClient.listObjects(ListObjectsArgs.builder().bucket(serviceBucketName(reference)).build())
+                .firstOrNull() ?: return false
+        val item = maybeItem as Result<Item>
+
+        val stream = minioClient.getObject(
+            GetObjectArgs.builder().bucket(serviceBucketName(reference)).`object`(item.get().objectName()).build()
+        ).buffered()
+
+        val requestBody = object : RequestBody() {
+
+            override fun contentType() = "application/octet-stream".toMediaType()
+
+            override fun writeTo(sink: BufferedSink) {
+                sink.writeAll(stream.source())
+            }
+        }
+
+        val request = Request.Builder()
+            .url("$vaultAddress/v1/sys/storage/raft/snapshot")
+            .addHeader("X-Vault-Token", credentials.rootToken)
+            .post(requestBody)
+            .build()
+
+        val restoreResponse = client.newCall(request).execute()
+        return restoreResponse.code == 204
     }
 }

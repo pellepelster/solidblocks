@@ -14,7 +14,6 @@ class EnvironmentRepositoryTest {
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
         val cloud = cloudRepository.createCloud("cloud1", "domain1")
-
         assertThat(environmentRepository.createEnvironment(cloud.name, "env1")).isNotNull
 
         val environment = environmentRepository.getEnvironment("cloud1", "env1")
