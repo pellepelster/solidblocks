@@ -1,6 +1,7 @@
 package de.solidblocks.vault
 
 import de.solidblocks.base.ServiceReference
+import de.solidblocks.vault.VaultConstants.domain
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
@@ -15,13 +16,13 @@ import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
 
-val cf = CertificateFactory.getInstance("X.509")
+val certificateFactory = CertificateFactory.getInstance("X.509")
 
-data class Certificate(val publicRaw: String) {
+data class Certificate(val certificateRaw: String, val privateKeyRaw: String, val issuingCaRaw: String) {
 
     val public: X509Certificate
         get() {
-            return cf.generateCertificate(publicRaw.byteInputStream()) as X509Certificate
+            return certificateFactory.generateCertificate(certificateRaw.byteInputStream()) as X509Certificate
         }
 
     @OptIn(ExperimentalTime::class)
@@ -37,6 +38,8 @@ class VaultCertificateManager(
     private val address: String,
     token: String,
     val reference: ServiceReference,
+    val rootDomain: String,
+    val isDevelopment: Boolean = false,
     val minCertificateLifetime: Duration = Duration.hours(2)
 ) {
 
@@ -83,7 +86,7 @@ class VaultCertificateManager(
                 reference.environment
             )
             }/issue/${VaultConstants.pkiMountName(reference.cloud, reference.environment)}",
-            mapOf("common_name" to reference.service)
+            mapOf("common_name" to domain(reference, rootDomain), "alt_names" to listOf("localhost").joinToString(","))
         )
 
         val certificate = response.data.get("certificate").toString()
@@ -91,7 +94,7 @@ class VaultCertificateManager(
         val issuingCa = response.data.get("issuing_ca").toString()
         val serialNumber = response.data.get("serial_number").toString()
 
-        val result = Certificate(certificate)
+        val result = Certificate(certificate, privateKey, issuingCa)
         logger.info { "issued certificate '${result.public.serialNumber}' valid until ${result.public.notAfter}" }
         result
     } catch (e: Exception) {

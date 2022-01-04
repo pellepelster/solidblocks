@@ -123,8 +123,10 @@ class VaultPkiBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
             key_bits = resource.keyBits,
             max_ttl = resource.maxTtl,
             ttl = resource.ttl,
-            allow_any_name = resource.allowAnyName,
+            allow_localhost = resource.allowLocalhost,
+            allowed_domains = resource.allowedDomains,
             generate_lease = resource.generateLease,
+            allow_subdomains = resource.allowSubdomains,
         )
         val vaultTemplate = vaultTemplateProvider.invoke()
 

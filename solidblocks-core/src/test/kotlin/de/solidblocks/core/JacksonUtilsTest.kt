@@ -2,8 +2,7 @@ package de.solidblocks.core
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import de.solidblocks.core.utils.JacksonUtils
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.core.Is
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class JacksonUtilsTest {
@@ -17,6 +16,6 @@ class JacksonUtilsTest {
     fun testSerializeToMap() {
         val test = SerializationTest("abc")
         val map = JacksonUtils.toMap(test)
-        assertThat(map["my_property"], Is.`is`("abc"))
+        assertThat(map["my_property"]).isEqualTo("abc")
     }
 }

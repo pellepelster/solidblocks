@@ -1,7 +1,7 @@
 package de.solidblocks.service.vault
 
-import de.solidblocks.test.SolidblocksLocalEnv
-import de.solidblocks.test.SolidblocksLocalEnvExtension
+import de.solidblocks.test.DevelopmentEnvironment
+import de.solidblocks.test.DevelopmentEnvironmentExtension
 import de.solidblocks.test.TestUtils.initWorldReadableTempDir
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
@@ -14,28 +14,28 @@ import org.springframework.vault.core.VaultTemplate
 import java.net.URI
 import java.util.*
 
-@ExtendWith(SolidblocksLocalEnvExtension::class)
+@ExtendWith(DevelopmentEnvironmentExtension::class)
 class VaultServiceManagerTest {
 
     private val logger = KotlinLogging.logger {}
 
     @Test
-    fun testKeepsDataAfterRestart(solidblocksLocalEnv: SolidblocksLocalEnv) {
+    fun testKeepsDataAfterRestart(developmentEnvironment: DevelopmentEnvironment) {
 
         val service = "vault-${UUID.randomUUID()}"
-        if (!solidblocksLocalEnv.createVaultService(service)) {
+        if (!developmentEnvironment.createVaultService(service)) {
             throw RuntimeException("error creating service")
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = solidblocksLocalEnv.reference.toService(service)
+        val reference = developmentEnvironment.reference.toService(service)
 
         val serviceManager = VaultServiceManager(
             reference,
             tempDir,
-            solidblocksLocalEnv.minioAddress,
-            solidblocksLocalEnv.vaultAddress,
-            solidblocksLocalEnv.rootToken
+            developmentEnvironment.minioAddress,
+            developmentEnvironment.vaultAddress,
+            developmentEnvironment.rootToken
         )
 
         assertThat(serviceManager.start()).isTrue
@@ -60,22 +60,22 @@ class VaultServiceManagerTest {
     }
 
     @Test
-    fun testRestoreDataIntoService(solidblocksLocalEnv: SolidblocksLocalEnv) {
+    fun testRestoreDataIntoService(developmentEnvironment: DevelopmentEnvironment) {
 
         val service = "vault-${UUID.randomUUID()}"
-        if (!solidblocksLocalEnv.createVaultService(service)) {
+        if (!developmentEnvironment.createVaultService(service)) {
             throw RuntimeException("error creating service")
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = solidblocksLocalEnv.reference.toService(service)
+        val reference = developmentEnvironment.reference.toService(service)
 
         val serviceManager = VaultServiceManager(
             reference,
             tempDir,
-            solidblocksLocalEnv.minioAddress,
-            solidblocksLocalEnv.vaultAddress,
-            solidblocksLocalEnv.rootToken
+            developmentEnvironment.minioAddress,
+            developmentEnvironment.vaultAddress,
+            developmentEnvironment.rootToken
         )
 
         assertThat(serviceManager.start()).isTrue

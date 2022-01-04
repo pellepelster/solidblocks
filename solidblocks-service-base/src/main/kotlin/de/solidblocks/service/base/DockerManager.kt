@@ -2,7 +2,12 @@ package de.solidblocks.service.base
 
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.api.exception.NotFoundException
-import com.github.dockerjava.api.model.*
+import com.github.dockerjava.api.model.Bind
+import com.github.dockerjava.api.model.ExposedPort
+import com.github.dockerjava.api.model.HostConfig
+import com.github.dockerjava.api.model.PortBinding
+import com.github.dockerjava.api.model.Ports
+import com.github.dockerjava.api.model.Volume
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
@@ -17,12 +22,13 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 class DockerManager(
-    private val dockerImage: String,
-    private val service: String,
-    private val storageDir: String,
-    private val ports: Set<Int>,
-    private val bindings: Map<String, String> = emptyMap(),
-    private val healthPath: String? = null
+        private val dockerImage: String,
+        private val service: String,
+        private val storageDir: String,
+        private val ports: Set<Int>,
+        private val bindings: Map<String, String> = emptyMap(),
+        private val healthCheck: Boolean = true,
+        private val network: String? = null
 ) {
     private val client = OkHttpClient()
 
@@ -39,15 +45,23 @@ class DockerManager(
         val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
 
         dockerClient = DockerClientImpl.getInstance(
-            config,
-            ZerodepDockerHttpClient.Builder().dockerHost(URI.create("unix:///var/run/docker.sock")).build()
+                config,
+                ZerodepDockerHttpClient.Builder().dockerHost(URI.create("unix:///var/run/docker.sock")).build()
         )
+    }
+
+
+    fun existsImage(imageName: String): Boolean = try {
+        dockerClient.inspectImageCmd(imageName).exec()
+        true
+    } catch (e: NotFoundException) {
+        false
     }
 
     fun start(): Boolean {
         logger.info { "starting docker image '$dockerImage'" }
 
-        if (dockerClient.listImagesCmd().withImageNameFilter(dockerImage).exec().isEmpty()) {
+        if (!existsImage(dockerImage)) {
             try {
                 val pullResult = dockerClient.pullImageCmd(dockerImage).start().awaitCompletion(5, TimeUnit.MINUTES)
                 if (!pullResult) {
@@ -60,17 +74,22 @@ class DockerManager(
             }
         }
 
-        val result = dockerClient.createContainerCmd(dockerImage)
-            .withExposedPorts(ports.map { ExposedPort(it) })
-            .withLabels(mapOf(SERVICE_LABEL_KEY to service))
-            .withHostConfig(
-                HostConfig.newHostConfig()
-                    .withPortBindings(ports.map { PortBinding(Ports.Binding.empty(), ExposedPort(it)) })
-                    .withBinds(
+        val hostConfig = HostConfig.newHostConfig()
+                .withPortBindings(ports.map { PortBinding(Ports.Binding.empty(), ExposedPort(it)) })
+                .withAutoRemove(true)
+                .withBinds(
                         bindings.map { Bind(it.key, Volume(it.value)) } +
-                            Bind(storageDir, Volume("/storage/local"))
-                    )
-            ).exec()
+                                Bind(storageDir, Volume("/storage/local"))
+                )
+
+        if (network != null) {
+            hostConfig.withNetworkMode(network)
+        }
+
+        val result = dockerClient.createContainerCmd(dockerImage)
+                .withExposedPorts(ports.map { ExposedPort(it) })
+                .withLabels(mapOf(SERVICE_LABEL_KEY to service))
+                .withHostConfig(hostConfig).exec()
 
         dockerClient.startContainerCmd(result.id).exec()
 
@@ -129,8 +148,12 @@ class DockerManager(
 
     fun isHealthy(): Boolean {
 
+        if (!healthCheck) {
+            return true
+        }
+
         return ports.map {
-            val address = "http://localhost:${mappedPort(it)}/${healthPath ?: ""}"
+            val address = "http://localhost:${mappedPort(it)}"
 
             logger.info { "checking health for '$address'" }
             val request = Request.Builder()

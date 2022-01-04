@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = false)
 data class PkiBackendRole(
+    val allowed_domains: List<String>,
+    val allow_subdomains: Boolean,
+    val allow_localhost: Boolean,
     val key_type: String?,
     val key_bits: Int?,
     val max_ttl: String?,
     val ttl: String?,
-    val allow_any_name: Boolean?,
     val generate_lease: Boolean?,
 )

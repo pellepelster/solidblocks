@@ -16,7 +16,6 @@ dependencies {
     implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
     testImplementation("org.hamcrest:hamcrest:2.2")
-    testImplementation("org.testcontainers:testcontainers:1.15.3")
 }
 
 application {

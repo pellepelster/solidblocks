@@ -19,7 +19,6 @@ class VaultRootClientProviderTest {
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
                 .apply {
-                    withPull(true)
                     withExposedService("vault", 8200)
                     start()
                 }

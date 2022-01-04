@@ -1,5 +1,7 @@
-version: '3'
+version: '3.5'
+
 services:
+
   vault:
     image: vault
     ports:
@@ -9,6 +11,11 @@ services:
     cap_add:
       - IPC_LOCK
     command: server
+    networks:
+      solidblocks-dev:
+        aliases:
+          - vault.dev.local.test
+
   minio:
     image: minio/minio
     ports:
@@ -17,3 +24,11 @@ services:
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=a9776029-2852-4d60-af81-621b91da711d
     command: server /tmp/minio-test --console-address ":9001"
+    networks:
+      solidblocks-dev:
+        aliases:
+          - minio.dev.local.test
+
+networks:
+  solidblocks-dev:
+    name: solidblocks-dev

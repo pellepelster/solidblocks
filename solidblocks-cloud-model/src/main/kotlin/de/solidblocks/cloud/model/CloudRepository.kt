@@ -9,7 +9,12 @@ import java.util.*
 
 class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
 
-    fun createCloud(name: String, rootDomain: String, configValues: List<CloudConfigValue> = emptyList()): CloudEntity {
+    fun createCloud(
+        name: String,
+        rootDomain: String,
+        configValues: List<CloudConfigValue> = emptyList(),
+        development: Boolean = false,
+    ): CloudEntity {
         logger.info { "creating cloud '$name'" }
 
         val id = UUID.randomUUID()
@@ -22,6 +27,7 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             .values(id, name, false).execute()
 
         setConfiguration(CloudId(id), CloudEntity.ROOT_DOMAIN_KEY, rootDomain)
+        setConfiguration(CloudId(id), CloudEntity.DEVELOPMENT_KEY, development.toString())
 
         configValues.forEach {
             setConfiguration(CloudId(id), it.name, it.value)
@@ -54,6 +60,7 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
                     id = it.key.id!!,
                     name = it.key.name!!,
                     rootDomain = it.value.configValue(CloudEntity.ROOT_DOMAIN_KEY).value,
+                    isDevelopment = it.value.configValue(CloudEntity.DEVELOPMENT_KEY).value.toBoolean(),
                     it.value.map {
                         CloudConfigValue(
                             it.getValue(CONFIGURATION_VALUES.NAME)!!,

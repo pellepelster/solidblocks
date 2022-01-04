@@ -16,7 +16,6 @@ class MinioMcWrapperTest {
     val environment: DockerComposeContainer<*> =
         KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
             .apply {
-                withPull(true)
                 withExposedService("minio", 9000)
                 start()
             }

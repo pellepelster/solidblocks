@@ -19,32 +19,33 @@ import kotlin.io.path.writeBytes
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
-class SolidblocksLocalEnv {
+class DevelopmentEnvironment {
 
     private val logger = KotlinLogging.logger {}
 
     private val dockerEnvironment: DockerComposeContainer<*>
 
-    val cloud = "local"
+    private val cloud = "local"
 
-    val environment = "env1"
+    val rootDomain = "local.test"
+
+    val environment = "dev"
 
     private val certificateManagers: MutableMap<ServiceReference, VaultCertificateManager> = mutableMapOf()
 
-    private lateinit var appplicationContext: SolidblocksAppplicationContext
+    private lateinit var applicationContext: SolidblocksAppplicationContext
 
     val rootToken: String get() = environmentModel.getConfigValue(VaultConstants.ROOT_TOKEN_KEY)
 
     init {
         val dockerComposeContent =
-            SolidblocksLocalEnv::class.java.getResource("/local-env/docker-compose.yml").readBytes()
+            DevelopmentEnvironment::class.java.getResource("/local-env/docker-compose.yml").readBytes()
 
         val tempFile = Files.createTempFile("solidblocks-local-env-dockercompose", ".yml")
         tempFile.writeBytes(dockerComposeContent)
 
         dockerEnvironment = KDockerComposeContainer(tempFile.toFile())
             .apply {
-                withPull(true)
                 withExposedService("vault", 8200)
                 withExposedService("minio", 9000)
             }
@@ -61,25 +62,29 @@ class SolidblocksLocalEnv {
 
     val environmentModel: EnvironmentEntity
         get() =
-            appplicationContext.environmentRepository.getEnvironment(cloud, environment)
+            applicationContext.environmentRepository.getEnvironment(cloud, environment)
 
     val minioCredentialProvider: () -> MinioCredentials
         get() = { MinioCredentials(minioAddress, "admin", "a9776029-2852-4d60-af81-621b91da711d") }
 
     fun start() {
         dockerEnvironment.start()
-        appplicationContext = SolidblocksAppplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider)
+        applicationContext = SolidblocksAppplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider)
     }
 
     fun stop() {
-        dockerEnvironment.stop()
+        try {
+            dockerEnvironment.stop()
+        } catch (e: Exception) {
+            logger.warn(e) {}
+        }
     }
 
     fun createCloud(): Boolean {
         logger.info { "creating test env ($cloud/$environment)" }
 
-        appplicationContext.cloudManager.createCloud(cloud, "test.env")
-        appplicationContext.cloudManager.createEnvironment(
+        applicationContext.cloudManager.createCloud(cloud, rootDomain, true)
+        applicationContext.cloudManager.createEnvironment(
             cloud, environment,
             "<none>",
             "<none>",
@@ -87,8 +92,8 @@ class SolidblocksLocalEnv {
             "<none>"
         )
 
-        val environment = appplicationContext.environmentRepository.getEnvironment(cloud, environment)
-        val provisioner = appplicationContext.createProvisioner(cloud, this.environment)
+        val environment = applicationContext.environmentRepository.getEnvironment(cloud, environment)
+        val provisioner = applicationContext.createProvisioner(cloud, this.environment)
 
         provisioner.addResourceGroup(createVaultConfig(emptySet(), environment))
 
@@ -109,19 +114,19 @@ class SolidblocksLocalEnv {
 
         val service = VaultService(
             ServiceReference(cloud, environment, service),
-            appplicationContext.serviceRepository
+            applicationContext.serviceRepository
         )
 
         service.createService()
 
-        val provisioner = appplicationContext.createProvisioner(cloud, this.environment)
+        val provisioner = applicationContext.createProvisioner(cloud, this.environment)
         service.bootstrapService(provisioner)
 
         return true
     }
 
     fun createCertificate(reference: ServiceReference): Certificate? {
-        certificateManagers[reference] = VaultCertificateManager(vaultAddress, rootToken, reference)
+        certificateManagers[reference] = VaultCertificateManager(vaultAddress, rootToken, reference, rootDomain, true)
         return certificateManagers[reference]!!.issueCertificate()
     }
 }

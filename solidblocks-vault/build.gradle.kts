@@ -9,8 +9,5 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
-    testImplementation("org.awaitility:awaitility:4.1.1")
-    testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
-
     testImplementation(project(":solidblocks-test"))
 }

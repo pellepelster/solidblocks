@@ -10,6 +10,5 @@ dependencies {
     api("org.springframework.vault:spring-vault-core:2.3.2")
     api(project(":solidblocks-vault"))
 
-    testImplementation("org.testcontainers:testcontainers:1.15.3")
     testImplementation(project(":solidblocks-test"))
 }

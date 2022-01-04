@@ -1,3 +1,3 @@
 package de.solidblocks.ingress.config
 
-data class Admin(val listen: String = ":2019")
+data class Admin(val disabled: Boolean = true)

@@ -6,36 +6,32 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.ParameterContext
 import org.junit.jupiter.api.extension.ParameterResolver
 
-class SolidblocksLocalEnvExtension : ParameterResolver, BeforeAllCallback, AfterAllCallback {
+class DevelopmentEnvironmentExtension : ParameterResolver, BeforeAllCallback, AfterAllCallback {
 
-    val solidblocksLocalEnv: SolidblocksLocalEnv
-
-    init {
-        solidblocksLocalEnv = SolidblocksLocalEnv()
-    }
+    private val developmentEnvironment: DevelopmentEnvironment = DevelopmentEnvironment()
 
     override fun afterAll(context: ExtensionContext) {
-        solidblocksLocalEnv.stop()
+        developmentEnvironment.stop()
     }
 
     override fun beforeAll(context: ExtensionContext) {
-        solidblocksLocalEnv.start()
+        developmentEnvironment.start()
 
-        if (!solidblocksLocalEnv.createCloud()) {
-            solidblocksLocalEnv.stop()
+        if (!developmentEnvironment.createCloud()) {
+            developmentEnvironment.stop()
             throw RuntimeException("failed to provision local environment")
         }
     }
 
     override fun supportsParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Boolean {
         return parameterContext.parameter.type
-            .equals(SolidblocksLocalEnv::class.java)
+            .equals(DevelopmentEnvironment::class.java)
     }
 
     override fun resolveParameter(
         parameterContext: ParameterContext,
         extensionContext: ExtensionContext
     ): Any {
-        return solidblocksLocalEnv
+        return developmentEnvironment
     }
 }

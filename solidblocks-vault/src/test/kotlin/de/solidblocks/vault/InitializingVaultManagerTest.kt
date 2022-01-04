@@ -17,7 +17,6 @@ class InitializingVaultManagerTest {
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
                 .apply {
-                    withPull(true)
                     withExposedService("vault", 8200)
                     start()
                 }
@@ -38,7 +37,7 @@ class InitializingVaultManagerTest {
         assertThat(initializingVaultManager.unseal(result)).isTrue
         assertThat(initializingVaultManager.isSealed()).isFalse
 
-        val vaultManager = VaultCertificateManager(vaultAddress(), result.rootToken, ServiceReference("cloud1", "env1", "service1"))
+        val vaultManager = VaultCertificateManager(vaultAddress(), result.rootToken, ServiceReference("cloud1", "env1", "service1"), "local.test")
         vaultManager.seal()
 
         assertThat(initializingVaultManager.isSealed()).isTrue

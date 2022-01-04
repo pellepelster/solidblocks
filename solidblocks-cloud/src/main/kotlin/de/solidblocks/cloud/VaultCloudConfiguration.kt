@@ -15,6 +15,7 @@ import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
 import de.solidblocks.vault.VaultConstants
+import de.solidblocks.vault.VaultConstants.domain
 import de.solidblocks.vault.VaultConstants.hostSshMountName
 import de.solidblocks.vault.VaultConstants.kvMountName
 import de.solidblocks.vault.VaultConstants.pkiMountName
@@ -32,7 +33,9 @@ object VaultCloudConfiguration {
         val hostPkiMount = VaultMount(pkiMountName(environment), "pki")
         val hostPkiBackendRole = VaultPkiBackendRole(
             id = pkiMountName(environment),
-            allowAnyName = true,
+            allowedDomains = listOf(domain(environment)),
+            allowSubdomains = true,
+            allowLocalhost = environment.cloud.isDevelopment,
             generateLease = true,
             maxTtl = "168h",
             ttl = "168h",
@@ -87,7 +90,12 @@ object VaultCloudConfiguration {
         val hetznerConfig =
             VaultKV(
                 "solidblocks/cloud/providers/hetzner",
-                mapOf(HETZNER_CLOUD_API_TOKEN_RO_KEY to environment.configValues.getConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY)!!.value), kvMount
+                mapOf(
+                    HETZNER_CLOUD_API_TOKEN_RO_KEY to environment.configValues.getConfigValue(
+                        HETZNER_CLOUD_API_TOKEN_RO_KEY
+                    )!!.value
+                ),
+                kvMount
             )
         resourceGroup.addResource(hetznerConfig)
 

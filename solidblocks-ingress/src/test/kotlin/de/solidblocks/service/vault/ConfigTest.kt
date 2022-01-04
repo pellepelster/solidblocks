@@ -1,18 +1,80 @@
 package de.solidblocks.service.vault
 
-import de.solidblocks.ingress.config.AutomaticHttps
-import de.solidblocks.ingress.config.CaddyConfig
-import de.solidblocks.ingress.config.Http
-import de.solidblocks.ingress.config.Server
+import de.solidblocks.ingress.config.*
+import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
+import net.javacrumbs.jsonunit.core.Option.IGNORING_EXTRA_FIELDS
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class ConfigTest {
 
     @Test
-    fun testConfig() {
+    fun testConfigDefaultConfig() {
 
         assertThat(
+            CaddyConfig.serialize(
+                CaddyConfig()
+            )
+        ).isEqualTo("{\"apps\":{},\"admin\":{\"disabled\":true}}")
+    }
+
+    @Test
+    fun testHostBasedReverseProxy() {
+
+        val expectedConfig = """
+            {
+              "admin": {
+                "disabled": true
+              },
+              "apps": {
+                "http": {
+                  "servers": {
+                    "server1": {
+                      "automatic_https": {
+                        "disable": true
+                      },
+                      "listen": [
+                        ":80",
+                        ":443"
+                      ],
+                      "routes": [
+                        {
+                          "match": [
+                            {
+                              "host": [
+                                "localhost"
+                              ]
+                            }
+                          ],
+                          "handle": [
+                            {
+                              "handler": "reverse_proxy",
+                              "transport": {
+                                "protocol": "http",
+                                "compression": true,
+                                "tls": {
+                                  "root_ca_pem_files": [
+                                    "/tmp/ca.crt"
+                                  ]
+                                }
+                              },
+                              "upstreams": [
+                                {
+                                  "dial": "localhost:49298"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }            
+        """.trimIndent()
+
+        assertThatJson(
             CaddyConfig.serialize(
                 CaddyConfig(
                     apps = mapOf(
@@ -20,13 +82,33 @@ class ConfigTest {
                             Http(
                                 servers = mapOf(
                                     "server1" to Server(
-                                        automaticHttps = AutomaticHttps(disable = false)
+                                        automaticHttps = AutomaticHttps(disable = true),
+                                        routes = listOf(
+                                            Route(
+                                                match = listOf(
+                                                    Match(host = listOf("localhost"))
+                                                ),
+                                                handle = listOf(
+                                                    Handler(
+                                                        transport = Transport(
+                                                            tls = Tls(
+                                                                rootCAPemFiles = listOf(
+                                                                    "/tmp/ca.crt"
+                                                                )
+                                                            )
+                                                        ),
+                                                        upstreams = listOf(Upstream("localhost:49298"))
+                                                    )
+                                                )
+                                            )
+                                        )
+
                                     )
                                 )
                             )
                     )
                 )
             )
-        ).isEqualTo("{\"apps\":{\"http\":{\"servers\":{\"server1\":{\"listen\":[\":80\",\":443\"],\"automatic_https\":{\"disable\":false}}}}}}")
+        ).`when`(IGNORING_EXTRA_FIELDS).isEqualTo(expectedConfig)
     }
 }

@@ -1,7 +1,7 @@
 package de.solidblocks.vault
 
-import de.solidblocks.test.SolidblocksLocalEnv
-import de.solidblocks.test.SolidblocksLocalEnvExtension
+import de.solidblocks.test.DevelopmentEnvironment
+import de.solidblocks.test.DevelopmentEnvironmentExtension
 import de.solidblocks.vault.VaultConstants.ROOT_TOKEN_KEY
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -13,18 +13,19 @@ import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
-@ExtendWith(SolidblocksLocalEnvExtension::class)
+@ExtendWith(DevelopmentEnvironmentExtension::class)
 class VaultCertificateManagerTest {
 
     @OptIn(ExperimentalTime::class)
     @Test
-    fun testIssueCertificates(solidblocksLocalEnv: SolidblocksLocalEnv) {
-        val rootToken = solidblocksLocalEnv.environmentModel.getConfigValue(ROOT_TOKEN_KEY)
+    fun testIssueCertificates(developmentEnvironment: DevelopmentEnvironment) {
+        val rootToken = developmentEnvironment.environmentModel.getConfigValue(ROOT_TOKEN_KEY)
 
         val vaultManager = VaultCertificateManager(
-            address = solidblocksLocalEnv.vaultAddress,
+            address = developmentEnvironment.vaultAddress,
             token = rootToken,
-            solidblocksLocalEnv.reference.toService("service1"),
+            developmentEnvironment.reference.toService("service1"),
+            "local.test",
             minCertificateLifetime = Duration.Companion.days(300)
         )
 
@@ -35,6 +36,6 @@ class VaultCertificateManagerTest {
             serial != firstCertificate.public.serialNumber
         }
 
-        assertThat(firstCertificate.public.subjectX500Principal.name).isEqualTo("CN=service1")
+        assertThat(firstCertificate.public.subjectX500Principal.name).isEqualTo("CN=service1.dev.local.test")
     }
 }

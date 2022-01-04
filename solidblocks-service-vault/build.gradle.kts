@@ -35,6 +35,7 @@ docker {
     files(file("$projectDir/docker/install.sh"))
     name = "solidblocks-service-vault"
 }
+tasks.getByPath("check").dependsOn(tasks.getByPath("docker"))
 
 application {
     mainClass.set("de.solidblocks.service.vault.CliKt")

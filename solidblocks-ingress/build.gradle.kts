@@ -40,12 +40,15 @@ dependencies {
 
     testImplementation(project(":solidblocks-cloud-model"))
     testImplementation(project(":solidblocks-test"))
+
+    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
 }
 
 docker {
     setDockerfile(file("$projectDir/docker/Dockerfile"))
     name = "solidblocks-ingress"
 }
+tasks.getByPath("check").dependsOn(tasks.getByPath("docker"))
 
 application {
     mainClass.set("de.solidblocks.ingress.CliKt")

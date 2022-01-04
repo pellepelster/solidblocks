@@ -16,8 +16,7 @@ import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleProvisioner
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import de.solidblocks.vault.VaultRootClientProvider
 import junit.framework.Assert.assertFalse
-import org.hamcrest.MatcherAssert
-import org.hamcrest.core.Is
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -41,7 +40,6 @@ class VaultProvisionerTest {
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
                 .apply {
-                    withPull(true)
                     withExposedService("vault", 8200)
                     start()
                 }
@@ -108,7 +106,9 @@ class VaultProvisionerTest {
 
         val newRole = VaultPkiBackendRole(
             id = "solidblocks-pki",
-            allowAnyName = true,
+            allowedDomains = listOf("test.org"),
+            allowSubdomains = true,
+            allowLocalhost = false,
             generateLease = true,
             maxTtl = "168h",
             ttl = "168h",
@@ -131,20 +131,24 @@ class VaultProvisionerTest {
 
         val lookup = roleProvisioner.lookup(newRole)
 
-        MatcherAssert.assertThat(lookup.result?.backendRole?.allow_any_name, Is.`is`(true))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.generate_lease, Is.`is`(true))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.ttl, Is.`is`("604800"))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.max_ttl, Is.`is`("604800"))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.key_type, Is.`is`("ec"))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.key_bits, Is.`is`(521))
+        assertThat(lookup.result?.backendRole?.allowed_domains).isEqualTo(listOf("test.org"))
+        assertThat(lookup.result?.backendRole?.allow_subdomains).isEqualTo(true)
+        assertThat(lookup.result?.backendRole?.allow_localhost).isEqualTo(false)
+        assertThat(lookup.result?.backendRole?.generate_lease).isEqualTo(true)
+        assertThat(lookup.result?.backendRole?.ttl).isEqualTo("604800")
+        assertThat(lookup.result?.backendRole?.max_ttl).isEqualTo("604800")
+        assertThat(lookup.result?.backendRole?.key_type).isEqualTo("ec")
+        assertThat(lookup.result?.backendRole?.key_bits).isEqualTo(521)
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultPkiBackendRole(
-            id = "solidblocks-pki",
-            allowAnyName = true,
-            generateLease = true,
-            maxTtl = "170h",
-            ttl = "170h",
+                id = "solidblocks-pki",
+                allowedDomains = listOf("test.org"),
+                allowSubdomains = true,
+                allowLocalhost = false,
+                generateLease = true,
+                maxTtl = "170h",
+                ttl = "170h",
             keyBits = 521,
             keyType = "ec",
             mount = mount
@@ -235,21 +239,21 @@ class VaultProvisionerTest {
 
         val lookup = sshBackendRoleProvisioner.lookup(newRole)
 
-        MatcherAssert.assertThat(lookup.result?.backendRole?.allow_host_certificates, Is.`is`(true))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.allow_user_certificates, Is.`is`(false))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.ttl, Is.`is`("604800"))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.max_ttl, Is.`is`("604800"))
-        MatcherAssert.assertThat(lookup.result?.backendRole?.key_type, Is.`is`("ca"))
+        assertThat(lookup.result?.backendRole?.allow_host_certificates).isEqualTo(true)
+        assertThat(lookup.result?.backendRole?.allow_user_certificates).isEqualTo(false)
+        assertThat(lookup.result?.backendRole?.ttl).isEqualTo("604800")
+        assertThat(lookup.result?.backendRole?.max_ttl).isEqualTo("604800")
+        assertThat(lookup.result?.backendRole?.key_type).isEqualTo("ca")
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultSshBackendRole(
-            id = "solidblocks-host-ssh",
-            keyType = "ca",
-            maxTtl = "170h",
-            ttl = "170h",
-            allowHostCertificates = true,
-            allowUserCertificates = false,
-            mount = mount
+                id = "solidblocks-host-ssh",
+                keyType = "ca",
+                maxTtl = "170h",
+                ttl = "170h",
+                allowHostCertificates = true,
+                allowUserCertificates = false,
+                mount = mount
         )
 
         // changes due to updated ttl's

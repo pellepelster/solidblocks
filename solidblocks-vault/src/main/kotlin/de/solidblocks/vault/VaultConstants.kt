@@ -1,6 +1,7 @@
 package de.solidblocks.vault
 
 import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.model.ModelConstants.cloudId
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 
@@ -18,6 +19,12 @@ object VaultConstants {
 
     fun pkiMountName(environment: EnvironmentEntity) = pkiMountName(environment.cloud.name, environment.name)
 
+    fun domain(environment: EnvironmentEntity) = "${environment.name}.${environment.cloud.rootDomain}"
+
+    fun domain(reference: ServiceReference, rootDomain: String) = "${reference.service}.${reference.environment}.$rootDomain"
+
+    fun domain(reference: EnvironmentReference, rootDomain: String) = "${reference.environment}.$rootDomain"
+
     fun kvMountName(reference: EnvironmentReference) = "${cloudId(reference)}-kv"
 
     fun kvMountName(environment: EnvironmentEntity) = kvMountName(environment.reference)
@@ -29,5 +36,5 @@ object VaultConstants {
     fun userSshMountName(environment: EnvironmentEntity) = "${cloudId(environment)}-user-ssh"
 
     fun vaultAddress(environment: EnvironmentEntity) =
-        "https://vault.${environment.name}.${environment.cloud.rootDomain}:8200"
+        "https://vault.${domain(environment)}:8200"
 }

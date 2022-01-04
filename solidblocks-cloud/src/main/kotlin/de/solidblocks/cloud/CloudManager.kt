@@ -2,7 +2,10 @@ package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.model.*
+import de.solidblocks.cloud.model.CloudRepository
+import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.cloud.model.ServiceRepository
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.createConfigValue
 import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_CLOUD_API_TOKEN_RO_KEY
@@ -21,13 +24,13 @@ class CloudManager(
 
     private val logger = KotlinLogging.logger {}
 
-    fun createCloud(name: String, domain: String): Boolean {
+    fun createCloud(name: String, domain: String, development: Boolean = false): Boolean {
         if (cloudRepository.hasCloud(name)) {
             logger.info { "cloud '$name' already exists" }
             return false
         }
 
-        cloudRepository.createCloud(name, domain)
+        cloudRepository.createCloud(name, domain, development = development)
 
         return true
     }

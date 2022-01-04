@@ -1,11 +1,11 @@
 package de.solidblocks.localenv
 
-import de.solidblocks.test.SolidblocksLocalEnvExtension
+import de.solidblocks.test.DevelopmentEnvironmentExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(SolidblocksLocalEnvExtension::class)
-class SolidblocksLocalEnvTest {
+@ExtendWith(DevelopmentEnvironmentExtension::class)
+class DevelopmentEnvironmentTest {
 
     @Test
     fun testBootstrap() {
