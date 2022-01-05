@@ -18,7 +18,8 @@ versioning {
 }
 
 val versionFile = File("$rootDir/version.txt")
-version = versionFile.readText().trim()
+
+version = System.getenv("SOLIDBLOCKS_VERSION") ?: versionFile.readText().trim()
 
 
 dependencies {
@@ -66,7 +67,13 @@ tasks.test {
     useJUnitPlatform()
 
     testLogging {
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.STANDARD_OUT, TestLogEvent.STANDARD_ERROR)
+        events = setOf(
+            TestLogEvent.PASSED,
+            TestLogEvent.SKIPPED,
+            TestLogEvent.FAILED,
+            TestLogEvent.STANDARD_OUT,
+            TestLogEvent.STANDARD_ERROR
+        )
     }
 }
 

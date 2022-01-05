@@ -13,7 +13,6 @@ dependencies {
 
     implementation("com.hierynomus:sshj:0.31.0")
     implementation("org.apache.commons:commons-text")
-    implementation("com.github.ajalt.clikt:clikt:3.1.0")
 
     testImplementation("org.hamcrest:hamcrest:2.2")
 }

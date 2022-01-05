@@ -12,6 +12,40 @@ function task_increment_version() {
     echo "SNAPSHOT-$(date +%Y%m%d%H%M%S)" > "${DIR}/version.txt"
 }
 
+function task_service_base_integration_test() {
+    local timestamp_now=$(date +%Y%m%d%H%M%S)
+
+    local solidblocks_blue_version="BLUE-${timestamp_now}"
+    local solidblocks_green_version="GREEN-${timestamp_now}"
+
+    local distributions_dir="${DIR}/solidblocks-service-base-integrationtest/build/distributions"
+    local artefact_dir="${DIR}/solidblocks-service-base-integrationtest/bootstrap/artefacts"
+    mkdir -p "${artefact_dir}"
+
+    rm -rf ${artefact_dir}/*.tar
+
+    SOLIDBLOCKS_VERSION="${solidblocks_blue_version}" "${DIR}/gradlew" solidblocks-service-base-integrationtest:assemble
+    SOLIDBLOCKS_VERSION="${solidblocks_green_version}" "${DIR}/gradlew" solidblocks-service-base-integrationtest:assemble
+
+    cp "${distributions_dir}/solidblocks-service-base-integrationtest-${solidblocks_blue_version}.tar" "${artefact_dir}/solidblocks-service-base-integrationtest-${solidblocks_blue_version}.tar"
+    cp "${distributions_dir}/solidblocks-service-base-integrationtest-${solidblocks_green_version}.tar" "${artefact_dir}/solidblocks-service-base-integrationtest-${solidblocks_green_version}.tar"
+
+    echo "solidblocks_blue_version=${solidblocks_blue_version}"
+    echo "solidblocks_green_version=${solidblocks_green_version}"
+
+    docker-compose -f solidblocks-service-base-integrationtest/docker-compose.yml build \
+      --build-arg SOLIDBLOCKS_BLUE_VERSION="${solidblocks_blue_version}" \
+      --build-arg SOLIDBLOCKS_GREEN_VERSION="${solidblocks_green_version}"
+
+    local test_base_dir="${DIR}/solidblocks-service-base-integrationtest/test"
+    rm -rf "${test_base_dir}"
+    mkdir -p "${test_base_dir}/instance"
+    echo "SOLIDBLOCKS_VERSION=${solidblocks_blue_version}" > "${test_base_dir}/instance/environment"
+
+    docker-compose -f solidblocks-service-base-integrationtest/docker-compose.yml up
+
+}
+
 function task_recreate_integration_test() {
   local db_dir="${DIR}/integration-test"
   rm -rf "${db_dir}"
@@ -55,6 +89,7 @@ shift || true
 
 case ${COMMAND} in
   cli) task_cli "$@" ;;
+  service-base-integration-test) task_service_base_integration_test "$@" ;;
   increment-version) task_increment_version "$@" ;;
   recreate-integration-test) task_recreate_integration_test "$@" ;;
   publish) task_publish "$@" ;;

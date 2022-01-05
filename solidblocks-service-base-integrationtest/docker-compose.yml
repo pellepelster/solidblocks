@@ -1,0 +1,18 @@
+version: '3.5'
+
+services:
+
+  bootstrap:
+    build:
+      context: ./bootstrap
+
+    ports:
+      - "8081:80"
+    networks:
+      solidblocks-dev:
+        aliases:
+          - maven.pkg.github.com
+
+networks:
+  solidblocks-dev:
+    name: solidblocks-dev

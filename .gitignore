@@ -17,3 +17,5 @@ solidblocks-root-infrastructure/**/terraform.tfstate.backup
 
 !terraform-state
 derby.log
+/solidblocks-service-base-integrationtest/bootstrap/artefacts/
+/solidblocks-service-base-integrationtest/test/

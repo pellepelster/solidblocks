@@ -15,6 +15,7 @@ include(
     "solidblocks-provisioner-hetzner",
     "solidblocks-provisioner-vault",
     "solidblocks-service-base",
+    "solidblocks-service-base-integrationtest",
     "solidblocks-service-vault",
     "solidblocks-service-vault-api",
     "solidblocks-service-vault-backend",

@@ -1,5 +1,4 @@
 plugins {
-    id("solidblocks.kotlin-library-conventions")
     id("solidblocks.kotlin-application-conventions")
     id("com.palantir.docker") version "0.31.0"
 }
@@ -11,7 +10,6 @@ dependencies {
     implementation(project(":solidblocks-cloud-model"))
     implementation(project(":solidblocks-service-vault-api"))
 
-    implementation("com.github.ajalt.clikt:clikt:3.1.0")
     implementation("com.github.docker-java:docker-java-core:3.2.12")
     implementation("com.github.docker-java:docker-java-transport-zerodep:3.2.12")
 
