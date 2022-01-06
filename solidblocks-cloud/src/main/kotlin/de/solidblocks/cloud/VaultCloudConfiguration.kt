@@ -249,6 +249,7 @@ object VaultCloudConfiguration {
             ),
         )
         resourceGroup.addResource(backupPolicy)
+
         return resourceGroup
     }
 }

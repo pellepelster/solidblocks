@@ -4,22 +4,39 @@ set -eu
 
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
-SOLIDBLOCKS_DIR="${DIR}/test"
+SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
+SOLIDBLOCKS_BOOTSTRAP_ADDRESS="${SOLIDBLOCKS_BOOTSTRAP_ADDRESS:-https://maven.pkg.github.com}"
+
 export $(xargs < "${SOLIDBLOCKS_DIR}/instance/environment")
+export $(xargs < "${SOLIDBLOCKS_DIR}/protected/initial_environment")
+export $(xargs < "${SOLIDBLOCKS_DIR}/service/environment")
+
+echo "bootstrapping '${SOLIDBLOCKS_COMPONENT}' from '${SOLIDBLOCKS_BOOTSTRAP_ADDRESS}'"
 
 DOWNLOAD_DIR="${SOLIDBLOCKS_DIR}/download"
-SOLIDBLOCKS_COMPONENT="solidblocks-service-base-integrationtest"
-
 mkdir -p "${DOWNLOAD_DIR}"
-curl "http://localhost:8081/pellepelster/solidblocks/solidblocks/${SOLIDBLOCKS_COMPONENT}/${SOLIDBLOCKS_VERSION}/${SOLIDBLOCKS_COMPONENT}-${SOLIDBLOCKS_VERSION}.tar" > "${DOWNLOAD_DIR}/${SOLIDBLOCKS_COMPONENT}-${SOLIDBLOCKS_VERSION}.tar"
 
-#mkdir -p "${SOLIDBLOCKS_DIR}/${SOLIDBLOCKS_COMPONENT}"
+COMPONENT_URL="${SOLIDBLOCKS_BOOTSTRAP_ADDRESS}/pellepelster/solidblocks/solidblocks/${SOLIDBLOCKS_COMPONENT}/${SOLIDBLOCKS_VERSION}/${SOLIDBLOCKS_COMPONENT}-${SOLIDBLOCKS_VERSION}.tar"
+COMPONENT_NAME="${SOLIDBLOCKS_COMPONENT}-${SOLIDBLOCKS_VERSION}"
+COMPONENT_DISTRIBUTION="${DOWNLOAD_DIR}/${COMPONENT_NAME}.tar"
+
+echo "downloading '${COMPONENT_URL}' to '${COMPONENT_DISTRIBUTION}'"
+
+while ! curl --retry 25 --retry-connrefused --silent --location --show-error "${COMPONENT_URL}" > "${COMPONENT_DISTRIBUTION}"; do
+    echo "download failed, retrying"
+    sleep 10
+done
+
+SOLIDBLOCKS_COMPONENT_ACTIVE="${SOLIDBLOCKS_DIR}/service/${SOLIDBLOCKS_COMPONENT}-active"
+
 (
-  cd "${SOLIDBLOCKS_DIR}"
-  tar -xf "${DOWNLOAD_DIR}/${SOLIDBLOCKS_COMPONENT}-${SOLIDBLOCKS_VERSION}.tar"
-  rm -f "${SOLIDBLOCKS_DIR}/${SOLIDBLOCKS_COMPONENT}-active"
-  ln -s "${SOLIDBLOCKS_DIR}/${SOLIDBLOCKS_COMPONENT}-${SOLIDBLOCKS_VERSION}" "${SOLIDBLOCKS_DIR}/${SOLIDBLOCKS_COMPONENT}-active"
+  cd "${SOLIDBLOCKS_DIR}/service"
+  echo "extracting '${COMPONENT_DISTRIBUTION}' to '$(pwd)'"
+  tar -xvf "${COMPONENT_DISTRIBUTION}"
 )
 
-cd "${SOLIDBLOCKS_DIR}/${SOLIDBLOCKS_COMPONENT}-active"
-exec "${SOLIDBLOCKS_DIR}/${SOLIDBLOCKS_COMPONENT}-active/bin/${SOLIDBLOCKS_COMPONENT}"
+rm -f "${SOLIDBLOCKS_COMPONENT_ACTIVE}"
+ln -s "${COMPONENT_NAME}" "${SOLIDBLOCKS_COMPONENT_ACTIVE}"
+
+cd "${SOLIDBLOCKS_COMPONENT_ACTIVE}"
+exec "${SOLIDBLOCKS_COMPONENT_ACTIVE}/bin/${SOLIDBLOCKS_COMPONENT}"

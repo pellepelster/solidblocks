@@ -5,9 +5,11 @@ services:
   bootstrap:
     build:
       context: ./bootstrap
-
+      args:
+        - SOLIDBLOCKS_BLUE_VERSION=${SOLIDBLOCKS_BLUE_VERSION}
+        - SOLIDBLOCKS_GREEN_VERSION=${SOLIDBLOCKS_GREEN_VERSION}
     ports:
-      - "8081:80"
+      - "80"
     networks:
       solidblocks-dev:
         aliases:

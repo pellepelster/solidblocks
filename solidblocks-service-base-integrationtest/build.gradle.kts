@@ -8,6 +8,8 @@ dependencies {
 
     implementation(project(":solidblocks-service-base"))
 
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("io.ktor:ktor-locations:$ktorVersion")

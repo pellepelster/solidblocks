@@ -2,6 +2,7 @@ package de.solidblocks.test
 
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
+import de.solidblocks.cloud.ServiceProvisioner
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createVaultConfig
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
@@ -11,6 +12,7 @@ import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
 import de.solidblocks.vault.Certificate
 import de.solidblocks.vault.VaultCertificateManager
 import de.solidblocks.vault.VaultConstants
+import de.solidblocks.vault.VaultManager
 import mu.KotlinLogging
 import org.testcontainers.containers.DockerComposeContainer
 import java.io.File
@@ -128,5 +130,15 @@ class DevelopmentEnvironment {
     fun createCertificate(reference: ServiceReference): Certificate? {
         certificateManagers[reference] = VaultCertificateManager(vaultAddress, rootToken, reference, rootDomain, true)
         return certificateManagers[reference]!!.issueCertificate()
+    }
+
+    fun createService(name: String): String {
+        val service = reference.toService(name)
+
+        val provisioner = applicationContext.createProvisioner(cloud, this.environment)
+        ServiceProvisioner(provisioner).createService(service)
+
+        val vaultManager = VaultManager(vaultAddress, rootToken, reference)
+        return vaultManager.createToken(service.service)
     }
 }

@@ -15,9 +15,13 @@ object VaultConstants {
 
     const val BACKUP_POLICY_NAME = "backup"
 
+    const val SERVICE_BASE_POLICY_NAME = "service-base"
+
     fun pkiMountName(cloudName: String, environmentName: String) = "${cloudId(cloudName, environmentName)}-pki"
 
     fun pkiMountName(environment: EnvironmentEntity) = pkiMountName(environment.cloud.name, environment.name)
+
+    fun pkiMountName(reference: EnvironmentReference) = pkiMountName(reference.cloud, reference.environment)
 
     fun domain(environment: EnvironmentEntity) = "${environment.name}.${environment.cloud.rootDomain}"
 
