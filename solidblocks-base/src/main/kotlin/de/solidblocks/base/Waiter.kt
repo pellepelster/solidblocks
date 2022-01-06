@@ -15,7 +15,6 @@ class Waiter(maxAttempts: Int, delay: Duration) {
         .waitDuration(delay)
         .retryOnResult { it.retryable }
         .build()
-
     private val resultRegistry: RetryRegistry = RetryRegistry.of(resultConfig)
 
     private val config = RetryConfig.custom<Boolean>()
@@ -25,9 +24,24 @@ class Waiter(maxAttempts: Int, delay: Duration) {
         .build()
     private val registry: RetryRegistry = RetryRegistry.of(config)
 
+    private val nunNullConfig = RetryConfig.custom<Any?>()
+        .maxAttempts(maxAttempts)
+        .waitDuration(delay)
+        .retryOnResult { it == null }
+        .build()
+    private val nonNullRegistry: RetryRegistry = RetryRegistry.of(nunNullConfig)
+
     fun <T> waitForResult(callable: () -> Result<T>): Result<T> {
 
         val retry = resultRegistry.retry(UUID.randomUUID().toString())
+        val supplier = Retry.decorateSupplier(retry, callable)
+
+        return Try.ofSupplier(supplier).get()
+    }
+
+    fun <T> waitForNunNull(callable: () -> T): T {
+
+        val retry = nonNullRegistry.retry(UUID.randomUUID().toString())
         val supplier = Retry.decorateSupplier(retry, callable)
 
         return Try.ofSupplier(supplier).get()

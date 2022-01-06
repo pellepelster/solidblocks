@@ -2,7 +2,7 @@
 
 ## TODOs
 * pellepelster github is currently SPOF, better an organization?
-
+* token lifetimes and max ttl?
 
 ## Architecture
 

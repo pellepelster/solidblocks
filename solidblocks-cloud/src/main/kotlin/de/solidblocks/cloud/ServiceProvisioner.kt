@@ -1,16 +1,14 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
-import de.solidblocks.vault.VaultConstants
 import de.solidblocks.vault.VaultConstants.kvMountName
 import de.solidblocks.vault.VaultConstants.pkiMountName
 import mu.KotlinLogging
-import org.springframework.vault.support.Policy
+import org.springframework.vault.support.Policy.BuiltinCapabilities.*
+import org.springframework.vault.support.Policy.Rule.builder
 
 class ServiceProvisioner(val provisioner: Provisioner) {
 
@@ -20,15 +18,18 @@ class ServiceProvisioner(val provisioner: Provisioner) {
         val resourceGroup = provisioner.createResourceGroup(reference.service)
 
         val backupServicePolicy = VaultPolicy(
-                serviceId(reference),
-                setOf(
-                        Policy.Rule.builder().path(
-                                "${kvMountName(reference.toEnvironment())}/data/solidblocks/cloud/providers/github"
-                        ).capabilities(Policy.BuiltinCapabilities.READ).build(),
+            serviceId(reference),
+            setOf(
+                builder().path(
+                    "${kvMountName(reference.toEnvironment())}/data/solidblocks/cloud/providers/github"
+                ).capabilities(READ).build(),
 
-                        Policy.Rule.builder().path("${pkiMountName(reference.toEnvironment())}/issue/${pkiMountName(reference.toEnvironment())}")
-                                .capabilities(Policy.BuiltinCapabilities.UPDATE).build(),
-                ),
+                builder().path("${pkiMountName(reference.toEnvironment())}/issue/${pkiMountName(reference.toEnvironment())}")
+                    .capabilities(UPDATE).build(),
+
+                builder().path("auth/token/renew-self").capabilities(UPDATE).build(),
+                builder().path("/auth/token/lookup-self").capabilities(READ).build(),
+            ),
         )
         resourceGroup.addResource(backupServicePolicy)
         provisioner.apply()

@@ -60,7 +60,7 @@ class DevelopmentEnvironment {
         get() = "http://localhost:${dockerEnvironment.getServicePort("vault", 8200)}"
 
     val minioAddress: String
-        get() = "http://localhost:${dockerEnvironment.getServicePort("minio", 9000)}"
+        get() = "http://localhost:9000"
 
     val environmentModel: EnvironmentEntity
         get() =
@@ -122,9 +122,7 @@ class DevelopmentEnvironment {
         service.createService()
 
         val provisioner = applicationContext.createProvisioner(cloud, this.environment)
-        service.bootstrapService(provisioner)
-
-        return true
+        return service.bootstrapService(provisioner)
     }
 
     fun createCertificate(reference: ServiceReference): Certificate? {
@@ -139,6 +137,7 @@ class DevelopmentEnvironment {
         ServiceProvisioner(provisioner).createService(service)
 
         val vaultManager = VaultManager(vaultAddress, rootToken, reference)
-        return vaultManager.createToken(service.service)
+
+        return vaultManager.createServiceToken(service)
     }
 }

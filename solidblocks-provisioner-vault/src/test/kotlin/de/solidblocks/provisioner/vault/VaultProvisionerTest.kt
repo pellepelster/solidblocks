@@ -142,13 +142,13 @@ class VaultProvisionerTest {
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultPkiBackendRole(
-                id = "solidblocks-pki",
-                allowedDomains = listOf("test.org"),
-                allowSubdomains = true,
-                allowLocalhost = false,
-                generateLease = true,
-                maxTtl = "170h",
-                ttl = "170h",
+            id = "solidblocks-pki",
+            allowedDomains = listOf("test.org"),
+            allowSubdomains = true,
+            allowLocalhost = false,
+            generateLease = true,
+            maxTtl = "170h",
+            ttl = "170h",
             keyBits = 521,
             keyType = "ec",
             mount = mount
@@ -247,13 +247,13 @@ class VaultProvisionerTest {
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultSshBackendRole(
-                id = "solidblocks-host-ssh",
-                keyType = "ca",
-                maxTtl = "170h",
-                ttl = "170h",
-                allowHostCertificates = true,
-                allowUserCertificates = false,
-                mount = mount
+            id = "solidblocks-host-ssh",
+            keyType = "ca",
+            maxTtl = "170h",
+            ttl = "170h",
+            allowHostCertificates = true,
+            allowUserCertificates = false,
+            mount = mount
         )
 
         // changes due to updated ttl's

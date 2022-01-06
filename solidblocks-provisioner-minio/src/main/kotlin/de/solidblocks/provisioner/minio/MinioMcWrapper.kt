@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.base.CommandExecutor
 import de.solidblocks.base.CommandResult
+import mu.KotlinLogging
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
@@ -14,6 +15,8 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeBytes
 
 class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredentials) {
+
+    private val logger = KotlinLogging.logger {}
 
     private val instanceId = UUID.randomUUID()
 
@@ -113,15 +116,22 @@ class MinioMcWrapper(private val minioCredentialsProvider: () -> MinioCredential
         val url =
             "${uri.scheme}://${credentials.accessKey}:${credentials.secretKey}@${uri.host}:${uri.port}/${uri.path}"
 
-        val result = CommandExecutor().run(
-            environment = mapOf(
-                "MC_HOST_$alias" to url
-            ),
-            command = listOf(file.toString()) + command.map {
-                if (it == "ALIAS") alias
-                else it
-            }
+        val environment = mapOf(
+            "MC_HOST_$alias" to url
         )
+        val expandedCommand = listOf(file.toString()) + command.map {
+            if (it == "ALIAS") alias
+            else it
+        }
+
+        val result = CommandExecutor().run(environment = environment, command = expandedCommand)
+
+        /*
+        if (result.error) {
+            logger.info { "command failed: ${environment.entries.joinToString { "${it.key}=${it.value}" }} ${expandedCommand.joinToString(" ")}" }
+            throw RuntimeException("unable to list policies")
+        }
+        */
 
         return result
     }

@@ -25,7 +25,7 @@ class MinioProvisionerTest {
     companion object {
         @Container
         val environment: DockerComposeContainer<*> =
-            KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
+            KDockerComposeContainer(File("src/test/resources/minio/docker-compose.yml"))
                 .apply {
                     withExposedService("minio", 9000)
                     start()

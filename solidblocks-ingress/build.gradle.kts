@@ -5,7 +5,6 @@ plugins {
     id("com.palantir.docker") version "0.31.0"
 }
 
-
 dependencies {
 
     implementation(project(":solidblocks-vault"))

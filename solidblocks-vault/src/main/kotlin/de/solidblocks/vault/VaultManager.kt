@@ -2,11 +2,13 @@ package de.solidblocks.vault
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.base.ServiceReference
+import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.vault.VaultConstants.SERVICE_BASE_POLICY_NAME
+import de.solidblocks.vault.VaultConstants.SERVICE_TOKEN_TTL
 import de.solidblocks.vault.VaultConstants.kvMountName
 import mu.KotlinLogging
 import org.springframework.vault.support.VaultTokenRequest
-import java.time.Duration
 
 data class VaultWriteRequest(val data: Map<*, *>)
 
@@ -39,15 +41,15 @@ class VaultManager(address: String, val _token: String, private val reference: E
         return vaultTemplate.read(kvPath(path)) != null
     }
 
-    fun createToken(name: String): String {
+    fun createServiceToken(reference: ServiceReference): String {
         val result = vaultTemplate.opsForToken().create(
-                VaultTokenRequest.builder()
-                        .displayName(name)
-                        .noParent(true)
-                        .renewable(true)
-                        .ttl(Duration.ofHours(36))
-                        .policies(listOf(SERVICE_BASE_POLICY_NAME))
-                        .build()
+            VaultTokenRequest.builder()
+                .displayName(serviceId(reference))
+                .noParent(true)
+                .renewable(true)
+                .ttl(SERVICE_TOKEN_TTL)
+                .policies(listOf(SERVICE_BASE_POLICY_NAME))
+                .build()
         )
         return result.token.token
     }

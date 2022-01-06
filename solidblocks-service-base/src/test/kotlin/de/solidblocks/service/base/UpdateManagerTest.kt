@@ -1,4 +1,3 @@
 package de.solidblocks.service.base
 
-class UpdateManagerTest {
-}
+class UpdateManagerTest

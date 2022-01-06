@@ -4,6 +4,7 @@ import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.model.ModelConstants.cloudId
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import java.time.Duration
 
 object VaultConstants {
 
@@ -16,6 +17,8 @@ object VaultConstants {
     const val BACKUP_POLICY_NAME = "backup"
 
     const val SERVICE_BASE_POLICY_NAME = "service-base"
+
+    val SERVICE_TOKEN_TTL = Duration.ofDays(7)
 
     fun pkiMountName(cloudName: String, environmentName: String) = "${cloudId(cloudName, environmentName)}-pki"
 
