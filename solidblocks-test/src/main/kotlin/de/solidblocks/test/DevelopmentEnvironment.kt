@@ -7,12 +7,12 @@ import de.solidblocks.cloud.SolidblocksAppplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createVaultConfig
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.provisioner.minio.MinioCredentials
-import de.solidblocks.service.vault.VaultService
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
 import de.solidblocks.vault.Certificate
 import de.solidblocks.vault.VaultCertificateManager
 import de.solidblocks.vault.VaultConstants
 import de.solidblocks.vault.VaultManager
+import de.solidblocks.vault.agent.VaultService
 import mu.KotlinLogging
 import org.testcontainers.containers.DockerComposeContainer
 import java.io.File

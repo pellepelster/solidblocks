@@ -18,18 +18,18 @@ function task_prepare_service_base_integration_test() {
     local solidblocks_blue_version="BLUE-${timestamp_now}"
     local solidblocks_green_version="GREEN-${timestamp_now}"
 
-    local distributions_dir="${DIR}/solidblocks-service-base-integrationtest/build/distributions"
-    local artefacts_dir="${DIR}/solidblocks-service-base-integrationtest/src/test/resources/service-integrationtest/bootstrap/artefacts"
+    local distributions_dir="${DIR}/solidblocks-helloworld-agent/build/distributions"
+    local artefacts_dir="${DIR}/solidblocks-helloworld-agent/src/test/resources/helloworld/bootstrap/artefacts"
 
     mkdir -p "${artefacts_dir}"
     rm -rf ${artefacts_dir}/*.tar
     rm -rf ${artefacts_dir}/*.version
 
-    SOLIDBLOCKS_VERSION="${solidblocks_blue_version}" "${DIR}/gradlew" solidblocks-service-base-integrationtest:assemble
-    SOLIDBLOCKS_VERSION="${solidblocks_green_version}" "${DIR}/gradlew" solidblocks-service-base-integrationtest:assemble
+    SOLIDBLOCKS_VERSION="${solidblocks_blue_version}" "${DIR}/gradlew" solidblocks-helloworld-agent:assemble
+    SOLIDBLOCKS_VERSION="${solidblocks_green_version}" "${DIR}/gradlew" solidblocks-helloworld-agent:assemble
 
-    cp "${distributions_dir}/solidblocks-service-base-integrationtest-${solidblocks_blue_version}.tar" "${artefacts_dir}/solidblocks-service-base-integrationtest-${solidblocks_blue_version}.tar"
-    cp "${distributions_dir}/solidblocks-service-base-integrationtest-${solidblocks_green_version}.tar" "${artefacts_dir}/solidblocks-service-base-integrationtest-${solidblocks_green_version}.tar"
+    cp "${distributions_dir}/solidblocks-helloworld-agent-${solidblocks_blue_version}.tar" "${artefacts_dir}/solidblocks-helloworld-agent-${solidblocks_blue_version}.tar"
+    cp "${distributions_dir}/solidblocks-helloworld-agent-${solidblocks_green_version}.tar" "${artefacts_dir}/solidblocks-helloworld-agent-${solidblocks_green_version}.tar"
 
     echo "${solidblocks_blue_version}" > "${artefacts_dir}/blue.version"
     echo "${solidblocks_green_version}" > "${artefacts_dir}/green.version"
@@ -37,7 +37,7 @@ function task_prepare_service_base_integration_test() {
 
 function task_test() {
   task_prepare_service_base_integration_test
-  "${DIR}/gradlew" ktFormat check
+  "${DIR}/gradlew" clean ktFormat check
 }
 
 function task_recreate_integration_test() {
