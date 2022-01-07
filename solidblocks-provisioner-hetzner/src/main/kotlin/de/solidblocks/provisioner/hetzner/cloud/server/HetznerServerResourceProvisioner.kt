@@ -201,7 +201,11 @@ class HetznerServerResourceProvisioner(
             it.map { server ->
                 logger.info { "destroying server '${server.name}'" }
                 destroy(server.id)
-            }.any { it }
+            }.ifEmpty { listOf(true) }.all { it }.also {
+                if (!it) {
+                    logger.error { "destroying all servers failed" }
+                }
+            }
         }
     }
 

@@ -23,6 +23,7 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         val request = NetworkRequest.builder()
         request.name(resource.id)
         request.ipRange(resource.ipRange)
+        request.labels(resource.labels)
 
         return checkedApiCall {
             it.createNetwork(request.build())
@@ -54,8 +55,12 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         }.mapSuccessNonNullBoolean {
             it.map { network ->
                 logger.info { "destroying network '${network.name}'" }
-                destroy(network.id)
-            }.any { it.success() }
+                !destroy(network.id).failed
+            }.ifEmpty { listOf(true) }.all { it }.also {
+                if (!it) {
+                    logger.error { "destroying all networks failed" }
+                }
+            }
         }
     }
 

@@ -10,7 +10,11 @@ import de.solidblocks.test.DevelopmentEnvironmentExtension
 import de.solidblocks.test.KDockerComposeContainer
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
-import org.awaitility.kotlin.*
+import org.awaitility.kotlin.atMost
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.ignoreException
+import org.awaitility.kotlin.until
+import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -44,12 +48,13 @@ class HelloWorldAgentIntegrationTest {
         val dockerEnvironment =
             KDockerComposeContainer(File("src/test/resources/helloworld/docker-compose.yml"))
                 .apply {
-                    withEnv(
-                        mapOf(
-                            "SOLIDBLOCKS_BLUE_VERSION" to blueVersion,
-                            "SOLIDBLOCKS_GREEN_VERSION" to greenVersion
+                    withBuild(true)
+                        .withEnv(
+                            mapOf(
+                                "SOLIDBLOCKS_BLUE_VERSION" to blueVersion,
+                                "SOLIDBLOCKS_GREEN_VERSION" to greenVersion
+                            )
                         )
-                    )
                     withExposedService("bootstrap", 80)
                 }
         dockerEnvironment.start()

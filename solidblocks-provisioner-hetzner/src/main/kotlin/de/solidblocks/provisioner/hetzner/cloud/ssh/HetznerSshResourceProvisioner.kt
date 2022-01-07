@@ -48,7 +48,11 @@ class HetznerSshResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
             it.map { sshKey ->
                 logger.info { "destroying ssh keys '${sshKey.name}'" }
                 destroyById(sshKey.id)
-            }.any { it }
+            }.ifEmpty { listOf(true) }.all { it }.also {
+                if (!it) {
+                    logger.error { "destroying all ssh keys failed" }
+                }
+            }
         }
     }
 

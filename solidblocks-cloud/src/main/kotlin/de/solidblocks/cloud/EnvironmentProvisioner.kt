@@ -9,18 +9,12 @@ import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.cloud.NetworkUtils.solidblocksNetwork
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.model.EnvironmentRepository
-import de.solidblocks.cloud.model.ModelConstants.cloudId
 import de.solidblocks.cloud.model.ModelConstants.defaultLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.Role
 import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.Provisioner
-import de.solidblocks.provisioner.consul.kv.ConsulKv
-import de.solidblocks.provisioner.consul.policy.ConsulPolicy
-import de.solidblocks.provisioner.consul.policy.ConsulRuleBuilder
-import de.solidblocks.provisioner.consul.policy.Privileges
-import de.solidblocks.provisioner.consul.token.ConsulToken
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIp
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIpAssignment
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIpRuntime
@@ -35,17 +29,15 @@ import de.solidblocks.provisioner.hetzner.dns.record.DnsRecord
 import de.solidblocks.provisioner.hetzner.dns.zone.DnsZone
 import de.solidblocks.provisioner.hetzner.dns.zone.DnsZoneRuntime
 import de.solidblocks.vault.VaultConstants.BACKUP_POLICY_NAME
-import de.solidblocks.vault.VaultConstants.CONTROLLER_POLICY_NAME
 import de.solidblocks.vault.VaultRootClientProvider
 import mu.KotlinLogging
 import org.springframework.vault.support.VaultTokenRequest
 import java.net.URL
 import java.time.Duration
-import java.util.*
 
-class CloudProvisioner(
-    val cloudName: String,
-    val environmentName: String,
+class EnvironmentProvisioner(
+    private val cloudName: String,
+    private val environmentName: String,
     private val vaultRootClientProvider: VaultRootClientProvider,
     private val provisioner: Provisioner,
     val environmentRepository: EnvironmentRepository,
@@ -53,8 +45,7 @@ class CloudProvisioner(
     private val logger = KotlinLogging.logger {}
 
     fun destroy(destroyVolumes: Boolean): Boolean {
-        provisioner.destroyAll(destroyVolumes)
-        return true
+        return provisioner.destroyAll(destroyVolumes)
     }
 
     fun bootstrap(): Boolean {
@@ -62,7 +53,7 @@ class CloudProvisioner(
 
         logger.info { "creating/updating environment '$cloudName' for cloud '$environmentName'" }
 
-        createCloudModel(
+        createEnvironmentModel(
             environment,
             setOf(SshKey("${environment.cloud.name}-${environment.name}", environment.sshSecrets.sshPublicKey))
         )
@@ -70,17 +61,15 @@ class CloudProvisioner(
         return provisioner.apply()
     }
 
-    private fun createCloudModel(
+    private fun createEnvironmentModel(
         environment: EnvironmentEntity,
         sshKeys: Set<SshKey> = emptySet()
     ) {
         val rootZone = DnsZone(environment.cloud.rootDomain)
 
-        // val rootZone = DnsZone(cloud.solidblocksConfig.domain)
-
         val networkResourceGroup = provisioner.createResourceGroup("network")
 
-        val network = Network(networkName(environment), solidblocksNetwork())
+        val network = Network(networkName(environment), solidblocksNetwork(), defaultLabels(environment))
         networkResourceGroup.addResource(network)
 
         val subnet = Subnet(subnetForNetwork(solidblocksNetwork()), network)
@@ -94,6 +83,7 @@ class CloudProvisioner(
                 name = "vault-0",
                 location = location,
                 network = network,
+                subnet = subnet,
                 role = Role.vault,
                 sshKeys = sshKeys,
                 dnsHealthCheckPort = 8200
@@ -123,6 +113,7 @@ class CloudProvisioner(
 
         provisioner.addResourceGroup(VaultCloudConfiguration.createVaultConfig(setOf(vaultResourceGroup), environment))
 
+        /*
         val controllerNodeCount = 1
         val controllerGroup = provisioner.createResourceGroup("controller")
         val controllerFLoatingIp = createDefaultServer(
@@ -167,25 +158,29 @@ class CloudProvisioner(
                 dependsOn = setOf(consulDns)
             )
         )
+        */
 
-        val backupResourceGroup = provisioner.createResourceGroup("backup", setOf(controllerConfigGroup))
+        val backupResourceGroup = provisioner.createResourceGroup("backup", setOf())
 
+        /*
         val acl = ConsulPolicy("backup", ConsulRuleBuilder().addKeyPrefix("prefix1", Privileges.write).asPolicy())
         backupResourceGroup.addResource(acl)
 
         val backupTokenId = UUID.randomUUID()
         val backupToken = ConsulToken(backupTokenId, "backup", setOf(acl))
         backupResourceGroup.addResource(backupToken)
+        */
 
         createDefaultServer(
             ServerSpec(
                 name = "backup",
                 location = location,
                 network = network,
+                subnet = subnet,
                 role = Role.backup,
                 sshKeys = sshKeys,
                 vaultPolicyName = BACKUP_POLICY_NAME,
-                staticVariables = mapOf("controller_node_count" to ConstantDataSource(controllerNodeCount.toString())),
+                staticVariables = mapOf(),
             ),
             backupResourceGroup, environment, rootZone
         )
@@ -219,6 +214,7 @@ class CloudProvisioner(
         val location: String,
         val vaultPolicyName: String? = null,
         val network: Network,
+        val subnet: Subnet,
         val sshKeys: Set<SshKey>,
         val dnsHealthCheckPort: Int? = null,
         val staticVariables: Map<String, IResourceLookup<String>> = emptyMap(),
@@ -281,6 +277,7 @@ class CloudProvisioner(
             Server(
                 id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                 network = serverSpec.network,
+                subnet = serverSpec.subnet,
                 userData = userData,
                 sshKeys = serverSpec.sshKeys,
                 location = serverSpec.location,

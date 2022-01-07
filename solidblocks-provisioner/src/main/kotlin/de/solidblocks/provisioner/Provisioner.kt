@@ -31,6 +31,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
 
     private val logger = KotlinLogging.logger {}
 
+    private val appliedResources: MutableList<IResource> = mutableListOf()
+
     val retryConfig = RetryConfig.custom<Boolean>()
         .maxAttempts(15)
         .waitDuration(Duration.ofMillis(5000))
@@ -61,6 +63,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
 
     @OptIn(ExperimentalStdlibApi::class)
     fun apply(): Boolean {
+        appliedResources.clear()
 
         logger.info {
             "applying resource groups ${resourceGroups.joinToString(", ") { it.name }}"
@@ -120,6 +123,11 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
         for (diffWithChange in diffs.filter { it.hasChangesOrMissing() }) {
             val resource = diffWithChange.resource as IInfrastructureResource<Any, Any>
 
+            if (appliedResources.contains(resource)) {
+                logger.info { "${resource.logName()} already applied" }
+                continue
+            }
+
             logger.info { "applying ${resource.logName()}" }
 
             try {
@@ -129,6 +137,8 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
                     logger.error { "applying ${diffWithChange.resource.logName()} failed, result was: '${result.errorMessage()}'" }
                     return false
                 }
+
+                appliedResources.add(resource)
             } catch (e: Exception) {
                 logger.error(e) { "apply failed for resource ${diffWithChange.resource.logName()}" }
                 return false
@@ -148,8 +158,22 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
 
         for (parentResourceGroup in resourceGroup.dependsOn) {
 
-            val resourcesWithHealthChecks = parentResourceGroup.resources.filter { it.getHealthCheck() != null }
+            val resourceGroupAllInfraParents = resourceGroup.resources.getAllInfraParents()
+            val resourceGroupMissingOrChangedParents = resourceGroupAllInfraParents.filter { changedOrMissingResources.contains(it) }
 
+            if (resourceGroupMissingOrChangedParents.isNotEmpty()) {
+                logger.info {
+                    "skipping healthcheck for resource group ${resourceGroup.name} the following dependencies were missing or changed: ${
+                    resourceGroupMissingOrChangedParents.joinToString(
+                        ", "
+                    ) { it.id() }
+                    } "
+                }
+
+                continue
+            }
+
+            val resourcesWithHealthChecks = parentResourceGroup.resources.filter { it.getHealthCheck() != null }
             for (resourcesWithHealthCheck in resourcesWithHealthChecks) {
                 val allInfraParents = resourcesWithHealthCheck.getAllInfraParents()
                 val missingOrChangedParents = allInfraParents.filter { changedOrMissingResources.contains(it) }
@@ -221,17 +245,32 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
         return result
     }
 
-    fun destroyAll(destroyVolumes: Boolean) {
-        this.provisionerRegistry.provisioner(FloatingIpAssignment::class).destroyAll()
-        this.provisionerRegistry.provisioner(Server::class).destroyAll()
-
-        if (destroyVolumes) {
-            this.provisionerRegistry.provisioner(Volume::class).destroyAll()
+    fun destroyAll(destroyVolumes: Boolean): Boolean {
+        if (!this.provisionerRegistry.provisioner(FloatingIpAssignment::class).destroyAll()) {
+            return false
         }
 
-        this.provisionerRegistry.provisioner(Network::class).destroyAll()
-        this.provisionerRegistry.provisioner(SshKey::class).destroyAll()
-        this.provisionerRegistry.provisioner(FloatingIp::class).destroyAll()
+        if (!this.provisionerRegistry.provisioner(Server::class).destroyAll()) {
+            return false
+        }
+
+        if (destroyVolumes) {
+            if (!this.provisionerRegistry.provisioner(Volume::class).destroyAll()) {
+                return false
+            }
+        }
+
+        if (!this.provisionerRegistry.provisioner(Network::class).destroyAll()) {
+            return false
+        }
+        if (!this.provisionerRegistry.provisioner(SshKey::class).destroyAll()) {
+            return false
+        }
+        if (!this.provisionerRegistry.provisioner(FloatingIp::class).destroyAll()) {
+            return false
+        }
+
+        return true
     }
 
     fun clear() {

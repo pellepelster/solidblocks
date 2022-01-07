@@ -30,16 +30,18 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
                 ensureDetached(volume.id).mapResult {
                     logger.info { "destroying volume '${volume.name}'" }
                     destroy(volume.id)
+                }.mapSuccessBoolean()
+            }.ifEmpty { listOf(true) }.all { it }.also {
+                if (!it) {
+                    logger.error { "destroying all volumes failed" }
                 }
-            }.all { it.success() }
+            }
         }
     }
 
-    private fun destroy(id: Long): Result<*> {
-        return checkedApiCall {
-            it.deleteVolume(id)
-        }
-    }
+    private fun destroy(id: Long) = checkedApiCall {
+        it.deleteVolume(id)
+    }.mapSuccessBoolean()
 
     private fun ensureDetached(id: Long): Result<*> {
         return checkedApiCall {
@@ -112,6 +114,7 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
             }
 
             val request = UpdateVolumeRequest.builder()
+            request.name(resource.id)
             checkedApiCall {
                 logger.info { "updating volume '${resource.id}'" }
                 it.updateVolume(volume.id.toLong(), request.build())

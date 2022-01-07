@@ -30,14 +30,23 @@ object ModelConstants {
 
     fun defaultLabels(role: Role) = mapOf("$LABEL_PREFIX/role" to role.toString())
 
+    fun defaultLabels(cloud: CloudEntity) =
+        mapOf("$LABEL_PREFIX/cloud" to cloud.name)
+
+    fun defaultLabels(environment: EnvironmentEntity) =
+        mapOf("$LABEL_PREFIX/environment" to environment.name) + defaultLabels(environment.cloud)
+
     fun defaultLabels(cloud: CloudEntity, role: Role) =
-        defaultLabels(role) + mapOf("$LABEL_PREFIX/cloud" to cloud.name)
+        defaultLabels(role) + defaultLabels(cloud)
 
     fun defaultLabels(environment: EnvironmentEntity, role: Role) =
         mapOf("$LABEL_PREFIX/environment" to environment.name) + defaultLabels(environment.cloud, role)
 
+    fun defaultLabels(tenant: TenantEntity) =
+        mapOf("$LABEL_PREFIX/tenant" to tenant.name) + defaultLabels(tenant.environment)
+
     fun defaultLabels(tenant: TenantEntity, role: Role) =
-        mapOf("$LABEL_PREFIX/tenant" to tenant.name) + defaultLabels(tenant.environment, role)
+        defaultLabels(tenant) + defaultLabels(role)
 
     const val GITHUB_TOKEN_RO_KEY = "github_token_ro"
     const val GITHUB_USERNAME_KEY = "github_username"

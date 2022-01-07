@@ -5,6 +5,7 @@ import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.cloud.model.ModelConstants.GITHUB_TOKEN_RO_KEY
 import de.solidblocks.cloud.model.ServiceRepository
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.createConfigValue
@@ -57,7 +58,7 @@ class CloudManager(
         environmentRepository.createEnvironment(
             cloud, environment,
             listOf(
-                createConfigValue(ModelConstants.GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
+                createConfigValue(GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
                 createConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
                 createConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
                 createConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),

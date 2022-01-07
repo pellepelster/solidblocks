@@ -60,7 +60,9 @@ class HetznerSubnetResourceProvisioner(
             return failedResult()
         }
 
-        val subnet = result.result!!.subnets.firstOrNull { subnet -> subnet.ipRange == lookup.id() }
+        val subnet = result.result!!.subnets.firstOrNull {
+            it.ipRange == lookup.id()
+        }
 
         if (subnet != null) {
             return Result(result = SubnetRuntime(subnet.ipRange))

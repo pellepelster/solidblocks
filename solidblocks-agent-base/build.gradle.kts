@@ -25,6 +25,5 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-kotlin:1.7.1")
     implementation("io.github.resilience4j:resilience4j-retry:1.7.1")
 
-    testImplementation("org.slf4j:slf4j-jdk14:1.7.30")
     testImplementation(project(":solidblocks-test"))
 }

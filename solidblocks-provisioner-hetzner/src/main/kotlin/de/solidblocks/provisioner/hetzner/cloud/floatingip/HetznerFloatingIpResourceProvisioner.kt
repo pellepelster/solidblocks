@@ -25,7 +25,11 @@ class HetznerFloatingIpResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
             it.map {
                 logger.info { "destroying floating ip '${it.name}'" }
                 destroy(it.id)
-            }.all { it }
+            }.ifEmpty { listOf(true) }.all { it }.also {
+                if (!it) {
+                    logger.error { "destroying all floating ips failed" }
+                }
+            }
         }
     }
 

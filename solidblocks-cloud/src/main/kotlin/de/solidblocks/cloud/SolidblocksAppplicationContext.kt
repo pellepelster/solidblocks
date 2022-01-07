@@ -47,8 +47,8 @@ class SolidblocksAppplicationContext(
         return vaultRootClientProvider!!
     }
 
-    fun createCloudProvisioner(cloud: String, environment: String): CloudProvisioner {
-        return CloudProvisioner(
+    fun createCloudProvisioner(cloud: String, environment: String): EnvironmentProvisioner {
+        return EnvironmentProvisioner(
             cloud,
             environment,
             vaultRootClientProvider(cloud, environment),

@@ -11,4 +11,6 @@ data class Subnet(val subnet: String, val network: INetworkLookup) : ISubnetLook
     override fun id(): String {
         return subnet
     }
+
+    override fun getParents() = setOf(network)
 }

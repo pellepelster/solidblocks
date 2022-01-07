@@ -11,6 +11,8 @@ fun IResource.getInfraParents(): List<IInfrastructureResource<*, *>> {
 
 fun IResource.getAllInfraParents(): List<IInfrastructureResource<*, *>> = getParentsInternal(this).filterIsInstance<IInfrastructureResource<*, *>>()
 
+fun List<IResource>.getAllInfraParents(): List<IInfrastructureResource<*, *>> = this.flatMap { getParentsInternal(it).filterIsInstance<IInfrastructureResource<*, *>>() }
+
 private fun getParentsInternal(resource: IResource): List<IResource> {
     val parents = mutableListOf<IResource>()
     resource.getParents().forEach { getParentsInternal(it, parents) }

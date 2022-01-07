@@ -33,7 +33,11 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
             it.map { floatingIp ->
                 logger.info { "unassigning floating ip '${floatingIp.name}'" }
                 destroy(floatingIp.id)
-            }.all { it }
+            }.all { it }.also {
+                if (!it) {
+                    logger.error { "unassigning all floating ips failed" }
+                }
+            }
         }
     }
 

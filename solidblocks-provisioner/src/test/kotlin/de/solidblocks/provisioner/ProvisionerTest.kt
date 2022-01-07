@@ -57,7 +57,7 @@ class ProvisionerTest {
         layer.addResource(resource2)
 
         assertThat(provisioner.apply()).isTrue
-        assertThat(testResourceProvisioner.applyCount(resource2)).isEqualTo(2)
+        assertThat(testResourceProvisioner.applyCount(resource2)).isEqualTo(1)
     }
 
     @Test
