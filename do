@@ -12,7 +12,7 @@ function task_increment_version() {
     echo "SNAPSHOT-$(date +%Y%m%d%H%M%S)" > "${DIR}/version.txt"
 }
 
-function task_prepare_service_base_integration_test() {
+function task_helloworld_agent_integration_test() {
     local timestamp_now=$(date +%Y%m%d%H%M%S)
 
     local solidblocks_blue_version="BLUE-${timestamp_now}"
@@ -36,7 +36,7 @@ function task_prepare_service_base_integration_test() {
 }
 
 function task_test() {
-  task_prepare_service_base_integration_test
+  task_helloworld_agent_integration_test
   "${DIR}/gradlew" clean ktFormat check
 }
 
@@ -84,7 +84,7 @@ shift || true
 case ${COMMAND} in
   cli) task_cli "$@" ;;
   test) task_test "$@" ;;
-  prepare-service-base-integration-test) task_prepare_service_base_integration_test "$@" ;;
+  prepare-helloworld-agent-integration-test) task_helloworld_agent_integration_test "$@" ;;
   increment-version) task_increment_version "$@" ;;
   recreate-integration-test) task_recreate_integration_test "$@" ;;
   publish) task_publish "$@" ;;
