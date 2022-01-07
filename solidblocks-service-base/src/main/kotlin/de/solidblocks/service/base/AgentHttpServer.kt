@@ -8,11 +8,17 @@ import io.ktor.locations.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import java.util.concurrent.CountDownLatch
+import kotlin.system.exitProcess
 
-class BaseServiceApi {
+class AgentHttpServer {
+
+    val shutdown = CountDownLatch(1)
+
+    val server: NettyApplicationEngine
 
     init {
-        val server = embeddedServer(Netty, port = 8080) {
+        server = embeddedServer(Netty, port = 8080) {
             install(Locations)
             install(ContentNegotiation) {
                 jackson {
@@ -21,9 +27,15 @@ class BaseServiceApi {
             }
 
             routing {
-                versionRoutes()
+                versionRoutes(shutdown)
             }
         }
-        server.start(wait = true)
+    }
+
+    fun startAndWait() {
+        server.start(false)
+        shutdown.await()
+        server.stop(4000, 4000)
+        exitProcess(7)
     }
 }

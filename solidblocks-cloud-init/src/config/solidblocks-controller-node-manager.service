@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 EnvironmentFile=-/solidblocks/instance/environment
-EnvironmentFile=-/solidblocks/protected/initial_environment
+EnvironmentFile=-/solidblocks/protected/environment
 EnvironmentFile=-/solidblocks/protected/environment
 Restart=always
 RestartSec=5

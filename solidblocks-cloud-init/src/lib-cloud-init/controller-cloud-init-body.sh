@@ -38,6 +38,6 @@ while [ ! -f "${SOLIDBLOCKS_DIR}/protected/environment" ]; do
 done
 export $(xargs < "${SOLIDBLOCKS_DIR}/protected/environment")
 
-#export $(xargs < "${SOLIDBLOCKS_DIR}/protected/initial_environment")
+#export $(xargs < "${SOLIDBLOCKS_DIR}/protected/environment")
 
 consul_server_bootstrap

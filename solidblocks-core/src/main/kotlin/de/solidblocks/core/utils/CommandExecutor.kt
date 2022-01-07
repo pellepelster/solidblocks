@@ -9,10 +9,13 @@ import java.time.Duration
 interface CommandExecutor {
 
     class CommandResult(
-        val success: Boolean,
+        val code: Int,
         val stdout: List<String> = ArrayList(),
         val stderr: List<String> = ArrayList()
     ) {
+
+        val success: Boolean
+            get() = code == 0
 
         fun stdoutAsString(): String? {
             return stdout.joinToString("\n")

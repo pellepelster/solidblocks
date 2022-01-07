@@ -52,11 +52,11 @@ class LinuxCommandExecutor : CommandExecutor {
 
             process!!.waitFor(timeout.toSeconds(), TimeUnit.SECONDS)
 
-            return CommandExecutor.CommandResult(success = process!!.exitValue() == 0, stderr = stderr, stdout = stdout)
+            return CommandExecutor.CommandResult(process!!.exitValue(), stderr = stderr, stdout = stdout)
         } catch (e: IllegalThreadStateException) {
             logger.error(e) { "command did not finish in time '${command.joinToString { " " }}'" }
 
-            return CommandExecutor.CommandResult(success = false, stderr = stderr, stdout = stdout)
+            return CommandExecutor.CommandResult(process!!.exitValue(), stderr = stderr, stdout = stdout)
         } catch (e: Exception) {
             logger.error(e) { "execution of command '${command.joinToString { " " }}' failed" }
             throw RuntimeException(e)
@@ -69,6 +69,8 @@ class LinuxCommandExecutor : CommandExecutor {
 
     fun kill() {
         process?.destroyForcibly()
+        process?.descendants()?.forEach { it.destroyForcibly() }
+        process?.onExit()?.join()
     }
 
     companion object {
