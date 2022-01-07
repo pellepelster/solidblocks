@@ -33,17 +33,11 @@ function task_prepare_service_base_integration_test() {
 
     echo "${solidblocks_blue_version}" > "${artefacts_dir}/blue.version"
     echo "${solidblocks_green_version}" > "${artefacts_dir}/green.version"
+}
 
-    #docker-compose -f solidblocks-service-base-integrationtest/docker-compose.yml build \
-    #  --build-arg SOLIDBLOCKS_BLUE_VERSION="${solidblocks_blue_version}" \
-    #  --build-arg SOLIDBLOCKS_GREEN_VERSION="${solidblocks_green_version}"
-
-    #rm -rf "${test_base_dir}"
-    #mkdir -p "${test_base_dir}/instance"
-    #echo "SOLIDBLOCKS_VERSION=${solidblocks_blue_version}" > "${test_base_dir}/instance/environment"
-
-    #docker-compose -f solidblocks-service-base-integrationtest/docker-compose.yml up
-
+function task_test() {
+  task_prepare_service_base_integration_test
+  "${DIR}/gradlew" ktFormat check
 }
 
 function task_recreate_integration_test() {
@@ -89,6 +83,7 @@ shift || true
 
 case ${COMMAND} in
   cli) task_cli "$@" ;;
+  test) task_test "$@" ;;
   prepare-service-base-integration-test) task_prepare_service_base_integration_test "$@" ;;
   increment-version) task_increment_version "$@" ;;
   recreate-integration-test) task_recreate_integration_test "$@" ;;

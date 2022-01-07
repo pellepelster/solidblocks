@@ -4,6 +4,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.time.Duration
 
 interface CommandExecutor {
 
@@ -26,7 +27,9 @@ interface CommandExecutor {
 
     fun executeCommand(
         workingDir: File?,
+        printStream: Boolean = false,
         environment: Map<String, String>,
+        timeout: Duration = Duration.ofMinutes(1),
         vararg command: String
     ): CommandResult
 
@@ -34,8 +37,8 @@ interface CommandExecutor {
         fun createReader(inputStream: InputStream, target: MutableList<String>, printStream: Boolean): Thread {
             return Thread {
                 try {
-                    val inputStreamReader = InputStreamReader(inputStream).use {
-                        val bufferedReader = BufferedReader(it).use { reader ->
+                    InputStreamReader(inputStream).use {
+                        BufferedReader(it).use { reader ->
                             val iterator = reader.lineSequence().iterator()
                             while (iterator.hasNext()) {
                                 val line = iterator.next()
