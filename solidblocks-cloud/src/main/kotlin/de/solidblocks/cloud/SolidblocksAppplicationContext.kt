@@ -30,6 +30,7 @@ class SolidblocksAppplicationContext(
     init {
         val database = SolidblocksDatabase(jdbcUrl)
         database.ensureDBSchema()
+
         cloudRepository = CloudRepository(database.dsl)
         environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
         serviceRepository = ServiceRepository(database.dsl, environmentRepository)

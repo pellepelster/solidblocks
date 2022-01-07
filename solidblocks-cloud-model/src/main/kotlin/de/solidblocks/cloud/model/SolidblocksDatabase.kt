@@ -6,16 +6,13 @@ import liquibase.Contexts
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
-import liquibase.exception.DatabaseException
-import liquibase.resource.FileSystemResourceAccessor
+import liquibase.resource.ClassLoaderResourceAccessor
 import mu.KotlinLogging
 import org.jooq.impl.DataSourceConnectionProvider
 import org.jooq.impl.DefaultConfiguration
 import org.jooq.impl.DefaultDSLContext
-import java.nio.file.Files
-import java.sql.SQLException
+import java.io.InputStream
 import javax.sql.DataSource
-import kotlin.io.path.writeText
 
 class SolidblocksDatabase(jdbcUrl: String) {
 
@@ -27,7 +24,7 @@ class SolidblocksDatabase(jdbcUrl: String) {
 
     init {
 
-        logger.info { "initializing database '$jdbcUrl'" }
+        logger.info { "initializing database connection for '$jdbcUrl'" }
 
         val config = HikariConfig()
         config.jdbcUrl = jdbcUrl
@@ -42,26 +39,16 @@ class SolidblocksDatabase(jdbcUrl: String) {
     }
 
     fun ensureDBSchema() {
-        try {
-            val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(datasource.connection))
-
-            val changelogContent = SolidblocksDatabase::class.java.getResource("/db/changelog/db.changelog-master.yaml").readText()
-            val changelogDir = Files.createTempDirectory("solidblocks")
-            val changelogFile = Files.createTempFile(changelogDir, "changelog", ".yml")
-            changelogFile.writeText(changelogContent)
-
-            val liquibase = Liquibase(changelogFile.toFile().toString(), FileSystemResourceAccessor(changelogDir.toFile()), database)
-            liquibase.log
-            liquibase.update(Contexts())
-        } catch (e: SQLException) {
-            throw DatabaseException(e)
-        } finally {
-            try {
-                datasource.connection.rollback()
-                datasource.connection.close()
-            } catch (e: SQLException) {
-                // nothing to do
-            }
-        }
+        val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(datasource.connection))
+        val liquibase = Liquibase(
+            "classpath:/db/changelog/db.changelog-master.yaml",
+            object : ClassLoaderResourceAccessor() {
+                override fun openStream(relativeTo: String?, streamPath: String?): InputStream? {
+                    return super.openStreams(relativeTo, streamPath).firstOrNull()
+                }
+            },
+            database
+        )
+        liquibase.update(Contexts())
     }
 }
