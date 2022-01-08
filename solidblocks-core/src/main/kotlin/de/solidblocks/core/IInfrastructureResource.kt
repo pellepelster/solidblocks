@@ -2,5 +2,6 @@ package de.solidblocks.core
 
 interface IInfrastructureResource<ResourceType, RuntimeType> : IResource {
 
-    fun getHealthCheck(): (() -> Boolean)? = null
+    val healthCheck: (() -> Boolean)?
+        get() = null
 }

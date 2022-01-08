@@ -7,7 +7,13 @@ import de.solidblocks.api.resources.allChangedOrMissingResources
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.base.ProvisionerRegistry
-import de.solidblocks.core.*
+import de.solidblocks.core.IInfrastructureResource
+import de.solidblocks.core.IResource
+import de.solidblocks.core.IResourceLookup
+import de.solidblocks.core.Result
+import de.solidblocks.core.getAllInfraParents
+import de.solidblocks.core.getInfraParents
+import de.solidblocks.core.logName
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIp
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIpAssignment
 import de.solidblocks.provisioner.hetzner.cloud.network.Network
@@ -134,7 +140,7 @@ class Provisioner(
                 val result = this.provisionerRegistry.provisioner<IResource, Any>(resource).apply(resource)
 
                 if (result.failed) {
-                    logger.error { "applying ${diffWithChange.resource.logName()} failed, result was: '${result.errorMessage()}'" }
+                    logger.error { "applying ${diffWithChange.resource.logName()} failed, result was: '${result.logText()}'" }
                     return false
                 }
 
@@ -153,7 +159,7 @@ class Provisioner(
     }
 
     private fun runHealthCheckIfNeeded(resource: IInfrastructureResource<Any, Any>): Boolean {
-        val healthCheck = resource.getHealthCheck() ?: return true
+        val healthCheck = resource.healthCheck ?: return true
 
         logger.info { "running healthcheck for ${resource.logName()}" }
 
@@ -215,7 +221,7 @@ class Provisioner(
                 val diff = this.provisionerRegistry.provisioner<IResource, Any>(resource).diff(resource)
 
                 if (diff.failed) {
-                    logger.info { "diff failed for ${resource.logName()}" }
+                    logger.error { "diff failed for ${resource.logName()} ${diff.logText()}" }
                     return null
                 }
 

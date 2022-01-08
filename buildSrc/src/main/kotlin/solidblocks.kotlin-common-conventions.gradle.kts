@@ -30,6 +30,7 @@ dependencies {
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("ch.qos.logback:logback-classic:1.2.1")
 
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
 

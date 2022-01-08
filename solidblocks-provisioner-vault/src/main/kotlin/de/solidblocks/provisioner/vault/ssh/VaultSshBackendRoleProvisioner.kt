@@ -4,7 +4,7 @@ import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
-import de.solidblocks.base.Utils
+import de.solidblocks.base.generateSshKey
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRole
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRoleDefaultExtensions
@@ -168,7 +168,7 @@ class VaultSshBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
         val response = vaultTemplate.write("${resource.mount.name}/roles/${resource.name}", role)
 
         if (!keysExist(vaultTemplate, resource)) {
-            val key = Utils.generateSshKey(resource.mount.name)
+            val key = generateSshKey(resource.mount.name)
             vaultTemplate.write(
                 "${resource.mount.name}/config/ca",
                 mapOf("private_key" to key.first, "public_key" to key.second)

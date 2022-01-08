@@ -32,7 +32,6 @@ kotlin {
 
         dependencies {
             // implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
-            implementation("ch.qos.logback:logback-classic:1.2.1")
             implementation("io.ktor:ktor-auth:$ktorVersion")
             implementation("io.ktor:ktor-gson:$ktorVersion")
             implementation("io.ktor:ktor-locations:$ktorVersion")

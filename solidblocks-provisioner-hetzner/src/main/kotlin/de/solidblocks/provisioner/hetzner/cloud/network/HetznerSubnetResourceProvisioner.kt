@@ -49,7 +49,7 @@ class HetznerSubnetResourceProvisioner(
 
     override fun lookup(lookup: ISubnetLookup): Result<SubnetRuntime> {
         val result = checkedApiCall {
-            it.getNetworksByName(lookup.network().name).networks.firstOrNull()
+            it.getNetworksByName(lookup.network.name).networks.firstOrNull()
         }
 
         if (result.isEmptyOrFailed()) {

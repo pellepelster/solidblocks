@@ -68,9 +68,8 @@ class LinuxCommandExecutor : CommandExecutor {
     }
 
     fun kill() {
-        process?.destroyForcibly()
-        process?.descendants()?.forEach { it.destroyForcibly() }
-        process?.onExit()?.join()
+        process?.destroy()
+        process?.waitFor()
     }
 
     companion object {

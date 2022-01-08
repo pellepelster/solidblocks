@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
+import de.solidblocks.base.healthcheck.HttpHealthCheck
 import de.solidblocks.base.lookups.Base64Encode
 import de.solidblocks.base.lookups.ConstantDataSource
 import de.solidblocks.base.lookups.CustomDataSource
@@ -32,7 +33,6 @@ import de.solidblocks.vault.VaultConstants.BACKUP_POLICY_NAME
 import de.solidblocks.vault.VaultRootClientProvider
 import mu.KotlinLogging
 import org.springframework.vault.support.VaultTokenRequest
-import java.net.URL
 import java.time.Duration
 
 class EnvironmentProvisioner(
@@ -78,7 +78,7 @@ class EnvironmentProvisioner(
         val location = "nbg1"
 
         val vaultResourceGroup = provisioner.createResourceGroup("vault")
-        val floatingIp = createDefaultServer(
+        val floatingIpAssignment = createDefaultServer(
             ServerSpec(
                 name = "vault-0",
                 location = location,
@@ -93,21 +93,11 @@ class EnvironmentProvisioner(
 
         vaultResourceGroup.addResource(object : DnsRecord(
             name = "vault.${environment.name}",
-            floatingIp = floatingIp,
+            floatingIpAssignment = floatingIpAssignment,
             dnsZone = rootZone
         ) {
-                override fun getHealthCheck(): () -> Boolean {
-                    return health@{
-                        val url = "https://${this.name}.${dnsZone.name}:8200"
-                        try {
-                            URL(url).readText()
-                            logger.info { "url '$url' is healthy" }
-                            return@health true
-                        } catch (e: Exception) {
-                            logger.warn { "url '$url' is unhealthy" }
-                            return@health false
-                        }
-                    }
+                override val healthCheck = {
+                    HttpHealthCheck("https://${this.name}.${dnsZone.name}:8200").check()
                 }
             })
 
@@ -226,7 +216,7 @@ class EnvironmentProvisioner(
         resourceGroup: ResourceGroup,
         environment: EnvironmentEntity,
         rootZone: DnsZone
-    ): FloatingIp {
+    ): FloatingIpAssignment {
         val volume = resourceGroup.addResource(
             Volume(
                 name = "${environment.cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
@@ -301,27 +291,18 @@ class EnvironmentProvisioner(
             dnsZone = rootZone,
             server = server
         ) {
-                override fun getHealthCheck(): () -> Boolean {
-                    return health@{
-                        if (serverSpec.dnsHealthCheckPort == null) {
-                            return@health true
-                        }
-
-                        val url = "https://${this.name}.${dnsZone.name}:${serverSpec.dnsHealthCheckPort}"
-                        try {
-                            URL(url).readText()
-                            logger.info { "url '$url' is healthy" }
-                            return@health true
-                        } catch (e: Exception) {
-                            logger.warn { "url '$url' is unhealthy" }
-                            return@health false
-                        }
+                override val healthCheck = health@{
+                    if (serverSpec.dnsHealthCheckPort == null) {
+                        return@health true
                     }
+
+                    HttpHealthCheck("https://${this.name}.${dnsZone.name}:${serverSpec.dnsHealthCheckPort}").check()
                 }
             })
 
-        resourceGroup.addResource(FloatingIpAssignment(server = server, floatingIp = floatingIp))
+        val floatingIpAssignment = FloatingIpAssignment(server = server, floatingIp = floatingIp)
+        resourceGroup.addResource(floatingIpAssignment)
 
-        return floatingIp
+        return floatingIpAssignment
     }
 }

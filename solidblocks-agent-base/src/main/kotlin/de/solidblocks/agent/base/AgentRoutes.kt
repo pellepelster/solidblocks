@@ -23,6 +23,11 @@ fun Route.versionRoutes(shutdown: CountDownLatch) {
             call.respond(VersionResponse(solidblocksVersion()))
         }
 
+        post("trigger-shutdown") {
+            call.respond(object {})
+            shutdown.countDown()
+        }
+
         post("trigger-update") {
             val updateRequest = call.receive<TriggerUpdateRequest>()
             val workingDir = System.getProperty("user.dir")

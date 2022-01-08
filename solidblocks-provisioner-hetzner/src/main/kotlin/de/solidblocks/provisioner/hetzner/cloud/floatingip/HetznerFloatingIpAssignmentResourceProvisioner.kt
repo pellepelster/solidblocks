@@ -111,7 +111,7 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
     }
 
     override fun lookup(lookup: IFloatingIpAssignmentLookup): Result<FloatingIpAssignmentRuntime> {
-        return provisioner.lookup(lookup.floatingIp()).mapNonNullResult {
+        return provisioner.lookup(lookup.floatingIp).mapNonNullResult {
             FloatingIpAssignmentRuntime(it.id, it.server)
         }
     }

@@ -24,5 +24,5 @@ class TestResource(
         hasChanges
     )
 
-    override fun getHealthCheck(): (() -> Boolean) = { healthy }
+    override val healthCheck: (() -> Boolean) = { healthy }
 }

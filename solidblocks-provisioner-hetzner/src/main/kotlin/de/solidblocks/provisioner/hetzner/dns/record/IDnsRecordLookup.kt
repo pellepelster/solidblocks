@@ -4,5 +4,5 @@ import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.hetzner.dns.zone.IDnsZoneLookup
 
 interface IDnsRecordLookup : IResourceLookup<DnsRecordRuntime> {
-    fun dnsZone(): IDnsZoneLookup
+    val dnsZone: IDnsZoneLookup
 }

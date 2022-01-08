@@ -53,7 +53,7 @@ class Result<Type>(
         return result == null || failed
     }
 
-    fun errorMessage(): String {
+    fun logText(): String {
         return "result was '$result', failed = $failed, error message was '${message ?: "<none>"}"
     }
 

@@ -2,7 +2,13 @@ package de.solidblocks.core
 
 @OptIn(ExperimentalStdlibApi::class)
 fun IResource.logName(): String {
-    return "${this.javaClass.simpleName.lowercase()} resource '${this.name}'"
+    var simpleName = this.javaClass.simpleName.lowercase()
+
+    if (simpleName.isEmpty()) {
+        simpleName = this.javaClass.superclass.simpleName.lowercase()
+    }
+
+    return "$simpleName resource '${this.name}'"
 }
 
 fun IResource.getInfraParents(): List<IInfrastructureResource<*, *>> {

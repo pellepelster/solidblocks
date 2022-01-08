@@ -23,13 +23,17 @@ class HetznerDnsRecordResourceProvisioner(
 
     private val logger = KotlinLogging.logger {}
 
-    fun resolveIp(resource: DnsRecord): Result<String> {
+    private fun resolveIp(resource: DnsRecord): Result<String> {
         if (resource.floatingIp != null) {
-            return provisioner.lookup(resource.floatingIp!!).mapResult { it?.ipv4 }
+            return provisioner.lookup(resource.floatingIp).mapResult { it?.ipv4 }
+        }
+
+        if (resource.floatingIpAssignment != null) {
+            return provisioner.lookup(resource.floatingIpAssignment.floatingIp).mapResult { it?.ipv4 }
         }
 
         if (resource.server != null) {
-            return provisioner.lookup(resource.server!!).mapResult { it?.privateIp }
+            return provisioner.lookup(resource.server).mapResult { it?.privateIp }
         }
 
         return Result(failed = true, message = "neither floating ip nor server was provided")
@@ -40,7 +44,6 @@ class HetznerDnsRecordResourceProvisioner(
             lookup(resource),
             resolveIp(resource)
         ) { first, second ->
-
             if (first == null || second == null) {
                 return@onSuccess ResourceDiff(resource, missing = true)
             }
@@ -110,7 +113,7 @@ class HetznerDnsRecordResourceProvisioner(
     }
 
     override fun lookup(lookup: IDnsRecordLookup): Result<DnsRecordRuntime> {
-        val result = this.provisioner.lookup(lookup.dnsZone())
+        val result = this.provisioner.lookup(lookup.dnsZone)
 
         if (result.isEmptyOrFailed()) {
             return Result(failed = true)

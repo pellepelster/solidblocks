@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.Utils.Companion.generateSshKey
+import de.solidblocks.base.generateSshKey
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_SECRET_KEY
 import de.solidblocks.cloud.model.ModelConstants.SSH_IDENTITY_PRIVATE_KEY
