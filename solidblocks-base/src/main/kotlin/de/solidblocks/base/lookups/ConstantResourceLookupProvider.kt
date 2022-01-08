@@ -9,7 +9,5 @@ class ConstantResourceLookupProvider : IResourceLookupProvider<ConstantDataSourc
         return Result(datasource.content)
     }
 
-    override fun getLookupType(): Class<ConstantDataSource> {
-        return ConstantDataSource::class.java
-    }
+    override val lookupType = ConstantDataSource::class.java
 }

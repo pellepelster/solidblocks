@@ -4,7 +4,7 @@ import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 class VaultSshBackendRole(
-    val id: String,
+    override val name: String,
     val keyType: String,
     val maxTtl: String,
     val ttl: String,
@@ -13,18 +13,10 @@ class VaultSshBackendRole(
     val allowedUsers: List<String> = emptyList(),
     val defaultUser: String? = null,
     val defaultExtensions: VaultSshBackendRoleDefaultExtensions? = null,
-    val mount: IVaultMountLookup
+    override val mount: IVaultMountLookup
 ) :
     IVaultSshBackendRoleLookup,
     IInfrastructureResource<VaultSshBackendRole, VaultSshBackendRoleRuntime> {
 
-    override fun mount(): IVaultMountLookup {
-        return mount
-    }
-
-    override fun id(): String {
-        return this.id
-    }
-
-    override fun getParents() = setOf(mount)
+    override val parents = setOf(mount)
 }

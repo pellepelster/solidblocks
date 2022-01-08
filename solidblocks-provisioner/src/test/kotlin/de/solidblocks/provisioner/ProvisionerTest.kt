@@ -8,6 +8,7 @@ import de.solidblocks.provisioner.fixtures.TestResource
 import de.solidblocks.provisioner.fixtures.TestResourceProvisioner
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.Duration
 import java.util.*
 
 class ProvisionerTest {
@@ -26,8 +27,7 @@ class ProvisionerTest {
         val resource = TestResource(UUID.randomUUID())
 
         testResourceProvisioner.reset()
-        provisioner.clear()
-        testResourceProvisioner.failOnLookup(resource)
+        testResourceProvisioner.mockFailOnLookupFor(resource)
 
         val result = provisioner.lookup(resource)
 
@@ -49,8 +49,7 @@ class ProvisionerTest {
         val resource2 = TestResource(UUID.randomUUID(), setOf(resource1))
 
         testResourceProvisioner.reset()
-        provisioner.clear()
-        testResourceProvisioner.diffIsMissing(resource1)
+        testResourceProvisioner.mockMissingDiffFor(resource1)
 
         val layer = provisioner.createResourceGroup("layer1")
         layer.addResource(resource1)
@@ -61,28 +60,64 @@ class ProvisionerTest {
     }
 
     @Test
-    fun diffIsOmittedWhenParentsAreMissing() {
+    fun resourcesAreNotTouchedIfPreviousLayerHasUnhealthyResources() {
         val testResourceProvisioner = TestResourceProvisioner()
 
         val provisionerRegistry = ProvisionerRegistry()
         provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
         provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
 
-        val provisioner = Provisioner(provisionerRegistry)
+        val provisioner = Provisioner(provisionerRegistry, healthCheckWait = Duration.ofMillis(10))
 
-        val resource1 = TestResource(UUID.randomUUID())
+        val resource1 = TestResource(UUID.randomUUID(), healthy = false, hasChanges = true)
+        val resource2 = TestResource(UUID.randomUUID())
+
+        provisioner.createResourceGroup("layer1").addResource(resource1)
+        provisioner.createResourceGroup("layer2").addResource(resource2)
+
+        assertThat(provisioner.apply()).isFalse
+        assertThat(testResourceProvisioner.applyCount(resource1)).isEqualTo(1)
+        assertThat(testResourceProvisioner.noInteractions(resource2)).isTrue
+    }
+
+    @Test
+    fun applyFailsWhenHealthCheckFails() {
+        val testResourceProvisioner = TestResourceProvisioner()
+
+        val provisionerRegistry = ProvisionerRegistry()
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+        provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        val provisioner = Provisioner(provisionerRegistry, healthCheckWait = Duration.ofMillis(10))
+
+        val resource1 = TestResource(UUID.randomUUID(), healthy = false, hasChanges = true)
+        provisioner.createResourceGroup("layer1").addResource(resource1)
+
+        assertThat(provisioner.apply()).isFalse
+    }
+
+    @Test
+    fun resourcesForGroupAreNotTouchedWhenParentsIsUnhealthy() {
+        val testResourceProvisioner = TestResourceProvisioner()
+
+        val provisionerRegistry = ProvisionerRegistry()
+        provisionerRegistry.addProvisioner(testResourceProvisioner as IInfrastructureResourceProvisioner<Any, Any>)
+        provisionerRegistry.addLookupProvider(testResourceProvisioner as IResourceLookupProvider<IResourceLookup<Any>, Any>)
+
+        val provisioner = Provisioner(provisionerRegistry, healthCheckWait = Duration.ofMillis(10))
+
+        val resource1 = TestResource(UUID.randomUUID(), healthy = false)
         val resource2 = TestResource(UUID.randomUUID(), setOf(resource1))
 
         testResourceProvisioner.reset()
-        provisioner.clear()
-        testResourceProvisioner.diffIsMissing(resource1)
+        testResourceProvisioner.mockMissingDiffFor(resource1)
 
-        val layer = provisioner.createResourceGroup("layer1")
-        layer.addResource(resource1)
-        layer.addResource(resource2)
+        provisioner.createResourceGroup("layer1").addResource(resource1)
+        provisioner.createResourceGroup("layer2").addResource(resource2)
 
-        assertThat(provisioner.apply()).isTrue
-        assertThat(testResourceProvisioner.diffCount(resource2)).isEqualTo(0)
+        assertThat(provisioner.apply()).isFalse
+        assertThat(testResourceProvisioner.diffCount(resource1)).isEqualTo(1)
+        assertThat(testResourceProvisioner.noInteractions(resource2)).isTrue
     }
 
     @Test
@@ -98,8 +133,7 @@ class ProvisionerTest {
         val resource = TestResource(UUID.randomUUID())
 
         testResourceProvisioner.reset()
-        provisioner.clear()
-        testResourceProvisioner.failOnDiff(resource)
+        testResourceProvisioner.mockFailOnDiffFor(resource)
 
         provisioner.createResourceGroup("layer1").addResource(resource)
 
@@ -122,9 +156,8 @@ class ProvisionerTest {
         val resource = TestResource(UUID.randomUUID())
 
         testResourceProvisioner.reset()
-        provisioner.clear()
-        testResourceProvisioner.failOnApply(resource)
-        testResourceProvisioner.diffIsMissing(resource)
+        testResourceProvisioner.mockFailOnApplyFor(resource)
+        testResourceProvisioner.mockMissingDiffFor(resource)
 
         provisioner.createResourceGroup("layer1").addResource(resource)
 

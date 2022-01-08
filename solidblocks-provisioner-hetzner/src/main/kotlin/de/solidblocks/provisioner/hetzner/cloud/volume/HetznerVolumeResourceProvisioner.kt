@@ -77,14 +77,14 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
 
     fun createVolume(resource: Volume): Result<*> {
         val request = VolumeRequest.builder()
-        request.name(resource.id)
+        request.name(resource.name)
         request.size(16L)
         request.location(resource.location)
         request.format("ext4")
         request.labels(resource.labels)
 
         return checkedApiCall {
-            logger.info { "creating volume '${resource.id}'" }
+            logger.info { "creating volume '${resource.name}'" }
             val v = it.createVolume(request.build())
             val p = it.changeVolumeProtection(v.volume.id, ChangeProtectionRequest.builder().delete(true).build())
 
@@ -94,13 +94,15 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
             }
         }.mapNonNullResult { r ->
             logger.info {
-                "volume '${resource.id}' created, waiting for actions '${r.second.map { it.command }.joinToString(", ")}' to finish"
+                "volume '${resource.name}' created, waiting for actions '${
+                r.second.map { it.command }.joinToString(", ")
+                }' to finish"
             }
             waitForActions(
                 r.second
             ) { api, action ->
                 val actionResult = api.getActionOfVolume(r.first, action.id).action
-                logger.info { "waiting for action '${action.command}' to finish for volume '${resource.id}', current status is '${action.status}'" }
+                logger.info { "waiting for action '${action.command}' to finish for volume '${resource.name}', current status is '${action.status}'" }
                 actionResult.finished != null
             }
         }
@@ -114,9 +116,9 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
             }
 
             val request = UpdateVolumeRequest.builder()
-            request.name(resource.id)
+            request.name(resource.name)
             checkedApiCall {
-                logger.info { "updating volume '${resource.id}'" }
+                logger.info { "updating volume '${resource.name}'" }
                 it.updateVolume(volume.id.toLong(), request.build())
             }
         }
@@ -128,19 +130,15 @@ class HetznerVolumeResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         }.mapSuccessNonNullBoolean { true }
     }
 
-    override fun getResourceType(): Class<*> {
-        return Volume::class.java
-    }
-
     override fun lookup(lookup: IVolumeLookup): Result<VolumeRuntime> {
         return checkedApiCall {
-            it.volumes.volumes.firstOrNull { it.name == lookup.id() }
+            it.volumes.volumes.firstOrNull { it.name == lookup.name }
         }.mapNonNullResult {
             VolumeRuntime(it.id.toString(), it.linuxDevice, it.server)
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IVolumeLookup::class.java
-    }
+    override val resourceType = Volume::class.java
+
+    override val lookupType = IVolumeLookup::class.java
 }

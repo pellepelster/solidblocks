@@ -11,5 +11,5 @@ interface IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
     fun destroy(resource: ResourceType): Boolean = TODO("Not yet implemented")
     fun destroyAll(): Boolean = TODO("Not yet implemented")
 
-    fun getResourceType(): Class<*>
+    val resourceType: Class<*>
 }

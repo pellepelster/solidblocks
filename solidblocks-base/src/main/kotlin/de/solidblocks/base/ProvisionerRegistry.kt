@@ -17,12 +17,12 @@ open class ProvisionerRegistry {
     private val logger = KotlinLogging.logger {}
 
     fun supportsResource(clazz: KClass<*>): Boolean {
-        return provisioners.any { it.getResourceType() == clazz.java }
+        return provisioners.any { it.resourceType == clazz.java }
     }
 
     fun <ResourceType : IResource, RuntimeType> provisioner(resource: ResourceType): IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
         val provisioner = provisioners.firstOrNull {
-            it.getResourceType().isAssignableFrom(resource::class.java)
+            it.resourceType.isAssignableFrom(resource::class.java)
         }
 
         if (provisioner == null) {
@@ -34,7 +34,7 @@ open class ProvisionerRegistry {
 
     fun <ResourceType, Type : IInfrastructureResource<ResourceType, RuntimeType>, RuntimeType> provisioner(clazz: KClass<Type>): IInfrastructureResourceProvisioner<ResourceType, RuntimeType> {
         val provisioner = provisioners.firstOrNull {
-            it.getResourceType().isAssignableFrom(clazz.java)
+            it.resourceType.isAssignableFrom(clazz.java)
         }
 
         if (provisioner == null) {
@@ -46,7 +46,7 @@ open class ProvisionerRegistry {
 
     fun <LookupType : IResourceLookup<RuntimeType>, RuntimeType> datasource(lookup: LookupType): IResourceLookupProvider<IResourceLookup<RuntimeType>, RuntimeType> {
         val datasource = lookupProviders.firstOrNull {
-            it.getLookupType().isAssignableFrom(lookup::class.java)
+            it.lookupType.isAssignableFrom(lookup::class.java)
         }
 
         if (datasource == null) {

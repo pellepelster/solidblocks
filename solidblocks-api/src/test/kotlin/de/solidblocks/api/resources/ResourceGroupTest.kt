@@ -13,7 +13,7 @@ class ResourceGroupTest {
 
         val resourceList = resourceGroup.hierarchicalResourceList()
 
-        assertThat(resourceList[0].id()).isEqualTo("resource2")
-        assertThat(resourceList[1].id()).isEqualTo("resource1")
+        assertThat(resourceList[0].name).isEqualTo("resource2")
+        assertThat(resourceList[1].name).isEqualTo("resource1")
     }
 }

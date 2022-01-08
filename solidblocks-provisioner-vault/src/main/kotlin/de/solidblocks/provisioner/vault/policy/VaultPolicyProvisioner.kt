@@ -15,10 +15,6 @@ class VaultPolicyProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
 
     private val logger = KotlinLogging.logger {}
 
-    override fun getResourceType(): Class<VaultPolicy> {
-        return VaultPolicy::class.java
-    }
-
     override fun diff(resource: VaultPolicy): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
@@ -40,14 +36,14 @@ class VaultPolicyProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
     override fun apply(resource: VaultPolicy): Result<*> {
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        vaultTemplate.opsForSys().createOrUpdatePolicy(resource.id, Policy.of(resource.rules))
+        vaultTemplate.opsForSys().createOrUpdatePolicy(resource.name, Policy.of(resource.rules))
         return Result<Any>(resource)
     }
 
     override fun lookup(lookup: IVaultPolicyLookup): Result<VaultPolicyRuntime> {
         return try {
             val vaultTemplate = vaultTemplateProvider.invoke()
-            val policy = vaultTemplate.opsForSys().getPolicy(lookup.id())
+            val policy = vaultTemplate.opsForSys().getPolicy(lookup.name)
 
             if (null == policy) {
                 Result()
@@ -59,7 +55,7 @@ class VaultPolicyProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IVaultPolicyLookup::class.java
-    }
+    override val resourceType = VaultPolicy::class.java
+
+    override val lookupType = IVaultPolicyLookup::class.java
 }

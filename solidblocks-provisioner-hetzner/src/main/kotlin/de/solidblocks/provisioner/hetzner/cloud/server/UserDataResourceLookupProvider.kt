@@ -9,7 +9,8 @@ import freemarker.template.Configuration.SQUARE_BRACKET_INTERPOLATION_SYNTAX
 import freemarker.template.TemplateExceptionHandler
 import java.io.StringWriter
 
-class UserDataResourceLookupProvider(val provisioner: InfrastructureProvisioner) : IResourceLookupProvider<UserData, UserDataRuntime> {
+class UserDataResourceLookupProvider(val provisioner: InfrastructureProvisioner) :
+    IResourceLookupProvider<UserData, UserDataRuntime> {
 
     val cfg = Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS)
 
@@ -43,10 +44,6 @@ class UserDataResourceLookupProvider(val provisioner: InfrastructureProvisioner)
         return Result(UserDataRuntime(staticUserData, ephemeraUserData))
     }
 
-    override fun getLookupType(): Class<UserData> {
-        return UserData::class.java
-    }
-
     private fun resolveVariables(variables: HashMap<String, IResourceLookup<String>>): Map<String, String>? {
 
         val lookups = variables.map {
@@ -61,4 +58,6 @@ class UserDataResourceLookupProvider(val provisioner: InfrastructureProvisioner)
             key to value.result!!
         }
     }
+
+    override val lookupType = UserData::class.java
 }

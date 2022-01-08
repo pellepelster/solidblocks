@@ -110,17 +110,13 @@ class HetznerFloatingIpAssignmentResourceProvisioner(
         }
     }
 
-    override fun getResourceType(): Class<*> {
-        return FloatingIpAssignment::class.java
-    }
-
     override fun lookup(lookup: IFloatingIpAssignmentLookup): Result<FloatingIpAssignmentRuntime> {
         return provisioner.lookup(lookup.floatingIp()).mapNonNullResult {
             FloatingIpAssignmentRuntime(it.id, it.server)
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IFloatingIpAssignmentLookup::class.java
-    }
+    override val resourceType = FloatingIpAssignment::class.java
+
+    override val lookupType = IFloatingIpAssignmentLookup::class.java
 }

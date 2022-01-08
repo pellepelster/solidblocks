@@ -3,15 +3,6 @@ package de.solidblocks.provisioner.consul.kv
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.core.IResource
 
-class ConsulKv(val key: String, val dependsOn: Set<IResource> = emptySet()) :
+class ConsulKv(override val name: String, override val parents: Set<IResource> = emptySet()) :
     IConsulKvLookup,
-    IInfrastructureResource<ConsulKv, ConsulKvRuntime> {
-
-    override fun getParents(): Set<IResource> {
-        return dependsOn
-    }
-
-    override fun id(): String {
-        return key
-    }
-}
+    IInfrastructureResource<ConsulKv, ConsulKvRuntime>

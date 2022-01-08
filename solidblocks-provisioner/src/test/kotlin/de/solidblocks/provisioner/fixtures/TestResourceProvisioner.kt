@@ -7,7 +7,9 @@ import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
 import de.solidblocks.core.Result
 import java.util.concurrent.atomic.AtomicInteger
 
-class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, String>, IInfrastructureResourceProvisioner<TestResource, String> {
+class TestResourceProvisioner :
+    IResourceLookupProvider<ITestResourceLookup, String>,
+    IInfrastructureResourceProvisioner<TestResource, String> {
 
     val failOnDiff = HashMap<String, Boolean>()
     var diffWasCalled = HashMap<String, AtomicInteger>()
@@ -24,32 +26,39 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
     var diffIsMissing = HashMap<String, Boolean>()
     var diffNeedsRecreate = HashMap<String, AtomicInteger>()
 
-    fun failOnLookup(resource: TestResource) {
-        failOnLookup[resource.id] = true
+    fun mockFailOnLookupFor(resource: TestResource) {
+        failOnLookup[resource.name] = true
     }
 
     fun lookupCount(resource: TestResource): Int {
-        return lookupWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.get()
+        return lookupWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.get()
     }
 
-    fun failOnApply(resource: TestResource) {
-        failOnApply[resource.id] = true
+    fun mockFailOnApplyFor(resource: TestResource) {
+        failOnApply[resource.name] = true
     }
 
-    fun diffIsMissing(resource: TestResource) {
-        diffIsMissing[resource.id] = true
+    fun mockMissingDiffFor(resource: TestResource) {
+        diffIsMissing[resource.name] = true
     }
 
     fun applyCount(resource: TestResource): Int {
-        return applyWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.get()
+        return applyWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.get()
     }
 
-    fun failOnDiff(resource: TestResource) {
-        failOnDiff[resource.id] = true
+    fun noInteractions(resource: TestResource): Boolean {
+        return applyWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }
+            .get() + destroyWasCalled.computeIfAbsent(
+            resource.name
+        ) { AtomicInteger() }.get() + diffWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.get() == 0
+    }
+
+    fun mockFailOnDiffFor(resource: TestResource) {
+        failOnDiff[resource.name] = true
     }
 
     fun diffCount(resource: TestResource): Int {
-        return diffWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.get()
+        return diffWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.get()
     }
 
     fun reset() {
@@ -69,31 +78,31 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
         diffNeedsRecreate.clear()
     }
 
-    override fun getResourceType(): Class<TestResource> {
-        return TestResource::class.java
-    }
-
     override fun diff(resource: TestResource): Result<ResourceDiff> {
-        diffWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.incrementAndGet()
-        if (failOnDiff.containsKey(resource.id)) {
+        diffWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
+        if (failOnDiff.containsKey(resource.name)) {
             throw RuntimeException()
         } else {
             val changes = ArrayList<ResourceDiffItem>()
 
-            if (diffNeedsRecreate.containsKey(resource.id)) {
+            if (resource.hasChanges) {
+                changes.add(ResourceDiffItem("something", changed = true))
+            }
+
+            if (diffNeedsRecreate.containsKey(resource.name)) {
                 changes.add(ResourceDiffItem("something", triggersRecreate = true))
             }
 
             return Result(
-                result = ResourceDiff(resource, missing = diffIsMissing.containsKey(resource.id), changes = changes)
+                result = ResourceDiff(resource, missing = diffIsMissing.containsKey(resource.name), changes = changes)
             )
         }
     }
 
     override fun apply(resource: TestResource): Result<*> {
-        applyWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.incrementAndGet()
+        applyWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
 
-        if (failOnApply.containsKey(resource.id)) {
+        if (failOnApply.containsKey(resource.name)) {
             throw RuntimeException()
         } else {
             return Result(result = "result")
@@ -101,9 +110,9 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
     }
 
     override fun destroy(resource: TestResource): Boolean {
-        destroyWasCalled.computeIfAbsent(resource.id) { AtomicInteger() }.incrementAndGet()
+        destroyWasCalled.computeIfAbsent(resource.name) { AtomicInteger() }.incrementAndGet()
 
-        if (failOnDestroy.containsKey(resource.id)) {
+        if (failOnDestroy.containsKey(resource.name)) {
             throw RuntimeException()
         } else {
             return true
@@ -111,16 +120,16 @@ class TestResourceProvisioner : IResourceLookupProvider<ITestResourceLookup, Str
     }
 
     override fun lookup(lookup: ITestResourceLookup): Result<String> {
-        lookupWasCalled.computeIfAbsent(lookup.id()) { AtomicInteger() }.incrementAndGet()
+        lookupWasCalled.computeIfAbsent(lookup.name) { AtomicInteger() }.incrementAndGet()
 
-        if (failOnLookup.containsKey(lookup.id())) {
+        if (failOnLookup.containsKey(lookup.name)) {
             throw RuntimeException()
         } else {
             return Result(result = "result")
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return ITestResourceLookup::class.java
-    }
+    override val resourceType = TestResource::class.java
+
+    override val lookupType = ITestResourceLookup::class.java
 }

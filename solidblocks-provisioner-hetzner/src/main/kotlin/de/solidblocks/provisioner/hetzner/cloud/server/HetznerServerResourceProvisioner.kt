@@ -32,7 +32,7 @@ class HetznerServerResourceProvisioner(
 
                 if (!labels.hashLabelMatches(
                         resource::sshKeys.name,
-                        resource.sshKeys.joinToString { it.id() }
+                        resource.sshKeys.joinToString { it.name }
                     )
                 ) {
                     changes.add(
@@ -95,7 +95,7 @@ class HetznerServerResourceProvisioner(
     fun createServer(resource: Server): Result<*> {
         val request = ServerRequest.builder()
 
-        request.name(resource.id)
+        request.name(resource.name)
         request.serverType("cx11")
         request.location(resource.location)
         request.image("debian-10")
@@ -123,7 +123,7 @@ class HetznerServerResourceProvisioner(
         request.userData(userData.result!!.ephemeralUserData)
 
         val labels = HetznerLabels()
-        labels.addHashLabel(resource::sshKeys.name, resource.sshKeys.joinToString { it.id() })
+        labels.addHashLabel(resource::sshKeys.name, resource.sshKeys.joinToString { it.name })
         labels.addHashLabel(EPHEMERAL_USER_DATA_KEY, userData.result!!.ephemeralUserData)
         labels.addHashLabel(STATIC_USER_DATA_KEY, userData.result!!.staticUserData)
 
@@ -138,7 +138,7 @@ class HetznerServerResourceProvisioner(
         request.sshKeys(sshKeys.map { it.result!!.id.toLong() })
 
         return checkedApiCall {
-            logger.info { "creating server '${resource.id}'" }
+            logger.info { "creating server '${resource.name}'" }
             it.createServer(request.build())
         }.mapNonNullResult {
             waitForActions(it.nextActions) { api, action ->
@@ -153,11 +153,11 @@ class HetznerServerResourceProvisioner(
         var existingServer = lookup(resource)
 
         if (existingServer.isEmpty()) {
-            logger.info { "server '${resource.id}' not found, creating" }
+            logger.info { "server '${resource.name}' not found, creating" }
             val result = createServer(resource)
 
             if (result.failed) {
-                logger.info { "creating server '${resource.id}' failed" }
+                logger.info { "creating server '${resource.name}' failed" }
                 return result
             }
             existingServer = lookup(resource)
@@ -170,12 +170,12 @@ class HetznerServerResourceProvisioner(
         }
 
         return checkedApiCall {
-            logger.info { "powering on server '${resource.id}'" }
+            logger.info { "powering on server '${resource.name}'" }
             it.powerOnServer(existingServer.result!!.id.toLong())
         }.mapNonNullResult {
             waitForActions(listOf(it.action)) { api, action ->
                 val actionResult = api.getActionOfServer(existingServer.result!!.id.toLong(), action.id).action
-                logger.info { "waiting for action '${action.command}' to finish for server '${resource.id}', current status is '${action.status}'" }
+                logger.info { "waiting for action '${action.command}' to finish for server '${resource.name}', current status is '${action.status}'" }
                 actionResult.finished != null
             }
         }
@@ -209,14 +209,10 @@ class HetznerServerResourceProvisioner(
         }
     }
 
-    override fun getResourceType(): Class<*> {
-        return Server::class.java
-    }
-
     override fun lookup(lookup: IServerLookup): Result<ServerRuntime> {
         return checkedApiCall {
             it.servers.servers.firstOrNull {
-                it.name == lookup.id()
+                it.name == lookup.name
             }
         }.mapNonNullResult {
             ServerRuntime(
@@ -230,7 +226,7 @@ class HetznerServerResourceProvisioner(
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IServerLookup::class.java
-    }
+    override val resourceType = Server::class.java
+
+    override val lookupType = IServerLookup::class.java
 }

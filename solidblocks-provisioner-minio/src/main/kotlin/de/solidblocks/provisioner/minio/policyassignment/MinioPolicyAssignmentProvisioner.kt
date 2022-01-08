@@ -20,10 +20,6 @@ class MinioPolicyAssignmentProvisioner(minioCredentialsProvider: () -> MinioCred
 
     private val logger = KotlinLogging.logger {}
 
-    override fun getResourceType(): Class<MinioPolicyAssignment> {
-        return MinioPolicyAssignment::class.java
-    }
-
     override fun diff(resource: MinioPolicyAssignment): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
@@ -53,7 +49,7 @@ class MinioPolicyAssignmentProvisioner(minioCredentialsProvider: () -> MinioCred
         return Result.emptyResult()
     }
 
-    override fun getLookupType(): Class<*> {
-        return IMinioPolicyAssignmentLookup::class.java
-    }
+    override val resourceType = MinioPolicyAssignment::class.java
+
+    override val lookupType = IMinioPolicyAssignmentLookup::class.java
 }

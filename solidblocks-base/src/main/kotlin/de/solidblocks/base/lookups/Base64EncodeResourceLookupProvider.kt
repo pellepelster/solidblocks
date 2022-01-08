@@ -14,7 +14,5 @@ class Base64EncodeResourceLookupProvider(val provisioner: InfrastructureProvisio
         }
     }
 
-    override fun getLookupType(): Class<Base64Encode> {
-        return Base64Encode::class.java
-    }
+    override val lookupType = Base64Encode::class.java
 }

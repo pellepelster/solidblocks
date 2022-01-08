@@ -17,10 +17,6 @@ class VaultKVProvisioner(private val vaultTemplateProvider: () -> VaultTemplate)
 
     private val logger = KotlinLogging.logger {}
 
-    override fun getResourceType(): Class<VaultKV> {
-        return VaultKV::class.java
-    }
-
     override fun diff(resource: VaultKV): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
@@ -39,7 +35,7 @@ class VaultKVProvisioner(private val vaultTemplateProvider: () -> VaultTemplate)
     }
 
     override fun apply(resource: VaultKV): Result<*> {
-        val kvOperations = kvOperations(resource.mount())
+        val kvOperations = kvOperations(resource.mount)
         kvOperations.put(resource.path, resource.data)
 
         return Result<Any>(resource)
@@ -50,13 +46,13 @@ class VaultKVProvisioner(private val vaultTemplateProvider: () -> VaultTemplate)
     ): VaultKeyValueOperations {
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        return vaultTemplate.opsForKeyValue(mount.id(), VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
+        return vaultTemplate.opsForKeyValue(mount.name, VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
     }
 
     override fun lookup(lookup: IVaultKVLookup): Result<VaultKVRuntime> {
         return try {
-            val kvOperations = kvOperations(lookup.mount())
-            val result = kvOperations.get(lookup.path())
+            val kvOperations = kvOperations(lookup.mount)
+            val result = kvOperations.get(lookup.path)
 
             if (null == result) {
                 Result()
@@ -68,7 +64,7 @@ class VaultKVProvisioner(private val vaultTemplateProvider: () -> VaultTemplate)
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IVaultKVLookup::class.java
-    }
+    override val resourceType = VaultKV::class.java
+
+    override val lookupType = IVaultKVLookup::class.java
 }

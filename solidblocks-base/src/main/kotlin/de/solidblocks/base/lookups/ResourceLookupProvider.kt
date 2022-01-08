@@ -12,7 +12,5 @@ class ResourceLookupProvider<RuntimeType>(private val provisioner: Infrastructur
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return ResourceLookup::class.java
-    }
+    override val lookupType = ResourceLookup::class.java
 }

@@ -14,13 +14,11 @@ class HetznerDnsZoneResourceProvisioner(hetznerDnsAPI: HetznerDnsAPI) :
 
     override fun lookup(lookup: IDnsZoneLookup): Result<DnsZoneRuntime> {
         return checkedApiCall {
-            it.searchZone(lookup.id())
+            it.searchZone(lookup.name)
         }.mapNonNullResult {
             DnsZoneRuntime(it.id, it.name)
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IDnsZoneLookup::class.java
-    }
+    override val lookupType = IDnsZoneLookup::class.java
 }

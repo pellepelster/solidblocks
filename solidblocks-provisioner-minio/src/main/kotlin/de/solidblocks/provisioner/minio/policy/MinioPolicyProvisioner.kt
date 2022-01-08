@@ -20,10 +20,6 @@ class MinioPolicyProvisioner(minioCredentialsProvider: () -> MinioCredentials) :
 
     private val logger = KotlinLogging.logger {}
 
-    override fun getResourceType(): Class<MinioPolicy> {
-        return MinioPolicy::class.java
-    }
-
     override fun diff(resource: MinioPolicy): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
@@ -41,16 +37,16 @@ class MinioPolicyProvisioner(minioCredentialsProvider: () -> MinioCredentials) :
     }
 
     override fun lookup(resource: IMinioPolicyLookup): Result<MinioPolicyRuntime> {
-        val user = minioMcWrapper.listPolicies().firstOrNull { it.policy == resource.name() }
+        val user = minioMcWrapper.listPolicies().firstOrNull { it.policy == resource.name }
 
         return if (user != null) {
-            Result.resultOf(MinioPolicyRuntime(resource.name()))
+            Result.resultOf(MinioPolicyRuntime(resource.name))
         } else {
             Result.emptyResult()
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IMinioPolicyLookup::class.java
-    }
+    override val resourceType = MinioPolicy::class.java
+
+    override val lookupType = IMinioPolicyLookup::class.java
 }

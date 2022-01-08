@@ -3,21 +3,11 @@ package de.solidblocks.provisioner.vault.kv
 import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
-class VaultKV(val path: String, val data: Map<String, Any>, val mount: IVaultMountLookup) :
+class VaultKV(override val path: String, val data: Map<String, Any>, override val mount: IVaultMountLookup) :
     IVaultKVLookup,
     IInfrastructureResource<VaultKV, VaultKVRuntime> {
 
-    override fun getParents() = setOf(mount)
+    override val parents = setOf(mount)
 
-    override fun mount(): IVaultMountLookup {
-        return mount
-    }
-
-    override fun path(): String {
-        return path
-    }
-
-    override fun id(): String {
-        return "${mount.id()}.${this.path}"
-    }
+    override val name = "${mount.name}.${this.path}"
 }

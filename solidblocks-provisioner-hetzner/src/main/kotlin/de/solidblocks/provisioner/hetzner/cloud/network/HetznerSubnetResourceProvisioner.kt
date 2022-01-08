@@ -47,13 +47,9 @@ class HetznerSubnetResourceProvisioner(
         return resultOf(ResourceDiff(resource, false))
     }
 
-    override fun getResourceType(): Class<*> {
-        return Subnet::class.java
-    }
-
     override fun lookup(lookup: ISubnetLookup): Result<SubnetRuntime> {
         val result = checkedApiCall {
-            it.getNetworksByName(lookup.network().id()).networks.firstOrNull()
+            it.getNetworksByName(lookup.network().name).networks.firstOrNull()
         }
 
         if (result.isEmptyOrFailed()) {
@@ -61,7 +57,7 @@ class HetznerSubnetResourceProvisioner(
         }
 
         val subnet = result.result!!.subnets.firstOrNull {
-            it.ipRange == lookup.id()
+            it.ipRange == lookup.name
         }
 
         if (subnet != null) {
@@ -71,7 +67,7 @@ class HetznerSubnetResourceProvisioner(
         return emptyResult()
     }
 
-    override fun getLookupType(): Class<*> {
-        return ISubnetLookup::class.java
-    }
+    override val resourceType = Subnet::class.java
+
+    override val lookupType = ISubnetLookup::class.java
 }

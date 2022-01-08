@@ -32,7 +32,7 @@ object VaultCloudConfiguration {
 
         val hostPkiMount = VaultMount(pkiMountName(environment), "pki")
         val hostPkiBackendRole = VaultPkiBackendRole(
-            id = pkiMountName(environment),
+            name = pkiMountName(environment),
             allowedDomains = listOf(domain(environment)),
             allowSubdomains = true,
             allowLocalhost = environment.cloud.isDevelopment,
@@ -50,7 +50,7 @@ object VaultCloudConfiguration {
             "ssh"
         )
         val hostSshBackendRole = VaultSshBackendRole(
-            id = hostSshMountName(environment),
+            name = hostSshMountName(environment),
             keyType = "ca",
             maxTtl = "168h",
             ttl = "168h",
@@ -65,7 +65,7 @@ object VaultCloudConfiguration {
             "ssh"
         )
         val userSshBackendRole = VaultSshBackendRole(
-            id = userSshMountName(environment),
+            name = userSshMountName(environment),
             keyType = "ca",
             maxTtl = "168h",
             ttl = "168h",

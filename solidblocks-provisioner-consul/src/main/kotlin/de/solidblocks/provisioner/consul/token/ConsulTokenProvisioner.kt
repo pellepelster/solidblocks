@@ -17,13 +17,9 @@ class ConsulTokenProvisioner(val consul: Consul) :
 
     private val logger = KotlinLogging.logger {}
 
-    override fun getResourceType(): Class<ConsulToken> {
-        return ConsulToken::class.java
-    }
+    override val resourceType = ConsulToken::class.java
 
-    override fun getLookupType(): Class<*> {
-        return IConsulTokenLookup::class.java
-    }
+    override val lookupType = IConsulTokenLookup::class.java
 
     override fun apply(resource: ConsulToken): Result<*> {
 
@@ -33,7 +29,7 @@ class ConsulTokenProvisioner(val consul: Consul) :
             return Result<Any>(failed = false)
         }
 
-        val policies = resource.policies.map { ImmutablePolicyLink.builder().name(it.id).build() }
+        val policies = resource.policies.map { ImmutablePolicyLink.builder().name(it.name).build() }
         val token = ImmutableToken.builder().addAllPolicies(policies).description(resource.description).id(resource.id.toString())
         consul.aclClient().createToken(token.build())
 
@@ -49,7 +45,7 @@ class ConsulTokenProvisioner(val consul: Consul) :
 
     override fun lookup(lookup: IConsulTokenLookup): Result<ConsulTokenRuntime> {
         try {
-            val token = consul.aclClient().readToken(lookup.id())
+            val token = consul.aclClient().readToken(lookup.name)
                 ?: return Result.emptyResult()
             return Result.resultOf(ConsulTokenRuntime(UUID.fromString(token.accessorId()), token.secretId()))
         } catch (e: ConsulException) {

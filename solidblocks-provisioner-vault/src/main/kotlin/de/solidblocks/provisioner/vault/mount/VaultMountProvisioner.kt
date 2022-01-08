@@ -33,7 +33,7 @@ class VaultMountProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
         val mount = org.springframework.vault.support.VaultMount.create(resource.type)
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        vaultTemplate.opsForSys().mount(resource.id, mount)
+        vaultTemplate.opsForSys().mount(resource.name, mount)
 
         return Result<Any>(resource)
     }
@@ -41,18 +41,14 @@ class VaultMountProvisioner(val vaultTemplateProvider: () -> VaultTemplate) :
     override fun lookup(lookup: IVaultMountLookup): Result<VaultMountRuntime> {
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        return if (vaultTemplate.opsForSys().mounts.keys.any { it == "${lookup.id()}/" }) {
+        return if (vaultTemplate.opsForSys().mounts.keys.any { it == "${lookup.name}/" }) {
             Result(VaultMountRuntime())
         } else {
             Result()
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IVaultMountLookup::class.java
-    }
+    override val resourceType = IVaultMountLookup::class.java
 
-    override fun getResourceType(): Class<VaultMount> {
-        return VaultMount::class.java
-    }
+    override val lookupType = VaultMount::class.java
 }

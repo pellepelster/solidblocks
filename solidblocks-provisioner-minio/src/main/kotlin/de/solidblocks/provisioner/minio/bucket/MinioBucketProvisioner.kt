@@ -23,10 +23,6 @@ class MinioBucketProvisioner(minioCredentialsProvider: () -> MinioCredentials) :
 
     private val logger = KotlinLogging.logger {}
 
-    override fun getResourceType(): Class<MinioBucket> {
-        return MinioBucket::class.java
-    }
-
     override fun diff(resource: MinioBucket): Result<ResourceDiff> {
         return lookup(resource).mapResourceResultOrElse(
             {
@@ -45,20 +41,20 @@ class MinioBucketProvisioner(minioCredentialsProvider: () -> MinioCredentials) :
 
     override fun lookup(resource: IMinioBucketLookup): Result<MinioBucketRuntime> {
         return try {
-            val bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(resource.name()).build())
+            val bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(resource.name).build())
 
             if (bucketExists) {
-                Result.resultOf(MinioBucketRuntime(resource.name()))
+                Result.resultOf(MinioBucketRuntime(resource.name))
             } else {
                 Result.emptyResult()
             }
         } catch (e: Exception) {
-            logger.error(e) { "error creating bucket '${resource.name()}'" }
+            logger.error(e) { "error creating bucket '${resource.name}'" }
             Result(failed = true, message = e.message)
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IMinioBucketLookup::class.java
-    }
+    override val resourceType = MinioBucket::class.java
+
+    override val lookupType = IMinioBucketLookup::class.java
 }

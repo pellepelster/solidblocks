@@ -4,7 +4,7 @@ import de.solidblocks.core.IInfrastructureResource
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 class VaultPkiBackendRole(
-    val id: String,
+    override val name: String,
     val allowedDomains: List<String>,
     val allowSubdomains: Boolean,
     val allowLocalhost: Boolean,
@@ -13,16 +13,10 @@ class VaultPkiBackendRole(
     val generateLease: Boolean,
     val keyType: String,
     val keyBits: Int,
-    val mount: IVaultMountLookup
+    override val mount: IVaultMountLookup
 ) :
     IVaultPkiBackendRoleLookup,
     IInfrastructureResource<VaultPkiBackendRole, VaultPkiBackendRoleRuntime> {
 
-    override fun mount(): IVaultMountLookup {
-        return mount
-    }
-
-    override fun id() = id
-
-    override fun getParents() = setOf(mount)
+    override val parents = setOf(mount)
 }

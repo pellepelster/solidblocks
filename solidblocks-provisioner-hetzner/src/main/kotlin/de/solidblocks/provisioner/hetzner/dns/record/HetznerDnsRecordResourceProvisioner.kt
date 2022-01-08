@@ -67,12 +67,12 @@ class HetznerDnsRecordResourceProvisioner(
                     )
                 )
             }
-            if (first.name != resource.id) {
+            if (first.name != resource.name) {
                 changes.add(
                     ResourceDiffItem(
-                        name = resource.id(),
+                        name = resource.name,
                         actualValue = first.name,
-                        expectedValue = resource.id
+                        expectedValue = resource.name
                     )
                 )
             }
@@ -88,7 +88,7 @@ class HetznerDnsRecordResourceProvisioner(
         ) { first, second ->
 
             val recordRequest = RecordRequest.builder()
-            recordRequest.name(resource.id)
+            recordRequest.name(resource.name)
             recordRequest.type(RecordType.A)
             recordRequest.value(second)
             recordRequest.ttl(resource.ttl)
@@ -109,10 +109,6 @@ class HetznerDnsRecordResourceProvisioner(
         }
     }
 
-    override fun getResourceType(): Class<*> {
-        return DnsRecord::class.java
-    }
-
     override fun lookup(lookup: IDnsRecordLookup): Result<DnsRecordRuntime> {
         val result = this.provisioner.lookup(lookup.dnsZone())
 
@@ -121,13 +117,13 @@ class HetznerDnsRecordResourceProvisioner(
         }
 
         return checkedApiCall {
-            it.getRecords(result.result!!.id).firstOrNull { it.name == lookup.id() }
+            it.getRecords(result.result!!.id).firstOrNull { it.name == lookup.name }
         }.mapNonNullResult {
             DnsRecordRuntime(it.id, it.name, it.value, it.ttl)
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IDnsRecordLookup::class.java
-    }
+    override val resourceType = DnsRecord::class.java
+
+    override val lookupType = IDnsRecordLookup::class.java
 }

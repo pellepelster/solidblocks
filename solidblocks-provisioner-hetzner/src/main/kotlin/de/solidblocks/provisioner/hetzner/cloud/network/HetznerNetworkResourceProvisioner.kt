@@ -21,7 +21,7 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
     ): Result<*> {
 
         val request = NetworkRequest.builder()
-        request.name(resource.id)
+        request.name(resource.name)
         request.ipRange(resource.ipRange)
         request.labels(resource.labels)
 
@@ -70,19 +70,15 @@ class HetznerNetworkResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         }.mapSuccessNonNullBoolean { true }
     }
 
-    override fun getResourceType(): Class<*> {
-        return Network::class.java
-    }
-
     override fun lookup(lookup: INetworkLookup): Result<NetworkRuntime> {
         return checkedApiCall {
-            it.getNetworksByName(lookup.id()).networks.firstOrNull()
+            it.getNetworksByName(lookup.name).networks.firstOrNull()
         }.mapNonNullResult {
             NetworkRuntime(it.id.toString())
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return INetworkLookup::class.java
-    }
+    override val resourceType = Network::class.java
+
+    override val lookupType = INetworkLookup::class.java
 }

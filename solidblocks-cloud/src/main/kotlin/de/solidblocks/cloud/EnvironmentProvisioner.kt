@@ -92,13 +92,13 @@ class EnvironmentProvisioner(
         )
 
         vaultResourceGroup.addResource(object : DnsRecord(
-            id = "vault.${environment.name}",
+            name = "vault.${environment.name}",
             floatingIp = floatingIp,
             dnsZone = rootZone
         ) {
                 override fun getHealthCheck(): () -> Boolean {
                     return health@{
-                        val url = "https://${this.id}.${dnsZone.id()}:8200"
+                        val url = "https://${this.name}.${dnsZone.name}:8200"
                         try {
                             URL(url).readText()
                             logger.info { "url '$url' is healthy" }
@@ -229,14 +229,14 @@ class EnvironmentProvisioner(
     ): FloatingIp {
         val volume = resourceGroup.addResource(
             Volume(
-                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
+                name = "${environment.cloud.name}-${environment.name}-${serverSpec.name}-${serverSpec.location}",
                 location = serverSpec.location,
                 labels = defaultLabels(environment, serverSpec.role)
             )
         )
         val floatingIp = resourceGroup.addResource(
             FloatingIp(
-                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
+                name = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                 location = serverSpec.location,
                 labels = defaultLabels(environment, serverSpec.role)
             )
@@ -275,7 +275,7 @@ class EnvironmentProvisioner(
             UserData("lib-cloud-init-generated/${serverSpec.role}-cloud-init.sh", staticVariables, ephemeralVariables)
         val server = resourceGroup.addResource(
             Server(
-                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
+                name = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                 network = serverSpec.network,
                 subnet = serverSpec.subnet,
                 userData = userData,
@@ -288,7 +288,7 @@ class EnvironmentProvisioner(
 
         resourceGroup.addResource(
             DnsRecord(
-                id = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
+                name = "${environment.cloud.name}-${environment.name}-${serverSpec.name}",
                 floatingIp = floatingIp,
                 dnsZone = rootZone,
                 server = server
@@ -296,7 +296,7 @@ class EnvironmentProvisioner(
         )
 
         resourceGroup.addResource(object : DnsRecord(
-            id = "${serverSpec.name}.${environment.name}",
+            name = "${serverSpec.name}.${environment.name}",
             floatingIp = floatingIp,
             dnsZone = rootZone,
             server = server
@@ -307,7 +307,7 @@ class EnvironmentProvisioner(
                             return@health true
                         }
 
-                        val url = "https://${this.id}.${dnsZone.id()}:${serverSpec.dnsHealthCheckPort}"
+                        val url = "https://${this.name}.${dnsZone.name}:${serverSpec.dnsHealthCheckPort}"
                         try {
                             URL(url).readText()
                             logger.info { "url '$url' is healthy" }

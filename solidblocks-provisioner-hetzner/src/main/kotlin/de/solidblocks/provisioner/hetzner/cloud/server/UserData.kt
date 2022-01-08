@@ -1,18 +1,17 @@
 package de.solidblocks.provisioner.hetzner.cloud.server
 
-import de.solidblocks.core.IResource
 import de.solidblocks.core.IResourceLookup
 
 data class UserDataRuntime(val staticUserData: String, val ephemeralUserData: String)
 
-class UserData(val resourceFile: String, val staticVariables: HashMap<String, IResourceLookup<String>>, val ephemeralVariables: HashMap<String, IResourceLookup<String>>) :
+class UserData(
+    val resourceFile: String,
+    val staticVariables: HashMap<String, IResourceLookup<String>>,
+    val ephemeralVariables: HashMap<String, IResourceLookup<String>>
+) :
     IResourceLookup<UserDataRuntime> {
 
-    override fun id(): String {
-        return resourceFile
-    }
+    override val name = resourceFile
 
-    override fun getParents(): Set<IResource> {
-        return ephemeralVariables.values.toSet() + staticVariables.values.toSet()
-    }
+    override val parents = ephemeralVariables.values.toSet() + staticVariables.values.toSet()
 }

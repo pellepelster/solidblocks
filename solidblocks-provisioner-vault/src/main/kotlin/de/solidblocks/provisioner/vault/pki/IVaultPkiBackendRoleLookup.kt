@@ -4,5 +4,5 @@ import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.vault.mount.IVaultMountLookup
 
 interface IVaultPkiBackendRoleLookup : IResourceLookup<VaultPkiBackendRoleRuntime> {
-    fun mount(): IVaultMountLookup
+    val mount: IVaultMountLookup
 }

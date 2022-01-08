@@ -15,13 +15,9 @@ class ConsulPolicyProvisioner(val consul: Consul) :
 
     private val logger = KotlinLogging.logger {}
 
-    override fun getResourceType(): Class<ConsulPolicy> {
-        return ConsulPolicy::class.java
-    }
+    override val resourceType = ConsulPolicy::class.java
 
-    override fun getLookupType(): Class<*> {
-        return IConsulPolicyLookup::class.java
-    }
+    override val lookupType = IConsulPolicyLookup::class.java
 
     override fun apply(resource: ConsulPolicy): Result<*> {
 
@@ -30,7 +26,7 @@ class ConsulPolicyProvisioner(val consul: Consul) :
             return Result<Any>(failed = false)
         }
 
-        val policy = ImmutablePolicy.builder().name(resource.id).rules(resource.rules)
+        val policy = ImmutablePolicy.builder().name(resource.name).rules(resource.rules)
         consul.aclClient().createPolicy(policy.build())
 
         return Result<ConsulPolicy>(failed = false)
@@ -39,7 +35,7 @@ class ConsulPolicyProvisioner(val consul: Consul) :
     override fun diff(resource: ConsulPolicy): Result<ResourceDiff> {
         val policies = consul.aclClient().listPolicies()
 
-        val policy = policies.firstOrNull { it.name() == resource.id }
+        val policy = policies.firstOrNull { it.name() == resource.name }
             ?: return Result(
                 failed = false,
                 result = ResourceDiff(resource = resource, missing = true)
@@ -55,7 +51,7 @@ class ConsulPolicyProvisioner(val consul: Consul) :
     override fun lookup(lookup: IConsulPolicyLookup): Result<ConsulPolicyRuntime> {
         val policies = consul.aclClient().listPolicies()
 
-        val policy = policies.firstOrNull { it.name() == lookup.id() }
+        val policy = policies.firstOrNull { it.name() == lookup.name }
         if (policy == null) {
             return Result(failed = false)
         }

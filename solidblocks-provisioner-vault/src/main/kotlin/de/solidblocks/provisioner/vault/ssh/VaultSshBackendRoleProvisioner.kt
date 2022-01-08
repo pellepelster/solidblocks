@@ -48,7 +48,7 @@ class VaultSshBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
     ): Boolean {
         var keysExist = true
         try {
-            client.read("${resource.mount().id()}/config/ca", Object::class.java)
+            client.read("${resource.mount.name}/config/ca", Object::class.java)
         } catch (e: VaultException) {
             if (e.message?.contains("keys haven't been configured yet") == true) {
                 keysExist = false
@@ -165,12 +165,12 @@ class VaultSshBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
 
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        val response = vaultTemplate.write("${resource.mount.id()}/roles/${resource.id}", role)
+        val response = vaultTemplate.write("${resource.mount.name}/roles/${resource.name}", role)
 
         if (!keysExist(vaultTemplate, resource)) {
-            val key = Utils.generateSshKey(resource.mount.id())
+            val key = Utils.generateSshKey(resource.mount.name)
             vaultTemplate.write(
-                "${resource.mount.id()}/config/ca",
+                "${resource.mount.name}/config/ca",
                 mapOf("private_key" to key.first, "public_key" to key.second)
             )
         }
@@ -178,14 +178,10 @@ class VaultSshBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
         return Result(response)
     }
 
-    override fun getResourceType(): Class<VaultSshBackendRole> {
-        return VaultSshBackendRole::class.java
-    }
-
     override fun lookup(lookup: IVaultSshBackendRoleLookup): Result<VaultSshBackendRoleRuntime> {
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        val role = vaultTemplate.read("${lookup.mount().id()}/roles/${lookup.id()}", SshBackendRole::class.java)
+        val role = vaultTemplate.read("${lookup.mount.name}/roles/${lookup.name}", SshBackendRole::class.java)
             ?: return Result(null)
 
         val keysExist = keysExist(vaultTemplate, lookup)
@@ -193,7 +189,7 @@ class VaultSshBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
         return Result(VaultSshBackendRoleRuntime(role.data!!, keysExist))
     }
 
-    override fun getLookupType(): Class<*> {
-        return IVaultSshBackendRoleLookup::class.java
-    }
+    override val resourceType = VaultSshBackendRole::class.java
+
+    override val lookupType = IVaultSshBackendRoleLookup::class.java
 }

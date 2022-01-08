@@ -46,7 +46,7 @@ class HetznerFloatingIpResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
 
     override fun apply(resource: FloatingIp): Result<*> {
         val request = FloatingIPRequest.builder()
-        request.name(resource.id)
+        request.name(resource.name)
         request.homeLocation(resource.location)
         request.type("ipv4")
         request.labels(resource.labels)
@@ -76,19 +76,15 @@ class HetznerFloatingIpResourceProvisioner(hetznerCloudAPI: HetznerCloudAPI) :
         }.mapSuccessBoolean()
     }
 
-    override fun getResourceType(): Class<*> {
-        return FloatingIp::class.java
-    }
-
     override fun lookup(lookup: IFloatingIpLookup): Result<FloatingIpRuntime> {
         return checkedApiCall {
-            it.floatingIPs.floatingIPs.firstOrNull { it.name == lookup.id() }
+            it.floatingIPs.floatingIPs.firstOrNull { it.name == lookup.name }
         }.mapNonNullResult {
             FloatingIpRuntime(it.id.toString(), it.ip, it.server)
         }
     }
 
-    override fun getLookupType(): Class<*> {
-        return IFloatingIpLookup::class.java
-    }
+    override val resourceType = FloatingIp::class.java
+
+    override val lookupType = IFloatingIpLookup::class.java
 }

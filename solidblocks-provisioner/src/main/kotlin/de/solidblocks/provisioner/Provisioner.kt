@@ -7,13 +7,7 @@ import de.solidblocks.api.resources.allChangedOrMissingResources
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.base.ProvisionerRegistry
-import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.core.IResource
-import de.solidblocks.core.IResourceLookup
-import de.solidblocks.core.Result
-import de.solidblocks.core.getAllInfraParents
-import de.solidblocks.core.getInfraParents
-import de.solidblocks.core.logName
+import de.solidblocks.core.*
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIp
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIpAssignment
 import de.solidblocks.provisioner.hetzner.cloud.network.Network
@@ -27,19 +21,22 @@ import mu.KotlinLogging
 import java.time.Duration
 import java.util.function.Supplier
 
-class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : InfrastructureProvisioner {
+class Provisioner(
+    private val provisionerRegistry: ProvisionerRegistry,
+    healthCheckWait: Duration = Duration.ofSeconds(10)
+) : InfrastructureProvisioner {
 
     private val logger = KotlinLogging.logger {}
 
     private val appliedResources: MutableList<IResource> = mutableListOf()
 
-    val retryConfig = RetryConfig.custom<Boolean>()
+    private val healthCheckRetryConfig = RetryConfig.custom<Boolean>()
         .maxAttempts(15)
-        .waitDuration(Duration.ofMillis(5000))
+        .waitDuration(healthCheckWait)
         .retryOnResult { !it }
         .build()
 
-    val retryRegistry: RetryRegistry = RetryRegistry.of(retryConfig)
+    private val healthCheckRetryRegistry: RetryRegistry = RetryRegistry.of(healthCheckRetryConfig)
 
     private val resourceGroups = mutableListOf<ResourceGroup>()
 
@@ -69,21 +66,21 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
             "applying resource groups ${resourceGroups.joinToString(", ") { it.name }}"
         }
 
-        val allLayerDiffs = HashMap<ResourceGroup, List<ResourceDiff>>()
+        val allDiffs = HashMap<ResourceGroup, List<ResourceDiff>>()
 
         for (resourceGroup in resourceGroups) {
 
-            val diffs = diffForResourceGroup(resourceGroup, allLayerDiffs) ?: return false
+            val diffs = diffForResourceGroup(resourceGroup, allDiffs) ?: return false
             logger.info {
                 "resource group '${resourceGroup.name}', changed resources: ${
                 diffs.filter { it.hasChanges() }.joinToString(", ") { it.toString() }
-                }, missing resources: ${diffs.filter { it.isMissing() }.joinToString(", ") { it.resource.id() }}"
+                }, missing resources: ${diffs.filter { it.isMissing() }.joinToString(", ") { it.resource.name }}"
             }
 
-            allLayerDiffs[resourceGroup] = diffs
+            allDiffs[resourceGroup] = diffs
 
             val diffsForAllLayersWithChanges =
-                allLayerDiffs.flatMap { it.value }.filter { it.hasChangesOrMissing() }
+                allDiffs.flatMap { it.value }.filter { it.hasChangesOrMissing() }
 
             val resourcesThatDependOnResourcesWithChanges = resourceGroup.resources.filter {
                 it.getInfraParents().any { parent -> diffsForAllLayersWithChanges.any { it.resource == parent } }
@@ -96,8 +93,10 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
                 )
             }
 
-            val resourcesToApply = allLayerDiffs[resourceGroup]!! + o
+            val resourcesToApply = allDiffs[resourceGroup]!! + o
+
             val result = apply(resourcesToApply)
+
             if (!result) {
                 return false
             }
@@ -121,6 +120,7 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
         }
 
         for (diffWithChange in diffs.filter { it.hasChangesOrMissing() }) {
+
             val resource = diffWithChange.resource as IInfrastructureResource<Any, Any>
 
             if (appliedResources.contains(resource)) {
@@ -138,6 +138,10 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
                     return false
                 }
 
+                if (!runHealthCheckIfNeeded(resource)) {
+                    return false
+                }
+
                 appliedResources.add(resource)
             } catch (e: Exception) {
                 logger.error(e) { "apply failed for resource ${diffWithChange.resource.logName()}" }
@@ -148,60 +152,38 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
         return true
     }
 
+    private fun runHealthCheckIfNeeded(resource: IInfrastructureResource<Any, Any>): Boolean {
+        val healthCheck = resource.getHealthCheck() ?: return true
+
+        logger.info { "running healthcheck for ${resource.logName()}" }
+
+        val decorateFunction: Supplier<Boolean> =
+            Retry.decorateSupplier(healthCheckRetryRegistry.retry("healthcheck-${resource.name}")) { healthCheck.invoke() }
+
+        val result = decorateFunction.get()
+        if (!result) {
+            logger.error { "healthcheck for ${resource.logName()} failed" }
+            return false
+        }
+
+        return true
+    }
+
     private fun diffForResourceGroup(
         resourceGroup: ResourceGroup,
-        allLayerDiffs: Map<ResourceGroup, List<ResourceDiff>>
+        allDiffs: Map<ResourceGroup, List<ResourceDiff>>
     ): List<ResourceDiff>? {
         logger.info { "creating diff for resource group '${resourceGroup.name}'" }
 
-        val changedOrMissingResources = allLayerDiffs.allChangedOrMissingResources()
+        val changedOrMissingResources = allDiffs.allChangedOrMissingResources()
 
         for (parentResourceGroup in resourceGroup.dependsOn) {
+            val healthCheckResults =
+                parentResourceGroup.resources.map { runHealthCheckIfNeeded(it as IInfrastructureResource<Any, Any>) }
 
-            val resourceGroupAllInfraParents = resourceGroup.resources.getAllInfraParents()
-            val resourceGroupMissingOrChangedParents = resourceGroupAllInfraParents.filter { changedOrMissingResources.contains(it) }
-
-            if (resourceGroupMissingOrChangedParents.isNotEmpty()) {
-                logger.info {
-                    "skipping healthcheck for resource group ${resourceGroup.name} the following dependencies were missing or changed: ${
-                    resourceGroupMissingOrChangedParents.joinToString(
-                        ", "
-                    ) { it.id() }
-                    } "
-                }
-
-                continue
-            }
-
-            val resourcesWithHealthChecks = parentResourceGroup.resources.filter { it.getHealthCheck() != null }
-            for (resourcesWithHealthCheck in resourcesWithHealthChecks) {
-                val allInfraParents = resourcesWithHealthCheck.getAllInfraParents()
-                val missingOrChangedParents = allInfraParents.filter { changedOrMissingResources.contains(it) }
-
-                if (missingOrChangedParents.isNotEmpty()) {
-                    logger.info {
-                        "skipping healthcheck for ${resourcesWithHealthCheck.id()} the following dependencies were missing or changed: ${
-                        missingOrChangedParents.joinToString(
-                            ", "
-                        ) { it.id() }
-                        } "
-                    }
-
-                    continue
-                }
-
-                logger.info { "running healthcheck for '${resourcesWithHealthCheck.id()}" }
-
-                val decorateFunction: Supplier<Boolean> =
-                    Retry.decorateSupplier(retryRegistry.retry("healthcheck")) {
-                        resourcesWithHealthCheck.getHealthCheck()!!.invoke()
-                    }
-
-                val result = decorateFunction.get()
-                if (!result) {
-                    logger.error { "healthcheck for ${resourcesWithHealthCheck.id()} failed" }
-                    return null
-                }
+            if (healthCheckResults.any { !it }) {
+                logger.error { "at least one healthcheck for resource group '${parentResourceGroup.name}' failed" }
+                return null
             }
         }
 
@@ -210,14 +192,16 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
 
         for (resource in resources) {
             val allInfraParents = resource.getAllInfraParents()
-            val missingOrChangedParents = allInfraParents.filter { changedOrMissingResources.contains(it) } + result.filter { it.hasChangesOrMissing() }.map { it.resource }
+            val missingOrChangedParents =
+                allInfraParents.filter { changedOrMissingResources.contains(it) } + result.filter { it.hasChangesOrMissing() }
+                    .map { it.resource }
 
             if (missingOrChangedParents.isNotEmpty()) {
                 logger.info {
-                    "skipping diff for ${resource.id()} the following dependencies were missing or changed: ${
+                    "skipping diff for ${resource.name} the following dependencies were missing or changed: ${
                     missingOrChangedParents.joinToString(
                         ", "
-                    ) { it.id() }
+                    ) { it.name }
                     } "
                 }
 
@@ -271,10 +255,6 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry) : Infras
         }
 
         return true
-    }
-
-    fun clear() {
-        resourceGroups.clear()
     }
 
     fun addResourceGroup(resourceGroup: ResourceGroup) {

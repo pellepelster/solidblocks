@@ -9,7 +9,5 @@ class CustomResourceLookupProvider : IResourceLookupProvider<CustomDataSource, S
         return Result(datasource.content.invoke())
     }
 
-    override fun getLookupType(): Class<CustomDataSource> {
-        return CustomDataSource::class.java
-    }
+    override val lookupType = CustomDataSource::class.java
 }

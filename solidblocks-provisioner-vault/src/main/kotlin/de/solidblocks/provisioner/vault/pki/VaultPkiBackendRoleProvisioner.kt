@@ -40,7 +40,7 @@ class VaultPkiBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
         resource: IVaultPkiBackendRoleLookup
     ): Boolean {
         val pem = client.doWithVault {
-            val pem = it.getForEntity("${resource.mount().id()}/ca/pem", String::class.java)
+            val pem = it.getForEntity("${resource.mount.name}/ca/pem", String::class.java)
             pem
         }
 
@@ -130,26 +130,22 @@ class VaultPkiBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
         )
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        val response = vaultTemplate.write("${resource.mount.id()}/roles/${resource.id}", role)
+        val response = vaultTemplate.write("${resource.mount.name}/roles/${resource.name}", role)
 
         if (!keysExist(vaultTemplate, resource)) {
             val response = vaultTemplate.write(
-                "${resource.mount.id()}/root/generate/internal",
-                mapOf("common_name" to "${resource.id} root")
+                "${resource.mount.name}/root/generate/internal",
+                mapOf("common_name" to "${resource.name} root")
             )
         }
 
         return Result(response)
     }
 
-    override fun getResourceType(): Class<VaultPkiBackendRole> {
-        return VaultPkiBackendRole::class.java
-    }
-
     override fun lookup(lookup: IVaultPkiBackendRoleLookup): Result<VaultPkiBackendRoleRuntime> {
         val vaultTemplate = vaultTemplateProvider.invoke()
 
-        val role = vaultTemplate.read("${lookup.mount().id()}/roles/${lookup.id()}", PkiBackendRole::class.java)
+        val role = vaultTemplate.read("${lookup.mount.name}/roles/${lookup.name}", PkiBackendRole::class.java)
             ?: return Result(null)
 
         val keysExist = keysExist(vaultTemplate, lookup)
@@ -157,7 +153,7 @@ class VaultPkiBackendRoleProvisioner(val vaultTemplateProvider: () -> VaultTempl
         return Result(VaultPkiBackendRoleRuntime(role.data!!, keysExist))
     }
 
-    override fun getLookupType(): Class<*> {
-        return IVaultPkiBackendRoleLookup::class.java
-    }
+    override val resourceType = VaultPkiBackendRole::class.java
+
+    override val lookupType = IVaultPkiBackendRoleLookup::class.java
 }
