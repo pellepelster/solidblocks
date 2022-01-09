@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.TenantReference
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -14,15 +15,17 @@ class TenantRepositoryTest {
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
         val tenantRepository = TenantRepository(solidblocksDatabase.dsl, environmentRepository)
 
-        val cloud = cloudRepository.createCloud("cloud1", "domain1")
-        val envrionment = environmentRepository.createEnvironment("cloud1", "env1")
+        val tenantRef = TenantReference("cloud1", "env1", "tenant1")
 
-        assertThat(tenantRepository.hasTenant("cloud1", "env1", "tenant1")).isFalse
+        cloudRepository.createCloud(tenantRef.toCloud(), "domain1")
+        environmentRepository.createEnvironment(tenantRef.toEnvironment())
 
-        assertThat(tenantRepository.createTenant("cloud1", "env1", "tenant1")).isNotNull
-        assertThat(tenantRepository.hasTenant("cloud1", "env1", "tenant1")).isTrue
+        assertThat(tenantRepository.hasTenant(tenantRef)).isFalse
 
-        val tenant = tenantRepository.getTenant("cloud1", "env1", "tenant1")
+        assertThat(tenantRepository.createTenant(tenantRef)).isNotNull
+        assertThat(tenantRepository.hasTenant(tenantRef)).isTrue
+
+        val tenant = tenantRepository.getTenant(tenantRef)
         assertThat(tenant.name).isEqualTo("tenant1")
     }
 }

@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.ServiceReference
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -13,20 +14,24 @@ class ServiceRepositoryTest {
         val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
-        val cloud = cloudRepository.createCloud("cloud1", "domain1")
-        assertThat(environmentRepository.createEnvironment(cloud.name, "env1")).isNotNull
+        val service1Ref = ServiceReference("cloud1", "env1", "service1")
+
+        cloudRepository.createCloud(service1Ref.toCloud(), "domain1")
+        assertThat(environmentRepository.createEnvironment(service1Ref.toEnvironment())).isNotNull
 
         val serviceRepository = ServiceRepository(solidblocksDatabase.dsl, environmentRepository)
 
-        assertThat(serviceRepository.hasService("cloud1", "env1", "service1")).isFalse
-        serviceRepository.createService("cloud1", "env1", "service1")
-        assertThat(serviceRepository.hasService("cloud1", "env1", "service1")).isTrue
+        assertThat(serviceRepository.hasService(service1Ref)).isFalse
+        serviceRepository.createService(service1Ref)
+        assertThat(serviceRepository.hasService(service1Ref)).isTrue
 
-        val service1 = serviceRepository.getService("cloud1", "env1", "service1")
+        val service1 = serviceRepository.getService(service1Ref)
         assertThat(service1!!.configValues).isEmpty()
 
-        serviceRepository.createService("cloud1", "env1", "service2", mapOf("foo" to "bar"))
-        val service2 = serviceRepository.getService("cloud1", "env1", "service2")
+        val service2Ref = ServiceReference("cloud1", "env1", "service2")
+
+        serviceRepository.createService(service2Ref, mapOf("foo" to "bar"))
+        val service2 = serviceRepository.getService(service2Ref)
         assertThat(service2!!.configValues).hasSize(1)
         assertThat(service2.configValues.first { it.name == "foo" }.value).isEqualTo("bar")
     }

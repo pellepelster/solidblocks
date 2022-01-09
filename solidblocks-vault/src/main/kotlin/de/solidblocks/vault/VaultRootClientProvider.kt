@@ -1,5 +1,6 @@
 package de.solidblocks.vault
 
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.vault.VaultConstants.ROOT_TOKEN_KEY
 import de.solidblocks.vault.VaultConstants.UNSEAL_KEY_PREFIX
@@ -10,8 +11,7 @@ import org.springframework.vault.core.VaultTemplate
 import java.net.URI
 
 class VaultRootClientProvider(
-    private val cloudName: String,
-    private val environmentName: String,
+    private val reference: EnvironmentReference,
     private val environmentRepository: EnvironmentRepository,
     private val vaultAddressOverride: String? = null
 ) {
@@ -22,7 +22,7 @@ class VaultRootClientProvider(
             return vaultAddressOverride
         }
 
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName)
+        val environment = environmentRepository.getEnvironment(reference)
 
         return VaultConstants.vaultAddress(environment)
     }
@@ -32,10 +32,10 @@ class VaultRootClientProvider(
     private var vaultTemplate: VaultTemplate? = null
 
     private fun getVaultCredentials(): VaultCredentials {
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName)
+        val environment = environmentRepository.getEnvironment(reference)
 
         val rootToken = environment.configValues.firstOrNull { it.name == ROOT_TOKEN_KEY }
-            ?: throw RuntimeException("vault at '${vaultAddress()}' is initialized, but no vault root token found for cloud '$cloudName'")
+            ?: throw RuntimeException("vault at '${vaultAddress()}' is initialized, but no vault root token found for cloud '${reference.cloud}'")
         val unsealKeys = environment.configValues.filter { it.name.startsWith(UNSEAL_KEY_PREFIX) }.map { it.value }
 
         return VaultCredentials(rootToken.value, unsealKeys)
@@ -47,8 +47,7 @@ class VaultRootClientProvider(
             return vaultTemplate!!
         }
 
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName)
-            ?: throw RuntimeException("environment '$environmentName' not found for cloud '$cloudName'")
+        val environment = environmentRepository.getEnvironment(reference)
 
         val initializingVaultManager = InitializingVaultManager(vaultAddress())
         val hasUnsealKeys = environment.configValues.any { it.name.startsWith(UNSEAL_KEY_PREFIX) }
@@ -56,16 +55,15 @@ class VaultRootClientProvider(
         if (!initializingVaultManager.isInitialized()) {
 
             if (hasUnsealKeys) {
-                throw RuntimeException("environment '$environmentName' for cloud '$cloudName' has unseal keys, but is not initialized")
+                throw RuntimeException("environment '${reference.environment}' for cloud '${reference.cloud}' has unseal keys, but is not initialized")
             }
 
             val result = initializingVaultManager.initializeAndUnseal()
             environmentRepository.updateEnvironment(
-                cloudName,
-                environmentName,
+                reference,
                 result.unsealKeys.mapIndexed { i, key -> "$UNSEAL_KEY_PREFIX-$i" to key }.toMap()
             )
-            environmentRepository.updateEnvironment(cloudName, environmentName, ROOT_TOKEN_KEY, result.rootToken)
+            environmentRepository.updateEnvironment(reference, ROOT_TOKEN_KEY, result.rootToken)
         }
 
         val credentials = getVaultCredentials()

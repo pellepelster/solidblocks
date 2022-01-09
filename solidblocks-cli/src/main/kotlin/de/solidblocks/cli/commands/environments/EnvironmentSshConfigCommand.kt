@@ -28,13 +28,17 @@ class EnvironmentSshConfigCommand :
 
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        if (!context.environmentRepository.hasEnvironment(cloud, environment)) {
+        if (!context.verifyReference(reference)) {
+            exitProcess(1)
+        }
+
+        if (!context.environmentRepository.hasEnvironment(reference)) {
             logger.info { "environment '$environment' and/or cloud '$cloud' does no exist" }
             exitProcess(1)
         }
 
         val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
-        for (environment in context.cloudManager.listEnvironments(cloud)) {
+        for (environment in context.cloudManager.listEnvironments(reference.toCloud())) {
 
             val environmentPath = Path(basePath.toString(), environment.name)
 

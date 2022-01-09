@@ -74,8 +74,10 @@ function task_recreate_integration_test() {
 function task_publish() {
   export GITHUB_USERNAME="pellepelster"
   export GITHUB_TOKEN="$(pass solidblocks/github/personal_access_token_rw)"
+  echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GITHUB_USERNAME}" --password-stdin
 
-  "${DIR}/gradlew" solidblocks-cloud-init:publish
+  "${DIR}/gradlew" dockerPush
+  "${DIR}/gradlew" publish
 }
 
 

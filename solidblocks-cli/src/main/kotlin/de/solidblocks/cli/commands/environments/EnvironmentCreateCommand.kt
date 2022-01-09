@@ -2,6 +2,8 @@ package de.solidblocks.cli.commands.environments
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import de.solidblocks.base.CloudReference
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import kotlin.system.exitProcess
@@ -24,9 +26,13 @@ class EnvironmentCreateCommand :
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
+        val reference = CloudReference(cloud)
+        if (!context.verifyReference(reference)) {
+            exitProcess(1)
+        }
+
         val result = context.cloudManager.createEnvironment(
-            cloud,
-            environment,
+            reference = EnvironmentReference(cloud, environment),
             githubReadOnlyToken,
             hetznerCloudApiTokenReadOnly,
             hetznerCloudApiTokenReadWrite,

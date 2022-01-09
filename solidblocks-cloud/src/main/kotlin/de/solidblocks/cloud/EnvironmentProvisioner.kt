@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.healthcheck.HttpHealthCheck
 import de.solidblocks.base.lookups.Base64Encode
 import de.solidblocks.base.lookups.ConstantDataSource
@@ -36,8 +37,7 @@ import org.springframework.vault.support.VaultTokenRequest
 import java.time.Duration
 
 class EnvironmentProvisioner(
-    private val cloudName: String,
-    private val environmentName: String,
+    private val reference: EnvironmentReference,
     private val vaultRootClientProvider: VaultRootClientProvider,
     private val provisioner: Provisioner,
     val environmentRepository: EnvironmentRepository,
@@ -49,9 +49,9 @@ class EnvironmentProvisioner(
     }
 
     fun bootstrap(): Boolean {
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName)
+        val environment = environmentRepository.getEnvironment(reference)
 
-        logger.info { "creating/updating environment '$cloudName' for cloud '$environmentName'" }
+        logger.info { "creating/updating environment '${reference.cloud}' for cloud '${reference.environment}'" }
 
         createEnvironmentModel(
             environment,

@@ -1,5 +1,6 @@
 package de.solidblocks.provisioner.vault
 
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.SolidblocksDatabase
@@ -52,15 +53,13 @@ class VaultProvisionerTest {
                 val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
                 val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
-                val cloudName = UUID.randomUUID().toString()
-                val environmentName = UUID.randomUUID().toString()
+                val reference = EnvironmentReference(UUID.randomUUID().toString(), UUID.randomUUID().toString())
 
-                cloudRepository.createCloud(cloudName, "domain1", emptyList())
-                environmentRepository.createEnvironment(cloudName, environmentName)
+                cloudRepository.createCloud(reference.toCloud(), "domain1", emptyList())
+                environmentRepository.createEnvironment(reference)
 
                 vaultClient = VaultRootClientProvider(
-                    cloudName,
-                    environmentName,
+                    reference,
                     environmentRepository,
                     vaultAddress()
                 ).createClient()

@@ -26,12 +26,12 @@ object Hetzner {
 
     const val HETZNER_DNS_API_TOKEN_RW_KEY = "hetzner_dns_api_key_rw"
 
-    fun createCloudApi(environmentConfiguration: EnvironmentEntity): HetznerCloudAPI {
-        return HetznerCloudAPI(environmentConfiguration.getConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY))
+    fun createCloudApi(environment: EnvironmentEntity): HetznerCloudAPI {
+        return HetznerCloudAPI(environment.getConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY))
     }
 
-    fun createDnsApi(environmentConfiguration: EnvironmentEntity): HetznerDnsAPI {
-        return HetznerDnsAPI(environmentConfiguration.getConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY))
+    fun createDnsApi(environment: EnvironmentEntity): HetznerDnsAPI {
+        return HetznerDnsAPI(environment.getConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY))
     }
 
     fun registerLookups(
@@ -45,65 +45,65 @@ object Hetzner {
 
     fun registerProvisioners(
         provisionerRegistry: ProvisionerRegistry,
-        environmentConfiguration: EnvironmentEntity,
+        environment: EnvironmentEntity,
         provisioner: InfrastructureProvisioner
     ) {
 
         provisionerRegistry.addLookupProvider(
             HetznerDnsZoneResourceProvisioner(
-                createDnsApi(environmentConfiguration),
+                createDnsApi(environment),
             ) as IResourceLookupProvider<IResourceLookup<Any>, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerDnsRecordResourceProvisioner(
-                createDnsApi(environmentConfiguration),
+                createDnsApi(environment),
                 provisioner
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerSubnetResourceProvisioner(
-                createCloudApi(environmentConfiguration),
+                createCloudApi(environment),
                 provisioner
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerNetworkResourceProvisioner(
-                createCloudApi(environmentConfiguration),
+                createCloudApi(environment),
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerServerResourceProvisioner(
-                createCloudApi(environmentConfiguration),
+                createCloudApi(environment),
                 provisioner
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerSshResourceProvisioner(
-                createCloudApi(environmentConfiguration),
+                createCloudApi(environment),
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerVolumeResourceProvisioner(
-                createCloudApi(environmentConfiguration),
+                createCloudApi(environment),
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerFloatingIpAssignmentResourceProvisioner(
-                createCloudApi(environmentConfiguration),
+                createCloudApi(environment),
                 provisioner
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
 
         provisionerRegistry.addProvisioner(
             HetznerFloatingIpResourceProvisioner(
-                createCloudApi(environmentConfiguration)
+                createCloudApi(environment)
             ) as IInfrastructureResourceProvisioner<Any, Any>
         )
     }

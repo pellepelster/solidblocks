@@ -1,31 +1,13 @@
 
 plugins {
-    `maven-publish`
     id("solidblocks.kotlin-library-conventions")
+    id("solidblocks.kotlin-publish-conventions")
 }
 
 sourceSets {
     main {
         resources {
             setSrcDirs(listOf("src"))
-        }
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/pellepelster/solidblocks")
-            credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-    publications {
-        register<MavenPublication>("gpr") {
-            from(components["java"])
         }
     }
 }

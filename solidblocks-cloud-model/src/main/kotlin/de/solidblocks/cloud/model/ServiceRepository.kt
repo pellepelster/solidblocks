@@ -12,14 +12,12 @@ import java.util.*
 class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
 
     fun createService(
-        cloud: String,
-        environment: String,
-        name: String,
+        reference: ServiceReference,
         configValues: Map<String, String> = emptyMap()
     ): Boolean {
 
         val id = UUID.randomUUID()
-        val environment = environmentRepository.getEnvironment(cloud, environment)
+        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
 
         dsl.insertInto(SERVICES)
             .columns(
@@ -28,7 +26,7 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
                 SERVICES.DELETED,
                 SERVICES.ENVIRONMENT,
             )
-            .values(id, name, false, environment.id).execute()
+            .values(id, reference.service, false, environment.id).execute()
 
         configValues.forEach {
             setConfiguration(ServiceId(id), it.key, it.value)
@@ -77,16 +75,11 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
             }
     }
 
-    fun getService(cloud: String, environment: String, service: String) =
-        environmentRepository.getEnvironment(cloud, environment).let {
-            listServices(service, it).firstOrNull()
-        }
-
     fun getService(reference: ServiceReference) =
-        environmentRepository.getEnvironment(reference.cloud, reference.environment).let {
+        environmentRepository.getEnvironment(reference.toEnvironment()).let {
             listServices(reference.service, it).firstOrNull()
         }
 
-    fun hasService(cloud: String, environment: String, service: String) =
-        getService(cloud, environment, service) != null
+    fun hasService(reference: ServiceReference) =
+        getService(reference) != null
 }

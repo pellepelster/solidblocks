@@ -1,6 +1,8 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
+import de.solidblocks.base.CloudReference
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
@@ -25,38 +27,37 @@ class CloudManager(
 
     private val logger = KotlinLogging.logger {}
 
-    fun createCloud(name: String, domain: String, development: Boolean = false): Boolean {
-        if (cloudRepository.hasCloud(name)) {
-            logger.info { "cloud '$name' already exists" }
+    fun createCloud(reference: CloudReference, domain: String, development: Boolean = false): Boolean {
+        if (cloudRepository.hasCloud(reference)) {
+            logger.info { "cloud '$reference.cloud' already exists" }
             return false
         }
 
-        cloudRepository.createCloud(name, domain, development = development)
+        cloudRepository.createCloud(reference, domain, development = development)
 
         return true
     }
 
     fun createEnvironment(
-        cloud: String,
-        environment: String,
+        reference: EnvironmentReference,
         githubReadOnlyToken: String,
         hetznerCloudApiTokenReadOnly: String,
         hetznerCloudApiTokenReadWrite: String,
         hetznerDnsApiToken: String
     ): Boolean {
 
-        if (!cloudRepository.hasCloud(cloud)) {
-            logger.info { "cloud '$cloud' does not exist" }
+        if (!cloudRepository.hasCloud(reference.toCloud())) {
+            logger.info { "cloud '${reference.cloud}' does not exist" }
             return false
         }
 
-        if (environmentRepository.hasEnvironment(cloud, environment)) {
-            logger.info { "environment '$environment' already exist in cloud '$cloud'" }
+        if (environmentRepository.hasEnvironment(reference)) {
+            logger.info { "environment '$reference.environment' already exist in cloud '$reference.cloud'" }
             return false
         }
 
         environmentRepository.createEnvironment(
-            cloud, environment,
+            reference,
             listOf(
                 createConfigValue(GITHUB_TOKEN_RO_KEY, githubReadOnlyToken),
                 createConfigValue(HETZNER_CLOUD_API_TOKEN_RO_KEY, hetznerCloudApiTokenReadOnly),
@@ -71,12 +72,12 @@ class CloudManager(
     fun bootstrapService(reference: ServiceReference): String {
 
         val service = serviceRepository.createService(
-            reference.cloud, reference.environment, reference.service,
+            reference,
             mapOf(
                 MINIO_SERVICE_SECRET_KEY_KEY to UUID.randomUUID().toString()
             )
         )
-        val provisioner = serviceRepository.createService(reference.cloud, reference.environment, reference.service)
+        val provisioner = serviceRepository.createService(reference)
 
         val group = ResourceGroup("${ModelConstants.serviceId(reference)}-backup")
 
@@ -84,25 +85,24 @@ class CloudManager(
         group.addResource(bucket)
 
         // provisioner.apply()
-
         // return provisioner.lookup(bucket).result!!.name
 
         return ""
     }
 
-    fun rotateEnvironmentSecrets(cloud: String, environment: String): Boolean {
+    fun rotateEnvironmentSecrets(reference: EnvironmentReference): Boolean {
 
-        if (!environmentRepository.hasEnvironment(cloud, environment)) {
-            logger.info { "environment '$environment' and/or cloud '$cloud' does no exist" }
+        if (!environmentRepository.hasEnvironment(reference)) {
+            logger.info { "environment '$reference.environment' and/or cloud '${reference.cloud}' does no exist" }
             return false
         }
 
-        environmentRepository.rotateEnvironmentSecrets(cloud, environment)
+        environmentRepository.rotateEnvironmentSecrets(reference)
         return true
     }
 
-    fun listEnvironments(cloud: String): List<EnvironmentEntity> {
-        val cloud = cloudRepository.getCloud(cloud)
+    fun listEnvironments(reference: CloudReference): List<EnvironmentEntity> {
+        val cloud = cloudRepository.getCloud(reference)
         return environmentRepository.listEnvironments(cloud)
     }
 }

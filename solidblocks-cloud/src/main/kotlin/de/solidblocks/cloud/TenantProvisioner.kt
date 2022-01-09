@@ -1,8 +1,8 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.base.TenantReference
 import de.solidblocks.cloud.NetworkUtils.nextNetwork
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
-import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants.defaultLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
@@ -16,8 +16,8 @@ import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import mu.KotlinLogging
 
 class TenantProvisioner(
+    private val reference: TenantReference,
     val provisioner: Provisioner,
-    val cloudRepository: CloudRepository,
     val environmentRepository: EnvironmentRepository,
     val tenantRepository: TenantRepository,
     val hetznerCloudApi: HetznerCloudAPI
@@ -28,11 +28,9 @@ class TenantProvisioner(
         return true
     }
 
-    fun bootstrap(cloudName: String, environmentName: String, tenantName: String): Boolean {
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName)
-            ?: throw RuntimeException("environment '$environmentName' not found for cloud '$cloudName'")
-
-        val tenant = tenantRepository.getTenant(tenantName, cloudName, environmentName) ?: return false
+    fun bootstrap(): Boolean {
+        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        val tenant = tenantRepository.getTenant(reference)
 
         createTenantModel(
             tenant,

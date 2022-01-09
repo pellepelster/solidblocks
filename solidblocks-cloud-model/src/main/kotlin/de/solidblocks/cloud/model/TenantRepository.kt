@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.TenantReference
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -9,9 +10,9 @@ import java.util.*
 
 class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
 
-    fun getTenant(cloudName: String, environmentName: String, name: String): TenantEntity {
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName)
-        return listTenants(name, environment).first()
+    fun getTenant(reference: TenantReference): TenantEntity {
+        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        return listTenants(reference.tenant, environment).first()
     }
 
     fun listTenants(name: String? = null, environment: EnvironmentEntity): List<TenantEntity> {
@@ -40,10 +41,10 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
             }
     }
 
-    fun createTenant(cloudName: String, environmentName: String, name: String): TenantEntity? {
+    fun createTenant(reference: TenantReference): TenantEntity {
 
         val id = UUID.randomUUID()
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName) ?: return null
+        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
 
         dsl.insertInto(TENANTS)
             .columns(
@@ -52,13 +53,13 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
                 TENANTS.DELETED,
                 TENANTS.ENVRIONMENT,
             )
-            .values(id, name, false, environment.id).execute()
+            .values(id, reference.tenant, false, environment.id).execute()
 
-        return getTenant(cloudName, environmentName, name)
+        return getTenant(reference)
     }
 
-    fun hasTenant(cloudName: String, environmentName: String, name: String): Boolean {
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName) ?: return false
-        return listTenants(name, environment).isNotEmpty()
+    fun hasTenant(reference: TenantReference): Boolean {
+        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        return listTenants(reference.tenant, environment).isNotEmpty()
     }
 }

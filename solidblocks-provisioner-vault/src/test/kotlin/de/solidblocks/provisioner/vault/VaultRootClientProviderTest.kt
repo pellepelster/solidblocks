@@ -1,5 +1,6 @@
 package de.solidblocks.provisioner.vault
 
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.SolidblocksDatabase
@@ -39,15 +40,14 @@ class VaultRootClientProviderTest {
         val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
-        val cloudName = UUID.randomUUID().toString()
-        val environmentName = UUID.randomUUID().toString()
+        val reference = EnvironmentReference(UUID.randomUUID().toString(), UUID.randomUUID().toString())
 
-        cloudRepository.createCloud(cloudName, "domain1", emptyList())
-        environmentRepository.createEnvironment(cloudName, environmentName)
+        cloudRepository.createCloud(reference.toCloud(), "domain1", emptyList())
+        environmentRepository.createEnvironment(reference)
 
-        val provider = VaultRootClientProvider(cloudName, environmentName, environmentRepository, vaultAddress())
+        val provider = VaultRootClientProvider(reference, environmentRepository, vaultAddress())
 
-        val environmentBefore = environmentRepository.getEnvironment(cloudName, environmentName)
+        val environmentBefore = environmentRepository.getEnvironment(reference)
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-0" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-1" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-2" })
@@ -55,7 +55,7 @@ class VaultRootClientProviderTest {
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-4" })
 
         val vaultClient = provider.createClient()
-        val environment = environmentRepository.getEnvironment(cloudName, environmentName)
+        val environment = environmentRepository.getEnvironment(reference)
 
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-0" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-1" })

@@ -28,7 +28,7 @@ class VaultAgentTest {
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = developmentEnvironment.reference.toService(service)
+        val reference = developmentEnvironment.environmentRef.toService(service)
 
         val serviceManager = VaultAgent(
             reference,
@@ -52,8 +52,9 @@ class VaultAgentTest {
         assertThat(serviceManager.isRunning()).isFalse
         assertThat(serviceManager.start()).isTrue
 
-        val testDataAfterRestart = vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
-            .get("test", Map::class.java)
+        val testDataAfterRestart =
+            vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
+                .get("test", Map::class.java)
         assertThat(testDataAfterRestart!!.data).isEqualTo(mapOf("foo" to "bar"))
 
         serviceManager.stop()
@@ -68,7 +69,7 @@ class VaultAgentTest {
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = developmentEnvironment.reference.toService(service)
+        val reference = developmentEnvironment.environmentRef.toService(service)
 
         val serviceManager = VaultAgent(
             reference,
@@ -92,14 +93,16 @@ class VaultAgentTest {
         vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
             .put("test", mapOf("foo" to "newBar"))
 
-        val testDataBeforeRestore = vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
-            .get("test", Map::class.java)
+        val testDataBeforeRestore =
+            vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
+                .get("test", Map::class.java)
         assertThat(testDataBeforeRestore!!.data).isEqualTo(mapOf("foo" to "newBar"))
 
         assertThat(serviceManager.restore()).isTrue
 
-        val testDataAfterRestore = vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
-            .get("test", Map::class.java)
+        val testDataAfterRestore =
+            vaultTemplate.opsForKeyValue("cubbyhole", VaultKeyValueOperationsSupport.KeyValueBackend.KV_2)
+                .get("test", Map::class.java)
         assertThat(testDataAfterRestore!!.data).isEqualTo(mapOf("foo" to "bar"))
 
         serviceManager.stop()

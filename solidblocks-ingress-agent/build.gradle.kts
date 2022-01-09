@@ -2,7 +2,8 @@ import Constants.ktorVersion
 
 plugins {
     id("solidblocks.kotlin-application-conventions")
-    id("com.palantir.docker") version "0.31.0"
+    id("com.palantir.docker") version "0.32.0"
+    id("solidblocks.kotlin-publish-conventions")
 }
 
 dependencies {
@@ -40,7 +41,7 @@ dependencies {
 
 docker {
     setDockerfile(file("$projectDir/docker/Dockerfile"))
-    name = "solidblocks-ingress"
+    name = "ghcr.io/pellepelster/solidblocks-ingress:$version"
 }
 tasks.getByPath("check").dependsOn(tasks.getByPath("docker"))
 

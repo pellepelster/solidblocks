@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.CloudReference
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.CloudEntity
 import de.solidblocks.config.db.tables.references.CLOUDS
@@ -10,12 +11,12 @@ import java.util.*
 class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
 
     fun createCloud(
-        name: String,
+        reference: CloudReference,
         rootDomain: String,
         configValues: List<CloudConfigValue> = emptyList(),
         development: Boolean = false,
     ): CloudEntity {
-        logger.info { "creating cloud '$name'" }
+        logger.info { "creating cloud '${reference.cloud}'" }
 
         val id = UUID.randomUUID()
         dsl.insertInto(CLOUDS)
@@ -24,7 +25,7 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
                 CLOUDS.NAME,
                 CLOUDS.DELETED,
             )
-            .values(id, name, false).execute()
+            .values(id, reference.cloud, false).execute()
 
         setConfiguration(CloudId(id), CloudEntity.ROOT_DOMAIN_KEY, rootDomain)
         setConfiguration(CloudId(id), CloudEntity.DEVELOPMENT_KEY, development.toString())
@@ -33,11 +34,11 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             setConfiguration(CloudId(id), it.name, it.value)
         }
 
-        return getCloud(name)
+        return getCloud(reference)
     }
 
-    fun hasCloud(name: String): Boolean {
-        return dsl.fetchCount(CLOUDS, CLOUDS.NAME.eq(name).and(CLOUDS.DELETED.isFalse)) == 1
+    fun hasCloud(reference: CloudReference): Boolean {
+        return dsl.fetchCount(CLOUDS, CLOUDS.NAME.eq(reference.cloud).and(CLOUDS.DELETED.isFalse)) == 1
     }
 
     fun listClouds(name: String? = null): List<CloudEntity> {
@@ -72,7 +73,7 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             }
     }
 
-    fun getCloud(name: String): CloudEntity {
-        return listClouds(name).first()
+    fun getCloud(reference: CloudReference): CloudEntity {
+        return listClouds(reference.cloud).first()
     }
 }

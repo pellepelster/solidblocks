@@ -1,7 +1,6 @@
-
-
 plugins {
     id("solidblocks.kotlin-application-conventions")
+    id("solidblocks.kotlin-publish-conventions")
 }
 
 dependencies {

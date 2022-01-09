@@ -25,7 +25,7 @@ class VaultService(val reference: ServiceReference, val serviceRepository: Servi
 
     fun createService(): Boolean {
         serviceRepository.createService(
-            reference.cloud, reference.environment, reference.service,
+            reference,
             mapOf(
                 MINIO_SERVICE_ACCESS_KEY_KEY to serviceId(reference),
                 MINIO_SERVICE_SECRET_KEY_KEY to UUID.randomUUID().toString()
