@@ -2,5 +2,4 @@
 # vault-cloud-init-variables.sh       #
 #######################################
 
-export VAULT_TOKEN="[=vault_token]"
-export VAULT_ADDR="[=vault_addr]"
+export SOLIDBLOCKS_PUBLIC_IP="[=solidblocks_public_ip]"

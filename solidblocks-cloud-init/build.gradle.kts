@@ -1,4 +1,3 @@
-
 plugins {
     id("solidblocks.kotlin-library-conventions")
     id("solidblocks.kotlin-publish-conventions")
@@ -31,7 +30,6 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
             listOf(
                 "lib-cloud-init/shell-script-header.sh",
                 "lib-cloud-init/cloud-init-variables.sh",
-                "lib-cloud-init/vault-cloud-init-variables.sh",
                 "lib/configuration.sh",
                 "lib/curl.sh",
                 "lib/package.sh",
@@ -41,6 +39,22 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
                 "lib-cloud-init/controller-cloud-init-body.sh"
             )
         )
+
+        generate_cloud_init(
+            "service-cloud-init.sh",
+            listOf(
+                "lib-cloud-init/shell-script-header.sh",
+                "lib-cloud-init/cloud-init-variables.sh",
+                "lib/configuration.sh",
+                "lib/curl.sh",
+                "lib/package.sh",
+                "lib/network.sh",
+                "lib/vault.sh",
+                "lib/storage.sh",
+                "lib-cloud-init/service-cloud-init-body.sh"
+            )
+        )
+
         generate_cloud_init(
             "backup-cloud-init.sh",
             listOf(
@@ -61,6 +75,7 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
             listOf(
                 "lib-cloud-init/shell-script-header.sh",
                 "lib-cloud-init/cloud-init-variables.sh",
+                "lib-cloud-init/vault-cloud-init-variables.sh",
                 "lib/configuration.sh",
                 "lib/network.sh",
                 "lib/ssh.sh",
@@ -74,3 +89,11 @@ abstract class GenerateTask @Inject constructor(@get:Input val projectLayout: Pr
 tasks.register<GenerateTask>("generate")
 
 tasks.getByName("jar").dependsOn("generate")
+
+publishing {
+    publications {
+        register<MavenPublication>("gpr") {
+            from(components["java"])
+        }
+    }
+}

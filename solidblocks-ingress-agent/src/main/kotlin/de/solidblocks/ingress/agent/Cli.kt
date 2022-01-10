@@ -1,7 +1,6 @@
 package de.solidblocks.ingress.agent
 
 import com.github.ajalt.clikt.core.CliktCommand
-import de.solidblocks.ingress.api.server.apis.DefaultApi
 import io.ktor.application.*
 import io.ktor.locations.*
 import io.ktor.routing.*
@@ -17,10 +16,8 @@ class RunCommand : CliktCommand(name = "run") {
     override fun run() {
 
         embeddedServer(Netty, port = 8080) {
-            install(Locations) // see https://ktor.io/docs/features-locations.html
-
+            install(Locations)
             routing {
-                DefaultApi()
             }
         }.start(wait = true)
 

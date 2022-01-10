@@ -27,7 +27,7 @@ class EnvironmentCreateCommand :
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
         val reference = CloudReference(cloud)
-        if (!context.verifyReference(reference)) {
+        if (!context.verifyCloudReference(reference)) {
             exitProcess(1)
         }
 

@@ -1,6 +1,6 @@
 package de.solidblocks.provisioner.hetzner.cloud
 
-import de.solidblocks.base.Constants.LABEL_PREFIX
+import de.solidblocks.cloud.model.ModelConstants.LABEL_PREFIX
 import java.security.MessageDigest
 
 class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {

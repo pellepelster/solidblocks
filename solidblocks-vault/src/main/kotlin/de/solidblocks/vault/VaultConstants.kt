@@ -2,7 +2,7 @@ package de.solidblocks.vault
 
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.model.ModelConstants.cloudId
+import de.solidblocks.cloud.model.ModelConstants.environmentId
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import java.time.Duration
 
@@ -20,27 +20,24 @@ object VaultConstants {
 
     val SERVICE_TOKEN_TTL = Duration.ofDays(7)
 
-    fun pkiMountName(cloudName: String, environmentName: String) = "${cloudId(cloudName, environmentName)}-pki"
+    val ENVIRONMENT_TOKEN_TTL = SERVICE_TOKEN_TTL
 
-    fun pkiMountName(environment: EnvironmentEntity) = pkiMountName(environment.cloud.name, environment.name)
+    fun pkiMountName(reference: EnvironmentReference) = "${environmentId(reference)}-pki"
 
-    fun pkiMountName(reference: EnvironmentReference) = pkiMountName(reference.cloud, reference.environment)
+    fun domain(reference: ServiceReference, rootDomain: String) =
+        "${reference.service}.${reference.environment}.$rootDomain"
 
-    fun domain(environment: EnvironmentEntity) = "${environment.name}.${environment.cloud.rootDomain}"
-
-    fun domain(reference: ServiceReference, rootDomain: String) = "${reference.service}.${reference.environment}.$rootDomain"
-
-    fun domain(reference: EnvironmentReference, rootDomain: String) = "${reference.environment}.$rootDomain"
-
-    fun kvMountName(reference: EnvironmentReference) = "${cloudId(reference)}-kv"
+    fun kvMountName(reference: EnvironmentReference) = "${environmentId(reference)}-kv"
 
     fun kvMountName(environment: EnvironmentEntity) = kvMountName(environment.reference)
 
     fun servicePath(service: String) = "solidblocks/services/$service"
 
-    fun hostSshMountName(environment: EnvironmentEntity) = "${cloudId(environment)}-host-ssh"
+    fun hostSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-host-ssh"
 
-    fun userSshMountName(environment: EnvironmentEntity) = "${cloudId(environment)}-user-ssh"
+    fun userSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-user-ssh"
+
+    fun domain(environment: EnvironmentEntity) = "${environment.name}.${environment.cloud.rootDomain}"
 
     fun vaultAddress(environment: EnvironmentEntity) =
         "https://vault.${domain(environment)}:8200"

@@ -11,13 +11,13 @@ class EnvironmentConfigCommand :
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        if (!context.verifyReference(reference)) {
+        if (!context.verifyEnvironmentReference(environmentRef)) {
             exitProcess(1)
         }
 
         println(
             ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-                .writeValueAsString(context.environmentRepository.getEnvironment(reference))
+                .writeValueAsString(context.environmentRepository.getEnvironment(environmentRef))
         )
     }
 }

@@ -9,6 +9,7 @@ ARG BLUE_HTML_DIR="/etc/nginx/html/${GITHUB_USERNAME}/solidblocks/solidblocks/so
 ARG GREEN_HTML_DIR="/etc/nginx/html/${GITHUB_USERNAME}/solidblocks/solidblocks/solidblocks-helloworld-agent/${SOLIDBLOCKS_GREEN_VERSION}"
 
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY .htpasswd /etc/nginx/.htpasswd
 
 RUN mkdir -p ${BLUE_HTML_DIR}
 RUN mkdir -p ${GREEN_HTML_DIR}

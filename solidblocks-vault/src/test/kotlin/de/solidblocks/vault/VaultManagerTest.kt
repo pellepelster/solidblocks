@@ -21,8 +21,8 @@ class VaultManagerTest {
         logger.info { "local env vault at '${developmentEnvironment.vaultAddress}' with root token '${developmentEnvironment.rootToken}'" }
 
         val vaultManager = VaultManager(
-            address = developmentEnvironment.vaultAddress,
-            _token = developmentEnvironment.rootToken,
+            developmentEnvironment.vaultAddress,
+            developmentEnvironment.rootToken,
             developmentEnvironment.reference
         )
 

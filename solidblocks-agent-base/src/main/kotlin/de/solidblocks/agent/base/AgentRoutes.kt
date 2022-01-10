@@ -1,5 +1,12 @@
 package de.solidblocks.agent.base
 
+import de.solidblocks.agent.base.api.AGENT_BASE_PATH
+import de.solidblocks.agent.base.api.TriggerShutdownRequest.TRIGGER_SHUTDOWN_PATH
+import de.solidblocks.agent.base.api.TriggerUpdateRequest
+import de.solidblocks.agent.base.api.TriggerUpdateRequest.Companion.TRIGGER_UPDATE_PATH
+import de.solidblocks.agent.base.api.TriggerUpdateResponse
+import de.solidblocks.agent.base.api.VersionResponse
+import de.solidblocks.agent.base.api.VersionResponse.Companion.VERSION_PATH
 import de.solidblocks.base.solidblocksVersion
 import io.ktor.application.*
 import io.ktor.request.*
@@ -9,26 +16,22 @@ import mu.KotlinLogging
 import java.io.File
 import java.util.concurrent.CountDownLatch
 
-data class VersionResponse(val version: String)
-data class TriggerUpdateRequest(val updateVersion: String)
-data class TriggerUpdateResponse(val triggered: Boolean)
-
 fun Route.versionRoutes(shutdown: CountDownLatch) {
 
     val logger = KotlinLogging.logger {}
 
-    route("/v1/agent") {
+    route(AGENT_BASE_PATH) {
 
-        get("version") {
+        get(VERSION_PATH) {
             call.respond(VersionResponse(solidblocksVersion()))
         }
 
-        post("trigger-shutdown") {
+        post(TRIGGER_SHUTDOWN_PATH) {
             call.respond(object {})
             shutdown.countDown()
         }
 
-        post("trigger-update") {
+        post(TRIGGER_UPDATE_PATH) {
             val updateRequest = call.receive<TriggerUpdateRequest>()
             val workingDir = System.getProperty("user.dir")
             val file = File(workingDir, "update.version")

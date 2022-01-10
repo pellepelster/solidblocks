@@ -4,7 +4,7 @@ import de.solidblocks.base.TenantReference
 import de.solidblocks.cloud.NetworkUtils.nextNetwork
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.model.EnvironmentRepository
-import de.solidblocks.cloud.model.ModelConstants.defaultLabels
+import de.solidblocks.cloud.model.ModelConstants.defaultTenantLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
 import de.solidblocks.cloud.model.TenantRepository
 import de.solidblocks.cloud.model.entities.TenantEntity
@@ -55,7 +55,7 @@ class TenantProvisioner(
 
         val networkResourceGroup = provisioner.createResourceGroup("network")
 
-        val network = Network(networkName(tenant), nextNetwork, defaultLabels(tenant))
+        val network = Network(networkName(tenant.reference), nextNetwork, defaultTenantLabels(tenant.reference))
         networkResourceGroup.addResource(network)
 
         val subnet = Subnet(subnetForNetwork(nextNetwork), network)

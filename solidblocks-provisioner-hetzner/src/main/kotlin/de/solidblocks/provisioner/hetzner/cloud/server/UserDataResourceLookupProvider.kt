@@ -7,12 +7,15 @@ import de.solidblocks.core.Result
 import freemarker.template.Configuration
 import freemarker.template.Configuration.SQUARE_BRACKET_INTERPOLATION_SYNTAX
 import freemarker.template.TemplateExceptionHandler
+import mu.KotlinLogging
 import java.io.StringWriter
 
 class UserDataResourceLookupProvider(val provisioner: InfrastructureProvisioner) :
     IResourceLookupProvider<UserData, UserDataRuntime> {
 
     val cfg = Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS)
+
+    private val logger = KotlinLogging.logger {}
 
     init {
         cfg.setClassForTemplateLoading(this::class.java, "/")
@@ -51,6 +54,9 @@ class UserDataResourceLookupProvider(val provisioner: InfrastructureProvisioner)
         }
 
         if (lookups.any { it.second.isEmptyOrFailed() }) {
+            lookups.filter { it.second.isEmptyOrFailed() }.forEach {
+                logger.error { "error resolving user data key '${it.first}" }
+            }
             return null
         }
 

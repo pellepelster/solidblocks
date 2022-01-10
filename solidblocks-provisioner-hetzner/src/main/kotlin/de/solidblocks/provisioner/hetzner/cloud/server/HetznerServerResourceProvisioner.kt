@@ -98,7 +98,7 @@ class HetznerServerResourceProvisioner(
         request.name(resource.name)
         request.serverType("cx11")
         request.location(resource.location)
-        request.image("debian-10")
+        request.image("debian-11")
         request.startAfterCreate(false)
 
         if (resource.volume != null) {
@@ -160,7 +160,13 @@ class HetznerServerResourceProvisioner(
                 logger.info { "creating server '${resource.name}' failed" }
                 return result
             }
+
             existingServer = lookup(resource)
+        }
+
+        if (existingServer.isEmpty()) {
+            logger.error { "server creation failed" }
+            return Result<Server>(failed = true)
         }
 
         waitForRetryableApiCall {

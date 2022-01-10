@@ -126,13 +126,13 @@ class DevelopmentEnvironment {
     }
 
     fun createService(name: String): String {
-        val service = reference.toService(name)
+        val serviceRef = reference.toService(name)
 
         val provisioner = applicationContext.createProvisioner(reference)
-        ServiceProvisioner(provisioner).createService(service)
+        provisioner.addResourceGroup(ServiceProvisioner.createVaultConfigResourceGroup(serviceRef))
+        provisioner.apply()
 
         val vaultManager = VaultManager(vaultAddress, rootToken, reference)
-
-        return vaultManager.createServiceToken(service)
+        return vaultManager.createServiceToken(name, serviceRef)
     }
 }

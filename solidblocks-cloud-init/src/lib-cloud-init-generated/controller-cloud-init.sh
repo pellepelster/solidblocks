@@ -8,14 +8,9 @@ set -eux
 export SOLIDBLOCKS_ENVIRONMENT="[=solidblocks_environment]"
 export SOLIDBLOCKS_CLOUD="[=solidblocks_cloud]"
 export SOLIDBLOCKS_ROOT_DOMAIN="[=solidblocks_root_domain]"
-export SOLIDBLOCKS_PUBLIC_IP="[=solidblocks_public_ip]"
 export SOLIDBLOCKS_VERSION="[=solidblocks_version]"
 export SOLIDBLOCKS_STORAGE_LOCAL_DEVICE="[=storage_local_device]"
 export SOLIDBLOCKS_HOSTNAME="[=solidblocks_hostname]"
-
-#######################################
-# vault-cloud-init-variables.sh       #
-#######################################
 
 export VAULT_TOKEN="[=vault_token]"
 export VAULT_ADDR="[=vault_addr]"
@@ -38,9 +33,9 @@ function bootstrap_solidblocks() {
   groupadd solidblocks
 
   # shellcheck disable=SC2086
-  mkdir -p ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
-  chmod 770 ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
-  chgrp solidblocks ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
+  mkdir -p ${SOLIDBLOCKS_DIR}/{protected,service,download,instance,templates,config,lib,bin,certificates}
+  chmod 770 ${SOLIDBLOCKS_DIR}/{protected,service,download,instance,templates,config,lib,bin,certificates}
+  chgrp solidblocks ${SOLIDBLOCKS_DIR}/{protected,service,download,instance,templates,config,lib,bin,certificates}
 
   echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"

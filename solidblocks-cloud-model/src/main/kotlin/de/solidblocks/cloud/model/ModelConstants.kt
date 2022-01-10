@@ -1,52 +1,89 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.Constants.LABEL_PREFIX
+import de.solidblocks.base.CloudReference
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.model.entities.CloudEntity
-import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import de.solidblocks.base.TenantReference
 import de.solidblocks.cloud.model.entities.Role
-import de.solidblocks.cloud.model.entities.TenantEntity
 
 object ModelConstants {
 
-    fun serviceId(reference: ServiceReference) =
-        "${cloudId(reference.cloud, reference.environment)}-${reference.service}"
+    const val LABEL_PREFIX = "solidblocks"
+
+    const val SERVICE_LABEL_KEY = "service"
+
+    val SERVICE_LABEL: String = "$LABEL_PREFIX/service"
+
+    val ROLE_LABEL: String = "$LABEL_PREFIX/role"
 
     fun serviceBucketName(reference: ServiceReference) = serviceId(reference)
 
     fun serviceConfigPath(reference: ServiceReference) =
         "/solidblocks/services/${reference.service}/config"
 
-    fun cloudId(cloudName: String, environmentName: String) = "$cloudName-$environmentName"
+    // fun environmentId(cloud: String, environment: String) = "$cloud-$environment"
+    fun cloudId(reference: CloudReference) = reference.cloud
 
-    fun cloudId(reference: EnvironmentReference) = cloudId(reference.cloud, reference.environment)
+    fun environmentId(reference: EnvironmentReference) = "${cloudId(reference)}-${reference.environment}"
 
-    fun cloudId(environment: EnvironmentEntity) = cloudId(environment.reference)
+    fun tenantId(reference: TenantReference) = "${environmentId(reference)}-${reference.tenant}"
 
-    fun networkName(environment: EnvironmentEntity) = cloudId(environment)
+    fun serviceId(reference: ServiceReference) = "${tenantId(reference)}-${reference.service}"
 
-    fun networkName(tenant: TenantEntity) = "${tenant.environment.cloud.name}-${cloudId(tenant.environment)}"
+    fun networkName(environment: EnvironmentReference) = environmentId(environment)
 
-    fun defaultLabels(role: Role) = mapOf("$LABEL_PREFIX/role" to role.toString())
+    fun sshKeyName(environment: EnvironmentReference) = environmentId(environment)
 
-    fun defaultLabels(cloud: CloudEntity) =
-        mapOf("$LABEL_PREFIX/cloud" to cloud.name)
+    fun networkName(reference: TenantReference) = tenantId(reference)
 
-    fun defaultLabels(environment: EnvironmentEntity) =
-        mapOf("$LABEL_PREFIX/environment" to environment.name) + defaultLabels(environment.cloud)
+    fun defaultRoleLabels(role: Role) = mapOf(ROLE_LABEL to role.toString())
 
-    fun defaultLabels(cloud: CloudEntity, role: Role) =
-        defaultLabels(role) + defaultLabels(cloud)
+    fun defaultCloudLabels(reference: CloudReference) =
+        mapOf("$LABEL_PREFIX/cloud" to reference.cloud)
 
-    fun defaultLabels(environment: EnvironmentEntity, role: Role) =
-        mapOf("$LABEL_PREFIX/environment" to environment.name) + defaultLabels(environment.cloud, role)
+    fun defaultEnvironmentLabels(reference: EnvironmentReference) =
+        mapOf("$LABEL_PREFIX/environment" to reference.environment) + defaultCloudLabels(reference)
 
-    fun defaultLabels(tenant: TenantEntity) =
-        mapOf("$LABEL_PREFIX/tenant" to tenant.name) + defaultLabels(tenant.environment)
+    fun defaultCloudLabels(cloud: CloudReference, role: Role) =
+        defaultRoleLabels(role) + defaultCloudLabels(cloud)
 
-    fun defaultLabels(tenant: TenantEntity, role: Role) =
-        defaultLabels(tenant) + defaultLabels(role)
+    fun defaultEnvironmentLabels(reference: EnvironmentReference, role: Role) =
+        mapOf("$LABEL_PREFIX/environment" to reference.environment) + defaultCloudLabels(reference, role)
+
+    fun defaultTenantLabels(reference: TenantReference) =
+        mapOf("$LABEL_PREFIX/tenant" to reference.tenant) + defaultEnvironmentLabels(reference)
+
+    fun defaultTenantLabels(reference: TenantReference, role: Role) =
+        defaultTenantLabels(reference) + defaultRoleLabels(role)
+
+    fun defaultServiceLabels(reference: ServiceReference, role: Role) =
+        mapOf(SERVICE_LABEL to reference.service) + defaultTenantLabels(reference) + defaultRoleLabels(role)
+
+    /*
+    fun volumeName(reference: EnvironmentReference, serverName: String, location: String) =
+        "${environmentId(reference)}-$serverName-$location"
+    */
+
+    fun volumeName(reference: ServiceReference, location: String, index: Int) =
+        serverName(reference, location, index)
+
+    fun serverName(reference: ServiceReference, location: String, index: Int) =
+        "${serviceId(reference)}-$index-$location"
+
+    fun volumeName(name: String, reference: EnvironmentReference, location: String, index: Int) =
+        serverName(name, reference, location, index)
+
+    fun floatingIpName(name: String, reference: EnvironmentReference, location: String, index: Int) =
+        serverName(name, reference, location, index)
+
+    fun serverName(name: String, reference: EnvironmentReference, location: String, index: Int) =
+        "${environmentId(reference)}-$name-$index-$location"
+
+    fun vaultTokenName(name: String, reference: EnvironmentReference, location: String, index: Int) =
+        serverName(name, reference, location, index)
+
+    fun vaultTokenName(name: String, reference: ServiceReference) =
+        "$name-${serviceId(reference)}"
 
     const val GITHUB_TOKEN_RO_KEY = "github_token_ro"
     const val GITHUB_USERNAME_KEY = "github_username"

@@ -13,9 +13,9 @@ import com.github.dockerjava.api.model.Volume
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
-import de.solidblocks.base.Constants.SERVICE_LABEL_KEY
 import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.cloud.model.ModelConstants.SERVICE_LABEL_KEY
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
 import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.vault.InitializingVaultManager

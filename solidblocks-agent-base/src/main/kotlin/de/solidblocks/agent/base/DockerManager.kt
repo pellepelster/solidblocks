@@ -11,7 +11,7 @@ import com.github.dockerjava.api.model.Volume
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
-import de.solidblocks.base.Constants.SERVICE_LABEL_KEY
+import de.solidblocks.cloud.model.ModelConstants.SERVICE_LABEL_KEY
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import mu.KotlinLogging

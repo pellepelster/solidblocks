@@ -1,22 +1,13 @@
 package de.solidblocks.helloworld.agent
 
-import de.solidblocks.agent.base.TriggerUpdateRequest
-import de.solidblocks.agent.base.TriggerUpdateResponse
-import de.solidblocks.agent.base.VersionResponse
-import de.solidblocks.base.http.HttpClient
-import de.solidblocks.base.http.HttpResponse
+import de.solidblocks.agent.base.api.BaseAgentApiClient
 import de.solidblocks.core.utils.LinuxCommandExecutor
 import de.solidblocks.test.DevelopmentEnvironment
 import de.solidblocks.test.DevelopmentEnvironmentExtension
 import de.solidblocks.test.KDockerComposeContainer
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
-import org.awaitility.kotlin.atMost
-import org.awaitility.kotlin.await
-import org.awaitility.kotlin.ignoreException
-import org.awaitility.kotlin.until
-import org.awaitility.kotlin.untilAsserted
-import org.awaitility.kotlin.withPollDelay
+import org.awaitility.kotlin.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -40,7 +31,7 @@ class AgentWrapperProcess(solidblocksDirectory: Path) {
                 printStream = true,
                 environment = mapOf("SOLIDBLOCKS_DIR" to solidblocksDirectory.toString()),
                 workingDir = File(workingDir),
-                command = listOf("$workingDir/solidblocks-service-wrapper.sh").toTypedArray()
+                command = listOf("$workingDir/../solidblocks-cloud-init/src/bin/solidblocks-agent-wrapper.sh").toTypedArray()
             )
 
             logger.info { "service wrapper exited with ${result.code}" }
@@ -93,23 +84,17 @@ class HelloWorldAgentIntegrationTest {
 
         agentWrapperProcess = AgentWrapperProcess(solidblocksDirectory)
 
-        val client = HttpClient("http://localhost:8080")
+        val client = BaseAgentApiClient("http://localhost:8080")
 
         await ignoreException (ConnectException::class) until {
-            val response: HttpResponse<VersionResponse> = client.get("/v1/agent/version")
-            response.isSuccessful
+            client.version() != null
         }
 
-        val beforeUpdateVersionResponse: HttpResponse<VersionResponse> = client.get("/v1/agent/version")
-        assertThat(beforeUpdateVersionResponse.data?.version).isEqualTo(blueVersion)
+        assertThat(client.version()?.version).isEqualTo(blueVersion)
+        assertThat(client.triggerUpdate(greenVersion)).isTrue
 
-        val triggerResponse: HttpResponse<TriggerUpdateResponse> =
-            client.post("/v1/agent/trigger-update", TriggerUpdateRequest(greenVersion))
-        assertThat(triggerResponse.data?.triggered).isTrue
-
-        await atMost(Duration.ofSeconds(15)) ignoreException (ConnectException::class) untilAsserted {
-            val afterUpdateVersionResponse: HttpResponse<VersionResponse> = client.get("/v1/agent/version")
-            assertThat(afterUpdateVersionResponse.data?.version).isEqualTo(greenVersion)
+        await atMost (Duration.ofSeconds(15)) ignoreException (ConnectException::class) untilAsserted {
+            assertThat(client.version()?.version).isEqualTo(greenVersion)
         }
     }
 
@@ -137,23 +122,17 @@ class HelloWorldAgentIntegrationTest {
 
         agentWrapperProcess = AgentWrapperProcess(solidblocksDirectory)
 
-        val client = HttpClient("http://localhost:8080")
+        val client = BaseAgentApiClient("http://localhost:8080")
 
         await ignoreException (ConnectException::class) until {
-            val response: HttpResponse<VersionResponse> = client.get("/v1/agent/version")
-            response.isSuccessful
+            client.version() != null
         }
 
-        val beforeUpdateVersionResponse: HttpResponse<VersionResponse> = client.get("/v1/agent/version")
-        assertThat(beforeUpdateVersionResponse.data?.version).isEqualTo(blueVersion)
+        assertThat(client.version()?.version).isEqualTo(blueVersion)
+        assertThat(client.triggerUpdate("invalid-version")).isTrue
 
-        val triggerResponse: HttpResponse<TriggerUpdateResponse> =
-            client.post("/v1/agent/trigger-update", TriggerUpdateRequest("invalid-version"))
-        assertThat(triggerResponse.data?.triggered).isTrue
-
-        await withPollDelay(Duration.ofSeconds(20)) atMost(Duration.ofSeconds(25)) ignoreException (ConnectException::class) untilAsserted {
-            val afterUpdateVersionResponse: HttpResponse<VersionResponse> = client.get("/v1/agent/version")
-            assertThat(afterUpdateVersionResponse.data?.version).isEqualTo(blueVersion)
+        await withPollDelay (Duration.ofSeconds(20)) atMost (Duration.ofSeconds(25)) ignoreException (ConnectException::class) untilAsserted {
+            assertThat(client.version()?.version).isEqualTo(blueVersion)
         }
     }
 
@@ -172,14 +151,17 @@ class HelloWorldAgentIntegrationTest {
         initialEnvironmentFile.writeText(
             """
             VAULT_TOKEN=$vaultToken
-            GITHUB_TOKEN_RO=XXX
-            GITHUB_USERNAME=YYY
+            GITHUB_TOKEN_RO=5c94d4bc-7259-11ec-b135-fb9e235ad033
+            GITHUB_USERNAME=pellepelster
             """.trimIndent()
         )
         logger.info { "created initial environment file: '$initialEnvironmentFile'" }
 
         val instanceDir = File(solidblocksDir.toFile(), "instance")
         instanceDir.mkdirs()
+
+        val downloadDir = File(solidblocksDir.toFile(), "download")
+        downloadDir.mkdirs()
 
         val instanceEnvironmentFile = File(instanceDir, "environment")
         instanceEnvironmentFile.writeText(
@@ -196,7 +178,7 @@ class HelloWorldAgentIntegrationTest {
         val serviceEnvironmentFile = File(serviceDir, "environment")
         serviceEnvironmentFile.writeText(
             """
-            SOLIDBLOCKS_COMPONENT=solidblocks-helloworld-agent
+            SOLIDBLOCKS_SERVICE=solidblocks-helloworld-agent
             """.trimIndent()
         )
         logger.info { "created service instance file: '$serviceEnvironmentFile'" }

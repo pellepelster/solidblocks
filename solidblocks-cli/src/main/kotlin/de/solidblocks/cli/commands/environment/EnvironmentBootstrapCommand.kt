@@ -8,10 +8,10 @@ class EnvironmentBootstrapCommand :
 
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
-        if (!context.verifyReference(reference)) {
+        if (!context.verifyEnvironmentReference(environmentRef)) {
             exitProcess(1)
         }
 
-        context.createEnvironmentProvisioner(reference).bootstrap()
+        context.createEnvironmentProvisioner(environmentRef).bootstrap()
     }
 }

@@ -8,6 +8,7 @@ dependencies {
 
     api(project(":solidblocks-base"))
     implementation(project(":solidblocks-cloud-model"))
+    implementation(project(":solidblocks-agent-base-api"))
 
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")

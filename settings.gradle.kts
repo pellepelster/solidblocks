@@ -15,6 +15,7 @@ include(
     "solidblocks-provisioner-hetzner",
     "solidblocks-provisioner-vault",
     "solidblocks-agent-base",
+    "solidblocks-agent-base-api",
     "solidblocks-helloworld-agent",
     "solidblocks-vault-agent",
     "solidblocks-service-vault-api",

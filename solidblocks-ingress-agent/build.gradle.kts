@@ -21,15 +21,6 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
-    implementation(
-        project(
-            mapOf(
-                "path" to ":solidblocks-ingress-api",
-                "configuration" to "server"
-            )
-        )
-    )
-
     implementation("io.github.resilience4j:resilience4j-kotlin:1.7.1")
     implementation("io.github.resilience4j:resilience4j-retry:1.7.1")
 

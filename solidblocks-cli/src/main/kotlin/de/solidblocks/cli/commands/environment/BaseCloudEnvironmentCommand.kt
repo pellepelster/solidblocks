@@ -15,6 +15,6 @@ abstract class BaseCloudEnvironmentCommand(
 
     val environment: String by option(help = "cloud environment").required()
 
-    val reference: EnvironmentReference
+    val environmentRef: EnvironmentReference
         get() = EnvironmentReference(cloud, environment)
 }

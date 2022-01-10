@@ -2,6 +2,7 @@ package de.solidblocks.vault
 
 import de.solidblocks.base.ServiceReference
 import de.solidblocks.vault.VaultConstants.domain
+import de.solidblocks.vault.VaultConstants.pkiMountName
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
@@ -77,29 +78,36 @@ class VaultCertificateManager(
         }
     }
 
-    fun issueCertificate(): Certificate? = try {
-        logger.info { "issuing certificate" }
-        val response = vaultTemplate.write(
-            "${
-            VaultConstants.pkiMountName(
-                reference.cloud,
-                reference.environment
+    fun issueCertificate(): Certificate? {
+        try {
+            logger.info { "issuing certificate" }
+            val response = vaultTemplate.write(
+                "${
+                pkiMountName(reference)
+                }/issue/${pkiMountName(reference)}",
+                mapOf(
+                    "common_name" to domain(reference, rootDomain),
+                    "alt_names" to listOf("localhost").joinToString(",")
+                )
             )
-            }/issue/${VaultConstants.pkiMountName(reference.cloud, reference.environment)}",
-            mapOf("common_name" to domain(reference, rootDomain), "alt_names" to listOf("localhost").joinToString(","))
-        )
 
-        val certificate = response.data.get("certificate").toString()
-        val privateKey = response.data.get("private_key").toString()
-        val issuingCa = response.data.get("issuing_ca").toString()
-        val serialNumber = response.data.get("serial_number").toString()
+            if (response?.data == null) {
+                return null
+            }
 
-        val result = Certificate(certificate, privateKey, issuingCa)
-        logger.info { "issued certificate '${result.public.serialNumber}' valid until ${result.public.notAfter}" }
-        result
-    } catch (e: Exception) {
-        logger.error { "failed to issue certificate for service '${reference.service}'" }
-        null
+            val certificate = response.data!!["certificate"].toString()
+            val privateKey = response.data!!["private_key"].toString()
+            val issuingCa = response.data!!["issuing_ca"].toString()
+            val serialNumber = response.data!!["serial_number"].toString()
+
+            val result = Certificate(certificate, privateKey, issuingCa)
+            logger.info { "issued certificate '${result.public.serialNumber}' valid until ${result.public.notAfter}" }
+            return result
+        } catch (e: Exception) {
+            logger.error { "failed to issue certificate for service '${reference.service}'" }
+        }
+
+        return null
     }
 
     fun seal(): Boolean {

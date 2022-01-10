@@ -14,7 +14,7 @@ class ServiceCreateCommand :
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        if (!context.verifyReference(tenantRef)) {
+        if (!context.verifyTenantReference(tenantRef)) {
             exitProcess(1)
         }
 

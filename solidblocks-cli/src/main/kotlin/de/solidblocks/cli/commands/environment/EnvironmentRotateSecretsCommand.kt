@@ -9,11 +9,11 @@ class EnvironmentRotateSecretsCommand :
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        if (!context.verifyReference(reference)) {
+        if (!context.verifyEnvironmentReference(environmentRef)) {
             exitProcess(1)
         }
 
-        if (!context.cloudManager.rotateEnvironmentSecrets(reference)) {
+        if (!context.cloudManager.rotateEnvironmentSecrets(environmentRef)) {
             exitProcess(1)
         }
     }

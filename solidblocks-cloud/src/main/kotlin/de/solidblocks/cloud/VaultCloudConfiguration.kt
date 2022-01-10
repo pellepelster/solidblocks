@@ -30,9 +30,9 @@ object VaultCloudConfiguration {
     ): ResourceGroup {
         val resourceGroup = ResourceGroup("vaultConfig", parentResourceGroups)
 
-        val hostPkiMount = VaultMount(pkiMountName(environment), "pki")
+        val hostPkiMount = VaultMount(pkiMountName(environment.reference), "pki")
         val hostPkiBackendRole = VaultPkiBackendRole(
-            name = pkiMountName(environment),
+            name = pkiMountName(environment.reference),
             allowedDomains = listOf(domain(environment)),
             allowSubdomains = true,
             allowLocalhost = environment.cloud.isDevelopment,
@@ -46,11 +46,11 @@ object VaultCloudConfiguration {
         resourceGroup.addResource(hostPkiBackendRole)
 
         val hostSshMount = VaultMount(
-            hostSshMountName(environment),
+            hostSshMountName(environment.reference),
             "ssh"
         )
         val hostSshBackendRole = VaultSshBackendRole(
-            name = hostSshMountName(environment),
+            name = hostSshMountName(environment.reference),
             keyType = "ca",
             maxTtl = "168h",
             ttl = "168h",
@@ -61,16 +61,16 @@ object VaultCloudConfiguration {
         resourceGroup.addResource(hostSshBackendRole)
 
         val userSshMount = VaultMount(
-            userSshMountName(environment),
+            userSshMountName(environment.reference),
             "ssh"
         )
         val userSshBackendRole = VaultSshBackendRole(
-            name = userSshMountName(environment),
+            name = userSshMountName(environment.reference),
             keyType = "ca",
             maxTtl = "168h",
             ttl = "168h",
-            allowedUsers = listOf(ModelConstants.cloudId(environment)),
-            defaultUser = ModelConstants.cloudId(environment),
+            allowedUsers = listOf(ModelConstants.environmentId(environment.reference)),
+            defaultUser = ModelConstants.environmentId(environment.reference),
             allowHostCertificates = false,
             allowUserCertificates = true,
             mount = userSshMount
@@ -155,31 +155,31 @@ object VaultCloudConfiguration {
                     .build(),
 
                 Policy.Rule.builder()
-                    .path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
+                    .path("${pkiMountName(environment.reference)}/issue/${pkiMountName(environment.reference)}")
                     .capabilities(Policy.BuiltinCapabilities.UPDATE)
                     .build(),
 
                 Policy.Rule.builder()
-                    .path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
+                    .path("${userSshMountName(environment.reference)}/sign/${userSshMountName(environment.reference)}")
                     .capabilities(
                         Policy.BuiltinCapabilities.UPDATE,
                         Policy.BuiltinCapabilities.CREATE
                     )
                     .build(),
 
-                Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
+                Policy.Rule.builder().path("${userSshMountName(environment.reference)}/config/ca")
                     .capabilities(Policy.BuiltinCapabilities.READ)
                     .build(),
 
                 Policy.Rule.builder()
-                    .path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
+                    .path("${hostSshMountName(environment.reference)}/sign/${hostSshMountName(environment.reference)}")
                     .capabilities(
                         Policy.BuiltinCapabilities.UPDATE,
                         Policy.BuiltinCapabilities.CREATE
                     )
                     .build(),
 
-                Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
+                Policy.Rule.builder().path("${hostSshMountName(environment.reference)}/config/ca")
                     .capabilities(Policy.BuiltinCapabilities.READ)
                     .build(),
 
@@ -220,29 +220,32 @@ object VaultCloudConfiguration {
                     .capabilities(Policy.BuiltinCapabilities.READ)
                     .build(),
 
-                Policy.Rule.builder().path("${pkiMountName(environment)}/issue/${pkiMountName(environment)}")
+                Policy.Rule.builder()
+                    .path("${pkiMountName(environment.reference)}/issue/${pkiMountName(environment.reference)}")
                     .capabilities(Policy.BuiltinCapabilities.UPDATE)
                     .build(),
 
-                Policy.Rule.builder().path("${userSshMountName(environment)}/sign/${userSshMountName(environment)}")
+                Policy.Rule.builder()
+                    .path("${userSshMountName(environment.reference)}/sign/${userSshMountName(environment.reference)}")
                     .capabilities(
                         Policy.BuiltinCapabilities.UPDATE,
                         Policy.BuiltinCapabilities.CREATE
                     )
                     .build(),
 
-                Policy.Rule.builder().path("${userSshMountName(environment)}/config/ca")
+                Policy.Rule.builder().path("${userSshMountName(environment.reference)}/config/ca")
                     .capabilities(Policy.BuiltinCapabilities.READ)
                     .build(),
 
-                Policy.Rule.builder().path("${hostSshMountName(environment)}/sign/${hostSshMountName(environment)}")
+                Policy.Rule.builder()
+                    .path("${hostSshMountName(environment.reference)}/sign/${hostSshMountName(environment.reference)}")
                     .capabilities(
                         Policy.BuiltinCapabilities.UPDATE,
                         Policy.BuiltinCapabilities.CREATE
                     )
                     .build(),
 
-                Policy.Rule.builder().path("${hostSshMountName(environment)}/config/ca")
+                Policy.Rule.builder().path("${hostSshMountName(environment.reference)}/config/ca")
                     .capabilities(Policy.BuiltinCapabilities.READ)
                     .build(),
 

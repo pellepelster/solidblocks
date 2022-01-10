@@ -5,7 +5,6 @@ import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.CloudReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 import de.solidblocks.cloud.SolidblocksAppplicationContext
-import kotlin.system.exitProcess
 
 class CloudCreateCommand :
     BaseCloudDbCommand(name = "create", help = "create a new cloud") {
@@ -18,10 +17,6 @@ class CloudCreateCommand :
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
         val reference = CloudReference(cloud)
-
-        if (!context.verifyReference(reference)) {
-            exitProcess(1)
-        }
 
         context.cloudManager.createCloud(reference, domain)
     }

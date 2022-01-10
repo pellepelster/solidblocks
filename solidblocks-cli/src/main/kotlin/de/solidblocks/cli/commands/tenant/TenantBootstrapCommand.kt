@@ -15,10 +15,11 @@ class TenantBootstrapCommand : BaseCloudEnvironmentCommand(name = "bootstrap", h
     val tenant: String by option(help = "tenant name").required()
 
     override fun run() {
+
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
         val tenant = TenantReference(cloud, environment, tenant)
-        if (!context.verifyReference(tenant)) {
+        if (!context.verifyTenantReference(tenant)) {
             exitProcess(1)
         }
 

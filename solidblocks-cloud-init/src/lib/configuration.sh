@@ -16,9 +16,9 @@ function bootstrap_solidblocks() {
   groupadd solidblocks
 
   # shellcheck disable=SC2086
-  mkdir -p ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
-  chmod 770 ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
-  chgrp solidblocks ${SOLIDBLOCKS_DIR}/{protected,instance,templates,config,lib,bin,certificates}
+  mkdir -p ${SOLIDBLOCKS_DIR}/{protected,service,download,instance,templates,config,lib,bin,certificates}
+  chmod 770 ${SOLIDBLOCKS_DIR}/{protected,service,download,instance,templates,config,lib,bin,certificates}
+  chgrp solidblocks ${SOLIDBLOCKS_DIR}/{protected,service,download,instance,templates,config,lib,bin,certificates}
 
   echo "SOLIDBLOCKS_DEBUG_LEVEL=${SOLIDBLOCKS_DEBUG_LEVEL}" > "${SOLIDBLOCKS_DIR}/instance/environment"
   echo "SOLIDBLOCKS_ENVIRONMENT=${SOLIDBLOCKS_ENVIRONMENT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"

@@ -16,11 +16,11 @@ class EnvironmentDestroyCommand :
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
-        if (!context.verifyReference(reference)) {
+        if (!context.verifyEnvironmentReference(environmentRef)) {
             exitProcess(1)
         }
 
-        if (!context.createEnvironmentProvisioner(reference).destroy(destroyVolumes)) {
+        if (!context.createEnvironmentProvisioner(environmentRef).destroy(destroyVolumes)) {
             logger.error { "destroying environment failed" }
             exitProcess(1)
         }

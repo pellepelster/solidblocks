@@ -19,7 +19,7 @@ class TenantCreateCommand :
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
 
         val reference = EnvironmentReference(cloud, environment)
-        if (!context.verifyReference(reference)) {
+        if (!context.verifyEnvironmentReference(reference)) {
             exitProcess(1)
         }
 

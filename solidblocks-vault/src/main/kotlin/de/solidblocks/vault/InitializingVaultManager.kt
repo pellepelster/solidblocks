@@ -8,7 +8,7 @@ class InitializingVaultManager(address: String) : BaseVaultManager(address) {
     private val logger = KotlinLogging.logger {}
 
     fun initialize(): VaultCredentials {
-        logger.info { "initializing vault at '$address'" }
+        logger.info { "initializing vault" }
         val request = VaultInitializationRequest.create(5, 3)
         val response = vaultTemplate.opsForSys().initialize(request)
 

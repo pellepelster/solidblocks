@@ -1,9 +1,6 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.base.CloudReference
-import de.solidblocks.base.EnvironmentReference
-import de.solidblocks.base.ProvisionerRegistry
-import de.solidblocks.base.TenantReference
+import de.solidblocks.base.*
 import de.solidblocks.base.lookups.Lookups
 import de.solidblocks.cloud.model.*
 import de.solidblocks.provisioner.Provisioner
@@ -12,6 +9,7 @@ import de.solidblocks.provisioner.hetzner.Hetzner
 import de.solidblocks.provisioner.minio.Minio
 import de.solidblocks.provisioner.minio.MinioCredentials
 import de.solidblocks.provisioner.vault.Vault
+import de.solidblocks.vault.VaultManager
 import de.solidblocks.vault.VaultRootClientProvider
 import mu.KotlinLogging
 
@@ -52,14 +50,11 @@ class SolidblocksAppplicationContext(
         return vaultRootClientProvider!!
     }
 
-    fun createEnvironmentProvisioner(reference: EnvironmentReference): EnvironmentProvisioner {
-        return EnvironmentProvisioner(
-            reference,
-            vaultRootClientProvider(reference),
-            createProvisioner(reference),
-            environmentRepository
-        )
-    }
+    fun createEnvironmentProvisioner(reference: EnvironmentReference) = EnvironmentProvisioner(
+        environmentRepository.getEnvironment(reference),
+        vaultRootClientProvider(reference),
+        createProvisioner(reference),
+    )
 
     fun createTenantProvisioner(reference: TenantReference) = TenantProvisioner(
         reference,
@@ -68,6 +63,14 @@ class SolidblocksAppplicationContext(
         tenantRepository,
         Hetzner.createCloudApi(environmentRepository.getEnvironment(reference))
     )
+
+    fun createServiceProvisioner(reference: ServiceReference) =
+        ServiceProvisioner(
+            createProvisioner(reference),
+            reference,
+            environmentRepository,
+            VaultManager(vaultRootClientProvider(reference).createClient(), reference)
+        )
 
     fun createProvisioner(reference: EnvironmentReference): Provisioner {
 
@@ -95,8 +98,8 @@ class SolidblocksAppplicationContext(
         return provisioner
     }
 
-    fun verifyReference(reference: TenantReference): Boolean {
-        if (!verifyReference(reference)) {
+    fun verifyTenantReference(reference: TenantReference): Boolean {
+        if (!verifyEnvironmentReference(reference)) {
             return false
         }
 
@@ -108,8 +111,8 @@ class SolidblocksAppplicationContext(
         return true
     }
 
-    fun verifyReference(reference: EnvironmentReference): Boolean {
-        if (!verifyReference(reference)) {
+    fun verifyEnvironmentReference(reference: EnvironmentReference): Boolean {
+        if (!verifyCloudReference(reference)) {
             return false
         }
 
@@ -121,7 +124,7 @@ class SolidblocksAppplicationContext(
         return true
     }
 
-    fun verifyReference(reference: CloudReference): Boolean {
+    fun verifyCloudReference(reference: CloudReference): Boolean {
         if (!cloudRepository.hasCloud(reference)) {
             logger.error { "cloud '${reference.cloud}' not found" }
             return false

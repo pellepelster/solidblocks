@@ -8,20 +8,27 @@ import java.net.URI
 
 data class VaultCredentials(val rootToken: String, val unsealKeys: List<String>)
 
-abstract class BaseVaultManager(val address: String, val token: String? = null) {
+abstract class BaseVaultManager(vaultTemplate: VaultTemplate) {
 
     private val logger = KotlinLogging.logger {}
 
     protected val vaultTemplate: VaultTemplate
 
     init {
-        logger.info { "initializing vault manager for address '$address'" }
-        if (token != null) {
-            vaultTemplate = VaultTemplate(VaultEndpoint.from(URI.create(address)), TokenAuthentication(token))
-        } else {
-            vaultTemplate = VaultTemplate(VaultEndpoint.from(URI.create(address)))
+        this.vaultTemplate = vaultTemplate
+    }
+
+    companion object {
+        fun createVaultTemplate(address: String, token: String? = null): VaultTemplate {
+            return if (token != null) {
+                VaultTemplate(VaultEndpoint.from(URI.create(address)), TokenAuthentication(token))
+            } else {
+                VaultTemplate(VaultEndpoint.from(URI.create(address)))
+            }
         }
     }
+
+    constructor(address: String, token: String? = null) : this(createVaultTemplate(address, token))
 
     fun isInitialized(): Boolean {
         return vaultTemplate.opsForSys().isInitialized
@@ -32,7 +39,7 @@ abstract class BaseVaultManager(val address: String, val token: String? = null) 
     }
 
     fun unseal(vaultCredentials: VaultCredentials): Boolean {
-        logger.info { "unsealing vault at '$address'" }
+        logger.info { "unsealing vault" }
 
         vaultCredentials.unsealKeys.forEach {
             vaultTemplate.opsForSys().unseal(it)
