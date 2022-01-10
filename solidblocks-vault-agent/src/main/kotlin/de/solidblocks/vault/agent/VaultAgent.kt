@@ -99,7 +99,7 @@ class VaultAgent(
         solidblocksVaultManager = VaultManager(
             solidblocksVaultAddress,
             solidblocksVaultToken,
-            reference.toEnvironment()
+            reference
         )
     }
 

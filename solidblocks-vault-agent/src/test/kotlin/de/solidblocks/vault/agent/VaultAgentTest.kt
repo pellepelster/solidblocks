@@ -28,7 +28,7 @@ class VaultAgentTest {
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = developmentEnvironment.environmentRef.toService(service)
+        val reference = developmentEnvironment.reference.toService(service)
 
         val serviceManager = VaultAgent(
             reference,
@@ -69,7 +69,7 @@ class VaultAgentTest {
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = developmentEnvironment.environmentRef.toService(service)
+        val reference = developmentEnvironment.reference.toService(service)
 
         val serviceManager = VaultAgent(
             reference,

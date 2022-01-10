@@ -1,4 +1,4 @@
-package de.solidblocks.cli.commands.tenants
+package de.solidblocks.cli.commands.tenant
 
 import com.github.ajalt.clikt.core.CliktCommand
 

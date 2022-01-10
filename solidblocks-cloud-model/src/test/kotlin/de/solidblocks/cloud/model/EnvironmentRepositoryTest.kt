@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.toCloudReference
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -14,11 +14,11 @@ class EnvironmentRepositoryTest {
         val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
-        val reference = "cloud1".toCloudReference()
-        val cloud = cloudRepository.createCloud(reference, "domain1")
-        assertThat(environmentRepository.createEnvironment(reference.toEnvironment("env1"))).isNotNull
+        val reference = EnvironmentReference("cloud1", "env1")
+        cloudRepository.createCloud(reference, "domain1")
+        assertThat(environmentRepository.createEnvironment(reference)).isNotNull
 
-        val environment = environmentRepository.getEnvironment(reference.toEnvironment("env1"))
+        val environment = environmentRepository.getEnvironment(reference)
         assertThat(environment.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(environment.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(environment.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
@@ -30,18 +30,17 @@ class EnvironmentRepositoryTest {
         val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
-        val cloudRef = "cloud3".toCloudReference()
-        val environmentRef = cloudRef.toEnvironment("env3")
+        val reference = EnvironmentReference("cloud3", "env3")
 
-        cloudRepository.createCloud(cloudRef, "domain1")
+        cloudRepository.createCloud(reference, "domain1")
 
-        assertThat(environmentRepository.createEnvironment(environmentRef)).isNotNull
+        assertThat(environmentRepository.createEnvironment(reference)).isNotNull
 
-        val environment = environmentRepository.getEnvironment(environmentRef)
+        val environment = environmentRepository.getEnvironment(reference)
         assertThat(environment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(0)
 
-        environmentRepository.updateEnvironment(environmentRef, "my-attribute", "my-value")
-        val updatedEnvironment = environmentRepository.getEnvironment(environmentRef)
+        environmentRepository.updateEnvironment(reference, "my-attribute", "my-value")
+        val updatedEnvironment = environmentRepository.getEnvironment(reference)
 
         assertThat(updatedEnvironment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(1)
         assertThat(updatedEnvironment.configValues).anyMatch { it.name == "my-attribute" && it.value == "my-value" }
@@ -52,22 +51,21 @@ class EnvironmentRepositoryTest {
         val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
-        val cloudRef = "cloud4".toCloudReference()
-        val environmentRef = cloudRef.toEnvironment("env4")
+        val reference = EnvironmentReference("cloud4", "env4")
 
-        val cloud = cloudRepository.createCloud(cloudRef, "domain4")
+        val cloud = cloudRepository.createCloud(reference, "domain4")
 
-        assertThat(environmentRepository.createEnvironment(environmentRef)).isNotNull
+        assertThat(environmentRepository.createEnvironment(reference)).isNotNull
 
-        val newEnv2 = environmentRepository.getEnvironment(environmentRef)
+        val newEnv2 = environmentRepository.getEnvironment(reference)
         assertThat(newEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(newEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(newEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(newEnv2.sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
 
-        environmentRepository.rotateEnvironmentSecrets(environmentRef)
+        environmentRepository.rotateEnvironmentSecrets(reference)
 
-        val updatedEnv2 = environmentRepository.getEnvironment(environmentRef)
+        val updatedEnv2 = environmentRepository.getEnvironment(reference)
         assertThat(updatedEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(updatedEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(updatedEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")

@@ -28,9 +28,9 @@ class CaddyManagerTest {
         val service = "ingress-${UUID.randomUUID()}"
         val tempDir = initWorldReadableTempDir(service)
 
-        val reference = developmentEnvironment.environmentRef.toService(service)
-
-        val certificate = developmentEnvironment.createCertificate(developmentEnvironment.environmentRef.toService("backend-service1"))
+        val reference = developmentEnvironment.reference.toService(service)
+        val certificate =
+            developmentEnvironment.createCertificate(developmentEnvironment.reference.toService("backend-service1"))
 
         val issuingCaFile = File(tempDir, "ca.crt")
         val privateKeyFile = File(tempDir, "server.key")

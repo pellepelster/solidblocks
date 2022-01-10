@@ -1,6 +1,4 @@
 package de.solidblocks.base
 
-data class ServiceReference(val cloud: String, val environment: String, val service: String) {
-    fun toEnvironment() = EnvironmentReference(cloud, environment)
-    fun toCloud() = toEnvironment().toCloud()
-}
+open class ServiceReference(cloud: String, environment: String, tenant: String, val service: String) :
+    TenantReference(cloud, environment, tenant)

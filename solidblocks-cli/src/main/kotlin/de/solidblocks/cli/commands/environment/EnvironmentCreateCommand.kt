@@ -1,4 +1,4 @@
-package de.solidblocks.cli.commands.environments
+package de.solidblocks.cli.commands.environment
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required

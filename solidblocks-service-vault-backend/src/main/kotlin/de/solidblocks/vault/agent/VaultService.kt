@@ -77,7 +77,7 @@ class VaultService(val reference: ServiceReference, val serviceRepository: Servi
 
         provisioner.addResourceGroup(group)
 
-        val mount = VaultMountLookup(VaultConstants.kvMountName(reference.toEnvironment()))
+        val mount = VaultMountLookup(VaultConstants.kvMountName(reference))
 
         val kv = VaultKV(
             path = serviceConfigPath(reference),

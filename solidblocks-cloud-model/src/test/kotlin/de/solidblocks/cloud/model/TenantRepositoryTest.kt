@@ -15,17 +15,17 @@ class TenantRepositoryTest {
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
         val tenantRepository = TenantRepository(solidblocksDatabase.dsl, environmentRepository)
 
-        val tenantRef = TenantReference("cloud1", "env1", "tenant1")
+        val reference = TenantReference("cloud1", "env1", "tenant1")
 
-        cloudRepository.createCloud(tenantRef.toCloud(), "domain1")
-        environmentRepository.createEnvironment(tenantRef.toEnvironment())
+        cloudRepository.createCloud(reference, "domain1")
+        environmentRepository.createEnvironment(reference)
 
-        assertThat(tenantRepository.hasTenant(tenantRef)).isFalse
+        assertThat(tenantRepository.hasTenant(reference)).isFalse
 
-        assertThat(tenantRepository.createTenant(tenantRef)).isNotNull
-        assertThat(tenantRepository.hasTenant(tenantRef)).isTrue
+        assertThat(tenantRepository.createTenant(reference)).isNotNull
+        assertThat(tenantRepository.hasTenant(reference)).isTrue
 
-        val tenant = tenantRepository.getTenant(tenantRef)
+        val tenant = tenantRepository.getTenant(reference)
         assertThat(tenant.name).isEqualTo("tenant1")
     }
 }

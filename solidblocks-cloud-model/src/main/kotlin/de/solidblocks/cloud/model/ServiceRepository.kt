@@ -17,7 +17,7 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
     ): Boolean {
 
         val id = UUID.randomUUID()
-        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        val environment = environmentRepository.getEnvironment(reference)
 
         dsl.insertInto(SERVICES)
             .columns(
@@ -76,7 +76,7 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
     }
 
     fun getService(reference: ServiceReference) =
-        environmentRepository.getEnvironment(reference.toEnvironment()).let {
+        environmentRepository.getEnvironment(reference).let {
             listServices(reference.service, it).firstOrNull()
         }
 

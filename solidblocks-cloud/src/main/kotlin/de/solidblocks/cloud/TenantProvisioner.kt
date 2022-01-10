@@ -29,7 +29,7 @@ class TenantProvisioner(
     }
 
     fun bootstrap(): Boolean {
-        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        val environment = environmentRepository.getEnvironment(reference)
         val tenant = tenantRepository.getTenant(reference)
 
         createTenantModel(

@@ -37,7 +37,7 @@ class VaultRootClientProviderTest {
 
         val reference = EnvironmentReference(UUID.randomUUID().toString(), UUID.randomUUID().toString())
 
-        cloudRepository.createCloud(reference.toCloud(), "domain1", emptyList())
+        cloudRepository.createCloud(reference, "domain1", emptyList())
         environmentRepository.createEnvironment(reference)
 
         val vaultClientProvider =

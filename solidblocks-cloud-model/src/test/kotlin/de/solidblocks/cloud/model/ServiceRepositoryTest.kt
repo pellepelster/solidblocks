@@ -14,10 +14,10 @@ class ServiceRepositoryTest {
         val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
-        val service1Ref = ServiceReference("cloud1", "env1", "service1")
+        val service1Ref = ServiceReference("cloud1", "env1", "tenant1", "service1")
 
-        cloudRepository.createCloud(service1Ref.toCloud(), "domain1")
-        assertThat(environmentRepository.createEnvironment(service1Ref.toEnvironment())).isNotNull
+        cloudRepository.createCloud(service1Ref, "domain1")
+        assertThat(environmentRepository.createEnvironment(service1Ref)).isNotNull
 
         val serviceRepository = ServiceRepository(solidblocksDatabase.dsl, environmentRepository)
 
@@ -28,7 +28,7 @@ class ServiceRepositoryTest {
         val service1 = serviceRepository.getService(service1Ref)
         assertThat(service1!!.configValues).isEmpty()
 
-        val service2Ref = ServiceReference("cloud1", "env1", "service2")
+        val service2Ref = ServiceReference("cloud1", "env1", "tenant2", "service2")
 
         serviceRepository.createService(service2Ref, mapOf("foo" to "bar"))
         val service2 = serviceRepository.getService(service2Ref)

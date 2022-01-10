@@ -1,8 +1,9 @@
-package de.solidblocks.cli.commands
+package de.solidblocks.cli.commands.environment
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.cli.commands.BaseCloudDbCommand
 
 abstract class BaseCloudEnvironmentCommand(
     help: String = "",

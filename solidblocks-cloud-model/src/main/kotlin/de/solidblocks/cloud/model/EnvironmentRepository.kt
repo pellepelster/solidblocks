@@ -22,7 +22,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
         reference: EnvironmentReference,
         configValues: List<CloudConfigValue> = emptyList()
     ): EnvironmentEntity {
-        val cloud = cloudRepository.getCloud(reference.toCloud())
+        val cloud = cloudRepository.getCloud(reference)
 
         logger.info { "creating environment '$reference.environment' for cloud '$cloud'" }
         val id = UUID.randomUUID()
@@ -95,12 +95,12 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
     }
 
     fun getEnvironment(reference: EnvironmentReference): EnvironmentEntity {
-        val cloud = cloudRepository.getCloud(reference.toCloud())
+        val cloud = cloudRepository.getCloud(reference)
         return listEnvironments(cloud).first { it.name == reference.environment }
     }
 
     fun hasEnvironment(reference: EnvironmentReference): Boolean {
-        val cloud = cloudRepository.getCloud(reference.toCloud())
+        val cloud = cloudRepository.getCloud(reference)
         return listEnvironments(cloud).any { it.name == reference.environment }
     }
 

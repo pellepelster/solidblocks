@@ -21,10 +21,10 @@ class ServiceProvisioner(val provisioner: Provisioner) {
             serviceId(reference),
             setOf(
                 builder().path(
-                    "${kvMountName(reference.toEnvironment())}/data/solidblocks/cloud/providers/github"
+                    "${kvMountName(reference)}/data/solidblocks/cloud/providers/github"
                 ).capabilities(READ).build(),
 
-                builder().path("${pkiMountName(reference.toEnvironment())}/issue/${pkiMountName(reference.toEnvironment())}")
+                builder().path("${pkiMountName(reference)}/issue/${pkiMountName(reference)}")
                     .capabilities(UPDATE).build(),
 
                 builder().path("auth/token/renew-self").capabilities(UPDATE).build(),

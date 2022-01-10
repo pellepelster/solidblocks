@@ -1,8 +1,7 @@
-package de.solidblocks.cli.commands.environments
+package de.solidblocks.cli.commands.environment
 
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import mu.KotlinLogging
 import kotlin.system.exitProcess

@@ -46,7 +46,7 @@ class CloudManager(
         hetznerDnsApiToken: String
     ): Boolean {
 
-        if (!cloudRepository.hasCloud(reference.toCloud())) {
+        if (!cloudRepository.hasCloud(reference)) {
             logger.info { "cloud '${reference.cloud}' does not exist" }
             return false
         }

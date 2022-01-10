@@ -11,7 +11,7 @@ import java.util.*
 class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
 
     fun getTenant(reference: TenantReference): TenantEntity {
-        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        val environment = environmentRepository.getEnvironment(reference)
         return listTenants(reference.tenant, environment).first()
     }
 
@@ -44,7 +44,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
     fun createTenant(reference: TenantReference): TenantEntity {
 
         val id = UUID.randomUUID()
-        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        val environment = environmentRepository.getEnvironment(reference)
 
         dsl.insertInto(TENANTS)
             .columns(
@@ -59,7 +59,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
     }
 
     fun hasTenant(reference: TenantReference): Boolean {
-        val environment = environmentRepository.getEnvironment(reference.toEnvironment())
+        val environment = environmentRepository.getEnvironment(reference)
         return listTenants(reference.tenant, environment).isNotEmpty()
     }
 }

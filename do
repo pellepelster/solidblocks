@@ -5,7 +5,8 @@ set -eu
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
 function task_cli() {
-    "${DIR}/gradlew" solidblocks-cli:run --args="$*"
+    local db_args="--db-password $(pass solidblocks/integration-test/db_password) --db-path $(pwd)/integration-test"
+    "${DIR}/gradlew" solidblocks-cli:run --args="${db_args} $*"
 }
 
 function task_increment_version() {
@@ -44,13 +45,11 @@ function task_recreate_integration_test() {
   local db_dir="${DIR}/integration-test"
   rm -rf "${db_dir}"
 
-  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
-    cloud create \
+  task_cli cloud create \
     --cloud blcks \
     --domain blcks.de
 
-  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
-    environment create \
+  task_cli environment create \
       --cloud blcks \
       --environment dev \
       --hetzner-cloud-api-token-read-only "$(pass solidblocks/integration-test/hcloud_api_token_ro)" \
@@ -58,16 +57,14 @@ function task_recreate_integration_test() {
       --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
       --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
 
-  "${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
-    environment ssh-config \
+  task_cli environment ssh-config \
     --cloud blcks \
     --environment dev
 
-  #"${DIR}/do" cli --db-password "$(pass solidblocks/integration-test/db_password)" --db-path "${db_dir}" \
-  #  tenant create \
-  #  --cloud blcks \
-  #  --environment dev \
-  #  --tenant tenant1
+  task_cli tenant create \
+    --cloud blcks \
+    --environment dev \
+    --tenant tenant1
 
 }
 

@@ -23,7 +23,7 @@ class VaultManagerTest {
         val vaultManager = VaultManager(
             address = developmentEnvironment.vaultAddress,
             _token = developmentEnvironment.rootToken,
-            developmentEnvironment.environmentRef
+            developmentEnvironment.reference
         )
 
         assertThat(vaultManager.hasKv("test")).isFalse

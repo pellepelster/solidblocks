@@ -24,7 +24,7 @@ class VaultCertificateManagerTest {
         val vaultManager = VaultCertificateManager(
             address = developmentEnvironment.vaultAddress,
             token = rootToken,
-            developmentEnvironment.environmentRef.toService("service1"),
+            developmentEnvironment.reference.toService("service1"),
             "local.test",
             minCertificateLifetime = Duration.Companion.days(300)
         )

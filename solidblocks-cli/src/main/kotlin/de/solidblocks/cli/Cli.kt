@@ -3,16 +3,11 @@ package de.solidblocks.cli
 import com.github.ajalt.clikt.core.subcommands
 import de.solidblocks.cli.commands.cloud.CloudCommand
 import de.solidblocks.cli.commands.cloud.CloudCreateCommand
-import de.solidblocks.cli.commands.environments.EnvironmentBootstrapCommand
-import de.solidblocks.cli.commands.environments.EnvironmentCommand
-import de.solidblocks.cli.commands.environments.EnvironmentConfigCommand
-import de.solidblocks.cli.commands.environments.EnvironmentCreateCommand
-import de.solidblocks.cli.commands.environments.EnvironmentDestroyCommand
-import de.solidblocks.cli.commands.environments.EnvironmentRotateSecretsCommand
-import de.solidblocks.cli.commands.environments.EnvironmentSshConfigCommand
-import de.solidblocks.cli.commands.tenants.TenantBootstrapCommand
-import de.solidblocks.cli.commands.tenants.TenantCommand
-import de.solidblocks.cli.commands.tenants.TenantCreateCommand
+import de.solidblocks.cli.commands.environment.*
+import de.solidblocks.cli.commands.service.ServiceCommand
+import de.solidblocks.cli.commands.tenant.TenantBootstrapCommand
+import de.solidblocks.cli.commands.tenant.TenantCommand
+import de.solidblocks.cli.commands.tenant.TenantCreateCommand
 import de.solidblocks.cli.self.SolidBlocksCli
 
 fun main(args: Array<String>) {
@@ -36,7 +31,9 @@ fun main(args: Array<String>) {
             TenantCommand().subcommands(
                 TenantCreateCommand(),
                 TenantBootstrapCommand()
-            )
+            ),
+
+            ServiceCommand().subcommands()
         )
         .main(args)
 }

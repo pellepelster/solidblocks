@@ -1,6 +1,5 @@
-package de.solidblocks.cli.commands.environments
+package de.solidblocks.cli.commands.environment
 
-import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import mu.KotlinLogging
 import java.io.File
@@ -38,7 +37,7 @@ class EnvironmentSshConfigCommand :
         }
 
         val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
-        for (environment in context.cloudManager.listEnvironments(reference.toCloud())) {
+        for (environment in context.cloudManager.listEnvironments(reference)) {
 
             val environmentPath = Path(basePath.toString(), environment.name)
 

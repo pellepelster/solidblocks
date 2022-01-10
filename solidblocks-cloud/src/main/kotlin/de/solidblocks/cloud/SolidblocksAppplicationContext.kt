@@ -61,15 +61,13 @@ class SolidblocksAppplicationContext(
         )
     }
 
-    fun createTenantProvisioner(reference: TenantReference): TenantProvisioner {
-        return TenantProvisioner(
-            reference,
-            createProvisioner(reference.toEnvironment()),
-            environmentRepository,
-            tenantRepository,
-            Hetzner.createCloudApi(environmentRepository.getEnvironment(reference.toEnvironment()))
-        )
-    }
+    fun createTenantProvisioner(reference: TenantReference) = TenantProvisioner(
+        reference,
+        createProvisioner(reference),
+        environmentRepository,
+        tenantRepository,
+        Hetzner.createCloudApi(environmentRepository.getEnvironment(reference))
+    )
 
     fun createProvisioner(reference: EnvironmentReference): Provisioner {
 
@@ -98,7 +96,7 @@ class SolidblocksAppplicationContext(
     }
 
     fun verifyReference(reference: TenantReference): Boolean {
-        if (!verifyReference(reference.toEnvironment())) {
+        if (!verifyReference(reference)) {
             return false
         }
 
@@ -111,7 +109,7 @@ class SolidblocksAppplicationContext(
     }
 
     fun verifyReference(reference: EnvironmentReference): Boolean {
-        if (!verifyReference(reference.toCloud())) {
+        if (!verifyReference(reference)) {
             return false
         }
 

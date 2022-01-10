@@ -1,8 +1,7 @@
 package de.solidblocks.test
 
-import de.solidblocks.base.CloudReference
-import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.TenantReference
 import de.solidblocks.cloud.ServiceProvisioner
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createVaultConfig
@@ -28,9 +27,7 @@ class DevelopmentEnvironment {
 
     private val dockerEnvironment: DockerComposeContainer<*>
 
-    private val cloudRef = CloudReference("local")
-
-    val environmentRef = EnvironmentReference(cloudRef.cloud, "dev")
+    val reference = TenantReference("local", "dev", "tenant1")
 
     val rootDomain = "local.test"
 
@@ -62,7 +59,7 @@ class DevelopmentEnvironment {
 
     val environmentModel: EnvironmentEntity
         get() =
-            applicationContext.environmentRepository.getEnvironment(environmentRef)
+            applicationContext.environmentRepository.getEnvironment(reference)
 
     val minioCredentialProvider: () -> MinioCredentials
         get() = { MinioCredentials(minioAddress, "admin", "a9776029-2852-4d60-af81-621b91da711d") }
@@ -81,26 +78,26 @@ class DevelopmentEnvironment {
     }
 
     fun createCloud(): Boolean {
-        logger.info { "creating test env ($cloudRef/$environmentRef)" }
+        logger.info { "creating test env (${reference.cloud}/${reference.environment})" }
 
-        applicationContext.cloudManager.createCloud(cloudRef, rootDomain, true)
+        applicationContext.cloudManager.createCloud(reference, rootDomain, true)
         applicationContext.cloudManager.createEnvironment(
-            environmentRef,
+            reference,
             "<none>",
             "<none>",
             "<none>",
             "<none>"
         )
 
-        val environment = applicationContext.environmentRepository.getEnvironment(environmentRef)
-        val provisioner = applicationContext.createProvisioner(environmentRef)
+        val environment = applicationContext.environmentRepository.getEnvironment(reference)
+        val provisioner = applicationContext.createProvisioner(reference)
 
         provisioner.addResourceGroup(createVaultConfig(emptySet(), environment))
 
         val result = provisioner.apply()
 
         if (!result) {
-            logger.error { "provisioning test env ($cloudRef/$environment) failed" }
+            logger.error { "provisioning test env (${reference.cloud}/${reference.environment}) failed" }
             return false
         }
 
@@ -113,13 +110,13 @@ class DevelopmentEnvironment {
     fun createVaultService(service: String): Boolean {
 
         val service = VaultService(
-            environmentRef.toService(service),
+            reference.toService(service),
             applicationContext.serviceRepository
         )
 
         service.createService()
 
-        val provisioner = applicationContext.createProvisioner(environmentRef)
+        val provisioner = applicationContext.createProvisioner(reference)
         return service.bootstrapService(provisioner)
     }
 
@@ -129,12 +126,12 @@ class DevelopmentEnvironment {
     }
 
     fun createService(name: String): String {
-        val service = environmentRef.toService(name)
+        val service = reference.toService(name)
 
-        val provisioner = applicationContext.createProvisioner(environmentRef)
+        val provisioner = applicationContext.createProvisioner(reference)
         ServiceProvisioner(provisioner).createService(service)
 
-        val vaultManager = VaultManager(vaultAddress, rootToken, environmentRef)
+        val vaultManager = VaultManager(vaultAddress, rootToken, reference)
 
         return vaultManager.createServiceToken(service)
     }

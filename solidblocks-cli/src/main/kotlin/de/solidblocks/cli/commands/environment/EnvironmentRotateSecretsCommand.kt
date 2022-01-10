@@ -1,6 +1,5 @@
-package de.solidblocks.cli.commands.environments
+package de.solidblocks.cli.commands.environment
 
-import de.solidblocks.cli.commands.BaseCloudEnvironmentCommand
 import de.solidblocks.cloud.SolidblocksAppplicationContext
 import kotlin.system.exitProcess
 
