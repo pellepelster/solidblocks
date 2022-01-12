@@ -4,13 +4,12 @@ import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.CloudReference
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.EnvironmentRepository
-import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.base.TenantReference
+import de.solidblocks.cloud.model.*
 import de.solidblocks.cloud.model.ModelConstants.GITHUB_TOKEN_RO_KEY
-import de.solidblocks.cloud.model.ServiceRepository
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.createConfigValue
+import de.solidblocks.provisioner.hetzner.Hetzner
 import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_CLOUD_API_TOKEN_RO_KEY
 import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_CLOUD_API_TOKEN_RW_KEY
 import de.solidblocks.provisioner.hetzner.Hetzner.HETZNER_DNS_API_TOKEN_RW_KEY
@@ -22,18 +21,20 @@ import java.util.*
 class CloudManager(
     val cloudRepository: CloudRepository,
     val environmentRepository: EnvironmentRepository,
-    val serviceRepository: ServiceRepository
+    val tenantRepository: TenantRepository,
+    val serviceRepository: ServiceRepository,
+    val isDevelopment: Boolean
 ) {
 
     private val logger = KotlinLogging.logger {}
 
-    fun createCloud(reference: CloudReference, domain: String, development: Boolean = false): Boolean {
+    fun createCloud(reference: CloudReference, domain: String): Boolean {
         if (cloudRepository.hasCloud(reference)) {
             logger.info { "cloud '$reference.cloud' already exists" }
             return false
         }
 
-        cloudRepository.createCloud(reference, domain, development = development)
+        cloudRepository.createCloud(reference, domain, development = isDevelopment)
 
         return true
     }
@@ -65,6 +66,27 @@ class CloudManager(
                 createConfigValue(HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
             )
         )
+
+        return true
+    }
+
+    fun nextNetworkCidr(reference: TenantReference) = if (isDevelopment) {
+        "<none>"
+    } else {
+        val hetznerCloudApi = Hetzner.createCloudApi(environmentRepository.getEnvironment(reference))
+        val currentNetworks = hetznerCloudApi.allNetworks.networks.map { it.ipRange }
+
+        NetworkUtils.nextNetwork(currentNetworks.toSet())
+            ?: throw RuntimeException("could not determine next network CIDR")
+    }
+
+    fun createTenant(reference: TenantReference): Boolean {
+        if (tenantRepository.hasTenant(reference)) {
+            logger.info { "tenant '${reference.tenant}' already exists" }
+            return false
+        }
+
+        tenantRepository.createTenant(reference, nextNetworkCidr(reference))
 
         return true
     }

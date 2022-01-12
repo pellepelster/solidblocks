@@ -37,7 +37,7 @@ class InitializingVaultManagerTest {
         assertThat(initializingVaultManager.unseal(result)).isTrue
         assertThat(initializingVaultManager.isSealed()).isFalse
 
-        val vaultManager = VaultCertificateManager(
+        val vaultManager = ServiceVaultCertificateManager(
             vaultAddress(),
             result.rootToken,
             ServiceReference("cloud1", "env1", "tenant1", "service1"),

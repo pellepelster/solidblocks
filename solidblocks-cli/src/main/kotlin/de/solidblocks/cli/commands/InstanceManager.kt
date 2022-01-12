@@ -1,6 +1,6 @@
 package de.solidblocks.cli.commands
 
-import de.solidblocks.cli.commands.environment.RunningInstance
+import de.solidblocks.cli.commands.environment.agents.RunningInstance
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.entities.Role
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI

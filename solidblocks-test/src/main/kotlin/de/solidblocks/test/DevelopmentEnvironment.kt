@@ -4,14 +4,12 @@ import de.solidblocks.base.ServiceReference
 import de.solidblocks.base.TenantReference
 import de.solidblocks.cloud.ServiceProvisioner
 import de.solidblocks.cloud.SolidblocksAppplicationContext
-import de.solidblocks.cloud.VaultCloudConfiguration.createVaultConfig
+import de.solidblocks.cloud.VaultCloudConfiguration.createEnvironmentVaultConfig
+import de.solidblocks.cloud.VaultCloudConfiguration.createTenantVaultConfig
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.provisioner.minio.MinioCredentials
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
-import de.solidblocks.vault.Certificate
-import de.solidblocks.vault.VaultCertificateManager
-import de.solidblocks.vault.VaultConstants
-import de.solidblocks.vault.VaultManager
+import de.solidblocks.vault.*
 import de.solidblocks.vault.agent.VaultService
 import mu.KotlinLogging
 import org.testcontainers.containers.DockerComposeContainer
@@ -31,7 +29,7 @@ class DevelopmentEnvironment {
 
     val rootDomain = "local.test"
 
-    private val certificateManagers: MutableMap<ServiceReference, VaultCertificateManager> = mutableMapOf()
+    private val certificateManagers: MutableMap<ServiceReference, ServiceVaultCertificateManager> = mutableMapOf()
 
     private lateinit var applicationContext: SolidblocksAppplicationContext
 
@@ -66,7 +64,8 @@ class DevelopmentEnvironment {
 
     fun start() {
         dockerEnvironment.start()
-        applicationContext = SolidblocksAppplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider)
+        applicationContext =
+            SolidblocksAppplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
     }
 
     fun stop() {
@@ -80,7 +79,7 @@ class DevelopmentEnvironment {
     fun createCloud(): Boolean {
         logger.info { "creating test env (${reference.cloud}/${reference.environment})" }
 
-        applicationContext.cloudManager.createCloud(reference, rootDomain, true)
+        applicationContext.cloudManager.createCloud(reference, rootDomain)
         applicationContext.cloudManager.createEnvironment(
             reference,
             "<none>",
@@ -88,11 +87,14 @@ class DevelopmentEnvironment {
             "<none>",
             "<none>"
         )
+        applicationContext.cloudManager.createTenant(reference)
 
         val environment = applicationContext.environmentRepository.getEnvironment(reference)
+        val tenant = applicationContext.tenantRepository.getTenant(reference)
         val provisioner = applicationContext.createProvisioner(reference)
 
-        provisioner.addResourceGroup(createVaultConfig(emptySet(), environment))
+        provisioner.addResourceGroup(createEnvironmentVaultConfig(emptySet(), environment))
+        provisioner.addResourceGroup(createTenantVaultConfig(emptySet(), tenant))
 
         val result = provisioner.apply()
 
@@ -121,7 +123,8 @@ class DevelopmentEnvironment {
     }
 
     fun createCertificate(reference: ServiceReference): Certificate? {
-        certificateManagers[reference] = VaultCertificateManager(vaultAddress, rootToken, reference, rootDomain, true)
+        certificateManagers[reference] =
+            ServiceVaultCertificateManager(vaultAddress, rootToken, reference, rootDomain, true)
         return certificateManagers[reference]!!.issueCertificate()
     }
 
@@ -132,7 +135,7 @@ class DevelopmentEnvironment {
         provisioner.addResourceGroup(ServiceProvisioner.createVaultConfigResourceGroup(serviceRef))
         provisioner.apply()
 
-        val vaultManager = VaultManager(vaultAddress, rootToken, reference)
+        val vaultManager = EnvironmentVaultManager(vaultAddress, rootToken, reference)
         return vaultManager.createServiceToken(name, serviceRef)
     }
 }

@@ -1,5 +1,6 @@
 package de.solidblocks.agent.base
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.agent.base.api.AGENT_BASE_PATH
 import de.solidblocks.agent.base.api.TriggerShutdownRequest.TRIGGER_SHUTDOWN_PATH
 import de.solidblocks.agent.base.api.TriggerUpdateRequest
@@ -8,37 +9,41 @@ import de.solidblocks.agent.base.api.TriggerUpdateResponse
 import de.solidblocks.agent.base.api.VersionResponse
 import de.solidblocks.agent.base.api.VersionResponse.Companion.VERSION_PATH
 import de.solidblocks.base.solidblocksVersion
-import io.ktor.application.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.vertx.core.Vertx
+import io.vertx.ext.web.Router
 import mu.KotlinLogging
 import java.io.File
 import java.util.concurrent.CountDownLatch
 
-fun Route.versionRoutes(shutdown: CountDownLatch) {
+class BaseAgentRoutes(vertx: Vertx, router: Router, val shutdown: CountDownLatch) {
 
-    val logger = KotlinLogging.logger {}
+    val jackson = jacksonObjectMapper()
 
-    route(AGENT_BASE_PATH) {
+    private val logger = KotlinLogging.logger {}
 
-        get(VERSION_PATH) {
-            call.respond(VersionResponse(solidblocksVersion()))
+    init {
+        val subRouter = Router.router(vertx)
+        router.mountSubRouter(AGENT_BASE_PATH, subRouter)
+
+        subRouter.get(VERSION_PATH).handler {
+            it.response().setStatusCode(200).end(jackson.writeValueAsString(VersionResponse(solidblocksVersion())))
         }
 
-        post(TRIGGER_SHUTDOWN_PATH) {
-            call.respond(object {})
+        subRouter.post(TRIGGER_SHUTDOWN_PATH).handler {
+            it.response().setStatusCode(200).end()
             shutdown.countDown()
         }
 
-        post(TRIGGER_UPDATE_PATH) {
-            val updateRequest = call.receive<TriggerUpdateRequest>()
+        subRouter.post(TRIGGER_UPDATE_PATH).handler {
+
+            val request = jackson.readValue(it.bodyAsString, TriggerUpdateRequest::class.java)
+
             val workingDir = System.getProperty("user.dir")
             val file = File(workingDir, "update.version")
 
-            logger.info { "writing update trigger for version '${updateRequest.updateVersion}' to '$file'" }
-            file.writeText(updateRequest.updateVersion)
-            call.respond(TriggerUpdateResponse(true))
+            logger.info { "writing update trigger for version '${request.updateVersion}' to '$file'" }
+            file.writeText(request.updateVersion)
+            it.response().setStatusCode(200).end(jackson.writeValueAsString(TriggerUpdateResponse(true)))
             shutdown.countDown()
         }
     }

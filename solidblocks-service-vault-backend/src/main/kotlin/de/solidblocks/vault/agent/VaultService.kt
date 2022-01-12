@@ -72,7 +72,6 @@ class VaultService(val reference: ServiceReference, val serviceRepository: Servi
             )
         )
         group.addResource(policy)
-
         group.addResource(MinioPolicyAssignment(user, policy))
 
         provisioner.addResourceGroup(group)

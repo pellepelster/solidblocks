@@ -54,6 +54,8 @@ class VaultTokenManager(
                     } else {
                         logger.error { "renewing token failed" }
                     }
+                } else {
+                    logger.info { "token is still fresh" }
                 }
 
                 Thread.sleep(checkInterval.toMillis())

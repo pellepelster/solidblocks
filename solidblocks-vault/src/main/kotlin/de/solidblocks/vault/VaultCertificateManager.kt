@@ -1,12 +1,11 @@
 package de.solidblocks.vault
 
-import de.solidblocks.base.ServiceReference
-import de.solidblocks.vault.VaultConstants.domain
-import de.solidblocks.vault.VaultConstants.pkiMountName
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
 import org.springframework.vault.core.VaultTemplate
+import java.net.Inet4Address
+import java.net.NetworkInterface
 import java.net.URI
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
@@ -35,13 +34,14 @@ data class Certificate(val certificateRaw: String, val privateKeyRaw: String, va
 }
 
 @OptIn(ExperimentalTime::class)
-class VaultCertificateManager(
+abstract class BaseVaultCertificateManager(
     private val address: String,
     token: String,
-    val reference: ServiceReference,
-    val rootDomain: String,
-    val isDevelopment: Boolean = false,
-    val minCertificateLifetime: Duration = Duration.hours(2)
+    private val pkiMount: String,
+    private val commonName: String,
+    private val isDevelopment: Boolean = false,
+    private val minCertificateLifetime: Duration = Duration.days(2),
+    private val checkInterval: Duration = Duration.minutes(10)
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -73,21 +73,34 @@ class VaultCertificateManager(
                     certificate = issueCertificate()
                 }
 
-                Thread.sleep(5000)
+                Thread.sleep(checkInterval.inWholeMilliseconds)
             }
         }
     }
 
+    fun altNames() = if (isDevelopment) {
+        listOf("localhost").joinToString(",")
+    } else {
+        emptyList<String>().joinToString(",")
+    }
+
+    fun ipAddresses() =
+        NetworkInterface.getNetworkInterfaces().asSequence().flatMap { it.inetAddresses.asSequence() }.filterIsInstance(
+            Inet4Address::class.java
+        ).map { it.hostAddress }
+
     fun issueCertificate(): Certificate? {
         try {
-            logger.info { "issuing certificate" }
+            val path = "$pkiMount/issue/$pkiMount"
+
+            logger.info { "issuing certificate for '$commonName at '$path'" }
             val response = vaultTemplate.write(
-                "${
-                pkiMountName(reference)
-                }/issue/${pkiMountName(reference)}",
+                path,
                 mapOf(
-                    "common_name" to domain(reference, rootDomain),
-                    "alt_names" to listOf("localhost").joinToString(",")
+                    "common_name" to commonName,
+                    "alt_names" to altNames(),
+                    "ip_sans" to ipAddresses()
+
                 )
             )
 
@@ -104,7 +117,7 @@ class VaultCertificateManager(
             logger.info { "issued certificate '${result.public.serialNumber}' valid until ${result.public.notAfter}" }
             return result
         } catch (e: Exception) {
-            logger.error { "failed to issue certificate for service '${reference.service}'" }
+            logger.error(e) { "failed to issue certificate for service '$commonName'" }
         }
 
         return null

@@ -8,7 +8,6 @@ import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ModelConstants.defaultServiceLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
 import de.solidblocks.cloud.model.ModelConstants.serverName
-import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.cloud.model.ModelConstants.sshKeyName
 import de.solidblocks.cloud.model.ModelConstants.volumeName
 import de.solidblocks.cloud.model.entities.Role
@@ -21,19 +20,15 @@ import de.solidblocks.provisioner.hetzner.cloud.ssh.SshKeyLookup
 import de.solidblocks.provisioner.hetzner.cloud.volume.Volume
 import de.solidblocks.provisioner.hetzner.dns.zone.DnsZone
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
-import de.solidblocks.vault.VaultConstants.kvMountName
-import de.solidblocks.vault.VaultConstants.pkiMountName
-import de.solidblocks.vault.VaultManager
+import de.solidblocks.vault.EnvironmentVaultManager
+import de.solidblocks.vault.VaultConstants.servicePolicyName
 import mu.KotlinLogging
-import org.springframework.vault.support.Policy.BuiltinCapabilities.READ
-import org.springframework.vault.support.Policy.BuiltinCapabilities.UPDATE
-import org.springframework.vault.support.Policy.Rule.builder
 
 class ServiceProvisioner(
     val provisioner: Provisioner,
     val reference: ServiceReference,
     val environmentRepository: EnvironmentRepository,
-    val vaultManager: VaultManager
+    val vaultManager: EnvironmentVaultManager
 ) {
 
     companion object {
@@ -41,18 +36,8 @@ class ServiceProvisioner(
             val vaultConfigResourceGroup = ResourceGroup("vault_config")
 
             val servicePolicy = VaultPolicy(
-                serviceId(reference),
-                setOf(
-                    builder().path(
-                        "${kvMountName(reference)}/data/solidblocks/cloud/providers/github"
-                    ).capabilities(READ).build(),
-
-                    builder().path("${pkiMountName(reference)}/issue/${pkiMountName(reference)}")
-                        .capabilities(UPDATE).build(),
-
-                    builder().path("auth/token/renew-self").capabilities(UPDATE).build(),
-                    builder().path("/auth/token/lookup-self").capabilities(READ).build(),
-                ),
+                servicePolicyName(reference),
+                setOf(),
             )
             vaultConfigResourceGroup.addResource(servicePolicy)
 
@@ -86,15 +71,11 @@ class ServiceProvisioner(
 
         staticVariables.putAll(
             defaultCloudInitVariables(
-                name,
-                environment,
-                rootZone,
-                volume,
-                vaultManager.createServiceToken(name, reference)
-            ) +
-                mapOf(
-                    "solidblocks_service" to ConstantDataSource("solidblocks-helloworld-agent")
-                )
+                name, environment, rootZone, volume, vaultManager.createServiceToken(name, reference)
+            ) + mapOf(
+                "solidblocks_service" to ConstantDataSource("solidblocks-helloworld-agent"),
+                "solidblocks_tenant" to ConstantDataSource(reference.tenant)
+            )
         )
 
         val userData =

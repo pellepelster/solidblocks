@@ -96,4 +96,6 @@ object ModelConstants {
 
     const val SSH_IDENTITY_PUBLIC_KEY = "ssh_identity_public_key"
     const val SSH_IDENTITY_PRIVATE_KEY = "ssh_identity_private_key"
+
+    const val TENANT_NETWORK_CIDR_KEY = "network_cidr"
 }

@@ -23,6 +23,6 @@ class TenantCreateCommand :
             exitProcess(1)
         }
 
-        context.tenantRepository.createTenant(reference.toTenant(tenant))
+        context.cloudManager.createTenant(reference.toTenant(tenant))
     }
 }

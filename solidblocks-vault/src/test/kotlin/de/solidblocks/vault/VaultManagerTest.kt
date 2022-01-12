@@ -20,7 +20,7 @@ class VaultManagerTest {
     fun testStoreAndLoadData(developmentEnvironment: DevelopmentEnvironment) {
         logger.info { "local env vault at '${developmentEnvironment.vaultAddress}' with root token '${developmentEnvironment.rootToken}'" }
 
-        val vaultManager = VaultManager(
+        val vaultManager = EnvironmentVaultManager(
             developmentEnvironment.vaultAddress,
             developmentEnvironment.rootToken,
             developmentEnvironment.reference

@@ -1,50 +1,48 @@
 package de.solidblocks.vault
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.vault.VaultConstants.ENVIRONMENT_TOKEN_TTL
 import mu.KotlinLogging
-import org.springframework.vault.authentication.TokenAuthentication
-import org.springframework.vault.client.VaultEndpoint
 import org.springframework.vault.core.VaultTemplate
-import java.net.URI
+import org.springframework.vault.support.VaultTokenRequest
 
-data class VaultCredentials(val rootToken: String, val unsealKeys: List<String>)
+data class VaultWriteRequest(val data: Map<*, *>)
 
-abstract class BaseVaultManager(vaultTemplate: VaultTemplate) {
+abstract class BaseVaultManager<REFERENCE : EnvironmentReference>(vaultTemplate: VaultTemplate, val reference: REFERENCE) :
+    BaseVaultAdminManager(vaultTemplate) {
 
     private val logger = KotlinLogging.logger {}
 
-    protected val vaultTemplate: VaultTemplate
+    private val objectMapper = jacksonObjectMapper()
 
-    init {
-        this.vaultTemplate = vaultTemplate
-    }
+    abstract fun kvPath(path: String): String
 
-    companion object {
-        fun createVaultTemplate(address: String, token: String? = null): VaultTemplate {
-            return if (token != null) {
-                VaultTemplate(VaultEndpoint.from(URI.create(address)), TokenAuthentication(token))
-            } else {
-                VaultTemplate(VaultEndpoint.from(URI.create(address)))
-            }
-        }
-    }
-
-    constructor(address: String, token: String? = null) : this(createVaultTemplate(address, token))
-
-    fun isInitialized(): Boolean {
-        return vaultTemplate.opsForSys().isInitialized
-    }
-
-    fun isSealed(): Boolean {
-        return vaultTemplate.opsForSys().unsealStatus.isSealed
-    }
-
-    fun unseal(vaultCredentials: VaultCredentials): Boolean {
-        logger.info { "unsealing vault" }
-
-        vaultCredentials.unsealKeys.forEach {
-            vaultTemplate.opsForSys().unseal(it)
-        }
-
+    fun storeKv(path: String, data: Any): Boolean {
+        vaultTemplate.write(kvPath(path), VaultWriteRequest(objectMapper.convertValue(data, Map::class.java)))
         return true
+    }
+
+    fun <T> loadKv(path: String, clazz: Class<T>): T? {
+        val response = vaultTemplate.read(kvPath(path))
+
+        if (response == null || response.data == null) {
+            logger.error { "no data returned for '${kvPath(path)}'" }
+            return null
+        }
+
+        return jacksonObjectMapper().convertValue(response.data!!["data"] as Map<*, *>, clazz)
+    }
+
+    fun hasKv(path: String): Boolean {
+        return vaultTemplate.read(kvPath(path)) != null
+    }
+
+    fun createEnvironmentToken(name: String, policy: String): String {
+        val result = vaultTemplate.opsForToken().create(
+            VaultTokenRequest.builder().displayName(name).noParent(true).renewable(true).ttl(ENVIRONMENT_TOKEN_TTL)
+                .policies(listOf(policy)).build()
+        )
+        return result.token.token
     }
 }

@@ -12,7 +12,7 @@ services:
     networks:
       solidblocks-dev:
         aliases:
-          - backend-service1.dev.local.test
+          - backend-service1.tenant1.dev.local.test
 
 networks:
   solidblocks-dev:

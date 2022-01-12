@@ -3,7 +3,7 @@ package de.solidblocks.vault
 import mu.KotlinLogging
 import org.springframework.vault.support.VaultInitializationRequest
 
-class InitializingVaultManager(address: String) : BaseVaultManager(address) {
+class InitializingVaultManager(address: String) : BaseVaultAdminManager(address) {
 
     private val logger = KotlinLogging.logger {}
 

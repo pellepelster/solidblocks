@@ -33,9 +33,9 @@ import de.solidblocks.provisioner.hetzner.cloud.volume.VolumeRuntime
 import de.solidblocks.provisioner.hetzner.dns.record.DnsRecord
 import de.solidblocks.provisioner.hetzner.dns.zone.DnsZone
 import de.solidblocks.provisioner.hetzner.dns.zone.DnsZoneRuntime
-import de.solidblocks.vault.VaultConstants.BACKUP_POLICY_NAME
+import de.solidblocks.vault.EnvironmentVaultManager
+import de.solidblocks.vault.VaultConstants.backupPolicyName
 import de.solidblocks.vault.VaultConstants.vaultAddress
-import de.solidblocks.vault.VaultManager
 import de.solidblocks.vault.VaultRootClientProvider
 import mu.KotlinLogging
 
@@ -95,8 +95,7 @@ class EnvironmentProvisioner(
         logger.info { "creating/updating environment '${environment.reference.cloud}' for cloud '${environment.reference.environment}'" }
 
         createEnvironmentModel(
-            environment,
-            setOf(SshKey(sshKeyName(environment.reference), environment.sshSecrets.sshPublicKey))
+            environment, setOf(SshKey(sshKeyName(environment.reference), environment.sshSecrets.sshPublicKey))
         )
 
         return provisioner.apply()
@@ -111,8 +110,7 @@ class EnvironmentProvisioner(
         val networkResourceGroup = provisioner.createResourceGroup("network")
 
         val network = Network(
-            networkName(environment.reference), solidblocksNetwork(),
-            defaultEnvironmentLabels(environment.reference)
+            networkName(environment.reference), solidblocksNetwork(), defaultEnvironmentLabels(environment.reference)
         )
         networkResourceGroup.addResource(network)
 
@@ -124,7 +122,11 @@ class EnvironmentProvisioner(
         val vaultResourceGroup = provisioner.createResourceGroup("vault")
         createVaultServers(location, rootZone, vaultResourceGroup, network, subnet, sshKeys)
 
-        provisioner.addResourceGroup(VaultCloudConfiguration.createVaultConfig(setOf(vaultResourceGroup), environment))
+        provisioner.addResourceGroup(
+            VaultCloudConfiguration.createEnvironmentVaultConfig(
+                setOf(vaultResourceGroup), environment
+            )
+        )
 
         val backupResourceGroup = provisioner.createResourceGroup("backup", setOf(vaultResourceGroup))
         createBackupServers(location, rootZone, backupResourceGroup, network, subnet, sshKeys)
@@ -153,25 +155,17 @@ class EnvironmentProvisioner(
 
         staticVariables.putAll(
             defaultCloudInitVariables(
-                name,
-                environment,
-                rootZone,
-                volume,
-                "<none>",
-                floatingIp
+                name, environment, rootZone, volume, "<none>", floatingIp
             )
         )
 
         ephemeralVariables["vault_token"] = CustomDataSource {
-            val vaultManager = VaultManager(vaultRootClientProvider.createClient(), environment.reference)
+            val vaultManager = EnvironmentVaultManager(vaultRootClientProvider.createClient(), environment.reference)
             vaultManager.createEnvironmentToken(
                 vaultTokenName(
-                    name,
-                    environment.reference,
-                    location,
-                    index
+                    name, environment.reference, location, index
                 ),
-                BACKUP_POLICY_NAME
+                backupPolicyName(environment.reference)
             )
         }
 
@@ -193,10 +187,7 @@ class EnvironmentProvisioner(
 
         resourceGroup.addResource(
             DnsRecord(
-                name = "$name-$index.${environment.name}",
-                floatingIp = floatingIp,
-                dnsZone = rootZone,
-                server = server
+                name = "$name-$index.${environment.name}", floatingIp = floatingIp, dnsZone = rootZone, server = server
             )
         )
 
@@ -205,10 +196,7 @@ class EnvironmentProvisioner(
 
         resourceGroup.addResource(
             DnsRecord(
-                name = "$name.${environment.name}",
-                floatingIp = floatingIp,
-                dnsZone = rootZone,
-                server = server
+                name = "$name.${environment.name}", floatingIp = floatingIp, dnsZone = rootZone, server = server
             )
         )
     }
@@ -236,12 +224,7 @@ class EnvironmentProvisioner(
 
         staticVariables.putAll(
             defaultCloudInitVariables(
-                name,
-                environment,
-                rootZone,
-                volume,
-                "<none>",
-                floatingIp
+                name, environment, rootZone, volume, "<none>", floatingIp
             )
         )
 
@@ -263,10 +246,7 @@ class EnvironmentProvisioner(
 
         resourceGroup.addResource(
             DnsRecord(
-                name = "$name-$index.${environment.name}",
-                floatingIp = floatingIp,
-                dnsZone = rootZone,
-                server = server
+                name = "$name-$index.${environment.name}", floatingIp = floatingIp, dnsZone = rootZone, server = server
             )
         )
 
@@ -297,12 +277,11 @@ class EnvironmentProvisioner(
         val dnsHealthCheckPort: Int? = null,
     )
 
-    private fun createVolume(name: String, location: String, index: Int, role: Role) =
-        Volume(
-            name = volumeName(name, environment.reference, location, index),
-            location = location,
-            labels = defaultEnvironmentLabels(environment.reference, role)
-        )
+    private fun createVolume(name: String, location: String, index: Int, role: Role) = Volume(
+        name = volumeName(name, environment.reference, location, index),
+        location = location,
+        labels = defaultEnvironmentLabels(environment.reference, role)
+    )
 
     private fun createFloatingIp(
         name: String,

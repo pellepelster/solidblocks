@@ -1,9 +1,9 @@
-import Constants.ktorVersion
+import Constants.dockerRepository
 
 plugins {
     id("solidblocks.kotlin-application-conventions")
-    id("com.palantir.docker") version "0.32.0"
     id("solidblocks.kotlin-publish-conventions")
+    id("com.palantir.docker") version "0.32.0"
 }
 
 dependencies {
@@ -11,13 +11,6 @@ dependencies {
     implementation(project(":solidblocks-vault"))
     implementation(project(":solidblocks-cloud-model"))
     implementation(project(":solidblocks-agent-base"))
-
-    implementation("io.ktor:ktor-auth:$ktorVersion")
-    implementation("io.ktor:ktor-gson:$ktorVersion")
-    implementation("io.ktor:ktor-locations:$ktorVersion")
-    implementation("io.dropwizard.metrics:metrics-core:4.1.18")
-    implementation("io.ktor:ktor-metrics:$ktorVersion")
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
@@ -32,7 +25,7 @@ dependencies {
 
 docker {
     setDockerfile(file("$projectDir/docker/Dockerfile"))
-    name = "ghcr.io/pellepelster/solidblocks-ingress:$version"
+    name = "$dockerRepository/solidblocks-ingress:$version"
 }
 tasks.getByPath("check").dependsOn(tasks.getByPath("docker"))
 

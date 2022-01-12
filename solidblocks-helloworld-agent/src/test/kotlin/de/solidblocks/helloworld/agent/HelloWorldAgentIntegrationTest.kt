@@ -80,7 +80,8 @@ class HelloWorldAgentIntegrationTest {
         dockerEnvironment.start()
 
         val vaultToken = developmentEnvironment.createService("test")
-        val solidblocksDirectory = createSolidblocksDirectory(vaultToken, blueVersion, dockerEnvironment)
+        val solidblocksDirectory =
+            createSolidblocksDirectory(vaultToken, blueVersion, dockerEnvironment, developmentEnvironment)
 
         agentWrapperProcess = AgentWrapperProcess(solidblocksDirectory)
 
@@ -118,7 +119,8 @@ class HelloWorldAgentIntegrationTest {
         dockerEnvironment.start()
 
         val vaultToken = developmentEnvironment.createService("test")
-        val solidblocksDirectory = createSolidblocksDirectory(vaultToken, blueVersion, dockerEnvironment)
+        val solidblocksDirectory =
+            createSolidblocksDirectory(vaultToken, blueVersion, dockerEnvironment, developmentEnvironment)
 
         agentWrapperProcess = AgentWrapperProcess(solidblocksDirectory)
 
@@ -139,7 +141,8 @@ class HelloWorldAgentIntegrationTest {
     private fun createSolidblocksDirectory(
         vaultToken: String,
         solidblocksVersion: String,
-        dockerEnvironment: KDockerComposeContainer
+        dockerEnvironment: KDockerComposeContainer,
+        developmentEnvironment: DevelopmentEnvironment
     ): Path {
 
         val solidblocksDir = Files.createTempDirectory("helloworld")
@@ -151,6 +154,7 @@ class HelloWorldAgentIntegrationTest {
         initialEnvironmentFile.writeText(
             """
             VAULT_TOKEN=$vaultToken
+            VAULT_ADDR=${developmentEnvironment.vaultAddress}
             GITHUB_TOKEN_RO=5c94d4bc-7259-11ec-b135-fb9e235ad033
             GITHUB_USERNAME=pellepelster
             """.trimIndent()
@@ -166,10 +170,16 @@ class HelloWorldAgentIntegrationTest {
         val instanceEnvironmentFile = File(instanceDir, "environment")
         instanceEnvironmentFile.writeText(
             """
+            SOLIDBLOCKS_CLOUD=${developmentEnvironment.reference.cloud}
+            SOLIDBLOCKS_ENVIRONMENT=${developmentEnvironment.reference.environment}
+            SOLIDBLOCKS_TENANT=${developmentEnvironment.reference.tenant}
+            SOLIDBLOCKS_SERVICE=solidblocks-helloworld-agent
+            SOLIDBLOCKS_ROOT_DOMAIN=${developmentEnvironment.rootDomain}
             SOLIDBLOCKS_VERSION=$solidblocksVersion
             SOLIDBLOCKS_BOOTSTRAP_ADDRESS=http://localhost:${dockerEnvironment.getServicePort("bootstrap", 80)}
             """.trimIndent()
         )
+
         logger.info { "created environment instance file: '$instanceEnvironmentFile'" }
 
         val serviceDir = File(solidblocksDir.toFile(), "service")
@@ -178,7 +188,6 @@ class HelloWorldAgentIntegrationTest {
         val serviceEnvironmentFile = File(serviceDir, "environment")
         serviceEnvironmentFile.writeText(
             """
-            SOLIDBLOCKS_SERVICE=solidblocks-helloworld-agent
             """.trimIndent()
         )
         logger.info { "created service instance file: '$serviceEnvironmentFile'" }

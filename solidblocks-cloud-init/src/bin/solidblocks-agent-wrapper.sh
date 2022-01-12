@@ -70,6 +70,5 @@ if [[ ${SKIP_DOWNLOAD} -eq 0 ]]; then
 
 fi
 
-
 cd "${COMPONENT_ACTIVE}"
 exec "${COMPONENT_ACTIVE}/bin/${SOLIDBLOCKS_SERVICE}"

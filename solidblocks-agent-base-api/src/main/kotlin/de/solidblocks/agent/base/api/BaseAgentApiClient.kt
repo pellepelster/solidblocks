@@ -8,7 +8,7 @@ class BaseAgentApiClient(val address: String) {
     private val client: HttpClient = HttpClient(address)
 
     fun version() = try {
-        val currentVersion: HttpResponse<VersionResponse> = client.get("/v1/agent/version")
+        val currentVersion: HttpResponse<VersionResponse> = client.get("$AGENT_BASE_PATH/version")
         currentVersion.data
     } catch (e: Exception) {
         null

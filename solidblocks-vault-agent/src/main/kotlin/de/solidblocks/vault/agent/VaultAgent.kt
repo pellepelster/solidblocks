@@ -14,13 +14,13 @@ import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ModelConstants.SERVICE_LABEL_KEY
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
+import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
 import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.vault.InitializingVaultManager
+import de.solidblocks.vault.ServiceVaultManager
 import de.solidblocks.vault.VaultCredentials
-import de.solidblocks.vault.VaultManager
 import de.solidblocks.vault.agent.config.RaftStorage
 import de.solidblocks.vault.agent.config.Tcp
 import de.solidblocks.vault.agent.config.Vault
@@ -82,7 +82,7 @@ class VaultAgent(
 
     val dockerClient: DockerClient
 
-    val solidblocksVaultManager: VaultManager
+    val solidblocksVaultManager: ServiceVaultManager
 
     val retryConfig =
         RetryConfig.custom<Boolean>().retryOnResult { it == false }.maxAttempts(20).waitDuration(Duration.ofSeconds(1))
@@ -96,7 +96,7 @@ class VaultAgent(
             ZerodepDockerHttpClient.Builder().dockerHost(URI.create("unix:///var/run/docker.sock")).build()
         )
 
-        solidblocksVaultManager = VaultManager(
+        solidblocksVaultManager = ServiceVaultManager(
             solidblocksVaultAddress,
             solidblocksVaultToken,
             reference
@@ -104,7 +104,7 @@ class VaultAgent(
     }
 
     fun loadConfiguration(): VaultServiceConfiguration? {
-        val configPath = ModelConstants.serviceConfigPath(reference)
+        val configPath = serviceConfigPath(reference)
         return solidblocksVaultManager.loadKv(configPath, VaultServiceConfiguration::class.java).also {
             if (it == null) {
                 logger.error { "could not load service configuration from '$configPath'" }

@@ -3,7 +3,7 @@ package de.solidblocks.cli.commands
 import de.solidblocks.agent.base.api.BaseAgentApiClient
 import de.solidblocks.base.Waiter
 import de.solidblocks.base.solidblocksVersion
-import de.solidblocks.cli.commands.environment.RunningInstance
+import de.solidblocks.cli.commands.environment.agents.RunningInstance
 import de.solidblocks.cloud.model.entities.Role
 import mu.KotlinLogging
 
@@ -19,7 +19,7 @@ class AgentManager(private val instanceManager: InstanceManager) {
 
         logger.info { "calculating agent update" }
 
-        val agentsToUpdate = instanceManager.allServers().filter { it.role == Role.service }.map {
+        val agentsToUpdate = listAllAgents().map {
 
             val address = "http://${it.publicIp}:8080"
             val currentVersion = BaseAgentApiClient(address).version()
@@ -59,4 +59,6 @@ class AgentManager(private val instanceManager: InstanceManager) {
 
         return true
     }
+
+    fun listAllAgents() = instanceManager.allServers().filter { it.role == Role.service }
 }

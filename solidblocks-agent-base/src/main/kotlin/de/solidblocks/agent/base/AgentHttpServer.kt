@@ -1,41 +1,36 @@
 package de.solidblocks.agent.base
 
-import com.fasterxml.jackson.module.kotlin.kotlinModule
-import io.ktor.application.*
-import io.ktor.features.*
-import io.ktor.jackson.*
-import io.ktor.locations.*
-import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.vertx.core.Vertx
+import io.vertx.core.http.HttpServer
+import io.vertx.ext.web.Router
+import io.vertx.ext.web.handler.BodyHandler
+import mu.KotlinLogging
 import java.util.concurrent.CountDownLatch
 import kotlin.system.exitProcess
 
-class AgentHttpServer {
+class AgentHttpServer(port: Int = 8080) {
+
+    private val logger = KotlinLogging.logger {}
 
     val shutdown = CountDownLatch(1)
 
-    val server: NettyApplicationEngine
+    var server: HttpServer
 
     init {
-        server = embeddedServer(Netty, port = 8080) {
-            install(Locations)
-            install(ContentNegotiation) {
-                jackson {
-                    this.registerModule(kotlinModule())
-                }
-            }
+        val vertx = Vertx.vertx()
+        val router = Router.router(vertx)
+        router.route().handler(BodyHandler.create())
 
-            routing {
-                versionRoutes(shutdown)
-            }
-        }
+        server = vertx.createHttpServer()
+        BaseAgentRoutes(vertx, router, shutdown)
+
+        logger.info { "starting agent http api on port $port" }
+        server.requestHandler(router).listen(port)
     }
 
-    fun startAndWait() {
-        server.start(false)
+    fun waitForShutdown() {
         shutdown.await()
-        server.stop(4000, 4000)
+        server.close().result()
         exitProcess(7)
     }
 }

@@ -1,16 +1,14 @@
-package de.solidblocks.cli.commands.environment
+package de.solidblocks.cli.commands.environment.agents
 
 import de.solidblocks.cli.commands.AgentManager
 import de.solidblocks.cli.commands.InstanceManager
+import de.solidblocks.cli.commands.environment.BaseCloudEnvironmentCommand
 import de.solidblocks.cloud.SolidblocksAppplicationContext
-import de.solidblocks.cloud.model.entities.Role
 import de.solidblocks.provisioner.hetzner.Hetzner
 import kotlin.system.exitProcess
 
-data class RunningInstance(val name: String, val publicIp: String, val role: Role)
-
-class EnvironmentAgentsCommand :
-    BaseCloudEnvironmentCommand(name = "agents", help = "list all agents") {
+class AgentsListCommand :
+    BaseCloudEnvironmentCommand(name = "list", help = "list all agents") {
 
     override fun run() {
         val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
@@ -22,6 +20,8 @@ class EnvironmentAgentsCommand :
         val instanceManager = InstanceManager(Hetzner.createCloudApi(context.environmentRepository.getEnvironment(environmentRef)))
         val agentManager = AgentManager(instanceManager)
 
-        agentManager.updateAllAgents()
+        agentManager.listAllAgents().forEach {
+            println("${it.name} = ${it.publicIp}")
+        }
     }
 }

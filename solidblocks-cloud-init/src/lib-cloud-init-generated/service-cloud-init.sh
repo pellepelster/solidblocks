@@ -214,6 +214,9 @@ export $(xargs < "${SOLIDBLOCKS_DIR}/protected/environment")
 export SOLIDBLOCKS_SERVICE="[=solidblocks_service]"
 echo "SOLIDBLOCKS_SERVICE=${SOLIDBLOCKS_SERVICE}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
 
+export SOLIDBLOCKS_TENANT="[=solidblocks_tenant]"
+echo "SOLIDBLOCKS_TENANT=${SOLIDBLOCKS_TENANT}" >> "${SOLIDBLOCKS_DIR}/instance/environment"
+
 
 function service_agent_systemd_config() {
 cat <<-EOF
@@ -224,6 +227,8 @@ After=network-online.target
 
 [Service]
 User=${SOLIDBLOCKS_SERVICE}
+EnvironmentFile=-/solidblocks/instance/environment
+EnvironmentFile=-/solidblocks/protected/environment
 Restart=on-failure
 ExecStart=/solidblocks/bin/solidblocks-agent-wrapper.sh
 ExecReload=/bin/kill -HUP \$MAINPID

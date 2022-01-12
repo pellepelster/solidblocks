@@ -4,12 +4,15 @@ import com.github.ajalt.clikt.core.subcommands
 import de.solidblocks.cli.commands.cloud.CloudCommand
 import de.solidblocks.cli.commands.cloud.CloudCreateCommand
 import de.solidblocks.cli.commands.environment.*
+import de.solidblocks.cli.commands.environment.agents.AgentsListCommand
+import de.solidblocks.cli.commands.environment.agents.AgentsUpdateCommand
 import de.solidblocks.cli.commands.service.ServiceBootstrapCommand
 import de.solidblocks.cli.commands.service.ServiceCommand
 import de.solidblocks.cli.commands.service.ServiceCreateCommand
 import de.solidblocks.cli.commands.tenant.TenantBootstrapCommand
 import de.solidblocks.cli.commands.tenant.TenantCommand
 import de.solidblocks.cli.commands.tenant.TenantCreateCommand
+import de.solidblocks.cli.commands.tenant.TenantDestroyCommand
 import de.solidblocks.cli.self.SolidBlocksCli
 
 fun main(args: Array<String>) {
@@ -28,12 +31,13 @@ fun main(args: Array<String>) {
                 EnvironmentDestroyCommand(),
                 EnvironmentRotateSecretsCommand(),
                 EnvironmentSshConfigCommand(),
-                EnvironmentAgentsCommand()
+                EnvironmentAgentsCommand().subcommands(AgentsUpdateCommand(), AgentsListCommand())
             ),
 
             TenantCommand().subcommands(
                 TenantCreateCommand(),
-                TenantBootstrapCommand()
+                TenantBootstrapCommand(),
+                TenantDestroyCommand()
             ),
 
             ServiceCommand().subcommands(

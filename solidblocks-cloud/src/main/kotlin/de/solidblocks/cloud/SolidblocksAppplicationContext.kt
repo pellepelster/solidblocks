@@ -9,14 +9,15 @@ import de.solidblocks.provisioner.hetzner.Hetzner
 import de.solidblocks.provisioner.minio.Minio
 import de.solidblocks.provisioner.minio.MinioCredentials
 import de.solidblocks.provisioner.vault.Vault
-import de.solidblocks.vault.VaultManager
+import de.solidblocks.vault.EnvironmentVaultManager
 import de.solidblocks.vault.VaultRootClientProvider
 import mu.KotlinLogging
 
 class SolidblocksAppplicationContext(
     jdbcUrl: String,
     private val vaultAddressOverride: String? = null,
-    private val minioCredentialsProvider: (() -> MinioCredentials)? = null
+    private val minioCredentialsProvider: (() -> MinioCredentials)? = null,
+    isDevelopmenmt: Boolean = false
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -38,7 +39,13 @@ class SolidblocksAppplicationContext(
         tenantRepository = TenantRepository(database.dsl, environmentRepository)
         serviceRepository = ServiceRepository(database.dsl, environmentRepository)
 
-        cloudManager = CloudManager(cloudRepository, environmentRepository, serviceRepository)
+        cloudManager = CloudManager(
+            cloudRepository,
+            environmentRepository,
+            tenantRepository,
+            serviceRepository,
+            isDevelopmenmt
+        )
     }
 
     fun vaultRootClientProvider(reference: EnvironmentReference): VaultRootClientProvider {
@@ -60,8 +67,7 @@ class SolidblocksAppplicationContext(
         reference,
         createProvisioner(reference),
         environmentRepository,
-        tenantRepository,
-        Hetzner.createCloudApi(environmentRepository.getEnvironment(reference))
+        tenantRepository
     )
 
     fun createServiceProvisioner(reference: ServiceReference) =
@@ -69,7 +75,7 @@ class SolidblocksAppplicationContext(
             createProvisioner(reference),
             reference,
             environmentRepository,
-            VaultManager(vaultRootClientProvider(reference).createClient(), reference)
+            EnvironmentVaultManager(vaultRootClientProvider(reference).createClient(), reference)
         )
 
     fun createProvisioner(reference: EnvironmentReference): Provisioner {

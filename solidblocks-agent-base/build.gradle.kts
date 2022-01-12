@@ -1,5 +1,3 @@
-import Constants.ktorVersion
-
 plugins {
     id("solidblocks.kotlin-library-conventions")
 }
@@ -10,13 +8,8 @@ dependencies {
     implementation(project(":solidblocks-cloud-model"))
     implementation(project(":solidblocks-agent-base-api"))
 
-    implementation("io.ktor:ktor-auth:$ktorVersion")
-    implementation("io.ktor:ktor-gson:$ktorVersion")
-    implementation("io.ktor:ktor-locations:$ktorVersion")
-    implementation("io.dropwizard.metrics:metrics-core:4.1.18")
-    implementation("io.ktor:ktor-metrics:$ktorVersion")
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
+    implementation("io.vertx:vertx-web:4.2.3")
+    implementation("io.vertx:vertx-lang-kotlin:4.2.3")
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 

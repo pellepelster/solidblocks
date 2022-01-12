@@ -7,13 +7,7 @@ import de.solidblocks.api.resources.allChangedOrMissingResources
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.InfrastructureProvisioner
 import de.solidblocks.base.ProvisionerRegistry
-import de.solidblocks.core.IInfrastructureResource
-import de.solidblocks.core.IResource
-import de.solidblocks.core.IResourceLookup
-import de.solidblocks.core.Result
-import de.solidblocks.core.getAllInfraParents
-import de.solidblocks.core.getInfraParents
-import de.solidblocks.core.logName
+import de.solidblocks.core.*
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIp
 import de.solidblocks.provisioner.hetzner.cloud.floatingip.FloatingIpAssignment
 import de.solidblocks.provisioner.hetzner.cloud.network.Network
@@ -79,8 +73,10 @@ class Provisioner(
             val diffs = diffForResourceGroup(resourceGroup, allDiffs) ?: return false
             logger.info {
                 "resource group '${resourceGroup.name}', changed resources: ${
-                diffs.filter { it.hasChanges() }.joinToString(", ") { it.toString() }
-                }, missing resources: ${diffs.filter { it.isMissing() }.joinToString(", ") { it.resource.name }}"
+                diffs.filter { it.hasChanges() }.joinToString(", ") { it.toString() }.ifEmpty { "<none>" }
+                }, missing resources: ${
+                diffs.filter { it.isMissing() }.joinToString(", ") { it.resource.name }.ifEmpty { "<none>" }
+                }"
             }
 
             allDiffs[resourceGroup] = diffs
@@ -233,6 +229,17 @@ class Provisioner(
         }
 
         return result
+    }
+
+    fun destroy(destroyVolumes: Boolean): Boolean {
+        this.resourceGroups.forEach {
+            it.resources.forEach {
+                logger.info { "destroying ${it.logName()}" }
+                // this.provisionerRegistry.provisioner(it)
+            }
+        }
+
+        return true
     }
 
     fun destroyAll(destroyVolumes: Boolean): Boolean {

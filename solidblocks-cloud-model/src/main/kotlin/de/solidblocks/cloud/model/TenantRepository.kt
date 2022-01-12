@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.model
 
 import de.solidblocks.base.TenantReference
+import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -36,12 +37,19 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
                 TenantEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
-                    environment = environment
+                    environment = environment,
+                    configValues = it.value.map {
+                        CloudConfigValue(
+                            it.getValue(CONFIGURATION_VALUES.NAME)!!,
+                            it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
+                            it.getValue(CONFIGURATION_VALUES.VERSION)!!
+                        )
+                    }
                 )
             }
     }
 
-    fun createTenant(reference: TenantReference): TenantEntity {
+    fun createTenant(reference: TenantReference, networkCidr: String): TenantEntity {
 
         val id = UUID.randomUUID()
         val environment = environmentRepository.getEnvironment(reference)
@@ -54,6 +62,8 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
                 TENANTS.ENVRIONMENT,
             )
             .values(id, reference.tenant, false, environment.id).execute()
+
+        setConfiguration(TenantId(id), ModelConstants.TENANT_NETWORK_CIDR_KEY, networkCidr)
 
         return getTenant(reference)
     }

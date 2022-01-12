@@ -22,7 +22,7 @@ class TenantRepositoryTest {
 
         assertThat(tenantRepository.hasTenant(reference)).isFalse
 
-        assertThat(tenantRepository.createTenant(reference)).isNotNull
+        assertThat(tenantRepository.createTenant(reference, "10.0.0.0/16")).isNotNull
         assertThat(tenantRepository.hasTenant(reference)).isTrue
 
         val tenant = tenantRepository.getTenant(reference)

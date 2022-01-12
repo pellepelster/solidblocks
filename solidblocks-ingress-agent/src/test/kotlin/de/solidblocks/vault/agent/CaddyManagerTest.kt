@@ -66,7 +66,7 @@ class CaddyManagerTest {
             }
         dockerEnvironment.start()
 
-        caddyManager.createReverseProxy("backend-service1.dev.local.test:443")
+        caddyManager.createReverseProxy("backend-service1.tenant1.dev.local.test:443")
 
         val request = Request.Builder()
             .url("http://localhost:${caddyManager.httpPort()}/test.txt")
