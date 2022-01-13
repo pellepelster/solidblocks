@@ -85,7 +85,11 @@ class HelloWorldAgentIntegrationTest {
 
         agentWrapperProcess = AgentWrapperProcess(solidblocksDirectory)
 
-        val client = BaseAgentApiClient("http://localhost:8080")
+        val client = BaseAgentApiClient(
+            "https://localhost:8080",
+            developmentEnvironment.environmentContext().clientCertificateManager("test"),
+            developmentEnvironment.tenantContext().serverCaCertificateManager()
+        )
 
         await ignoreException (ConnectException::class) until {
             client.version() != null
@@ -124,7 +128,11 @@ class HelloWorldAgentIntegrationTest {
 
         agentWrapperProcess = AgentWrapperProcess(solidblocksDirectory)
 
-        val client = BaseAgentApiClient("http://localhost:8080")
+        val client = BaseAgentApiClient(
+            "https://localhost:8080",
+            developmentEnvironment.environmentContext().clientCertificateManager("test"),
+            developmentEnvironment.tenantContext().serverCaCertificateManager()
+        )
 
         await ignoreException (ConnectException::class) until {
             client.version() != null
@@ -170,6 +178,7 @@ class HelloWorldAgentIntegrationTest {
         val instanceEnvironmentFile = File(instanceDir, "environment")
         instanceEnvironmentFile.writeText(
             """
+            SOLIDBLOCKS_CERTIFICATE_ALT_NAMES=localhost
             SOLIDBLOCKS_CLOUD=${developmentEnvironment.reference.cloud}
             SOLIDBLOCKS_ENVIRONMENT=${developmentEnvironment.reference.environment}
             SOLIDBLOCKS_TENANT=${developmentEnvironment.reference.tenant}

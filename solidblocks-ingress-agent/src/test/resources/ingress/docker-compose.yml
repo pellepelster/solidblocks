@@ -9,6 +9,7 @@ services:
     environment:
       - SERVER_CERT
       - SERVER_KEY
+      - CLIENT_CA_CERT
     networks:
       solidblocks-dev:
         aliases:

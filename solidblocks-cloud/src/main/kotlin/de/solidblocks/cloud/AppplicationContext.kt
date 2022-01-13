@@ -13,11 +13,11 @@ import de.solidblocks.vault.EnvironmentVaultManager
 import de.solidblocks.vault.VaultRootClientProvider
 import mu.KotlinLogging
 
-class SolidblocksAppplicationContext(
+class AppplicationContext(
     jdbcUrl: String,
     private val vaultAddressOverride: String? = null,
     private val minioCredentialsProvider: (() -> MinioCredentials)? = null,
-    isDevelopmenmt: Boolean = false
+    isDevelopment: Boolean = false
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -44,7 +44,7 @@ class SolidblocksAppplicationContext(
             environmentRepository,
             tenantRepository,
             serviceRepository,
-            isDevelopmenmt
+            isDevelopment
         )
     }
 
@@ -138,4 +138,6 @@ class SolidblocksAppplicationContext(
 
         return true
     }
+
+    fun createEnvironmentContext(reference: EnvironmentReference) = EnvironmentApplicationContext(reference, environmentRepository)
 }

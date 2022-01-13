@@ -1,4 +1,4 @@
-package de.solidblocks.vault
+package de.solidblocks.vault.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty

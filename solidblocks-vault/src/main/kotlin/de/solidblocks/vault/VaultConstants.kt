@@ -15,8 +15,6 @@ object VaultConstants {
 
     const val UNSEAL_KEY_PREFIX = "vault-unseal-key"
 
-    const val ROOT_TOKEN_KEY = "vault-root-token"
-
     val SERVICE_TOKEN_TTL = Duration.ofDays(7)
 
     val ENVIRONMENT_TOKEN_TTL = SERVICE_TOKEN_TTL
@@ -25,24 +23,37 @@ object VaultConstants {
 
     fun backupPolicyName(reference: EnvironmentReference) = "${environmentId(reference)}-backup"
 
-    fun environentBasePolicyName(reference: EnvironmentReference) = "${environmentId(reference)}-base-service"
-
-    fun tenantBaseServicePolicyName(reference: TenantReference) = "${tenantId(reference)}-base-service"
-
     fun servicePolicyName(reference: ServiceReference) = serviceId(reference)
 
-    fun pkiMountName(reference: EnvironmentReference) = "${environmentId(reference)}-pki"
+    fun environmentServerPkiMountName(reference: EnvironmentReference) = "${environmentId(reference)}-pki-server"
 
-    fun pkiMountName(reference: TenantReference) = "${tenantId(reference)}-pki"
+    fun environmentClientPkiMountName(reference: EnvironmentReference) = "${environmentId(reference)}-pki-client"
 
-    fun domain(reference: ServiceReference, rootDomain: String) =
+    fun tenantServerPkiMountName(reference: TenantReference) = "${tenantId(reference)}-pki-server"
+
+    fun tenantClientPkiMountName(reference: TenantReference) = "${tenantId(reference)}-pki-client"
+
+    fun serversDomain(reference: ServiceReference, rootDomain: String) =
         "${reference.service}.${reference.tenant}.${reference.environment}.$rootDomain"
 
-    fun domain(reference: EnvironmentReference, rootDomain: String) =
+    fun serversDomain(reference: EnvironmentReference, rootDomain: String) =
         "${reference.environment}.$rootDomain"
 
-    fun domain(reference: EnvironmentServiceReference, rootDomain: String) =
+    fun serversDomain(reference: EnvironmentServiceReference, rootDomain: String) =
         "${reference.service}.${reference.environment}.$rootDomain"
+
+    fun serversDomain(reference: TenantReference, rootDomain: String) =
+        "${reference.tenant}.${reference.environment}.$rootDomain"
+
+    fun environmentHostFQDN(hostname: String, reference: EnvironmentReference, rootDomain: String) =
+        "$hostname.${serversDomain(reference, rootDomain)}"
+
+    fun tenantHostFQDN(hostname: String, reference: TenantReference, rootDomain: String) =
+        "$hostname.${serversDomain(reference, rootDomain)}"
+
+    fun clientsDomain() = "clients"
+
+    fun clientFQDN(client: String) = "$client.${clientsDomain()}"
 
     fun kvMountName(reference: EnvironmentReference) = "${environmentId(reference)}-kv"
 
@@ -57,16 +68,32 @@ object VaultConstants {
     fun userSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-user-ssh"
 
     fun vaultAddress(environment: EnvironmentEntity) =
-        "https://vault.${domain(environment.reference, environment.cloud.rootDomain)}:8200"
+        "https://${environmentHostFQDN("vault", environment.reference, environment.cloud.rootDomain)}:8200"
 
     fun providersGithubPolicy(reference: EnvironmentReference) = Policy.Rule.builder().path(
         "${kvMountName(reference)}/data/solidblocks/cloud/providers/github"
     ).capabilities(Policy.BuiltinCapabilities.READ).build()
 
-    fun tokenSelfRenewalPolicies() = setOf(
+    fun tokenSelfRenewalPolicy() =
         Policy.Rule.builder().path("/auth/token/renew-self").capabilities(Policy.BuiltinCapabilities.UPDATE)
-            .build(),
+            .build()
+
+    fun tokenSelfLookupPolicy() =
         Policy.Rule.builder().path("/auth/token/lookup-self").capabilities(Policy.BuiltinCapabilities.READ)
-            .build(),
-    )
+            .build()
+
+    fun issueEnvironmentServerCertificatesPolicy(reference: EnvironmentReference) =
+        Policy.Rule.builder()
+            .path("${environmentServerPkiMountName(reference)}/issue/${environmentServerPkiMountName(reference)}")
+            .capabilities(Policy.BuiltinCapabilities.UPDATE).build()
+
+    fun issueTenantServerCertificatesPolicy(reference: TenantReference) =
+        Policy.Rule.builder()
+            .path("${tenantServerPkiMountName(reference)}/issue/${tenantServerPkiMountName(reference)}")
+            .capabilities(Policy.BuiltinCapabilities.UPDATE).build()
+
+    fun readEnvironmentClientCaCertificatePolicy(reference: TenantReference) =
+        Policy.Rule.builder()
+            .path("${environmentClientPkiMountName(reference)}/cert/ca")
+            .capabilities(Policy.BuiltinCapabilities.READ).build()
 }

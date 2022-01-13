@@ -10,6 +10,8 @@ data class PkiBackendRole(
     val key_type: String?,
     val key_bits: Int?,
     val max_ttl: String?,
+    val server_flag: Boolean?,
+    val client_flag: Boolean?,
     val ttl: String?,
     val generate_lease: Boolean?,
 )

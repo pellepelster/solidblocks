@@ -1,5 +1,6 @@
 package de.solidblocks.vault
 
+import de.solidblocks.vault.model.VaultCredentials
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint

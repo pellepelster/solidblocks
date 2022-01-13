@@ -5,8 +5,10 @@ plugins {
 dependencies {
 
     api(project(":solidblocks-base"))
+    implementation(project(":solidblocks-cloud"))
     implementation(project(":solidblocks-cloud-model"))
     implementation(project(":solidblocks-agent-base-api"))
+    implementation(project(":solidblocks-vault"))
 
     implementation("io.vertx:vertx-web:4.2.3")
     implementation("io.vertx:vertx-lang-kotlin:4.2.3")

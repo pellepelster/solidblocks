@@ -38,7 +38,7 @@ function task_helloworld_agent_integration_test() {
 
 function task_test() {
   task_helloworld_agent_integration_test
-  "${DIR}/gradlew" clean ktFormat check
+  "${DIR}/gradlew" clean docker ktFormat check
 }
 
 function task_recreate_integration_test() {

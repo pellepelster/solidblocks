@@ -28,38 +28,52 @@ class CaddyManagerTest {
         val service = "ingress-${UUID.randomUUID()}"
         val tempDir = initWorldReadableTempDir(service)
 
-        val reference = developmentEnvironment.reference.toService(service)
-        val certificate =
-            developmentEnvironment.createCertificate(developmentEnvironment.reference.toService("backend-service1"))
+        val reference = developmentEnvironment.reference.toService("backend-service1")
 
-        val issuingCaFile = File(tempDir, "ca.crt")
-        val privateKeyFile = File(tempDir, "server.key")
-        val certificateFile = File(tempDir, "server.cert")
+        val tenantContext = developmentEnvironment.tenantContext()
+        val environmentContext = developmentEnvironment.environmentContext()
 
-        logger.info { "writing ca file to '$issuingCaFile'" }
-        issuingCaFile.writeText(certificate!!.issuingCaRaw)
+        val environmentClientCertificateManager = environmentContext.clientCertificateManager("client1")
+        val environmentClientCACertificateManager = environmentContext.clientCaCertificateManager()
 
-        logger.info { "writing private key to '$privateKeyFile'" }
-        privateKeyFile.writeText(certificate.privateKeyRaw)
+        val tenantCACertificateManager = tenantContext.serverCaCertificateManager()
 
-        logger.info { "writing certificate to '$certificateFile'" }
-        certificateFile.writeText(certificate.certificateRaw)
+        val clientCertificate = environmentClientCertificateManager.waitForCertificate()
+
+        val serverCaFile = File(tempDir, "ca.crt")
+        val clientPrivateKeyFile = File(tempDir, "server.key")
+        val clientCertificateFile = File(tempDir, "server.cert")
+
+        logger.info { "writing ca file to '$serverCaFile'" }
+        serverCaFile.writeText(tenantCACertificateManager.waitForCaCertificate().caCertificateRaw)
+
+        logger.info { "writing private key to '$clientPrivateKeyFile'" }
+        clientPrivateKeyFile.writeText(clientCertificate.privateKeyRaw)
+
+        logger.info { "writing certificate to '$clientCertificateFile'" }
+        clientCertificateFile.writeText(clientCertificate.certificateRaw)
 
         val caddyManager = CaddyManager(
             reference,
             tempDir,
-            issuingCaFile,
+            serverCaFile,
+            clientKey = clientPrivateKeyFile,
+            clientCert = clientCertificateFile,
             network = "solidblocks-dev"
         )
         assertThat(caddyManager.start()).isTrue
+
+        val tenantCertificateManager = tenantContext.serverCertificateManager("backend-service1")
+        val tenantCertificate = tenantCertificateManager.waitForCertificate()
 
         val dockerEnvironment = KDockerComposeContainer(File("src/test/resources/ingress/docker-compose.yml"))
             .apply {
                 withBuild(true)
                     .withEnv(
                         mapOf(
-                            "SERVER_CERT" to certificate.certificateRaw,
-                            "SERVER_KEY" to certificate.privateKeyRaw,
+                            "SERVER_CERT" to tenantCertificate.certificateRaw,
+                            "SERVER_KEY" to tenantCertificate.privateKeyRaw,
+                            "CLIENT_CA_CERT" to environmentClientCACertificateManager.waitForCaCertificate().caCertificateRaw,
                         )
                     )
                 withExposedService("backend-service1", 443)

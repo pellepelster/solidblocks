@@ -20,10 +20,10 @@ import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
 import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.vault.InitializingVaultManager
 import de.solidblocks.vault.ServiceVaultManager
-import de.solidblocks.vault.VaultCredentials
 import de.solidblocks.vault.agent.config.RaftStorage
 import de.solidblocks.vault.agent.config.Tcp
 import de.solidblocks.vault.agent.config.Vault
+import de.solidblocks.vault.model.VaultCredentials
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import io.minio.GetObjectArgs

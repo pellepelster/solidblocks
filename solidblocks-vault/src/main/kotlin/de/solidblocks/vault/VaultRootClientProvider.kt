@@ -2,8 +2,8 @@ package de.solidblocks.vault
 
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.cloud.model.EnvironmentRepository
-import de.solidblocks.vault.VaultConstants.ROOT_TOKEN_KEY
 import de.solidblocks.vault.VaultConstants.UNSEAL_KEY_PREFIX
+import de.solidblocks.vault.model.VaultCredentials
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
@@ -34,11 +34,11 @@ class VaultRootClientProvider(
     private fun getVaultCredentials(): VaultCredentials {
         val environment = environmentRepository.getEnvironment(reference)
 
-        val rootToken = environment.configValues.firstOrNull { it.name == ROOT_TOKEN_KEY }
+        val rootToken = environment.rootToken
             ?: throw RuntimeException("vault at '${vaultAddress()}' is initialized, but no vault root token found for cloud '${reference.cloud}'")
         val unsealKeys = environment.configValues.filter { it.name.startsWith(UNSEAL_KEY_PREFIX) }.map { it.value }
 
-        return VaultCredentials(rootToken.value, unsealKeys)
+        return VaultCredentials(rootToken, unsealKeys)
     }
 
     fun createClient(): VaultTemplate {
@@ -63,7 +63,7 @@ class VaultRootClientProvider(
                 reference,
                 result.unsealKeys.mapIndexed { i, key -> "$UNSEAL_KEY_PREFIX-$i" to key }.toMap()
             )
-            environmentRepository.updateEnvironment(reference, ROOT_TOKEN_KEY, result.rootToken)
+            environmentRepository.updateRootToken(reference, result.rootToken)
         }
 
         val credentials = getVaultCredentials()

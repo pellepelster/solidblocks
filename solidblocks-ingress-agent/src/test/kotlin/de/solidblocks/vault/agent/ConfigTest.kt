@@ -53,6 +53,8 @@ class ConfigTest {
                                 "protocol": "http",
                                 "compression": true,
                                 "tls": {
+                                  "client_certificate_file":  "/tmp/client.crt",
+                                  "client_certificate_key_file": "/tmp/client.key",
                                   "root_ca_pem_files": [
                                     "/tmp/ca.crt"
                                   ]
@@ -92,6 +94,8 @@ class ConfigTest {
                                                     Handler(
                                                         transport = Transport(
                                                             tls = Tls(
+                                                                clientCertificateFile = "/tmp/client.crt",
+                                                                clientCertificateKeyFile = "/tmp/client.key",
                                                                 rootCAPemFiles = listOf(
                                                                     "/tmp/ca.crt"
                                                                 )

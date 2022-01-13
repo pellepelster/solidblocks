@@ -1,15 +1,16 @@
 package de.solidblocks.test
 
-import de.solidblocks.base.ServiceReference
 import de.solidblocks.base.TenantReference
+import de.solidblocks.cloud.AppplicationContext
+import de.solidblocks.cloud.EnvironmentApplicationContext
 import de.solidblocks.cloud.ServiceProvisioner
-import de.solidblocks.cloud.SolidblocksAppplicationContext
+import de.solidblocks.cloud.TenantApplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createEnvironmentVaultConfig
 import de.solidblocks.cloud.VaultCloudConfiguration.createTenantVaultConfig
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.provisioner.minio.MinioCredentials
 import de.solidblocks.test.TestConstants.TEST_DB_JDBC_URL
-import de.solidblocks.vault.*
+import de.solidblocks.vault.EnvironmentVaultManager
 import de.solidblocks.vault.agent.VaultService
 import mu.KotlinLogging
 import org.testcontainers.containers.DockerComposeContainer
@@ -21,6 +22,9 @@ class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerCompos
 
 class DevelopmentEnvironment {
 
+    val vaultRootToken: String
+        get() = environment.rootToken!!
+
     private val logger = KotlinLogging.logger {}
 
     private val dockerEnvironment: DockerComposeContainer<*>
@@ -29,11 +33,7 @@ class DevelopmentEnvironment {
 
     val rootDomain = "local.test"
 
-    private val certificateManagers: MutableMap<ServiceReference, ServiceVaultCertificateManager> = mutableMapOf()
-
-    private lateinit var applicationContext: SolidblocksAppplicationContext
-
-    val rootToken: String get() = environmentModel.getConfigValue(VaultConstants.ROOT_TOKEN_KEY)
+    private lateinit var context: AppplicationContext
 
     init {
         val dockerComposeContent =
@@ -55,17 +55,17 @@ class DevelopmentEnvironment {
     val minioAddress: String
         get() = "http://localhost:9000"
 
-    val environmentModel: EnvironmentEntity
+    val environment: EnvironmentEntity
         get() =
-            applicationContext.environmentRepository.getEnvironment(reference)
+            context.environmentRepository.getEnvironment(reference)
 
     val minioCredentialProvider: () -> MinioCredentials
         get() = { MinioCredentials(minioAddress, "admin", "a9776029-2852-4d60-af81-621b91da711d") }
 
     fun start() {
         dockerEnvironment.start()
-        applicationContext =
-            SolidblocksAppplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
+        context =
+            AppplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
     }
 
     fun stop() {
@@ -79,19 +79,19 @@ class DevelopmentEnvironment {
     fun createCloud(): Boolean {
         logger.info { "creating test env (${reference.cloud}/${reference.environment})" }
 
-        applicationContext.cloudManager.createCloud(reference, rootDomain)
-        applicationContext.cloudManager.createEnvironment(
+        context.cloudManager.createCloud(reference, rootDomain)
+        context.cloudManager.createEnvironment(
             reference,
             "<none>",
             "<none>",
             "<none>",
             "<none>"
         )
-        applicationContext.cloudManager.createTenant(reference)
+        context.cloudManager.createTenant(reference)
 
-        val environment = applicationContext.environmentRepository.getEnvironment(reference)
-        val tenant = applicationContext.tenantRepository.getTenant(reference)
-        val provisioner = applicationContext.createProvisioner(reference)
+        val environment = context.environmentRepository.getEnvironment(reference)
+        val tenant = context.tenantRepository.getTenant(reference)
+        val provisioner = context.createProvisioner(reference)
 
         provisioner.addResourceGroup(createEnvironmentVaultConfig(emptySet(), environment))
         provisioner.addResourceGroup(createTenantVaultConfig(emptySet(), tenant))
@@ -103,7 +103,8 @@ class DevelopmentEnvironment {
             return false
         }
 
-        logger.info { "vault is available at '$vaultAddress' with root token '$rootToken'" }
+        val environmentAfterProvisioning = context.environmentRepository.getEnvironment(reference)
+        logger.info { "vault is available at '$vaultAddress' with root token '${environmentAfterProvisioning.rootToken}'" }
         logger.info { "minio is available at '$minioAddress' with access key '${minioCredentialProvider.invoke().accessKey}' and secret key '${minioCredentialProvider.invoke().secretKey}'" }
 
         return result
@@ -113,29 +114,32 @@ class DevelopmentEnvironment {
 
         val service = VaultService(
             reference.toService(service),
-            applicationContext.serviceRepository
+            context.serviceRepository
         )
 
         service.createService()
 
-        val provisioner = applicationContext.createProvisioner(reference)
+        val provisioner = context.createProvisioner(reference)
         return service.bootstrapService(provisioner)
-    }
-
-    fun createCertificate(reference: ServiceReference): Certificate? {
-        certificateManagers[reference] =
-            ServiceVaultCertificateManager(vaultAddress, rootToken, reference, rootDomain, true)
-        return certificateManagers[reference]!!.issueCertificate()
     }
 
     fun createService(name: String): String {
         val serviceRef = reference.toService(name)
 
-        val provisioner = applicationContext.createProvisioner(reference)
+        val provisioner = context.createProvisioner(reference)
+
         provisioner.addResourceGroup(ServiceProvisioner.createVaultConfigResourceGroup(serviceRef))
         provisioner.apply()
 
-        val vaultManager = EnvironmentVaultManager(vaultAddress, rootToken, reference)
+        val vaultManager = EnvironmentVaultManager(vaultAddress, environment.rootToken!!, reference)
         return vaultManager.createServiceToken(name, serviceRef)
+    }
+
+    fun environmentContext(): EnvironmentApplicationContext {
+        return EnvironmentApplicationContext(reference, context.environmentRepository, true, vaultAddress)
+    }
+
+    fun tenantContext(): TenantApplicationContext {
+        return TenantApplicationContext(reference, context.tenantRepository, true, vaultAddress)
     }
 }

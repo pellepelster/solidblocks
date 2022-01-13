@@ -15,16 +15,18 @@ import de.solidblocks.provisioner.vault.mount.VaultMount
 import de.solidblocks.provisioner.vault.pki.VaultPkiBackendRole
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
+import de.solidblocks.vault.VaultConstants
 import de.solidblocks.vault.VaultConstants.backupPolicyName
-import de.solidblocks.vault.VaultConstants.domain
-import de.solidblocks.vault.VaultConstants.environentBasePolicyName
+import de.solidblocks.vault.VaultConstants.clientsDomain
+import de.solidblocks.vault.VaultConstants.environmentClientPkiMountName
+import de.solidblocks.vault.VaultConstants.environmentServerPkiMountName
 import de.solidblocks.vault.VaultConstants.hostSshMountName
 import de.solidblocks.vault.VaultConstants.ingressPolicyName
 import de.solidblocks.vault.VaultConstants.kvMountName
-import de.solidblocks.vault.VaultConstants.pkiMountName
 import de.solidblocks.vault.VaultConstants.providersGithubPolicy
-import de.solidblocks.vault.VaultConstants.tenantBaseServicePolicyName
-import de.solidblocks.vault.VaultConstants.tokenSelfRenewalPolicies
+import de.solidblocks.vault.VaultConstants.serversDomain
+import de.solidblocks.vault.VaultConstants.tenantClientPkiMountName
+import de.solidblocks.vault.VaultConstants.tenantServerPkiMountName
 import de.solidblocks.vault.VaultConstants.userSshMountName
 import org.springframework.vault.support.Policy
 
@@ -36,20 +38,38 @@ object VaultCloudConfiguration {
     ): ResourceGroup {
         val resourceGroup = ResourceGroup("vaultConfig", parentResourceGroups)
 
-        val hostPkiMount = VaultMount(pkiMountName(environment.reference), "pki")
-        val hostPkiBackendRole = VaultPkiBackendRole(
-            name = pkiMountName(environment.reference),
-            allowedDomains = listOf(domain(environment.reference, environment.cloud.rootDomain)),
+        val serverPkiMount = VaultMount(environmentServerPkiMountName(environment.reference), "pki")
+        val serverPkiBackendRole = VaultPkiBackendRole(
+            name = environmentServerPkiMountName(environment.reference),
+            allowedDomains = listOf(serversDomain(environment.reference, environment.cloud.rootDomain)),
             allowSubdomains = true,
             allowLocalhost = environment.cloud.isDevelopment,
             generateLease = true,
+            serverFlag = true,
+            clientFlag = false,
             maxTtl = "168h",
             ttl = "168h",
             keyBits = 521,
             keyType = "ec",
-            mount = hostPkiMount
+            mount = serverPkiMount
         )
-        resourceGroup.addResource(hostPkiBackendRole)
+        resourceGroup.addResource(serverPkiBackendRole)
+
+        val clientPkiMount = VaultMount(environmentClientPkiMountName(environment.reference), "pki")
+        val clientPkiBackendRole = VaultPkiBackendRole(
+            name = environmentClientPkiMountName(environment.reference),
+            allowedDomains = listOf(clientsDomain()),
+            allowSubdomains = true,
+            generateLease = true,
+            serverFlag = false,
+            clientFlag = true,
+            maxTtl = "168h",
+            ttl = "168h",
+            keyBits = 521,
+            keyType = "ec",
+            mount = clientPkiMount
+        )
+        resourceGroup.addResource(clientPkiBackendRole)
 
         val hostSshMount = VaultMount(
             hostSshMountName(environment.reference), "ssh"
@@ -133,10 +153,6 @@ object VaultCloudConfiguration {
                 ).capabilities(Policy.BuiltinCapabilities.READ).build(),
 
                 Policy.Rule.builder()
-                    .path("${pkiMountName(environment.reference)}/issue/${pkiMountName(environment.reference)}")
-                    .capabilities(Policy.BuiltinCapabilities.UPDATE).build(),
-
-                Policy.Rule.builder()
                     .path("${userSshMountName(environment.reference)}/sign/${userSshMountName(environment.reference)}")
                     .capabilities(
                         Policy.BuiltinCapabilities.UPDATE, Policy.BuiltinCapabilities.CREATE
@@ -157,32 +173,19 @@ object VaultCloudConfiguration {
         )
         resourceGroup.addResource(ingressPolicy)
 
-        val baseServicePolicy = VaultPolicy(
-            environentBasePolicyName(environment.reference),
-            setOf(
-                providersGithubPolicy(environment.reference)
-            ) + tokenSelfRenewalPolicies()
-        )
-        resourceGroup.addResource(baseServicePolicy)
-
         val backupPolicy = VaultPolicy(
             backupPolicyName(environment.reference),
             setOf(
                 providersGithubPolicy(environment.reference),
+                VaultConstants.tokenSelfRenewalPolicy(),
+                VaultConstants.tokenSelfLookupPolicy(),
                 Policy.Rule.builder().path(
                     "${kvMountName(environment)}/data/solidblocks/cloud/config"
                 ).capabilities(Policy.BuiltinCapabilities.READ).build(),
 
                 Policy.Rule.builder().path(
-                    "${kvMountName(environment)}/data/solidblocks/cloud/config/consul"
-                ).capabilities(Policy.BuiltinCapabilities.READ).build(),
-                Policy.Rule.builder().path(
                     "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner"
                 ).capabilities(Policy.BuiltinCapabilities.READ).build(),
-
-                Policy.Rule.builder()
-                    .path("${pkiMountName(environment.reference)}/issue/${pkiMountName(environment.reference)}")
-                    .capabilities(Policy.BuiltinCapabilities.UPDATE).build(),
 
                 Policy.Rule.builder()
                     .path("${userSshMountName(environment.reference)}/sign/${userSshMountName(environment.reference)}")
@@ -202,7 +205,7 @@ object VaultCloudConfiguration {
                 Policy.Rule.builder().path("${hostSshMountName(environment.reference)}/config/ca")
                     .capabilities(Policy.BuiltinCapabilities.READ).build(),
 
-            ) + tokenSelfRenewalPolicies()
+            )
         )
         resourceGroup.addResource(backupPolicy)
 
@@ -215,32 +218,41 @@ object VaultCloudConfiguration {
     ): ResourceGroup {
         val resourceGroup = ResourceGroup("vaultConfig", parentResourceGroups)
 
-        val hostPkiMount = VaultMount(pkiMountName(tenant.reference), "pki")
-        val hostPkiBackendRole = VaultPkiBackendRole(
-            name = pkiMountName(tenant.reference),
-            allowedDomains = listOf(domain(tenant.reference, tenant.environment.cloud.rootDomain)),
+        val serverPkiMount = VaultMount(tenantServerPkiMountName(tenant.reference), "pki")
+        val serverPkiBackendRole = VaultPkiBackendRole(
+            name = tenantServerPkiMountName(tenant.reference),
+            allowedDomains = listOf(serversDomain(tenant.reference, tenant.environment.cloud.rootDomain)),
             allowSubdomains = true,
             allowLocalhost = tenant.environment.cloud.isDevelopment,
             generateLease = true,
+            serverFlag = true,
+            clientFlag = false,
             maxTtl = "168h",
             ttl = "168h",
             keyBits = 521,
             keyType = "ec",
-            mount = hostPkiMount
+            mount = serverPkiMount
         )
-        resourceGroup.addResource(hostPkiBackendRole)
+        resourceGroup.addResource(serverPkiBackendRole)
+
+        val clientPkiMount = VaultMount(tenantClientPkiMountName(tenant.reference), "pki")
+        val clientPkiBackendRole = VaultPkiBackendRole(
+            name = tenantClientPkiMountName(tenant.reference),
+            allowedDomains = listOf(clientsDomain()),
+            allowSubdomains = true,
+            generateLease = true,
+            serverFlag = false,
+            clientFlag = true,
+            maxTtl = "168h",
+            ttl = "168h",
+            keyBits = 521,
+            keyType = "ec",
+            mount = clientPkiMount
+        )
+        resourceGroup.addResource(clientPkiBackendRole)
 
         val kvMount = VaultMount(kvMountName(tenant.reference), "kv-v2")
         resourceGroup.addResource(kvMount)
-
-        val baseServicePolicy = VaultPolicy(
-            tenantBaseServicePolicyName(tenant.reference),
-            setOf(
-                Policy.Rule.builder().path("${pkiMountName(tenant.reference)}/issue/${pkiMountName(tenant.reference)}")
-                    .capabilities(Policy.BuiltinCapabilities.UPDATE).build(),
-            )
-        )
-        resourceGroup.addResource(baseServicePolicy)
 
         return resourceGroup
     }

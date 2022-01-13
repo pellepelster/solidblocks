@@ -1,4 +1,4 @@
-package de.solidblocks.base.http
+package de.solidblocks.vault.http
 
 class HttpResponse<T>(val code: Int, val data: T?) {
     val isSuccessful: Boolean

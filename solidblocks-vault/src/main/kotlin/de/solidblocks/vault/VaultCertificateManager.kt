@@ -1,5 +1,6 @@
 package de.solidblocks.vault
 
+import de.solidblocks.vault.model.VaultCertificate
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
@@ -7,39 +8,17 @@ import org.springframework.vault.core.VaultTemplate
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.net.URI
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.time.Instant
 import kotlin.concurrent.thread
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
-import kotlin.time.toDuration
-
-val certificateFactory = CertificateFactory.getInstance("X.509")
-
-data class Certificate(val certificateRaw: String, val privateKeyRaw: String, val issuingCaRaw: String) {
-
-    val public: X509Certificate
-        get() {
-            return certificateFactory.generateCertificate(certificateRaw.byteInputStream()) as X509Certificate
-        }
-
-    @OptIn(ExperimentalTime::class)
-    val remainingCertificateLifetime: Duration
-        get() {
-            val currentEpocSeconds = public.notAfter.toInstant().toEpochMilli()
-            return (currentEpocSeconds - Instant.now().toEpochMilli()).toDuration(DurationUnit.MILLISECONDS)
-        }
-}
 
 @OptIn(ExperimentalTime::class)
-abstract class BaseVaultCertificateManager(
+class VaultCertificateManager(
     private val address: String,
     token: String,
-    private val pkiMount: String,
-    private val commonName: String,
-    private val isDevelopment: Boolean = false,
+    val pkiMount: String,
+    val commonName: String,
+    private val altNames: List<String> = emptyList(),
     private val minCertificateLifetime: Duration = Duration.days(2),
     private val checkInterval: Duration = Duration.minutes(10)
 ) {
@@ -48,14 +27,22 @@ abstract class BaseVaultCertificateManager(
 
     private val vaultTemplate: VaultTemplate
 
-    var certificate: Certificate? = null
+    var certificate: VaultCertificate? = null
 
     init {
         logger.info { "initializing vault manager for address '$address'" }
         vaultTemplate = VaultTemplate(VaultEndpoint.from(URI.create(address)), TokenAuthentication(token))
+        startCertificateWorker()
+    }
 
+    private fun ipAddresses() =
+        NetworkInterface.getNetworkInterfaces().asSequence().flatMap { it.inetAddresses.asSequence() }.filterIsInstance(
+            Inet4Address::class.java
+        ).map { it.hostAddress }
+
+    private fun startCertificateWorker() {
+        logger.info { "starting certificate manager worker thread" }
         thread(start = true) {
-
             while (true) {
                 if (certificate != null) {
 
@@ -73,34 +60,27 @@ abstract class BaseVaultCertificateManager(
                     certificate = issueCertificate()
                 }
 
-                Thread.sleep(checkInterval.inWholeMilliseconds)
+                if (certificate == null) {
+                    Thread.sleep(Duration.seconds(10).inWholeMilliseconds)
+                } else {
+                    Thread.sleep(checkInterval.inWholeMilliseconds)
+                }
             }
         }
     }
 
-    fun altNames() = if (isDevelopment) {
-        listOf("localhost").joinToString(",")
-    } else {
-        emptyList<String>().joinToString(",")
-    }
-
-    fun ipAddresses() =
-        NetworkInterface.getNetworkInterfaces().asSequence().flatMap { it.inetAddresses.asSequence() }.filterIsInstance(
-            Inet4Address::class.java
-        ).map { it.hostAddress }
-
-    fun issueCertificate(): Certificate? {
+    private fun issueCertificate(): VaultCertificate? {
         try {
             val path = "$pkiMount/issue/$pkiMount"
 
-            logger.info { "issuing certificate for '$commonName at '$path'" }
+            logger.info { "issuing certificate for '$commonName at '$path' with common name '$commonName' and alt names ${altNames.joinToString(", ") { "'$it'" }.ifEmpty { "<none>" }}" }
             val response = vaultTemplate.write(
                 path,
                 mapOf(
                     "common_name" to commonName,
-                    "alt_names" to altNames(),
-                    "ip_sans" to ipAddresses()
-
+                    "alt_names" to altNames.joinToString(","),
+                    "ip_sans" to ipAddresses(),
+                    "private_key_format" to "pkcs8"
                 )
             )
 
@@ -113,7 +93,7 @@ abstract class BaseVaultCertificateManager(
             val issuingCa = response.data!!["issuing_ca"].toString()
             val serialNumber = response.data!!["serial_number"].toString()
 
-            val result = Certificate(certificate, privateKey, issuingCa)
+            val result = VaultCertificate(certificate, privateKey, issuingCa)
             logger.info { "issued certificate '${result.public.serialNumber}' valid until ${result.public.notAfter}" }
             return result
         } catch (e: Exception) {
@@ -123,9 +103,12 @@ abstract class BaseVaultCertificateManager(
         return null
     }
 
-    fun seal(): Boolean {
-        logger.info { "sealing vault at address '$address'" }
-        vaultTemplate.opsForSys().seal()
-        return true
+    public fun waitForCertificate(): VaultCertificate {
+        while (certificate == null) {
+            logger.info { "waiting for first certificate" }
+            Thread.sleep(Duration.seconds(5).inWholeMilliseconds)
+        }
+
+        return certificate!!
     }
 }

@@ -1,15 +1,12 @@
 package de.solidblocks.vault
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import de.solidblocks.base.EnvironmentReference
-import de.solidblocks.vault.VaultConstants.ENVIRONMENT_TOKEN_TTL
 import mu.KotlinLogging
 import org.springframework.vault.core.VaultTemplate
-import org.springframework.vault.support.VaultTokenRequest
 
 data class VaultWriteRequest(val data: Map<*, *>)
 
-abstract class BaseVaultManager<REFERENCE : EnvironmentReference>(vaultTemplate: VaultTemplate, val reference: REFERENCE) :
+abstract class BaseVaultManager(vaultTemplate: VaultTemplate) :
     BaseVaultAdminManager(vaultTemplate) {
 
     private val logger = KotlinLogging.logger {}
@@ -36,13 +33,5 @@ abstract class BaseVaultManager<REFERENCE : EnvironmentReference>(vaultTemplate:
 
     fun hasKv(path: String): Boolean {
         return vaultTemplate.read(kvPath(path)) != null
-    }
-
-    fun createEnvironmentToken(name: String, policy: String): String {
-        val result = vaultTemplate.opsForToken().create(
-            VaultTokenRequest.builder().displayName(name).noParent(true).renewable(true).ttl(ENVIRONMENT_TOKEN_TTL)
-                .policies(listOf(policy)).build()
-        )
-        return result.token.token
     }
 }

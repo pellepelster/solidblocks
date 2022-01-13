@@ -7,4 +7,5 @@ dependencies {
     api(project(":solidblocks-cloud-model"))
 
     implementation("io.minio:minio:8.3.4")
+    testImplementation(project(":solidblocks-test"))
 }

@@ -5,9 +5,9 @@ plugins {
 dependencies {
 
     implementation("org.springframework.vault:spring-vault-core:2.3.2")
-    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation(project(":solidblocks-cloud-model"))
-
+    implementation("io.github.hakky54:sslcontext-kickstart:7.2.0")
+    implementation("io.github.hakky54:sslcontext-kickstart-for-pem:7.2.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
     testImplementation(project(":solidblocks-test"))

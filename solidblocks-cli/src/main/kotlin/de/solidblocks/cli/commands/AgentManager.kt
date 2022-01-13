@@ -5,11 +5,17 @@ import de.solidblocks.base.Waiter
 import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.cli.commands.environment.agents.RunningInstance
 import de.solidblocks.cloud.model.entities.Role
+import de.solidblocks.vault.VaultCaCertificateManager
+import de.solidblocks.vault.VaultCertificateManager
 import mu.KotlinLogging
 
 data class AgentVersionInformation(val instance: RunningInstance, val currentVersion: String?)
 
-class AgentManager(private val instanceManager: InstanceManager) {
+class AgentManager(
+    private val instanceManager: InstanceManager,
+    val vaultCertificateManager: VaultCertificateManager,
+    val vaultCaCertificateManager: VaultCaCertificateManager
+) {
 
     val logger = KotlinLogging.logger {}
 
@@ -22,7 +28,8 @@ class AgentManager(private val instanceManager: InstanceManager) {
         val agentsToUpdate = listAllAgents().map {
 
             val address = "http://${it.publicIp}:8080"
-            val currentVersion = BaseAgentApiClient(address).version()
+            val currentVersion =
+                BaseAgentApiClient(address, vaultCertificateManager, vaultCaCertificateManager).version()
 
             if (currentVersion == null) {
                 logger.error { "unable to retrieve current agent version for instance '${it.name}' at $address" }
@@ -41,7 +48,7 @@ class AgentManager(private val instanceManager: InstanceManager) {
                 continue
             }
 
-            val client = BaseAgentApiClient("http://${agent.instance.publicIp}:8080")
+            val client = BaseAgentApiClient("http://${agent.instance.publicIp}:8080", vaultCertificateManager, vaultCaCertificateManager)
 
             if (client.triggerUpdate(targetVersion) != true) {
                 logger.error { "failed to trigger update for instance '${agent.instance.name}' at ${client.address}" }

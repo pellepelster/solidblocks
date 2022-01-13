@@ -2,7 +2,9 @@ package de.solidblocks.vault
 
 import de.solidblocks.test.DevelopmentEnvironment
 import de.solidblocks.test.DevelopmentEnvironmentExtension
-import de.solidblocks.vault.VaultConstants.ROOT_TOKEN_KEY
+import de.solidblocks.vault.VaultConstants.environmentServerPkiMountName
+import de.solidblocks.vault.VaultConstants.serversDomain
+import de.solidblocks.vault.VaultConstants.tenantServerPkiMountName
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
@@ -19,13 +21,13 @@ class VaultCertificateManagerTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun testIssueServiceCertificate(developmentEnvironment: DevelopmentEnvironment) {
-        val rootToken = developmentEnvironment.environmentModel.getConfigValue(ROOT_TOKEN_KEY)
+        val reference = developmentEnvironment.reference.toService("service1")
 
-        val vaultManager = ServiceVaultCertificateManager(
+        val vaultManager = VaultCertificateManager(
             address = developmentEnvironment.vaultAddress,
-            token = rootToken,
-            developmentEnvironment.reference.toService("service1"),
-            "local.test",
+            token = developmentEnvironment.vaultRootToken,
+            pkiMount = tenantServerPkiMountName(reference),
+            commonName = serversDomain(reference, "local.test"),
             minCertificateLifetime = Duration.days(300),
             checkInterval = Duration.seconds(2)
         )
@@ -44,13 +46,13 @@ class VaultCertificateManagerTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun testIssueEnvironmentCertificate(developmentEnvironment: DevelopmentEnvironment) {
-        val rootToken = developmentEnvironment.environmentModel.getConfigValue(ROOT_TOKEN_KEY)
+        val reference = developmentEnvironment.reference.toEnvironmentService("ingress")
 
-        val vaultManager = EnvironmentVaultCertificateManager(
+        val vaultManager = VaultCertificateManager(
             address = developmentEnvironment.vaultAddress,
-            token = rootToken,
-            developmentEnvironment.reference.toEnvironmentService("ingress"),
-            "local.test",
+            token = developmentEnvironment.vaultRootToken,
+            pkiMount = environmentServerPkiMountName(reference),
+            commonName = serversDomain(reference, "local.test"),
             minCertificateLifetime = Duration.days(300),
             checkInterval = Duration.seconds(2)
         )

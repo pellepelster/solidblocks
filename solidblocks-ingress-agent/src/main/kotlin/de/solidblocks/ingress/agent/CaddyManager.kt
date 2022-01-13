@@ -2,16 +2,8 @@ package de.solidblocks.ingress.agent
 
 import de.solidblocks.agent.base.DockerManager
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.ingress.agent.config.AutomaticHttps
-import de.solidblocks.ingress.agent.config.CaddyConfig
-import de.solidblocks.ingress.agent.config.Handler
-import de.solidblocks.ingress.agent.config.Http
-import de.solidblocks.ingress.agent.config.Match
-import de.solidblocks.ingress.agent.config.Route
-import de.solidblocks.ingress.agent.config.Server
-import de.solidblocks.ingress.agent.config.Tls
-import de.solidblocks.ingress.agent.config.Transport
-import de.solidblocks.ingress.agent.config.Upstream
+import de.solidblocks.base.solidblocksVersion
+import de.solidblocks.ingress.agent.config.*
 import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Files
@@ -21,7 +13,9 @@ import kotlin.io.path.writeBytes
 class CaddyManager(
     reference: ServiceReference,
     storageDir: String,
-    caFile: File,
+    serverCaFile: File,
+    clientCert: File,
+    clientKey: File,
     network: String? = null
 ) {
 
@@ -35,9 +29,11 @@ class CaddyManager(
 
     private val caddyConfigFile = Path.of(tempDir.toString(), "caddy.json")
 
-    private val CA_CERT_PATH = "/solidblocks/certificates/ca.crt"
-
     private val CADDY_CONFIG_PATH = "/solidblocks/config/caddy.json"
+
+    private val SERVER_CA_CERT_PATH = "/solidblocks/certificates/server_ca.crt"
+    private val CLIENT_CERTIFICATE_PATH = "/solidblocks/certificates/client.crt"
+    private val CLIENT_KEY_PATH = "/solidblocks/certificates/client.key"
 
     fun writeCaddyConfig(config: CaddyConfig) {
         logger.info { "writing caddy config to '$caddyConfigFile" }
@@ -49,13 +45,15 @@ class CaddyManager(
         writeCaddyConfig(CaddyConfig())
 
         dockerManager = DockerManager(
-            "solidblocks-ingress",
+            "ghcr.io/pellepelster/solidblocks-ingress:${solidblocksVersion()}",
             reference.service,
             storageDir,
             setOf(80),
             mapOf(
                 caddyConfigFile.toString() to CADDY_CONFIG_PATH,
-                caFile.toString() to CA_CERT_PATH
+                serverCaFile.toString() to SERVER_CA_CERT_PATH,
+                clientCert.toString() to CLIENT_CERTIFICATE_PATH,
+                clientKey.toString() to CLIENT_KEY_PATH
             ),
             healthCheck = false,
             network = network
@@ -88,7 +86,9 @@ class CaddyManager(
                                             Handler(
                                                 transport = Transport(
                                                     tls = Tls(
-                                                        rootCAPemFiles = listOf(CA_CERT_PATH)
+                                                        clientCertificateFile = CLIENT_CERTIFICATE_PATH,
+                                                        clientCertificateKeyFile = CLIENT_KEY_PATH,
+                                                        rootCAPemFiles = listOf(SERVER_CA_CERT_PATH)
                                                     )
                                                 ),
                                                 upstreams = listOf(Upstream(upstream))

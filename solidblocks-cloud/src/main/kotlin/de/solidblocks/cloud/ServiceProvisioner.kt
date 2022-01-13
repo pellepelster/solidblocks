@@ -21,7 +21,12 @@ import de.solidblocks.provisioner.hetzner.cloud.volume.Volume
 import de.solidblocks.provisioner.hetzner.dns.zone.DnsZone
 import de.solidblocks.provisioner.vault.policy.VaultPolicy
 import de.solidblocks.vault.EnvironmentVaultManager
+import de.solidblocks.vault.VaultConstants.issueTenantServerCertificatesPolicy
+import de.solidblocks.vault.VaultConstants.providersGithubPolicy
+import de.solidblocks.vault.VaultConstants.readEnvironmentClientCaCertificatePolicy
 import de.solidblocks.vault.VaultConstants.servicePolicyName
+import de.solidblocks.vault.VaultConstants.tokenSelfLookupPolicy
+import de.solidblocks.vault.VaultConstants.tokenSelfRenewalPolicy
 import mu.KotlinLogging
 
 class ServiceProvisioner(
@@ -37,7 +42,13 @@ class ServiceProvisioner(
 
             val servicePolicy = VaultPolicy(
                 servicePolicyName(reference),
-                setOf(),
+                setOf(
+                    providersGithubPolicy(reference),
+                    issueTenantServerCertificatesPolicy(reference),
+                    readEnvironmentClientCaCertificatePolicy(reference),
+                    tokenSelfRenewalPolicy(),
+                    tokenSelfLookupPolicy()
+                )
             )
             vaultConfigResourceGroup.addResource(servicePolicy)
 

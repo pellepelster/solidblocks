@@ -18,11 +18,11 @@ class VaultManagerTest {
     @OptIn(ExperimentalTime::class)
     @Test
     fun testStoreAndLoadData(developmentEnvironment: DevelopmentEnvironment) {
-        logger.info { "local env vault at '${developmentEnvironment.vaultAddress}' with root token '${developmentEnvironment.rootToken}'" }
+        logger.info { "local env vault at '${developmentEnvironment.vaultAddress}' with root token '${developmentEnvironment.vaultRootToken}'" }
 
         val vaultManager = EnvironmentVaultManager(
             developmentEnvironment.vaultAddress,
-            developmentEnvironment.rootToken,
+            developmentEnvironment.vaultRootToken,
             developmentEnvironment.reference
         )
 

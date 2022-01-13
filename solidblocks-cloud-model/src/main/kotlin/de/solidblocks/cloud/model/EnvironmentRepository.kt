@@ -9,6 +9,7 @@ import de.solidblocks.cloud.model.ModelConstants.SSH_IDENTITY_PUBLIC_KEY
 import de.solidblocks.cloud.model.ModelConstants.SSH_PRIVATE_KEY
 import de.solidblocks.cloud.model.ModelConstants.SSH_PUBLIC_KEY
 import de.solidblocks.cloud.model.entities.*
+import de.solidblocks.cloud.model.entities.EnvironmentEntity.Companion.ROOT_TOKEN_KEY
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import de.solidblocks.config.db.tables.references.ENVIRONMENTS
 import org.jooq.DSLContext
@@ -75,6 +76,10 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
 
     fun updateEnvironment(reference: EnvironmentReference, name: String, value: String): Boolean {
         return updateEnvironment(reference, mapOf(name to value))
+    }
+
+    fun updateRootToken(reference: EnvironmentReference, rootToken: String) {
+        updateEnvironment(reference, ROOT_TOKEN_KEY, rootToken)
     }
 
     fun updateEnvironment(reference: EnvironmentReference, values: Map<String, String>): Boolean {

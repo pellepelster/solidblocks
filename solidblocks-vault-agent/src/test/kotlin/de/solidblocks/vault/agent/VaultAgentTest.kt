@@ -35,7 +35,7 @@ class VaultAgentTest {
             tempDir,
             developmentEnvironment.minioAddress,
             developmentEnvironment.vaultAddress,
-            developmentEnvironment.rootToken
+            developmentEnvironment.vaultRootToken
         )
 
         assertThat(serviceManager.start()).isTrue
@@ -76,7 +76,7 @@ class VaultAgentTest {
             tempDir,
             developmentEnvironment.minioAddress,
             developmentEnvironment.vaultAddress,
-            developmentEnvironment.rootToken
+            developmentEnvironment.vaultRootToken
         )
 
         assertThat(serviceManager.start()).isTrue

@@ -2,7 +2,7 @@ package de.solidblocks.cli.commands.environment
 
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import de.solidblocks.cloud.SolidblocksAppplicationContext
+import de.solidblocks.cloud.AppplicationContext
 import mu.KotlinLogging
 import kotlin.system.exitProcess
 
@@ -14,7 +14,7 @@ class EnvironmentDestroyCommand :
     val destroyVolumes by option("--destroy-volumes").flag(default = false)
 
     override fun run() {
-        val context = SolidblocksAppplicationContext(solidblocksDatabaseUrl)
+        val context = AppplicationContext(solidblocksDatabaseUrl)
 
         if (!context.verifyEnvironmentReference(environmentRef)) {
             exitProcess(1)

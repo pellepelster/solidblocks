@@ -3,8 +3,8 @@ package de.solidblocks.vault
 import de.solidblocks.base.ServiceReference
 import org.springframework.vault.core.VaultTemplate
 
-class ServiceVaultManager(vaultTemplate: VaultTemplate, reference: ServiceReference) :
-    BaseVaultManager<ServiceReference>(vaultTemplate, reference) {
+class ServiceVaultManager(vaultTemplate: VaultTemplate, val reference: ServiceReference) :
+    BaseVaultManager(vaultTemplate) {
 
     constructor(address: String, token: String, reference: ServiceReference) : this(
         createVaultTemplate(

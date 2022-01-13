@@ -8,6 +8,7 @@ plugins {
 
 dependencies {
     implementation(project(":solidblocks-vault"))
+    implementation(project(":solidblocks-cloud"))
     implementation(project(":solidblocks-agent-base"))
     implementation(project(":solidblocks-agent-base-api"))
 

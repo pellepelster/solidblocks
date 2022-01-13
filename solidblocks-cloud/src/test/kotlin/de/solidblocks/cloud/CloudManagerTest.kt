@@ -22,4 +22,23 @@ class CloudManagerTest {
     }
 }
 
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun testGetTenantCaCertificate(developmentEnvironment: DevelopmentEnvironment) {
+        val caCertificateManager = developmentEnvironment.createTenantContext().createVaultCaCertificateManager()
+
+        val caCertificate = caCertificateManager.waitForCaCertificate()
+        assertThat(caCertificate.caCertificate.subjectX500Principal.name).isEqualTo("CN=local-dev-tenant1-pki-server root")
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun testGetEnvironmentCaCertificate(developmentEnvironment: DevelopmentEnvironment) {
+        val caCertificateManager = developmentEnvironment.createEnvironmentContext().createVaultCaCertificateManager()
+
+        val caCertificate = caCertificateManager.waitForCaCertificate()
+        assertThat(caCertificate.caCertificate.subjectX500Principal.name).isEqualTo("CN=local-dev-pki-server root")
+    }
+
+
 */

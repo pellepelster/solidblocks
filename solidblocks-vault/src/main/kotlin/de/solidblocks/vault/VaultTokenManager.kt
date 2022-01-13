@@ -2,6 +2,7 @@ package de.solidblocks.vault
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.base.Waiter
+import de.solidblocks.vault.model.VaultTokenLookupResponse
 import mu.KotlinLogging
 import org.springframework.vault.authentication.TokenAuthentication
 import org.springframework.vault.client.VaultEndpoint
