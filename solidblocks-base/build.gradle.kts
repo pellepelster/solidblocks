@@ -11,8 +11,5 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
-    implementation("org.bouncycastle:bcprov-jdk15to18:1.68")
-    implementation("net.i2p.crypto:eddsa:0.3.0")
-
     testImplementation("org.hamcrest:hamcrest:2.2")
 }

@@ -15,7 +15,7 @@ class EnvironmentRepositoryTest {
         val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
 
         val reference = EnvironmentReference("cloud1", "env1")
-        cloudRepository.createCloud(reference, "domain1")
+        cloudRepository.createCloud(reference.cloud, "domain1")
         assertThat(environmentRepository.createEnvironment(reference)).isNotNull
 
         val environment = environmentRepository.getEnvironment(reference)
@@ -32,7 +32,7 @@ class EnvironmentRepositoryTest {
 
         val reference = EnvironmentReference("cloud3", "env3")
 
-        cloudRepository.createCloud(reference, "domain1")
+        cloudRepository.createCloud(reference.cloud, "domain1")
 
         assertThat(environmentRepository.createEnvironment(reference)).isNotNull
 
@@ -53,7 +53,7 @@ class EnvironmentRepositoryTest {
 
         val reference = EnvironmentReference("cloud4", "env4")
 
-        val cloud = cloudRepository.createCloud(reference, "domain4")
+        val cloud = cloudRepository.createCloud(reference.cloud, "domain4")
 
         assertThat(environmentRepository.createEnvironment(reference)).isNotNull
 

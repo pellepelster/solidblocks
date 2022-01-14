@@ -2,21 +2,17 @@ package de.solidblocks.agent.base
 
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.api.exception.NotFoundException
-import com.github.dockerjava.api.model.Bind
-import com.github.dockerjava.api.model.ExposedPort
-import com.github.dockerjava.api.model.HostConfig
-import com.github.dockerjava.api.model.PortBinding
-import com.github.dockerjava.api.model.Ports
-import com.github.dockerjava.api.model.Volume
+import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
-import de.solidblocks.cloud.model.ModelConstants.SERVICE_LABEL_KEY
+import de.solidblocks.base.BaseConstants.SERVICE_LABEL_KEY
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.File
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -24,10 +20,10 @@ import java.util.concurrent.TimeUnit
 class DockerManager(
     private val dockerImage: String,
     private val service: String,
-    private val storageDir: String,
     private val ports: Set<Int>,
     private val bindings: Map<String, String> = emptyMap(),
     private val healthCheck: Boolean = true,
+    private val storageDir: File? = null,
     private val network: String? = null
 ) {
     private val client = OkHttpClient()
@@ -76,10 +72,7 @@ class DockerManager(
         val hostConfig = HostConfig.newHostConfig()
             .withPortBindings(ports.map { PortBinding(Ports.Binding.empty(), ExposedPort(it)) })
             .withAutoRemove(true)
-            .withBinds(
-                bindings.map { Bind(it.key, Volume(it.value)) } +
-                    Bind(storageDir, Volume("/storage/local"))
-            )
+            .withBinds(createBindings())
 
         if (network != null) {
             hostConfig.withNetworkMode(network)
@@ -93,6 +86,16 @@ class DockerManager(
         dockerClient.startContainerCmd(result.id).exec()
 
         return waitForRunning() && waitForHealthy()
+    }
+
+    private fun defaultStorageBind(): Bind? = if (storageDir != null) {
+        Bind(storageDir.toString(), Volume("/storage/local"))
+    } else {
+        null
+    }
+
+    private fun createBindings(): List<Bind> {
+        return bindings.map { Bind(it.key, Volume(it.value)) } + listOfNotNull(defaultStorageBind())
     }
 
     fun mappedPort(port: Int) = serviceContainers().flatMap {
@@ -110,7 +113,7 @@ class DockerManager(
         if (!result) {
             logger.error { "service '$service' not running" }
         } else {
-            logger.error { "service '$service' running" }
+            logger.info { "service '$service' running" }
         }
 
         return result
@@ -125,7 +128,7 @@ class DockerManager(
         if (!result) {
             logger.error { "service '$service' not healthy" }
         } else {
-            logger.error { "service '$service' healthy" }
+            logger.info { "service '$service' healthy" }
         }
 
         return result

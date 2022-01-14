@@ -12,6 +12,11 @@ dependencies {
     implementation("org.liquibase:liquibase-core:4.6.2")
     implementation("com.zaxxer:HikariCP:3.4.5")
 
+    implementation("org.bouncycastle:bcprov-jdk15to18:1.70")
+    implementation("org.bouncycastle:bcpkix-jdk15to18:1.70")
+
+    implementation("net.i2p.crypto:eddsa:0.3.0")
+
     jooqGenerator("org.jooq:jooq-meta-extensions-liquibase")
     jooqGenerator("org.liquibase:liquibase-core")
     jooqGenerator("org.yaml:snakeyaml:1.28")

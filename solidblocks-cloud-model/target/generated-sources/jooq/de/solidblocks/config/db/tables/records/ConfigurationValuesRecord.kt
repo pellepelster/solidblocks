@@ -33,19 +33,19 @@ open class ConfigurationValuesRecord() : UpdatableRecordImpl<ConfigurationValues
         set(value) = set(3, value)
         get() = get(3) as String?
 
-    var tenant: UUID?
+    var cloud: UUID?
         set(value) = set(4, value)
         get() = get(4) as UUID?
 
-    var service: UUID?
+    var environment: UUID?
         set(value) = set(5, value)
         get() = get(5) as UUID?
 
-    var environment: UUID?
+    var tenant: UUID?
         set(value) = set(6, value)
         get() = get(6) as UUID?
 
-    var cloud: UUID?
+    var service: UUID?
         set(value) = set(7, value)
         get() = get(7) as UUID?
 
@@ -65,26 +65,26 @@ open class ConfigurationValuesRecord() : UpdatableRecordImpl<ConfigurationValues
     override fun field2(): Field<Int?> = ConfigurationValues.CONFIGURATION_VALUES.VERSION
     override fun field3(): Field<String?> = ConfigurationValues.CONFIGURATION_VALUES.NAME
     override fun field4(): Field<String?> = ConfigurationValues.CONFIGURATION_VALUES.CONFIG_VALUE
-    override fun field5(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.TENANT
-    override fun field6(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.SERVICE
-    override fun field7(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.ENVIRONMENT
-    override fun field8(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.CLOUD
+    override fun field5(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.CLOUD
+    override fun field6(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.ENVIRONMENT
+    override fun field7(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.TENANT
+    override fun field8(): Field<UUID?> = ConfigurationValues.CONFIGURATION_VALUES.SERVICE
     override fun component1(): UUID? = id
     override fun component2(): Int? = version
     override fun component3(): String? = name
     override fun component4(): String? = configValue
-    override fun component5(): UUID? = tenant
-    override fun component6(): UUID? = service
-    override fun component7(): UUID? = environment
-    override fun component8(): UUID? = cloud
+    override fun component5(): UUID? = cloud
+    override fun component6(): UUID? = environment
+    override fun component7(): UUID? = tenant
+    override fun component8(): UUID? = service
     override fun value1(): UUID? = id
     override fun value2(): Int? = version
     override fun value3(): String? = name
     override fun value4(): String? = configValue
-    override fun value5(): UUID? = tenant
-    override fun value6(): UUID? = service
-    override fun value7(): UUID? = environment
-    override fun value8(): UUID? = cloud
+    override fun value5(): UUID? = cloud
+    override fun value6(): UUID? = environment
+    override fun value7(): UUID? = tenant
+    override fun value8(): UUID? = service
 
     override fun value1(value: UUID?): ConfigurationValuesRecord {
         this.id = value
@@ -107,22 +107,22 @@ open class ConfigurationValuesRecord() : UpdatableRecordImpl<ConfigurationValues
     }
 
     override fun value5(value: UUID?): ConfigurationValuesRecord {
-        this.tenant = value
+        this.cloud = value
         return this
     }
 
     override fun value6(value: UUID?): ConfigurationValuesRecord {
-        this.service = value
-        return this
-    }
-
-    override fun value7(value: UUID?): ConfigurationValuesRecord {
         this.environment = value
         return this
     }
 
+    override fun value7(value: UUID?): ConfigurationValuesRecord {
+        this.tenant = value
+        return this
+    }
+
     override fun value8(value: UUID?): ConfigurationValuesRecord {
-        this.cloud = value
+        this.service = value
         return this
     }
 
@@ -141,14 +141,14 @@ open class ConfigurationValuesRecord() : UpdatableRecordImpl<ConfigurationValues
     /**
      * Create a detached, initialised ConfigurationValuesRecord
      */
-    constructor(id: UUID? = null, version: Int? = null, name: String? = null, configValue: String? = null, tenant: UUID? = null, service: UUID? = null, environment: UUID? = null, cloud: UUID? = null) : this() {
+    constructor(id: UUID? = null, version: Int? = null, name: String? = null, configValue: String? = null, cloud: UUID? = null, environment: UUID? = null, tenant: UUID? = null, service: UUID? = null) : this() {
         this.id = id
         this.version = version
         this.name = name
         this.configValue = configValue
+        this.cloud = cloud
+        this.environment = environment
         this.tenant = tenant
         this.service = service
-        this.environment = environment
-        this.cloud = cloud
     }
 }

@@ -26,9 +26,10 @@ class DockerManagerTest {
         val dockerManager = DockerManager(
             "halverneus/static-file-server",
             service,
-            tempDir,
             setOf(8080),
-            mapOf(webDir to "/web")
+            mapOf(webDir.toString() to "/web"),
+            storageDir = tempDir,
+
         )
 
         assertThat(dockerManager.start()).isTrue

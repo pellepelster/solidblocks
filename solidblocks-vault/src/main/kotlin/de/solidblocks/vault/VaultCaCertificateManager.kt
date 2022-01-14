@@ -16,7 +16,8 @@ class VaultCaCertificateManager(
     token: String,
     val pkiMount: String,
     private val minCertificateLifetime: Duration = Duration.days(2),
-    private val checkInterval: Duration = Duration.minutes(10)
+    private val checkInterval: Duration = Duration.minutes(10),
+    private val callback: ((VaultCaCertificate) -> Unit)? = null,
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -42,12 +43,12 @@ class VaultCaCertificateManager(
                         logger.info { "certificate still has ${remainingCertificateLifetime.inWholeHours} hours left" }
                     } else {
                         logger.info { "certificate has less than ${minCertificateLifetime.inWholeHours} hours left, fetching new certificate" }
-                        caCertificate = readCaCertificate()
+                        updateCaCertificate()
                     }
                 }
 
                 if (caCertificate == null) {
-                    caCertificate = readCaCertificate()
+                    updateCaCertificate()
                     Thread.sleep(Duration.seconds(10).inWholeMilliseconds)
                 } else {
                     Thread.sleep(checkInterval.inWholeMilliseconds)
@@ -56,30 +57,24 @@ class VaultCaCertificateManager(
         }
     }
 
-    private fun readCaCertificate(): VaultCaCertificate? {
+    private fun updateCaCertificate() {
         try {
             val path = "$pkiMount/cert/ca"
 
-            logger.info {
-                "reading ca certificate from '$path'"
-            }
-
-            val response = vaultTemplate.read(
-                path
-            )
+            logger.info { "reading ca certificate from '$path'" }
+            val response = vaultTemplate.read(path)
 
             if (response?.data == null) {
-                return null
+                return
             }
 
-            val certificate = response.data!!["certificate"].toString()
+            val certificateRaw = response.data!!["certificate"].toString()
 
-            return VaultCaCertificate(certificate)
+            caCertificate = VaultCaCertificate(certificateRaw)
+            callback?.invoke(caCertificate!!)
         } catch (e: Exception) {
             logger.error(e) { "failed to read ca certificate" }
         }
-
-        return null
     }
 
     public fun waitForCaCertificate(): VaultCaCertificate {

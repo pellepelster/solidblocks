@@ -1,11 +1,12 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.api.resources.ResourceGroup
+import de.solidblocks.base.BaseConstants.environmentId
+import de.solidblocks.base.BaseConstants.serversDomain
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_SECRET_KEY
 import de.solidblocks.cloud.model.ModelConstants.GITHUB_TOKEN_RO_KEY
 import de.solidblocks.cloud.model.ModelConstants.GITHUB_USERNAME_KEY
-import de.solidblocks.cloud.model.ModelConstants.environmentId
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.cloud.model.entities.getConfigValue
@@ -24,7 +25,6 @@ import de.solidblocks.vault.VaultConstants.hostSshMountName
 import de.solidblocks.vault.VaultConstants.ingressPolicyName
 import de.solidblocks.vault.VaultConstants.kvMountName
 import de.solidblocks.vault.VaultConstants.providersGithubPolicy
-import de.solidblocks.vault.VaultConstants.serversDomain
 import de.solidblocks.vault.VaultConstants.tenantClientPkiMountName
 import de.solidblocks.vault.VaultConstants.tenantServerPkiMountName
 import de.solidblocks.vault.VaultConstants.userSshMountName
@@ -101,7 +101,7 @@ object VaultCloudConfiguration {
         )
         resourceGroup.addResource(userSshBackendRole)
 
-        val kvMount = VaultMount(kvMountName(environment), "kv-v2")
+        val kvMount = VaultMount(kvMountName(environment.reference), "kv-v2")
         resourceGroup.addResource(kvMount)
 
         val solidblocksConfig = VaultKV(
@@ -145,11 +145,11 @@ object VaultCloudConfiguration {
             setOf(
                 providersGithubPolicy(environment.reference),
                 Policy.Rule.builder().path(
-                    "${kvMountName(environment)}/data/solidblocks/cloud/config"
+                    "${kvMountName(environment.reference)}/data/solidblocks/cloud/config"
                 ).capabilities(Policy.BuiltinCapabilities.READ).build(),
 
                 Policy.Rule.builder().path(
-                    "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner"
+                    "${kvMountName(environment.reference)}/data/solidblocks/cloud/providers/hetzner"
                 ).capabilities(Policy.BuiltinCapabilities.READ).build(),
 
                 Policy.Rule.builder()
@@ -180,11 +180,11 @@ object VaultCloudConfiguration {
                 VaultConstants.tokenSelfRenewalPolicy(),
                 VaultConstants.tokenSelfLookupPolicy(),
                 Policy.Rule.builder().path(
-                    "${kvMountName(environment)}/data/solidblocks/cloud/config"
+                    "${kvMountName(environment.reference)}/data/solidblocks/cloud/config"
                 ).capabilities(Policy.BuiltinCapabilities.READ).build(),
 
                 Policy.Rule.builder().path(
-                    "${kvMountName(environment)}/data/solidblocks/cloud/providers/hetzner"
+                    "${kvMountName(environment.reference)}/data/solidblocks/cloud/providers/hetzner"
                 ).capabilities(Policy.BuiltinCapabilities.READ).build(),
 
                 Policy.Rule.builder()

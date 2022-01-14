@@ -1,7 +1,7 @@
 package de.solidblocks.vault
 
-import de.solidblocks.test.DevelopmentEnvironment
-import de.solidblocks.test.DevelopmentEnvironmentExtension
+import de.solidblocks.test.IntegrationTestEnvironment
+import de.solidblocks.test.IntegrationTestExtension
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.atMost
@@ -12,18 +12,18 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration.*
 
-@ExtendWith(DevelopmentEnvironmentExtension::class)
+@ExtendWith(IntegrationTestExtension::class)
 class VaultTokenManagerTest {
 
     private val logger = KotlinLogging.logger {}
 
     @Test
-    fun testRenewToken(developmentEnvironment: DevelopmentEnvironment) {
+    fun testRenewToken(integrationTestEnvironment: IntegrationTestEnvironment) {
 
-        val serviceToken = developmentEnvironment.createService("test")
+        val serviceToken = integrationTestEnvironment.createService("test")
 
         val vaultTokenManager = VaultTokenManager(
-            address = developmentEnvironment.vaultAddress,
+            address = integrationTestEnvironment.vaultAddress,
             token = serviceToken,
             checkInterval = ofSeconds(1),
             renewAtTtl = ofDays(30)

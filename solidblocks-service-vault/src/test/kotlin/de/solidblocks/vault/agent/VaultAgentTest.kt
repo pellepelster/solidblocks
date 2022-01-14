@@ -1,7 +1,7 @@
 package de.solidblocks.vault.agent
 
-import de.solidblocks.test.DevelopmentEnvironment
-import de.solidblocks.test.DevelopmentEnvironmentExtension
+import de.solidblocks.test.IntegrationTestEnvironment
+import de.solidblocks.test.IntegrationTestExtension
 import de.solidblocks.test.TestUtils.initWorldReadableTempDir
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
@@ -14,28 +14,28 @@ import org.springframework.vault.core.VaultTemplate
 import java.net.URI
 import java.util.*
 
-@ExtendWith(DevelopmentEnvironmentExtension::class)
+@ExtendWith(IntegrationTestExtension::class)
 class VaultAgentTest {
 
     private val logger = KotlinLogging.logger {}
 
     @Test
-    fun testKeepsDataAfterRestart(developmentEnvironment: DevelopmentEnvironment) {
+    fun testKeepsDataAfterRestart(integrationTestEnvironment: IntegrationTestEnvironment) {
 
         val service = "vault-${UUID.randomUUID()}"
-        if (!developmentEnvironment.createVaultService(service)) {
+        if (!integrationTestEnvironment.createVaultService(service)) {
             throw RuntimeException("error creating service")
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = developmentEnvironment.reference.toService(service)
+        val reference = integrationTestEnvironment.reference.toService(service)
 
         val serviceManager = VaultAgent(
             reference,
-            tempDir,
-            developmentEnvironment.minioAddress,
-            developmentEnvironment.vaultAddress,
-            developmentEnvironment.vaultRootToken
+            tempDir.toString(),
+            integrationTestEnvironment.minioAddress,
+            integrationTestEnvironment.vaultAddress,
+            integrationTestEnvironment.vaultRootToken
         )
 
         assertThat(serviceManager.start()).isTrue
@@ -61,22 +61,22 @@ class VaultAgentTest {
     }
 
     @Test
-    fun testRestoreDataIntoService(developmentEnvironment: DevelopmentEnvironment) {
+    fun testRestoreDataIntoService(integrationTestEnvironment: IntegrationTestEnvironment) {
 
         val service = "vault-${UUID.randomUUID()}"
-        if (!developmentEnvironment.createVaultService(service)) {
+        if (!integrationTestEnvironment.createVaultService(service)) {
             throw RuntimeException("error creating service")
         }
 
         val tempDir = initWorldReadableTempDir(service)
-        val reference = developmentEnvironment.reference.toService(service)
+        val reference = integrationTestEnvironment.reference.toService(service)
 
         val serviceManager = VaultAgent(
             reference,
-            tempDir,
-            developmentEnvironment.minioAddress,
-            developmentEnvironment.vaultAddress,
-            developmentEnvironment.vaultRootToken
+            tempDir.toString(),
+            integrationTestEnvironment.minioAddress,
+            integrationTestEnvironment.vaultAddress,
+            integrationTestEnvironment.vaultRootToken
         )
 
         assertThat(serviceManager.start()).isTrue

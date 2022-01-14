@@ -8,6 +8,7 @@ import de.solidblocks.config.db.tables.ConfigurationValues
 import de.solidblocks.config.db.tables.Environments
 import de.solidblocks.config.db.tables.Services
 import de.solidblocks.config.db.tables.Tenants
+import de.solidblocks.config.db.tables.Users
 
 /**
  * The table <code>CLOUDS</code>.
@@ -33,3 +34,8 @@ val SERVICES = Services.SERVICES
  * The table <code>TENANTS</code>.
  */
 val TENANTS = Tenants.TENANTS
+
+/**
+ * The table <code>USERS</code>.
+ */
+val USERS = Users.USERS

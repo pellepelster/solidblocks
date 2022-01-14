@@ -66,6 +66,30 @@ function task_recreate_integration_test() {
     --environment dev \
     --tenant tenant1
 
+  task_cli service create \
+    --cloud blcks \
+    --environment dev \
+    --tenant tenant1 \
+    --service service1
+
+}
+
+function task_bootstrap() {
+  task_cli environment bootstrap \
+      --cloud blcks \
+      --environment dev
+
+  task_cli tenant bootstrap \
+    --cloud blcks \
+    --environment dev \
+    --tenant tenant1
+
+  #task_cli service bootstrap \
+  #  --cloud blcks \
+  #  --environment dev \
+  #  --tenant tenant1 \
+  #  --service service1
+
 }
 
 function task_publish() {
@@ -73,8 +97,7 @@ function task_publish() {
   export GITHUB_TOKEN="$(pass solidblocks/github/personal_access_token_rw)"
   echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GITHUB_USERNAME}" --password-stdin
 
-  "${DIR}/gradlew" dockerPush
-  "${DIR}/gradlew" publish
+  "${DIR}/gradlew" assemble docker publish dockerPush
 }
 
 
@@ -88,4 +111,5 @@ case ${COMMAND} in
   increment-version) task_increment_version "$@" ;;
   recreate-integration-test) task_recreate_integration_test "$@" ;;
   publish) task_publish "$@" ;;
+  bootstrap) task_bootstrap "$@" ;;
 esac

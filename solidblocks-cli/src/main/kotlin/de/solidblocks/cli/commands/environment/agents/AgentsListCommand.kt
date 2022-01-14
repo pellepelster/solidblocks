@@ -3,7 +3,7 @@ package de.solidblocks.cli.commands.environment.agents
 import de.solidblocks.cli.commands.AgentManager
 import de.solidblocks.cli.commands.InstanceManager
 import de.solidblocks.cli.commands.environment.BaseCloudEnvironmentCommand
-import de.solidblocks.cloud.AppplicationContext
+import de.solidblocks.cloud.ApplicationContext
 import de.solidblocks.provisioner.hetzner.Hetzner
 import kotlin.system.exitProcess
 
@@ -11,7 +11,7 @@ class AgentsListCommand :
     BaseCloudEnvironmentCommand(name = "list", help = "list all agents") {
 
     override fun run() {
-        val context = AppplicationContext(solidblocksDatabaseUrl)
+        val context = ApplicationContext(solidblocksDatabaseUrl)
 
         if (!context.verifyEnvironmentReference(environmentRef)) {
             exitProcess(1)

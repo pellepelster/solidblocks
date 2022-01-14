@@ -1,13 +1,11 @@
 package de.solidblocks.vault
 
+import de.solidblocks.base.BaseConstants.environmentId
+import de.solidblocks.base.BaseConstants.serviceId
+import de.solidblocks.base.BaseConstants.tenantId
 import de.solidblocks.base.EnvironmentReference
-import de.solidblocks.base.EnvironmentServiceReference
 import de.solidblocks.base.ServiceReference
 import de.solidblocks.base.TenantReference
-import de.solidblocks.cloud.model.ModelConstants.environmentId
-import de.solidblocks.cloud.model.ModelConstants.serviceId
-import de.solidblocks.cloud.model.ModelConstants.tenantId
-import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import org.springframework.vault.support.Policy
 import java.time.Duration
 
@@ -33,24 +31,6 @@ object VaultConstants {
 
     fun tenantClientPkiMountName(reference: TenantReference) = "${tenantId(reference)}-pki-client"
 
-    fun serversDomain(reference: ServiceReference, rootDomain: String) =
-        "${reference.service}.${reference.tenant}.${reference.environment}.$rootDomain"
-
-    fun serversDomain(reference: EnvironmentReference, rootDomain: String) =
-        "${reference.environment}.$rootDomain"
-
-    fun serversDomain(reference: EnvironmentServiceReference, rootDomain: String) =
-        "${reference.service}.${reference.environment}.$rootDomain"
-
-    fun serversDomain(reference: TenantReference, rootDomain: String) =
-        "${reference.tenant}.${reference.environment}.$rootDomain"
-
-    fun environmentHostFQDN(hostname: String, reference: EnvironmentReference, rootDomain: String) =
-        "$hostname.${serversDomain(reference, rootDomain)}"
-
-    fun tenantHostFQDN(hostname: String, reference: TenantReference, rootDomain: String) =
-        "$hostname.${serversDomain(reference, rootDomain)}"
-
     fun clientsDomain() = "clients"
 
     fun clientFQDN(client: String) = "$client.${clientsDomain()}"
@@ -59,16 +39,11 @@ object VaultConstants {
 
     fun kvMountName(reference: TenantReference) = "${tenantId(reference)}-kv"
 
-    fun kvMountName(environment: EnvironmentEntity) = kvMountName(environment.reference)
-
     fun servicePath(service: String) = "solidblocks/services/$service"
 
-    fun hostSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-host-ssh"
+    fun hostSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-ssh-host"
 
-    fun userSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-user-ssh"
-
-    fun vaultAddress(environment: EnvironmentEntity) =
-        "https://${environmentHostFQDN("vault", environment.reference, environment.cloud.rootDomain)}:8200"
+    fun userSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-ssh-user"
 
     fun providersGithubPolicy(reference: EnvironmentReference) = Policy.Rule.builder().path(
         "${kvMountName(reference)}/data/solidblocks/cloud/providers/github"

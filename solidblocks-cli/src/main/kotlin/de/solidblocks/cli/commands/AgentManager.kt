@@ -4,7 +4,7 @@ import de.solidblocks.agent.base.api.BaseAgentApiClient
 import de.solidblocks.base.Waiter
 import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.cli.commands.environment.agents.RunningInstance
-import de.solidblocks.cloud.model.entities.Role
+import de.solidblocks.cloud.model.entities.NodeRole
 import de.solidblocks.vault.VaultCaCertificateManager
 import de.solidblocks.vault.VaultCertificateManager
 import mu.KotlinLogging
@@ -67,5 +67,5 @@ class AgentManager(
         return true
     }
 
-    fun listAllAgents() = instanceManager.allServers().filter { it.role == Role.service }
+    fun listAllAgents() = instanceManager.allServers().filter { it.nodeRole == NodeRole.service }
 }

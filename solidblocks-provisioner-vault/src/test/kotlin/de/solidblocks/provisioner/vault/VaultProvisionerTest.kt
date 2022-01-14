@@ -15,7 +15,6 @@ import de.solidblocks.provisioner.vault.policy.VaultPolicyProvisioner
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleProvisioner
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
-import de.solidblocks.vault.VaultRootClientProvider
 import junit.framework.Assert.assertFalse
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertTrue
@@ -55,7 +54,7 @@ class VaultProvisionerTest {
 
                 val reference = EnvironmentReference(UUID.randomUUID().toString(), UUID.randomUUID().toString())
 
-                cloudRepository.createCloud(reference, "domain1", emptyList())
+                cloudRepository.createCloud(reference.cloud, "domain1", emptyList())
                 environmentRepository.createEnvironment(reference)
 
                 vaultClient = VaultRootClientProvider(
@@ -219,7 +218,7 @@ class VaultProvisionerTest {
         mountProvisioner.apply(mount)
 
         val newRole = VaultSshBackendRole(
-            name = "solidblocks-host-ssh",
+            name = "solidblocks-ssh-host",
             keyType = "ca",
             maxTtl = "168h",
             ttl = "168h",
@@ -250,7 +249,7 @@ class VaultProvisionerTest {
         assertTrue(lookup.result?.keysExist!!)
 
         val updateRole = VaultSshBackendRole(
-            name = "solidblocks-host-ssh",
+            name = "solidblocks-ssh-host",
             keyType = "ca",
             maxTtl = "170h",
             ttl = "170h",

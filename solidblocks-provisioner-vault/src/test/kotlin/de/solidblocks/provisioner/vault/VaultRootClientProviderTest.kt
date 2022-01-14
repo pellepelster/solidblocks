@@ -5,7 +5,7 @@ import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
-import de.solidblocks.vault.VaultRootClientProvider
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -42,7 +42,7 @@ class VaultRootClientProviderTest {
 
         val reference = EnvironmentReference(UUID.randomUUID().toString(), UUID.randomUUID().toString())
 
-        cloudRepository.createCloud(reference, "domain1", emptyList())
+        cloudRepository.createCloud(reference.cloud, "domain1", emptyList())
         environmentRepository.createEnvironment(reference)
 
         val provider = VaultRootClientProvider(reference, environmentRepository, vaultAddress())
@@ -69,5 +69,7 @@ class VaultRootClientProviderTest {
 
         val vaultClient1 = provider.createClient()
         assertFalse(vaultClient1.opsForSys().unsealStatus.isSealed)
+
+        Assertions.assertThat(provider.createClient().list("/")).hasSize(0)
     }
 }

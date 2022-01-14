@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.CloudReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
-import de.solidblocks.cloud.AppplicationContext
+import de.solidblocks.cloud.ApplicationContext
 
 class CloudCreateCommand :
     BaseCloudDbCommand(name = "create", help = "create a new cloud") {
@@ -14,10 +14,10 @@ class CloudCreateCommand :
     val domain: String by option(help = "root domain for the cloud").required()
 
     override fun run() {
-        val context = AppplicationContext(solidblocksDatabaseUrl)
+        val context = ApplicationContext(solidblocksDatabaseUrl)
 
         val reference = CloudReference(cloud)
 
-        context.cloudManager.createCloud(reference, domain)
+        context.cloudManager.createCloud(reference.cloud, domain)
     }
 }

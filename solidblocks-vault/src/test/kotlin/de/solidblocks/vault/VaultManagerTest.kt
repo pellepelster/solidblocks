@@ -1,7 +1,7 @@
 package de.solidblocks.vault
 
-import de.solidblocks.test.DevelopmentEnvironment
-import de.solidblocks.test.DevelopmentEnvironmentExtension
+import de.solidblocks.test.IntegrationTestEnvironment
+import de.solidblocks.test.IntegrationTestExtension
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,20 +10,20 @@ import kotlin.time.ExperimentalTime
 
 data class TestData(val string: String, val number: Number, val boolean: Boolean)
 
-@ExtendWith(DevelopmentEnvironmentExtension::class)
+@ExtendWith(IntegrationTestExtension::class)
 class VaultManagerTest {
 
     private val logger = KotlinLogging.logger {}
 
     @OptIn(ExperimentalTime::class)
     @Test
-    fun testStoreAndLoadData(developmentEnvironment: DevelopmentEnvironment) {
-        logger.info { "local env vault at '${developmentEnvironment.vaultAddress}' with root token '${developmentEnvironment.vaultRootToken}'" }
+    fun testStoreAndLoadData(integrationTestEnvironment: IntegrationTestEnvironment) {
+        logger.info { "local env vault at '${integrationTestEnvironment.vaultAddress}' with root token '${integrationTestEnvironment.vaultRootToken}'" }
 
         val vaultManager = EnvironmentVaultManager(
-            developmentEnvironment.vaultAddress,
-            developmentEnvironment.vaultRootToken,
-            developmentEnvironment.reference
+            integrationTestEnvironment.vaultAddress,
+            integrationTestEnvironment.vaultRootToken,
+            integrationTestEnvironment.reference
         )
 
         assertThat(vaultManager.hasKv("test")).isFalse

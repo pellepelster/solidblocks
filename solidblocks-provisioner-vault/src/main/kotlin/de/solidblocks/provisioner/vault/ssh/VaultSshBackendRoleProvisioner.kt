@@ -4,7 +4,7 @@ import de.solidblocks.api.resources.ResourceDiff
 import de.solidblocks.api.resources.ResourceDiffItem
 import de.solidblocks.api.resources.infrastructure.IInfrastructureResourceProvisioner
 import de.solidblocks.api.resources.infrastructure.IResourceLookupProvider
-import de.solidblocks.base.generateSshKey
+import de.solidblocks.cloud.model.generateSshKey
 import de.solidblocks.core.Result
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRole
 import de.solidblocks.provisioner.vault.ssh.dto.SshBackendRoleDefaultExtensions

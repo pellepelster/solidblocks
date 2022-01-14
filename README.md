@@ -12,3 +12,5 @@
 * SOLIDBLOCKS_DIR
   * /solidblocks/instance/environment
     * SOLIDBLOCKS_VERSION
+
+* all TLS stuff has to work without interaction from the outside (certificate creation/renewal)

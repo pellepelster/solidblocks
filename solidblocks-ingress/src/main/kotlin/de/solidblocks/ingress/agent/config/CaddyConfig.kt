@@ -7,6 +7,6 @@ data class CaddyConfig(val apps: Map<String, Any> = emptyMap(), val admin: Admin
         private val objectMapper = jacksonObjectMapper()
 
         fun serialize(config: CaddyConfig): String = objectMapper.writeValueAsString(config)
-        fun serializeToBytes(config: CaddyConfig): ByteArray = objectMapper.writeValueAsBytes(config)
+        fun serializeToBytes(config: CaddyConfig): ByteArray = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(config)
     }
 }

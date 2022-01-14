@@ -5,7 +5,7 @@ package de.solidblocks.config.db.tables
 
 import de.solidblocks.config.db.DefaultSchema
 import de.solidblocks.config.db.indexes.IDX_SERVICES_ENVIRONMENT_NAME
-import de.solidblocks.config.db.keys.FK_SERVICES_CLOUD_ID
+import de.solidblocks.config.db.keys.FK_SERVICES_ENVIRONMENT_ID
 import de.solidblocks.config.db.keys.PK_SERVICES
 import de.solidblocks.config.db.tables.records.ServicesRecord
 import org.jooq.Field
@@ -102,12 +102,12 @@ open class Services(
     override fun getIndexes(): List<Index> = listOf(IDX_SERVICES_ENVIRONMENT_NAME)
     override fun getPrimaryKey(): UniqueKey<ServicesRecord> = PK_SERVICES
     override fun getKeys(): List<UniqueKey<ServicesRecord>> = listOf(PK_SERVICES)
-    override fun getReferences(): List<ForeignKey<ServicesRecord, *>> = listOf(FK_SERVICES_CLOUD_ID)
+    override fun getReferences(): List<ForeignKey<ServicesRecord, *>> = listOf(FK_SERVICES_ENVIRONMENT_ID)
 
     private lateinit var _environments: Environments
     fun environments(): Environments {
         if (!this::_environments.isInitialized)
-            _environments = Environments(this, FK_SERVICES_CLOUD_ID)
+            _environments = Environments(this, FK_SERVICES_ENVIRONMENT_ID)
 
         return _environments
     }

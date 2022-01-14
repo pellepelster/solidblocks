@@ -5,10 +5,8 @@ plugins {
 dependencies {
 
     api(project(":solidblocks-base"))
-    implementation(project(":solidblocks-cloud"))
-    implementation(project(":solidblocks-cloud-model"))
-    implementation(project(":solidblocks-agent-base-api"))
-    implementation(project(":solidblocks-vault"))
+    api(project(":solidblocks-agent-base-api"))
+    api(project(":solidblocks-vault"))
 
     implementation("io.vertx:vertx-web:4.2.3")
     implementation("io.vertx:vertx-lang-kotlin:4.2.3")
@@ -21,5 +19,6 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-kotlin:1.7.1")
     implementation("io.github.resilience4j:resilience4j-retry:1.7.1")
 
+    testImplementation(project(":solidblocks-cloud"))
     testImplementation(project(":solidblocks-test"))
 }

@@ -2,10 +2,10 @@ package de.solidblocks.vault.agent
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.api.resources.ResourceGroup
+import de.solidblocks.base.BaseConstants.serviceId
 import de.solidblocks.base.ServiceReference
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
 import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
-import de.solidblocks.cloud.model.ModelConstants.serviceId
 import de.solidblocks.cloud.model.ServiceRepository
 import de.solidblocks.cloud.model.entities.getRawConfigValue
 import de.solidblocks.provisioner.Provisioner

@@ -16,7 +16,7 @@ class ServiceRepositoryTest {
 
         val service1Ref = ServiceReference("cloud1", "env1", "tenant1", "service1")
 
-        cloudRepository.createCloud(service1Ref, "domain1")
+        cloudRepository.createCloud(service1Ref.cloud, "domain1")
         assertThat(environmentRepository.createEnvironment(service1Ref)).isNotNull
 
         val serviceRepository = ServiceRepository(solidblocksDatabase.dsl, environmentRepository)

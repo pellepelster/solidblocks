@@ -77,6 +77,16 @@ open class ConfigurationValues(
     val CONFIG_VALUE: TableField<ConfigurationValuesRecord, String?> = createField(DSL.name("CONFIG_VALUE"), SQLDataType.VARCHAR(4096).nullable(false), this, "")
 
     /**
+     * The column <code>CONFIGURATION_VALUES.CLOUD</code>.
+     */
+    val CLOUD: TableField<ConfigurationValuesRecord, UUID?> = createField(DSL.name("CLOUD"), SQLDataType.UUID, this, "")
+
+    /**
+     * The column <code>CONFIGURATION_VALUES.ENVIRONMENT</code>.
+     */
+    val ENVIRONMENT: TableField<ConfigurationValuesRecord, UUID?> = createField(DSL.name("ENVIRONMENT"), SQLDataType.UUID, this, "")
+
+    /**
      * The column <code>CONFIGURATION_VALUES.TENANT</code>.
      */
     val TENANT: TableField<ConfigurationValuesRecord, UUID?> = createField(DSL.name("TENANT"), SQLDataType.UUID, this, "")
@@ -85,16 +95,6 @@ open class ConfigurationValues(
      * The column <code>CONFIGURATION_VALUES.SERVICE</code>.
      */
     val SERVICE: TableField<ConfigurationValuesRecord, UUID?> = createField(DSL.name("SERVICE"), SQLDataType.UUID, this, "")
-
-    /**
-     * The column <code>CONFIGURATION_VALUES.ENVIRONMENT</code>.
-     */
-    val ENVIRONMENT: TableField<ConfigurationValuesRecord, UUID?> = createField(DSL.name("ENVIRONMENT"), SQLDataType.UUID, this, "")
-
-    /**
-     * The column <code>CONFIGURATION_VALUES.CLOUD</code>.
-     */
-    val CLOUD: TableField<ConfigurationValuesRecord, UUID?> = createField(DSL.name("CLOUD"), SQLDataType.UUID, this, "")
 
     private constructor(alias: Name, aliased: Table<ConfigurationValuesRecord>?) : this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<ConfigurationValuesRecord>?, parameters: Array<Field<*>?>?) : this(alias, null, null, aliased, parameters)

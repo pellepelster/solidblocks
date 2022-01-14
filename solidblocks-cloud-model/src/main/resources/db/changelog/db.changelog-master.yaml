@@ -138,7 +138,6 @@ databaseChangeLog:
                   type: uuid
                   constraints:
                     nullable: true
-
         - createTable:
             tableName: services
             columns:
@@ -163,7 +162,7 @@ databaseChangeLog:
                   type: uuid
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_services_cloud_id
+                    foreignKeyName: fk_services_environment_id
                     references: environments(id)
         - createIndex:
             columns:
@@ -174,3 +173,49 @@ databaseChangeLog:
             indexName: idx_services_environment_name
             tableName: services
             unique: true
+
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: salt
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted
+                  type: boolean
+                  constraints:
+                    nullable: false
+#              - column:
+#                  name: environment
+#                  type: uuid
+#                  constraints:
+#                    nullable: false
+#                    foreignKeyName: fk_users_environment_id
+#                    references: environments(id)
+#        - createIndex:
+#            columns:
+#              - column:
+#                  name: environment
+#              - column:
+#                  name: email
+#            indexName: idx_users_environment_email
+#            tableName: users
+#            unique: true

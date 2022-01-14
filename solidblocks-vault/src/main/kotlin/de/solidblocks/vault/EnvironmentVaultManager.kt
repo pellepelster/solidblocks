@@ -1,8 +1,8 @@
 package de.solidblocks.vault
 
+import de.solidblocks.base.BaseConstants.vaultTokenName
 import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.ServiceReference
-import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.vault.VaultConstants.servicePolicyName
 import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.VaultTokenRequest
@@ -19,7 +19,7 @@ class EnvironmentVaultManager(vaultTemplate: VaultTemplate, val reference: Envir
 
     fun createServiceToken(name: String, reference: ServiceReference): String {
         val result = vaultTemplate.opsForToken().create(
-            VaultTokenRequest.builder().displayName(ModelConstants.vaultTokenName(name, reference)).noParent(true)
+            VaultTokenRequest.builder().displayName(vaultTokenName(name, reference)).noParent(true)
                 .renewable(true)
                 .ttl(VaultConstants.SERVICE_TOKEN_TTL).policies(
                     listOf(

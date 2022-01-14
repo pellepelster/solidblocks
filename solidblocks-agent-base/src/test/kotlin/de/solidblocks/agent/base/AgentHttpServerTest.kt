@@ -2,22 +2,22 @@ package de.solidblocks.agent.base
 
 import de.solidblocks.agent.base.api.BaseAgentApiClient
 import de.solidblocks.base.solidblocksVersion
-import de.solidblocks.test.DevelopmentEnvironment
-import de.solidblocks.test.DevelopmentEnvironmentExtension
+import de.solidblocks.test.IntegrationTestEnvironment
+import de.solidblocks.test.IntegrationTestExtension
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(DevelopmentEnvironmentExtension::class)
+@ExtendWith(IntegrationTestExtension::class)
 class AgentHttpServerTest {
 
     private val logger = KotlinLogging.logger {}
 
     @Test
-    fun testEnvironmentCa(developmentEnvironment: DevelopmentEnvironment) {
+    fun testEnvironmentCa(integrationTestEnvironment: IntegrationTestEnvironment) {
 
-        val environmentContext = developmentEnvironment.environmentContext()
+        val environmentContext = integrationTestEnvironment.environmentContext()
 
         val agentHttpServer = AgentHttpServer(environmentContext.serverCertificateManager("test"), environmentContext.clientCaCertificateManager(), -1)
 
@@ -30,9 +30,9 @@ class AgentHttpServerTest {
     }
 
     @Test
-    fun testTenantCa(developmentEnvironment: DevelopmentEnvironment) {
+    fun testTenantCa(integrationTestEnvironment: IntegrationTestEnvironment) {
 
-        val tenantContext = developmentEnvironment.tenantContext()
+        val tenantContext = integrationTestEnvironment.tenantContext()
 
         val agentHttpServer = AgentHttpServer(tenantContext.serverCertificateManager("test"), tenantContext.clientCaCertificateManager(), -1)
 

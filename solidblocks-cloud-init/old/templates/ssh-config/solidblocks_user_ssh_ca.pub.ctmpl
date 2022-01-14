@@ -1,1 +1,1 @@
-{{ with secret (printf "%s-user-ssh/config/ca" (env "CLOUD_NAME")) }}{{ .Data.public_key }}{{ end }}
+{{ with secret (printf "%s-ssh-user/config/ca" (env "CLOUD_NAME")) }}{{ .Data.public_key }}{{ end }}

@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.TenantReference
 import de.solidblocks.cli.commands.environment.BaseCloudEnvironmentCommand
-import de.solidblocks.cloud.AppplicationContext
+import de.solidblocks.cloud.ApplicationContext
 import mu.KotlinLogging
 import kotlin.system.exitProcess
 
@@ -16,7 +16,7 @@ class TenantBootstrapCommand : BaseCloudEnvironmentCommand(name = "bootstrap", h
 
     override fun run() {
 
-        val context = AppplicationContext(solidblocksDatabaseUrl)
+        val context = ApplicationContext(solidblocksDatabaseUrl)
 
         val tenant = TenantReference(cloud, environment, tenant)
         if (!context.verifyTenantReference(tenant)) {

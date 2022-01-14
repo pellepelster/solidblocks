@@ -11,12 +11,11 @@ import java.util.*
 class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
 
     fun createCloud(
-        reference: CloudReference,
+        name: String,
         rootDomain: String,
         configValues: List<CloudConfigValue> = emptyList(),
         development: Boolean = false,
     ): CloudEntity {
-        logger.info { "creating cloud '${reference.cloud}'" }
 
         val id = UUID.randomUUID()
         dsl.insertInto(CLOUDS)
@@ -25,7 +24,7 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
                 CLOUDS.NAME,
                 CLOUDS.DELETED,
             )
-            .values(id, reference.cloud, false).execute()
+            .values(id, name, false).execute()
 
         setConfiguration(CloudId(id), CloudEntity.ROOT_DOMAIN_KEY, rootDomain)
         setConfiguration(CloudId(id), CloudEntity.DEVELOPMENT_KEY, development.toString())
@@ -34,12 +33,16 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             setConfiguration(CloudId(id), it.name, it.value)
         }
 
-        return getCloud(reference)
+        return getCloud(name)
     }
 
-    fun hasCloud(reference: CloudReference): Boolean {
-        return dsl.fetchCount(CLOUDS, CLOUDS.NAME.eq(reference.cloud).and(CLOUDS.DELETED.isFalse)) == 1
+    fun hasCloud(name: String): Boolean {
+        return dsl.fetchCount(CLOUDS, CLOUDS.NAME.eq(name).and(CLOUDS.DELETED.isFalse)) == 1
     }
+
+    fun hasCloud(reference: CloudReference) = hasCloud(reference.cloud)
+
+    fun listClouds() = listClouds(null)
 
     fun listClouds(name: String? = null): List<CloudEntity> {
         val latest = latestConfigurationValues(CONFIGURATION_VALUES.CLOUD)
@@ -73,7 +76,9 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             }
     }
 
-    fun getCloud(reference: CloudReference): CloudEntity {
-        return listClouds(reference.cloud).first()
+    fun getCloud(name: String): CloudEntity {
+        return listClouds(name).first()
     }
+
+    fun getCloud(reference: CloudReference) = getCloud(reference.cloud)
 }

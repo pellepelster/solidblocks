@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.base.TenantReference
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
@@ -14,6 +15,11 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
     fun getTenant(reference: TenantReference): TenantEntity {
         val environment = environmentRepository.getEnvironment(reference)
         return listTenants(reference.tenant, environment).first()
+    }
+
+    fun getOptional(reference: TenantReference): TenantEntity? {
+        val environment = environmentRepository.getEnvironment(reference)
+        return listTenants(reference.tenant, environment).firstOrNull()
     }
 
     fun listTenants(name: String? = null, environment: EnvironmentEntity): List<TenantEntity> {
@@ -49,7 +55,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
             }
     }
 
-    fun createTenant(reference: TenantReference, networkCidr: String): TenantEntity {
+    fun createTenant(reference: EnvironmentReference, name: String, networkCidr: String): TenantEntity {
 
         val id = UUID.randomUUID()
         val environment = environmentRepository.getEnvironment(reference)
@@ -61,11 +67,11 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
                 TENANTS.DELETED,
                 TENANTS.ENVRIONMENT,
             )
-            .values(id, reference.tenant, false, environment.id).execute()
+            .values(id, name, false, environment.id).execute()
 
         setConfiguration(TenantId(id), ModelConstants.TENANT_NETWORK_CIDR_KEY, networkCidr)
 
-        return getTenant(reference)
+        return getTenant(reference.toTenant(name))
     }
 
     fun hasTenant(reference: TenantReference): Boolean {

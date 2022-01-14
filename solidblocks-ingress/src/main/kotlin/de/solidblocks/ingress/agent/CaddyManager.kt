@@ -1,7 +1,8 @@
 package de.solidblocks.ingress.agent
 
 import de.solidblocks.agent.base.DockerManager
-import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.BaseConstants.serviceId
+import de.solidblocks.base.EnvironmentServiceReference
 import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.ingress.agent.config.*
 import mu.KotlinLogging
@@ -10,30 +11,20 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.writeBytes
 
-class CaddyManager(
-    reference: ServiceReference,
-    storageDir: String,
-    serverCaFile: File,
-    clientCert: File,
-    clientKey: File,
-    network: String? = null
-) {
+class CaddyManager(reference: EnvironmentServiceReference, certificatesDir: File, network: String? = null) {
 
     private val logger = KotlinLogging.logger {}
 
     private val dockerManager: DockerManager
 
     // TODO: ensure permissions (use /solidblocks)
-    private val tempDir: Path =
-        Files.createTempDirectory("${reference.cloud}-${reference.environment}-${reference.service}")
+    private val tempDir: Path = Files.createTempDirectory("${reference.cloud}-${reference.environment}-${reference.service}")
 
     private val caddyConfigFile = Path.of(tempDir.toString(), "caddy.json")
 
     private val CADDY_CONFIG_PATH = "/solidblocks/config/caddy.json"
 
-    private val SERVER_CA_CERT_PATH = "/solidblocks/certificates/server_ca.crt"
-    private val CLIENT_CERTIFICATE_PATH = "/solidblocks/certificates/client.crt"
-    private val CLIENT_KEY_PATH = "/solidblocks/certificates/client.key"
+    private val CADDY_CERTIFICATES_DIR = "/solidblocks/certificates"
 
     fun writeCaddyConfig(config: CaddyConfig) {
         logger.info { "writing caddy config to '$caddyConfigFile" }
@@ -45,18 +36,12 @@ class CaddyManager(
         writeCaddyConfig(CaddyConfig())
 
         dockerManager = DockerManager(
-            "ghcr.io/pellepelster/solidblocks-ingress:${solidblocksVersion()}",
-            reference.service,
-            storageDir,
-            setOf(80),
+            "ghcr.io/pellepelster/solidblocks-ingress:${solidblocksVersion()}", reference.service, setOf(80),
             mapOf(
                 caddyConfigFile.toString() to CADDY_CONFIG_PATH,
-                serverCaFile.toString() to SERVER_CA_CERT_PATH,
-                clientCert.toString() to CLIENT_CERTIFICATE_PATH,
-                clientKey.toString() to CLIENT_KEY_PATH
+                certificatesDir.toString() to CADDY_CERTIFICATES_DIR,
             ),
-            healthCheck = false,
-            network = network
+            healthCheck = false, network = network
         )
     }
 
@@ -68,41 +53,35 @@ class CaddyManager(
         return dockerManager.stop()
     }
 
-    fun createReverseProxy(upstream: String) {
-
-        val config = CaddyConfig(
-            apps = mapOf(
-                "http" to
-                    Http(
-                        servers = mapOf(
-                            "server1" to Server(
-                                automaticHttps = AutomaticHttps(disable = true),
-                                routes = listOf(
-                                    Route(
-                                        match = listOf(
-                                            Match(host = listOf("localhost"))
-                                        ),
-                                        handle = listOf(
-                                            Handler(
-                                                transport = Transport(
-                                                    tls = Tls(
-                                                        clientCertificateFile = CLIENT_CERTIFICATE_PATH,
-                                                        clientCertificateKeyFile = CLIENT_KEY_PATH,
-                                                        rootCAPemFiles = listOf(SERVER_CA_CERT_PATH)
-                                                    )
-                                                ),
-                                                upstreams = listOf(Upstream(upstream))
-                                            )
-                                        )
+    fun updateServices(services: List<ReverseProxyConfiguration>) {
+        val servers = services.map {
+            serviceId(it.reference) to Server(
+                automaticHttps = AutomaticHttps(disable = true),
+                routes = listOf(
+                    Route(
+                        match = listOf(Match(host = it.hostnames)),
+                        handle = listOf(
+                            Handler(
+                                transport = Transport(
+                                    tls =
+                                    Tls(
+                                        clientCertificateFile = "$CADDY_CERTIFICATES_DIR/${it.clientCertificateFile.toPath().fileName}",
+                                        clientCertificateKeyFile = "$CADDY_CERTIFICATES_DIR/${it.clientCertificateKeyFile.toPath().fileName}",
+                                        rootCAPemFiles = listOf("$CADDY_CERTIFICATES_DIR/${it.rootCAPemFile.toPath().fileName}")
                                     )
-                                )
+                                ),
+                                upstreams = listOf(Upstream(it.upstream))
                             )
                         )
                     )
+                )
             )
-        )
+        }.toMap()
 
-        writeCaddyConfig(config)
+        if (servers.isNotEmpty()) {
+            val config = CaddyConfig(apps = mapOf("http" to Http(servers)))
+            writeCaddyConfig(config)
+        }
     }
 
     fun httpPort(): String = dockerManager.mappedPort(80)!!

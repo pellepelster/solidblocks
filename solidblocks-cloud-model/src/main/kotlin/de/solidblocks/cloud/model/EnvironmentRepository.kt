@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.model
 
 import de.solidblocks.base.EnvironmentReference
-import de.solidblocks.base.generateSshKey
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_MASTER_TOKEN_KEY
 import de.solidblocks.cloud.model.ModelConstants.CONSUL_SECRET_KEY
 import de.solidblocks.cloud.model.ModelConstants.SSH_IDENTITY_PRIVATE_KEY
@@ -102,6 +101,11 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
     fun getEnvironment(reference: EnvironmentReference): EnvironmentEntity {
         val cloud = cloudRepository.getCloud(reference)
         return listEnvironments(cloud).first { it.name == reference.environment }
+    }
+
+    fun getOptional(reference: EnvironmentReference): EnvironmentEntity? {
+        val cloud = cloudRepository.getCloud(reference)
+        return listEnvironments(cloud).firstOrNull { it.name == reference.environment }
     }
 
     fun hasEnvironment(reference: EnvironmentReference): Boolean {

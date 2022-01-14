@@ -8,6 +8,7 @@ import de.solidblocks.config.db.tables.ConfigurationValues
 import de.solidblocks.config.db.tables.Environments
 import de.solidblocks.config.db.tables.Services
 import de.solidblocks.config.db.tables.Tenants
+import de.solidblocks.config.db.tables.Users
 import org.jooq.Catalog
 import org.jooq.Table
 import org.jooq.impl.SchemaImpl
@@ -51,6 +52,11 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
      */
     val TENANTS get() = Tenants.TENANTS
 
+    /**
+     * The table <code>USERS</code>.
+     */
+    val USERS get() = Users.USERS
+
     override fun getCatalog(): Catalog = DefaultCatalog.DEFAULT_CATALOG
 
     override fun getTables(): List<Table<*>> = listOf(
@@ -58,6 +64,7 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
         ConfigurationValues.CONFIGURATION_VALUES,
         Environments.ENVIRONMENTS,
         Services.SERVICES,
-        Tenants.TENANTS
+        Tenants.TENANTS,
+        Users.USERS
     )
 }

@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":solidblocks-cloud-model"))
     implementation(project(":solidblocks-cloud"))
     implementation(project(":solidblocks-agent-base"))
+    implementation(project(":solidblocks-ingress-api"))
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
 

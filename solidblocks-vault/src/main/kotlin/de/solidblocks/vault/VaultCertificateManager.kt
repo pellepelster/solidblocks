@@ -13,15 +13,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
-class VaultCertificateManager(
-    private val address: String,
-    token: String,
-    val pkiMount: String,
-    val commonName: String,
-    private val altNames: List<String> = emptyList(),
-    private val minCertificateLifetime: Duration = Duration.days(2),
-    private val checkInterval: Duration = Duration.minutes(10)
-) {
+class VaultCertificateManager(private val address: String, token: String, val pkiMount: String, val commonName: String, private val altNames: List<String> = emptyList(), private val minCertificateLifetime: Duration = Duration.days(2), private val checkInterval: Duration = Duration.minutes(10), private val callback: ((VaultCertificate) -> Unit)? = null) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -35,10 +27,7 @@ class VaultCertificateManager(
         startCertificateWorker()
     }
 
-    private fun ipAddresses() =
-        NetworkInterface.getNetworkInterfaces().asSequence().flatMap { it.inetAddresses.asSequence() }.filterIsInstance(
-            Inet4Address::class.java
-        ).map { it.hostAddress }
+    private fun ipAddresses() = NetworkInterface.getNetworkInterfaces().asSequence().flatMap { it.inetAddresses.asSequence() }.filterIsInstance(Inet4Address::class.java).map { it.hostAddress }
 
     private fun startCertificateWorker() {
         logger.info { "starting certificate manager worker thread" }
@@ -51,13 +40,13 @@ class VaultCertificateManager(
                         logger.info { "certificate still has ${remainingCertificateLifetime.inWholeHours} hours left" }
                     } else {
                         logger.info { "certificate has less than ${minCertificateLifetime.inWholeHours} hours left" }
-                        certificate = issueCertificate()
+                        issueCertificate()
                     }
                 }
 
                 if (certificate == null) {
                     logger.info { "no active certificate found" }
-                    certificate = issueCertificate()
+                    issueCertificate()
                 }
 
                 if (certificate == null) {
@@ -69,38 +58,28 @@ class VaultCertificateManager(
         }
     }
 
-    private fun issueCertificate(): VaultCertificate? {
+    private fun issueCertificate() {
         try {
             val path = "$pkiMount/issue/$pkiMount"
 
             logger.info { "issuing certificate for '$commonName at '$path' with common name '$commonName' and alt names ${altNames.joinToString(", ") { "'$it'" }.ifEmpty { "<none>" }}" }
-            val response = vaultTemplate.write(
-                path,
-                mapOf(
-                    "common_name" to commonName,
-                    "alt_names" to altNames.joinToString(","),
-                    "ip_sans" to ipAddresses(),
-                    "private_key_format" to "pkcs8"
-                )
-            )
+            val response = vaultTemplate.write(path, mapOf("common_name" to commonName, "alt_names" to altNames.joinToString(","), "ip_sans" to ipAddresses(), "private_key_format" to "pkcs8"))
 
             if (response?.data == null) {
-                return null
+                return
             }
 
-            val certificate = response.data!!["certificate"].toString()
-            val privateKey = response.data!!["private_key"].toString()
-            val issuingCa = response.data!!["issuing_ca"].toString()
+            val certificateRaw = response.data!!["certificate"].toString()
+            val privateKeyRaw = response.data!!["private_key"].toString()
+            val issuingCaRaw = response.data!!["issuing_ca"].toString()
             val serialNumber = response.data!!["serial_number"].toString()
 
-            val result = VaultCertificate(certificate, privateKey, issuingCa)
-            logger.info { "issued certificate '${result.public.serialNumber}' valid until ${result.public.notAfter}" }
-            return result
+            certificate = VaultCertificate(certificateRaw, privateKeyRaw, issuingCaRaw)
+            logger.info { "issued certificate '${certificate!!.public.serialNumber}' valid until ${certificate!!.public.notAfter}" }
+            callback?.invoke(certificate!!)
         } catch (e: Exception) {
             logger.error(e) { "failed to issue certificate for service '$commonName'" }
         }
-
-        return null
     }
 
     public fun waitForCertificate(): VaultCertificate {
