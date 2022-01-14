@@ -16,7 +16,7 @@ class BaseAgentApiClient(val address: String, vaultCertificateManager: VaultCert
         val currentVersion: HttpResponse<VersionResponse> = client.get("$AGENT_BASE_PATH/version")
         currentVersion.data
     } catch (e: Exception) {
-        logger.error(e) { "error executing request for '$address'" }
+        // logger.error(e) { "error executing request for '$address'" }
         null
     }
 

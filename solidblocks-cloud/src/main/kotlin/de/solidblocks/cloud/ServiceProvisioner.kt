@@ -84,7 +84,7 @@ class ServiceProvisioner(
             defaultCloudInitVariables(
                 name, environment, rootZone, volume, vaultManager.createServiceToken(name, reference)
             ) + mapOf(
-                "solidblocks_service" to ConstantDataSource("solidblocks-helloworld-agent"),
+                "solidblocks_service" to ConstantDataSource("solidblocks-service-helloworld"),
                 "solidblocks_tenant" to ConstantDataSource(reference.tenant)
             )
         )

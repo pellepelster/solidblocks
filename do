@@ -13,31 +13,31 @@ function task_increment_version() {
     echo "SNAPSHOT-$(date +%Y%m%d%H%M%S)" > "${DIR}/version.txt"
 }
 
-function task_helloworld_agent_integration_test() {
+function task_repare_helloworld_integration_test() {
     local timestamp_now=$(date +%Y%m%d%H%M%S)
 
     local solidblocks_blue_version="BLUE-${timestamp_now}"
     local solidblocks_green_version="GREEN-${timestamp_now}"
 
-    local distributions_dir="${DIR}/solidblocks-helloworld-agent/build/distributions"
-    local artefacts_dir="${DIR}/solidblocks-helloworld-agent/src/test/resources/helloworld/bootstrap/artefacts"
+    local distributions_dir="${DIR}/solidblocks-service-helloworld/build/distributions"
+    local artefacts_dir="${DIR}/solidblocks-service-helloworld/src/test/resources/helloworld/bootstrap/artefacts"
 
     mkdir -p "${artefacts_dir}"
     rm -rf ${artefacts_dir}/*.tar
     rm -rf ${artefacts_dir}/*.version
 
-    SOLIDBLOCKS_VERSION="${solidblocks_blue_version}" "${DIR}/gradlew" solidblocks-helloworld-agent:assemble
-    SOLIDBLOCKS_VERSION="${solidblocks_green_version}" "${DIR}/gradlew" solidblocks-helloworld-agent:assemble
+    SOLIDBLOCKS_VERSION="${solidblocks_blue_version}" "${DIR}/gradlew" solidblocks-service-helloworld:assemble
+    SOLIDBLOCKS_VERSION="${solidblocks_green_version}" "${DIR}/gradlew" solidblocks-service-helloworld:assemble
 
-    cp "${distributions_dir}/solidblocks-helloworld-agent-${solidblocks_blue_version}.tar" "${artefacts_dir}/solidblocks-helloworld-agent-${solidblocks_blue_version}.tar"
-    cp "${distributions_dir}/solidblocks-helloworld-agent-${solidblocks_green_version}.tar" "${artefacts_dir}/solidblocks-helloworld-agent-${solidblocks_green_version}.tar"
+    cp "${distributions_dir}/solidblocks-service-helloworld-${solidblocks_blue_version}.tar" "${artefacts_dir}/solidblocks-service-helloworld-${solidblocks_blue_version}.tar"
+    cp "${distributions_dir}/solidblocks-service-helloworld-${solidblocks_green_version}.tar" "${artefacts_dir}/solidblocks-service-helloworld-${solidblocks_green_version}.tar"
 
     echo "${solidblocks_blue_version}" > "${artefacts_dir}/blue.version"
     echo "${solidblocks_green_version}" > "${artefacts_dir}/green.version"
 }
 
 function task_test() {
-  task_helloworld_agent_integration_test
+  task_repare_helloworld_integration_test
   "${DIR}/gradlew" clean docker ktFormat check
 }
 
@@ -84,7 +84,7 @@ shift || true
 case ${COMMAND} in
   cli) task_cli "$@" ;;
   test) task_test "$@" ;;
-  prepare-helloworld-agent-integration-test) task_helloworld_agent_integration_test "$@" ;;
+  prepare-helloworld-integration-test) task_repare_helloworld_integration_test "$@" ;;
   increment-version) task_increment_version "$@" ;;
   recreate-integration-test) task_recreate_integration_test "$@" ;;
   publish) task_publish "$@" ;;

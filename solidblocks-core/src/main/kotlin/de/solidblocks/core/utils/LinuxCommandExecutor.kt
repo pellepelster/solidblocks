@@ -46,8 +46,9 @@ class LinuxCommandExecutor : CommandExecutor {
             processBuilder.environment().putAll(environment)
             process = processBuilder.start()
 
-            stdoutThread = CommandExecutor.createReader(process!!.inputStream, stdout, printStream)
-            stderrThread = CommandExecutor.createReader(process!!.errorStream, stderr, printStream)
+            stdoutThread = CommandExecutor.createReader("stdout", process!!.inputStream, stdout, printStream)
+            stdoutThread.start()
+            stderrThread = CommandExecutor.createReader("stderr", process!!.errorStream, stderr, printStream)
             stderrThread.start()
 
             process!!.waitFor(timeout.toSeconds(), TimeUnit.SECONDS)
@@ -80,19 +81,6 @@ class LinuxCommandExecutor : CommandExecutor {
                 reader.lines().collect(Collectors.joining(System.lineSeparator()))
             } catch (e: Exception) {
                 throw RuntimeException(e)
-            }
-        }
-
-        fun executeBackgroundCommand(command: Array<String>, stringBuffer: MutableList<String>) {
-            try {
-                val pb = ProcessBuilder(*command)
-                val process = pb.start()
-                val thread = CommandExecutor.createReader(process.inputStream, stringBuffer, true)
-                thread.start()
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            } finally {
-                // killswitch.set(true);
             }
         }
     }

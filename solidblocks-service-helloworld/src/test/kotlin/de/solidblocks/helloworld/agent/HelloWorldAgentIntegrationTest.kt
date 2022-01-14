@@ -182,7 +182,7 @@ class HelloWorldAgentIntegrationTest {
             SOLIDBLOCKS_CLOUD=${developmentEnvironment.reference.cloud}
             SOLIDBLOCKS_ENVIRONMENT=${developmentEnvironment.reference.environment}
             SOLIDBLOCKS_TENANT=${developmentEnvironment.reference.tenant}
-            SOLIDBLOCKS_SERVICE=solidblocks-helloworld-agent
+            SOLIDBLOCKS_SERVICE=solidblocks-service-helloworld
             SOLIDBLOCKS_ROOT_DOMAIN=${developmentEnvironment.rootDomain}
             SOLIDBLOCKS_VERSION=$solidblocksVersion
             SOLIDBLOCKS_BOOTSTRAP_ADDRESS=http://localhost:${dockerEnvironment.getServicePort("bootstrap", 80)}

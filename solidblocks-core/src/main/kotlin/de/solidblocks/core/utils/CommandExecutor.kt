@@ -1,5 +1,6 @@
 package de.solidblocks.core.utils
 
+import mu.KotlinLogging
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -37,7 +38,10 @@ interface CommandExecutor {
     ): CommandResult
 
     companion object {
-        fun createReader(inputStream: InputStream, target: MutableList<String>, printStream: Boolean): Thread {
+
+        private val logger = KotlinLogging.logger {}
+
+        fun createReader(prefix: String, inputStream: InputStream, target: MutableList<String>, printStream: Boolean): Thread {
             return Thread {
                 try {
                     InputStreamReader(inputStream).use {
@@ -46,7 +50,7 @@ interface CommandExecutor {
                             while (iterator.hasNext()) {
                                 val line = iterator.next()
                                 if (printStream) {
-                                    println(line)
+                                    logger.info { "$prefix -> $line" }
                                 }
 
                                 target.add(line)
