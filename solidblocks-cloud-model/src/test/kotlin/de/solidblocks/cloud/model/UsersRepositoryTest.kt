@@ -11,17 +11,17 @@ class UsersRepositoryTest {
 
     @Test
     fun testCreateUser(testEnvironment: TestEnvironment) {
-        testEnvironment.ensureTenant()
+        val reference = testEnvironment.createEnvironment("cloud1", "env1")
 
-        val repository = UsersRepository(testEnvironment.dsl)
+        val repository = UsersRepository(testEnvironment.dsl, testEnvironment.cloudRepository, testEnvironment.environmentRepository, testEnvironment.tenantRepository)
 
-        assertThat(repository.read("user1")).isNull()
-        assertThat(repository.create("user1", "password1", "salt1")).isTrue
+        assertThat(repository.getUser("user1")).isNull()
+        assertThat(repository.createEnvironmentUser(reference, "juergen2@test.local", "password2", "salt2")).isTrue
 
-        val user = repository.read("user1")
+        val user = repository.getUser("juergen2@test.local")
         assertThat(user).isNotNull
-        assertThat(user?.email).isEqualTo("user1")
-        assertThat(user?.password).isEqualTo("password1")
-        assertThat(user?.salt).isEqualTo("salt1")
+        assertThat(user?.email).isEqualTo("juergen2@test.local")
+        assertThat(user?.password).isEqualTo("password2")
+        assertThat(user?.salt).isEqualTo("salt2")
     }
 }

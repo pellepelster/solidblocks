@@ -1,6 +1,6 @@
 package de.solidblocks.test
 
-import de.solidblocks.base.TenantReference
+import de.solidblocks.base.resources.TenantResource
 import de.solidblocks.cloud.ApplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createEnvironmentVaultConfig
 import de.solidblocks.cloud.VaultCloudConfiguration.createTenantVaultConfig
@@ -29,7 +29,7 @@ class IntegrationTestEnvironment {
 
     private val dockerEnvironment: DockerComposeContainer<*>
 
-    val reference = TenantReference("local", "dev", "tenant1")
+    val reference = TenantResource("local", "dev", "tenant1")
 
     val rootDomain = "local.test"
 
@@ -79,9 +79,12 @@ class IntegrationTestEnvironment {
     fun createCloud(): Boolean {
         logger.info { "creating test env (${reference.cloud}/${reference.environment})" }
 
-        context.cloudManager.createCloud(reference.cloud, rootDomain)
-        context.cloudManager.createEnvironment(
+        context.cloudsManager.createCloud(reference.cloud, rootDomain)
+        context.environmentsManager.create(
             reference,
+            reference.environment,
+            "juergen@test.local",
+            "password1",
             "<none>",
             "<none>",
             "<none>",

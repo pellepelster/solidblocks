@@ -50,6 +50,8 @@ dependencies {
 
     testImplementation("org.awaitility:awaitility:4.1.1")
     testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
+
+    testImplementation("io.mockk:mockk:1.12.2")
 }
 
 tasks.withType<KotlinCompile>().configureEach {

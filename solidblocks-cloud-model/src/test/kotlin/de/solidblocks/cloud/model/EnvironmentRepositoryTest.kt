@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.base.resources.EnvironmentResource
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,13 +10,13 @@ import org.junit.jupiter.api.extension.ExtendWith
 class EnvironmentRepositoryTest {
 
     @Test
-    fun testCreateEnvironment(solidblocksDatabase: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
-        val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
+    fun testCreateEnvironment(database: SolidblocksDatabase) {
+        val cloudRepository = CloudRepository(database.dsl)
+        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
 
-        val reference = EnvironmentReference("cloud1", "env1")
+        val reference = EnvironmentResource("cloud1", "env1")
         cloudRepository.createCloud(reference.cloud, "domain1")
-        assertThat(environmentRepository.createEnvironment(reference)).isNotNull
+        assertThat(environmentRepository.createEnvironment(reference, "env1")).isNotNull
 
         val environment = environmentRepository.getEnvironment(reference)
         assertThat(environment.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
@@ -26,15 +26,15 @@ class EnvironmentRepositoryTest {
     }
 
     @Test
-    fun testCreateAndUpdateEnvironment(solidblocksDatabase: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
-        val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
+    fun testCreateAndUpdateEnvironment(database: SolidblocksDatabase) {
+        val cloudRepository = CloudRepository(database.dsl)
+        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
 
-        val reference = EnvironmentReference("cloud3", "env3")
+        val reference = EnvironmentResource("cloud3", "env3")
 
         cloudRepository.createCloud(reference.cloud, "domain1")
 
-        assertThat(environmentRepository.createEnvironment(reference)).isNotNull
+        assertThat(environmentRepository.createEnvironment(reference, "env3")).isNotNull
 
         val environment = environmentRepository.getEnvironment(reference)
         assertThat(environment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(0)
@@ -47,15 +47,14 @@ class EnvironmentRepositoryTest {
     }
 
     @Test
-    fun testRegenerateCloudSecrets(solidblocksDatabase: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
-        val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
+    fun testRegenerateCloudSecrets(database: SolidblocksDatabase) {
+        val cloudRepository = CloudRepository(database.dsl)
+        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
 
-        val reference = EnvironmentReference("cloud4", "env4")
+        val reference = EnvironmentResource("cloud4", "env4")
+        cloudRepository.createCloud(reference.cloud, "domain4")
 
-        val cloud = cloudRepository.createCloud(reference.cloud, "domain4")
-
-        assertThat(environmentRepository.createEnvironment(reference)).isNotNull
+        assertThat(environmentRepository.createEnvironment(reference, "env4")).isNotNull
 
         val newEnv2 = environmentRepository.getEnvironment(reference)
         assertThat(newEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")

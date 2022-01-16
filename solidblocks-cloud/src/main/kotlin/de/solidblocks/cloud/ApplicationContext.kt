@@ -2,6 +2,11 @@ package de.solidblocks.cloud
 
 import de.solidblocks.base.*
 import de.solidblocks.base.lookups.Lookups
+import de.solidblocks.base.resources.CloudResource
+import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.resources.ServiceResource
+import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.cloud.clouds.CloudsManager
 import de.solidblocks.cloud.environments.EnvironmentApplicationContext
 import de.solidblocks.cloud.environments.EnvironmentProvisioner
 import de.solidblocks.cloud.environments.EnvironmentsManager
@@ -32,7 +37,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
     val tenantRepository: TenantRepository
     val usersRepository: UsersRepository
 
-    val cloudManager: CloudManager
+    val cloudsManager: CloudsManager
     val environmentsManager: EnvironmentsManager
     val tenantsManager: TenantsManager
     val usersManager: UsersManager
@@ -44,17 +49,18 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         cloudRepository = CloudRepository(database.dsl)
         environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
         tenantRepository = TenantRepository(database.dsl, environmentRepository)
-        usersRepository = UsersRepository(database.dsl)
+        usersRepository = UsersRepository(database.dsl, cloudRepository, environmentRepository, tenantRepository)
 
         serviceRepository = ServiceRepository(database.dsl, environmentRepository)
 
-        cloudManager = CloudManager(cloudRepository, environmentRepository, tenantRepository, serviceRepository, development)
-        environmentsManager = EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, development)
-        usersManager = UsersManager(usersRepository)
+        cloudsManager = CloudsManager(cloudRepository, environmentRepository, true)
+
+        usersManager = UsersManager(database.dsl, usersRepository)
+        environmentsManager = EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, usersManager, development)
         tenantsManager = TenantsManager(database.dsl, cloudRepository, environmentsManager, tenantRepository, usersManager, development)
     }
 
-    fun vaultRootClientProvider(reference: EnvironmentReference): VaultRootClientProvider {
+    fun vaultRootClientProvider(reference: EnvironmentResource): VaultRootClientProvider {
         if (vaultRootClientProvider == null) {
             vaultRootClientProvider = VaultRootClientProvider(reference, environmentRepository, vaultAddressOverride)
         }
@@ -62,17 +68,17 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         return vaultRootClientProvider!!
     }
 
-    fun createEnvironmentProvisioner(reference: EnvironmentReference) = EnvironmentProvisioner(
+    fun createEnvironmentProvisioner(reference: EnvironmentResource) = EnvironmentProvisioner(
         environmentRepository.getEnvironment(reference),
         vaultRootClientProvider(reference),
         createProvisioner(reference),
     )
 
-    fun createTenantProvisioner(reference: TenantReference) = TenantProvisioner(reference, createProvisioner(reference), environmentRepository, tenantRepository)
+    fun createTenantProvisioner(reference: TenantResource) = TenantProvisioner(reference, createProvisioner(reference), environmentRepository, tenantRepository)
 
-    fun createServiceProvisioner(reference: ServiceReference) = ServiceProvisioner(createProvisioner(reference), reference, environmentRepository, EnvironmentVaultManager(vaultRootClientProvider(reference).createClient(), reference))
+    fun createServiceProvisioner(reference: ServiceResource) = ServiceProvisioner(createProvisioner(reference), reference, environmentRepository, EnvironmentVaultManager(vaultRootClientProvider(reference).createClient(), reference))
 
-    fun createProvisioner(reference: EnvironmentReference): Provisioner {
+    fun createProvisioner(reference: EnvironmentResource): Provisioner {
 
         val provisionerRegistry = ProvisionerRegistry()
         val provisioner = Provisioner(provisionerRegistry)
@@ -98,7 +104,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         return provisioner
     }
 
-    fun verifyTenantReference(reference: TenantReference): Boolean {
+    fun verifyTenantReference(reference: TenantResource): Boolean {
         if (!verifyEnvironmentReference(reference)) {
             return false
         }
@@ -111,7 +117,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         return true
     }
 
-    fun verifyEnvironmentReference(reference: EnvironmentReference): Boolean {
+    fun verifyEnvironmentReference(reference: EnvironmentResource): Boolean {
         if (!verifyCloudReference(reference)) {
             return false
         }
@@ -124,7 +130,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         return true
     }
 
-    fun verifyCloudReference(reference: CloudReference): Boolean {
+    fun verifyCloudReference(reference: CloudResource): Boolean {
         if (!cloudRepository.hasCloud(reference)) {
             logger.error { "cloud '${reference.cloud}' not found" }
             return false
@@ -133,5 +139,5 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         return true
     }
 
-    fun createEnvironmentContext(reference: EnvironmentReference) = EnvironmentApplicationContext(reference, environmentRepository)
+    fun createEnvironmentContext(reference: EnvironmentResource) = EnvironmentApplicationContext(reference, environmentRepository)
 }

@@ -1,6 +1,7 @@
 package de.solidblocks.cli
 
 import com.github.ajalt.clikt.core.subcommands
+import de.solidblocks.cli.commands.api.ApiCommand
 import de.solidblocks.cli.commands.cloud.CloudCommand
 import de.solidblocks.cli.commands.cloud.CloudCreateCommand
 import de.solidblocks.cli.commands.environment.*
@@ -43,7 +44,8 @@ fun main(args: Array<String>) {
             ServiceCommand().subcommands(
                 ServiceCreateCommand(),
                 ServiceBootstrapCommand()
-            )
+            ),
+            ApiCommand()
         )
         .main(args)
 }

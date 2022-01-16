@@ -3,13 +3,18 @@
  */
 package de.solidblocks.config.db.indexes
 
+
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.Environments
 import de.solidblocks.config.db.tables.Services
 import de.solidblocks.config.db.tables.Tenants
+import de.solidblocks.config.db.tables.Users
+
 import org.jooq.Index
 import org.jooq.impl.DSL
 import org.jooq.impl.Internal
+
+
 
 // -------------------------------------------------------------------------
 // INDEX definitions
@@ -19,3 +24,4 @@ val IDX_CLOUDS_NAME: Index = Internal.createIndex(DSL.name("IDX_CLOUDS_NAME"), C
 val IDX_ENVIRONMENTS_NAME: Index = Internal.createIndex(DSL.name("IDX_ENVIRONMENTS_NAME"), Environments.ENVIRONMENTS, arrayOf(Environments.ENVIRONMENTS.CLOUD, Environments.ENVIRONMENTS.NAME), true)
 val IDX_SERVICES_ENVIRONMENT_NAME: Index = Internal.createIndex(DSL.name("IDX_SERVICES_ENVIRONMENT_NAME"), Services.SERVICES, arrayOf(Services.SERVICES.ENVIRONMENT, Services.SERVICES.NAME), true)
 val IDX_TENANTS_NAME: Index = Internal.createIndex(DSL.name("IDX_TENANTS_NAME"), Tenants.TENANTS, arrayOf(Tenants.TENANTS.NAME), true)
+val IDX_USERS_EMAIL: Index = Internal.createIndex(DSL.name("IDX_USERS_EMAIL"), Users.USERS, arrayOf(Users.USERS.EMAIL), true)

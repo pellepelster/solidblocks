@@ -2,7 +2,7 @@ package de.solidblocks.cloud.services
 
 import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.BaseConstants.serverName
-import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.resources.ServiceResource
 import de.solidblocks.base.lookups.ConstantDataSource
 import de.solidblocks.cloud.environments.defaultCloudInitVariables
 import de.solidblocks.cloud.model.EnvironmentRepository
@@ -31,14 +31,14 @@ import de.solidblocks.vault.VaultConstants.tokenSelfRenewalPolicy
 import mu.KotlinLogging
 
 class ServiceProvisioner(
-    val provisioner: Provisioner,
-    val reference: ServiceReference,
-    val environmentRepository: EnvironmentRepository,
-    val vaultManager: EnvironmentVaultManager
+        val provisioner: Provisioner,
+        val reference: ServiceResource,
+        val environmentRepository: EnvironmentRepository,
+        val vaultManager: EnvironmentVaultManager
 ) {
 
     companion object {
-        fun createVaultConfigResourceGroup(reference: ServiceReference): ResourceGroup {
+        fun createVaultConfigResourceGroup(reference: ServiceResource): ResourceGroup {
             val vaultConfigResourceGroup = ResourceGroup("vault_config")
 
             val servicePolicy = VaultPolicy(

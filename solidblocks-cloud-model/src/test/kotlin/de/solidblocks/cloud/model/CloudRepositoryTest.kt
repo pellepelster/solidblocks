@@ -27,7 +27,7 @@ class CloudRepositoryTest {
 
         assertThat(cloudRepository.hasCloud("cloud1")).isTrue
 
-        val configWithoutEnv = cloudRepository.getCloud("cloud1")
+        val configWithoutEnv = cloudRepository.getCloud("cloud1")!!
         assertThat(configWithoutEnv.name).isEqualTo("cloud1")
         assertThat(configWithoutEnv.rootDomain).isEqualTo("domain1")
     }

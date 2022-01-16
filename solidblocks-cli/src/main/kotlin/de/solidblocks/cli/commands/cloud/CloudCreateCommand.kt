@@ -2,7 +2,7 @@ package de.solidblocks.cli.commands.cloud
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.base.CloudReference
+import de.solidblocks.base.resources.CloudResource
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 import de.solidblocks.cloud.ApplicationContext
 
@@ -16,8 +16,8 @@ class CloudCreateCommand :
     override fun run() {
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
-        val reference = CloudReference(cloud)
+        val reference = CloudResource(cloud)
 
-        context.cloudManager.createCloud(reference.cloud, domain)
+        context.cloudsManager.createCloud(reference.cloud, domain)
     }
 }

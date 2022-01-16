@@ -10,7 +10,6 @@ data class CloudEntity(
     val configValues: List<CloudConfigValue>
 ) {
     companion object {
-        const val ROOT_DOMAIN_KEY = "root_domain"
         const val DEVELOPMENT_KEY = "development"
     }
 }

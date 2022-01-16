@@ -3,7 +3,7 @@ package de.solidblocks.vault.agent
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.BaseConstants.serviceId
-import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.resources.ServiceResource
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
 import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
 import de.solidblocks.cloud.model.ServiceRepository
@@ -21,7 +21,7 @@ import de.solidblocks.provisioner.vault.mount.VaultMountLookup
 import de.solidblocks.vault.VaultConstants
 import java.util.*
 
-class VaultService(val reference: ServiceReference, val serviceRepository: ServiceRepository) {
+class VaultService(val reference: ServiceResource, val serviceRepository: ServiceRepository) {
 
     fun createService(): Boolean {
         serviceRepository.createService(

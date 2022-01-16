@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.resources.ServiceResource
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.ServiceEntity
@@ -12,8 +12,8 @@ import java.util.*
 class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
 
     fun createService(
-        reference: ServiceReference,
-        configValues: Map<String, String> = emptyMap()
+            reference: ServiceResource,
+            configValues: Map<String, String> = emptyMap()
     ): Boolean {
 
         val id = UUID.randomUUID()
@@ -75,11 +75,11 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
             }
     }
 
-    fun getService(reference: ServiceReference) =
+    fun getService(reference: ServiceResource) =
         environmentRepository.getEnvironment(reference).let {
             listServices(reference.service, it).firstOrNull()
         }
 
-    fun hasService(reference: ServiceReference) =
+    fun hasService(reference: ServiceResource) =
         getService(reference) != null
 }

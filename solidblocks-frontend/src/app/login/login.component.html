@@ -1,0 +1,34 @@
+<div class="container h-100">
+  <div class="row d-flex justify-content-center align-items-center h-100">
+    <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+      <div class="card" style="border-radius: 1rem;">
+        <div class="card-body p-5">
+
+          <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="mb-4">
+              <label class="form-label" for="email">Email</label>
+              <input type="email" id="email" formControlName="email" class="form-control form-control-lg"/>
+            </div>
+
+            <div class="form mb-4">
+              <label class="form-label" for="password">Password</label>
+              <input type="password" formControlName="password" id="password" class="form-control form-control-lg"/>
+            </div>
+
+            <button class="btn btn-outline-info btn-lg px-5" [disabled]="!loginForm.valid" type="submit">Login
+            </button>
+
+          </form>
+
+          <!--
+          <p class="small mb-5 pb-lg-2"><a class="text-50" href="#!">Forgot password?</a></p>
+          -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

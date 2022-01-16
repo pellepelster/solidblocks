@@ -32,7 +32,7 @@ class EnvironmentSshConfigCommand :
         }
 
         val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
-        for (environment in context.cloudManager.listEnvironments(environmentRef)) {
+        for (environment in context.cloudsManager.listEnvironments(environmentRef)) {
 
             val environmentPath = Path(basePath.toString(), environment.name)
 

@@ -13,7 +13,7 @@ class EnvironmentRotateSecretsCommand :
             exitProcess(1)
         }
 
-        if (!context.cloudManager.rotateEnvironmentSecrets(environmentRef)) {
+        if (!context.cloudsManager.rotateEnvironmentSecrets(environmentRef)) {
             exitProcess(1)
         }
     }

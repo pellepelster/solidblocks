@@ -18,6 +18,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: root_domain
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
                   name: deleted
                   type: boolean
                   constraints:
@@ -199,23 +204,40 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: admin
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
                   name: deleted
                   type: boolean
                   constraints:
                     nullable: false
-#              - column:
-#                  name: environment
-#                  type: uuid
-#                  constraints:
-#                    nullable: false
-#                    foreignKeyName: fk_users_environment_id
-#                    references: environments(id)
-#        - createIndex:
-#            columns:
-#              - column:
-#                  name: environment
-#              - column:
-#                  name: email
-#            indexName: idx_users_environment_email
-#            tableName: users
-#            unique: true
+              - column:
+                  name: cloud
+                  type: uuid
+                  constraints:
+                    nullable: true
+                    foreignKeyName: fk_users_clouds_id
+                    references: clouds(id)
+              - column:
+                  name: environment
+                  type: uuid
+                  constraints:
+                    nullable: true
+                    foreignKeyName: fk_users_environment_id
+                    references: environments(id)
+              - column:
+                  name: tenant
+                  type: uuid
+                  constraints:
+                    nullable: true
+                    foreignKeyName: fk_users_tenants_id
+                    references: tenants(id)
+        - createIndex:
+            columns:
+              - column:
+                  name: email
+            indexName: idx_users_email
+            tableName: users
+            unique: true

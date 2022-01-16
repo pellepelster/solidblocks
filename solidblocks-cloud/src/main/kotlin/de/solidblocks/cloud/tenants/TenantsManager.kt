@@ -1,13 +1,13 @@
 package de.solidblocks.cloud.tenants
 
-import de.solidblocks.base.EnvironmentReference
-import de.solidblocks.cloud.model.CreationResult
-import de.solidblocks.cloud.model.ErrorCodes
+import de.solidblocks.base.resources.EnvironmentResource
 import de.solidblocks.cloud.NetworkUtils
-import de.solidblocks.cloud.model.ValidationResult
 import de.solidblocks.cloud.environments.EnvironmentsManager
 import de.solidblocks.cloud.model.CloudRepository
+import de.solidblocks.cloud.model.CreationResult
+import de.solidblocks.cloud.model.ErrorCodes
 import de.solidblocks.cloud.model.TenantRepository
+import de.solidblocks.cloud.model.ValidationResult
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.cloud.users.UsersManager
@@ -27,7 +27,7 @@ class TenantsManager(
 
     private val logger = KotlinLogging.logger {}
 
-    fun create(environmentReference: EnvironmentReference, name: String, email: String, password: String): CreationResult<TenantEntity> {
+    fun create(environmentReference: EnvironmentResource, name: String, email: String, password: String): CreationResult<TenantEntity> {
         val environment = environmentsManager.getOptional(environmentReference)
             ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
 
@@ -37,7 +37,6 @@ class TenantsManager(
             TransactionalCallable {
                 logger.info { "creating tenant '$name'" }
                 tenantRepository.createTenant(environment.reference, name, nextNetworkCidr(environment))
-                usersManager.createUser(reference, email, password)
                 CreationResult(tenantRepository.getTenant(reference))
             }
         )

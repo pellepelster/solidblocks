@@ -3,6 +3,7 @@ package de.solidblocks.cloud.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.cloud.model.ErrorCodes
+import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpServer
@@ -12,13 +13,18 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
+import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.ext.web.handler.JWTAuthHandler
 import mu.KotlinLogging
 
 val jackson = jacksonObjectMapper()
 
-fun RoutingContext.jsonResponse(response: Any) {
-    this.response().setStatusCode(401).putHeader("Content-Type", "application/json").end(jackson.writeValueAsString(response))
+fun RoutingContext.jsonResponse(response: Any, code: Int = 200) {
+    this.response().setStatusCode(code).putHeader("Content-Type", "application/json").end(jackson.writeValueAsString(response))
+}
+
+fun RoutingContext.jsonResponse(code: Int = 200) {
+    this.response().setStatusCode(code).end()
 }
 
 fun <T> RoutingContext.jsonRequest(clazz: Class<T>): T {
@@ -40,6 +46,10 @@ class CloudApiHttpServer(val privateKey: String, val publicKey: String, port: In
     private val router: Router
 
     val authProvider: JWTAuth
+
+    val authHandler: JWTAuthHandler
+
+    val listen: Future<HttpServer>
 
     val port: Int
         get() = server.actualPort()
@@ -66,27 +76,52 @@ class CloudApiHttpServer(val privateKey: String, val publicKey: String, port: In
                 )
         )
 
+        router.route().handler(
+            CorsHandler.create("*")
+            .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+            .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+            .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+            .allowedHeader("Access-Control-Request-Method")
+            .allowedHeader("Access-Control-Allow-Credentials")
+            .allowedHeader("Access-Control-Allow-Origin")
+            .allowedHeader("Access-Control-Allow-Headers")
+            .allowedHeader("Content-Type"))
+
+        authHandler = JWTAuthHandler.create(authProvider)
+
+
         router.route().handler(BodyHandler.create())
+
 
         registerErrorHandlers()
 
         logger.info { "starting cloud http api on on port $port" }
-        server.requestHandler(router).listen(port) {
+        listen = server.requestHandler(router).listen(port)
+        /*
+        {
             if (it.succeeded()) {
                 logger.info { "cloud http api started on port ${server.actualPort()}" }
             } else {
                 logger.error(it.cause()) { "starting cloud http api has failed" }
             }
-        }
+        }*/
     }
 
-    fun addRouter(path: String): Router {
+    fun createSubRouter(path: String): Router {
         val subRouter = Router.router(vertx)
 
-        subRouter.route().handler(JWTAuthHandler.create(authProvider))
+        subRouter.route().handler(authHandler)
         router.mountSubRouter(path, subRouter)
 
         return subRouter
+    }
+
+    fun configureSubRouter(path: String, configure: (Router, JWTAuthHandler) -> Unit) {
+        val subRouter = Router.router(vertx)
+
+        router.mountSubRouter(path, subRouter)
+
+        configure(subRouter, authHandler)
     }
 
     fun addUnprotectedRouter(path: String): Router {
@@ -109,7 +144,11 @@ class CloudApiHttpServer(val privateKey: String, val publicKey: String, port: In
         }
 
         router.errorHandler(401) {
-            it.jsonResponse(BaseApiResponse(listOf(MessageResponse(ErrorCodes.UNAUTHORIZED))))
+            it.jsonResponse(BaseApiResponse(listOf(MessageResponse(ErrorCodes.UNAUTHORIZED))), 401)
         }
+    }
+
+    fun waitForShutdown() {
+        listen.succeeded()
     }
 }

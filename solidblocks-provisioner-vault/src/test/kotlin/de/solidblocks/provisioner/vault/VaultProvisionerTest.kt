@@ -1,9 +1,7 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
-import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.kv.VaultKVProvisioner
 import de.solidblocks.provisioner.vault.mount.VaultMount
@@ -14,7 +12,8 @@ import de.solidblocks.provisioner.vault.policy.VaultPolicy
 import de.solidblocks.provisioner.vault.policy.VaultPolicyProvisioner
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRole
 import de.solidblocks.provisioner.vault.ssh.VaultSshBackendRoleProvisioner
-import de.solidblocks.test.SolidblocksTestDatabaseExtension
+import de.solidblocks.test.TestEnvironment
+import de.solidblocks.test.TestEnvironmentExtension
 import junit.framework.Assert.assertFalse
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertTrue
@@ -29,7 +28,7 @@ import java.io.File
 import java.util.*
 
 @Testcontainers
-@ExtendWith(SolidblocksTestDatabaseExtension::class)
+@ExtendWith(TestEnvironmentExtension::class)
 class VaultProvisionerTest {
 
     companion object {
@@ -46,16 +45,12 @@ class VaultProvisionerTest {
 
         private fun vaultAddress() = "http://localhost:${environment.getServicePort("vault", 8200)}"
 
-        fun vaultTemplateProvider(solidblocksDatabase: SolidblocksDatabase): () -> VaultTemplate {
-
+        fun vaultTemplateProvider(testEnvironment: TestEnvironment): () -> VaultTemplate {
             if (vaultClient == null) {
-                val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
-                val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
+                val reference = testEnvironment.createEnvironment()
 
-                val reference = EnvironmentReference(UUID.randomUUID().toString(), UUID.randomUUID().toString())
-
-                cloudRepository.createCloud(reference.cloud, "domain1", emptyList())
-                environmentRepository.createEnvironment(reference)
+                val cloudRepository = CloudRepository(testEnvironment.dsl)
+                val environmentRepository = EnvironmentRepository(testEnvironment.dsl, cloudRepository)
 
                 vaultClient = VaultRootClientProvider(
                     reference,
@@ -69,10 +64,10 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testMountDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
+    fun testMountDiffAndApply(testEnvironment: TestEnvironment) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
-        val kvProvisioner = VaultKVProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(testEnvironment))
+        val kvProvisioner = VaultKVProvisioner(vaultTemplateProvider(testEnvironment))
 
         val mount = VaultMount(UUID.randomUUID().toString(), "kv-v2")
         val result = mountProvisioner.apply(mount)
@@ -94,10 +89,10 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testPkiBackendRoleDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
+    fun testPkiBackendRoleDiffAndApply(testEnvironment: TestEnvironment) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
-        val roleProvisioner = VaultPkiBackendRoleProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(testEnvironment))
+        val roleProvisioner = VaultPkiBackendRoleProvisioner(vaultTemplateProvider(testEnvironment))
 
         val mount = VaultMount(UUID.randomUUID().toString(), "pki")
         mountProvisioner.apply(mount)
@@ -162,9 +157,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testDiffAndApplySsh(solidblocksDatabase: SolidblocksDatabase) {
+    fun testDiffAndApplySsh(testEnvironment: TestEnvironment) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(testEnvironment))
 
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "ssh")
 
@@ -178,9 +173,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testDiffAndApplyKv2(solidblocksDatabase: SolidblocksDatabase) {
+    fun testDiffAndApplyKv2(testEnvironment: TestEnvironment) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(testEnvironment))
 
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "kv-v2")
 
@@ -194,9 +189,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testDiffAndApplyPki(solidblocksDatabase: SolidblocksDatabase) {
+    fun testDiffAndApplyPki(testEnvironment: TestEnvironment) {
 
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(testEnvironment))
 
         val mount = VaultMount("${UUID.randomUUID()}-pki", "pki")
 
@@ -210,9 +205,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testSSHBackendRoleDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
-        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(solidblocksDatabase))
-        val sshBackendRoleProvisioner = VaultSshBackendRoleProvisioner(vaultTemplateProvider(solidblocksDatabase))
+    fun testSSHBackendRoleDiffAndApply(testEnvironment: TestEnvironment) {
+        val mountProvisioner = VaultMountProvisioner(vaultTemplateProvider(testEnvironment))
+        val sshBackendRoleProvisioner = VaultSshBackendRoleProvisioner(vaultTemplateProvider(testEnvironment))
 
         val mount = VaultMount(UUID.randomUUID().toString(), "ssh")
         mountProvisioner.apply(mount)
@@ -264,9 +259,9 @@ class VaultProvisionerTest {
     }
 
     @Test
-    fun testPolicyDiffAndApply(solidblocksDatabase: SolidblocksDatabase) {
+    fun testPolicyDiffAndApply(testEnvironment: TestEnvironment) {
 
-        val policyProvisioner = VaultPolicyProvisioner(vaultTemplateProvider(solidblocksDatabase))
+        val policyProvisioner = VaultPolicyProvisioner(vaultTemplateProvider(testEnvironment))
 
         val name = UUID.randomUUID().toString()
         val emptyPolicy = VaultPolicy(name, emptySet())

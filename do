@@ -49,28 +49,28 @@ function task_recreate_integration_test() {
     --cloud blcks \
     --domain blcks.de
 
-  task_cli environment create \
-      --cloud blcks \
-      --environment dev \
-      --hetzner-cloud-api-token-read-only "$(pass solidblocks/integration-test/hcloud_api_token_ro)" \
-      --hetzner-cloud-api-token-read-write "$(pass solidblocks/integration-test/hcloud_api_token_rw)" \
-      --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
-      --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
+  #task_cli environment create \
+  #    --cloud blcks \
+  #    --environment dev \
+  #    --hetzner-cloud-api-token-read-only "$(pass solidblocks/integration-test/hcloud_api_token_ro)" \
+  #    --hetzner-cloud-api-token-read-write "$(pass solidblocks/integration-test/hcloud_api_token_rw)" \
+  #    --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
+  #    --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
 
-  task_cli environment ssh-config \
-    --cloud blcks \
-    --environment dev
+  #task_cli environment ssh-config \
+  #  --cloud blcks \
+  #  --environment dev
 
-  task_cli tenant create \
-    --cloud blcks \
-    --environment dev \
-    --tenant tenant1
+  #task_cli tenant create \
+  #  --cloud blcks \
+  #  --environment dev \
+  #  --tenant tenant1
 
-  task_cli service create \
-    --cloud blcks \
-    --environment dev \
-    --tenant tenant1 \
-    --service service1
+  #task_cli service create \
+  #  --cloud blcks \
+  #  --environment dev \
+  #  --tenant tenant1 \
+  #  --service service1
 
 }
 

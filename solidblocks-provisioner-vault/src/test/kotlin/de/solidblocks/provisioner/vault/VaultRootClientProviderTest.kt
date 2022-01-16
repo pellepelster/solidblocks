@@ -1,10 +1,9 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.base.EnvironmentReference
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
-import de.solidblocks.cloud.model.SolidblocksDatabase
-import de.solidblocks.test.SolidblocksTestDatabaseExtension
+import de.solidblocks.test.TestEnvironment
+import de.solidblocks.test.TestEnvironmentExtension
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -14,12 +13,11 @@ import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
-import java.util.*
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
 @Testcontainers
-@ExtendWith(SolidblocksTestDatabaseExtension::class)
+@ExtendWith(TestEnvironmentExtension::class)
 class VaultRootClientProviderTest {
 
     companion object {
@@ -35,15 +33,12 @@ class VaultRootClientProviderTest {
     }
 
     @Test
-    fun testInitAndUnseal(solidblocksDatabase: SolidblocksDatabase) {
+    fun testInitAndUnseal(testEnvironment: TestEnvironment) {
 
-        val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
-        val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
+        val reference = testEnvironment.createEnvironment()
 
-        val reference = EnvironmentReference(UUID.randomUUID().toString(), UUID.randomUUID().toString())
-
-        cloudRepository.createCloud(reference.cloud, "domain1", emptyList())
-        environmentRepository.createEnvironment(reference)
+        val cloudRepository = CloudRepository(testEnvironment.dsl)
+        val environmentRepository = EnvironmentRepository(testEnvironment.dsl, cloudRepository)
 
         val provider = VaultRootClientProvider(reference, environmentRepository, vaultAddress())
 

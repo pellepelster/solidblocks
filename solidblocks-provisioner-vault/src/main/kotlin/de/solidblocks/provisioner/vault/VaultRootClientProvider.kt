@@ -1,6 +1,6 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.base.resources.EnvironmentResource
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.vault.InitializingVaultManager
@@ -13,9 +13,9 @@ import org.springframework.vault.core.VaultTemplate
 import java.net.URI
 
 class VaultRootClientProvider(
-    private val reference: EnvironmentReference,
-    private val environmentRepository: EnvironmentRepository,
-    private val vaultAddressOverride: String? = null
+        private val reference: EnvironmentResource,
+        private val environmentRepository: EnvironmentRepository,
+        private val vaultAddressOverride: String? = null
 ) {
 
     private fun vaultAddress(): String {

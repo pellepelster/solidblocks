@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test
 
 class CloudApiHttpServerTest {
 
-    val keyPair = generateRsaKeyPair()
+    private val keyPair = generateRsaKeyPair()
 
-    val httpServer = CloudApiHttpServer(privateKey = keyPair.first, publicKey = keyPair.second, port = -1)
+    private val httpServer = CloudApiHttpServer(privateKey = keyPair.first, publicKey = keyPair.second, port = -1)
 
     @Test
     fun testRegisterProtectedRoute() {
-        httpServer.addRouter("/protected").route().handler {
+        httpServer.createSubRouter("/protected").route().handler {
             it.response().end("protected stuff")
         }
 
@@ -33,5 +33,22 @@ class CloudApiHttpServerTest {
         given().port(httpServer.port).get("/unprotected").then().assertThat()
             .statusCode(200)
             .body(equalTo("unprotected stuff"))
+    }
+
+    @Test
+    fun testCrossOriginHeader() {
+        httpServer.addUnprotectedRouter("/unprotected").route().handler {
+            it.response().end("unprotected stuff")
+        }
+
+        httpServer.createSubRouter("/protected").route().handler {
+            it.response().end("protected stuff")
+        }
+
+        given().port(httpServer.port).get("/protected").then().assertThat()
+            .header("Access-Control-Allow-Origin", "*")
+
+        given().port(httpServer.port).get("/unprotected").then().assertThat()
+            .header("Access-Control-Allow-Origin", "*")
     }
 }

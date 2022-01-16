@@ -2,7 +2,7 @@ package de.solidblocks.ingress.agent
 
 import de.solidblocks.agent.base.DockerManager
 import de.solidblocks.base.BaseConstants.serviceId
-import de.solidblocks.base.EnvironmentServiceReference
+import de.solidblocks.base.resources.EnvironmentServiceResource
 import de.solidblocks.base.solidblocksVersion
 import de.solidblocks.ingress.agent.config.*
 import mu.KotlinLogging
@@ -11,7 +11,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.writeBytes
 
-class CaddyManager(reference: EnvironmentServiceReference, certificatesDir: File, network: String? = null) {
+class CaddyManager(reference: EnvironmentServiceResource, certificatesDir: File, network: String? = null) {
 
     private val logger = KotlinLogging.logger {}
 

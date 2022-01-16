@@ -2,7 +2,7 @@ package de.solidblocks.cli.commands.tenant
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.base.TenantReference
+import de.solidblocks.base.resources.TenantResource
 import de.solidblocks.cli.commands.environment.BaseCloudEnvironmentCommand
 import de.solidblocks.cloud.ApplicationContext
 import mu.KotlinLogging
@@ -18,7 +18,7 @@ class TenantDestroyCommand : BaseCloudEnvironmentCommand(name = "destroy", help 
 
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
-        val tenant = TenantReference(cloud, environment, tenant)
+        val tenant = TenantResource(cloud, environment, tenant)
         if (!context.verifyTenantReference(tenant)) {
             exitProcess(1)
         }

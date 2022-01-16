@@ -15,6 +15,7 @@ dependencies {
     implementation("io.vertx:vertx-web:4.2.3")
     implementation("io.vertx:vertx-lang-kotlin:4.2.3")
     implementation("io.vertx:vertx-auth-jwt:4.2.3")
+    implementation("io.vertx:vertx-ext:38")
 
     implementation("com.github.seancfoley:ipaddress:5.3.3")
 

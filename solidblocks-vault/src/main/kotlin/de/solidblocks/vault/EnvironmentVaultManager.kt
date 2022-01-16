@@ -1,23 +1,23 @@
 package de.solidblocks.vault
 
 import de.solidblocks.base.BaseConstants.vaultTokenName
-import de.solidblocks.base.EnvironmentReference
-import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.resources.ServiceResource
 import de.solidblocks.vault.VaultConstants.servicePolicyName
 import org.springframework.vault.core.VaultTemplate
 import org.springframework.vault.support.VaultTokenRequest
 
-class EnvironmentVaultManager(vaultTemplate: VaultTemplate, val reference: EnvironmentReference) :
+class EnvironmentVaultManager(vaultTemplate: VaultTemplate, val reference: EnvironmentResource) :
     BaseVaultManager(vaultTemplate) {
 
-    constructor(address: String, token: String, reference: EnvironmentReference) : this(
+    constructor(address: String, token: String, reference: EnvironmentResource) : this(
         createVaultTemplate(
             address, token
         ),
         reference
     )
 
-    fun createServiceToken(name: String, reference: ServiceReference): String {
+    fun createServiceToken(name: String, reference: ServiceResource): String {
         val result = vaultTemplate.opsForToken().create(
             VaultTokenRequest.builder().displayName(vaultTokenName(name, reference)).noParent(true)
                 .renewable(true)

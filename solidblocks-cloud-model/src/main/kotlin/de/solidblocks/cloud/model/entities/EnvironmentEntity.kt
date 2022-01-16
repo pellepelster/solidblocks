@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model.entities
 
-import de.solidblocks.base.EnvironmentReference
+import de.solidblocks.base.resources.EnvironmentResource
 import java.util.*
 
 data class EnvironmentEntity(
@@ -17,8 +17,8 @@ data class EnvironmentEntity(
 
     fun getConfigValue(key: String) = configValues.getConfigValue(key)!!.value
 
-    val reference: EnvironmentReference
-        get() = EnvironmentReference(cloud.name, name)
+    val reference: EnvironmentResource
+        get() = EnvironmentResource(cloud.name, name)
 
     val rootToken: String?
         get() = configValues.firstOrNull { it.name == ROOT_TOKEN_KEY }?.value

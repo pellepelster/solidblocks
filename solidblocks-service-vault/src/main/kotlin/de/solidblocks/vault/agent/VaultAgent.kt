@@ -15,7 +15,7 @@ import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import de.solidblocks.base.BaseConstants.SERVICE_LABEL_KEY
 import de.solidblocks.base.BaseConstants.serviceId
-import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.resources.ServiceResource
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
 import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
 import de.solidblocks.vault.InitializingVaultManager
@@ -59,11 +59,11 @@ import kotlin.io.path.writeBytes
 data class RaftAutopilotResponse(val healthy: Boolean, val leader: String)
 
 class VaultAgent(
-    private val reference: ServiceReference,
-    private val storageDir: String,
-    private val minioAddress: String,
-    solidblocksVaultAddress: String,
-    solidblocksVaultToken: String,
+        private val reference: ServiceResource,
+        private val storageDir: String,
+        private val minioAddress: String,
+        solidblocksVaultAddress: String,
+        solidblocksVaultToken: String,
 ) {
 
     private val DOCKER_IMAGE = "solidblocks-service-vault"

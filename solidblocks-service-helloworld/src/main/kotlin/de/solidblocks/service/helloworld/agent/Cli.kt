@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import de.solidblocks.agent.base.AgentHttpServer
 import de.solidblocks.base.BaseConstants.serversDomain
-import de.solidblocks.base.ServiceReference
+import de.solidblocks.base.resources.ServiceResource
 import de.solidblocks.vault.VaultCaCertificateManager
 import de.solidblocks.vault.VaultCertificateManager
 import de.solidblocks.vault.VaultConstants.environmentClientPkiMountName
@@ -37,7 +37,7 @@ class RunCommand : CliktCommand(name = "run") {
 
     override fun run() {
 
-        val reference = ServiceReference(cloud, environment, tenant, service)
+        val reference = ServiceResource(cloud, environment, tenant, service)
 
         val vaultTokenManager = VaultTokenManager(vaultAddress, vaultToken)
 
