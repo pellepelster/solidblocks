@@ -81,6 +81,7 @@ class CloudApiHttpServer(val privateKey: String, val publicKey: String, port: In
             .allowedMethod(io.vertx.core.http.HttpMethod.GET)
             .allowedMethod(io.vertx.core.http.HttpMethod.POST)
             .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+            .allowedHeader("Authorization")
             .allowedHeader("Access-Control-Request-Method")
             .allowedHeader("Access-Control-Allow-Credentials")
             .allowedHeader("Access-Control-Allow-Origin")

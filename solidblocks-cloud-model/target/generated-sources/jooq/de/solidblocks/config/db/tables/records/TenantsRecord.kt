@@ -33,7 +33,7 @@ open class TenantsRecord() : UpdatableRecordImpl<TenantsRecord>(Tenants.TENANTS)
         set(value) = set(2, value)
         get() = get(2) as Boolean?
 
-    var envrionment: UUID?
+    var environment: UUID?
         set(value) = set(3, value)
         get() = get(3) as UUID?
 
@@ -52,15 +52,15 @@ open class TenantsRecord() : UpdatableRecordImpl<TenantsRecord>(Tenants.TENANTS)
     override fun field1(): Field<UUID?> = Tenants.TENANTS.ID
     override fun field2(): Field<String?> = Tenants.TENANTS.NAME
     override fun field3(): Field<Boolean?> = Tenants.TENANTS.DELETED
-    override fun field4(): Field<UUID?> = Tenants.TENANTS.ENVRIONMENT
+    override fun field4(): Field<UUID?> = Tenants.TENANTS.ENVIRONMENT
     override fun component1(): UUID? = id
     override fun component2(): String? = name
     override fun component3(): Boolean? = deleted
-    override fun component4(): UUID? = envrionment
+    override fun component4(): UUID? = environment
     override fun value1(): UUID? = id
     override fun value2(): String? = name
     override fun value3(): Boolean? = deleted
-    override fun value4(): UUID? = envrionment
+    override fun value4(): UUID? = environment
 
     override fun value1(value: UUID?): TenantsRecord {
         this.id = value
@@ -78,7 +78,7 @@ open class TenantsRecord() : UpdatableRecordImpl<TenantsRecord>(Tenants.TENANTS)
     }
 
     override fun value4(value: UUID?): TenantsRecord {
-        this.envrionment = value
+        this.environment = value
         return this
     }
 
@@ -93,10 +93,10 @@ open class TenantsRecord() : UpdatableRecordImpl<TenantsRecord>(Tenants.TENANTS)
     /**
      * Create a detached, initialised TenantsRecord
      */
-    constructor(id: UUID? = null, name: String? = null, deleted: Boolean? = null, envrionment: UUID? = null): this() {
+    constructor(id: UUID? = null, name: String? = null, deleted: Boolean? = null, environment: UUID? = null): this() {
         this.id = id
         this.name = name
         this.deleted = deleted
-        this.envrionment = envrionment
+        this.environment = environment
     }
 }

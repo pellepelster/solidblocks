@@ -19,7 +19,7 @@ import org.jooq.ForeignKey
 import org.jooq.Index
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row3
+import org.jooq.Row4
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
@@ -75,6 +75,11 @@ open class Environments(
     val NAME: TableField<EnvironmentsRecord, String?> = createField(DSL.name("NAME"), SQLDataType.VARCHAR(256).nullable(false), this, "")
 
     /**
+     * The column <code>ENVIRONMENTS.DELETED</code>.
+     */
+    val DELETED: TableField<EnvironmentsRecord, Boolean?> = createField(DSL.name("DELETED"), SQLDataType.BOOLEAN.nullable(false), this, "")
+
+    /**
      * The column <code>ENVIRONMENTS.CLOUD</code>.
      */
     val CLOUD: TableField<EnvironmentsRecord, UUID?> = createField(DSL.name("CLOUD"), SQLDataType.UUID.nullable(false), this, "")
@@ -125,7 +130,7 @@ open class Environments(
     override fun rename(name: Name): Environments = Environments(name, null)
 
     // -------------------------------------------------------------------------
-    // Row3 type methods
+    // Row4 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row3<UUID?, String?, UUID?> = super.fieldsRow() as Row3<UUID?, String?, UUID?>
+    override fun fieldsRow(): Row4<UUID?, String?, Boolean?, UUID?> = super.fieldsRow() as Row4<UUID?, String?, Boolean?, UUID?>
 }

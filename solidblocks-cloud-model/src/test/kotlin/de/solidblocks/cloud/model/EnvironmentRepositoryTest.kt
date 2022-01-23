@@ -1,24 +1,57 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.resources.CloudResource
 import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.resources.parsePermissions
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.util.*
 
 @ExtendWith(SolidblocksTestDatabaseExtension::class)
 class EnvironmentRepositoryTest {
+
+    @Test
+    fun testPermissions(database: SolidblocksDatabase) {
+        val cloudRepository = CloudRepository(database.dsl)
+        val repository = EnvironmentRepository(database.dsl, cloudRepository)
+
+        val cloud1 = UUID.randomUUID().toString()
+        val env1 = UUID.randomUUID().toString()
+
+        val cloud2 = UUID.randomUUID().toString()
+        val env2 = UUID.randomUUID().toString()
+
+        cloudRepository.createCloud(cloud1, "domain1")
+        cloudRepository.createCloud(cloud2, "domain1")
+
+        assertThat(repository.createEnvironment(CloudResource(cloud1), env1)).isNotNull
+        assertThat(repository.createEnvironment(CloudResource(cloud2), env2)).isNotNull
+
+        val env1Resource = EnvironmentResource(cloud1, env1)
+        assertThat(repository.getEnvironment(env1Resource, "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(env1Resource, "srn::${env1}:".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(env1Resource, "srn::${env2}:".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud1}:${env1}:".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud1}::".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud1}:${env2}:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud2}::".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud2}:${env1}:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud2}:${env2}:".parsePermissions())).isNull()
+    }
 
     @Test
     fun testCreateEnvironment(database: SolidblocksDatabase) {
         val cloudRepository = CloudRepository(database.dsl)
         val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
 
-        val reference = EnvironmentResource("cloud1", "env1")
+        val reference = EnvironmentResource("cloud2", "env1")
         cloudRepository.createCloud(reference.cloud, "domain1")
+
         assertThat(environmentRepository.createEnvironment(reference, "env1")).isNotNull
 
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference)!!
         assertThat(environment.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(environment.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(environment.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
@@ -36,11 +69,11 @@ class EnvironmentRepositoryTest {
 
         assertThat(environmentRepository.createEnvironment(reference, "env3")).isNotNull
 
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference)!!
         assertThat(environment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(0)
 
         environmentRepository.updateEnvironment(reference, "my-attribute", "my-value")
-        val updatedEnvironment = environmentRepository.getEnvironment(reference)
+        val updatedEnvironment = environmentRepository.getEnvironment(reference)!!
 
         assertThat(updatedEnvironment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(1)
         assertThat(updatedEnvironment.configValues).anyMatch { it.name == "my-attribute" && it.value == "my-value" }
@@ -56,7 +89,7 @@ class EnvironmentRepositoryTest {
 
         assertThat(environmentRepository.createEnvironment(reference, "env4")).isNotNull
 
-        val newEnv2 = environmentRepository.getEnvironment(reference)
+        val newEnv2 = environmentRepository.getEnvironment(reference)!!
         assertThat(newEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(newEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(newEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
@@ -64,7 +97,7 @@ class EnvironmentRepositoryTest {
 
         environmentRepository.rotateEnvironmentSecrets(reference)
 
-        val updatedEnv2 = environmentRepository.getEnvironment(reference)
+        val updatedEnv2 = environmentRepository.getEnvironment(reference)!!
         assertThat(updatedEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(updatedEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(updatedEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")

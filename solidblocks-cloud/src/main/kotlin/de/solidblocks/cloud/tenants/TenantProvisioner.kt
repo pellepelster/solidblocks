@@ -26,8 +26,8 @@ class TenantProvisioner(
     val tenant: TenantEntity
 
     init {
-        tenant = tenantRepository.getTenant(reference)
-        val environment = environmentRepository.getEnvironment(reference)
+        tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '${reference}' not found")
+        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
 
         createTenantModel(
             tenant,

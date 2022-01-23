@@ -1,6 +1,6 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.base.*
+import de.solidblocks.base.ProvisionerRegistry
 import de.solidblocks.base.lookups.Lookups
 import de.solidblocks.base.resources.CloudResource
 import de.solidblocks.base.resources.EnvironmentResource
@@ -53,7 +53,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
 
         serviceRepository = ServiceRepository(database.dsl, environmentRepository)
 
-        cloudsManager = CloudsManager(cloudRepository, environmentRepository, true)
+        cloudsManager = CloudsManager(cloudRepository, environmentRepository, usersRepository, true)
 
         usersManager = UsersManager(database.dsl, usersRepository)
         environmentsManager = EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, usersManager, development)
@@ -69,7 +69,8 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
     }
 
     fun createEnvironmentProvisioner(reference: EnvironmentResource) = EnvironmentProvisioner(
-        environmentRepository.getEnvironment(reference),
+        environmentRepository.getEnvironment(reference)
+            ?: throw RuntimeException("environment '${reference}' not found"),
         vaultRootClientProvider(reference),
         createProvisioner(reference),
     )
@@ -84,6 +85,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         val provisioner = Provisioner(provisionerRegistry)
 
         val environment = environmentRepository.getEnvironment(reference)
+            ?: throw RuntimeException("environment '${reference}' not found")
 
         Hetzner.registerProvisioners(provisionerRegistry, environment, provisioner)
         Hetzner.registerLookups(provisionerRegistry, provisioner)

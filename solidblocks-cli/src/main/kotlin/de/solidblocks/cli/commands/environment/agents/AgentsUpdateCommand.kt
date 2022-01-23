@@ -18,7 +18,7 @@ class AgentsUpdateCommand :
         }
 
         val instanceManager =
-            InstanceManager(Hetzner.createCloudApi(context.environmentRepository.getEnvironment(environmentRef)))
+            InstanceManager(Hetzner.createCloudApi(context.environmentRepository.getEnvironment(environmentRef)!!))
 
         val environment = context.createEnvironmentContext(environmentRef)
         val agentManager = AgentManager(instanceManager, environment.serverCertificateManager("TODO"), environment.serverCaCertificateManager())

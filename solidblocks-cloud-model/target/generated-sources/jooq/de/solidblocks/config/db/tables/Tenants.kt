@@ -80,9 +80,9 @@ open class Tenants(
     val DELETED: TableField<TenantsRecord, Boolean?> = createField(DSL.name("DELETED"), SQLDataType.BOOLEAN.nullable(false), this, "")
 
     /**
-     * The column <code>TENANTS.ENVRIONMENT</code>.
+     * The column <code>TENANTS.ENVIRONMENT</code>.
      */
-    val ENVRIONMENT: TableField<TenantsRecord, UUID?> = createField(DSL.name("ENVRIONMENT"), SQLDataType.UUID.nullable(false), this, "")
+    val ENVIRONMENT: TableField<TenantsRecord, UUID?> = createField(DSL.name("ENVIRONMENT"), SQLDataType.UUID.nullable(false), this, "")
 
     private constructor(alias: Name, aliased: Table<TenantsRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<TenantsRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)

@@ -18,6 +18,7 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
 
         val id = UUID.randomUUID()
         val environment = environmentRepository.getEnvironment(reference)
+            ?: return false
 
         dsl.insertInto(SERVICES)
             .columns(
@@ -40,7 +41,7 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
         environment: EnvironmentEntity
     ): List<ServiceEntity> {
 
-        val latest = latestConfigurationValues(CONFIGURATION_VALUES.SERVICE)
+        val latest = latestConfigurationValuesQuery(CONFIGURATION_VALUES.SERVICE)
 
         val services = SERVICES.`as`("services")
 
@@ -75,10 +76,10 @@ class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentR
             }
     }
 
-    fun getService(reference: ServiceResource) =
-        environmentRepository.getEnvironment(reference).let {
-            listServices(reference.service, it).firstOrNull()
-        }
+    fun getService(reference: ServiceResource): ServiceEntity? {
+        val environment = environmentRepository.getEnvironment(reference) ?: return null
+        return listServices(reference.service, environment).firstOrNull()
+    }
 
     fun hasService(reference: ServiceResource) =
         getService(reference) != null

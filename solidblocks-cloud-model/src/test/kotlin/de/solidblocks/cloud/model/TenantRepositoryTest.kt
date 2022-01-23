@@ -1,19 +1,65 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.resources.CloudResource
+import de.solidblocks.base.resources.EnvironmentResource
 import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.resources.parsePermissions
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.util.*
 
 @ExtendWith(SolidblocksTestDatabaseExtension::class)
 class TenantRepositoryTest {
 
     @Test
-    fun testCreateAndUpdateTenant(solidblocksDatabase: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(solidblocksDatabase.dsl)
-        val environmentRepository = EnvironmentRepository(solidblocksDatabase.dsl, cloudRepository)
-        val tenantRepository = TenantRepository(solidblocksDatabase.dsl, environmentRepository)
+    fun testPermissions(database: SolidblocksDatabase) {
+        val cloudRepository = CloudRepository(database.dsl)
+        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
+        val repository = TenantRepository(database.dsl, environmentRepository)
+
+        val cloud1 = UUID.randomUUID().toString()
+        val env1 = UUID.randomUUID().toString()
+        val tenant1 = UUID.randomUUID().toString()
+
+        val cloud2 = UUID.randomUUID().toString()
+        val env2 = UUID.randomUUID().toString()
+        val tenant2 = UUID.randomUUID().toString()
+
+        cloudRepository.createCloud(cloud1, "domain1")
+        cloudRepository.createCloud(cloud2, "domain1")
+
+        environmentRepository.createEnvironment(CloudResource(cloud1), env1)
+        environmentRepository.createEnvironment(CloudResource(cloud2), env2)
+
+        assertThat(repository.createTenant(EnvironmentResource(cloud1, env1), tenant1, "<none>")).isNotNull
+        assertThat(repository.createTenant(EnvironmentResource(cloud2, env2), tenant2, "<none>")).isNotNull
+
+        val tenant1Resource = TenantResource(cloud1, env1, tenant1)
+        assertThat(repository.getTenant(tenant1Resource, "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env1}:".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env2}:".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env1}:${tenant1}".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env1}:${tenant2}".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env2}:${tenant1}".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env2}:${tenant2}".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}::".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env1}:".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env1}:${tenant1}".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env1}:${tenant2}".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env2}:".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env2}:${tenant1}".parsePermissions())).isNull()
+        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env2}:${tenant2}".parsePermissions())).isNull()
+
+    }
+
+    @Test
+    fun testCreateAndUpdateTenant(database: SolidblocksDatabase) {
+        val cloudRepository = CloudRepository(database.dsl)
+        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
+        val tenantRepository = TenantRepository(database.dsl, environmentRepository)
 
         val reference = TenantResource("cloud1", "env1", "tenant1")
 
@@ -25,7 +71,7 @@ class TenantRepositoryTest {
         assertThat(tenantRepository.createTenant(reference, "tenant1", "10.0.0.0/16")).isNotNull
         assertThat(tenantRepository.hasTenant(reference)).isTrue
 
-        val tenant = tenantRepository.getTenant(reference)
+        val tenant = tenantRepository.getTenant(reference)!!
         assertThat(tenant.name).isEqualTo("tenant1")
     }
 }

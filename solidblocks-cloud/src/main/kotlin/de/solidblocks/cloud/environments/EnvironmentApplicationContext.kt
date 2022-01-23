@@ -24,7 +24,7 @@ class EnvironmentApplicationContext(
     }
 
     fun serverCertificateManager(hostname: String): VaultCertificateManager {
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
 
         return VaultCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(environment),
@@ -37,7 +37,7 @@ class EnvironmentApplicationContext(
     }
 
     fun clientCertificateManager(client: String): VaultCertificateManager {
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
 
         return VaultCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(environment),
@@ -49,7 +49,7 @@ class EnvironmentApplicationContext(
     }
 
     fun serverCaCertificateManager(): VaultCaCertificateManager {
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
 
         return VaultCaCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(environment),
@@ -59,7 +59,7 @@ class EnvironmentApplicationContext(
     }
 
     fun clientCaCertificateManager(): VaultCaCertificateManager {
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
 
         return VaultCaCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(environment),

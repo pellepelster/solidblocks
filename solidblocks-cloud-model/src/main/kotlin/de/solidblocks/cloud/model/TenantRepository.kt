@@ -1,9 +1,9 @@
 package de.solidblocks.cloud.model
 
 import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.resources.ResourcePermissions
 import de.solidblocks.base.resources.TenantResource
 import de.solidblocks.cloud.model.entities.CloudConfigValue
-import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
@@ -11,53 +11,70 @@ import de.solidblocks.config.db.tables.references.ENVIRONMENTS
 import de.solidblocks.config.db.tables.references.TENANTS
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import java.util.*
 
 class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
 
     val tenants = TENANTS.`as`("tenants")
 
-    fun getTenant(id: UUID): TenantEntity? {
-        val record = dsl.selectFrom(TENANTS.join(ENVIRONMENTS).on(ENVIRONMENTS.ID.eq(TENANTS.ID)).leftJoin(CLOUDS).on(ENVIRONMENTS.ID.eq(CLOUDS.ID))).where(TENANTS.ID.eq(id)).fetchOne()
-            ?: return null
+    fun hasTenant(reference: TenantResource, permissions: ResourcePermissions? = null) =
+        getTenant(reference, permissions) != null
 
-        val cloud = record.getValue(CLOUDS.NAME)
-        val environment = record.getValue(ENVIRONMENTS.NAME)
-        val tenant = record.getValue(TENANTS.NAME)
+    fun getTenant(id: UUID): TenantEntity? = listTenants(tenants.ID.eq(id)).firstOrNull()
 
-        return getTenant(TenantResource(cloud!!, environment!!, tenant!!))
+    fun getTenant(reference: TenantResource, permissions: ResourcePermissions? = null): TenantEntity? {
+        return listTenants(
+            CLOUDS.NAME.eq(reference.cloud).and(ENVIRONMENTS.NAME.eq(reference.environment))
+                .and(tenants.NAME.eq(reference.tenant)), permissions
+        ).firstOrNull()
     }
 
-    fun getTenant(reference: TenantResource): TenantEntity {
-        val environment = environmentRepository.getEnvironment(reference)
-        return listTenants(tenants.NAME.eq(reference.tenant), environment).first()
-    }
+    fun listTenants(filter: Condition? = null, permissions: ResourcePermissions? = null): List<TenantEntity> {
 
-    fun getOptional(reference: TenantResource): TenantEntity? {
-        val environment = environmentRepository.getEnvironment(reference)
-        return listTenants(tenants.NAME.eq(reference.tenant), environment).firstOrNull()
-    }
+        val latest = latestConfigurationValuesQuery(CONFIGURATION_VALUES.TENANT)
 
-    fun listTenants(extraCondition: Condition? = null, environment: EnvironmentEntity): List<TenantEntity> {
+        var filterConditions = tenants.DELETED.isFalse
 
-        val latest = latestConfigurationValues(CONFIGURATION_VALUES.TENANT)
-
-        var condition = tenants.DELETED.isFalse
-        condition = condition.and(tenants.ENVRIONMENT.eq(environment.id))
-
-        if (extraCondition != null) {
-            condition.and(extraCondition)
+        if (filter != null) {
+            filterConditions = filterConditions.and(filter)
         }
 
-        return dsl.selectFrom(tenants.leftJoin(latest).on(tenants.ID.eq(latest.field(CONFIGURATION_VALUES.TENANT))))
-            .where(condition)
+        var permissionConditions: Condition = DSL.noCondition()
+        if (permissions != null && !permissions.isCloudWildcard && permissions.clouds.isNotEmpty()) {
+            if (!permissions.isCloudWildcard && permissions.clouds.isNotEmpty()) {
+                for (cloud in permissions.clouds) {
+                    permissionConditions = permissionConditions.and(CLOUDS.NAME.eq(cloud))
+                }
+            }
+
+            if (!permissions.isEnvironmentWildcard && permissions.environments.isNotEmpty()) {
+                for (environment in permissions.environments) {
+                    permissionConditions = permissionConditions.and(ENVIRONMENTS.NAME.eq(environment))
+                }
+            }
+
+            if (!permissions.isTenantWildcard && permissions.tenants.isNotEmpty()) {
+                for (tenant in permissions.tenants) {
+                    permissionConditions = permissionConditions.and(tenants.NAME.eq(tenant))
+                }
+            }
+        }
+
+        return dsl.selectFrom(
+            tenants
+                .leftJoin(ENVIRONMENTS).on(tenants.ENVIRONMENT.eq(ENVIRONMENTS.ID))
+                .leftJoin(CLOUDS).on(ENVIRONMENTS.CLOUD.eq(CLOUDS.ID))
+                .leftJoin(latest).on(tenants.ID.eq(latest.field(CONFIGURATION_VALUES.TENANT)))
+        )
+            .where(filterConditions).and(permissionConditions)
             .fetchGroups(
                 { it.into(tenants) }, { it.into(latest) }
             ).map {
                 TenantEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
-                    environment = environment,
+                    environment = environmentRepository.getEnvironment(it.key.environment!!)!!,
                     configValues = it.value.map {
                         CloudConfigValue(
                             it.getValue(CONFIGURATION_VALUES.NAME)!!,
@@ -69,17 +86,16 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
             }
     }
 
-    fun createTenant(reference: EnvironmentResource, name: String, networkCidr: String): TenantEntity {
-
+    fun createTenant(reference: EnvironmentResource, name: String, networkCidr: String): TenantEntity? {
         val id = UUID.randomUUID()
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference) ?: return null
 
         dsl.insertInto(TENANTS)
             .columns(
                 TENANTS.ID,
                 TENANTS.NAME,
                 TENANTS.DELETED,
-                TENANTS.ENVRIONMENT,
+                TENANTS.ENVIRONMENT,
             )
             .values(id, name, false, environment.id).execute()
 
@@ -88,8 +104,4 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
         return getTenant(reference.toTenant(name))
     }
 
-    fun hasTenant(reference: TenantResource): Boolean {
-        val environment = environmentRepository.getEnvironment(reference)
-        return listTenants(tenants.NAME.eq(reference.tenant), environment).isNotEmpty()
-    }
 }

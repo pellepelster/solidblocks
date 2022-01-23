@@ -9,7 +9,7 @@ const userTokenKey = "user-token";
 })
 export class LoginService {
 
-  private token: string | null = null
+  token: string | null = null
 
   constructor(private authService: AuthService) {
     this.token = localStorage.getItem(userTokenKey)

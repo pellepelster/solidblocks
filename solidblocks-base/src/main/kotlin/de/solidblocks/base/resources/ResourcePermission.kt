@@ -1,12 +1,16 @@
 package de.solidblocks.base.resources
 
+fun List<String>.parsePermissions() = ResourcePermissions(this.mapNotNull { ResourcePermission.parse(it) })
+
+fun String.parsePermissions() = listOf(this).parsePermissions()
+
 data class CloudPermission(val wildcard: Boolean, val cloud: String?)
 
 data class EnvironmentPermission(val wildcard: Boolean, val environment: String?)
 
 data class TenantPermission(val wildcard: Boolean, val tenant: String?)
 
-data class ResourcePermissions(val permissions: List<ResourcePermission>) {
+data class ResourcePermissions(val permissions: List<ResourcePermission> = emptyList()) {
 
     val isCloudWildcard: Boolean
         get() = permissions.any { it.cloud.wildcard }
@@ -27,11 +31,12 @@ data class ResourcePermissions(val permissions: List<ResourcePermission>) {
         get() = permissions.mapNotNull { it.tenant.tenant }
 
     companion object {
-        fun parse(permissions: List<String>) = ResourcePermissions(permissions.mapNotNull { ResourcePermission.parse(it) })
+        fun parse(permissions: List<String>) =
+            ResourcePermissions(permissions.mapNotNull { ResourcePermission.parse(it) })
+
+        fun adminPermissions() = listOf("src:::").parsePermissions()
     }
 }
-
-fun List<String>.parsePermissions() = ResourcePermissions(this.mapNotNull { ResourcePermission.parse(it) })
 
 data class ResourcePermission(val cloud: CloudPermission, val environment: EnvironmentPermission, val tenant: TenantPermission) {
 

@@ -1,5 +1,7 @@
 package de.solidblocks.cloud.model.entities
 
+import de.solidblocks.base.resources.ResourcePermissions
+import de.solidblocks.base.resources.parsePermissions
 import java.util.*
 
 data class UserEntity(
@@ -12,24 +14,24 @@ data class UserEntity(
         val environment: EnvironmentEntity? = null,
         val tenant: TenantEntity? = null
 ) {
-    fun scope(): Scope {
+    fun scope() = when {
+        listOfNotNull(
+            cloud,
+            environment,
+            tenant
+        ).size > 1 -> throw RuntimeException("invalid entity for user '${email}'")
+        cloud != null -> Scope.cloud
+        environment != null -> Scope.environment
+        tenant != null -> Scope.tenant
+        admin -> Scope.root
+        else -> throw RuntimeException("unable to determine scope for user '${email}'")
+    }
 
-        if (cloud != null) {
-            return Scope.cloud
-        }
-
-        if (environment != null) {
-            return Scope.environment
-        }
-
-        if (tenant != null) {
-            return Scope.tenant
-        }
-
-        if (admin) {
-            return Scope.root
-        }
-
-        throw RuntimeException("unable to determine scope for user '${email}'")
+    fun permissions() = when {
+        admin -> listOf("srn:::").parsePermissions()
+        scope() == Scope.cloud -> listOf("srn:${cloud!!.name}::").parsePermissions()
+        scope() == Scope.environment -> listOf("srn:${environment!!.cloud.name}:${environment.name}:").parsePermissions()
+        scope() == Scope.tenant -> listOf("srn:${tenant!!.environment.cloud.name}:${tenant.environment.name}:${tenant.name}").parsePermissions()
+        else -> ResourcePermissions()
     }
 }

@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.api
+package de.solidblocks.cloud.auth.api
 
 import de.solidblocks.cloud.users.api.UserResponse
 

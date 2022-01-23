@@ -72,7 +72,7 @@ class ServiceProvisioner(
             )
         )
 
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
         val rootZone = DnsZone(environment.cloud.rootDomain)
 
         val staticVariables = HashMap<String, IResourceLookup<String>>()

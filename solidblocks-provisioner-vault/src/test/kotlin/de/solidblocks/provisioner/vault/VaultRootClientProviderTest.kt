@@ -42,7 +42,7 @@ class VaultRootClientProviderTest {
 
         val provider = VaultRootClientProvider(reference, environmentRepository, vaultAddress())
 
-        val environmentBefore = environmentRepository.getEnvironment(reference)
+        val environmentBefore = environmentRepository.getEnvironment(reference)!!
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-0" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-1" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-2" })
@@ -50,7 +50,7 @@ class VaultRootClientProviderTest {
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-4" })
 
         val vaultClient = provider.createClient()
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference)!!
 
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-0" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-1" })

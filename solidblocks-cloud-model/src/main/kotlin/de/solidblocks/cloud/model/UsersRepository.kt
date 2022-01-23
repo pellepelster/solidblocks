@@ -18,17 +18,17 @@ class UsersRepository(val dsl: DSLContext, val cloudRepository: CloudRepository,
     }
 
     fun createCloudUser(reference: CloudResource, email: String, password: String, salt: String): Boolean {
-        val cloud = cloudRepository.getCloud(reference)
+        val cloud = cloudRepository.getCloud(reference) ?: return false
         return createUser(cloud = cloud.id, email = email, admin = false, password = password, salt = salt)
     }
 
     fun createEnvironmentUser(reference: EnvironmentResource, email: String, password: String, salt: String): Boolean {
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentRepository.getEnvironment(reference) ?: return false
         return createUser(environment = environment.id, email = email, admin = false, password = password, salt = salt)
     }
 
     fun createTenantUser(reference: TenantResource, email: String, password: String, salt: String): Boolean {
-        val tenant = tenantRepository.getTenant(reference)
+        val tenant = tenantRepository.getTenant(reference) ?: return false
         return createUser(tenant = tenant.id, email = email, admin = false, password = password, salt = salt)
     }
 

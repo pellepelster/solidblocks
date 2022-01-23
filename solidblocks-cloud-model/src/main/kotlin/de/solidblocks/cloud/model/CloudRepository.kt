@@ -1,12 +1,15 @@
 package de.solidblocks.cloud.model
 
 import de.solidblocks.base.resources.CloudResource
+import de.solidblocks.base.resources.ResourcePermissions
+import de.solidblocks.base.resources.ResourcePermissions.Companion.adminPermissions
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.CloudEntity
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import java.util.*
 
 class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
@@ -45,16 +48,24 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
 
     fun hasCloud(reference: CloudResource) = hasCloud(reference.cloud)
 
-    fun listClouds(extraCondition: Condition? = null): List<CloudEntity> {
-        val latest = latestConfigurationValues(CONFIGURATION_VALUES.CLOUD)
+    fun listClouds(filter: Condition? = null, permissions: ResourcePermissions? = null): List<CloudEntity> {
+        val latest = latestConfigurationValuesQuery(CONFIGURATION_VALUES.CLOUD)
 
-        var condition = clouds.DELETED.isFalse
-        if (extraCondition != null) {
-            condition = condition.and(extraCondition)
+        var filterConditions = clouds.DELETED.isFalse
+
+        if (filter != null) {
+            filterConditions = filterConditions.and(filter)
+        }
+
+        var permissionConditions: Condition = DSL.noCondition()
+        if (permissions != null && !permissions.isCloudWildcard && permissions.clouds.isNotEmpty()) {
+            for (cloud in permissions.clouds) {
+                permissionConditions = permissionConditions.and(clouds.NAME.eq(cloud))
+            }
         }
 
         return dsl.selectFrom(clouds.leftJoin(latest).on(clouds.ID.eq(latest.field(CONFIGURATION_VALUES.CLOUD))))
-            .where(condition)
+            .where(filterConditions).and(permissionConditions).orderBy(clouds.NAME)
             .fetchGroups(
                 { it.into(clouds) }, { it.into(latest) }
             ).map {
@@ -74,11 +85,15 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             }
     }
 
-    fun getCloud(reference: CloudResource) = getCloud(reference.cloud)!!
+    fun getCloud(reference: CloudResource, permissions: ResourcePermissions? = null) =
+        getCloud(reference.cloud, permissions)
 
-    fun getCloud(name: String) = listClouds(clouds.NAME.eq(name)).firstOrNull()
+    fun getCloud(name: String, permissions: ResourcePermissions? = null) =
+        listClouds(clouds.NAME.eq(name), permissions ?: adminPermissions()).firstOrNull()
 
-    fun getCloud(id: UUID) = listClouds(clouds.ID.eq(id)).firstOrNull()
+    fun getCloud(id: UUID, permissions: ResourcePermissions? = null) =
+        listClouds(clouds.ID.eq(id), permissions ?: adminPermissions()).firstOrNull()
 
-    fun getCloudByRootDomain(rootDomain: String) = listClouds(clouds.ROOT_DOMAIN.eq(rootDomain)).firstOrNull()
+    fun getCloudByRootDomain(rootDomain: String, permissions: ResourcePermissions? = null) =
+        listClouds(clouds.ROOT_DOMAIN.eq(rootDomain), permissions ?: adminPermissions()).firstOrNull()
 }

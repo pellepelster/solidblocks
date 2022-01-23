@@ -30,7 +30,8 @@ class EnvironmentsManager(
             return null
         }
 
-        val environments = environmentRepository.listEnvironments(clouds.first())
+        throw RuntimeException("XXX")
+        val environments = environmentRepository.listEnvironments()
         return environments.firstOrNull()
     }
 
@@ -65,7 +66,7 @@ class EnvironmentsManager(
                     createConfigValue(Hetzner.HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
                     createConfigValue(Hetzner.HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
                 )
-            )
+            ) ?: throw RuntimeException("failed to create environment '${name}' for '${reference}' not found")
 
             usersManager.createEnvironmentUser(reference, email, password)
 
@@ -73,5 +74,5 @@ class EnvironmentsManager(
         }
     )
 
-    fun getOptional(reference: EnvironmentResource) = environmentRepository.getOptional(reference)
+    fun getOptional(reference: EnvironmentResource) = environmentRepository.getEnvironment(reference)
 }

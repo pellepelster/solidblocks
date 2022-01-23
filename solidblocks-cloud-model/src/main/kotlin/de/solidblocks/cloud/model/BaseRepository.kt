@@ -25,7 +25,7 @@ abstract class BaseRepository(val dsl: DSLContext) {
 
     protected val logger = KotlinLogging.logger {}
 
-    protected fun latestConfigurationValues(referenceColumn: TableField<ConfigurationValuesRecord, UUID?>): Table<Record5<UUID?, UUID?, String?, String?, Int?>> {
+    protected fun latestConfigurationValuesQuery(referenceColumn: TableField<ConfigurationValuesRecord, UUID?>): Table<Record5<UUID?, UUID?, String?, String?, Int?>> {
 
         val latestVersions =
             dsl.select(
