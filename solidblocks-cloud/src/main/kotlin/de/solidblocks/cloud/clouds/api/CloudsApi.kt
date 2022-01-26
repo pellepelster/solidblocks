@@ -15,7 +15,7 @@ class CloudsApi(cloudApiHttpServer: CloudApiHttpServer, val cloudsManager: Cloud
 
     fun get(rc: RoutingContext) {
         val email = rc.user().principal().getString("email")
-        rc.jsonResponse(CloudsResponseWrapper(cloudsManager.listCloudsForUser(email).map { CloudResponse(it.name) }))
+        rc.jsonResponse(CloudsResponseWrapper(cloudsManager.listCloudsForUser(email).map { it.toResponse() }))
     }
 
     fun info(rc: RoutingContext) {
@@ -24,7 +24,7 @@ class CloudsApi(cloudApiHttpServer: CloudApiHttpServer, val cloudsManager: Cloud
         val clouds = cloudsManager.listCloudsForUser(email)
 
         for (cloud in clouds) {
-            ///environmentsManager.ge()
+            // /environmentsManager.ge()
         }
     }
 

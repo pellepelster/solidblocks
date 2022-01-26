@@ -13,11 +13,11 @@ import java.io.File
 import java.net.InetAddress
 
 class IngressManager(
-        val vaultAddress: String,
-        val vaultToken: String,
-        val reference: EnvironmentServiceResource,
-        val certificatesDir: File,
-        val network: String? = null
+    val vaultAddress: String,
+    val vaultToken: String,
+    val reference: EnvironmentServiceResource,
+    val certificatesDir: File,
+    val network: String? = null
 ) {
 
     private val caCertificateManagers = mutableMapOf<String, VaultCaCertificateManager>()

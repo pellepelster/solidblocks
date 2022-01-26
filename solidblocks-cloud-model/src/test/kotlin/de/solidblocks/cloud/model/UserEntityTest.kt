@@ -56,7 +56,6 @@ class UserEntityTest {
         assertThat(tenantUser.environments).isEqualTo(listOf("environment1"))
         assertThat(tenantUser.isTenantWildcard).isFalse
         assertThat(tenantUser.tenants).isEqualTo(listOf("tenant1"))
-
     }
 
     @Test

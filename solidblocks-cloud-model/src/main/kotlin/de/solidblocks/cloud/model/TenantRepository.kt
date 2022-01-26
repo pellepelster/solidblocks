@@ -26,7 +26,8 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
     fun getTenant(reference: TenantResource, permissions: ResourcePermissions? = null): TenantEntity? {
         return listTenants(
             CLOUDS.NAME.eq(reference.cloud).and(ENVIRONMENTS.NAME.eq(reference.environment))
-                .and(tenants.NAME.eq(reference.tenant)), permissions
+                .and(tenants.NAME.eq(reference.tenant)),
+            permissions
         ).firstOrNull()
     }
 
@@ -68,6 +69,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
                 .leftJoin(latest).on(tenants.ID.eq(latest.field(CONFIGURATION_VALUES.TENANT)))
         )
             .where(filterConditions).and(permissionConditions)
+            .orderBy(tenants.NAME)
             .fetchGroups(
                 { it.into(tenants) }, { it.into(latest) }
             ).map {
@@ -103,5 +105,4 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
 
         return getTenant(reference.toTenant(name))
     }
-
 }

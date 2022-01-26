@@ -16,18 +16,18 @@ import de.solidblocks.provisioner.hetzner.cloud.ssh.SshKey
 import mu.KotlinLogging
 
 class TenantProvisioner(
-        reference: TenantResource,
-        val provisioner: Provisioner,
-        val environmentRepository: EnvironmentRepository,
-        tenantRepository: TenantRepository
+    reference: TenantResource,
+    val provisioner: Provisioner,
+    val environmentRepository: EnvironmentRepository,
+    tenantRepository: TenantRepository
 ) {
     private val logger = KotlinLogging.logger {}
 
     val tenant: TenantEntity
 
     init {
-        tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '${reference}' not found")
-        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
+        tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
+        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
 
         createTenantModel(
             tenant,

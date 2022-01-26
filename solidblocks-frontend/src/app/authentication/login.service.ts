@@ -38,15 +38,7 @@ export class LoginService {
           resolve(true)
         },
         error: (error) => {
-          let messages: Array<MessageResponse>[] = []
-
-          if (typeof error.error === 'object' && 'messages' in error.error) {
-            for (let message of error.error.messages) {
-              messages.push(message)
-            }
-          }
-
-          reject(messages)
+          reject(error)
         },
         complete: () => console.info('complete')
       })

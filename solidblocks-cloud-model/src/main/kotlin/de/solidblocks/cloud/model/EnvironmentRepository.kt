@@ -17,6 +17,7 @@ import de.solidblocks.cloud.model.entities.SshSecrets
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import de.solidblocks.config.db.tables.references.ENVIRONMENTS
+import de.solidblocks.config.db.tables.references.TENANTS
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record5
@@ -29,24 +30,24 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
     val environments = ENVIRONMENTS.`as`("environments")
 
     fun createEnvironment(
-            cloudResource: CloudResource,
-            name: String,
-            configValues: List<CloudConfigValue> = emptyList()
+        cloudResource: CloudResource,
+        name: String,
+        configValues: List<CloudConfigValue> = emptyList()
     ): EnvironmentResource? {
         val cloud = cloudRepository.getCloud(cloudResource) ?: return null
 
-        logger.info { "creating environment '${name}' for cloud '${cloudResource.cloud}'" }
+        logger.info { "creating environment '$name' for cloud '${cloudResource.cloud}'" }
 
         val id = UUID.randomUUID()
 
         dsl.insertInto(ENVIRONMENTS)
-                .columns(
-                        ENVIRONMENTS.ID,
-                        ENVIRONMENTS.CLOUD,
-                        ENVIRONMENTS.NAME,
-                        ENVIRONMENTS.DELETED
-                )
-                .values(id, cloud.id, name, false).execute()
+            .columns(
+                ENVIRONMENTS.ID,
+                ENVIRONMENTS.CLOUD,
+                ENVIRONMENTS.NAME,
+                ENVIRONMENTS.DELETED
+            )
+            .values(id, cloud.id, name, false).execute()
 
         generateAndStoreSecrets(id, name)
 
@@ -56,7 +57,6 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
 
         return cloudResource.toEnvironment(name)
     }
-
 
     fun getEnvironment(id: UUID, permissions: ResourcePermissions? = null): EnvironmentEntity? {
         val record =
@@ -77,7 +77,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
         ).firstOrNull()
     }
 
-    fun hasEnvironment(reference: EnvironmentResource, permissions: ResourcePermissions? = null)= getEnvironment(reference, permissions) != null
+    fun hasEnvironment(reference: EnvironmentResource, permissions: ResourcePermissions? = null) = getEnvironment(reference, permissions) != null
 
     fun listEnvironments(filter: Condition? = null, permissions: ResourcePermissions? = null): List<EnvironmentEntity> {
 
@@ -87,20 +87,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
             filterConditions = filterConditions.and(filter)
         }
 
-        var permissionConditions: Condition = DSL.noCondition()
-        if (permissions != null && !permissions.isCloudWildcard && permissions.clouds.isNotEmpty()) {
-            if (!permissions.isCloudWildcard && permissions.clouds.isNotEmpty()) {
-                for (cloud in permissions.clouds) {
-                    permissionConditions = permissionConditions.and(CLOUDS.NAME.eq(cloud))
-                }
-            }
-
-            if (!permissions.isEnvironmentWildcard && permissions.environments.isNotEmpty()) {
-                for (environment in permissions.environments) {
-                    permissionConditions = permissionConditions.and(environments.NAME.eq(environment))
-                }
-            }
-        }
+        val permissionConditions = createPermissionConditions(permissions?.permissions.orEmpty(), CLOUDS, environments)
 
         val latest = latestConfigurationValuesQuery(CONFIGURATION_VALUES.ENVIRONMENT)
 
@@ -108,23 +95,23 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
             environments.leftJoin(CLOUDS).on(environments.CLOUD.eq(CLOUDS.ID)).leftJoin(latest)
                 .on(environments.ID.eq(latest.field(CONFIGURATION_VALUES.ENVIRONMENT)))
         ).where(filterConditions).and(permissionConditions)
-                .fetchGroups(
-                        { it.into(environments) }, { it.into(latest) }
-                ).map {
-                    EnvironmentEntity(
-                            id = it.key.id!!,
-                            name = it.key.name!!,
-                            sshSecrets = loadSshCredentials(it.value),
-                            configValues = it.value.map {
-                                CloudConfigValue(
-                                        it.getValue(CONFIGURATION_VALUES.NAME)!!,
-                                        it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
-                                        it.getValue(CONFIGURATION_VALUES.VERSION)!!
-                                )
-                            },
-                            cloud = cloudRepository.getCloud(it.key.cloud!!)!!
-                    )
-                }
+            .fetchGroups(
+                { it.into(environments) }, { it.into(latest) }
+            ).map {
+                EnvironmentEntity(
+                    id = it.key.id!!,
+                    name = it.key.name!!,
+                    sshSecrets = loadSshCredentials(it.value),
+                    configValues = it.value.map {
+                        CloudConfigValue(
+                            it.getValue(CONFIGURATION_VALUES.NAME)!!,
+                            it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
+                            it.getValue(CONFIGURATION_VALUES.VERSION)!!
+                        )
+                    },
+                    cloud = cloudRepository.getCloud(it.key.cloud!!)!!
+                )
+            }
     }
 
     fun updateEnvironment(reference: EnvironmentResource, name: String, value: String): Boolean {
@@ -144,9 +131,9 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
     }
 
     private fun updateEnvironment(
-            environment: EnvironmentEntity,
-            name: String,
-            value: String
+        environment: EnvironmentEntity,
+        name: String,
+        value: String
     ): Boolean {
         setConfiguration(EnvironmentId(environment.id), name, value)
         return true
@@ -186,10 +173,10 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
         val sshKey = generateSshKey(name)
 
         return SshSecrets(
-                sshIdentityPrivateKey = sshIdentity.first,
-                sshIdentityPublicKey = sshIdentity.second,
-                sshPrivateKey = sshKey.first,
-                sshPublicKey = sshKey.second,
+            sshIdentityPrivateKey = sshIdentity.first,
+            sshIdentityPublicKey = sshIdentity.second,
+            sshPrivateKey = sshKey.first,
+            sshPublicKey = sshKey.second,
         )
     }
 
@@ -211,10 +198,10 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
 
     private fun loadSshCredentials(list: List<Record5<UUID?, UUID?, String?, String?, Int?>>): SshSecrets {
         return SshSecrets(
-                sshIdentityPrivateKey = list.configValue(SSH_IDENTITY_PRIVATE_KEY).value,
-                sshIdentityPublicKey = list.configValue(SSH_IDENTITY_PUBLIC_KEY).value,
-                sshPrivateKey = list.configValue(SSH_PRIVATE_KEY).value,
-                sshPublicKey = list.configValue(SSH_PUBLIC_KEY).value,
+            sshIdentityPrivateKey = list.configValue(SSH_IDENTITY_PRIVATE_KEY).value,
+            sshIdentityPublicKey = list.configValue(SSH_IDENTITY_PUBLIC_KEY).value,
+            sshPrivateKey = list.configValue(SSH_PRIVATE_KEY).value,
+            sshPublicKey = list.configValue(SSH_PUBLIC_KEY).value,
         )
     }
 }

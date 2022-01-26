@@ -70,7 +70,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
 
     fun createEnvironmentProvisioner(reference: EnvironmentResource) = EnvironmentProvisioner(
         environmentRepository.getEnvironment(reference)
-            ?: throw RuntimeException("environment '${reference}' not found"),
+            ?: throw RuntimeException("environment '$reference' not found"),
         vaultRootClientProvider(reference),
         createProvisioner(reference),
     )
@@ -85,7 +85,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         val provisioner = Provisioner(provisionerRegistry)
 
         val environment = environmentRepository.getEnvironment(reference)
-            ?: throw RuntimeException("environment '${reference}' not found")
+            ?: throw RuntimeException("environment '$reference' not found")
 
         Hetzner.registerProvisioners(provisionerRegistry, environment, provisioner)
         Hetzner.registerLookups(provisionerRegistry, provisioner)

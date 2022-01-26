@@ -28,33 +28,27 @@ class AuthApiTest {
         val api = AuthApi(httpServer, testEnvironment.cloudRepository, testEnvironment.environmentRepository, testEnvironment.usersManager)
 
         given().port(httpServer.port).with().body(
-                """{
+            """{
                     "email": "juergen@admin.local",
                     "password": "invalid-admin-password"
                   }
             """.trimIndent()
-        ).post("/api/v1/auth/login")
-                .then().assertThat().statusCode(401).body("token", nullValue())
+        ).post("/api/v1/auth/login").then().assertThat().statusCode(401).body("token", nullValue())
 
         val token = given().port(httpServer.port).with().body(
-                """{
+            """{
                     "email": "juergen@admin.local",
                     "password": "admin-password"
                   }
             """.trimIndent()
-        ).post("/api/v1/auth/login")
-                .then().statusCode(200).body("token", notNullValue())
-                .extract().jsonPath().get<String>("token")
+        ).post("/api/v1/auth/login").then().statusCode(200).body("token", notNullValue()).extract().jsonPath().get<String>("token")
 
         val jwt = JWT.parse(token)
         val payload = jwt.get<JsonObject>("payload")
         assertThat(payload.getString("email")).isEqualTo("juergen@admin.local")
         assertThat(payload.getString("scope")).isEqualTo("root")
 
-        given().port(httpServer.port).with().header("Authorization", "Bearer $token").get("/api/v1/auth/whoami")
-                .then().statusCode(200)
-                .body("user.email", equalTo("juergen@admin.local"))
-                .body("user.scope", equalTo("root"))
+        given().port(httpServer.port).with().header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then().statusCode(200).body("user.email", equalTo("juergen@admin.local")).body("user.scope", equalTo("root"))
     }
 
     @Test
@@ -68,8 +62,7 @@ class AuthApiTest {
                     "password": "invalid-password1"
                   }
             """.trimIndent()
-        ).post("/api/v1/auth/login")
-            .then().assertThat().statusCode(401).body("token", nullValue())
+        ).post("/api/v1/auth/login").then().assertThat().statusCode(401).body("token", nullValue())
 
         val token = given().port(httpServer.port).with().body(
             """{
@@ -77,21 +70,15 @@ class AuthApiTest {
                     "password": "password1"
                   }
             """.trimIndent()
-        ).post("/api/v1/auth/login")
-            .then().statusCode(200).body("token", notNullValue())
-            .extract().jsonPath().get<String>("token")
+        ).post("/api/v1/auth/login").then().statusCode(200).body("token", notNullValue()).extract().jsonPath().get<String>("token")
 
         val jwt = JWT.parse(token)
         val payload = jwt.get<JsonObject>("payload")
         assertThat(payload.getString("email")).isEqualTo("juergen@test.local")
         assertThat(payload.getString("scope")).isEqualTo("environment")
 
-        given().port(httpServer.port).with().header("Authorization", "Bearer $token").get("/api/v1/auth/whoami")
-            .then().statusCode(200)
-                .body("user.email", equalTo("juergen@test.local"))
-                .body("user.scope", equalTo("environment"))
+        given().port(httpServer.port).with().header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then().statusCode(200).body("user.email", equalTo("juergen@test.local")).body("user.scope", equalTo("environment"))
 
-        given().port(httpServer.port).with().get("/api/v1/auth/whoami")
-            .then().statusCode(401).body("email", nullValue())
+        given().port(httpServer.port).with().get("/api/v1/auth/whoami").then().statusCode(401).body("email", nullValue())
     }
 }

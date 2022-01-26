@@ -7,3 +7,5 @@ fun solidblocksVersion(): String = try {
 } catch (e: Exception) {
     "snapshot"
 }
+
+fun validateId(id: String) = "[a-z]+[a-z0-9-]{1,61}[a-z0-9]+".toRegex().matches(id)

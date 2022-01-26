@@ -57,7 +57,7 @@ class IntegrationTestEnvironment {
 
     val environment: EnvironmentEntity
         get() =
-            context.environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
+            context.environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
 
     val minioCredentialProvider: () -> MinioCredentials
         get() = { MinioCredentials(minioAddress, "admin", "a9776029-2852-4d60-af81-621b91da711d") }
@@ -90,10 +90,10 @@ class IntegrationTestEnvironment {
             "<none>",
             "<none>"
         )
-        context.tenantsManager.create(reference, reference.tenant, "pelle@pelle.io", "password1")
+        context.tenantsManager.create(reference, reference.tenant, "pelle@pelle.io")
 
-        val environment = context.environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
-        val tenant = context.tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '${reference}' not found")
+        val environment = context.environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
+        val tenant = context.tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
         val provisioner = context.createProvisioner(reference)
 
         provisioner.addResourceGroup(createEnvironmentVaultConfig(emptySet(), environment))
@@ -106,7 +106,7 @@ class IntegrationTestEnvironment {
             return false
         }
 
-        val environmentAfterProvisioning = context.environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '${reference}' not found")
+        val environmentAfterProvisioning = context.environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
         logger.info { "vault is available at '$vaultAddress' with root token '${environmentAfterProvisioning.rootToken}'" }
         logger.info { "minio is available at '$minioAddress' with access key '${minioCredentialProvider.invoke().accessKey}' and secret key '${minioCredentialProvider.invoke().secretKey}'" }
 

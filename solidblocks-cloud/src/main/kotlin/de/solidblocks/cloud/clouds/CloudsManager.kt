@@ -45,7 +45,7 @@ class CloudsManager(
     }
 
     fun listEnvironments(reference: CloudResource): List<EnvironmentEntity> {
-        val cloud = cloudRepository.getCloud(reference) ?: throw RuntimeException("cloud '${reference}' not found")
+        val cloud = cloudRepository.getCloud(reference) ?: throw RuntimeException("cloud '$reference' not found")
         return environmentRepository.listEnvironments()
     }
 

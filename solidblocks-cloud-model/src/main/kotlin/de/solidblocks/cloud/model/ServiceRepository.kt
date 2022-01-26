@@ -12,8 +12,8 @@ import java.util.*
 class ServiceRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
 
     fun createService(
-            reference: ServiceResource,
-            configValues: Map<String, String> = emptyMap()
+        reference: ServiceResource,
+        configValues: Map<String, String> = emptyMap()
     ): Boolean {
 
         val id = UUID.randomUUID()

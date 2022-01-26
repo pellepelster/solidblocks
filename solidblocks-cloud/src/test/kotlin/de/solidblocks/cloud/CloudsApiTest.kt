@@ -8,10 +8,8 @@ import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
 import io.restassured.RestAssured.given
 import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.core.IsNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-
 
 @ExtendWith(TestEnvironmentExtension::class)
 class CloudsApiTest {
@@ -52,20 +50,10 @@ class CloudsApiTest {
         )
         val cloudsApi = CloudsApi(httpServer, testEnvironment.cloudsManager, testEnvironment.environmentsManager)
 
-        val token = given().port(httpServer.port).with().body(
-            """{
-                    "email": "admin",
-                    "password": "admin"
-                  }
-            """.trimIndent()
-        ).post("/api/v1/auth/login")
-            .then().statusCode(200).body("token", IsNull.notNullValue())
-            .extract().jsonPath().get<String>("token")
+        val token = given().port(httpServer.port).login()
 
-
-        given().port(httpServer.port).with().header("Authorization", "Bearer $token").get("/api/v1/clouds").then()
+        given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/clouds").then()
             .assertThat()
             .statusCode(200).assertThat().body("clouds.size()", `is`(2))
     }
-
 }

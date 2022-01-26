@@ -5,6 +5,7 @@ import de.solidblocks.base.resources.UserResource
 import de.solidblocks.cloud.clouds.CloudsManager
 import de.solidblocks.cloud.environments.EnvironmentsManager
 import de.solidblocks.cloud.model.*
+import de.solidblocks.cloud.tenants.TenantsManager
 import de.solidblocks.cloud.users.UsersManager
 import org.jooq.DSLContext
 
@@ -19,6 +20,7 @@ class TestEnvironment {
 
     val cloudsManager: CloudsManager
     val environmentsManager: EnvironmentsManager
+    val tenantsManager: TenantsManager
     val usersManager: UsersManager
 
     val reference = UserResource("cloud1", "environment1", "tenant1", "user1")
@@ -37,38 +39,26 @@ class TestEnvironment {
 
         cloudsManager = CloudsManager(cloudRepository, environmentRepository, usersRepository, true)
         usersManager = UsersManager(database.dsl, usersRepository)
-        environmentsManager =
-            EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, usersManager, true)
+        environmentsManager = EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, usersManager, true)
+        tenantsManager = TenantsManager(database.dsl, cloudRepository, environmentsManager, tenantRepository, usersManager, true)
     }
 
-    fun createCloud(cloud: String, rootDomain: String = "dev.local") {
+    fun createCloud(cloud: String = "cloud1", rootDomain: String = "dev.local") {
         cloudRepository.createCloud(cloud, rootDomain)
     }
 
-    fun createEnvironment(
-        cloud: String = "cloud1",
-        environment: String = "environment1",
-        email: String = "juergen@test.local",
-        password: String = "password1"
-    ): EnvironmentResource {
+    fun createEnvironment(cloud: String = "cloud1", environment: String = "environment1", email: String = "juergen@$cloud.$environment", password: String = "password1"): EnvironmentResource {
         val reference = EnvironmentResource(cloud, environment)
-
-        cloudsManager.createCloud(reference.cloud, "dev.local")
-        environmentsManager.create(
-            reference,
-            reference.environment,
-            email,
-            password,
-            "<none>",
-            "<none>",
-            "<none>",
-            "<none>"
-        )
+        environmentsManager.create(reference, reference.environment, email, password, "<none>", "<none>", "<none>", "<none>")
 
         return reference
     }
 
-    fun ensureTenant() {
-        tenantRepository.createTenant(reference, "tenant1", "<none>>")
+    fun createTenant(
+        cloud: String = "cloud1",
+        environment: String = "environment1",
+        tenant: String = "tenant1",
+    ) {
+        tenantRepository.createTenant(EnvironmentResource(cloud, environment), tenant, "<none>>")
     }
 }

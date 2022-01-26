@@ -23,27 +23,20 @@ class EnvironmentsManager(
 
     private val logger = KotlinLogging.logger {}
 
-    public fun newTenantsDefaultEnvironment(): EnvironmentEntity? {
-
-        val clouds = cloudRepository.listClouds()
-        if (clouds.isEmpty()) {
-            return null
-        }
-
-        throw RuntimeException("XXX")
+    public fun newTenantsDefaultEnvironment(email: String): EnvironmentEntity? {
         val environments = environmentRepository.listEnvironments()
         return environments.firstOrNull()
     }
 
     fun create(
-            reference: CloudResource,
-            name: String,
-            email: String,
-            password: String,
-            githubReadOnlyToken: String,
-            hetznerCloudApiTokenReadOnly: String,
-            hetznerCloudApiTokenReadWrite: String,
-            hetznerDnsApiToken: String
+        reference: CloudResource,
+        name: String,
+        email: String,
+        password: String,
+        githubReadOnlyToken: String,
+        hetznerCloudApiTokenReadOnly: String,
+        hetznerCloudApiTokenReadWrite: String,
+        hetznerDnsApiToken: String
     ) = dsl.transactionResult(
         TransactionalCallable create@{
 
@@ -66,7 +59,7 @@ class EnvironmentsManager(
                     createConfigValue(Hetzner.HETZNER_CLOUD_API_TOKEN_RW_KEY, hetznerCloudApiTokenReadWrite),
                     createConfigValue(Hetzner.HETZNER_DNS_API_TOKEN_RW_KEY, hetznerDnsApiToken),
                 )
-            ) ?: throw RuntimeException("failed to create environment '${name}' for '${reference}' not found")
+            ) ?: throw RuntimeException("failed to create environment '$name' for '$reference' not found")
 
             usersManager.createEnvironmentUser(reference, email, password)
 

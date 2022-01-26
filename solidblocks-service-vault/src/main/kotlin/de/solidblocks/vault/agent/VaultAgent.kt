@@ -59,11 +59,11 @@ import kotlin.io.path.writeBytes
 data class RaftAutopilotResponse(val healthy: Boolean, val leader: String)
 
 class VaultAgent(
-        private val reference: ServiceResource,
-        private val storageDir: String,
-        private val minioAddress: String,
-        solidblocksVaultAddress: String,
-        solidblocksVaultToken: String,
+    private val reference: ServiceResource,
+    private val storageDir: String,
+    private val minioAddress: String,
+    solidblocksVaultAddress: String,
+    solidblocksVaultToken: String,
 ) {
 
     private val DOCKER_IMAGE = "solidblocks-service-vault"

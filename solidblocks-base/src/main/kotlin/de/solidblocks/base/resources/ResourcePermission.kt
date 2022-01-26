@@ -60,29 +60,37 @@ data class ResourcePermission(val cloud: CloudPermission, val environment: Envir
                 return null
             }
 
-            val cloud = CloudPermission(wildcard = parts[1].isBlank(), cloud = parts[1].let {
-                if (it.isBlank()) {
-                    return@let null
+            val cloud = CloudPermission(
+                wildcard = parts[1].isBlank(),
+                cloud = parts[1].let {
+                    if (it.isBlank()) {
+                        return@let null
+                    }
+                    it
                 }
-                it
-            })
+            )
 
-            val environment = EnvironmentPermission(wildcard = parts[2].isBlank(), environment = parts[2].let {
-                if (it.isBlank()) {
-                    return@let null
+            val environment = EnvironmentPermission(
+                wildcard = parts[2].isBlank(),
+                environment = parts[2].let {
+                    if (it.isBlank()) {
+                        return@let null
+                    }
+                    it
                 }
-                it
-            })
+            )
 
-            val tenant = TenantPermission(wildcard = parts[3].isBlank(), tenant = parts[3].let {
-                if (it.isBlank()) {
-                    return@let null
+            val tenant = TenantPermission(
+                wildcard = parts[3].isBlank(),
+                tenant = parts[3].let {
+                    if (it.isBlank()) {
+                        return@let null
+                    }
+                    it
                 }
-                it
-            })
+            )
 
             return ResourcePermission(cloud, environment, tenant)
         }
     }
-
 }

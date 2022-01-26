@@ -13,9 +13,9 @@ import org.springframework.vault.core.VaultTemplate
 import java.net.URI
 
 class VaultRootClientProvider(
-        private val reference: EnvironmentResource,
-        private val environmentRepository: EnvironmentRepository,
-        private val vaultAddressOverride: String? = null
+    private val reference: EnvironmentResource,
+    private val environmentRepository: EnvironmentRepository,
+    private val vaultAddressOverride: String? = null
 ) {
 
     private fun vaultAddress(): String {
@@ -25,7 +25,7 @@ class VaultRootClientProvider(
         }
 
         val environment = environmentRepository.getEnvironment(reference)
-            ?: throw RuntimeException("environment '${reference}' not found")
+            ?: throw RuntimeException("environment '$reference' not found")
 
         return ModelConstants.vaultAddress(environment)
     }
@@ -36,7 +36,7 @@ class VaultRootClientProvider(
 
     private fun getVaultCredentials(): VaultCredentials {
         val environment = environmentRepository.getEnvironment(reference)
-            ?: throw RuntimeException("environment '${reference}' not found")
+            ?: throw RuntimeException("environment '$reference' not found")
 
         val rootToken = environment.rootToken
             ?: throw RuntimeException("vault at '${vaultAddress()}' is initialized, but no vault root token found for cloud '${reference.cloud}'")
@@ -52,7 +52,7 @@ class VaultRootClientProvider(
         }
 
         val environment = environmentRepository.getEnvironment(reference)
-            ?: throw RuntimeException("environment '${reference}' not found")
+            ?: throw RuntimeException("environment '$reference' not found")
 
         val initializingVaultManager = InitializingVaultManager(vaultAddress())
         val hasUnsealKeys = environment.configValues.any { it.name.startsWith(UNSEAL_KEY_PREFIX) }

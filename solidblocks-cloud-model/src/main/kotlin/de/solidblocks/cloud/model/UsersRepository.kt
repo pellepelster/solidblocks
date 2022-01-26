@@ -33,19 +33,19 @@ class UsersRepository(val dsl: DSLContext, val cloudRepository: CloudRepository,
     }
 
     private fun createUser(cloud: UUID? = null, environment: UUID? = null, tenant: UUID? = null, email: String, admin: Boolean, password: String, salt: String): Boolean {
-        logger.info { "creating user '${email}'" }
+        logger.info { "creating user '$email'" }
         val id = UUID.randomUUID()
 
         dsl.insertInto(USERS).columns(
-                USERS.ID,
-                USERS.CLOUD,
-                USERS.ENVIRONMENT,
-                USERS.TENANT,
-                USERS.EMAIL,
-                USERS.DELETED,
-                USERS.ADMIN,
-                USERS.PASSWORD,
-                USERS.SALT,
+            USERS.ID,
+            USERS.CLOUD,
+            USERS.ENVIRONMENT,
+            USERS.TENANT,
+            USERS.EMAIL,
+            USERS.DELETED,
+            USERS.ADMIN,
+            USERS.PASSWORD,
+            USERS.SALT,
         ).values(id, cloud, environment, tenant, email, false, admin, password, salt).execute()
 
         return true
@@ -80,6 +80,5 @@ class UsersRepository(val dsl: DSLContext, val cloudRepository: CloudRepository,
         }
 
         return UserEntity(user.id!!, user.email!!, user.salt!!, user.password!!, admin = true)
-
     }
 }

@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.users
 
 import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.resources.TenantResource
 import de.solidblocks.cloud.model.UsersRepository
 import de.solidblocks.cloud.model.entities.UserEntity
 import mu.KotlinLogging
@@ -32,14 +33,14 @@ class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository) {
     }
 
     fun ensureAdminUser(email: String, password: String) = dsl.transactionResult(
-            TransactionalCallable {
-                if (!usersRepository.hasUser(email)) {
-                    val credentials = generatePasswordAndSalt(password)
-                    usersRepository.createAdminUser(email, credentials.first, credentials.second)
-                }
-
-                true
+        TransactionalCallable {
+            if (!usersRepository.hasUser(email)) {
+                val credentials = generatePasswordAndSalt(password)
+                usersRepository.createAdminUser(email, credentials.first, credentials.second)
             }
+
+            true
+        }
     )
 
     fun createEnvironmentUser(reference: EnvironmentResource, email: String, password: String): Boolean {
@@ -47,6 +48,13 @@ class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository) {
 
         val credentials = generatePasswordAndSalt(password)
         return usersRepository.createEnvironmentUser(reference, email, credentials.first, credentials.second)
+    }
+
+    fun createTenantUser(reference: TenantResource, email: String, password: String): Boolean {
+        logger.info { "creating user '$email' for tenant '${reference.tenant}'" }
+
+        val credentials = generatePasswordAndSalt(password)
+        return usersRepository.createTenantUser(reference, email, credentials.first, credentials.second)
     }
 
     fun loginUser(email: String, passwordToCheck: String): UserEntity? {
@@ -58,14 +66,17 @@ class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository) {
         val encryptedPasswordToCheck = BCrypt.generate(passwordToCheck.toByteArray(), salt, BCRYPT_COST)
 
         if (!encryptedPassword.contentEquals(encryptedPasswordToCheck)) {
+            // TODO(pelle) exponential backoff
             logger.warn { "login failed for user '$email'" }
             return null
         }
 
-        logger.warn { "login succeeded for user '$email'" }
+        logger.info { "login succeeded for user '$email'" }
 
         return user
     }
 
     fun getUser(email: String) = usersRepository.getUser(email)
+
+    fun hasUser(email: String) = usersRepository.hasUser(email)
 }

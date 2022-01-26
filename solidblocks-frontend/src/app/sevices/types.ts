@@ -6,7 +6,24 @@ export interface Cloud {
   name: string
 }
 
+export interface ResourceReference {
+  id: string
+  name: string
+}
+
+export interface TenantResource {
+  cloud: ResourceReference
+  environment: ResourceReference
+  tenant: ResourceReference
+}
+
+export interface Tenant {
+  id: string
+  name: string
+}
+
 export interface MessageResponse {
+  attribute: string
   code: string
 }
 
@@ -16,6 +33,14 @@ export interface WhoAmIResponse {
 
 export interface CloudResponse {
   cloud: Cloud
+}
+
+export interface TenantsResponse {
+  tenants: Array<Tenant>
+}
+
+export interface CreateTenantResponse {
+  messages: Array<MessageResponse>
 }
 
 export interface LoginResponse {

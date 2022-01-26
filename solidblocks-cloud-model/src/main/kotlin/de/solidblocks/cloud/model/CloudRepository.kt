@@ -5,11 +5,13 @@ import de.solidblocks.base.resources.ResourcePermissions
 import de.solidblocks.base.resources.ResourcePermissions.Companion.adminPermissions
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.CloudEntity
+import de.solidblocks.config.db.tables.Environments
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
+import de.solidblocks.config.db.tables.references.ENVIRONMENTS
+import de.solidblocks.config.db.tables.references.TENANTS
 import org.jooq.Condition
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 import java.util.*
 
 class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
@@ -57,12 +59,7 @@ class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
             filterConditions = filterConditions.and(filter)
         }
 
-        var permissionConditions: Condition = DSL.noCondition()
-        if (permissions != null && !permissions.isCloudWildcard && permissions.clouds.isNotEmpty()) {
-            for (cloud in permissions.clouds) {
-                permissionConditions = permissionConditions.and(clouds.NAME.eq(cloud))
-            }
-        }
+        val permissionConditions = createPermissionConditions(permissions?.permissions.orEmpty(), clouds)
 
         return dsl.selectFrom(clouds.leftJoin(latest).on(clouds.ID.eq(latest.field(CONFIGURATION_VALUES.CLOUD))))
             .where(filterConditions).and(permissionConditions).orderBy(clouds.NAME)

@@ -11,10 +11,10 @@ import de.solidblocks.vault.VaultConstants.tenantClientPkiMountName
 import de.solidblocks.vault.VaultConstants.tenantServerPkiMountName
 
 class TenantApplicationContext(
-        val reference: TenantResource,
-        val tenantRepository: TenantRepository,
-        val isDevelopment: Boolean = false,
-        val vaultAddressOverride: String? = null,
+    val reference: TenantResource,
+    val tenantRepository: TenantRepository,
+    val isDevelopment: Boolean = false,
+    val vaultAddressOverride: String? = null,
 ) {
 
     fun altNames() = if (isDevelopment) {
@@ -24,7 +24,7 @@ class TenantApplicationContext(
     }
 
     fun clientCertificateManager(client: String): VaultCertificateManager {
-        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '${reference}' not found")
+        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
 
         return VaultCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(tenant.environment),
@@ -35,7 +35,7 @@ class TenantApplicationContext(
     }
 
     fun serverCertificateManager(hostname: String): VaultCertificateManager {
-        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '${reference}' not found")
+        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
 
         return VaultCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(tenant.environment),
@@ -47,7 +47,7 @@ class TenantApplicationContext(
     }
 
     fun serverCaCertificateManager(): VaultCaCertificateManager {
-        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '${reference}' not found")
+        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
 
         return VaultCaCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(tenant.environment),
@@ -57,7 +57,7 @@ class TenantApplicationContext(
     }
 
     fun clientCaCertificateManager(): VaultCaCertificateManager {
-        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '${reference}' not found")
+        val tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
 
         return VaultCaCertificateManager(
             address = vaultAddressOverride ?: vaultAddress(tenant.environment),

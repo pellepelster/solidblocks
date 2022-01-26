@@ -1,17 +1,18 @@
 import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {LoginService} from "../authentication/login.service";
-import {ToastService} from "../utils/toast.service";
+import {LoginService} from "../../../authentication/login.service";
+import {ToastService} from "../../../utils/toast.service";
 import {Router} from "@angular/router";
+import {BaseFormComponent} from "../../base-form.component";
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent extends BaseFormComponent implements OnInit {
 
-  constructor(private loginService: LoginService, private toastService: ToastService, private router: Router) {
-
+  constructor(private loginService: LoginService, toastService: ToastService, private router: Router) {
+    super(toastService);
   }
 
   loginForm = new FormGroup({
@@ -27,12 +28,10 @@ export class LoginComponent implements OnInit {
       () => {
         this.router.navigate(["/console/home"])
       },
-      (errors) => {
-        for (let message of errors) {
-          this.toastService.show(message.code, {classname: 'bg-danger text-light', delay: 15000})
-        }
+      (error) => {
+        this.handleErrorResponse(error)
         this.loginForm.setValue({email: "", password: ""})
-      },
+      }
     )
   }
 

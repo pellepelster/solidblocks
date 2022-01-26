@@ -12,6 +12,10 @@
       </li>
 
       <li class="nav-item" *ngIf="!hasValidUser()">
+        <a routerLink="/tenants/create" routerLinkActive="active" class="nav-link">Create</a>
+      </li>
+
+      <li class="nav-item" *ngIf="!hasValidUser()">
         <a routerLink="/login" routerLinkActive="active" class="nav-link">Login</a>
       </li>
       <li class="nav-item" *ngIf="hasValidUser()">

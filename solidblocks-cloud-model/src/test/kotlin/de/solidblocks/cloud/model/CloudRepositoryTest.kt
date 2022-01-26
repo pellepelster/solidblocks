@@ -25,52 +25,22 @@ class CloudRepositoryTest {
         cloudRepository.createCloud(cloud1, cloud1)
         cloudRepository.createCloud(cloud2, cloud2)
 
-
         assertThat(cloudRepository.hasCloud(cloud1)).isTrue
 
         assertThat(cloudRepository.getCloud(cloud1)).isNotNull
         assertThat(cloudRepository.getCloud(cloud1, "srn:::".parsePermissions())).isNotNull
-        assertThat(
-            cloudRepository.getCloud(
-                cloud1, "srn:${cloud1}::".parsePermissions()
-            )
-        ).isNotNull
-        assertThat(
-            cloudRepository.getCloud(
-                cloud1, "srn:${cloud1}:env1:".parsePermissions()
-            )
-        ).isNotNull
-
-        assertThat(
-            cloudRepository.getCloud(cloud1, "srn:${cloud1}:env1:tenant1".parsePermissions())
-        ).isNotNull
-
-
-        assertThat(
-            cloudRepository.getCloud(
-                cloud1, "srn:${cloud2}::".parsePermissions()
-            )
-        ).isNull()
-
+        assertThat(cloudRepository.getCloud(cloud1, "srn:$cloud1::".parsePermissions())).isNotNull
+        assertThat(cloudRepository.getCloud(cloud1, "srn:$cloud1:env1:".parsePermissions())).isNotNull
+        assertThat(cloudRepository.getCloud(cloud1, "srn:$cloud1:env1:tenant1".parsePermissions())).isNotNull
+        assertThat(cloudRepository.getCloud(cloud1, "srn:$cloud2::".parsePermissions())).isNull()
+        assertThat(cloudRepository.getCloud(cloud1, listOf("srn:$cloud1::","srn:$cloud2::").parsePermissions())).isNotNull
+        assertThat(cloudRepository.getCloud(cloud2, listOf("srn:$cloud1::","srn:$cloud2::").parsePermissions())).isNotNull
 
         assertThat(cloudRepository.getCloudByRootDomain(cloud1)).isNotNull
-        assertThat(
-            cloudRepository.getCloudByRootDomain(
-                cloud1, "srn:${cloud1}::".parsePermissions()
-            )
-        ).isNotNull
-        assertThat(
-            cloudRepository.getCloudByRootDomain(
-                cloud1, "srn:${cloud2}::".parsePermissions()
-            )
-        ).isNull()
-
+        assertThat(cloudRepository.getCloudByRootDomain(cloud1, "srn:$cloud1::".parsePermissions())).isNotNull
+        assertThat(cloudRepository.getCloudByRootDomain(cloud1, "srn:$cloud2::".parsePermissions())).isNull()
         assertThat(cloudRepository.getCloud(CloudResource(cloud1))).isNotNull
-        assertThat(
-            cloudRepository.getCloud(
-                CloudResource(cloud1), "srn:cloud2::".parsePermissions()
-            )
-        ).isNull()
+        assertThat(cloudRepository.getCloud(CloudResource(cloud1), "srn:cloud2::".parsePermissions())).isNull()
     }
 
     @Test

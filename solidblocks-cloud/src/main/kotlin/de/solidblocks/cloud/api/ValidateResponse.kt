@@ -1,3 +1,3 @@
 package de.solidblocks.cloud.api
 
-class ValidateResponse(errors: List<MessageResponse>) : BaseApiResponse(errors)
+data class ValidateResponse(val messages: List<MessageResponse> = emptyList())

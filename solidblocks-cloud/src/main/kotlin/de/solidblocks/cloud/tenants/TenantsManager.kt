@@ -1,15 +1,13 @@
 package de.solidblocks.cloud.tenants
 
 import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.validateId
 import de.solidblocks.cloud.NetworkUtils
 import de.solidblocks.cloud.environments.EnvironmentsManager
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.CreationResult
-import de.solidblocks.cloud.model.ErrorCodes
-import de.solidblocks.cloud.model.TenantRepository
-import de.solidblocks.cloud.model.ValidationResult
+import de.solidblocks.cloud.model.*
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
+import de.solidblocks.cloud.tenants.api.TenantCreateRequest
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.provisioner.hetzner.Hetzner
 import mu.KotlinLogging
@@ -27,7 +25,7 @@ class TenantsManager(
 
     private val logger = KotlinLogging.logger {}
 
-    fun create(environmentReference: EnvironmentResource, name: String, email: String, password: String): CreationResult<TenantEntity> {
+    fun create(environmentReference: EnvironmentResource, name: String, email: String): CreationResult<TenantEntity> {
         val environment = environmentsManager.getOptional(environmentReference)
             ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
 
@@ -37,28 +35,51 @@ class TenantsManager(
             TransactionalCallable {
                 logger.info { "creating tenant '$name'" }
                 tenantRepository.createTenant(environment.reference, name, nextNetworkCidr(environment))
+                // TODO(pelle) create random password
+                usersManager.createTenantUser(environment.reference.toTenant(name), email, "admin")
                 CreationResult(tenantRepository.getTenant(reference))
             }
         )
     }
 
-    fun create(name: String, email: String, password: String): CreationResult<TenantEntity> {
-        val environment = environmentsManager.newTenantsDefaultEnvironment()
+    fun create(name: String, email: String): CreationResult<TenantEntity> {
+        val environment = environmentsManager.newTenantsDefaultEnvironment(email)
             ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
 
-        return create(environment.reference, name, email, password)
+        return create(environment.reference, name, email)
     }
 
-    fun validate(name: String, email: String, password: String): ValidationResult {
+    fun validate(request: TenantCreateRequest): ValidationResult {
 
-        val environment = environmentsManager.newTenantsDefaultEnvironment()
-            ?: return ValidationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
+        if (request.tenant == null || request.tenant.isBlank()) {
+            return ValidationResult.error(TenantCreateRequest::tenant, ErrorCodes.MANDATORY)
+        }
 
-        if (tenantRepository.hasTenant(environment.reference.toTenant(name))) {
-            return ValidationResult.error(ErrorCodes.TENANT.DUPLICATE)
+        if (request.email == null || request.email.isBlank()) {
+            return ValidationResult.error(TenantCreateRequest::email, ErrorCodes.MANDATORY)
+        }
+
+        val environment = environmentsManager.newTenantsDefaultEnvironment(request.email)
+            ?: return ValidationResult.error(ErrorCodes.TENANT.ENVIRONMENT_NOT_FOUND)
+
+        if (!validateId(request.tenant)) {
+            return ValidationResult.error(TenantCreateRequest::tenant, ErrorCodes.TENANT.INVALID)
+        }
+
+        if (tenantRepository.hasTenant(environment.reference.toTenant(request.tenant))) {
+            return ValidationResult.error(TenantCreateRequest::tenant, ErrorCodes.TENANT.DUPLICATE)
+        }
+
+        if (usersManager.hasUser(request.email)) {
+            return ValidationResult.error(TenantCreateRequest::email, ErrorCodes.TENANT.DUPLICATE)
         }
 
         return ValidationResult.ok()
+    }
+
+    fun listTenantsForUser(email: String): List<TenantEntity> {
+        val user = usersManager.getUser(email) ?: return emptyList()
+        return tenantRepository.listTenants(permissions = user.permissions())
     }
 
     private fun nextNetworkCidr(environment: EnvironmentEntity) = if (isDevelopment) {

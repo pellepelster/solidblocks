@@ -1,13 +1,15 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.resources.ResourcePermission
 import de.solidblocks.cloud.model.entities.CloudConfigValue
+import de.solidblocks.config.db.tables.Clouds
+import de.solidblocks.config.db.tables.Environments
+import de.solidblocks.config.db.tables.Tenants
 import de.solidblocks.config.db.tables.records.ConfigurationValuesRecord
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import mu.KotlinLogging
-import org.jooq.DSLContext
-import org.jooq.Record5
-import org.jooq.Table
-import org.jooq.TableField
+import org.jooq.*
+import org.jooq.impl.DSL
 import org.jooq.impl.DSL.max
 import java.util.*
 
@@ -24,6 +26,37 @@ abstract class BaseRepository(val dsl: DSLContext) {
     protected class ServiceId(val id: UUID) : IdType(id)
 
     protected val logger = KotlinLogging.logger {}
+
+    protected fun createPermissionConditions(
+        permissions: List<ResourcePermission>,
+        clouds: Clouds,
+        environments: Environments? = null,
+        tenants: Tenants? = null
+    ): Condition {
+
+        var permissionConditions: Condition = DSL.noCondition()
+
+        for (permission in permissions) {
+
+            var permissionCondition: Condition = DSL.noCondition()
+
+            if (!permission.cloud.wildcard && permission.cloud.cloud != null) {
+                permissionCondition = permissionCondition.and(clouds.NAME.eq(permission.cloud.cloud))
+            }
+
+            if (environments != null && !permission.environment.wildcard && permission.environment.environment != null) {
+                permissionCondition = permissionCondition.and(environments.NAME.eq(permission.environment.environment))
+            }
+
+            if (tenants != null && !permission.tenant.wildcard && permission.tenant.tenant != null) {
+                permissionCondition = permissionCondition.and(tenants.NAME.eq(permission.tenant.tenant))
+            }
+
+            permissionConditions = permissionConditions.or(permissionCondition)
+        }
+
+        return permissionConditions
+    }
 
     protected fun latestConfigurationValuesQuery(referenceColumn: TableField<ConfigurationValuesRecord, UUID?>): Table<Record5<UUID?, UUID?, String?, String?, Int?>> {
 

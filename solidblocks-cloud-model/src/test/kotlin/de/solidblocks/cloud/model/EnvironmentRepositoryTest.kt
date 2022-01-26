@@ -27,18 +27,28 @@ class EnvironmentRepositoryTest {
         cloudRepository.createCloud(cloud2, "domain1")
 
         assertThat(repository.createEnvironment(CloudResource(cloud1), env1)).isNotNull
+        assertThat(repository.createEnvironment(CloudResource(cloud1), env2)).isNotNull
+        assertThat(repository.createEnvironment(CloudResource(cloud2), env1)).isNotNull
         assertThat(repository.createEnvironment(CloudResource(cloud2), env2)).isNotNull
 
-        val env1Resource = EnvironmentResource(cloud1, env1)
-        assertThat(repository.getEnvironment(env1Resource, "srn:::".parsePermissions())).isNotNull
-        assertThat(repository.getEnvironment(env1Resource, "srn::${env1}:".parsePermissions())).isNotNull
-        assertThat(repository.getEnvironment(env1Resource, "srn::${env2}:".parsePermissions())).isNotNull
-        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud1}:${env1}:".parsePermissions())).isNotNull
-        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud1}::".parsePermissions())).isNotNull
-        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud1}:${env2}:".parsePermissions())).isNull()
-        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud2}::".parsePermissions())).isNull()
-        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud2}:${env1}:".parsePermissions())).isNull()
-        assertThat(repository.getEnvironment(env1Resource, "srn:${cloud2}:${env2}:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env2), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud2, env1), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud2, env2), "srn:::".parsePermissions())).isNotNull
+
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn::$env1:".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn::$env2:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:$cloud1:$env1:".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:$cloud1::".parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:$cloud1:$env2:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:$cloud2::".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:$cloud2:$env1:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), "srn:$cloud2:$env2:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud1, env1), listOf("srn:$cloud1:$env1:", "srn:$cloud2:$env2:").parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud2, env2), listOf("srn:$cloud1:$env1:", "srn:$cloud2:$env2:").parsePermissions())).isNotNull
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud2, env1), "srn:$cloud1:$env1:".parsePermissions())).isNull()
+        assertThat(repository.getEnvironment(EnvironmentResource(cloud2, env1), "srn:$cloud2:$env1:".parsePermissions())).isNotNull
     }
 
     @Test

@@ -31,27 +31,48 @@ class TenantRepositoryTest {
         cloudRepository.createCloud(cloud2, "domain1")
 
         environmentRepository.createEnvironment(CloudResource(cloud1), env1)
+        environmentRepository.createEnvironment(CloudResource(cloud1), env2)
+        environmentRepository.createEnvironment(CloudResource(cloud2), env1)
         environmentRepository.createEnvironment(CloudResource(cloud2), env2)
 
         assertThat(repository.createTenant(EnvironmentResource(cloud1, env1), tenant1, "<none>")).isNotNull
+        assertThat(repository.createTenant(EnvironmentResource(cloud1, env1), tenant2, "<none>")).isNotNull
+        assertThat(repository.createTenant(EnvironmentResource(cloud1, env2), tenant1, "<none>")).isNotNull
+        assertThat(repository.createTenant(EnvironmentResource(cloud1, env2), tenant2, "<none>")).isNotNull
+
+        assertThat(repository.createTenant(EnvironmentResource(cloud2, env1), tenant1, "<none>")).isNotNull
+        assertThat(repository.createTenant(EnvironmentResource(cloud2, env1), tenant2, "<none>")).isNotNull
+        assertThat(repository.createTenant(EnvironmentResource(cloud2, env2), tenant1, "<none>")).isNotNull
         assertThat(repository.createTenant(EnvironmentResource(cloud2, env2), tenant2, "<none>")).isNotNull
 
-        val tenant1Resource = TenantResource(cloud1, env1, tenant1)
-        assertThat(repository.getTenant(tenant1Resource, "srn:::".parsePermissions())).isNotNull
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}::".parsePermissions())).isNotNull
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env1}:".parsePermissions())).isNotNull
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env2}:".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env1}:${tenant1}".parsePermissions())).isNotNull
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env1}:${tenant2}".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env2}:${tenant1}".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud1}:${env2}:${tenant2}".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}::".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env1}:".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env1}:${tenant1}".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env1}:${tenant2}".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env2}:".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env2}:${tenant1}".parsePermissions())).isNull()
-        assertThat(repository.getTenant(tenant1Resource, "srn:${cloud2}:${env2}:${tenant2}".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant2), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud1, env2, tenant1), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud1, env2, tenant2), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud2, env1, tenant1), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud2, env1, tenant2), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud2, env2, tenant1), "srn:::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud2, env2, tenant2), "srn:::".parsePermissions())).isNotNull
+
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud1::".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud1:$env1:".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud1:$env2:".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud1:$env1:$tenant1".parsePermissions())).isNotNull
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud1:$env1:$tenant2".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud1:$env2:$tenant1".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud1:$env2:$tenant2".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud2::".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud2:$env1:".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud2:$env1:$tenant1".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud2:$env1:$tenant2".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud2:$env2:".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud2:$env2:$tenant1".parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud1, env1, tenant1), "srn:$cloud2:$env2:$tenant2".parsePermissions())).isNull()
+
+        assertThat(repository.getTenant(TenantResource(cloud2, env1, tenant1), listOf("srn:$cloud1:$env1:$tenant1","srn:$cloud1:$env2:$tenant2").parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud2, env1, tenant1), listOf("srn:$cloud1:$env2:$tenant1","srn:$cloud1:$env2:$tenant2").parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud2, env1, tenant1), listOf("srn:$cloud2:$env1:$tenant2").parsePermissions())).isNull()
+        assertThat(repository.getTenant(TenantResource(cloud2, env1, tenant1), listOf("srn:$cloud2:$env1:$tenant1").parsePermissions())).isNotNull
 
     }
 

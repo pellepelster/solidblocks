@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {CloudsService} from "../../sevices/clouds.service";
+import {TenantsService} from "../../sevices/tenants.service";
+import {Tenant} from "../../sevices/types";
 
 @Component({
   selector: 'app-console-home',
@@ -7,14 +8,16 @@ import {CloudsService} from "../../sevices/clouds.service";
 })
 export class ConsoleHomeComponent implements OnInit {
 
-  constructor(private cloudsService: CloudsService) {
+  tenants: Array<Tenant> = []
+
+  constructor(private tenantsService: TenantsService) {
   }
 
   ngOnInit(): void {
 
-    this.cloudsService.list().subscribe(
-      (next) => {
-        console.log(next)
+    this.tenantsService.list().subscribe(
+      (response) => {
+        this.tenants = response.tenants
       },
       (errors) => {
         console.log(errors)

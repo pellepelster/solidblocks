@@ -65,13 +65,10 @@ class ResourcePermissionTest {
         assertThat(listOf("srn:cloud1::tenant1", "srn:cloud2:env2:tenant1").parsePermissions().environments).isEqualTo(listOf("env2"))
         assertThat(listOf("srn:cloud1:env1:tenant1", "srn:cloud2:env2:tenant1").parsePermissions().environments).isEqualTo(listOf("env1", "env2"))
 
-
         assertThat(listOf("srn:cloud1::", "srn:cloud2:env2:tenant1").parsePermissions().isTenantWildcard).isTrue
         assertThat(listOf("srn:cloud1:env1:tenant1", "srn:cloud2:env2:tenant2").parsePermissions().isTenantWildcard).isFalse
 
         assertThat(listOf("srn:cloud1::", "srn:cloud2:env2:tenant2").parsePermissions().tenants).isEqualTo(listOf("tenant2"))
         assertThat(listOf("srn:cloud1:env1:tenant1", "srn:cloud2:env2:tenant2").parsePermissions().tenants).isEqualTo(listOf("tenant1", "tenant2"))
-
-
     }
 }

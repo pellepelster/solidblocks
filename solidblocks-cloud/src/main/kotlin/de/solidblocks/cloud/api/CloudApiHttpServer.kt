@@ -78,21 +78,20 @@ class CloudApiHttpServer(val privateKey: String, val publicKey: String, port: In
 
         router.route().handler(
             CorsHandler.create("*")
-            .allowedMethod(io.vertx.core.http.HttpMethod.GET)
-            .allowedMethod(io.vertx.core.http.HttpMethod.POST)
-            .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
-            .allowedHeader("Authorization")
-            .allowedHeader("Access-Control-Request-Method")
-            .allowedHeader("Access-Control-Allow-Credentials")
-            .allowedHeader("Access-Control-Allow-Origin")
-            .allowedHeader("Access-Control-Allow-Headers")
-            .allowedHeader("Content-Type"))
+                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .allowedHeader("Authorization")
+                .allowedHeader("Access-Control-Request-Method")
+                .allowedHeader("Access-Control-Allow-Credentials")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Access-Control-Allow-Headers")
+                .allowedHeader("Content-Type")
+        )
 
         authHandler = JWTAuthHandler.create(authProvider)
 
-
         router.route().handler(BodyHandler.create())
-
 
         registerErrorHandlers()
 
@@ -117,11 +116,16 @@ class CloudApiHttpServer(val privateKey: String, val publicKey: String, port: In
         return subRouter
     }
 
+    fun configureSubRouter(path: String, configure: (Router) -> Unit) {
+        val subRouter = Router.router(vertx)
+        subRouter.route().handler(authHandler)
+        router.mountSubRouter(path, subRouter)
+        configure(subRouter)
+    }
+
     fun configureSubRouter(path: String, configure: (Router, JWTAuthHandler) -> Unit) {
         val subRouter = Router.router(vertx)
-
         router.mountSubRouter(path, subRouter)
-
         configure(subRouter, authHandler)
     }
 
@@ -145,7 +149,7 @@ class CloudApiHttpServer(val privateKey: String, val publicKey: String, port: In
         }
 
         router.errorHandler(401) {
-            it.jsonResponse(BaseApiResponse(listOf(MessageResponse(ErrorCodes.UNAUTHORIZED))), 401)
+            it.jsonResponse(GenericApiResponse(listOf(MessageResponse(code = ErrorCodes.UNAUTHORIZED))), 401)
         }
     }
 

@@ -25,4 +25,17 @@ class BaseTest {
         }
         assertThat(retryResult.failed).isFalse
     }
+
+    @Test
+    fun testValidateId() {
+        assertThat(validateId("aaaa")).isTrue
+        assertThat(validateId("-aaaa")).isFalse
+        assertThat(validateId("aaaa-")).isFalse
+        assertThat(validateId("-aaaa-")).isFalse
+        assertThat(validateId("1aaaa")).isFalse
+        assertThat(validateId("aaaa1")).isTrue
+        assertThat(validateId("1aaaa1")).isFalse
+        assertThat(validateId("a-aaaa")).isTrue
+        assertThat(validateId("a1aaaa")).isTrue
+    }
 }
