@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {TenantsService} from "../../sevices/tenants.service";
 import {Tenant} from "../../sevices/types";
+import {ToastService} from "../../utils/toast.service";
 
 @Component({
   selector: 'app-console-home',
@@ -10,7 +11,7 @@ export class ConsoleHomeComponent implements OnInit {
 
   tenants: Array<Tenant> = []
 
-  constructor(private tenantsService: TenantsService) {
+  constructor(private tenantsService: TenantsService, private toastsService: ToastService) {
   }
 
   ngOnInit(): void {
@@ -19,8 +20,8 @@ export class ConsoleHomeComponent implements OnInit {
       (response) => {
         this.tenants = response.tenants
       },
-      (errors) => {
-        console.log(errors)
+      (error) => {
+        this.toastsService.handleErrorResponse(error)
       },
     )
   }

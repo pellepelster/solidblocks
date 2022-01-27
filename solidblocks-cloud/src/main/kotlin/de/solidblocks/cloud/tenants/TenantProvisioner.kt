@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.tenants
 
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.VaultCloudConfiguration.createTenantVaultConfig
 import de.solidblocks.cloud.model.EnvironmentRepository
@@ -16,10 +16,10 @@ import de.solidblocks.provisioner.hetzner.cloud.ssh.SshKey
 import mu.KotlinLogging
 
 class TenantProvisioner(
-    reference: TenantResource,
-    val provisioner: Provisioner,
-    val environmentRepository: EnvironmentRepository,
-    tenantRepository: TenantRepository
+        reference: TenantReference,
+        val provisioner: Provisioner,
+        val environmentRepository: EnvironmentRepository,
+        tenantRepository: TenantRepository
 ) {
     private val logger = KotlinLogging.logger {}
 

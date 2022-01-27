@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.resources.CloudResource
+import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.resources.parsePermissions
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
@@ -39,8 +39,8 @@ class CloudRepositoryTest {
         assertThat(cloudRepository.getCloudByRootDomain(cloud1)).isNotNull
         assertThat(cloudRepository.getCloudByRootDomain(cloud1, "srn:$cloud1::".parsePermissions())).isNotNull
         assertThat(cloudRepository.getCloudByRootDomain(cloud1, "srn:$cloud2::".parsePermissions())).isNull()
-        assertThat(cloudRepository.getCloud(CloudResource(cloud1))).isNotNull
-        assertThat(cloudRepository.getCloud(CloudResource(cloud1), "srn:cloud2::".parsePermissions())).isNull()
+        assertThat(cloudRepository.getCloud(CloudReference(cloud1))).isNotNull
+        assertThat(cloudRepository.getCloud(CloudReference(cloud1), "srn:cloud2::".parsePermissions())).isNull()
     }
 
     @Test

@@ -1,7 +1,7 @@
 package de.solidblocks.test
 
-import de.solidblocks.base.resources.EnvironmentResource
-import de.solidblocks.base.resources.UserResource
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.UserReference
 import de.solidblocks.cloud.clouds.CloudsManager
 import de.solidblocks.cloud.environments.EnvironmentsManager
 import de.solidblocks.cloud.model.*
@@ -23,7 +23,7 @@ class TestEnvironment {
     val tenantsManager: TenantsManager
     val usersManager: UsersManager
 
-    val reference = UserResource("cloud1", "environment1", "tenant1", "user1")
+    val reference = UserReference("cloud1", "environment1", "tenant1", "user1")
 
     val dsl: DSLContext
         get() = database.dsl
@@ -39,26 +39,40 @@ class TestEnvironment {
 
         cloudsManager = CloudsManager(cloudRepository, environmentRepository, usersRepository, true)
         usersManager = UsersManager(database.dsl, usersRepository)
-        environmentsManager = EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, usersManager, true)
-        tenantsManager = TenantsManager(database.dsl, cloudRepository, environmentsManager, tenantRepository, usersManager, true)
+        environmentsManager =
+            EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, usersManager, true)
+        tenantsManager =
+            TenantsManager(database.dsl, cloudRepository, environmentsManager, tenantRepository, usersManager, true)
     }
 
-    fun createCloud(cloud: String = "cloud1", rootDomain: String = "dev.local") {
+    fun createCloud(cloud: String = "cloud1", rootDomain: String = "dev.local"): Boolean {
         cloudRepository.createCloud(cloud, rootDomain)
+        return true
     }
 
-    fun createEnvironment(cloud: String = "cloud1", environment: String = "environment1", email: String = "juergen@$cloud.$environment", password: String = "password1"): EnvironmentResource {
-        val reference = EnvironmentResource(cloud, environment)
-        environmentsManager.create(reference, reference.environment, email, password, "<none>", "<none>", "<none>", "<none>")
+    fun createEnvironment(
+        cloud: String = "cloud1",
+        environment: String = "environment1",
+        email: String = "juergen@$environment.$cloud",
+        password: String = "password1"
+    ): Boolean {
+        val reference = EnvironmentReference(cloud, environment)
 
-        return reference
+        return environmentsManager.create(
+            reference,
+            reference.environment,
+            email,
+            password,
+            "<none>",
+            "<none>",
+            "<none>",
+            "<none>"
+        ) ?: throw RuntimeException()
     }
 
     fun createTenant(
         cloud: String = "cloud1",
         environment: String = "environment1",
         tenant: String = "tenant1",
-    ) {
-        tenantRepository.createTenant(EnvironmentResource(cloud, environment), tenant, "<none>>")
-    }
+    ) = tenantRepository.createTenant(EnvironmentReference(cloud, environment), tenant, "<none>>") != null
 }

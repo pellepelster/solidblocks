@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.resources.CloudResource
-import de.solidblocks.base.resources.EnvironmentResource
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.CloudReference
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.entities.UserEntity
 import de.solidblocks.config.db.tables.references.USERS
 import mu.KotlinLogging
@@ -17,17 +17,18 @@ class UsersRepository(val dsl: DSLContext, val cloudRepository: CloudRepository,
         return createUser(email = email, admin = true, password = password, salt = salt)
     }
 
-    fun createCloudUser(reference: CloudResource, email: String, password: String, salt: String): Boolean {
+    fun createCloudUser(reference: CloudReference, email: String, password: String, salt: String): Boolean {
         val cloud = cloudRepository.getCloud(reference) ?: return false
         return createUser(cloud = cloud.id, email = email, admin = false, password = password, salt = salt)
     }
 
-    fun createEnvironmentUser(reference: EnvironmentResource, email: String, password: String, salt: String): Boolean {
+    fun createEnvironmentUser(reference: EnvironmentReference, email: String, password: String, salt: String): Boolean {
         val environment = environmentRepository.getEnvironment(reference) ?: return false
+
         return createUser(environment = environment.id, email = email, admin = false, password = password, salt = salt)
     }
 
-    fun createTenantUser(reference: TenantResource, email: String, password: String, salt: String): Boolean {
+    fun createTenantUser(reference: TenantReference, email: String, password: String, salt: String): Boolean {
         val tenant = tenantRepository.getTenant(reference) ?: return false
         return createUser(tenant = tenant.id, email = email, admin = false, password = password, salt = salt)
     }

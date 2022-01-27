@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.environments
 
-import de.solidblocks.base.resources.CloudResource
-import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.reference.CloudReference
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants
@@ -29,28 +29,28 @@ class EnvironmentsManager(
     }
 
     fun create(
-        reference: CloudResource,
-        name: String,
-        email: String,
-        password: String,
-        githubReadOnlyToken: String,
-        hetznerCloudApiTokenReadOnly: String,
-        hetznerCloudApiTokenReadWrite: String,
-        hetznerDnsApiToken: String
+            reference: CloudReference,
+            name: String,
+            email: String,
+            password: String,
+            githubReadOnlyToken: String,
+            hetznerCloudApiTokenReadOnly: String,
+            hetznerCloudApiTokenReadWrite: String,
+            hetznerDnsApiToken: String
     ) = dsl.transactionResult(
-        TransactionalCallable create@{
+        TransactionalCallable create1@{
 
             if (!cloudRepository.hasCloud(reference)) {
                 logger.info { "cloud '${reference.cloud}' does not exist" }
-                return@create false
+                return@create1 false
             }
 
             if (environmentRepository.hasEnvironment(reference.toEnvironment(name))) {
                 logger.info { "environment '$name' already exist in cloud '${reference.cloud}'" }
-                return@create false
+                return@create1 false
             }
 
-            val reference = environmentRepository.createEnvironment(
+            val envReference = environmentRepository.createEnvironment(
                 reference,
                 name,
                 listOf(
@@ -61,11 +61,11 @@ class EnvironmentsManager(
                 )
             ) ?: throw RuntimeException("failed to create environment '$name' for '$reference' not found")
 
-            usersManager.createEnvironmentUser(reference, email, password)
+            usersManager.createEnvironmentUser(envReference, email, password)
 
             true
         }
     )
 
-    fun getOptional(reference: EnvironmentResource) = environmentRepository.getEnvironment(reference)
+    fun getOptional(reference: EnvironmentReference) = environmentRepository.getEnvironment(reference)
 }

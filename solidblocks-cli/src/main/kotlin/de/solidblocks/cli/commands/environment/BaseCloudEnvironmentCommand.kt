@@ -2,7 +2,7 @@ package de.solidblocks.cli.commands.environment
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 
 abstract class BaseCloudEnvironmentCommand(
@@ -15,6 +15,6 @@ abstract class BaseCloudEnvironmentCommand(
 
     val environment: String by option(help = "cloud environment").required()
 
-    val environmentRef: EnvironmentResource
-        get() = EnvironmentResource(cloud, environment)
+    val environmentRef: EnvironmentReference
+        get() = EnvironmentReference(cloud, environment)
 }

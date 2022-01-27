@@ -4,7 +4,8 @@
 * pellepelster github is currently SPOF, better an organization?
 * token lifetimes and max ttl?
 * ensure uniqueness of hetzner credentials over all clouds
-
+* csrf protection
+* 
 ## Architecture
 
 ### Filesystem structure

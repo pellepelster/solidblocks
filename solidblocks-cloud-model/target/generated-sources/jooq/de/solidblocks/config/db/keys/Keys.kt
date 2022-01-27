@@ -3,6 +3,7 @@
  */
 package de.solidblocks.config.db.keys
 
+
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.ConfigurationValues
 import de.solidblocks.config.db.tables.Environments
@@ -15,10 +16,13 @@ import de.solidblocks.config.db.tables.records.EnvironmentsRecord
 import de.solidblocks.config.db.tables.records.ServicesRecord
 import de.solidblocks.config.db.tables.records.TenantsRecord
 import de.solidblocks.config.db.tables.records.UsersRecord
+
 import org.jooq.ForeignKey
 import org.jooq.UniqueKey
 import org.jooq.impl.DSL
 import org.jooq.impl.Internal
+
+
 
 // -------------------------------------------------------------------------
 // UNIQUE and PRIMARY KEY definitions
@@ -36,7 +40,7 @@ val PK_USERS: UniqueKey<UsersRecord> = Internal.createUniqueKey(Users.USERS, DSL
 // -------------------------------------------------------------------------
 
 val FK_ENVIRONMENTS_CLOUD_ID: ForeignKey<EnvironmentsRecord, CloudsRecord> = Internal.createForeignKey(Environments.ENVIRONMENTS, DSL.name("FK_ENVIRONMENTS_CLOUD_ID"), arrayOf(Environments.ENVIRONMENTS.CLOUD), de.solidblocks.config.db.keys.PK_CLOUDS, arrayOf(Clouds.CLOUDS.ID), true)
-val FK_SERVICES_ENVIRONMENT_ID: ForeignKey<ServicesRecord, EnvironmentsRecord> = Internal.createForeignKey(Services.SERVICES, DSL.name("FK_SERVICES_ENVIRONMENT_ID"), arrayOf(Services.SERVICES.ENVIRONMENT), de.solidblocks.config.db.keys.PK_ENVIRONMENTS, arrayOf(Environments.ENVIRONMENTS.ID), true)
+val FK_SERVICES_TENANT_ID: ForeignKey<ServicesRecord, TenantsRecord> = Internal.createForeignKey(Services.SERVICES, DSL.name("FK_SERVICES_TENANT_ID"), arrayOf(Services.SERVICES.TENANT), de.solidblocks.config.db.keys.PK_TENANTS, arrayOf(Tenants.TENANTS.ID), true)
 val FK_TENANTS_ENVIRONMENT_ID: ForeignKey<TenantsRecord, EnvironmentsRecord> = Internal.createForeignKey(Tenants.TENANTS, DSL.name("FK_TENANTS_ENVIRONMENT_ID"), arrayOf(Tenants.TENANTS.ENVIRONMENT), de.solidblocks.config.db.keys.PK_ENVIRONMENTS, arrayOf(Environments.ENVIRONMENTS.ID), true)
 val FK_USERS_CLOUDS_ID: ForeignKey<UsersRecord, CloudsRecord> = Internal.createForeignKey(Users.USERS, DSL.name("FK_USERS_CLOUDS_ID"), arrayOf(Users.USERS.CLOUD), de.solidblocks.config.db.keys.PK_CLOUDS, arrayOf(Clouds.CLOUDS.ID), true)
 val FK_USERS_ENVIRONMENT_ID: ForeignKey<UsersRecord, EnvironmentsRecord> = Internal.createForeignKey(Users.USERS, DSL.name("FK_USERS_ENVIRONMENT_ID"), arrayOf(Users.USERS.ENVIRONMENT), de.solidblocks.config.db.keys.PK_ENVIRONMENTS, arrayOf(Environments.ENVIRONMENTS.ID), true)

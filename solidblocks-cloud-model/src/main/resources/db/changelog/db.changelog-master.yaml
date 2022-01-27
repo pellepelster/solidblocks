@@ -100,7 +100,9 @@ databaseChangeLog:
             columns:
               - column:
                   name: name
-            indexName: idx_tenants_name
+              - column:
+                  name: environment
+            indexName: idx_tenants_environment_name
             tableName: tenants
             unique: true
 
@@ -163,24 +165,29 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: type
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
                   name: deleted
                   type: boolean
                   constraints:
                     nullable: false
               - column:
-                  name: environment
+                  name: tenant
                   type: uuid
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_services_environment_id
-                    references: environments(id)
+                    foreignKeyName: fk_services_tenant_id
+                    references: tenants(id)
         - createIndex:
             columns:
               - column:
-                  name: environment
+                  name: tenant
               - column:
                   name: name
-            indexName: idx_services_environment_name
+            indexName: idx_services_tenant_name
             tableName: services
             unique: true
 

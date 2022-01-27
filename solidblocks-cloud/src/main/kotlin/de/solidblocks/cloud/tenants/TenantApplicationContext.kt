@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.tenants
 
 import de.solidblocks.base.BaseConstants.tenantHostFQDN
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.ModelConstants.vaultAddress
 import de.solidblocks.cloud.model.TenantRepository
 import de.solidblocks.vault.VaultCaCertificateManager
@@ -11,10 +11,10 @@ import de.solidblocks.vault.VaultConstants.tenantClientPkiMountName
 import de.solidblocks.vault.VaultConstants.tenantServerPkiMountName
 
 class TenantApplicationContext(
-    val reference: TenantResource,
-    val tenantRepository: TenantRepository,
-    val isDevelopment: Boolean = false,
-    val vaultAddressOverride: String? = null,
+        val reference: TenantReference,
+        val tenantRepository: TenantRepository,
+        val isDevelopment: Boolean = false,
+        val vaultAddressOverride: String? = null,
 ) {
 
     fun altNames() = if (isDevelopment) {

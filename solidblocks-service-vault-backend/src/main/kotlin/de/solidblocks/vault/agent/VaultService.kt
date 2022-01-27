@@ -3,10 +3,10 @@ package de.solidblocks.vault.agent
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.BaseConstants.serviceId
-import de.solidblocks.base.resources.ServiceResource
+import de.solidblocks.base.reference.ServiceReference
+import de.solidblocks.cloud.model.EnvironmentRepository
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
 import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
-import de.solidblocks.cloud.model.ServiceRepository
 import de.solidblocks.cloud.model.entities.getRawConfigValue
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.minio.Minio.MINIO_SERVICE_ACCESS_KEY_KEY
@@ -21,31 +21,30 @@ import de.solidblocks.provisioner.vault.mount.VaultMountLookup
 import de.solidblocks.vault.VaultConstants
 import java.util.*
 
-class VaultService(val reference: ServiceResource, val serviceRepository: ServiceRepository) {
+class VaultService(val reference: ServiceReference, val environmentRepository: EnvironmentRepository) {
 
     fun createService(): Boolean {
-        serviceRepository.createService(
-            reference,
-            mapOf(
-                MINIO_SERVICE_ACCESS_KEY_KEY to serviceId(reference),
-                MINIO_SERVICE_SECRET_KEY_KEY to UUID.randomUUID().toString()
-            )
+        environmentRepository.updateEnvironment(reference,
+                mapOf(
+                        MINIO_SERVICE_ACCESS_KEY_KEY to serviceId(reference),
+                        MINIO_SERVICE_SECRET_KEY_KEY to UUID.randomUUID().toString()
+                )
         )
 
         return true
     }
 
     fun getServiceConfiguration(): VaultServiceConfiguration? {
-        val service = serviceRepository.getService(reference) ?: return null
+        val environment = environmentRepository.getEnvironment(reference) ?: return null
 
         return VaultServiceConfiguration(
-            service.configValues.getRawConfigValue(MINIO_SERVICE_ACCESS_KEY_KEY),
-            service.configValues.getRawConfigValue(MINIO_SERVICE_SECRET_KEY_KEY)
+                environment.configValues.getRawConfigValue(MINIO_SERVICE_ACCESS_KEY_KEY),
+                environment.configValues.getRawConfigValue(MINIO_SERVICE_SECRET_KEY_KEY)
         )
     }
 
     fun bootstrapService(
-        provisioner: Provisioner
+            provisioner: Provisioner
     ): Boolean {
         val service = getServiceConfiguration() ?: return false
 
@@ -58,18 +57,18 @@ class VaultService(val reference: ServiceResource, val serviceRepository: Servic
         group.addResource(user)
 
         val policy = MinioPolicy(
-            UUID.randomUUID().toString(),
-            MinioMcWrapper.Policy(
-                statement = listOf(
-                    MinioMcWrapper.Statement(
-                        action = listOf("s3:ListBucket", "s3:*", "s3:PutObject"),
-                        resource = listOf(
-                            "arn:aws:s3:::${serviceBucketName(reference)}/*",
-                            "arn:aws:s3:::${serviceBucketName(reference)}",
+                UUID.randomUUID().toString(),
+                MinioMcWrapper.Policy(
+                        statement = listOf(
+                                MinioMcWrapper.Statement(
+                                        action = listOf("s3:ListBucket", "s3:*", "s3:PutObject"),
+                                        resource = listOf(
+                                                "arn:aws:s3:::${serviceBucketName(reference)}/*",
+                                                "arn:aws:s3:::${serviceBucketName(reference)}",
+                                        )
+                                )
                         )
-                    )
                 )
-            )
         )
         group.addResource(policy)
         group.addResource(MinioPolicyAssignment(user, policy))
@@ -79,9 +78,9 @@ class VaultService(val reference: ServiceResource, val serviceRepository: Servic
         val mount = VaultMountLookup(VaultConstants.kvMountName(reference))
 
         val kv = VaultKV(
-            path = serviceConfigPath(reference),
-            mount = mount,
-            data = jacksonObjectMapper().convertValue(service, Map::class.java) as Map<String, Any>
+                path = serviceConfigPath(reference),
+                mount = mount,
+                data = jacksonObjectMapper().convertValue(service, Map::class.java) as Map<String, Any>
         )
         group.addResource(kv)
 

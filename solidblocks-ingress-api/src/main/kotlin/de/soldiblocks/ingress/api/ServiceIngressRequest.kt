@@ -1,5 +1,5 @@
 package de.soldiblocks.ingress.api
 
-import de.solidblocks.base.resources.ServiceResource
+import de.solidblocks.base.reference.ServiceReference
 
-data class ServiceIngressRequest(val reference: ServiceResource, val hostnames: List<String>, val upstream: String)
+data class ServiceIngressRequest(val reference: ServiceReference, val hostnames: List<String>, val upstream: String)

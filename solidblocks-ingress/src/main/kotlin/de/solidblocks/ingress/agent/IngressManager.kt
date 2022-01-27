@@ -2,7 +2,7 @@ package de.solidblocks.ingress.agent
 
 import de.soldiblocks.ingress.api.ServiceIngressRequest
 import de.solidblocks.base.BaseConstants.tenantId
-import de.solidblocks.base.resources.EnvironmentServiceResource
+import de.solidblocks.base.reference.EnvironmentServiceReference
 import de.solidblocks.vault.VaultCaCertificateManager
 import de.solidblocks.vault.VaultCertificateManager
 import de.solidblocks.vault.VaultConstants.clientFQDN
@@ -13,11 +13,11 @@ import java.io.File
 import java.net.InetAddress
 
 class IngressManager(
-    val vaultAddress: String,
-    val vaultToken: String,
-    val reference: EnvironmentServiceResource,
-    val certificatesDir: File,
-    val network: String? = null
+        val vaultAddress: String,
+        val vaultToken: String,
+        val reference: EnvironmentServiceReference,
+        val certificatesDir: File,
+        val network: String? = null
 ) {
 
     private val caCertificateManagers = mutableMapOf<String, VaultCaCertificateManager>()

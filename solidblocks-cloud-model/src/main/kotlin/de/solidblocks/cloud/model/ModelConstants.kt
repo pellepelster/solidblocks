@@ -5,10 +5,10 @@ import de.solidblocks.base.BaseConstants.environmentId
 import de.solidblocks.base.BaseConstants.serverName
 import de.solidblocks.base.BaseConstants.serviceId
 import de.solidblocks.base.BaseConstants.tenantId
-import de.solidblocks.base.resources.CloudResource
-import de.solidblocks.base.resources.EnvironmentResource
-import de.solidblocks.base.resources.ServiceResource
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.CloudReference
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.ServiceReference
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.NodeRole
 
@@ -20,50 +20,50 @@ object ModelConstants {
 
     val ROLE_LABEL: String = "$LABEL_PREFIX/role"
 
-    fun serviceBucketName(reference: ServiceResource) = serviceId(reference)
+    fun serviceBucketName(reference: ServiceReference) = serviceId(reference)
 
-    fun serviceConfigPath(reference: ServiceResource) =
+    fun serviceConfigPath(reference: ServiceReference) =
         "/solidblocks/services/${reference.service}/config"
 
     fun vaultAddress(environment: EnvironmentEntity) =
         "https://${environmentHostFQDN("vault", environment.reference, environment.cloud.rootDomain)}:8200"
 
-    fun networkName(environment: EnvironmentResource) = environmentId(environment)
+    fun networkName(environment: EnvironmentReference) = environmentId(environment)
 
-    fun sshKeyName(environment: EnvironmentResource) = environmentId(environment)
+    fun sshKeyName(environment: EnvironmentReference) = environmentId(environment)
 
-    fun networkName(reference: TenantResource) = tenantId(reference)
+    fun networkName(reference: TenantReference) = tenantId(reference)
 
     fun defaultRoleLabels(nodeRole: NodeRole) = mapOf(ROLE_LABEL to nodeRole.toString())
 
-    fun defaultCloudLabels(reference: CloudResource) =
+    fun defaultCloudLabels(reference: CloudReference) =
         mapOf("$LABEL_PREFIX/cloud" to reference.cloud)
 
-    fun defaultEnvironmentLabels(reference: EnvironmentResource) =
+    fun defaultEnvironmentLabels(reference: EnvironmentReference) =
         mapOf("$LABEL_PREFIX/environment" to reference.environment) + defaultCloudLabels(reference)
 
-    fun defaultCloudLabels(cloud: CloudResource, nodeRole: NodeRole) =
+    fun defaultCloudLabels(cloud: CloudReference, nodeRole: NodeRole) =
         defaultRoleLabels(nodeRole) + defaultCloudLabels(cloud)
 
-    fun defaultEnvironmentLabels(reference: EnvironmentResource, nodeRole: NodeRole) =
+    fun defaultEnvironmentLabels(reference: EnvironmentReference, nodeRole: NodeRole) =
         mapOf("$LABEL_PREFIX/environment" to reference.environment) + defaultCloudLabels(reference, nodeRole)
 
-    fun defaultTenantLabels(reference: TenantResource) =
+    fun defaultTenantLabels(reference: TenantReference) =
         mapOf("$LABEL_PREFIX/tenant" to reference.tenant) + defaultEnvironmentLabels(reference)
 
-    fun defaultTenantLabels(reference: TenantResource, nodeRole: NodeRole) =
+    fun defaultTenantLabels(reference: TenantReference, nodeRole: NodeRole) =
         defaultTenantLabels(reference) + defaultRoleLabels(nodeRole)
 
-    fun defaultServiceLabels(reference: ServiceResource, nodeRole: NodeRole) =
+    fun defaultServiceLabels(reference: ServiceReference, nodeRole: NodeRole) =
         mapOf(SERVICE_LABEL to reference.service) + defaultTenantLabels(reference) + defaultRoleLabels(nodeRole)
 
-    fun volumeName(reference: ServiceResource, location: String, index: Int) =
+    fun volumeName(reference: ServiceReference, location: String, index: Int) =
         serverName(reference, location, index)
 
-    fun volumeName(name: String, reference: EnvironmentResource, location: String, index: Int) =
+    fun volumeName(name: String, reference: EnvironmentReference, location: String, index: Int) =
         serverName(name, reference, location, index)
 
-    fun floatingIpName(name: String, reference: EnvironmentResource, location: String, index: Int) =
+    fun floatingIpName(name: String, reference: EnvironmentReference, location: String, index: Int) =
         serverName(name, reference, location, index)
 
     const val GITHUB_TOKEN_RO_KEY = "github_token_ro"

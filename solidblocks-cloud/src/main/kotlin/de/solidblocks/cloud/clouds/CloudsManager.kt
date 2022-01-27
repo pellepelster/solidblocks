@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.clouds
 
-import de.solidblocks.base.resources.CloudResource
-import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.reference.CloudReference
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cloud.CloudUtils
 import de.solidblocks.cloud.model.CloudRepository
 import de.solidblocks.cloud.model.EnvironmentRepository
@@ -19,7 +19,7 @@ class CloudsManager(
 
     private val logger = KotlinLogging.logger {}
 
-    fun createCloud(name: String, domain: String): CloudResource? {
+    fun createCloud(name: String, domain: String): CloudReference? {
 
         if (cloudRepository.hasCloud(name)) {
             logger.info { "cloud '$name' already exists" }
@@ -30,10 +30,10 @@ class CloudsManager(
 
         cloudRepository.createCloud(name, domain, development = isDevelopment)
 
-        return CloudResource(name)
+        return CloudReference(name)
     }
 
-    fun rotateEnvironmentSecrets(reference: EnvironmentResource): Boolean {
+    fun rotateEnvironmentSecrets(reference: EnvironmentReference): Boolean {
 
         if (!environmentRepository.hasEnvironment(reference)) {
             logger.info { "environment '$reference.environment' and/or cloud '${reference.cloud}' does no exist" }
@@ -44,7 +44,7 @@ class CloudsManager(
         return true
     }
 
-    fun listEnvironments(reference: CloudResource): List<EnvironmentEntity> {
+    fun listEnvironments(reference: CloudReference): List<EnvironmentEntity> {
         val cloud = cloudRepository.getCloud(reference) ?: throw RuntimeException("cloud '$reference' not found")
         return environmentRepository.listEnvironments()
     }

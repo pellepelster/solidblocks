@@ -3,9 +3,9 @@ package de.solidblocks.vault
 import de.solidblocks.base.BaseConstants.environmentId
 import de.solidblocks.base.BaseConstants.serviceId
 import de.solidblocks.base.BaseConstants.tenantId
-import de.solidblocks.base.resources.EnvironmentResource
-import de.solidblocks.base.resources.ServiceResource
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.ServiceReference
+import de.solidblocks.base.reference.TenantReference
 import org.springframework.vault.support.Policy
 import java.time.Duration
 
@@ -17,35 +17,35 @@ object VaultConstants {
 
     val ENVIRONMENT_TOKEN_TTL = SERVICE_TOKEN_TTL
 
-    fun ingressPolicyName(reference: EnvironmentResource) = "${environmentId(reference)}-ingress"
+    fun ingressPolicyName(reference: EnvironmentReference) = "${environmentId(reference)}-ingress"
 
-    fun backupPolicyName(reference: EnvironmentResource) = "${environmentId(reference)}-backup"
+    fun backupPolicyName(reference: EnvironmentReference) = "${environmentId(reference)}-backup"
 
-    fun servicePolicyName(reference: ServiceResource) = serviceId(reference)
+    fun servicePolicyName(reference: ServiceReference) = serviceId(reference)
 
-    fun environmentServerPkiMountName(reference: EnvironmentResource) = "${environmentId(reference)}-pki-server"
+    fun environmentServerPkiMountName(reference: EnvironmentReference) = "${environmentId(reference)}-pki-server"
 
-    fun environmentClientPkiMountName(reference: EnvironmentResource) = "${environmentId(reference)}-pki-client"
+    fun environmentClientPkiMountName(reference: EnvironmentReference) = "${environmentId(reference)}-pki-client"
 
-    fun tenantServerPkiMountName(reference: TenantResource) = "${tenantId(reference)}-pki-server"
+    fun tenantServerPkiMountName(reference: TenantReference) = "${tenantId(reference)}-pki-server"
 
-    fun tenantClientPkiMountName(reference: TenantResource) = "${tenantId(reference)}-pki-client"
+    fun tenantClientPkiMountName(reference: TenantReference) = "${tenantId(reference)}-pki-client"
 
     fun clientsDomain() = "clients"
 
     fun clientFQDN(client: String) = "$client.${clientsDomain()}"
 
-    fun kvMountName(reference: EnvironmentResource) = "${environmentId(reference)}-kv"
+    fun kvMountName(reference: EnvironmentReference) = "${environmentId(reference)}-kv"
 
-    fun kvMountName(reference: TenantResource) = "${tenantId(reference)}-kv"
+    fun kvMountName(reference: TenantReference) = "${tenantId(reference)}-kv"
 
     fun servicePath(service: String) = "solidblocks/services/$service"
 
-    fun hostSshMountName(reference: EnvironmentResource) = "${environmentId(reference)}-ssh-host"
+    fun hostSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-ssh-host"
 
-    fun userSshMountName(reference: EnvironmentResource) = "${environmentId(reference)}-ssh-user"
+    fun userSshMountName(reference: EnvironmentReference) = "${environmentId(reference)}-ssh-user"
 
-    fun providersGithubPolicy(reference: EnvironmentResource) = Policy.Rule.builder().path(
+    fun providersGithubPolicy(reference: EnvironmentReference) = Policy.Rule.builder().path(
         "${kvMountName(reference)}/data/solidblocks/cloud/providers/github"
     ).capabilities(Policy.BuiltinCapabilities.READ).build()
 
@@ -57,17 +57,17 @@ object VaultConstants {
         Policy.Rule.builder().path("/auth/token/lookup-self").capabilities(Policy.BuiltinCapabilities.READ)
             .build()
 
-    fun issueEnvironmentServerCertificatesPolicy(reference: EnvironmentResource) =
+    fun issueEnvironmentServerCertificatesPolicy(reference: EnvironmentReference) =
         Policy.Rule.builder()
             .path("${environmentServerPkiMountName(reference)}/issue/${environmentServerPkiMountName(reference)}")
             .capabilities(Policy.BuiltinCapabilities.UPDATE).build()
 
-    fun issueTenantServerCertificatesPolicy(reference: TenantResource) =
+    fun issueTenantServerCertificatesPolicy(reference: TenantReference) =
         Policy.Rule.builder()
             .path("${tenantServerPkiMountName(reference)}/issue/${tenantServerPkiMountName(reference)}")
             .capabilities(Policy.BuiltinCapabilities.UPDATE).build()
 
-    fun readEnvironmentClientCaCertificatePolicy(reference: TenantResource) =
+    fun readEnvironmentClientCaCertificatePolicy(reference: TenantReference) =
         Policy.Rule.builder()
             .path("${environmentClientPkiMountName(reference)}/cert/ca")
             .capabilities(Policy.BuiltinCapabilities.READ).build()

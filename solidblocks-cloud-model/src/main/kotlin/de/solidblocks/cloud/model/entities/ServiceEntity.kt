@@ -5,6 +5,6 @@ import java.util.*
 data class ServiceEntity(
     val id: UUID,
     val name: String,
-    val environment: EnvironmentEntity,
+    val tenant: TenantEntity,
     val configValues: List<CloudConfigValue>
 )

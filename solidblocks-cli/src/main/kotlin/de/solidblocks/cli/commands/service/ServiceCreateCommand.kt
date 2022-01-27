@@ -18,8 +18,9 @@ class ServiceCreateCommand :
             exitProcess(1)
         }
 
-        if (!context.serviceRepository.createService(tenantRef.toService(service))) {
+        /*
+        if (!context.serviceRepository.createService(tenantRef)) {
             exitProcess(1)
-        }
+        }*/
     }
 }

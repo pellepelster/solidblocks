@@ -1,26 +1,52 @@
 package de.solidblocks.cloud.model
 
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.util.*
 
 @ExtendWith(TestEnvironmentExtension::class)
 class UsersRepositoryTest {
 
     @Test
-    fun testCreateUser(testEnvironment: TestEnvironment) {
-        val reference = testEnvironment.createEnvironment("cloud1", "env1")
+    fun testCreateEnvironmentUser(testEnvironment: TestEnvironment) {
+        val cloud = UUID.randomUUID().toString()
+
+        assertThat(testEnvironment.createCloud(cloud)).isTrue
+        assertThat(testEnvironment.createEnvironment(cloud, "env1")).isTrue
 
         val repository = UsersRepository(testEnvironment.dsl, testEnvironment.cloudRepository, testEnvironment.environmentRepository, testEnvironment.tenantRepository)
 
-        assertThat(repository.getUser("user1")).isNull()
-        assertThat(repository.createEnvironmentUser(reference, "juergen2@test.local", "password2", "salt2")).isTrue
+        assertThat(repository.getUser("juergen@${cloud}")).isNull()
+        assertThat(repository.createEnvironmentUser(EnvironmentReference(cloud, "env1"), "juergen@${cloud}", "password2", "salt2")).isTrue
 
-        val user = repository.getUser("juergen2@test.local")
+        val user = repository.getUser("juergen@${cloud}")
         assertThat(user).isNotNull
-        assertThat(user?.email).isEqualTo("juergen2@test.local")
+        assertThat(user?.email).isEqualTo("juergen@${cloud}")
+        assertThat(user?.password).isEqualTo("password2")
+        assertThat(user?.salt).isEqualTo("salt2")
+    }
+
+    @Test
+    fun testCreateTenantUser(testEnvironment: TestEnvironment) {
+        val cloud = UUID.randomUUID().toString()
+
+        assertThat(testEnvironment.createCloud(cloud)).isTrue
+        assertThat(testEnvironment.createEnvironment(cloud, "env1")).isTrue
+        assertThat(testEnvironment.createTenant(cloud, "env1", "tenant1")).isTrue
+
+        val repository = UsersRepository(testEnvironment.dsl, testEnvironment.cloudRepository, testEnvironment.environmentRepository, testEnvironment.tenantRepository)
+
+        assertThat(repository.getUser("juergen@${cloud}")).isNull()
+        assertThat(repository.createTenantUser(TenantReference(cloud, "env1", "tenant1"), "juergen@${cloud}", "password2", "salt2")).isTrue
+
+        val user = repository.getUser("juergen@${cloud}")
+        assertThat(user).isNotNull
+        assertThat(user?.email).isEqualTo("juergen@${cloud}")
         assertThat(user?.password).isEqualTo("password2")
         assertThat(user?.salt).isEqualTo("salt2")
     }

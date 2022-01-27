@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.model.entities
 
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.TenantReference
 import java.util.*
 
 data class TenantEntity(
@@ -11,6 +11,6 @@ data class TenantEntity(
 ) {
     fun getConfigValue(key: String) = configValues.getConfigValue(key)!!.value
 
-    val reference: TenantResource
+    val reference: TenantReference
         get() = environment.reference.toTenant(name)
 }

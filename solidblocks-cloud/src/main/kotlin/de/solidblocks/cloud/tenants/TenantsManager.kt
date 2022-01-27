@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.tenants
 
-import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.validateId
 import de.solidblocks.cloud.NetworkUtils
 import de.solidblocks.cloud.environments.EnvironmentsManager
@@ -25,7 +25,7 @@ class TenantsManager(
 
     private val logger = KotlinLogging.logger {}
 
-    fun create(environmentReference: EnvironmentResource, name: String, email: String): CreationResult<TenantEntity> {
+    fun create(environmentReference: EnvironmentReference, name: String, email: String): CreationResult<TenantEntity> {
         val environment = environmentsManager.getOptional(environmentReference)
             ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
 

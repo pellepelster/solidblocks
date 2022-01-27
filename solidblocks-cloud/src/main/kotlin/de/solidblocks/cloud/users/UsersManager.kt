@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.users
 
-import de.solidblocks.base.resources.EnvironmentResource
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.UsersRepository
 import de.solidblocks.cloud.model.entities.UserEntity
 import mu.KotlinLogging
@@ -43,14 +43,14 @@ class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository) {
         }
     )
 
-    fun createEnvironmentUser(reference: EnvironmentResource, email: String, password: String): Boolean {
+    fun createEnvironmentUser(reference: EnvironmentReference, email: String, password: String): Boolean {
         logger.info { "creating user '$email' for environment '${reference.environment}'" }
 
         val credentials = generatePasswordAndSalt(password)
         return usersRepository.createEnvironmentUser(reference, email, credentials.first, credentials.second)
     }
 
-    fun createTenantUser(reference: TenantResource, email: String, password: String): Boolean {
+    fun createTenantUser(reference: TenantReference, email: String, password: String): Boolean {
         logger.info { "creating user '$email' for tenant '${reference.tenant}'" }
 
         val credentials = generatePasswordAndSalt(password)

@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.resources.ResourcePermissions
-import de.solidblocks.base.resources.TenantResource
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.config.db.tables.references.CLOUDS
@@ -18,12 +18,12 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
 
     val tenants = TENANTS.`as`("tenants")
 
-    fun hasTenant(reference: TenantResource, permissions: ResourcePermissions? = null) =
+    fun hasTenant(reference: TenantReference, permissions: ResourcePermissions? = null) =
         getTenant(reference, permissions) != null
 
     fun getTenant(id: UUID): TenantEntity? = listTenants(tenants.ID.eq(id)).firstOrNull()
 
-    fun getTenant(reference: TenantResource, permissions: ResourcePermissions? = null): TenantEntity? {
+    fun getTenant(reference: TenantReference, permissions: ResourcePermissions? = null): TenantEntity? {
         return listTenants(
             CLOUDS.NAME.eq(reference.cloud).and(ENVIRONMENTS.NAME.eq(reference.environment))
                 .and(tenants.NAME.eq(reference.tenant)),
@@ -88,7 +88,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
             }
     }
 
-    fun createTenant(reference: EnvironmentResource, name: String, networkCidr: String): TenantEntity? {
+    fun createTenant(reference: EnvironmentReference, name: String, networkCidr: String): TenantEntity? {
         val id = UUID.randomUUID()
         val environment = environmentRepository.getEnvironment(reference) ?: return null
 

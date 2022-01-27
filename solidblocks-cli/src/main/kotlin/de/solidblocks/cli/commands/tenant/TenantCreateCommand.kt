@@ -2,7 +2,7 @@ package de.solidblocks.cli.commands.tenant
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.base.resources.EnvironmentResource
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cli.commands.environment.BaseCloudEnvironmentCommand
 import de.solidblocks.cloud.ApplicationContext
 import kotlin.system.exitProcess
@@ -22,7 +22,7 @@ class TenantCreateCommand :
     override fun run() {
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
-        val reference = EnvironmentResource(cloud, environment)
+        val reference = EnvironmentReference(cloud, environment)
         if (!context.verifyEnvironmentReference(reference)) {
             exitProcess(1)
         }
