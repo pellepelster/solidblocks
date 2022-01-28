@@ -1,7 +1,7 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.cloud.model.CloudsRepository
-import de.solidblocks.cloud.model.EnvironmentsRepository
+import de.solidblocks.cloud.model.repositories.CloudsRepository
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
 import org.assertj.core.api.Assertions

@@ -1,8 +1,8 @@
 package de.solidblocks.provisioner.vault
 
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import de.solidblocks.vault.InitializingVaultManager
 import de.solidblocks.vault.VaultConstants.UNSEAL_KEY_PREFIX
 import de.solidblocks.vault.model.VaultCredentials

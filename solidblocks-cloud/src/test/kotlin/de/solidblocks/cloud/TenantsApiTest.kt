@@ -20,7 +20,7 @@ class TenantsApiTest {
     @Test
     fun testTenantsApi(testEnvironment: TestEnvironment) {
 
-        testEnvironment.usersManager.ensureAdminUser("admin", "admin")
+        testEnvironment.managers.users.ensureAdminUser("admin", "admin")
         testEnvironment.createCloud("cloud1")
         testEnvironment.createCloud("cloud2")
         testEnvironment.createEnvironment("cloud1", "env1")
@@ -32,9 +32,9 @@ class TenantsApiTest {
             httpServer,
             testEnvironment.repositories.clouds,
             testEnvironment.repositories.environments,
-            testEnvironment.usersManager
+            testEnvironment.managers.users
         )
-        TenantsApi(httpServer, testEnvironment.tenantsManager)
+        TenantsApi(httpServer, testEnvironment.managers.tenants)
 
         val token = given().port(httpServer.port).login()
 

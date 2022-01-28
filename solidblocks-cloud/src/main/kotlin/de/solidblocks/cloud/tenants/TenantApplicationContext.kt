@@ -3,7 +3,7 @@ package de.solidblocks.cloud.tenants
 import de.solidblocks.base.BaseConstants.tenantHostFQDN
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.ModelConstants.vaultAddress
-import de.solidblocks.cloud.model.TenantsRepository
+import de.solidblocks.cloud.model.repositories.TenantsRepository
 import de.solidblocks.vault.VaultCaCertificateManager
 import de.solidblocks.vault.VaultCertificateManager
 import de.solidblocks.vault.VaultConstants.clientFQDN

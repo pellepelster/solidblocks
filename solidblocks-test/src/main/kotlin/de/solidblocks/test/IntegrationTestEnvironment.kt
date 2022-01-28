@@ -80,8 +80,8 @@ class IntegrationTestEnvironment {
     fun createCloud(): Boolean {
         logger.info { "creating test env (${reference.cloud}/${reference.environment})" }
 
-        context.cloudsManager.createCloud(reference.cloud, rootDomain)
-        context.environmentsManager.create(
+        context.managers.clouds.createCloud(reference.cloud, rootDomain)
+        context.managers.environments.create(
             reference,
             reference.environment,
             "juergen@test.local",
@@ -91,7 +91,7 @@ class IntegrationTestEnvironment {
             "<none>",
             "<none>"
         )
-        context.tenantsManager.create(reference, reference.tenant, "pelle@pelle.io")
+        context.managers.tenants.create(reference, reference.tenant, "pelle@pelle.io")
 
         val environment = context.repositories.environments.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")

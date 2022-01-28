@@ -8,7 +8,7 @@ class EnvironmentBootstrapCommand :
 
     override fun run() {
         val context = ApplicationContext(solidblocksDatabaseUrl)
-        if (!context.verifyEnvironmentReference(environmentRef)) {
+        if (!context.managers.environments.verifyReference(environmentRef)) {
             exitProcess(1)
         }
 

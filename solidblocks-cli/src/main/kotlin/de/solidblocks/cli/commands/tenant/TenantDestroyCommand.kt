@@ -19,7 +19,7 @@ class TenantDestroyCommand : BaseCloudEnvironmentCommand(name = "destroy", help 
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
         val tenant = TenantReference(cloud, environment, tenant)
-        if (!context.verifyTenantReference(tenant)) {
+        if (!context.managers.tenants.verifyReference(tenant)) {
             exitProcess(1)
         }
 

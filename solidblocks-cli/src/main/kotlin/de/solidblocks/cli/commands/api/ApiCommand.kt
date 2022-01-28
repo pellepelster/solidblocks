@@ -11,13 +11,13 @@ import de.solidblocks.cloud.tenants.api.TenantsApi
 class ApiCommand : BaseCloudDbCommand(name = "api", help = "start cloud api") {
     override fun run() {
         val context = ApplicationContext(solidblocksDatabaseUrl)
-        context.usersManager.ensureAdminUser("admin", "admin")
+        context.managers.users.ensureAdminUser("admin", "admin")
 
         val keyPair = generateRsaKeyPair()
         val httpServer = CloudApiHttpServer(privateKey = keyPair.first, publicKey = keyPair.second, port = 8080)
-        val authApi = AuthApi(httpServer, context.repositories.clouds, context.repositories.environments, context.usersManager)
-        val cloudsApi = CloudsApi(httpServer, context.cloudsManager, context.environmentsManager)
-        val tenantsApi = TenantsApi(httpServer, context.tenantsManager)
+        val authApi = AuthApi(httpServer, context.repositories.clouds, context.repositories.environments, context.managers.users)
+        val cloudsApi = CloudsApi(httpServer, context.managers.clouds, context.managers.environments)
+        val tenantsApi = TenantsApi(httpServer, context.managers.tenants)
 
         httpServer.waitForShutdown()
     }

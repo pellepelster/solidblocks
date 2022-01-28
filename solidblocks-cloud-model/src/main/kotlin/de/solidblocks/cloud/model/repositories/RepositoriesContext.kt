@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.model
+package de.solidblocks.cloud.model.repositories
 
 import org.jooq.DSLContext
 

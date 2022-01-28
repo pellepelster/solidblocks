@@ -18,6 +18,6 @@ class CloudCreateCommand :
 
         val reference = CloudReference(cloud)
 
-        context.cloudsManager.createCloud(reference.cloud, domain)
+        context.managers.clouds.createCloud(reference.cloud, domain)
     }
 }

@@ -14,7 +14,7 @@ class ServiceBootstrapCommand :
     override fun run() {
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
-        if (!context.verifyTenantReference(tenantRef)) {
+        if (!context.managers.tenants.verifyReference(tenantRef)) {
             exitProcess(1)
         }
 

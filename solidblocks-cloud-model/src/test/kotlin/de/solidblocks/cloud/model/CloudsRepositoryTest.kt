@@ -3,6 +3,7 @@ package de.solidblocks.cloud.model
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.resources.parsePermissions
 import de.solidblocks.cloud.model.entities.CloudConfigValue
+import de.solidblocks.cloud.model.repositories.CloudsRepository
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.exception.DataAccessException

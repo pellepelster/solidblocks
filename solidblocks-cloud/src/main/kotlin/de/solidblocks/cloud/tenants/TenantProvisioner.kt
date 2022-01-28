@@ -3,12 +3,12 @@ package de.solidblocks.cloud.tenants
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.VaultCloudConfiguration.createTenantVaultConfig
-import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ModelConstants.defaultTenantLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
-import de.solidblocks.cloud.model.TenantsRepository
 import de.solidblocks.cloud.model.entities.TenantEntity
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
+import de.solidblocks.cloud.model.repositories.TenantsRepository
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.hetzner.cloud.network.Network
 import de.solidblocks.provisioner.hetzner.cloud.network.Subnet

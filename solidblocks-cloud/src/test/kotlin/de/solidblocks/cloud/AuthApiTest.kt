@@ -24,8 +24,8 @@ class AuthApiTest {
 
     @Test
     fun testAuthForAdminUser(testEnvironment: TestEnvironment) {
-        testEnvironment.usersManager.ensureAdminUser("juergen@admin.local", "admin-password")
-        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.usersManager)
+        testEnvironment.managers.users.ensureAdminUser("juergen@admin.local", "admin-password")
+        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.managers.users)
 
         given().port(httpServer.port).with().body(
             """{
@@ -56,7 +56,7 @@ class AuthApiTest {
         testEnvironment.createCloud()
         testEnvironment.createEnvironment()
 
-        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.usersManager)
+        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.managers.users)
 
         given().port(httpServer.port).with().body(
             """{

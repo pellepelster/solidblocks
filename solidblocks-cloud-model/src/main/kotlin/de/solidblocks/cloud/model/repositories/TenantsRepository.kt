@@ -1,8 +1,9 @@
-package de.solidblocks.cloud.model
+package de.solidblocks.cloud.model.repositories
 
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.base.resources.ResourcePermissions
+import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.config.db.tables.references.CLOUDS

@@ -27,11 +27,11 @@ class EnvironmentCreateCommand :
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
         val reference = CloudReference(cloud)
-        if (!context.verifyCloudReference(reference)) {
+        if (!context.managers.clouds.verifyReference(reference)) {
             exitProcess(1)
         }
 
-        context.environmentsManager.create(
+        context.managers.environments.create(
             reference = EnvironmentReference(cloud, environment),
             environment,
             "juerge@test.local",

@@ -5,13 +5,13 @@ import de.solidblocks.base.BaseConstants.serverName
 import de.solidblocks.base.lookups.ConstantDataSource
 import de.solidblocks.base.reference.ServiceReference
 import de.solidblocks.cloud.environments.defaultCloudInitVariables
-import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ModelConstants.defaultServiceLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
 import de.solidblocks.cloud.model.ModelConstants.sshKeyName
 import de.solidblocks.cloud.model.ModelConstants.volumeName
 import de.solidblocks.cloud.model.entities.NodeRole
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import de.solidblocks.core.IResourceLookup
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.hetzner.cloud.network.NetworkLookup

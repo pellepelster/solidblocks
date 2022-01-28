@@ -2,8 +2,8 @@ package de.solidblocks.cloud.users
 
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.TenantReference
-import de.solidblocks.cloud.model.UsersRepository
 import de.solidblocks.cloud.model.entities.UserEntity
+import de.solidblocks.cloud.model.repositories.UsersRepository
 import mu.KotlinLogging
 import org.bouncycastle.crypto.generators.BCrypt
 import org.jooq.DSLContext

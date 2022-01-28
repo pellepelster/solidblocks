@@ -2,6 +2,7 @@ package de.solidblocks.cloud.model
 
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.TenantReference
+import de.solidblocks.cloud.model.repositories.UsersRepository
 import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
 import org.assertj.core.api.Assertions.assertThat

@@ -23,10 +23,10 @@ class TenantCreateCommand :
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
         val reference = EnvironmentReference(cloud, environment)
-        if (!context.verifyEnvironmentReference(reference)) {
+        if (!context.managers.environments.verifyReference(reference)) {
             exitProcess(1)
         }
 
-        context.tenantsManager.create(reference, tenant, email)
+        context.managers.tenants.create(reference, tenant, email)
     }
 }

@@ -27,12 +27,12 @@ class EnvironmentSshConfigCommand :
 
         val context = ApplicationContext(solidblocksDatabaseUrl)
 
-        if (!context.verifyEnvironmentReference(environmentRef)) {
+        if (!context.managers.environments.verifyReference(environmentRef)) {
             exitProcess(1)
         }
 
         val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
-        for (environment in context.cloudsManager.listEnvironments(environmentRef)) {
+        for (environment in context.managers.clouds.listEnvironments(environmentRef)) {
 
             val environmentPath = Path(basePath.toString(), environment.name)
 

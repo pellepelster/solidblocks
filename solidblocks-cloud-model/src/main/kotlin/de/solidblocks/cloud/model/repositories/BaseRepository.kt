@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.model
+package de.solidblocks.cloud.model.repositories
 
 import de.solidblocks.base.resources.ResourcePermission
 import de.solidblocks.cloud.model.entities.CloudConfigValue

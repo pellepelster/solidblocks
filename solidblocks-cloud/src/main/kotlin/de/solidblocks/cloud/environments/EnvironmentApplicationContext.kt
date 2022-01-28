@@ -2,8 +2,8 @@ package de.solidblocks.cloud.environments
 
 import de.solidblocks.base.BaseConstants.environmentHostFQDN
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants.vaultAddress
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import de.solidblocks.vault.VaultCaCertificateManager
 import de.solidblocks.vault.VaultCertificateManager
 import de.solidblocks.vault.VaultConstants.clientFQDN

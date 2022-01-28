@@ -1,12 +1,16 @@
 package de.solidblocks.cloud.tenants
 
 import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.base.validateId
 import de.solidblocks.cloud.NetworkUtils
 import de.solidblocks.cloud.environments.EnvironmentsManager
-import de.solidblocks.cloud.model.*
+import de.solidblocks.cloud.model.CreationResult
+import de.solidblocks.cloud.model.ErrorCodes
+import de.solidblocks.cloud.model.ValidationResult
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
+import de.solidblocks.cloud.model.repositories.TenantsRepository
 import de.solidblocks.cloud.tenants.api.TenantCreateRequest
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.provisioner.hetzner.Hetzner
@@ -16,7 +20,6 @@ import org.jooq.TransactionalCallable
 
 class TenantsManager(
     val dsl: DSLContext,
-    val cloudsRepository: CloudsRepository,
     val environmentsManager: EnvironmentsManager,
     val tenantsRepository: TenantsRepository,
     val usersManager: UsersManager,
@@ -90,5 +93,18 @@ class TenantsManager(
 
         NetworkUtils.nextNetwork(currentNetworks.toSet())
             ?: throw RuntimeException("could not determine next network CIDR")
+    }
+
+    fun verifyReference(reference: TenantReference): Boolean {
+        if (!environmentsManager.verifyReference(reference)) {
+            return false
+        }
+
+        if (!tenantsRepository.hasTenant(reference)) {
+            logger.error { "tenant '${reference.tenant}' not found" }
+            return false
+        }
+
+        return true
     }
 }

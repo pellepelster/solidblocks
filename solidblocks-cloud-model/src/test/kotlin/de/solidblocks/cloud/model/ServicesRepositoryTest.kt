@@ -5,6 +5,10 @@ import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.ServiceReference
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.base.resources.parsePermissions
+import de.solidblocks.cloud.model.repositories.CloudsRepository
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
+import de.solidblocks.cloud.model.repositories.ServicesRepository
+import de.solidblocks.cloud.model.repositories.TenantsRepository
 import de.solidblocks.test.SolidblocksTestDatabaseExtension
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

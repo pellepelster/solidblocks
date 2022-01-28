@@ -4,10 +4,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import de.solidblocks.api.resources.ResourceGroup
 import de.solidblocks.base.BaseConstants.serviceId
 import de.solidblocks.base.reference.ServiceReference
-import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
 import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
 import de.solidblocks.cloud.model.entities.getRawConfigValue
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.minio.Minio.MINIO_SERVICE_ACCESS_KEY_KEY
 import de.solidblocks.provisioner.minio.Minio.MINIO_SERVICE_SECRET_KEY_KEY

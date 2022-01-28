@@ -2,25 +2,17 @@ package de.solidblocks.test
 
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.UserReference
-import de.solidblocks.cloud.clouds.CloudsManager
-import de.solidblocks.cloud.environments.EnvironmentsManager
-import de.solidblocks.cloud.model.RepositoriesContext
+import de.solidblocks.cloud.ManagersContext
 import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.cloud.model.entities.toReference
-import de.solidblocks.cloud.tenants.TenantsManager
-import de.solidblocks.cloud.users.UsersManager
+import de.solidblocks.cloud.model.repositories.RepositoriesContext
 import org.jooq.DSLContext
 
 class TestEnvironment {
 
     val database: SolidblocksDatabase
-
     val repositories: RepositoriesContext
-
-    val cloudsManager: CloudsManager
-    val environmentsManager: EnvironmentsManager
-    val tenantsManager: TenantsManager
-    val usersManager: UsersManager
+    val managers: ManagersContext
 
     val reference = UserReference("cloud1", "environment1", "tenant1", "user1")
 
@@ -32,20 +24,7 @@ class TestEnvironment {
         database.ensureDBSchema()
 
         repositories = RepositoriesContext(database.dsl)
-
-        cloudsManager = CloudsManager(repositories.clouds, repositories.environments, repositories.users, true)
-        usersManager = UsersManager(database.dsl, repositories.users)
-        environmentsManager =
-            EnvironmentsManager(database.dsl, repositories.clouds, repositories.environments, usersManager, true)
-        tenantsManager =
-            TenantsManager(
-                database.dsl,
-                repositories.clouds,
-                environmentsManager,
-                repositories.tenants,
-                usersManager,
-                true
-            )
+        managers = ManagersContext(database.dsl, repositories, true)
     }
 
     fun createCloud(cloud: String = "cloud1", rootDomain: String = "dev.local") =
@@ -64,7 +43,7 @@ class TestEnvironment {
     ): EnvironmentReference {
         val reference = EnvironmentReference(cloud, environment)
 
-        return environmentsManager.create(
+        return managers.environments.create(
             reference,
             reference.environment,
             email,

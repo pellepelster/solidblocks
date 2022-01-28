@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.model
+package de.solidblocks.cloud.model.repositories
 
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
@@ -14,6 +14,7 @@ import de.solidblocks.cloud.model.entities.ConsulSecrets
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.EnvironmentEntity.Companion.ROOT_TOKEN_KEY
 import de.solidblocks.cloud.model.entities.SshSecrets
+import de.solidblocks.cloud.model.generateSshKey
 import de.solidblocks.config.db.tables.references.CLOUDS
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
 import de.solidblocks.config.db.tables.references.ENVIRONMENTS

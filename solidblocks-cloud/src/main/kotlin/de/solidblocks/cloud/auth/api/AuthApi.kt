@@ -5,9 +5,9 @@ import de.solidblocks.cloud.api.CloudApiHttpServer.Companion.JWT_ALGORITHM
 import de.solidblocks.cloud.api.MessageResponse
 import de.solidblocks.cloud.api.jsonRequest
 import de.solidblocks.cloud.api.jsonResponse
-import de.solidblocks.cloud.model.CloudsRepository
-import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ErrorCodes
+import de.solidblocks.cloud.model.repositories.CloudsRepository
+import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.cloud.users.api.LoginRequest
 import de.solidblocks.cloud.users.api.LoginResponse
