@@ -31,11 +31,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
 
     private var vaultRootClientProvider: VaultRootClientProvider? = null
 
-    val cloudRepository: CloudRepository
-    val serviceRepository: ServiceRepository
-    val environmentRepository: EnvironmentRepository
-    val tenantRepository: TenantRepository
-    val usersRepository: UsersRepository
+    val repositories: RepositoriesContext
 
     val cloudsManager: CloudsManager
     val environmentsManager: EnvironmentsManager
@@ -46,44 +42,39 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         val database = SolidblocksDatabase(jdbcUrl)
         database.ensureDBSchema()
 
-        cloudRepository = CloudRepository(database.dsl)
-        environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
-        tenantRepository = TenantRepository(database.dsl, environmentRepository)
-        usersRepository = UsersRepository(database.dsl, cloudRepository, environmentRepository, tenantRepository)
-        serviceRepository = ServiceRepository(database.dsl, tenantRepository)
+        repositories = RepositoriesContext(database.dsl)
 
-        cloudsManager = CloudsManager(cloudRepository, environmentRepository, usersRepository, true)
-
-        usersManager = UsersManager(database.dsl, usersRepository)
-        environmentsManager = EnvironmentsManager(database.dsl, cloudRepository, environmentRepository, usersManager, development)
-        tenantsManager = TenantsManager(database.dsl, cloudRepository, environmentsManager, tenantRepository, usersManager, development)
+        cloudsManager = CloudsManager(repositories.clouds, repositories.environments, repositories.users, true)
+        usersManager = UsersManager(database.dsl, repositories.users)
+        environmentsManager = EnvironmentsManager(database.dsl, repositories.clouds, repositories.environments, usersManager, development)
+        tenantsManager = TenantsManager(database.dsl, repositories.clouds, environmentsManager, repositories.tenants, usersManager, development)
     }
 
     fun vaultRootClientProvider(reference: EnvironmentReference): VaultRootClientProvider {
         if (vaultRootClientProvider == null) {
-            vaultRootClientProvider = VaultRootClientProvider(reference, environmentRepository, vaultAddressOverride)
+            vaultRootClientProvider = VaultRootClientProvider(reference, repositories.environments, vaultAddressOverride)
         }
 
         return vaultRootClientProvider!!
     }
 
     fun createEnvironmentProvisioner(reference: EnvironmentReference) = EnvironmentProvisioner(
-        environmentRepository.getEnvironment(reference)
+        repositories.environments.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found"),
         vaultRootClientProvider(reference),
         createProvisioner(reference),
     )
 
-    fun createTenantProvisioner(reference: TenantReference) = TenantProvisioner(reference, createProvisioner(reference), environmentRepository, tenantRepository)
+    fun createTenantProvisioner(reference: TenantReference) = TenantProvisioner(reference, createProvisioner(reference), repositories.environments, repositories.tenants)
 
-    fun createServiceProvisioner(reference: ServiceReference) = ServiceProvisioner(createProvisioner(reference), reference, environmentRepository, EnvironmentVaultManager(vaultRootClientProvider(reference).createClient(), reference))
+    fun createServiceProvisioner(reference: ServiceReference) = ServiceProvisioner(createProvisioner(reference), reference, repositories.environments, EnvironmentVaultManager(vaultRootClientProvider(reference).createClient(), reference))
 
     fun createProvisioner(reference: EnvironmentReference): Provisioner {
 
         val provisionerRegistry = ProvisionerRegistry()
         val provisioner = Provisioner(provisionerRegistry)
 
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = repositories.environments.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")
 
         Hetzner.registerProvisioners(provisionerRegistry, environment, provisioner)
@@ -110,7 +101,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
             return false
         }
 
-        if (!tenantRepository.hasTenant(reference)) {
+        if (!repositories.tenants.hasTenant(reference)) {
             logger.error { "tenant '${reference.tenant}' not found" }
             return false
         }
@@ -123,7 +114,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
             return false
         }
 
-        if (!environmentRepository.hasEnvironment(reference)) {
+        if (!repositories.environments.hasEnvironment(reference)) {
             logger.error { "environment '${reference.environment}' not found" }
             return false
         }
@@ -132,7 +123,7 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
     }
 
     fun verifyCloudReference(reference: CloudReference): Boolean {
-        if (!cloudRepository.hasCloud(reference)) {
+        if (!repositories.clouds.hasCloud(reference)) {
             logger.error { "cloud '${reference.cloud}' not found" }
             return false
         }
@@ -140,5 +131,5 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         return true
     }
 
-    fun createEnvironmentContext(reference: EnvironmentReference) = EnvironmentApplicationContext(reference, environmentRepository)
+    fun createEnvironmentContext(reference: EnvironmentReference) = EnvironmentApplicationContext(reference, repositories.environments)
 }

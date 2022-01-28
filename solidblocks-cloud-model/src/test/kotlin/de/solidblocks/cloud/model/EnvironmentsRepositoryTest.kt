@@ -10,12 +10,12 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
 
 @ExtendWith(SolidblocksTestDatabaseExtension::class)
-class EnvironmentRepositoryTest {
+class EnvironmentsRepositoryTest {
 
     @Test
     fun testPermissions(database: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(database.dsl)
-        val repository = EnvironmentRepository(database.dsl, cloudRepository)
+        val cloudsRepository = CloudsRepository(database.dsl)
+        val repository = EnvironmentsRepository(database.dsl, cloudsRepository)
 
         val cloud1 = UUID.randomUUID().toString()
         val env1 = UUID.randomUUID().toString()
@@ -23,8 +23,8 @@ class EnvironmentRepositoryTest {
         val cloud2 = UUID.randomUUID().toString()
         val env2 = UUID.randomUUID().toString()
 
-        cloudRepository.createCloud(cloud1, "domain1")
-        cloudRepository.createCloud(cloud2, "domain1")
+        cloudsRepository.createCloud(cloud1, "domain1")
+        cloudsRepository.createCloud(cloud2, "domain1")
 
         assertThat(repository.createEnvironment(CloudReference(cloud1), env1)).isNotNull
         assertThat(repository.createEnvironment(CloudReference(cloud1), env2)).isNotNull
@@ -53,15 +53,15 @@ class EnvironmentRepositoryTest {
 
     @Test
     fun testCreateEnvironment(database: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(database.dsl)
-        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
+        val cloudsRepository = CloudsRepository(database.dsl)
+        val environmentsRepository = EnvironmentsRepository(database.dsl, cloudsRepository)
 
         val reference = EnvironmentReference("cloud2", "env1")
-        cloudRepository.createCloud(reference.cloud, "domain1")
+        cloudsRepository.createCloud(reference.cloud, "domain1")
 
-        assertThat(environmentRepository.createEnvironment(reference, "env1")).isNotNull
+        assertThat(environmentsRepository.createEnvironment(reference, "env1")).isNotNull
 
-        val environment = environmentRepository.getEnvironment(reference)!!
+        val environment = environmentsRepository.getEnvironment(reference)!!
         assertThat(environment.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(environment.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(environment.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
@@ -70,20 +70,20 @@ class EnvironmentRepositoryTest {
 
     @Test
     fun testCreateAndUpdateEnvironment(database: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(database.dsl)
-        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
+        val cloudsRepository = CloudsRepository(database.dsl)
+        val environmentsRepository = EnvironmentsRepository(database.dsl, cloudsRepository)
 
         val reference = EnvironmentReference("cloud3", "env3")
 
-        cloudRepository.createCloud(reference.cloud, "domain1")
+        cloudsRepository.createCloud(reference.cloud, "domain1")
 
-        assertThat(environmentRepository.createEnvironment(reference, "env3")).isNotNull
+        assertThat(environmentsRepository.createEnvironment(reference, "env3")).isNotNull
 
-        val environment = environmentRepository.getEnvironment(reference)!!
+        val environment = environmentsRepository.getEnvironment(reference)!!
         assertThat(environment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(0)
 
-        environmentRepository.updateEnvironment(reference, "my-attribute", "my-value")
-        val updatedEnvironment = environmentRepository.getEnvironment(reference)!!
+        environmentsRepository.updateEnvironment(reference, "my-attribute", "my-value")
+        val updatedEnvironment = environmentsRepository.getEnvironment(reference)!!
 
         assertThat(updatedEnvironment.configValues).filteredOn { it.name == "my-attribute" }.hasSize(1)
         assertThat(updatedEnvironment.configValues).anyMatch { it.name == "my-attribute" && it.value == "my-value" }
@@ -91,23 +91,23 @@ class EnvironmentRepositoryTest {
 
     @Test
     fun testRegenerateCloudSecrets(database: SolidblocksDatabase) {
-        val cloudRepository = CloudRepository(database.dsl)
-        val environmentRepository = EnvironmentRepository(database.dsl, cloudRepository)
+        val cloudsRepository = CloudsRepository(database.dsl)
+        val environmentsRepository = EnvironmentsRepository(database.dsl, cloudsRepository)
 
         val reference = EnvironmentReference("cloud4", "env4")
-        cloudRepository.createCloud(reference.cloud, "domain4")
+        cloudsRepository.createCloud(reference.cloud, "domain4")
 
-        assertThat(environmentRepository.createEnvironment(reference, "env4")).isNotNull
+        assertThat(environmentsRepository.createEnvironment(reference, "env4")).isNotNull
 
-        val newEnv2 = environmentRepository.getEnvironment(reference)!!
+        val newEnv2 = environmentsRepository.getEnvironment(reference)!!
         assertThat(newEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(newEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(newEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(newEnv2.sshSecrets.sshPublicKey).startsWith("ssh-ed25519 AAAA")
 
-        environmentRepository.rotateEnvironmentSecrets(reference)
+        environmentsRepository.rotateEnvironmentSecrets(reference)
 
-        val updatedEnv2 = environmentRepository.getEnvironment(reference)!!
+        val updatedEnv2 = environmentsRepository.getEnvironment(reference)!!
         assertThat(updatedEnv2.sshSecrets.sshIdentityPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")
         assertThat(updatedEnv2.sshSecrets.sshIdentityPublicKey).startsWith("ssh-ed25519 AAAA")
         assertThat(updatedEnv2.sshSecrets.sshPrivateKey).startsWith("-----BEGIN OPENSSH PRIVATE KEY-----")

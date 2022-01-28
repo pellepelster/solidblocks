@@ -31,7 +31,7 @@ class EnvironmentCreateCommand :
             exitProcess(1)
         }
 
-        val result = context.environmentsManager.create(
+        context.environmentsManager.create(
             reference = EnvironmentReference(cloud, environment),
             environment,
             "juerge@test.local",
@@ -40,10 +40,6 @@ class EnvironmentCreateCommand :
             hetznerCloudApiTokenReadOnly,
             hetznerCloudApiTokenReadWrite,
             hetznerDnsApiToken
-        )
-
-        if (!result) {
-            exitProcess(1)
-        }
+        ) ?: exitProcess(1)
     }
 }

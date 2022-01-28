@@ -3,11 +3,11 @@ package de.solidblocks.cloud.tenants
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
 import de.solidblocks.cloud.VaultCloudConfiguration.createTenantVaultConfig
-import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ModelConstants.defaultTenantLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
-import de.solidblocks.cloud.model.TenantRepository
+import de.solidblocks.cloud.model.TenantsRepository
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.provisioner.Provisioner
 import de.solidblocks.provisioner.hetzner.cloud.network.Network
@@ -16,18 +16,18 @@ import de.solidblocks.provisioner.hetzner.cloud.ssh.SshKey
 import mu.KotlinLogging
 
 class TenantProvisioner(
-        reference: TenantReference,
-        val provisioner: Provisioner,
-        val environmentRepository: EnvironmentRepository,
-        tenantRepository: TenantRepository
+    reference: TenantReference,
+    val provisioner: Provisioner,
+    val environmentsRepository: EnvironmentsRepository,
+    tenantsRepository: TenantsRepository
 ) {
     private val logger = KotlinLogging.logger {}
 
     val tenant: TenantEntity
 
     init {
-        tenant = tenantRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
-        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
+        tenant = tenantsRepository.getTenant(reference) ?: throw RuntimeException("tenant '$reference' not found")
+        val environment = environmentsRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
 
         createTenantModel(
             tenant,

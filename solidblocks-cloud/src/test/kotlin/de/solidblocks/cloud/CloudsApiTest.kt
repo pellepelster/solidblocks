@@ -42,13 +42,13 @@ class CloudsApiTest {
         testEnvironment.createCloud("cloud1")
         testEnvironment.createCloud("cloud2")
 
-        val api = AuthApi(
+        AuthApi(
             httpServer,
-            testEnvironment.cloudRepository,
-            testEnvironment.environmentRepository,
+            testEnvironment.repositories.clouds,
+            testEnvironment.repositories.environments,
             testEnvironment.usersManager
         )
-        val cloudsApi = CloudsApi(httpServer, testEnvironment.cloudsManager, testEnvironment.environmentsManager)
+        CloudsApi(httpServer, testEnvironment.cloudsManager, testEnvironment.environmentsManager)
 
         val token = given().port(httpServer.port).login()
 

@@ -3,15 +3,14 @@
  */
 package de.solidblocks.config.db.tables.references
 
-
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.ConfigurationValues
 import de.solidblocks.config.db.tables.Environments
+import de.solidblocks.config.db.tables.ScheduledTasks
 import de.solidblocks.config.db.tables.Services
+import de.solidblocks.config.db.tables.Shedlock
 import de.solidblocks.config.db.tables.Tenants
 import de.solidblocks.config.db.tables.Users
-
-
 
 /**
  * The table <code>CLOUDS</code>.
@@ -29,9 +28,19 @@ val CONFIGURATION_VALUES = ConfigurationValues.CONFIGURATION_VALUES
 val ENVIRONMENTS = Environments.ENVIRONMENTS
 
 /**
+ * The table <code>SCHEDULED_TASKS</code>.
+ */
+val SCHEDULED_TASKS = ScheduledTasks.SCHEDULED_TASKS
+
+/**
  * The table <code>SERVICES</code>.
  */
 val SERVICES = Services.SERVICES
+
+/**
+ * The table <code>SHEDLOCK</code>.
+ */
+val SHEDLOCK = Shedlock.SHEDLOCK
 
 /**
  * The table <code>TENANTS</code>.

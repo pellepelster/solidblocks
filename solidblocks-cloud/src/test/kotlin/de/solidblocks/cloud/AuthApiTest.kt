@@ -25,7 +25,7 @@ class AuthApiTest {
     @Test
     fun testAuthForAdminUser(testEnvironment: TestEnvironment) {
         testEnvironment.usersManager.ensureAdminUser("juergen@admin.local", "admin-password")
-        val api = AuthApi(httpServer, testEnvironment.cloudRepository, testEnvironment.environmentRepository, testEnvironment.usersManager)
+        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.usersManager)
 
         given().port(httpServer.port).with().body(
             """{
@@ -56,7 +56,7 @@ class AuthApiTest {
         testEnvironment.createCloud()
         testEnvironment.createEnvironment()
 
-        val api = AuthApi(httpServer, testEnvironment.cloudRepository, testEnvironment.environmentRepository, testEnvironment.usersManager)
+        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.usersManager)
 
         given().port(httpServer.port).with().body(
             """{
@@ -80,8 +80,8 @@ class AuthApiTest {
         assertThat(payload.getString("scope")).isEqualTo("environment")
 
         given().port(httpServer.port).with()
-                .header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then()
-                .statusCode(200).body("user.email", equalTo("juergen@environment1.cloud1")).body("user.scope", equalTo("environment"))
+            .header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then()
+            .statusCode(200).body("user.email", equalTo("juergen@environment1.cloud1")).body("user.scope", equalTo("environment"))
 
         given().port(httpServer.port).with().get("/api/v1/auth/whoami").then().statusCode(401).body("email", nullValue())
     }

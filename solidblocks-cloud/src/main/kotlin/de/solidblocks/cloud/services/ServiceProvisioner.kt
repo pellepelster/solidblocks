@@ -5,7 +5,7 @@ import de.solidblocks.base.BaseConstants.serverName
 import de.solidblocks.base.lookups.ConstantDataSource
 import de.solidblocks.base.reference.ServiceReference
 import de.solidblocks.cloud.environments.defaultCloudInitVariables
-import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ModelConstants.defaultServiceLabels
 import de.solidblocks.cloud.model.ModelConstants.networkName
@@ -31,10 +31,10 @@ import de.solidblocks.vault.VaultConstants.tokenSelfRenewalPolicy
 import mu.KotlinLogging
 
 class ServiceProvisioner(
-        val provisioner: Provisioner,
-        val reference: ServiceReference,
-        val environmentRepository: EnvironmentRepository,
-        val vaultManager: EnvironmentVaultManager
+    val provisioner: Provisioner,
+    val reference: ServiceReference,
+    val environmentsRepository: EnvironmentsRepository,
+    val vaultManager: EnvironmentVaultManager
 ) {
 
     companion object {
@@ -72,7 +72,7 @@ class ServiceProvisioner(
             )
         )
 
-        val environment = environmentRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
+        val environment = environmentsRepository.getEnvironment(reference) ?: throw RuntimeException("environment '$reference' not found")
         val rootZone = DnsZone(environment.cloud.rootDomain)
 
         val staticVariables = HashMap<String, IResourceLookup<String>>()

@@ -37,16 +37,16 @@ class IntegrationTestEnvironment {
 
     init {
         val dockerComposeContent =
-                IntegrationTestEnvironment::class.java.getResource("/local-env/docker-compose.yml").readBytes()
+            IntegrationTestEnvironment::class.java.getResource("/local-env/docker-compose.yml").readBytes()
 
         val tempFile = Files.createTempFile("solidblocks-local-env-dockercompose", ".yml")
         tempFile.writeBytes(dockerComposeContent)
 
         dockerEnvironment = KDockerComposeContainer(tempFile.toFile())
-                .apply {
-                    withExposedService("vault", 8200)
-                    withExposedService("minio", 9000)
-                }
+            .apply {
+                withExposedService("vault", 8200)
+                withExposedService("minio", 9000)
+            }
     }
 
     val vaultAddress: String
@@ -57,8 +57,8 @@ class IntegrationTestEnvironment {
 
     val environment: EnvironmentEntity
         get() =
-            context.environmentRepository.getEnvironment(reference)
-                    ?: throw RuntimeException("environment '$reference' not found")
+            context.repositories.environments.getEnvironment(reference)
+                ?: throw RuntimeException("environment '$reference' not found")
 
     val minioCredentialProvider: () -> MinioCredentials
         get() = { MinioCredentials(minioAddress, "admin", "a9776029-2852-4d60-af81-621b91da711d") }
@@ -66,7 +66,7 @@ class IntegrationTestEnvironment {
     fun start() {
         dockerEnvironment.start()
         context =
-                ApplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
+            ApplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
     }
 
     fun stop() {
@@ -82,21 +82,21 @@ class IntegrationTestEnvironment {
 
         context.cloudsManager.createCloud(reference.cloud, rootDomain)
         context.environmentsManager.create(
-                reference,
-                reference.environment,
-                "juergen@test.local",
-                "password1",
-                "<none>",
-                "<none>",
-                "<none>",
-                "<none>"
+            reference,
+            reference.environment,
+            "juergen@test.local",
+            "password1",
+            "<none>",
+            "<none>",
+            "<none>",
+            "<none>"
         )
         context.tenantsManager.create(reference, reference.tenant, "pelle@pelle.io")
 
-        val environment = context.environmentRepository.getEnvironment(reference)
-                ?: throw RuntimeException("environment '$reference' not found")
-        val tenant = context.tenantRepository.getTenant(reference)
-                ?: throw RuntimeException("tenant '$reference' not found")
+        val environment = context.repositories.environments.getEnvironment(reference)
+            ?: throw RuntimeException("environment '$reference' not found")
+        val tenant = context.repositories.tenants.getTenant(reference)
+            ?: throw RuntimeException("tenant '$reference' not found")
         val provisioner = context.createProvisioner(reference)
 
         provisioner.addResourceGroup(createEnvironmentVaultConfig(emptySet(), environment))
@@ -109,8 +109,8 @@ class IntegrationTestEnvironment {
             return false
         }
 
-        val environmentAfterProvisioning = context.environmentRepository.getEnvironment(reference)
-                ?: throw RuntimeException("environment '$reference' not found")
+        val environmentAfterProvisioning = context.repositories.environments.getEnvironment(reference)
+            ?: throw RuntimeException("environment '$reference' not found")
         logger.info { "vault is available at '$vaultAddress' with root token '${environmentAfterProvisioning.rootToken}'" }
         logger.info { "minio is available at '$minioAddress' with access key '${minioCredentialProvider.invoke().accessKey}' and secret key '${minioCredentialProvider.invoke().secretKey}'" }
 
@@ -120,8 +120,8 @@ class IntegrationTestEnvironment {
     fun createVaultService(service: String): Boolean {
 
         val service = VaultService(
-                reference.toService(service),
-                context.environmentRepository
+            reference.toService(service),
+            context.repositories.environments
         )
 
         service.createService()
@@ -143,10 +143,10 @@ class IntegrationTestEnvironment {
     }
 
     fun environmentContext(): EnvironmentApplicationContext {
-        return EnvironmentApplicationContext(reference, context.environmentRepository, true, vaultAddress)
+        return EnvironmentApplicationContext(reference, context.repositories.environments, true, vaultAddress)
     }
 
     fun tenantContext(): TenantApplicationContext {
-        return TenantApplicationContext(reference, context.tenantRepository, true, vaultAddress)
+        return TenantApplicationContext(reference, context.repositories.tenants, true, vaultAddress)
     }
 }

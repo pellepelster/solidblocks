@@ -1,7 +1,6 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.provisioner.vault.kv.VaultKV
 import de.solidblocks.provisioner.vault.kv.VaultKVProvisioner
 import de.solidblocks.provisioner.vault.mount.VaultMount
@@ -35,6 +34,8 @@ class VaultProvisionerTest {
 
         private var vaultClient: VaultTemplate? = null
 
+        lateinit var reference: EnvironmentReference
+
         @Container
         val environment: DockerComposeContainer<*> =
             KDockerComposeContainer(File("src/test/resources/docker-compose.yml"))
@@ -47,14 +48,11 @@ class VaultProvisionerTest {
 
         fun vaultTemplateProvider(testEnvironment: TestEnvironment): () -> VaultTemplate {
             if (vaultClient == null) {
-                val reference = testEnvironment.createEnvironment()
-
-                val cloudRepository = CloudRepository(testEnvironment.dsl)
-                val environmentRepository = EnvironmentRepository(testEnvironment.dsl, cloudRepository)
+                reference = testEnvironment.createCloudAndEnvironment(UUID.randomUUID().toString())
 
                 vaultClient = VaultRootClientProvider(
                     reference,
-                    environmentRepository,
+                    testEnvironment.repositories.environments,
                     vaultAddress()
                 ).createClient()
             }

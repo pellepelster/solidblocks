@@ -20,7 +20,7 @@ class SolidblocksDatabase(jdbcUrl: String) {
 
     val dsl: DefaultDSLContext
 
-    private val datasource: DataSource
+    val datasource: DataSource
 
     init {
 

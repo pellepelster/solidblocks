@@ -1,6 +1,9 @@
 package de.solidblocks.cloud.model.entities
 
+import de.solidblocks.base.reference.CloudReference
 import java.util.*
+
+fun CloudEntity.toReference() = CloudReference(this.name)
 
 data class CloudEntity(
     val id: UUID,

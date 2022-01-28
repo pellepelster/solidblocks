@@ -5,8 +5,8 @@ import de.solidblocks.cloud.api.CloudApiHttpServer.Companion.JWT_ALGORITHM
 import de.solidblocks.cloud.api.MessageResponse
 import de.solidblocks.cloud.api.jsonRequest
 import de.solidblocks.cloud.api.jsonResponse
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.CloudsRepository
+import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ErrorCodes
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.cloud.users.api.LoginRequest
@@ -18,8 +18,8 @@ import io.vertx.ext.web.RoutingContext
 
 class AuthApi(
     val cloudApi: CloudApiHttpServer,
-    val cloudRepository: CloudRepository,
-    val environmentRepository: EnvironmentRepository,
+    val cloudsRepository: CloudsRepository,
+    val environmentsRepository: EnvironmentsRepository,
     val usersManager: UsersManager
 ) {
 

@@ -30,8 +30,8 @@ class TenantsApiTest {
 
         AuthApi(
             httpServer,
-            testEnvironment.cloudRepository,
-            testEnvironment.environmentRepository,
+            testEnvironment.repositories.clouds,
+            testEnvironment.repositories.environments,
             testEnvironment.usersManager
         )
         TenantsApi(httpServer, testEnvironment.tenantsManager)

@@ -17,7 +17,7 @@ class EnvironmentConfigCommand :
 
         println(
             ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-                .writeValueAsString(context.environmentRepository.getEnvironment(environmentRef))
+                .writeValueAsString(context.repositories.environments.getEnvironment(environmentRef))
         )
     }
 }

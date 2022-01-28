@@ -11,6 +11,8 @@ dependencies {
     api(project(":solidblocks-provisioner-minio"))
 
     implementation("org.bouncycastle:bcprov-jdk15to18:1.70")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc:4.32.0")
+    implementation("com.github.kagkarlsson:db-scheduler:10.5")
 
     implementation("io.vertx:vertx-web:4.2.3")
     implementation("io.vertx:vertx-lang-kotlin:4.2.3")

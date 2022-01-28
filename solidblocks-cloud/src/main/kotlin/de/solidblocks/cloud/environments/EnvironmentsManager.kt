@@ -2,11 +2,12 @@ package de.solidblocks.cloud.environments
 
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.CloudsRepository
+import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.createConfigValue
+import de.solidblocks.cloud.model.entities.toReference
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.provisioner.hetzner.Hetzner
 import mu.KotlinLogging
@@ -15,8 +16,8 @@ import org.jooq.TransactionalCallable
 
 class EnvironmentsManager(
     val dsl: DSLContext,
-    val cloudRepository: CloudRepository,
-    val environmentRepository: EnvironmentRepository,
+    val cloudsRepository: CloudsRepository,
+    val environmentsRepository: EnvironmentsRepository,
     val usersManager: UsersManager,
     val isDevelopment: Boolean,
 ) {
@@ -24,33 +25,33 @@ class EnvironmentsManager(
     private val logger = KotlinLogging.logger {}
 
     public fun newTenantsDefaultEnvironment(email: String): EnvironmentEntity? {
-        val environments = environmentRepository.listEnvironments()
+        val environments = environmentsRepository.listEnvironments()
         return environments.firstOrNull()
     }
 
     fun create(
-            reference: CloudReference,
-            name: String,
-            email: String,
-            password: String,
-            githubReadOnlyToken: String,
-            hetznerCloudApiTokenReadOnly: String,
-            hetznerCloudApiTokenReadWrite: String,
-            hetznerDnsApiToken: String
+        reference: CloudReference,
+        name: String,
+        email: String,
+        password: String,
+        githubReadOnlyToken: String,
+        hetznerCloudApiTokenReadOnly: String,
+        hetznerCloudApiTokenReadWrite: String,
+        hetznerDnsApiToken: String
     ) = dsl.transactionResult(
         TransactionalCallable create1@{
 
-            if (!cloudRepository.hasCloud(reference)) {
+            if (!cloudsRepository.hasCloud(reference)) {
                 logger.info { "cloud '${reference.cloud}' does not exist" }
-                return@create1 false
+                return@create1 null
             }
 
-            if (environmentRepository.hasEnvironment(reference.toEnvironment(name))) {
+            if (environmentsRepository.hasEnvironment(reference.toEnvironment(name))) {
                 logger.info { "environment '$name' already exist in cloud '${reference.cloud}'" }
-                return@create1 false
+                return@create1 null
             }
 
-            val envReference = environmentRepository.createEnvironment(
+            val environment = environmentsRepository.createEnvironment(
                 reference,
                 name,
                 listOf(
@@ -61,11 +62,11 @@ class EnvironmentsManager(
                 )
             ) ?: throw RuntimeException("failed to create environment '$name' for '$reference' not found")
 
-            usersManager.createEnvironmentUser(envReference, email, password)
+            usersManager.createEnvironmentUser(environment.toReference(), email, password)
 
-            true
+            environment.toReference()
         }
     )
 
-    fun getOptional(reference: EnvironmentReference) = environmentRepository.getEnvironment(reference)
+    fun getOptional(reference: EnvironmentReference) = environmentsRepository.getEnvironment(reference)
 }

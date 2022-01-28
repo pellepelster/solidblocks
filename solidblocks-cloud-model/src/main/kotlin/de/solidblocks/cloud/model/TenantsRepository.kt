@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.model
 
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.base.resources.ResourcePermissions
 import de.solidblocks.base.reference.TenantReference
+import de.solidblocks.base.resources.ResourcePermissions
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.config.db.tables.references.CLOUDS
@@ -14,7 +14,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import java.util.*
 
-class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRepository) : BaseRepository(dsl) {
+class TenantsRepository(dsl: DSLContext, val environmentsRepository: EnvironmentsRepository) : BaseRepository(dsl) {
 
     val tenants = TENANTS.`as`("tenants")
 
@@ -76,7 +76,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
                 TenantEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
-                    environment = environmentRepository.getEnvironment(it.key.environment!!)!!,
+                    environment = environmentsRepository.getEnvironment(it.key.environment!!)!!,
                     configValues = it.value.map {
                         CloudConfigValue(
                             it.getValue(CONFIGURATION_VALUES.NAME)!!,
@@ -90,7 +90,7 @@ class TenantRepository(dsl: DSLContext, val environmentRepository: EnvironmentRe
 
     fun createTenant(reference: EnvironmentReference, name: String, networkCidr: String): TenantEntity? {
         val id = UUID.randomUUID()
-        val environment = environmentRepository.getEnvironment(reference) ?: return null
+        val environment = environmentsRepository.getEnvironment(reference) ?: return null
 
         dsl.insertInto(TENANTS)
             .columns(

@@ -18,7 +18,7 @@ class AgentsListCommand :
         }
 
         val instanceManager =
-            InstanceManager(Hetzner.createCloudApi(context.environmentRepository.getEnvironment(environmentRef)!!))
+            InstanceManager(Hetzner.createCloudApi(context.repositories.environments.getEnvironment(environmentRef)!!))
 
         val environment = context.createEnvironmentContext(environmentRef)
 

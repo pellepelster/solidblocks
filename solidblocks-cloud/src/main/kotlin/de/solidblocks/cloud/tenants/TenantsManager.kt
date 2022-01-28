@@ -16,9 +16,9 @@ import org.jooq.TransactionalCallable
 
 class TenantsManager(
     val dsl: DSLContext,
-    val cloudRepository: CloudRepository,
+    val cloudsRepository: CloudsRepository,
     val environmentsManager: EnvironmentsManager,
-    val tenantRepository: TenantRepository,
+    val tenantsRepository: TenantsRepository,
     val usersManager: UsersManager,
     val isDevelopment: Boolean,
 ) {
@@ -34,10 +34,10 @@ class TenantsManager(
         return dsl.transactionResult(
             TransactionalCallable {
                 logger.info { "creating tenant '$name'" }
-                tenantRepository.createTenant(environment.reference, name, nextNetworkCidr(environment))
+                tenantsRepository.createTenant(environment.reference, name, nextNetworkCidr(environment))
                 // TODO(pelle) create random password
                 usersManager.createTenantUser(environment.reference.toTenant(name), email, "admin")
-                CreationResult(tenantRepository.getTenant(reference))
+                CreationResult(tenantsRepository.getTenant(reference))
             }
         )
     }
@@ -66,7 +66,7 @@ class TenantsManager(
             return ValidationResult.error(TenantCreateRequest::tenant, ErrorCodes.TENANT.INVALID)
         }
 
-        if (tenantRepository.hasTenant(environment.reference.toTenant(request.tenant))) {
+        if (tenantsRepository.hasTenant(environment.reference.toTenant(request.tenant))) {
             return ValidationResult.error(TenantCreateRequest::tenant, ErrorCodes.TENANT.DUPLICATE)
         }
 
@@ -79,7 +79,7 @@ class TenantsManager(
 
     fun listTenantsForUser(email: String): List<TenantEntity> {
         val user = usersManager.getUser(email) ?: return emptyList()
-        return tenantRepository.listTenants(permissions = user.permissions())
+        return tenantsRepository.listTenants(permissions = user.permissions())
     }
 
     private fun nextNetworkCidr(environment: EnvironmentEntity) = if (isDevelopment) {

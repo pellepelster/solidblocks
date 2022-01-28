@@ -23,16 +23,16 @@ import org.jooq.Record5
 import java.security.SecureRandom
 import java.util.*
 
-class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepository) : BaseRepository(dsl) {
+class EnvironmentsRepository(dsl: DSLContext, val cloudsRepository: CloudsRepository) : BaseRepository(dsl) {
 
     val environments = ENVIRONMENTS.`as`("environments")
 
     fun createEnvironment(
-            cloudReference: CloudReference,
-            environment: String,
-            configValues: List<CloudConfigValue> = emptyList()
-    ): EnvironmentReference? {
-        val cloud = cloudRepository.getCloud(cloudReference) ?: return null
+        cloudReference: CloudReference,
+        environment: String,
+        configValues: List<CloudConfigValue> = emptyList()
+    ): EnvironmentEntity? {
+        val cloud = cloudsRepository.getCloud(cloudReference) ?: return null
 
         logger.info { "creating environment '$environment' for cloud '${cloudReference.cloud}'" }
 
@@ -53,7 +53,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
             setConfiguration(EnvironmentId(id), it.name, it.value)
         }
 
-        return cloudReference.toEnvironment(environment)
+        return getEnvironment(id)
     }
 
     fun getEnvironment(id: UUID, permissions: ResourcePermissions? = null): EnvironmentEntity? {
@@ -106,7 +106,7 @@ class EnvironmentRepository(dsl: DSLContext, val cloudRepository: CloudRepositor
                             it.getValue(CONFIGURATION_VALUES.VERSION)!!
                         )
                     },
-                    cloud = cloudRepository.getCloud(it.key.cloud!!)!!
+                    cloud = cloudsRepository.getCloud(it.key.cloud!!)!!
                 )
             }
     }

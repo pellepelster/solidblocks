@@ -1,7 +1,7 @@
 package de.solidblocks.provisioner.vault
 
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.vault.InitializingVaultManager
 import de.solidblocks.vault.VaultConstants.UNSEAL_KEY_PREFIX
@@ -13,9 +13,9 @@ import org.springframework.vault.core.VaultTemplate
 import java.net.URI
 
 class VaultRootClientProvider(
-        private val reference: EnvironmentReference,
-        private val environmentRepository: EnvironmentRepository,
-        private val vaultAddressOverride: String? = null
+    private val reference: EnvironmentReference,
+    private val environmentsRepository: EnvironmentsRepository,
+    private val vaultAddressOverride: String? = null
 ) {
 
     private fun vaultAddress(): String {
@@ -24,7 +24,7 @@ class VaultRootClientProvider(
             return vaultAddressOverride
         }
 
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentsRepository.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")
 
         return ModelConstants.vaultAddress(environment)
@@ -35,7 +35,7 @@ class VaultRootClientProvider(
     private var vaultTemplate: VaultTemplate? = null
 
     private fun getVaultCredentials(): VaultCredentials {
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentsRepository.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")
 
         val rootToken = environment.rootToken
@@ -51,7 +51,7 @@ class VaultRootClientProvider(
             return vaultTemplate!!
         }
 
-        val environment = environmentRepository.getEnvironment(reference)
+        val environment = environmentsRepository.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")
 
         val initializingVaultManager = InitializingVaultManager(vaultAddress())
@@ -64,11 +64,11 @@ class VaultRootClientProvider(
             }
 
             val result = initializingVaultManager.initializeAndUnseal()
-            environmentRepository.updateEnvironment(
+            environmentsRepository.updateEnvironment(
                 reference,
                 result.unsealKeys.mapIndexed { i, key -> "$UNSEAL_KEY_PREFIX-$i" to key }.toMap()
             )
-            environmentRepository.updateRootToken(reference, result.rootToken)
+            environmentsRepository.updateRootToken(reference, result.rootToken)
         }
 
         val credentials = getVaultCredentials()

@@ -1,7 +1,7 @@
 package de.solidblocks.provisioner.vault
 
-import de.solidblocks.cloud.model.CloudRepository
-import de.solidblocks.cloud.model.EnvironmentRepository
+import de.solidblocks.cloud.model.CloudsRepository
+import de.solidblocks.cloud.model.EnvironmentsRepository
 import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
 import org.assertj.core.api.Assertions
@@ -13,6 +13,7 @@ import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.io.File
+import java.util.*
 
 class KDockerComposeContainer(file: File) : DockerComposeContainer<KDockerComposeContainer>(file)
 
@@ -35,14 +36,14 @@ class VaultRootClientProviderTest {
     @Test
     fun testInitAndUnseal(testEnvironment: TestEnvironment) {
 
-        val reference = testEnvironment.createEnvironment()
+        val reference = testEnvironment.createCloudAndEnvironment(UUID.randomUUID().toString())
 
-        val cloudRepository = CloudRepository(testEnvironment.dsl)
-        val environmentRepository = EnvironmentRepository(testEnvironment.dsl, cloudRepository)
+        val cloudsRepository = CloudsRepository(testEnvironment.dsl)
+        val environmentsRepository = EnvironmentsRepository(testEnvironment.dsl, cloudsRepository)
 
-        val provider = VaultRootClientProvider(reference, environmentRepository, vaultAddress())
+        val provider = VaultRootClientProvider(reference, environmentsRepository, vaultAddress())
 
-        val environmentBefore = environmentRepository.getEnvironment(reference)!!
+        val environmentBefore = environmentsRepository.getEnvironment(reference)!!
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-0" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-1" })
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-2" })
@@ -50,7 +51,7 @@ class VaultRootClientProviderTest {
         assertTrue(environmentBefore.configValues.none { it.name == "vault-unseal-key-4" })
 
         val vaultClient = provider.createClient()
-        val environment = environmentRepository.getEnvironment(reference)!!
+        val environment = environmentsRepository.getEnvironment(reference)!!
 
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-0" })
         assertTrue(environment.configValues.any { it.name == "vault-unseal-key-1" })

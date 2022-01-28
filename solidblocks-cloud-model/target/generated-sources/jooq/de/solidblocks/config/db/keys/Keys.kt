@@ -3,26 +3,24 @@
  */
 package de.solidblocks.config.db.keys
 
-
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.ConfigurationValues
 import de.solidblocks.config.db.tables.Environments
 import de.solidblocks.config.db.tables.Services
+import de.solidblocks.config.db.tables.Shedlock
 import de.solidblocks.config.db.tables.Tenants
 import de.solidblocks.config.db.tables.Users
 import de.solidblocks.config.db.tables.records.CloudsRecord
 import de.solidblocks.config.db.tables.records.ConfigurationValuesRecord
 import de.solidblocks.config.db.tables.records.EnvironmentsRecord
 import de.solidblocks.config.db.tables.records.ServicesRecord
+import de.solidblocks.config.db.tables.records.ShedlockRecord
 import de.solidblocks.config.db.tables.records.TenantsRecord
 import de.solidblocks.config.db.tables.records.UsersRecord
-
 import org.jooq.ForeignKey
 import org.jooq.UniqueKey
 import org.jooq.impl.DSL
 import org.jooq.impl.Internal
-
-
 
 // -------------------------------------------------------------------------
 // UNIQUE and PRIMARY KEY definitions
@@ -32,6 +30,7 @@ val PK_CLOUDS: UniqueKey<CloudsRecord> = Internal.createUniqueKey(Clouds.CLOUDS,
 val PK_CONFIGURATION_VALUES: UniqueKey<ConfigurationValuesRecord> = Internal.createUniqueKey(ConfigurationValues.CONFIGURATION_VALUES, DSL.name("PK_CONFIGURATION_VALUES"), arrayOf(ConfigurationValues.CONFIGURATION_VALUES.ID), true)
 val PK_ENVIRONMENTS: UniqueKey<EnvironmentsRecord> = Internal.createUniqueKey(Environments.ENVIRONMENTS, DSL.name("PK_ENVIRONMENTS"), arrayOf(Environments.ENVIRONMENTS.ID), true)
 val PK_SERVICES: UniqueKey<ServicesRecord> = Internal.createUniqueKey(Services.SERVICES, DSL.name("PK_SERVICES"), arrayOf(Services.SERVICES.ID), true)
+val PK_SHEDLOCK: UniqueKey<ShedlockRecord> = Internal.createUniqueKey(Shedlock.SHEDLOCK, DSL.name("PK_SHEDLOCK"), arrayOf(Shedlock.SHEDLOCK.NAME, Shedlock.SHEDLOCK.LOCKED_BY), true)
 val PK_TENANTS: UniqueKey<TenantsRecord> = Internal.createUniqueKey(Tenants.TENANTS, DSL.name("PK_TENANTS"), arrayOf(Tenants.TENANTS.ID), true)
 val PK_USERS: UniqueKey<UsersRecord> = Internal.createUniqueKey(Users.USERS, DSL.name("PK_USERS"), arrayOf(Users.USERS.ID), true)
 

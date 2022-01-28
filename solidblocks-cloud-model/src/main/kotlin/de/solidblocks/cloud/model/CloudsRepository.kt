@@ -11,15 +11,15 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import java.util.*
 
-class CloudRepository(dsl: DSLContext) : BaseRepository(dsl) {
+class CloudsRepository(dsl: DSLContext) : BaseRepository(dsl) {
 
     val clouds = CLOUDS.`as`("clouds")
 
     fun createCloud(
-            cloud: String,
-            rootDomain: String,
-            configValues: List<CloudConfigValue> = emptyList(),
-            development: Boolean = false,
+        cloud: String,
+        rootDomain: String,
+        configValues: List<CloudConfigValue> = emptyList(),
+        development: Boolean = false,
     ): CloudEntity {
 
         val id = UUID.randomUUID()

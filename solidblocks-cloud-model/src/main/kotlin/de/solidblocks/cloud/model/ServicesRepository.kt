@@ -10,29 +10,29 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import java.util.*
 
-class ServiceRepository(dsl: DSLContext, val tenantRepository: TenantRepository) : BaseRepository(dsl) {
+class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsRepository) : BaseRepository(dsl) {
 
     val services = SERVICES.`as`("services")
 
     fun createService(
-            reference: TenantReference,
-            service: String,
-            type: String,
-            configValues: Map<String, String> = emptyMap()
+        reference: TenantReference,
+        service: String,
+        type: String,
+        configValues: Map<String, String> = emptyMap()
     ): Boolean {
         val id = UUID.randomUUID()
-        val tenant = tenantRepository.getTenant(reference)
-                ?: return false
+        val tenant = tenantsRepository.getTenant(reference)
+            ?: return false
 
         dsl.insertInto(SERVICES)
-                .columns(
-                        SERVICES.ID,
-                        SERVICES.NAME,
-                        SERVICES.TYPE,
-                        SERVICES.DELETED,
-                        SERVICES.TENANT,
-                )
-                .values(id, service, type, false, tenant.id).execute()
+            .columns(
+                SERVICES.ID,
+                SERVICES.NAME,
+                SERVICES.TYPE,
+                SERVICES.DELETED,
+                SERVICES.TENANT,
+            )
+            .values(id, service, type, false, tenant.id).execute()
 
         configValues.forEach {
             setConfiguration(ServiceId(id), it.key, it.value)
@@ -42,7 +42,8 @@ class ServiceRepository(dsl: DSLContext, val tenantRepository: TenantRepository)
     }
 
     private fun listServices(
-            filter: Condition? = null, permissions: ResourcePermissions? = null
+        filter: Condition? = null,
+        permissions: ResourcePermissions? = null
     ): List<ServiceEntity> {
 
         var filterConditions = services.DELETED.isFalse
@@ -68,20 +69,20 @@ class ServiceRepository(dsl: DSLContext, val tenantRepository: TenantRepository)
                 ServiceEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
-                    tenant = tenantRepository.getTenant(it.key.tenant!!)!!,
+                    tenant = tenantsRepository.getTenant(it.key.tenant!!)!!,
                     configValues = it.value.filter { it.value1() != null }.map {
                         CloudConfigValue(
                             it.getValue(CONFIGURATION_VALUES.NAME)!!,
-                                        it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
-                                        it.getValue(CONFIGURATION_VALUES.VERSION)!!
-                                )
-                            }
-                    )
-                }
+                            it.getValue(CONFIGURATION_VALUES.CONFIG_VALUE)!!,
+                            it.getValue(CONFIGURATION_VALUES.VERSION)!!
+                        )
+                    }
+                )
+            }
     }
 
     fun getService(reference: ServiceReference, permissions: ResourcePermissions? = null): ServiceEntity? {
-        val tenant = tenantRepository.getTenant(reference) ?: return null
+        val tenant = tenantsRepository.getTenant(reference) ?: return null
         return listServices(
             services.NAME.eq(reference.service).and(services.TENANT.eq(tenant.id)),
             permissions
@@ -89,5 +90,5 @@ class ServiceRepository(dsl: DSLContext, val tenantRepository: TenantRepository)
     }
 
     fun hasService(reference: ServiceReference, permissions: ResourcePermissions? = null) =
-            getService(reference, permissions) != null
+        getService(reference, permissions) != null
 }

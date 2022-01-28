@@ -4,6 +4,86 @@ databaseChangeLog:
       author: pelle
       changes:
         - createTable:
+            tableName: scheduled_tasks
+            columns:
+              - column:
+                  name: task_name
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: task_instance
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: task_data
+                  type: blob
+              - column:
+                  name: execution_time
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: picked
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: picked_by
+                  type: varchar(256)
+              - column:
+                  name: last_success
+                  type: timestamp with time zone
+              - column:
+                  name: last_failure
+                  type: timestamp with time zone
+              - column:
+                  name: consecutive_failures
+                  type: int
+              - column:
+                  name: last_heartbeat
+                  type: timestamp with time zone
+              - column:
+                  name: version
+                  type: bigint
+                  constraints:
+                    nullable: false
+        - createIndex:
+            columns:
+              - column:
+                  name: task_name
+              - column:
+                  name: task_instance
+            indexName: idx_scheduled_tasks_name_instance
+            tableName: scheduled_tasks
+            unique: true
+        - createTable:
+            tableName: shedlock
+            columns:
+              - column:
+                  name: name
+                  type: varchar(65)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: locked_by
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: lock_until
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: locked_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createTable:
             tableName: clouds
             columns:
               - column:

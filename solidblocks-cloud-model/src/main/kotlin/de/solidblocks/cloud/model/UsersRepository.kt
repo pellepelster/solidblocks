@@ -9,7 +9,7 @@ import mu.KotlinLogging
 import org.jooq.DSLContext
 import java.util.*
 
-class UsersRepository(val dsl: DSLContext, val cloudRepository: CloudRepository, val environmentRepository: EnvironmentRepository, val tenantRepository: TenantRepository) {
+class UsersRepository(val dsl: DSLContext, val cloudsRepository: CloudsRepository, val environmentsRepository: EnvironmentsRepository, val tenantsRepository: TenantsRepository) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -18,18 +18,18 @@ class UsersRepository(val dsl: DSLContext, val cloudRepository: CloudRepository,
     }
 
     fun createCloudUser(reference: CloudReference, email: String, password: String, salt: String): Boolean {
-        val cloud = cloudRepository.getCloud(reference) ?: return false
+        val cloud = cloudsRepository.getCloud(reference) ?: return false
         return createUser(cloud = cloud.id, email = email, admin = false, password = password, salt = salt)
     }
 
     fun createEnvironmentUser(reference: EnvironmentReference, email: String, password: String, salt: String): Boolean {
-        val environment = environmentRepository.getEnvironment(reference) ?: return false
+        val environment = environmentsRepository.getEnvironment(reference) ?: return false
 
         return createUser(environment = environment.id, email = email, admin = false, password = password, salt = salt)
     }
 
     fun createTenantUser(reference: TenantReference, email: String, password: String, salt: String): Boolean {
-        val tenant = tenantRepository.getTenant(reference) ?: return false
+        val tenant = tenantsRepository.getTenant(reference) ?: return false
         return createUser(tenant = tenant.id, email = email, admin = false, password = password, salt = salt)
     }
 
@@ -66,17 +66,17 @@ class UsersRepository(val dsl: DSLContext, val cloudRepository: CloudRepository,
         val user = users.first()
 
         if (user.cloud != null) {
-            val cloud = cloudRepository.getCloud(user.cloud!!)
+            val cloud = cloudsRepository.getCloud(user.cloud!!)
             return UserEntity(user.id!!, user.email!!, user.salt!!, user.password!!, cloud = cloud)
         }
 
         if (user.environment != null) {
-            val environment = environmentRepository.getEnvironment(user.environment!!)
+            val environment = environmentsRepository.getEnvironment(user.environment!!)
             return UserEntity(user.id!!, user.email!!, user.salt!!, user.password!!, environment = environment)
         }
 
         if (user.tenant != null) {
-            val tenant = tenantRepository.getTenant(user.tenant!!)
+            val tenant = tenantsRepository.getTenant(user.tenant!!)
             return UserEntity(user.id!!, user.email!!, user.salt!!, user.password!!, tenant = tenant)
         }
 

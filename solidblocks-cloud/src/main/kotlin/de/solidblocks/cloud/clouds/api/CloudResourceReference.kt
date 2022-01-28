@@ -5,6 +5,6 @@ import de.solidblocks.cloud.model.entities.CloudEntity
 
 fun CloudEntity.toResourceReference() = ResourceReference(this.id, this.name)
 
-fun CloudEntity.toReference() = CloudResourceReference(cloud = this.toResourceReference())
+fun CloudEntity.toCloudResourceReference() = CloudResourceReference(cloud = this.toResourceReference())
 
 data class CloudResourceReference(val cloud: ResourceReference)
