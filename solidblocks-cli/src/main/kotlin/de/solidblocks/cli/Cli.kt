@@ -28,8 +28,9 @@ fun main(args: Array<String>) {
             EnvironmentCommand().subcommands(
                 EnvironmentCreateCommand(),
                 EnvironmentConfigCommand(),
-                EnvironmentBootstrapCommand(),
+                EnvironmentApplyCommand(),
                 EnvironmentDestroyCommand(),
+                EnvironmentStatusCommand(),
                 EnvironmentRotateSecretsCommand(),
                 EnvironmentSshConfigCommand(),
                 EnvironmentAgentsCommand().subcommands(AgentsUpdateCommand(), AgentsListCommand())

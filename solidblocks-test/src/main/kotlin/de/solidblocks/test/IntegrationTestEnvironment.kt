@@ -1,7 +1,6 @@
 package de.solidblocks.test
 
 import de.solidblocks.base.reference.TenantReference
-import de.solidblocks.cloud.ApplicationContext
 import de.solidblocks.cloud.VaultCloudConfiguration.createEnvironmentVaultConfig
 import de.solidblocks.cloud.VaultCloudConfiguration.createTenantVaultConfig
 import de.solidblocks.cloud.environments.EnvironmentApplicationContext
@@ -33,7 +32,7 @@ class IntegrationTestEnvironment {
 
     val rootDomain = "local.test"
 
-    private lateinit var context: ApplicationContext
+    private lateinit var context: TestApplicationContext
 
     init {
         val dockerComposeContent =
@@ -66,7 +65,7 @@ class IntegrationTestEnvironment {
     fun start() {
         dockerEnvironment.start()
         context =
-            ApplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
+            TestApplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
     }
 
     fun stop() {
@@ -91,13 +90,13 @@ class IntegrationTestEnvironment {
             "<none>",
             "<none>"
         )
-        context.managers.tenants.create(reference, reference.tenant, "pelle@pelle.io")
+        context.managers.tenants.create(reference, reference.tenant, "pelle@pelle.io", "admin")
 
         val environment = context.repositories.environments.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")
         val tenant = context.repositories.tenants.getTenant(reference)
             ?: throw RuntimeException("tenant '$reference' not found")
-        val provisioner = context.createProvisioner(reference)
+        val provisioner = context.provisionerContext.createProvisioner(reference)
 
         provisioner.addResourceGroup(createEnvironmentVaultConfig(emptySet(), environment))
         provisioner.addResourceGroup(createTenantVaultConfig(emptySet(), tenant))
@@ -126,14 +125,14 @@ class IntegrationTestEnvironment {
 
         service.createService()
 
-        val provisioner = context.createProvisioner(reference)
+        val provisioner = context.provisionerContext.createProvisioner(reference)
         return service.bootstrapService(provisioner)
     }
 
     fun createService(name: String): String {
         val serviceRef = reference.toService(name)
 
-        val provisioner = context.createProvisioner(reference)
+        val provisioner = context.provisionerContext.createProvisioner(reference)
 
         provisioner.addResourceGroup(ServiceProvisioner.createVaultConfigResourceGroup(serviceRef))
         provisioner.apply()

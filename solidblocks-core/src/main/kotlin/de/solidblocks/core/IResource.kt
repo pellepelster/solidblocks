@@ -1,7 +1,7 @@
 package de.solidblocks.core
 
 @OptIn(ExperimentalStdlibApi::class)
-fun IResource.logName(): String {
+fun IResource.logText(): String {
     var simpleName = this.javaClass.simpleName.lowercase()
 
     if (simpleName.isEmpty()) {

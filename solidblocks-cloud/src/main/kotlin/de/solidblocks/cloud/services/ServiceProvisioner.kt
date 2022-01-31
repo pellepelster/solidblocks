@@ -107,7 +107,7 @@ class ServiceProvisioner(
         )
     }
 
-    fun createServiceModel() {
+    private fun createServiceModel() {
         val vaultConfigResourceGroup = createVaultConfigResourceGroup(reference)
         provisioner.addResourceGroup(vaultConfigResourceGroup)
 

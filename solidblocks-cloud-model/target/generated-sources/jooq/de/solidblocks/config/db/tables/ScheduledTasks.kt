@@ -84,7 +84,7 @@ open class ScheduledTasks(
     /**
      * The column <code>SCHEDULED_TASKS.PICKED_BY</code>.
      */
-    val PICKED_BY: TableField<ScheduledTasksRecord, String?> = createField(DSL.name("PICKED_BY"), SQLDataType.VARCHAR(256).nullable(false), this, "")
+    val PICKED_BY: TableField<ScheduledTasksRecord, String?> = createField(DSL.name("PICKED_BY"), SQLDataType.VARCHAR(256), this, "")
 
     /**
      * The column <code>SCHEDULED_TASKS.LAST_SUCCESS</code>.

@@ -6,6 +6,7 @@ import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.entities.UserEntity
 import de.solidblocks.config.db.tables.references.USERS
 import mu.KotlinLogging
+import org.jooq.Condition
 import org.jooq.DSLContext
 import java.util.*
 
@@ -13,27 +14,27 @@ class UsersRepository(val dsl: DSLContext, val cloudsRepository: CloudsRepositor
 
     private val logger = KotlinLogging.logger {}
 
-    fun createAdminUser(email: String, password: String, salt: String): Boolean {
+    fun createAdminUser(email: String, password: String, salt: String): UserEntity? {
         return createUser(email = email, admin = true, password = password, salt = salt)
     }
 
-    fun createCloudUser(reference: CloudReference, email: String, password: String, salt: String): Boolean {
-        val cloud = cloudsRepository.getCloud(reference) ?: return false
+    fun createCloudUser(reference: CloudReference, email: String, password: String, salt: String): UserEntity? {
+        val cloud = cloudsRepository.getCloud(reference) ?: return null
         return createUser(cloud = cloud.id, email = email, admin = false, password = password, salt = salt)
     }
 
-    fun createEnvironmentUser(reference: EnvironmentReference, email: String, password: String, salt: String): Boolean {
-        val environment = environmentsRepository.getEnvironment(reference) ?: return false
+    fun createEnvironmentUser(reference: EnvironmentReference, email: String, password: String, salt: String): UserEntity? {
+        val environment = environmentsRepository.getEnvironment(reference) ?: return null
 
         return createUser(environment = environment.id, email = email, admin = false, password = password, salt = salt)
     }
 
-    fun createTenantUser(reference: TenantReference, email: String, password: String, salt: String): Boolean {
-        val tenant = tenantsRepository.getTenant(reference) ?: return false
+    fun createTenantUser(reference: TenantReference, email: String, password: String, salt: String): UserEntity? {
+        val tenant = tenantsRepository.getTenant(reference) ?: return null
         return createUser(tenant = tenant.id, email = email, admin = false, password = password, salt = salt)
     }
 
-    private fun createUser(cloud: UUID? = null, environment: UUID? = null, tenant: UUID? = null, email: String, admin: Boolean, password: String, salt: String): Boolean {
+    private fun createUser(cloud: UUID? = null, environment: UUID? = null, tenant: UUID? = null, email: String, admin: Boolean, password: String, salt: String): UserEntity? {
         logger.info { "creating user '$email'" }
         val id = UUID.randomUUID()
 
@@ -49,17 +50,21 @@ class UsersRepository(val dsl: DSLContext, val cloudsRepository: CloudsRepositor
             USERS.SALT,
         ).values(id, cloud, environment, tenant, email, false, admin, password, salt).execute()
 
-        return true
+        return getUser(id)
     }
 
     fun hasUser(email: String) = dsl.selectFrom(USERS).where(USERS.EMAIL.eq(email)).fetchOptional().isPresent
 
-    fun getUser(email: String): UserEntity? {
+    fun getUser(id: UUID) = getUser(USERS.ID.eq(id))
 
-        val users = dsl.selectFrom(USERS).where(USERS.EMAIL.eq(email)).fetch()
+    fun getUser(email: String) = getUser(USERS.EMAIL.eq(email))
+
+    fun getUser(condition: Condition): UserEntity? {
+
+        val users = dsl.selectFrom(USERS).where(condition).fetch()
 
         if (users.isEmpty()) {
-            logger.warn { "user '$email' does not exist" }
+            logger.warn { "user not found for '$condition'" }
             return null
         }
 

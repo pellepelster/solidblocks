@@ -10,7 +10,7 @@ import {ToastService} from "../../../utils/toast.service";
 })
 export class TenantsCreateComponent extends BaseFormComponent implements OnInit {
 
-  loginForm = new FormGroup({
+  form = new FormGroup({
     email: new FormControl('', [
       Validators.required
     ]),
@@ -25,7 +25,7 @@ export class TenantsCreateComponent extends BaseFormComponent implements OnInit 
   }
 
   onSubmit() {
-    this.tenantsService.create(this.loginForm.value.email, this.loginForm.value.tenant).subscribe(
+    this.tenantsService.create(this.form.value.email, this.form.value.tenant).subscribe(
       (data) => {
       },
       (error) => {

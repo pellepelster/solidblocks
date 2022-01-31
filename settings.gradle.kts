@@ -17,6 +17,7 @@ include(
     "solidblocks-agent-base",
     "solidblocks-agent-base-api",
     "solidblocks-service-helloworld",
+    "solidblocks-service-helloworld-backend",
     "solidblocks-service-vault",
     "solidblocks-service-vault-api",
     "solidblocks-service-vault-backend",

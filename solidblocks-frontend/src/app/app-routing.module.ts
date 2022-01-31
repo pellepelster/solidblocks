@@ -6,6 +6,7 @@ import {ConsoleHomeComponent} from "./components/console-home/console-home.compo
 import {LogoutComponent} from "./components/authentication/logout/logout.component";
 import {TenantsCreateComponent} from "./components/tenants/tenants-create/tenants-create.component";
 import {TenantsHomeComponent} from "./components/tenants/tenants-home/tenants-home.component";
+import {ServicesCreateComponent} from "./services-create/services-create.component";
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -15,6 +16,7 @@ const routes: Routes = [
   {path: 'tenants/create', component: TenantsCreateComponent},
   {path: 'tenants/:id', component: TenantsHomeComponent},
   {path: 'console/home', component: ConsoleHomeComponent},
+  {path: 'services/create', component: ServicesCreateComponent},
 ];
 
 @NgModule({

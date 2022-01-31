@@ -34,7 +34,8 @@ class TenantsApi(val cloudApiHttpServer: CloudApiHttpServer, val tenantsManager:
             return
         }
 
-        val result = tenantsManager.create(request.tenant!!, request.email!!)
+        // TODO generate password
+        val result = tenantsManager.createTenantForDefaultEnvironment(request.tenant!!, request.email!!, "password")
 
         if (result.data == null) {
             rc.jsonResponse(GenericApiResponse(), 500)

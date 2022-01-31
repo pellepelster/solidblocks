@@ -12,17 +12,17 @@ import java.util.*
 
 class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsRepository) : BaseRepository(dsl) {
 
-    val services = SERVICES.`as`("services")
+    private val services = SERVICES.`as`("services")
 
     fun createService(
         reference: TenantReference,
         service: String,
         type: String,
         configValues: Map<String, String> = emptyMap()
-    ): Boolean {
+    ): ServiceEntity? {
         val id = UUID.randomUUID()
         val tenant = tenantsRepository.getTenant(reference)
-            ?: return false
+            ?: return null
 
         dsl.insertInto(SERVICES)
             .columns(
@@ -38,7 +38,7 @@ class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsReposito
             setConfiguration(ServiceId(id), it.key, it.value)
         }
 
-        return true
+        return getService(id)
     }
 
     private fun listServices(
@@ -69,6 +69,7 @@ class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsReposito
                 ServiceEntity(
                     id = it.key.id!!,
                     name = it.key.name!!,
+                    type = it.key.type!!,
                     tenant = tenantsRepository.getTenant(it.key.tenant!!)!!,
                     configValues = it.value.filter { it.value1() != null }.map {
                         CloudConfigValue(
@@ -88,6 +89,14 @@ class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsReposito
             permissions
         ).firstOrNull()
     }
+
+    fun getService(id: UUID, permissions: ResourcePermissions? = null): ServiceEntity? {
+        return listServices(
+            services.ID.eq(id), permissions
+        ).firstOrNull()
+    }
+
+    fun allServices(): List<ServiceEntity> = listServices()
 
     fun hasService(reference: ServiceReference, permissions: ResourcePermissions? = null) =
         getService(reference, permissions) != null

@@ -24,6 +24,7 @@ class SolidblocksDatabase(jdbcUrl: String) {
 
     init {
 
+        // TODO do not log password part of the jdbc url
         logger.info { "initializing database connection for '$jdbcUrl'" }
 
         val config = HikariConfig()

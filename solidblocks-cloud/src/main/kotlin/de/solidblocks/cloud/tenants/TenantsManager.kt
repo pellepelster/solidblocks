@@ -20,15 +20,15 @@ import org.jooq.TransactionalCallable
 
 class TenantsManager(
     val dsl: DSLContext,
-    val environmentsManager: EnvironmentsManager,
-    val tenantsRepository: TenantsRepository,
-    val usersManager: UsersManager,
-    val isDevelopment: Boolean,
+    private val environmentsManager: EnvironmentsManager,
+    private val tenantsRepository: TenantsRepository,
+    private val usersManager: UsersManager,
+    private val isDevelopment: Boolean,
 ) {
 
     private val logger = KotlinLogging.logger {}
 
-    fun create(environmentReference: EnvironmentReference, name: String, email: String): CreationResult<TenantEntity> {
+    fun create(environmentReference: EnvironmentReference, name: String, email: String, password: String): CreationResult<TenantEntity> {
         val environment = environmentsManager.getOptional(environmentReference)
             ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
 
@@ -36,20 +36,20 @@ class TenantsManager(
 
         return dsl.transactionResult(
             TransactionalCallable {
-                logger.info { "creating tenant '$name'" }
+                logger.info { "creating tenant '$name' for environment '$environment'" }
                 tenantsRepository.createTenant(environment.reference, name, nextNetworkCidr(environment))
                 // TODO(pelle) create random password
-                usersManager.createTenantUser(environment.reference.toTenant(name), email, "admin")
+                usersManager.createTenantUser(environment.reference.toTenant(name), email, password)
                 CreationResult(tenantsRepository.getTenant(reference))
             }
         )
     }
 
-    fun create(name: String, email: String): CreationResult<TenantEntity> {
+    fun createTenantForDefaultEnvironment(name: String, email: String, password: String): CreationResult<TenantEntity> {
         val environment = environmentsManager.newTenantsDefaultEnvironment(email)
             ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
 
-        return create(environment.reference, name, email)
+        return create(environment.reference, name, email, password)
     }
 
     fun validate(request: TenantCreateRequest): ValidationResult {

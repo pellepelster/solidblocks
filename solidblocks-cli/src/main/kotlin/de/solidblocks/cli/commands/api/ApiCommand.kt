@@ -1,7 +1,6 @@
 package de.solidblocks.cli.commands.api
 
 import de.solidblocks.cli.commands.BaseCloudDbCommand
-import de.solidblocks.cloud.ApplicationContext
 import de.solidblocks.cloud.api.CloudApiHttpServer
 import de.solidblocks.cloud.auth.api.AuthApi
 import de.solidblocks.cloud.clouds.api.CloudsApi
@@ -10,7 +9,7 @@ import de.solidblocks.cloud.tenants.api.TenantsApi
 
 class ApiCommand : BaseCloudDbCommand(name = "api", help = "start cloud api") {
     override fun run() {
-        val context = ApplicationContext(solidblocksDatabaseUrl)
+        val context = ApiApplicationContext(solidblocksDatabaseUrl)
         context.managers.users.ensureAdminUser("admin", "admin")
 
         val keyPair = generateRsaKeyPair()

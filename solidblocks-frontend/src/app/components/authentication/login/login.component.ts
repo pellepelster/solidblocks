@@ -15,7 +15,7 @@ export class LoginComponent extends BaseFormComponent implements OnInit {
     super(toastService);
   }
 
-  loginForm = new FormGroup({
+  form = new FormGroup({
     email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required])
   });
@@ -24,13 +24,13 @@ export class LoginComponent extends BaseFormComponent implements OnInit {
   }
 
   onSubmit() {
-    this.loginService.login(this.loginForm.value.email, this.loginForm.value.password).then(
+    console.log(this.form.value)
+    this.loginService.login(this.form.value.email, this.form.value.password).then(
       () => {
         this.router.navigate(["/console/home"])
       },
       (error) => {
         this.handleErrorResponse(error)
-        this.loginForm.setValue({email: "", password: ""})
       }
     )
   }

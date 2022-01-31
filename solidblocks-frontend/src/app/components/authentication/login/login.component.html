@@ -6,25 +6,15 @@
 
           <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
 
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-            <div class="mb-4">
-              <label class="form-label" for="email">Email</label>
-              <input type="email" id="email" formControlName="email" class="form-control form-control-lg"/>
-            </div>
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-            <div class="form mb-4">
-              <label class="form-label" for="password">Password</label>
-              <input type="password" formControlName="password" id="password" class="form-control form-control-lg"/>
-            </div>
+            <input-control [form]="form" [messages]="messages" formControlName="email" ></input-control>
+            <input-control [form]="form" type="password" [messages]="messages" formControlName="password" ></input-control>
 
-            <button class="btn btn-outline-info btn-lg px-5" [disabled]="!loginForm.valid" type="submit">Login
+            <button class="btn btn-outline-info btn-lg px-5" [disabled]="!form.valid" type="submit">Login
             </button>
 
           </form>
-
-          <!--
-          <p class="small mb-5 pb-lg-2"><a class="text-50" href="#!">Forgot password?</a></p>
-          -->
         </div>
       </div>
     </div>

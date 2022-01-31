@@ -36,7 +36,7 @@ class VaultRootClientProviderTest {
     @Test
     fun testInitAndUnseal(testEnvironment: TestEnvironment) {
 
-        val reference = testEnvironment.createCloudAndEnvironment(UUID.randomUUID().toString())
+        val reference = testEnvironment.createCloudAndEnvironment(UUID.randomUUID().toString(), UUID.randomUUID().toString())!!
 
         val cloudsRepository = CloudsRepository(testEnvironment.dsl)
         val environmentsRepository = EnvironmentsRepository(testEnvironment.dsl, cloudsRepository)

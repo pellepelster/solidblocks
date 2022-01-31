@@ -57,9 +57,9 @@ function task_recreate_integration_test() {
       --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
       --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
 
-  #task_cli environment ssh-config \
-  #  --cloud blcks \
-  #  --environment dev
+  task_cli environment ssh-config \
+    --cloud blcks \
+    --environment dev
 
   #task_cli tenant create \
   #  --cloud blcks \

@@ -2,8 +2,8 @@ package de.solidblocks.cli.commands.service
 
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import de.solidblocks.cli.commands.CommandApplicationContext
 import de.solidblocks.cli.commands.tenant.BaseCloudTenantCommand
-import de.solidblocks.cloud.ApplicationContext
 import kotlin.system.exitProcess
 
 class ServiceBootstrapCommand :
@@ -12,13 +12,13 @@ class ServiceBootstrapCommand :
     val service: String by option(help = "service name").required()
 
     override fun run() {
-        val context = ApplicationContext(solidblocksDatabaseUrl)
+        val context = CommandApplicationContext(solidblocksDatabaseUrl)
 
         if (!context.managers.tenants.verifyReference(tenantRef)) {
             exitProcess(1)
         }
 
-        if (!context.createServiceProvisioner(tenantRef.toService(service)).bootstrap()) {
+        if (!context.provisionerContext.createServiceProvisioner(tenantRef.toService(service)).bootstrap()) {
             exitProcess(1)
         }
     }

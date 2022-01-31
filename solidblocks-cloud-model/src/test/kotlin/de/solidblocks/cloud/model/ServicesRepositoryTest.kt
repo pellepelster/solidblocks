@@ -63,7 +63,7 @@ class ServicesRepositoryTest {
         assertThat(tenantsRepository.createTenant(service1Ref, "tenant1", "<none>")).isNotNull
 
         assertThat(servicesRepository.hasService(service1Ref)).isFalse
-        assertThat(servicesRepository.createService(service1Ref, service1Ref.service, "type1")).isTrue
+        assertThat(servicesRepository.createService(service1Ref, service1Ref.service, "type1")).isNotNull
         assertThat(servicesRepository.hasService(service1Ref)).isTrue
 
         val service1 = servicesRepository.getService(service1Ref)

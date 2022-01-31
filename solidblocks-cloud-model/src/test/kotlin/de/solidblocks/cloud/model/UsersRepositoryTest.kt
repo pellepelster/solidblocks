@@ -23,7 +23,7 @@ class UsersRepositoryTest {
         val repository = UsersRepository(testEnvironment.dsl, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.repositories.tenants)
 
         assertThat(repository.getUser("juergen@$cloud")).isNull()
-        assertThat(repository.createEnvironmentUser(EnvironmentReference(cloud, "env1"), "juergen@$cloud", "password2", "salt2")).isTrue
+        assertThat(repository.createEnvironmentUser(EnvironmentReference(cloud, "env1"), "juergen@$cloud", "password2", "salt2")).isNotNull
 
         val user = repository.getUser("juergen@$cloud")
         assertThat(user).isNotNull
@@ -43,7 +43,7 @@ class UsersRepositoryTest {
         val repository = UsersRepository(testEnvironment.dsl, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.repositories.tenants)
 
         assertThat(repository.getUser("juergen@$cloud")).isNull()
-        assertThat(repository.createTenantUser(TenantReference(cloud, "env1", "tenant1"), "juergen@$cloud", "password2", "salt2")).isTrue
+        assertThat(repository.createTenantUser(TenantReference(cloud, "env1", "tenant1"), "juergen@$cloud", "password2", "salt2")).isNotNull
 
         val user = repository.getUser("juergen@$cloud")
         assertThat(user).isNotNull

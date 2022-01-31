@@ -7,7 +7,6 @@ import de.solidblocks.base.reference.ServiceReference
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.environments.EnvironmentApplicationContext
 import de.solidblocks.cloud.environments.EnvironmentProvisioner
-import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.cloud.model.repositories.RepositoriesContext
 import de.solidblocks.cloud.services.ServiceProvisioner
 import de.solidblocks.cloud.tenants.TenantProvisioner
@@ -21,30 +20,34 @@ import de.solidblocks.provisioner.vault.VaultRootClientProvider
 import de.solidblocks.vault.EnvironmentVaultManager
 import mu.KotlinLogging
 
-class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: String? = null, private val minioCredentialsProvider: (() -> MinioCredentials)? = null, development: Boolean = false) {
+class ProvisionerContext(
+    val repositories: RepositoriesContext,
+    private val vaultAddressOverride: String? = null,
+    private val minioCredentialsProvider: (() -> MinioCredentials)? = null
+) {
 
     private val logger = KotlinLogging.logger {}
 
     private var vaultRootClientProvider: VaultRootClientProvider? = null
 
-    val repositories: RepositoriesContext
-    val managers: ManagersContext
-
-    init {
-        val database = SolidblocksDatabase(jdbcUrl)
-        database.ensureDBSchema()
-
-        repositories = RepositoriesContext(database.dsl)
-        managers = ManagersContext(database.dsl, repositories, development)
-    }
-
     fun vaultRootClientProvider(reference: EnvironmentReference): VaultRootClientProvider {
         if (vaultRootClientProvider == null) {
-            vaultRootClientProvider = VaultRootClientProvider(reference, repositories.environments, vaultAddressOverride)
+            vaultRootClientProvider =
+                VaultRootClientProvider(reference, repositories.environments, vaultAddressOverride)
         }
 
         return vaultRootClientProvider!!
     }
+
+    fun createTenantProvisioner(reference: TenantReference) =
+        TenantProvisioner(reference, createProvisioner(reference), repositories.environments, repositories.tenants)
+
+    fun createServiceProvisioner(reference: ServiceReference) = ServiceProvisioner(
+        createProvisioner(reference),
+        reference,
+        repositories.environments,
+        EnvironmentVaultManager(vaultRootClientProvider(reference).createClient(), reference)
+    )
 
     fun createEnvironmentProvisioner(reference: EnvironmentReference) = EnvironmentProvisioner(
         repositories.environments.getEnvironment(reference)
@@ -52,10 +55,6 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         vaultRootClientProvider(reference),
         createProvisioner(reference),
     )
-
-    fun createTenantProvisioner(reference: TenantReference) = TenantProvisioner(reference, createProvisioner(reference), repositories.environments, repositories.tenants)
-
-    fun createServiceProvisioner(reference: ServiceReference) = ServiceProvisioner(createProvisioner(reference), reference, repositories.environments, EnvironmentVaultManager(vaultRootClientProvider(reference).createClient(), reference))
 
     fun createProvisioner(reference: EnvironmentReference): Provisioner {
 
@@ -84,5 +83,6 @@ class ApplicationContext(jdbcUrl: String, private val vaultAddressOverride: Stri
         return provisioner
     }
 
-    fun createEnvironmentContext(reference: EnvironmentReference) = EnvironmentApplicationContext(reference, repositories.environments)
+    fun createEnvironmentContext(reference: EnvironmentReference) =
+        EnvironmentApplicationContext(reference, repositories.environments)
 }

@@ -10,12 +10,34 @@ import org.jgrapht.traverse.TopologicalOrderIterator
 fun Map<ResourceGroup, List<ResourceDiff>>.allDiffs() = this.flatMap { it.value }
 
 fun Map<ResourceGroup, List<ResourceDiff>>.allChangedOrMissingDiffs() = this.allDiffs().filter {
-    it.hasChangesOrMissing()
+    it.needsApply()
 }
 
-fun Map<ResourceGroup, List<ResourceDiff>>.allChangedOrMissingResources() = this.allChangedOrMissingDiffs().map { it.resource }
+fun Map<ResourceGroup, List<ResourceDiff>>.allChangedOrMissingResources() =
+    this.allChangedOrMissingDiffs().map { it.resource }
 
-data class ResourceGroup(val name: String, val dependsOn: Set<ResourceGroup> = emptySet(), val resources: ArrayList<IInfrastructureResource<*, *>> = ArrayList()) {
+fun Collection<ResourceGroup>.hierarchicalResourceGroupList(): List<ResourceGroup> {
+    val graph: Graph<ResourceGroup, DefaultEdge> = DefaultDirectedGraph(DefaultEdge::class.java)
+
+    this.forEach {
+        graph.addVertex(it)
+    }
+
+    this.forEach { source ->
+        source.dependsOn.forEach { target ->
+            graph.addEdge(source, target)
+        }
+    }
+
+    val orderIterator = TopologicalOrderIterator(graph)
+    return orderIterator.asSequence().map { it }.toList()
+}
+
+data class ResourceGroup(
+    val name: String,
+    val dependsOn: Set<ResourceGroup> = emptySet(),
+    val resources: ArrayList<IInfrastructureResource<*, *>> = ArrayList()
+) {
 
     fun <T : IInfrastructureResource<*, *>> addResource(resource: T): T {
         this.resources.add(resource)
@@ -24,7 +46,7 @@ data class ResourceGroup(val name: String, val dependsOn: Set<ResourceGroup> = e
     }
 
     fun hierarchicalResourceList(): List<IInfrastructureResource<*, *>> {
-        val graph = createGraph(resources)
+        val graph = createResourceGraph(resources)
         val orderIterator = TopologicalOrderIterator(graph)
 
         val result = ArrayList<IInfrastructureResource<*, *>>()
@@ -36,7 +58,7 @@ data class ResourceGroup(val name: String, val dependsOn: Set<ResourceGroup> = e
         return result
     }
 
-    private fun createGraph(resources: List<IInfrastructureResource<*, *>>): Graph<IInfrastructureResource<*, *>, DefaultEdge> {
+    private fun createResourceGraph(resources: List<IInfrastructureResource<*, *>>): Graph<IInfrastructureResource<*, *>, DefaultEdge> {
         val graph: Graph<IInfrastructureResource<*, *>, DefaultEdge> = DefaultDirectedGraph(DefaultEdge::class.java)
 
         val allResources = ArrayList<IInfrastructureResource<*, *>>()
@@ -53,6 +75,10 @@ data class ResourceGroup(val name: String, val dependsOn: Set<ResourceGroup> = e
         }
 
         return graph
+    }
+
+    override fun toString(): String {
+        return name
     }
 
     private fun flattenModels(

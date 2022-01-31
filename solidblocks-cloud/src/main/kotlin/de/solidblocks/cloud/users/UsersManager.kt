@@ -47,14 +47,14 @@ class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository) {
         logger.info { "creating user '$email' for environment '${reference.environment}'" }
 
         val credentials = generatePasswordAndSalt(password)
-        return usersRepository.createEnvironmentUser(reference, email, credentials.first, credentials.second)
+        return usersRepository.createEnvironmentUser(reference, email, credentials.first, credentials.second) != null
     }
 
     fun createTenantUser(reference: TenantReference, email: String, password: String): Boolean {
         logger.info { "creating user '$email' for tenant '${reference.tenant}'" }
 
         val credentials = generatePasswordAndSalt(password)
-        return usersRepository.createTenantUser(reference, email, credentials.first, credentials.second)
+        return usersRepository.createTenantUser(reference, email, credentials.first, credentials.second) != null
     }
 
     fun loginUser(email: String, passwordToCheck: String): UserEntity? {

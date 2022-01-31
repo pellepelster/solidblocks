@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
-import de.solidblocks.cloud.ApplicationContext
+import de.solidblocks.cli.commands.CommandApplicationContext
 import kotlin.system.exitProcess
 
 class EnvironmentCreateCommand :
@@ -24,7 +24,7 @@ class EnvironmentCreateCommand :
     val githubReadOnlyToken: String by option(help = "Github read only API token").required()
 
     override fun run() {
-        val context = ApplicationContext(solidblocksDatabaseUrl)
+        val context = CommandApplicationContext(solidblocksDatabaseUrl)
 
         val reference = CloudReference(cloud)
         if (!context.managers.clouds.verifyReference(reference)) {

@@ -48,7 +48,10 @@ class VaultProvisionerTest {
 
         fun vaultTemplateProvider(testEnvironment: TestEnvironment): () -> VaultTemplate {
             if (vaultClient == null) {
-                reference = testEnvironment.createCloudAndEnvironment(UUID.randomUUID().toString())
+                reference = testEnvironment.createCloudAndEnvironment(
+                    UUID.randomUUID().toString(),
+                    UUID.randomUUID().toString()
+                )!!
 
                 vaultClient = VaultRootClientProvider(
                     reference,
@@ -74,16 +77,16 @@ class VaultProvisionerTest {
         val kv = VaultKV("pelle", mapOf("aa" to "bb"), mount)
 
         val diffBefore = kvProvisioner.diff(kv)
-        assertTrue(diffBefore.result?.hasChangesOrMissing()!!)
+        assertTrue(diffBefore.result?.needsApply()!!)
 
         kvProvisioner.apply(kv)
 
         val diffAfter = kvProvisioner.diff(kv)
-        assertFalse(diffAfter.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfter.result?.needsApply()!!)
 
         val kvNew = VaultKV("pelle", mapOf("aa" to "cc"), mount)
         val diffAfterNew = kvProvisioner.diff(kvNew)
-        assertTrue(diffAfterNew.result?.hasChangesOrMissing()!!)
+        assertTrue(diffAfterNew.result?.needsApply()!!)
     }
 
     @Test
@@ -120,7 +123,7 @@ class VaultProvisionerTest {
 
         // no changes after apply
         val diffAfter = roleProvisioner.diff(newRole)
-        assertFalse(diffAfter.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfter.result?.needsApply()!!)
 
         val lookup = roleProvisioner.lookup(newRole)
 
@@ -151,7 +154,7 @@ class VaultProvisionerTest {
 
         // changes due to updated ttl's
         val updateDiff = roleProvisioner.diff(updateRole)
-        assertTrue(updateDiff.result?.hasChangesOrMissing()!!)
+        assertTrue(updateDiff.result?.needsApply()!!)
     }
 
     @Test
@@ -162,12 +165,12 @@ class VaultProvisionerTest {
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "ssh")
 
         val diffBefore = mountProvisioner.diff(mount)
-        assertTrue(diffBefore.result?.hasChangesOrMissing()!!)
+        assertTrue(diffBefore.result?.needsApply()!!)
 
         mountProvisioner.apply(mount)
 
         val diffAfter = mountProvisioner.diff(mount)
-        assertFalse(diffAfter.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfter.result?.needsApply()!!)
     }
 
     @Test
@@ -178,12 +181,12 @@ class VaultProvisionerTest {
         val mount = VaultMount("${UUID.randomUUID()}-ssh", "kv-v2")
 
         val diffBefore = mountProvisioner.diff(mount)
-        assertTrue(diffBefore.result?.hasChangesOrMissing()!!)
+        assertTrue(diffBefore.result?.needsApply()!!)
 
         mountProvisioner.apply(mount)
 
         val diffAfter = mountProvisioner.diff(mount)
-        assertFalse(diffAfter.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfter.result?.needsApply()!!)
     }
 
     @Test
@@ -194,12 +197,12 @@ class VaultProvisionerTest {
         val mount = VaultMount("${UUID.randomUUID()}-pki", "pki")
 
         val diffBefore = mountProvisioner.diff(mount)
-        assertTrue(diffBefore.result?.hasChangesOrMissing()!!)
+        assertTrue(diffBefore.result?.needsApply()!!)
 
         mountProvisioner.apply(mount)
 
         val diffAfter = mountProvisioner.diff(mount)
-        assertFalse(diffAfter.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfter.result?.needsApply()!!)
     }
 
     @Test
@@ -230,7 +233,7 @@ class VaultProvisionerTest {
 
         // no changes after apply
         val diffAfter = sshBackendRoleProvisioner.diff(newRole)
-        assertFalse(diffAfter.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfter.result?.needsApply()!!)
 
         val lookup = sshBackendRoleProvisioner.lookup(newRole)
 
@@ -253,7 +256,7 @@ class VaultProvisionerTest {
 
         // changes due to updated ttl's
         val updateDiff = sshBackendRoleProvisioner.diff(updateRole)
-        assertTrue(updateDiff.result?.hasChangesOrMissing()!!)
+        assertTrue(updateDiff.result?.needsApply()!!)
     }
 
     @Test
@@ -265,23 +268,23 @@ class VaultProvisionerTest {
         val emptyPolicy = VaultPolicy(name, emptySet())
 
         val diffBefore = policyProvisioner.diff(emptyPolicy)
-        assertTrue(diffBefore.result?.hasChangesOrMissing()!!)
+        assertTrue(diffBefore.result?.needsApply()!!)
 
         policyProvisioner.apply(emptyPolicy)
 
         val diffAfter = policyProvisioner.diff(emptyPolicy)
-        assertFalse(diffAfter.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfter.result?.needsApply()!!)
 
         val policyWithRules = VaultPolicy(
             name,
             setOf(Policy.Rule.builder().path("mypath").capability(Policy.BuiltinCapabilities.READ).build())
         )
         val diffBeforeWithRules = policyProvisioner.diff(policyWithRules)
-        assertTrue(diffBeforeWithRules.result?.hasChangesOrMissing()!!)
+        assertTrue(diffBeforeWithRules.result?.needsApply()!!)
 
         policyProvisioner.apply(policyWithRules)
 
         val diffAfterWithRules = policyProvisioner.diff(policyWithRules)
-        assertFalse(diffAfterWithRules.result?.hasChangesOrMissing()!!)
+        assertFalse(diffAfterWithRules.result?.needsApply()!!)
     }
 }

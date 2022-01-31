@@ -11,12 +11,12 @@ class ResourceDiffTest {
 
     @Test
     fun testChanges() {
-        assertFalse(ResourceDiff(NullResource).hasChangesOrMissing())
-        assertFalse(ResourceDiff(NullResource, changes = emptyList()).hasChangesOrMissing())
-        assertFalse(ResourceDiff(NullResource, changes = listOf(ResourceDiffItem("test1"))).hasChangesOrMissing())
+        assertFalse(ResourceDiff(NullResource).needsApply())
+        assertFalse(ResourceDiff(NullResource, changes = emptyList()).needsApply())
+        assertFalse(ResourceDiff(NullResource, changes = listOf(ResourceDiffItem("test1"))).needsApply())
 
-        assertTrue(ResourceDiff(NullResource, missing = true).hasChangesOrMissing())
-        assertTrue(ResourceDiff(NullResource, changes = listOf(ResourceDiffItem("test1", missing = true))).hasChangesOrMissing())
-        assertTrue(ResourceDiff(NullResource, changes = listOf(ResourceDiffItem("test1", changed = true))).hasChangesOrMissing())
+        assertTrue(ResourceDiff(NullResource, missing = true).needsApply())
+        assertTrue(ResourceDiff(NullResource, changes = listOf(ResourceDiffItem("test1", missing = true))).needsApply())
+        assertTrue(ResourceDiff(NullResource, changes = listOf(ResourceDiffItem("test1", changed = true))).needsApply())
     }
 }

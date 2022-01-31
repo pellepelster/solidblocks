@@ -15,7 +15,6 @@ import de.solidblocks.cloud.VaultCloudConfiguration
 import de.solidblocks.cloud.model.ModelConstants.defaultEnvironmentLabels
 import de.solidblocks.cloud.model.ModelConstants.floatingIpName
 import de.solidblocks.cloud.model.ModelConstants.networkName
-import de.solidblocks.cloud.model.ModelConstants.sshKeyName
 import de.solidblocks.cloud.model.ModelConstants.vaultAddress
 import de.solidblocks.cloud.model.ModelConstants.volumeName
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
@@ -88,19 +87,36 @@ class EnvironmentProvisioner(
 ) {
     private val logger = KotlinLogging.logger {}
 
+    init {
+        createEnvironmentModel(environment)
+    }
+
     fun destroy(destroyVolumes: Boolean): Boolean {
         return provisioner.destroyAll(destroyVolumes)
     }
 
-    fun bootstrap(): Boolean {
-        logger.info { "creating/updating environment '${environment.reference.cloud}' for cloud '${environment.reference.environment}'" }
-
-        createEnvironmentModel(
-            environment, setOf(SshKey(sshKeyName(environment.reference), environment.sshSecrets.sshPublicKey))
-        )
-
+    fun apply(): Boolean {
         return provisioner.apply()
     }
+
+    /*
+    fun hasChanges(): Boolean {
+        val diff = provisioner.createDiff()
+
+        if (diff == null) {
+            logger.error { "could not retrieve resource status for '${environment}'" }
+            return false
+        }
+
+        for (entry in diff.entries) {
+            logger.info {
+                "resource group '${entry.key.name}', ${entry.value.logText()}"
+            }
+        }
+
+        return diff.isNotEmpty()
+    }
+    */
 
     private fun createEnvironmentModel(
         environment: EnvironmentEntity,

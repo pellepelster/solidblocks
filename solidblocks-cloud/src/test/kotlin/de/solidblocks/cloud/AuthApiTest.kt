@@ -53,8 +53,7 @@ class AuthApiTest {
 
     @Test
     fun testAuthForEnvironmentUser(testEnvironment: TestEnvironment) {
-        testEnvironment.createCloud()
-        testEnvironment.createEnvironment()
+        testEnvironment.createEnvironment("cloud1", "environment1")
 
         val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.managers.users)
 

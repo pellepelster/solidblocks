@@ -16,6 +16,7 @@ import {AuthenticationTokenInterceptor} from "./authentication/authentication-to
 import { TenantsCreateComponent } from './components/tenants/tenants-create/tenants-create.component';
 import {InputControlComponent} from "./controls/input-control.component";
 import { TenantsHomeComponent } from './components/tenants/tenants-home/tenants-home.component';
+import { ServicesCreateComponent } from './services-create/services-create.component';
 
 @NgModule({
     declarations: [
@@ -28,7 +29,8 @@ import { TenantsHomeComponent } from './components/tenants/tenants-home/tenants-
         LogoutComponent,
         TenantsCreateComponent,
         InputControlComponent,
-        TenantsHomeComponent
+        TenantsHomeComponent,
+        ServicesCreateComponent
     ],
   imports: [
     BrowserModule,

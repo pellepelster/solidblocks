@@ -1,6 +1,6 @@
 package de.solidblocks.cli.commands.environment
 
-import de.solidblocks.cloud.ApplicationContext
+import de.solidblocks.cli.commands.CommandApplicationContext
 import mu.KotlinLogging
 import java.io.File
 import java.nio.file.attribute.PosixFilePermissions
@@ -25,7 +25,7 @@ class EnvironmentSshConfigCommand :
 
     override fun run() {
 
-        val context = ApplicationContext(solidblocksDatabaseUrl)
+        val context = CommandApplicationContext(solidblocksDatabaseUrl)
 
         if (!context.managers.environments.verifyReference(environmentRef)) {
             exitProcess(1)

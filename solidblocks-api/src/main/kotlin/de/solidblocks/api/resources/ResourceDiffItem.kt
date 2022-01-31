@@ -7,6 +7,7 @@ data class ResourceDiffItem(
     val changed: Boolean = false,
     val triggersRecreate: Boolean = false,
     val missing: Boolean = false,
+    val unknown: Boolean = false,
     val expectedValue: String? = null,
     val actualValue: String? = null
 ) {
@@ -16,6 +17,7 @@ data class ResourceDiffItem(
         triggersRecreate: Boolean = false,
         missing: Boolean = false,
         changed: Boolean = false,
+        unknown: Boolean = false,
         expectedValue: String? = null,
         actualValue: String? = null
     ) : this(property.name, triggersRecreate = triggersRecreate, missing = missing, changed = changed, expectedValue = expectedValue, actualValue = actualValue)

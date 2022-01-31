@@ -20,7 +20,7 @@ import {MessageResponse} from "../sevices/types";
         [disabled]="disabled"
         [(ngModel)]="value"
         (ngModelChange)="handleChange($event)"
-        type="text"
+        [type]="type"
         class="form-control form-control-lg"/>
 
       <div *ngIf="control?.invalid && (control?.dirty || control?.touched)"
@@ -55,14 +55,19 @@ export class InputControlComponent implements ControlValueAccessor, Validator {
   formControlName: string = "";
 
   @Input()
-  formGroup: any;
+  form: any;
+
+  @Input()
+  type: string = "text";
 
   _messages: Array<MessageResponse> = []
 
   @Input()
   set messages(messages: any) {
     this._messages = messages;
-    this.formGroup.get(this.formControlName).updateValueAndValidity()
+    if (this.control != null) {
+      this.form.get(this.formControlName).updateValueAndValidity()
+    }
   }
 
   value: string = "";
@@ -112,7 +117,7 @@ export class InputControlComponent implements ControlValueAccessor, Validator {
   }
 
   get control() {
-    return this.formGroup.get(this.formControlName);
+    return this.form.get(this.formControlName);
   }
 
 }

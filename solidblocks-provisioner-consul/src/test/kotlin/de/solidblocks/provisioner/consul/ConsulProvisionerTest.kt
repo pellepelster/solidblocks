@@ -59,7 +59,7 @@ class ConsulProvisionerTest {
         assertThat(afterApplyDiff.result?.missing).isFalse
 
         // update is always enforced to ensure rules are up-to-date
-        assertThat(policyProvisioner.diff(acl).result?.hasChangesOrMissing()).isTrue
+        assertThat(policyProvisioner.diff(acl).result?.needsApply()).isTrue
     }
 
     @Test
@@ -75,7 +75,7 @@ class ConsulProvisionerTest {
         kvProvisioner.apply(kv)
 
         val afterApplyDiff = kvProvisioner.diff(kv)
-        assertThat(afterApplyDiff.result?.hasChangesOrMissing()).isFalse
+        assertThat(afterApplyDiff.result?.needsApply()).isFalse
     }
 
     @Test

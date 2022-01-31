@@ -6,12 +6,12 @@
 
           <h2 class="fw-bold mb-2 text-uppercase">Create</h2>
 
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-            <input-control [formGroup]="loginForm" [messages]="messages" formControlName="email" ></input-control>
-            <input-control [formGroup]="loginForm" [messages]="messages" formControlName="tenant"></input-control>
+            <input-control [form]="form" [messages]="messages" formControlName="email" ></input-control>
+            <input-control [form]="form" [messages]="messages" formControlName="tenant"></input-control>
 
-            <button class="btn btn-outline-info btn-lg px-5" [disabled]="!loginForm.valid" type="submit">Create</button>
+            <button class="btn btn-outline-info btn-lg px-5" [disabled]="!form.valid" type="submit">Create</button>
 
           </form>
         </div>

@@ -2,6 +2,11 @@ export interface User {
   email: string
 }
 
+export interface ConfigValueDefinition {
+  name: string
+  type: string
+}
+
 export interface Cloud {
   name: string
 }

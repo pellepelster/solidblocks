@@ -10,6 +10,8 @@ dependencies {
     api(project(":solidblocks-provisioner-consul"))
     api(project(":solidblocks-provisioner-minio"))
 
+    implementation(project(":solidblocks-service-helloworld-backend"))
+
     implementation("org.bouncycastle:bcprov-jdk15to18:1.70")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc:4.32.0")
     implementation("com.github.kagkarlsson:db-scheduler:10.5")

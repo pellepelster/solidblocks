@@ -19,8 +19,7 @@ class CloudsManager(
 
     private val logger = KotlinLogging.logger {}
 
-    fun createCloud(name: String, domain: String): CloudReference? {
-
+    fun createCloud(name: String, domain: String): CloudEntity? {
         if (cloudsRepository.hasCloud(name)) {
             logger.info { "cloud '$name' already exists" }
             return null
@@ -28,9 +27,7 @@ class CloudsManager(
 
         logger.info { "creating cloud '$name'" }
 
-        cloudsRepository.createCloud(name, domain, development = isDevelopment)
-
-        return CloudReference(name)
+        return cloudsRepository.createCloud(name, domain, development = isDevelopment)
     }
 
     fun rotateEnvironmentSecrets(reference: EnvironmentReference): Boolean {
