@@ -3,15 +3,19 @@
  */
 package de.solidblocks.config.db.indexes
 
+
 import de.solidblocks.config.db.tables.Clouds
 import de.solidblocks.config.db.tables.Environments
 import de.solidblocks.config.db.tables.ScheduledTasks
 import de.solidblocks.config.db.tables.Services
 import de.solidblocks.config.db.tables.Tenants
 import de.solidblocks.config.db.tables.Users
+
 import org.jooq.Index
 import org.jooq.impl.DSL
 import org.jooq.impl.Internal
+
+
 
 // -------------------------------------------------------------------------
 // INDEX definitions

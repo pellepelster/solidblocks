@@ -1,22 +1,27 @@
 package de.solidblocks.cloud.tenants
 
+import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.LoadingCache
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.base.validateId
-import de.solidblocks.cloud.NetworkUtils
 import de.solidblocks.cloud.environments.EnvironmentsManager
 import de.solidblocks.cloud.model.CreationResult
 import de.solidblocks.cloud.model.ErrorCodes
+import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ValidationResult
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.cloud.model.repositories.TenantsRepository
 import de.solidblocks.cloud.tenants.api.TenantCreateRequest
 import de.solidblocks.cloud.users.UsersManager
+import de.solidblocks.cloud.utils.NetworkUtils
 import de.solidblocks.provisioner.hetzner.Hetzner
+import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import mu.KotlinLogging
 import org.jooq.DSLContext
 import org.jooq.TransactionalCallable
+import java.time.Duration
 
 class TenantsManager(
     val dsl: DSLContext,
@@ -107,4 +112,7 @@ class TenantsManager(
 
         return true
     }
+
+    fun listTenants() = tenantsRepository.listTenants()
+
 }

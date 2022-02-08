@@ -6,10 +6,7 @@ import de.solidblocks.base.resources.ResourcePermissions
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.TenantEntity
-import de.solidblocks.config.db.tables.references.CLOUDS
-import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
-import de.solidblocks.config.db.tables.references.ENVIRONMENTS
-import de.solidblocks.config.db.tables.references.TENANTS
+import de.solidblocks.config.db.tables.references.*
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -106,4 +103,5 @@ class TenantsRepository(dsl: DSLContext, val environmentsRepository: Environment
 
         return getTenant(reference.toTenant(name))
     }
+
 }

@@ -1,4 +1,4 @@
-package de.solidblocks.cloud
+package de.solidblocks.cloud.utils
 
 import java.net.URI
 

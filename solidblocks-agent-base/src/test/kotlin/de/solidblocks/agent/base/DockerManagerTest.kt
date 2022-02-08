@@ -1,8 +1,8 @@
 package de.solidblocks.agent.base
 
+import de.solidblocks.base.defaultHttpClient
 import de.solidblocks.test.TestUtils.initWorldReadableTempDir
 import mu.KotlinLogging
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -36,9 +36,9 @@ class DockerManagerTest {
         assertThat(dockerManager.isRunning()).isTrue
         assertThat(dockerManager.isHealthy()).isTrue
 
-        val httpClient = OkHttpClient()
+        val httpClient = defaultHttpClient()
         val request = Request.Builder()
-            .url("http://localhost:${dockerManager.mappedPort(8080)}/test.txt")
+            .url("http://locOkHttpClient()alhost:${dockerManager.mappedPort(8080)}/test.txt")
             .build()
         assertThat(httpClient.newCall(request).execute().body!!.string()).isEqualTo("Hello World!")
 

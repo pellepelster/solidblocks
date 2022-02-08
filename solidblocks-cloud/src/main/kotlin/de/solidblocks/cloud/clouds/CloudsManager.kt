@@ -2,7 +2,7 @@ package de.solidblocks.cloud.clouds
 
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.cloud.CloudUtils
+import de.solidblocks.cloud.utils.CloudUtils
 import de.solidblocks.cloud.model.entities.CloudEntity
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.repositories.CloudsRepository

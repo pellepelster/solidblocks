@@ -10,6 +10,8 @@ dependencies {
     api("org.jooq:jooq:3.14.11")
 
     implementation("org.liquibase:liquibase-core:4.6.2")
+    runtimeOnly("com.mattbertolini:liquibase-slf4j:4.0.0")
+
     implementation("com.zaxxer:HikariCP:3.4.5")
 
     implementation("org.bouncycastle:bcprov-jdk15to18:1.70")

@@ -8,4 +8,8 @@ open class TenantReference(cloud: String, environment: String, val tenant: Strin
     fun toUser(user: String) = UserReference(cloud, environment, tenant, user)
 
     fun toEnvironmentService(service: String) = EnvironmentServiceReference(cloud, environment, service)
+
+    override fun toString(): String {
+        return "$cloud/$environment/$tenant"
+    }
 }

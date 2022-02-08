@@ -10,6 +10,7 @@ dependencies {
     implementation("com.jcabi:jcabi-manifests:1.1")
 
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("dnsjava:dnsjava:3.5.0")
 
     testImplementation("org.hamcrest:hamcrest:2.2")
 }

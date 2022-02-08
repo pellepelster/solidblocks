@@ -10,7 +10,7 @@ import de.solidblocks.cli.commands.environment.agents.AgentsUpdateCommand
 import de.solidblocks.cli.commands.service.ServiceBootstrapCommand
 import de.solidblocks.cli.commands.service.ServiceCommand
 import de.solidblocks.cli.commands.service.ServiceCreateCommand
-import de.solidblocks.cli.commands.tenant.TenantBootstrapCommand
+import de.solidblocks.cli.commands.tenant.TenantApplyCommand
 import de.solidblocks.cli.commands.tenant.TenantCommand
 import de.solidblocks.cli.commands.tenant.TenantCreateCommand
 import de.solidblocks.cli.commands.tenant.TenantDestroyCommand
@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
 
             TenantCommand().subcommands(
                 TenantCreateCommand(),
-                TenantBootstrapCommand(),
+                TenantApplyCommand(),
                 TenantDestroyCommand()
             ),
 

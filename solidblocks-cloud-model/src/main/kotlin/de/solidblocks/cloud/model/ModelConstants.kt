@@ -28,6 +28,9 @@ object ModelConstants {
     fun vaultAddress(environment: EnvironmentEntity) =
         "https://${environmentHostFQDN("vault", environment.reference, environment.cloud.rootDomain)}:8200"
 
+    fun backupUiAddress(environment: EnvironmentEntity) =
+        "http://${environmentHostFQDN("backup", environment.reference, environment.cloud.rootDomain)}:8080"
+
     fun networkName(environment: EnvironmentReference) = environmentId(environment)
 
     fun sshKeyName(environment: EnvironmentReference) = environmentId(environment)

@@ -74,6 +74,12 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry, healthCh
             if (!apply(diffs)) {
                 return false
             }
+
+            val healthCheckResults = resourceGroup.resources.map { runHealthCheckIfNeeded(it as IInfrastructureResource<Any, Any>) }
+            if (healthCheckResults.any { !it }) {
+                logger.error { "at least one healthcheck for resource group '${resourceGroup.name}' failed" }
+                return false
+            }
         }
 
         return true
@@ -187,18 +193,6 @@ class Provisioner(private val provisionerRegistry: ProvisionerRegistry, healthCh
 
     private fun diffForResourceGroup(resourceGroup: ResourceGroup): List<ResourceDiff>? {
         logger.info { "creating diff for resource group '${resourceGroup.name}'" }
-
-        /*
-        for (parentResourceGroup in resourceGroup.dependsOn) {
-            val healthCheckResults =
-                parentResourceGroup.resources.map { runHealthCheckIfNeeded(it as IInfrastructureResource<Any, Any>) }
-
-            if (healthCheckResults.any { !it }) {
-                logger.error { "at least one healthcheck for resource group '${parentResourceGroup.name}' failed" }
-                return null
-            }
-        }
-        */
 
         val resources = resourceGroup.hierarchicalResourceList().toSet()
         val result = mutableListOf<ResourceDiff>()

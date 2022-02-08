@@ -8,7 +8,7 @@ import de.solidblocks.cli.commands.environment.BaseCloudEnvironmentCommand
 import mu.KotlinLogging
 import kotlin.system.exitProcess
 
-class TenantBootstrapCommand : BaseCloudEnvironmentCommand(name = "bootstrap", help = "bootstrap a tenant") {
+class TenantApplyCommand : BaseCloudEnvironmentCommand(name = "apply", help = "bootstrap a tenant") {
 
     private val logger = KotlinLogging.logger {}
 
@@ -23,6 +23,6 @@ class TenantBootstrapCommand : BaseCloudEnvironmentCommand(name = "bootstrap", h
             exitProcess(1)
         }
 
-        context.provisionerContext.createTenantProvisioner(tenant).bootstrap()
+        context.provisionerContext.createTenantProvisioner(tenant).apply()
     }
 }

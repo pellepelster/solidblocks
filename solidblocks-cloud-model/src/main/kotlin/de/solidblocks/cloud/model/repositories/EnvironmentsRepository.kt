@@ -15,9 +15,7 @@ import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.EnvironmentEntity.Companion.ROOT_TOKEN_KEY
 import de.solidblocks.cloud.model.entities.SshSecrets
 import de.solidblocks.cloud.model.generateSshKey
-import de.solidblocks.config.db.tables.references.CLOUDS
-import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
-import de.solidblocks.config.db.tables.references.ENVIRONMENTS
+import de.solidblocks.config.db.tables.references.*
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record5
@@ -202,4 +200,5 @@ class EnvironmentsRepository(dsl: DSLContext, val cloudsRepository: CloudsReposi
             sshPublicKey = list.configValue(SSH_PUBLIC_KEY).value,
         )
     }
+
 }

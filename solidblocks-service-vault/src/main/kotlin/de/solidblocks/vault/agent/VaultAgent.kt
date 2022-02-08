@@ -15,6 +15,7 @@ import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import de.solidblocks.base.BaseConstants.SERVICE_LABEL_KEY
 import de.solidblocks.base.BaseConstants.serviceId
+import de.solidblocks.base.defaultHttpClient
 import de.solidblocks.base.reference.ServiceReference
 import de.solidblocks.cloud.model.ModelConstants.serviceBucketName
 import de.solidblocks.cloud.model.ModelConstants.serviceConfigPath
@@ -35,7 +36,6 @@ import io.minio.messages.Item
 import io.minio.messages.Tags
 import mu.KotlinLogging
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -266,7 +266,7 @@ class VaultAgent(
         val minioClient = createMinioClient() ?: return false
         val credentials = loadCredentials() ?: return false
 
-        val client = OkHttpClient()
+        val client = defaultHttpClient()
         val request = Request.Builder()
             .url("$vaultAddress/v1/sys/storage/raft/snapshot")
             .addHeader("X-Vault-Token", credentials.rootToken)
@@ -322,7 +322,7 @@ class VaultAgent(
         val logging = HttpLoggingInterceptor()
         logging.level = (HttpLoggingInterceptor.Level.BASIC)
 
-        val client = OkHttpClient().newBuilder().addInterceptor(logging).build()
+        val client = defaultHttpClient().newBuilder().addInterceptor(logging).build()
 
         val minioClient = createMinioClient() ?: return false
         val credentials = loadCredentials() ?: return false

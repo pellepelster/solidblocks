@@ -8,6 +8,7 @@ import de.solidblocks.config.db.tables.Services
 import de.solidblocks.config.db.tables.Tenants
 import de.solidblocks.config.db.tables.records.ConfigurationValuesRecord
 import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
+import de.solidblocks.config.db.tables.references.STATUS
 import mu.KotlinLogging
 import org.jooq.*
 import org.jooq.impl.DSL
@@ -144,4 +145,5 @@ abstract class BaseRepository(val dsl: DSLContext) {
             )
         }!!
     }
+
 }

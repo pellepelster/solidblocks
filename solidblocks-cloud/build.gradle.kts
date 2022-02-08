@@ -10,16 +10,18 @@ dependencies {
     api(project(":solidblocks-provisioner-consul"))
     api(project(":solidblocks-provisioner-minio"))
 
-    implementation(project(":solidblocks-service-helloworld-backend"))
+    api("net.javacrumbs.shedlock:shedlock-provider-jdbc:4.32.0")
+    api("com.github.kagkarlsson:db-scheduler:10.5")
 
+    implementation(project(":solidblocks-service-helloworld-backend"))
     implementation("org.bouncycastle:bcprov-jdk15to18:1.70")
-    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc:4.32.0")
-    implementation("com.github.kagkarlsson:db-scheduler:10.5")
 
     implementation("io.vertx:vertx-web:4.2.3")
     implementation("io.vertx:vertx-lang-kotlin:4.2.3")
     implementation("io.vertx:vertx-auth-jwt:4.2.3")
     implementation("io.vertx:vertx-ext:38")
+
+    implementation("com.github.ben-manes.caffeine:caffeine:3.0.5")
 
     implementation("com.github.seancfoley:ipaddress:5.3.3")
 

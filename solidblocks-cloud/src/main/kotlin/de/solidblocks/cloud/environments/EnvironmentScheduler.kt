@@ -1,63 +1,63 @@
 package de.solidblocks.cloud.environments
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.kagkarlsson.scheduler.Scheduler
 import com.github.kagkarlsson.scheduler.task.ExecutionContext
 import com.github.kagkarlsson.scheduler.task.TaskInstance
 import com.github.kagkarlsson.scheduler.task.helper.OneTimeTask
 import com.github.kagkarlsson.scheduler.task.helper.Tasks
 import com.github.kagkarlsson.scheduler.task.schedule.FixedDelay
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.cloud.CloudConstants.ENVIRONMENT_HEALTHCHECK_INTERVAL
 import de.solidblocks.cloud.ProvisionerContext
 import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import mu.KotlinLogging
-import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
-import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider
+import net.javacrumbs.shedlock.core.LockConfiguration
+import net.javacrumbs.shedlock.core.LockingTaskExecutor
 import java.time.Instant
+import java.util.*
 import javax.sql.DataSource
 
-class EnvironmentScheduler(
-    val dataSource: DataSource,
-    val environmentsRepository: EnvironmentsRepository,
-    val provisionerContext: ProvisionerContext
-) {
 
-    val executor = DefaultLockingTaskExecutor(JdbcLockProvider(dataSource))
+class EnvironmentScheduler(private val dataSource: DataSource, val environmentsRepository: EnvironmentsRepository, val provisionerContext: ProvisionerContext, val lockingTaskExecutor: LockingTaskExecutor) {
+
+    private val jacksonObjectMapper = jacksonObjectMapper()
 
     private val logger = KotlinLogging.logger {}
 
     fun startScheduler() {
 
-        val applyTask = Tasks.recurring("my-hourly-task-1", FixedDelay.ofSeconds(10))
-            .execute { inst: TaskInstance<Void>, ctx: ExecutionContext ->
-                run {
-                    val client = ctx.schedulerClient
-                    logger.info { "checking all environment for changes" }
+        val applyTask: OneTimeTask<String> = Tasks.oneTime("environments-apply", String::class.java).execute { inst, _ ->
+            val reference = jacksonObjectMapper.readValue(inst.data, EnvironmentReference::class.java)
+            lockingTaskExecutor.executeWithLock<Any>({
+                provisionerContext.createEnvironmentProvisioner(reference).apply()
+            }, LockConfiguration("${reference}", Instant.now().plusSeconds(600)))
+        }
 
-                    environmentsRepository.listEnvironments().forEach {
-                        logger.info { "checking environment '${it.reference}' for changes" }
 
-                        val provisioner = provisionerContext.createEnvironmentProvisioner(it.reference)
-                        provisioner.apply()
-                    }
-                }
+        val healthCheckTask =
+            Tasks.recurring("environments-healthcheck", FixedDelay.of(ENVIRONMENT_HEALTHCHECK_INTERVAL))
+                .execute { inst: TaskInstance<Void>, ctx: ExecutionContext ->
+                    run {
+                        environmentsRepository.listEnvironments().forEach {
+                            val provisioner = provisionerContext.createEnvironmentProvisioner(it.reference)
+                            lockingTaskExecutor.executeWithLock<Any>({
+                                if (!provisioner.healthcheck()) {
+                                    val client = ctx.schedulerClient
+                                    client.schedule(
+                                        applyTask.instance(
+                                            UUID.randomUUID().toString(),
+                                            jacksonObjectMapper.writeValueAsString(it.reference)
+                                        ), Instant.now()
+                                    )
+                                }
+                            }, LockConfiguration("${it.reference}", Instant.now().plusSeconds(600)))
+                        }
             }
+        }
 
-        val myAdhocTask: OneTimeTask<String> = Tasks.oneTime(
-            "my-typed-adhoc-task", String::class.java
-        ).execute({ inst, ctx ->
 
-            System.out.println(
-                "Executed! Custom data, Id: "
-            )
-        })
-
-        val scheduler = Scheduler
-            .create(dataSource, myAdhocTask)
-            .enableImmediateExecution()
-            .startTasks(applyTask)
-            .threads(5).build()
-
+        val scheduler = Scheduler.create(dataSource, applyTask).startTasks(healthCheckTask).threads(5).build()
         scheduler.start()
-
-        scheduler.schedule(myAdhocTask.instance("id1", "{}"), Instant.now().plusSeconds(5))
     }
 }

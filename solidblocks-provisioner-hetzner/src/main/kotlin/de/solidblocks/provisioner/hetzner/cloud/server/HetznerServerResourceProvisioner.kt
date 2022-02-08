@@ -138,7 +138,7 @@ class HetznerServerResourceProvisioner(
         request.sshKeys(sshKeys.map { it.result!!.id.toLong() })
 
         return checkedApiCall {
-            logger.info { "creating server '${resource.name}'" }
+            logger.info { "creating server '${resource.name}' with ssh keys ${sshKeys.joinToString(", ") { it.result!!.id }}" }
             it.createServer(request.build())
         }.mapNonNullResult {
             waitForActions(it.nextActions) { api, action ->

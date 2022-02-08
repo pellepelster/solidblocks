@@ -9,4 +9,5 @@ class RepositoriesContext(dsl: DSLContext) {
     val tenants = TenantsRepository(dsl, environments)
     val users = UsersRepository(dsl, clouds, environments, tenants)
     val services = ServicesRepository(dsl, tenants)
+    val status = StatusRepository(dsl)
 }

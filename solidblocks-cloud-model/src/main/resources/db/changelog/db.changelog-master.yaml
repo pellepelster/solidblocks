@@ -21,7 +21,7 @@ databaseChangeLog:
                   type: blob
               - column:
                   name: execution_time
-                  type: timestamp with time zone
+                  type: TIMESTAMP
                   constraints:
                     nullable: false
               - column:
@@ -34,16 +34,16 @@ databaseChangeLog:
                   type: varchar(256)
               - column:
                   name: last_success
-                  type: timestamp with time zone
+                  type: TIMESTAMP
               - column:
                   name: last_failure
-                  type: timestamp with time zone
+                  type: TIMESTAMP
               - column:
                   name: consecutive_failures
                   type: int
               - column:
                   name: last_heartbeat
-                  type: timestamp with time zone
+                  type: TIMESTAMP
               - column:
                   name: version
                   type: bigint
@@ -333,3 +333,34 @@ databaseChangeLog:
             indexName: idx_users_email
             tableName: users
             unique: true
+
+        - createTable:
+            tableName: status
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: entity
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: code
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false

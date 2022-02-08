@@ -7,10 +7,10 @@ import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import de.solidblocks.base.BaseConstants.SERVICE_LABEL_KEY
+import de.solidblocks.base.defaultHttpClient
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import mu.KotlinLogging
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.net.URI
@@ -26,7 +26,7 @@ class DockerManager(
     private val storageDir: File? = null,
     private val network: String? = null
 ) {
-    private val client = OkHttpClient()
+    private val client = defaultHttpClient()
 
     private val logger = KotlinLogging.logger {}
 

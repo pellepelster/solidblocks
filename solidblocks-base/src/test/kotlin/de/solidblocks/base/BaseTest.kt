@@ -1,6 +1,7 @@
 package de.solidblocks.base
 
 import de.solidblocks.core.Result
+import okhttp3.Request
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
@@ -8,6 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger
 class BaseTest {
 
     @Test
+    fun testHttpClient() {
+        assertThat(defaultHttpClient().newCall(Request.Builder().url("https://heise.de").get().build()).execute().isSuccessful).isTrue
+    }
+
+        @Test
     fun testWaiter() {
         val failedResult = Waiter.defaultWaiter().waitForResult { Result<Any>(NullResource, failed = true) }
         assertThat(failedResult.failed).isTrue

@@ -1,8 +1,8 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.NetworkUtils.nextNetwork
-import de.solidblocks.cloud.NetworkUtils.solidblocksNetwork
-import de.solidblocks.cloud.NetworkUtils.subnetForNetwork
+import de.solidblocks.cloud.utils.NetworkUtils.nextNetwork
+import de.solidblocks.cloud.utils.NetworkUtils.solidblocksNetwork
+import de.solidblocks.cloud.utils.NetworkUtils.subnetForNetwork
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

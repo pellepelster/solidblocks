@@ -1,13 +1,13 @@
 package de.solidblocks.vault.agent
 
 import de.soldiblocks.ingress.api.ServiceIngressRequest
+import de.solidblocks.base.defaultHttpClient
 import de.solidblocks.ingress.agent.IngressManager
 import de.solidblocks.test.IntegrationTestEnvironment
 import de.solidblocks.test.IntegrationTestExtension
 import de.solidblocks.test.KDockerComposeContainer
 import de.solidblocks.test.TestUtils.initWorldReadableTempDir
 import mu.KotlinLogging
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -78,7 +78,7 @@ class IngressManagerTest {
 
         await untilCallTo {
             try {
-                OkHttpClient().newCall(request).execute().body!!.string().trim()
+                defaultHttpClient().newCall(request).execute().body!!.string().trim()
             } catch (e: Exception) {
                 null
             }

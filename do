@@ -46,19 +46,19 @@ function task_recreate_integration_test() {
   rm -rf "${db_dir}"
 
   task_cli cloud create \
-    --cloud blcks \
-    --domain blcks.de
+    --cloud pelle \
+    --domain pelle.io
 
   task_cli environment create \
-      --cloud blcks \
+      --cloud pelle \
       --environment dev \
-      --hetzner-cloud-api-token-read-only "$(pass solidblocks/integration-test/hcloud_api_token_ro)" \
-      --hetzner-cloud-api-token-read-write "$(pass solidblocks/integration-test/hcloud_api_token_rw)" \
+      --hetzner-cloud-api-token-read-only "$(pass solidblocks/pelle/hcloud_api_token_ro)" \
+      --hetzner-cloud-api-token-read-write "$(pass solidblocks/pelle/hcloud_api_token_rw)" \
       --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
-      --hetzner-dns-api-token "$(pass solidblocks/integration-test/dns_api_token)"
+      --hetzner-dns-api-token "$(pass solidblocks/pelle/dns_api_token)"
 
   task_cli environment ssh-config \
-    --cloud blcks \
+    --cloud pelle \
     --environment dev
 
   #task_cli tenant create \

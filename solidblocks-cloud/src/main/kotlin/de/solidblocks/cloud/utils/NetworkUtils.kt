@@ -1,4 +1,4 @@
-package de.solidblocks.cloud
+package de.solidblocks.cloud.utils
 
 import inet.ipaddr.IPAddress
 import inet.ipaddr.IPAddressString

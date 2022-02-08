@@ -1,6 +1,6 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.CloudUtils.extractRootDomain
+import de.solidblocks.cloud.utils.CloudUtils.extractRootDomain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

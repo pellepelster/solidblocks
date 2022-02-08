@@ -15,6 +15,7 @@ open class BaseApplicationContext(jdbcUrl: String, private val vaultAddressOverr
     val managers: ManagersContext
     val provisionerContext: ProvisionerContext
     val database: SolidblocksDatabase
+    val status: StatusContext
 
     init {
         database = SolidblocksDatabase(jdbcUrl)
@@ -22,8 +23,9 @@ open class BaseApplicationContext(jdbcUrl: String, private val vaultAddressOverr
 
         repositories = RepositoriesContext(database.dsl)
         managers = ManagersContext(database.dsl, repositories, development)
+        status = StatusContext(repositories)
 
-        provisionerContext = ProvisionerContext(repositories)
+        provisionerContext = ProvisionerContext(repositories, managers, status)
     }
 
     fun createEnvironmentContext(reference: EnvironmentReference) = EnvironmentApplicationContext(reference, repositories.environments)

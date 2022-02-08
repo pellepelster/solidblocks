@@ -100,4 +100,5 @@ class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsReposito
 
     fun hasService(reference: ServiceReference, permissions: ResourcePermissions? = null) =
         getService(reference, permissions) != null
+
 }

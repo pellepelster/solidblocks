@@ -1,5 +1,7 @@
 package de.solidblocks.cli.commands.environment
 
+import de.solidblocks.base.BaseConstants
+import de.solidblocks.base.BaseConstants.environmentHostFQDN
 import de.solidblocks.cli.commands.CommandApplicationContext
 import mu.KotlinLogging
 import java.io.File
@@ -46,7 +48,7 @@ class EnvironmentSshConfigCommand :
             privateKeyFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
             val knownHostsFile = File(environmentPath.toFile(), "${this.cloud}_known_hosts")
-            knownHostsFile.writeText("vault-1.$environment.${environment.cloud.rootDomain} ${environment.sshSecrets.sshIdentityPublicKey}")
+            knownHostsFile.writeText("${environmentHostFQDN("vault", environment.reference, environment.cloud.rootDomain)} ${environment.sshSecrets.sshIdentityPublicKey}")
 
             knownHostsFile.toPath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
