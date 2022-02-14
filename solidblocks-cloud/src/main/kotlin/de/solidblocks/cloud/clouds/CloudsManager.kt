@@ -11,10 +11,10 @@ import de.solidblocks.cloud.utils.CloudUtils
 import mu.KotlinLogging
 
 class CloudsManager(
-    val cloudsRepository: CloudsRepository,
-    val environmentsRepository: EnvironmentsRepository,
-    val usersManager: UsersManager,
-    val isDevelopment: Boolean
+        val cloudsRepository: CloudsRepository,
+        val environmentsRepository: EnvironmentsRepository,
+        val usersManager: UsersManager,
+        val isDevelopment: Boolean
 ) {
 
     private val logger = KotlinLogging.logger {}
@@ -58,7 +58,9 @@ class CloudsManager(
         return cloudsRepository.listClouds(permissions = user.permissions())
     }
 
-    fun verifyReference(reference: CloudReference): Boolean {
+    fun hasCloud(reference: CloudReference) = cloudsRepository.hasCloud(reference)
+
+    fun verifyReference1(reference: CloudReference): Boolean {
         if (!cloudsRepository.hasCloud(reference)) {
             logger.error { "cloud '${reference.cloud}' not found" }
             return false
