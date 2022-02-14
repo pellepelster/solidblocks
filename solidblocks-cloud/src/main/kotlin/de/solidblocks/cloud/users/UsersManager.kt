@@ -1,9 +1,12 @@
 package de.solidblocks.cloud.users
 
+import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.entities.UserEntity
+import de.solidblocks.cloud.model.repositories.CloudsRepository
 import de.solidblocks.cloud.model.repositories.UsersRepository
+import de.solidblocks.config.db.tables.references.USERS
 import mu.KotlinLogging
 import org.bouncycastle.crypto.generators.BCrypt
 import org.jooq.DSLContext
@@ -11,7 +14,7 @@ import org.jooq.TransactionalCallable
 import java.security.SecureRandom
 import java.util.*
 
-class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository) {
+class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository, val cloudRepository: CloudsRepository) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -24,25 +27,70 @@ class UsersManager(val dsl: DSLContext, val usersRepository: UsersRepository) {
 
     private val decoder = Base64.getDecoder()
 
+    fun updatePassword(id: UUID, password: String): Boolean {
+        val credentials = generatePasswordAndSalt(password)
+
+        return dsl.update(USERS).set(USERS.PASSWORD, credentials.first).set(USERS.SALT, credentials.second)
+            .where(USERS.ID.eq(id)).execute() > 0
+    }
+
     fun generatePasswordAndSalt(password: String): Pair<String, String> {
         val salt = ByteArray(16)
         random.nextBytes(salt)
 
         val encryptedPassword = BCrypt.generate(password.toByteArray(), salt, BCRYPT_COST)
+
         return encoder.encodeToString(encryptedPassword) to encoder.encodeToString(salt)
     }
 
     fun ensureAdminUser(email: String, password: String) = dsl.transactionResult(
         TransactionalCallable {
-            if (!usersRepository.hasUser(email)) {
-                val credentials = generatePasswordAndSalt(password)
-                usersRepository.createAdminUser(email, credentials.first, credentials.second)
+
+            cloudRepository.listClouds().forEach {
+                val user = usersRepository.getUser(email)
+
+                if (user != null) {
+                    logger.info { "updating password for admin user '${email}'" }
+                    return@TransactionalCallable updatePassword(user.id, password)
+                } else {
+                    logger.info { "creating admin user '${email}'" }
+                    val credentials = generatePasswordAndSalt(password)
+                    usersRepository.createAdminUser(
+                        email,
+                        credentials.first,
+                        credentials.second
+                    )
+                }
             }
 
             true
         }
     )
 
+    fun ensureCloudUser(email: String, password: String) = dsl.transactionResult(
+        TransactionalCallable {
+
+            cloudRepository.listClouds().forEach {
+                val user = usersRepository.getUser(email)
+
+                if (user != null) {
+                    logger.info { "updating password for cloud user '${email}'" }
+                    return@TransactionalCallable updatePassword(user.id, password)
+                } else {
+                    logger.info { "creating cloud user '${email}'" }
+                    val credentials = generatePasswordAndSalt(password)
+                    usersRepository.createCloudUser(
+                        CloudReference(it.name),
+                        email,
+                        credentials.first,
+                        credentials.second
+                    )
+                }
+            }
+
+            true
+        }
+    )
     fun createEnvironmentUser(reference: EnvironmentReference, email: String, password: String): Boolean {
         logger.info { "creating user '$email' for environment '${reference.environment}'" }
 

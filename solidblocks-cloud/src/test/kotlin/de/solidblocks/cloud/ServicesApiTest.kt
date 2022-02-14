@@ -32,7 +32,7 @@ class ServicesApiTest {
     @Test
     fun testCreateService(testEnvironment: TestEnvironment) {
 
-        val tenant = testEnvironment.createTenant("cloud1", "env1", "tenant1")
+        val tenant = testEnvironment.createTenant("cloud2", "env2", "tenant2")
 
         AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.managers.users)
         ServicesApi(httpServer, testEnvironment.managers.services)

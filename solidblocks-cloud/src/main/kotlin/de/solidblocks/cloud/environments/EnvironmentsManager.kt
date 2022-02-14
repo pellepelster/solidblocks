@@ -2,12 +2,19 @@ package de.solidblocks.cloud.environments
 
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.validateId
 import de.solidblocks.cloud.clouds.CloudsManager
+import de.solidblocks.cloud.environments.api.EnvironmentCreateRequest
+import de.solidblocks.cloud.model.CreationResult
+import de.solidblocks.cloud.model.ErrorCodes
 import de.solidblocks.cloud.model.ModelConstants
+import de.solidblocks.cloud.model.ValidationResult
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.cloud.model.entities.createConfigValue
 import de.solidblocks.cloud.model.entities.toReference
 import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
+import de.solidblocks.cloud.tenants.api.TenantCreateRequest
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.provisioner.hetzner.Hetzner
 import mu.KotlinLogging
@@ -23,9 +30,12 @@ class EnvironmentsManager(
 
     private val logger = KotlinLogging.logger {}
 
-    public fun newTenantsDefaultEnvironment(email: String): EnvironmentEntity? {
-        val environments = environmentsRepository.listEnvironments()
-        return environments.firstOrNull()
+    public fun newTenantsDefaultEnvironment(email: String) = listEnvironmentsForUser(email).singleOrNull()
+
+    fun createEnvironmentForDefaultCloud(name: String, email: String, password: String): CreationResult<TenantEntity> {
+        val cloud = cloudsManager.newEnvironmentsDefaultCloud(email)
+            ?: return CreationResult.error(ErrorCodes.CLOUD.NOT_FOUND)
+        return create(CloudReference(cloud.name), name, email, password)
     }
 
     fun create(
@@ -75,6 +85,40 @@ class EnvironmentsManager(
 
         return true
     }
+
+    fun validate(request: EnvironmentCreateRequest): ValidationResult {
+
+        if (request.environment == null || request.environment.isBlank()) {
+            return ValidationResult.error(EnvironmentCreateRequest::environment, ErrorCodes.MANDATORY)
+        }
+
+        if (request.email == null || request.email.isBlank()) {
+            return ValidationResult.error(EnvironmentCreateRequest::email, ErrorCodes.MANDATORY)
+        }
+
+        if (!validateId(request.environment)) {
+            return ValidationResult.error(EnvironmentCreateRequest::environment, ErrorCodes.ENVIRONMENT.INVALID)
+        }
+
+        val cloud = cloudsManager.newEnvironmentsDefaultCloud(request.email)?: return ValidationResult.error(ErrorCodes.ENVIRONMENT.CLOUD_NOT_FOUND)
+
+        if (environmentsRepository.hasEnvironment(cloud.toReference().toEnvironment(request.environment))) {
+            return ValidationResult.error(EnvironmentCreateRequest::environment, ErrorCodes.ENVIRONMENT.DUPLICATE)
+        }
+
+        if (usersManager.hasUser(request.email)) {
+            return ValidationResult.error(EnvironmentCreateRequest::email, ErrorCodes.EMAIL.DUPLICATE)
+        }
+
+        return ValidationResult.ok()
+    }
+
+
+    fun listEnvironmentsForUser(email: String): List<EnvironmentEntity> {
+        val user = usersManager.getUser(email) ?: return emptyList()
+        return environmentsRepository.listEnvironments(permissions = user.permissions())
+    }
+
 
     fun getOptional(reference: EnvironmentReference) = environmentsRepository.getEnvironment(reference)
 }

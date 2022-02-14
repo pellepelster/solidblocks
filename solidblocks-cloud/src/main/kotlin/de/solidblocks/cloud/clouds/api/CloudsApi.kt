@@ -28,16 +28,4 @@ class CloudsApi(cloudApiHttpServer: CloudApiHttpServer, val cloudsManager: Cloud
         }
     }
 
-    /*
-    fun get(rc: RoutingContext) {
-        val host = rc.request().getHeader("Host")
-        val cloud = cloudsManager.getByHostHeader(host)
-
-        if (cloud == null) {
-            rc.jsonResponse(CloudResponseWrapper(messages = ErrorCodes.CLOUD.UNKNOWN_DOMAIN.toMessages()), 404)
-            return
-        }
-
-        rc.jsonResponse(CloudResponseWrapper(CloudResponse(cloud.name)))
-    }*/
 }

@@ -35,6 +35,8 @@ class ApiApplicationContext(jdbcUrl: String) : BaseApplicationContext(jdbcUrl) {
                 status.environments
             )
         tenantsScheduler.startScheduler()
+
+        managers.users.ensureAdminUser("pelle@pelle.io", "password")
     }
 
     private fun cleanupEphemeralData() {

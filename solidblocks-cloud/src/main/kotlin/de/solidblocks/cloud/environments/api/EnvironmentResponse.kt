@@ -1,10 +1,11 @@
 package de.solidblocks.cloud.environments.api
 
-import de.solidblocks.cloud.api.ResourceReference
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import java.util.*
 
-data class EnvironmentResponse(val reference: EnvironmentResourceReference) {
-    companion object {
-        fun resourceReference(environment: EnvironmentEntity) = ResourceReference(environment.id, environment.name)
-    }
-}
+fun EnvironmentEntity.toResponse() = EnvironmentResponse(this.id, this.name)
+
+data class EnvironmentResponse(
+    val id: UUID,
+    val name: String
+)

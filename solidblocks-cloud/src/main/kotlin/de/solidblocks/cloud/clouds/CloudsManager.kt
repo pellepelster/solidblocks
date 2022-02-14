@@ -2,22 +2,24 @@ package de.solidblocks.cloud.clouds
 
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.cloud.utils.CloudUtils
 import de.solidblocks.cloud.model.entities.CloudEntity
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.repositories.CloudsRepository
 import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
-import de.solidblocks.cloud.model.repositories.UsersRepository
+import de.solidblocks.cloud.users.UsersManager
+import de.solidblocks.cloud.utils.CloudUtils
 import mu.KotlinLogging
 
 class CloudsManager(
     val cloudsRepository: CloudsRepository,
     val environmentsRepository: EnvironmentsRepository,
-    val usersRepository: UsersRepository,
+    val usersManager: UsersManager,
     val isDevelopment: Boolean
 ) {
 
     private val logger = KotlinLogging.logger {}
+
+    public fun newEnvironmentsDefaultCloud(email: String) = listCloudsForUser(email).singleOrNull()
 
     fun createCloud(name: String, domain: String): CloudEntity? {
         if (cloudsRepository.hasCloud(name)) {
@@ -52,7 +54,7 @@ class CloudsManager(
     }
 
     fun listCloudsForUser(email: String): List<CloudEntity> {
-        val user = usersRepository.getUser(email) ?: return emptyList()
+        val user = usersManager.getUser(email) ?: return emptyList()
         return cloudsRepository.listClouds(permissions = user.permissions())
     }
 

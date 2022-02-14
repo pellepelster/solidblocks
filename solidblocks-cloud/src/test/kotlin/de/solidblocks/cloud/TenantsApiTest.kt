@@ -21,12 +21,8 @@ class TenantsApiTest {
     fun testTenantsApi(testEnvironment: TestEnvironment) {
 
         testEnvironment.managers.users.ensureAdminUser("admin", "admin")
-        testEnvironment.createCloud("cloud1")
-        testEnvironment.createCloud("cloud2")
         testEnvironment.createEnvironment("cloud1", "env1")
         testEnvironment.createEnvironment("cloud2", "env2")
-        // testEnvironment.createTenant("cloud1", "env1", "tenant1")
-        // testEnvironment.createTenant("cloud2", "env2", "tenant2")
 
         AuthApi(
             httpServer,
