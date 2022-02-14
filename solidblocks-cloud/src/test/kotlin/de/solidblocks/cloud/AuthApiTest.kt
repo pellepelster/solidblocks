@@ -29,7 +29,7 @@ class AuthApiTest {
 
         given().port(httpServer.port).with().body(
             """{
-                    "email": "juergen@admin.local",
+                    "email": "admin@local.test",
                     "password": "invalid-admin-password"
                   }
             """.trimIndent()
@@ -37,29 +37,29 @@ class AuthApiTest {
 
         val token = given().port(httpServer.port).with().body(
             """{
-                    "email": "juergen@admin.local",
-                    "password": "admin-password"
+                    "email": "admin@local.test",
+                    "password": "admin"
                   }
             """.trimIndent()
         ).post("/api/v1/auth/login").then().statusCode(200).body("token", notNullValue()).extract().jsonPath().get<String>("token")
 
         val jwt = JWT.parse(token)
         val payload = jwt.get<JsonObject>("payload")
-        assertThat(payload.getString("email")).isEqualTo("juergen@admin.local")
+        assertThat(payload.getString("email")).isEqualTo("admin@local.test")
         assertThat(payload.getString("scope")).isEqualTo("root")
 
-        given().port(httpServer.port).with().header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then().statusCode(200).body("user.email", equalTo("juergen@admin.local")).body("user.scope", equalTo("root"))
+        given().port(httpServer.port).with().header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then().statusCode(200).body("user.email", equalTo("admin@local.test")).body("user.scope", equalTo("root"))
     }
 
     @Test
-    fun testAuthForEnvironmentUser(testEnvironment: TestEnvironment) {
-        testEnvironment.createEnvironment("cloud1", "environment1")
+    fun testAuthForCloudUser(testEnvironment: TestEnvironment) {
+        testEnvironment.testContext.createCloud("cloud1")
 
         val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.managers.users)
 
         given().port(httpServer.port).with().body(
             """{
-                    "email": "juergen@environment1.cloud1",
+                    "email": "juergen@cloud1.local.test",
                     "password": "invalid-password1"
                   }
             """.trimIndent()
@@ -67,20 +67,88 @@ class AuthApiTest {
 
         val token = given().port(httpServer.port).with().body(
             """{
-                    "email": "juergen@environment1.cloud1",
-                    "password": "password1"
+                    "email": "juergen@cloud1.local.test",
+                    "password": "cloudpassword"
                   }
             """.trimIndent()
         ).post("/api/v1/auth/login").then().statusCode(200).body("token", notNullValue()).extract().jsonPath().get<String>("token")
 
         val jwt = JWT.parse(token)
         val payload = jwt.get<JsonObject>("payload")
-        assertThat(payload.getString("email")).isEqualTo("juergen@environment1.cloud1")
+        assertThat(payload.getString("email")).isEqualTo("juergen@cloud1.local.test")
+        assertThat(payload.getString("scope")).isEqualTo("cloud")
+
+        given().port(httpServer.port).with()
+            .header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then()
+            .statusCode(200).body("user.email", equalTo("juergen@cloud1.local.test")).body("user.scope", equalTo("cloud"))
+
+        given().port(httpServer.port).with().get("/api/v1/auth/whoami").then().statusCode(401).body("email", nullValue())
+    }
+
+    @Test
+    fun testAuthForEnvironmentUser(testEnvironment: TestEnvironment) {
+        testEnvironment.testContext.createCloudEnvironment("cloud2", "environment2")
+
+        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.managers.users)
+
+        given().port(httpServer.port).with().body(
+            """{
+                    "email": "juergen@environment2.cloud2.local.test",
+                    "password": "invalid-password1"
+                  }
+            """.trimIndent()
+        ).post("/api/v1/auth/login").then().assertThat().statusCode(401).body("token", nullValue())
+
+        val token = given().port(httpServer.port).with().body(
+            """{
+                    "email": "juergen@environment2.cloud2.local.test",
+                    "password": "environmentpassword"
+                  }
+            """.trimIndent()
+        ).post("/api/v1/auth/login").then().statusCode(200).body("token", notNullValue()).extract().jsonPath().get<String>("token")
+
+        val jwt = JWT.parse(token)
+        val payload = jwt.get<JsonObject>("payload")
+        assertThat(payload.getString("email")).isEqualTo("juergen@environment2.cloud2.local.test")
         assertThat(payload.getString("scope")).isEqualTo("environment")
 
         given().port(httpServer.port).with()
             .header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then()
-            .statusCode(200).body("user.email", equalTo("juergen@environment1.cloud1")).body("user.scope", equalTo("environment"))
+            .statusCode(200).body("user.email", equalTo("juergen@environment2.cloud2.local.test")).body("user.scope", equalTo("environment"))
+
+        given().port(httpServer.port).with().get("/api/v1/auth/whoami").then().statusCode(401).body("email", nullValue())
+    }
+
+    @Test
+    fun testAuthForTenantUser(testEnvironment: TestEnvironment) {
+        testEnvironment.testContext.createCloudEnvironmentTenant("cloud3", "environment3", "tenant3")
+
+        val api = AuthApi(httpServer, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.managers.users)
+
+        given().port(httpServer.port).with().body(
+            """{
+                    "email": "juergen@tenant3.environment3.cloud3.local.test",
+                    "password": "invalid-password1"
+                  }
+            """.trimIndent()
+        ).post("/api/v1/auth/login").then().assertThat().statusCode(401).body("token", nullValue())
+
+        val token = given().port(httpServer.port).with().body(
+            """{
+                    "email": "juergen@tenant3.environment3.cloud3.local.test",
+                    "password": "tenantpassword"
+                  }
+            """.trimIndent()
+        ).post("/api/v1/auth/login").then().statusCode(200).body("token", notNullValue()).extract().jsonPath().get<String>("token")
+
+        val jwt = JWT.parse(token)
+        val payload = jwt.get<JsonObject>("payload")
+        assertThat(payload.getString("email")).isEqualTo("juergen@tenant3.environment3.cloud3.local.test")
+        assertThat(payload.getString("scope")).isEqualTo("tenant")
+
+        given().port(httpServer.port).with()
+            .header("Authorization", "Bearer $token").get("/api/v1/auth/whoami").then()
+            .statusCode(200).body("user.email", equalTo("juergen@tenant3.environment3.cloud3.local.test")).body("user.scope", equalTo("tenant"))
 
         given().port(httpServer.port).with().get("/api/v1/auth/whoami").then().statusCode(401).body("email", nullValue())
     }

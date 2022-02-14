@@ -22,7 +22,6 @@ import mu.KotlinLogging
 
 class ProvisionerContext(
     val repositories: RepositoriesContext,
-    val managers: ManagersContext,
     val status: StatusContext,
     private val vaultAddressOverride: String? = null,
     private val minioCredentialsProvider: (() -> MinioCredentials)? = null
@@ -61,7 +60,7 @@ class ProvisionerContext(
         repositories.environments.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found"),
         vaultRootClientProvider(reference),
-        createProvisioner(reference), managers.status
+        createProvisioner(reference), status.status
     )
 
     fun createProvisioner(reference: EnvironmentReference): Provisioner {

@@ -17,7 +17,7 @@ class IntegrationTestExtension : ParameterResolver, BeforeAllCallback, AfterAllC
     override fun beforeAll(context: ExtensionContext) {
         integrationTestEnvironment.start()
 
-        if (!integrationTestEnvironment.createCloud()) {
+        if (!integrationTestEnvironment.createIntegrationTestCloud()) {
             integrationTestEnvironment.stop()
             throw RuntimeException("failed to provision local environment")
         }

@@ -1,6 +1,5 @@
 package de.solidblocks.cli.commands.environment
 
-import de.solidblocks.base.BaseConstants
 import de.solidblocks.base.BaseConstants.environmentHostFQDN
 import de.solidblocks.cli.commands.CommandApplicationContext
 import mu.KotlinLogging
@@ -33,9 +32,9 @@ class EnvironmentSshConfigCommand :
             exitProcess(1)
         }
 
-        val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
-        for (environment in context.managers.clouds.listEnvironments(environmentRef)) {
+        context.managers.environments.getEnvironment(environmentRef)?.let { environment ->
 
+            val basePath = Path(System.getProperty("user.home"), ".solidblocks", this.cloud)
             val environmentPath = Path(basePath.toString(), environment.name)
 
             if (!environmentPath.toFile().exists() && !environmentPath.toFile().mkdirs()) {

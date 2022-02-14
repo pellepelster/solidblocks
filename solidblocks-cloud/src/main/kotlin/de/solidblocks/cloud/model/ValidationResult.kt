@@ -1,7 +1,14 @@
 package de.solidblocks.cloud.model
 
-import de.solidblocks.cloud.api.MessageResponse
+import de.solidblocks.base.CreationResult
+import de.solidblocks.base.api.MessageResponse
+import de.solidblocks.base.api.messageResponses
 import kotlin.reflect.KProperty1
+
+fun <T> ValidationResult.toCreationResult() =
+    CreationResult<T>(
+        messages = this.messages
+    )
 
 data class ValidationResult(val messages: List<MessageResponse>) {
 
@@ -13,6 +20,6 @@ data class ValidationResult(val messages: List<MessageResponse>) {
         fun error(code: String) = ValidationResult(listOf(MessageResponse(code = code)))
 
         fun error(attribute: KProperty1<*, *>, code: String) =
-            ValidationResult(listOf(MessageResponse(attribute = attribute.name, code = code)))
+            ValidationResult(code.messageResponses(attribute))
     }
 }

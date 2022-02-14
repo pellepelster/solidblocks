@@ -5,19 +5,32 @@ import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 import de.solidblocks.cli.commands.CommandApplicationContext
+import de.solidblocks.cloud.clouds.api.CloudCreateRequest
+import mu.KotlinLogging
+import kotlin.system.exitProcess
 
-class CloudCreateCommand :
-    BaseCloudDbCommand(name = "create", help = "create a new cloud") {
+class CloudCreateCommand : BaseCloudDbCommand(name = "create", help = "create a new cloud") {
+
+    private val logger = KotlinLogging.logger {}
 
     val cloud: String by option(help = "name of the cloud").required()
 
-    val domain: String by option(help = "root domain for the cloud").required()
+    val domain: String by option(help = "root domain").required()
+
+    val email: String by option(help = "admin email address").required()
+
+    val password: String by option(help = "admin password").required()
 
     override fun run() {
         val context = CommandApplicationContext(solidblocksDatabaseUrl)
 
         val reference = CloudReference(cloud)
 
-        context.managers.clouds.createCloud(reference.cloud, domain)
+        val result = context.managers.clouds.createCloud(reference.cloud, CloudCreateRequest(cloud, domain, email, password))
+
+        if (result.hasErrors()) {
+            logger.error { "failed to create cloud" }
+            exitProcess(0)
+        }
     }
 }

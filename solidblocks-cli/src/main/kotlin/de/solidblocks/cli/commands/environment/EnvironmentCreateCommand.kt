@@ -3,7 +3,6 @@ package de.solidblocks.cli.commands.environment
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.reference.CloudReference
-import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 import de.solidblocks.cli.commands.CommandApplicationContext
 import kotlin.system.exitProcess
@@ -23,6 +22,10 @@ class EnvironmentCreateCommand :
 
     val githubReadOnlyToken: String by option(help = "Github read only API token").required()
 
+    val email: String by option(help = "admin email address").required()
+
+    val password: String by option(help = "admin password").required()
+
     override fun run() {
         val context = CommandApplicationContext(solidblocksDatabaseUrl)
 
@@ -31,6 +34,7 @@ class EnvironmentCreateCommand :
             exitProcess(1)
         }
 
+        /*
         context.managers.environments.create(
             reference = EnvironmentReference(cloud, environment),
             environment,
@@ -41,5 +45,7 @@ class EnvironmentCreateCommand :
             hetznerCloudApiTokenReadWrite,
             hetznerDnsApiToken
         ) ?: exitProcess(1)
+
+         */
     }
 }

@@ -23,20 +23,18 @@ class TenantsStatusManager(
     var tenantNetworks: LoadingCache<TenantReference, Boolean> =
         Caffeine.newBuilder().maximumSize(100).expireAfterWrite(Duration.ofMinutes(5)).build { reference ->
             val environment = environmentsRepository.getEnvironment(reference)
-                ?: throw RuntimeException("failed to resolve '${reference}'")
+                ?: throw RuntimeException("failed to resolve '$reference'")
             val api = HetznerCloudAPI(environment.getConfigValue(HETZNER_CLOUD_API_TOKEN_RW_KEY))
             api.getNetworksByName(ModelConstants.networkName(reference)).networks.isEmpty()
         }
 
-
     fun needsApply(reference: TenantReference): Boolean {
         return !tenantNetworks.get(reference).also {
             if (it) {
-                logger.info { "tenant '${reference}' needs apply" }
+                logger.info { "tenant '$reference' needs apply" }
             }
         }
     }
 
     fun updateStatus(tenantEntity: TenantEntity, status: Status) = statusManager.updateStatus(tenantEntity.id, status)
-
 }

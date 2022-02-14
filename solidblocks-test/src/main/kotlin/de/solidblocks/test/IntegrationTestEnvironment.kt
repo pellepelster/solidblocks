@@ -28,11 +28,9 @@ class IntegrationTestEnvironment {
 
     private val dockerEnvironment: DockerComposeContainer<*>
 
-    val reference = TenantReference("local", "dev", "tenant1")
+    val reference = TenantReference("cloud1", "dev", "tenant1")
 
-    val rootDomain = "local.test"
-
-    private lateinit var context: TestApplicationContext
+    private lateinit var testContext: TestApplicationContext
 
     init {
         val dockerComposeContent =
@@ -56,7 +54,7 @@ class IntegrationTestEnvironment {
 
     val environment: EnvironmentEntity
         get() =
-            context.repositories.environments.getEnvironment(reference)
+            testContext.repositories.environments.getEnvironment(reference)
                 ?: throw RuntimeException("environment '$reference' not found")
 
     val minioCredentialProvider: () -> MinioCredentials
@@ -64,7 +62,7 @@ class IntegrationTestEnvironment {
 
     fun start() {
         dockerEnvironment.start()
-        context =
+        testContext =
             TestApplicationContext(TEST_DB_JDBC_URL(), vaultAddress, minioCredentialProvider, true)
     }
 
@@ -76,27 +74,20 @@ class IntegrationTestEnvironment {
         }
     }
 
-    fun createCloud(): Boolean {
-        logger.info { "creating test env (${reference.cloud}/${reference.environment})" }
+    fun createIntegrationTestCloud(): Boolean {
+        logger.info { "creating integration test env (${reference.cloud}/${reference.environment})" }
 
-        context.managers.clouds.createCloud(reference.cloud, rootDomain)
-        context.managers.environments.create(
-            reference,
-            reference.environment,
-            "juergen@test.local",
-            "password1",
-            "<none>",
-            "<none>",
-            "<none>",
-            "<none>"
-        )
-        context.managers.tenants.create(reference, reference.tenant, "pelle@pelle.io", "admin")
+        testContext.createCloud(reference.cloud)
+        testContext.createEnvironment(reference, reference.environment)
+        testContext.createTenant(reference, reference.tenant)
 
-        val environment = context.repositories.environments.getEnvironment(reference)
+        val environment = testContext.repositories.environments.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")
-        val tenant = context.repositories.tenants.getTenant(reference)
+
+        val tenant = testContext.repositories.tenants.getTenant(reference)
             ?: throw RuntimeException("tenant '$reference' not found")
-        val provisioner = context.provisionerContext.createProvisioner(reference)
+
+        val provisioner = testContext.provisionerContext.createProvisioner(reference)
 
         provisioner.addResourceGroup(createEnvironmentVaultConfig(emptySet(), environment))
         provisioner.addResourceGroup(createTenantVaultConfig(emptySet(), tenant))
@@ -108,8 +99,9 @@ class IntegrationTestEnvironment {
             return false
         }
 
-        val environmentAfterProvisioning = context.repositories.environments.getEnvironment(reference)
+        val environmentAfterProvisioning = testContext.repositories.environments.getEnvironment(reference)
             ?: throw RuntimeException("environment '$reference' not found")
+
         logger.info { "vault is available at '$vaultAddress' with root token '${environmentAfterProvisioning.rootToken}'" }
         logger.info { "minio is available at '$minioAddress' with access key '${minioCredentialProvider.invoke().accessKey}' and secret key '${minioCredentialProvider.invoke().secretKey}'" }
 
@@ -120,19 +112,19 @@ class IntegrationTestEnvironment {
 
         val service = VaultService(
             reference.toService(service),
-            context.repositories.environments
+            testContext.repositories.environments
         )
 
         service.createService()
 
-        val provisioner = context.provisionerContext.createProvisioner(reference)
+        val provisioner = testContext.provisionerContext.createProvisioner(reference)
         return service.bootstrapService(provisioner)
     }
 
     fun createService(name: String): String {
         val serviceRef = reference.toService(name)
 
-        val provisioner = context.provisionerContext.createProvisioner(reference)
+        val provisioner = testContext.provisionerContext.createProvisioner(reference)
 
         provisioner.addResourceGroup(ServiceProvisioner.createVaultConfigResourceGroup(serviceRef))
         provisioner.apply()
@@ -142,10 +134,10 @@ class IntegrationTestEnvironment {
     }
 
     fun environmentContext(): EnvironmentApplicationContext {
-        return EnvironmentApplicationContext(reference, context.repositories.environments, true, vaultAddress)
+        return EnvironmentApplicationContext(reference, testContext.repositories.environments, true, vaultAddress)
     }
 
     fun tenantContext(): TenantApplicationContext {
-        return TenantApplicationContext(reference, context.repositories.tenants, true, vaultAddress)
+        return TenantApplicationContext(reference, testContext.repositories.tenants, true, vaultAddress)
     }
 }

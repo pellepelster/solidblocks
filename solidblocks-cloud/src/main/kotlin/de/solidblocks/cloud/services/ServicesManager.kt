@@ -39,8 +39,8 @@ class ServicesManager(private val servicesRepository: ServicesRepository, privat
     }
 
     fun create(email: String, name: String, type: String): ServiceInstance? {
-
         val user = usersManager.getUser(email) ?: return null
+
         if (user.tenant == null) {
             logger.warn { "not creating service for user '$email' without tenant" }
             return null

@@ -38,9 +38,8 @@ class CloudsApiTest {
 
     @Test
     fun testListClouds(testEnvironment: TestEnvironment) {
-        testEnvironment.managers.users.ensureAdminUser("admin", "admin")
-        testEnvironment.createCloud("cloud1")
-        testEnvironment.createCloud("cloud2")
+        testEnvironment.testContext.createCloud("cloud1")
+        testEnvironment.testContext.createCloud("cloud2")
 
         AuthApi(
             httpServer,

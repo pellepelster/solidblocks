@@ -45,20 +45,24 @@ import de.solidblocks.vault.VaultConstants.backupPolicyName
 import mu.KotlinLogging
 
 public fun defaultCloudInitVariables(name: String, environment: EnvironmentEntity, rootZone: DnsZone, volume: Volume, vaultToken: String): Map<out String, IResourceLookup<String>> {
-    return mapOf("solidblocks_cloud" to ConstantDataSource(environment.cloud.name), "solidblocks_hostname" to ConstantDataSource(name), "solidblocks_version" to ConstantDataSource(solidblocksVersion()), "vault_token" to ConstantDataSource(vaultToken), "solidblocks_root_domain" to ResourceLookup<DnsZoneRuntime>(rootZone) {
-        it.name
-    }, "vault_addr" to ConstantDataSource(vaultAddress(environment)), "solidblocks_environment" to ConstantDataSource(environment.name), "ssh_identity_ed25519_key" to Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPrivateKey)), "ssh_identity_ed25519_pub" to Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPublicKey)), "storage_local_device" to ResourceLookup<VolumeRuntime>(volume) {
-        it.device
-    }
+    return mapOf(
+        "solidblocks_cloud" to ConstantDataSource(environment.cloud.name), "solidblocks_hostname" to ConstantDataSource(name), "solidblocks_version" to ConstantDataSource(solidblocksVersion()), "vault_token" to ConstantDataSource(vaultToken),
+        "solidblocks_root_domain" to ResourceLookup<DnsZoneRuntime>(rootZone) {
+            it.name
+        },
+        "vault_addr" to ConstantDataSource(vaultAddress(environment)), "solidblocks_environment" to ConstantDataSource(environment.name), "ssh_identity_ed25519_key" to Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPrivateKey)), "ssh_identity_ed25519_pub" to Base64Encode(ConstantDataSource(environment.sshSecrets.sshIdentityPublicKey)),
+        "storage_local_device" to ResourceLookup<VolumeRuntime>(volume) {
+            it.device
+        }
 
     )
 }
 
 public fun defaultCloudInitVariables(name: String, environment: EnvironmentEntity, rootZone: DnsZone, volume: Volume, vaultToken: String, floatingIp: FloatingIp): Map<out String, IResourceLookup<String>> {
     return mapOf(
-            "solidblocks_public_ip" to ResourceLookup<FloatingIpRuntime>(floatingIp) {
-                it.ipv4
-            },
+        "solidblocks_public_ip" to ResourceLookup<FloatingIpRuntime>(floatingIp) {
+            it.ipv4
+        },
     ) + defaultCloudInitVariables(name, environment, rootZone, volume, vaultToken)
 }
 

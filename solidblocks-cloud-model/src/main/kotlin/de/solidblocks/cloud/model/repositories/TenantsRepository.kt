@@ -101,7 +101,6 @@ class TenantsRepository(dsl: DSLContext, val environmentsRepository: Environment
 
         setConfiguration(TenantId(id), ModelConstants.TENANT_NETWORK_CIDR_KEY, networkCidr)
 
-        return getTenant(reference.toTenant(name))
+        return getTenant(reference.toTenant(name))!!
     }
-
 }

@@ -11,5 +11,4 @@ class EnvironmentsStatusManager(
     private val logger = KotlinLogging.logger {}
 
     fun isOk(environment: UUID) = statusManager.isOk(environment, CloudConstants.ENVIRONMENT_HEALTHCHECK_INTERVAL)
-
 }

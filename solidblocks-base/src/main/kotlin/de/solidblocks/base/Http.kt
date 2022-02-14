@@ -24,7 +24,7 @@ class OkHttpDns : Dns {
             val result = config.session.lookupAsync(Name.fromString(hostname), Type.A).toCompletableFuture().get()
             return result.records.map { InetAddress.getByName(it.rdataToString()) }
         } catch (e: Exception) {
-            logger.error { "failed to resolve '${hostname}' using resolver '${config.address}'" }
+            logger.error { "failed to resolve '$hostname' using resolver '${config.address}'" }
         }
 
         return emptyList()
@@ -34,7 +34,7 @@ class OkHttpDns : Dns {
 fun defaultHttpClient() = defaultHttpClientBuilder().build()
 
 fun defaultHttpClientBuilder() = OkHttpClient.Builder()
-        .callTimeout(Duration.ofSeconds(10))
-        .dns(OkHttpDns())
-        .readTimeout(Duration.ofSeconds(10))
-        .connectTimeout(Duration.ofSeconds(10))
+    .callTimeout(Duration.ofSeconds(10))
+    .dns(OkHttpDns())
+    .readTimeout(Duration.ofSeconds(10))
+    .connectTimeout(Duration.ofSeconds(10))

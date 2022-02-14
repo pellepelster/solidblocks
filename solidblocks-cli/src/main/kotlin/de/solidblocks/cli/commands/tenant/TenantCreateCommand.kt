@@ -27,6 +27,6 @@ class TenantCreateCommand :
             exitProcess(1)
         }
 
-        context.managers.tenants.create(reference, tenant, email, password)
+        // context.managers.tenants.create(reference, tenant, email, password)
     }
 }

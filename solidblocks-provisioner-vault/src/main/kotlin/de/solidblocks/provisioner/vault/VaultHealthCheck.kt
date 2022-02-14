@@ -5,7 +5,6 @@ import mu.KotlinLogging
 
 class VaultHealthCheck {
 
-
     companion object {
 
         private val logger = KotlinLogging.logger {}
@@ -14,18 +13,17 @@ class VaultHealthCheck {
             val vaultManager = InitializingVaultManager(vaultAddress)
 
             if (!vaultManager.isInitialized()) {
-                logger.error { "vault healtcheck failed '${vaultAddress}' is not initialized" }
+                logger.error { "vault healtcheck failed '$vaultAddress' is not initialized" }
                 return false
             }
 
             if (vaultManager.isSealed()) {
-                logger.error { "vault healtcheck failed '${vaultAddress}' is sealed" }
+                logger.error { "vault healtcheck failed '$vaultAddress' is sealed" }
                 return false
             }
 
-            logger.info { "vault healtcheck succeeded for '${vaultAddress}'" }
+            logger.info { "vault healtcheck succeeded for '$vaultAddress'" }
             return true
         }
     }
-
 }

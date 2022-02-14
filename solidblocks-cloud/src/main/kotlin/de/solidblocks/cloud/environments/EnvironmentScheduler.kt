@@ -2,6 +2,7 @@ package de.solidblocks.cloud.environments
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.kagkarlsson.scheduler.Scheduler
+import com.github.kagkarlsson.scheduler.SchedulerClient
 import com.github.kagkarlsson.scheduler.task.ExecutionContext
 import com.github.kagkarlsson.scheduler.task.TaskInstance
 import com.github.kagkarlsson.scheduler.task.helper.OneTimeTask
@@ -18,24 +19,29 @@ import java.time.Instant
 import java.util.*
 import javax.sql.DataSource
 
-
-class EnvironmentScheduler(private val dataSource: DataSource, val environmentsRepository: EnvironmentsRepository, val provisionerContext: ProvisionerContext, val lockingTaskExecutor: LockingTaskExecutor) {
+class EnvironmentScheduler(
+    dataSource: DataSource,
+    val environmentsRepository: EnvironmentsRepository,
+    val provisionerContext: ProvisionerContext,
+    private val lockingTaskExecutor: LockingTaskExecutor
+) {
 
     private val jacksonObjectMapper = jacksonObjectMapper()
 
     private val logger = KotlinLogging.logger {}
 
-    fun startScheduler() {
+    private val scheduler: Scheduler
 
-        val applyTask: OneTimeTask<String> = Tasks.oneTime("environments-apply", String::class.java).execute { inst, _ ->
+    private val applyTask: OneTimeTask<String> =
+        Tasks.oneTime("environments-apply", String::class.java).execute { inst, _ ->
             val reference = jacksonObjectMapper.readValue(inst.data, EnvironmentReference::class.java)
+            logger.info { "executing apply for $reference" }
             lockingTaskExecutor.executeWithLock<Any>({
                 provisionerContext.createEnvironmentProvisioner(reference).apply()
-            }, LockConfiguration("${reference}", Instant.now().plusSeconds(600)))
-        }
+            }, LockConfiguration("$reference", Instant.now().plusSeconds(600)))
+            }
 
-
-        val healthCheckTask =
+        private val healthCheckTask =
             Tasks.recurring("environments-healthcheck", FixedDelay.of(ENVIRONMENT_HEALTHCHECK_INTERVAL))
                 .execute { inst: TaskInstance<Void>, ctx: ExecutionContext ->
                     run {
@@ -43,21 +49,39 @@ class EnvironmentScheduler(private val dataSource: DataSource, val environmentsR
                             val provisioner = provisionerContext.createEnvironmentProvisioner(it.reference)
                             lockingTaskExecutor.executeWithLock<Any>({
                                 if (!provisioner.healthcheck()) {
-                                    val client = ctx.schedulerClient
-                                    client.schedule(
-                                        applyTask.instance(
-                                            UUID.randomUUID().toString(),
-                                            jacksonObjectMapper.writeValueAsString(it.reference)
-                                        ), Instant.now()
-                                    )
+                                    scheduleApplyTask(ctx.schedulerClient, it.reference)
                                 }
                             }, LockConfiguration("${it.reference}", Instant.now().plusSeconds(600)))
+                            }
                         }
+                    }
+
+            init {
+                scheduler = Scheduler.create(dataSource, applyTask).startTasks(healthCheckTask).threads(5).build()
+            }
+
+            fun startScheduler() {
+                scheduler.start()
+            }
+
+            fun scheduleApplyTask(
+                reference: EnvironmentReference
+            ) = scheduleApplyTask(scheduler, reference)
+
+            private fun scheduleApplyTask(
+                client: SchedulerClient,
+                reference: EnvironmentReference
+            ): UUID {
+                val id = UUID.randomUUID()
+
+                client.schedule(
+                    applyTask.instance(
+                        id.toString(), jacksonObjectMapper.writeValueAsString(reference)
+                    ),
+                    Instant.now()
+                )
+
+                return id
             }
         }
-
-
-        val scheduler = Scheduler.create(dataSource, applyTask).startTasks(healthCheckTask).threads(5).build()
-        scheduler.start()
-    }
-}
+        

@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.services.api
 
 import de.solidblocks.cloud.api.CloudApiHttpServer
+import de.solidblocks.cloud.api.email
 import de.solidblocks.cloud.api.jsonRequest
 import de.solidblocks.cloud.api.jsonResponse
 import de.solidblocks.cloud.services.ServicesManager
@@ -17,11 +18,9 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
     }
 
     fun list(rc: RoutingContext) {
-        val email = rc.user().principal().getString("email")
-
         rc.jsonResponse(
             ServicesResponse(
-                servicesManager.services(email).map {
+                servicesManager.services(rc.email()).map {
                     it.toResponse()
                 }
             )
@@ -29,10 +28,9 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
     }
 
     fun create(rc: RoutingContext) {
-        val email = rc.user().principal().getString("email")
         val request = rc.jsonRequest(ServiceCreateRequest::class.java)
 
-        val service = servicesManager.create(email, request.name, request.type)
+        val service = servicesManager.create(rc.email(), request.name, request.type)
 
         if (service == null) {
             rc.jsonResponse(500)
@@ -42,7 +40,6 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
     }
 
     fun catalog(rc: RoutingContext) {
-        val email = rc.user().principal().getString("email")
         rc.jsonResponse(servicesManager.serviceCatalog())
     }
 }

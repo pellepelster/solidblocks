@@ -1,9 +1,11 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.test.TestConstants.ADMIN_PASSWORD
+import de.solidblocks.test.TestConstants.ADMIN_USER
 import io.restassured.specification.RequestSpecification
 import org.hamcrest.core.IsNull
 
-fun RequestSpecification.login(username: String = "admin", password: String = "admin") = this.with().body(
+fun RequestSpecification.login(username: String = ADMIN_USER, password: String = ADMIN_PASSWORD) = this.with().body(
     """{
                     "email": "$username",
                     "password": "$password"

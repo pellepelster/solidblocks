@@ -16,11 +16,9 @@ class UsersRepositoryTest {
     @Test
     fun testCreateEnvironmentUser(testEnvironment: TestEnvironment) {
         val cloud = UUID.randomUUID().toString()
+        testEnvironment.testContext.createCloudEnvironment(cloud, "env1")
 
-        assertThat(testEnvironment.createCloud(cloud)).isNotNull
-        assertThat(testEnvironment.createEnvironment(cloud, "env1")).isNotNull
-
-        val repository = UsersRepository(testEnvironment.dsl, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.repositories.tenants)
+        val repository = UsersRepository(testEnvironment.database.dsl, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.repositories.tenants)
 
         assertThat(repository.getUser("juergen@$cloud")).isNull()
         assertThat(repository.createEnvironmentUser(EnvironmentReference(cloud, "env1"), "juergen@$cloud", "password2", "salt2")).isNotNull
@@ -35,12 +33,9 @@ class UsersRepositoryTest {
     @Test
     fun testCreateTenantUser(testEnvironment: TestEnvironment) {
         val cloud = UUID.randomUUID().toString()
+        testEnvironment.testContext.createCloudEnvironmentTenant(cloud, "env1", "tenant1")
 
-        assertThat(testEnvironment.createCloud(cloud)).isNotNull
-        assertThat(testEnvironment.createEnvironment(cloud, "env1")).isNotNull
-        assertThat(testEnvironment.createTenant(cloud, "env1", "tenant1")).isNotNull
-
-        val repository = UsersRepository(testEnvironment.dsl, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.repositories.tenants)
+        val repository = UsersRepository(testEnvironment.database.dsl, testEnvironment.repositories.clouds, testEnvironment.repositories.environments, testEnvironment.repositories.tenants)
 
         assertThat(repository.getUser("juergen@$cloud")).isNull()
         assertThat(repository.createTenantUser(TenantReference(cloud, "env1", "tenant1"), "juergen@$cloud", "password2", "salt2")).isNotNull

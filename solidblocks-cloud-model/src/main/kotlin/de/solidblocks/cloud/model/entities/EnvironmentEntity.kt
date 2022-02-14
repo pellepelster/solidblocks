@@ -3,8 +3,6 @@ package de.solidblocks.cloud.model.entities
 import de.solidblocks.base.reference.EnvironmentReference
 import java.util.*
 
-fun EnvironmentEntity.toReference() = EnvironmentReference(this.cloud.name, this.name)
-
 data class EnvironmentEntity(
     val id: UUID,
     val name: String,

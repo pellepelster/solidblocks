@@ -1,8 +1,9 @@
 package de.solidblocks.cloud.auth.api
 
+import de.solidblocks.base.api.MessageResponse
 import de.solidblocks.cloud.api.CloudApiHttpServer
 import de.solidblocks.cloud.api.CloudApiHttpServer.Companion.JWT_ALGORITHM
-import de.solidblocks.cloud.api.MessageResponse
+import de.solidblocks.cloud.api.email
 import de.solidblocks.cloud.api.jsonRequest
 import de.solidblocks.cloud.api.jsonResponse
 import de.solidblocks.cloud.model.ErrorCodes
@@ -53,8 +54,7 @@ class AuthApi(
     }
 
     private fun whoami(rc: RoutingContext) {
-        val email = rc.user().principal().getString("email")
-        val user = usersManager.getUser(email)
+        val user = usersManager.getUser(rc.email())
 
         if (user == null) {
             rc.jsonResponse(401)

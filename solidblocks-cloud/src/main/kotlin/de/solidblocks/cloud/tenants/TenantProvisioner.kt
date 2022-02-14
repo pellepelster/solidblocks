@@ -16,7 +16,6 @@ import de.solidblocks.provisioner.hetzner.cloud.network.Subnet
 import de.solidblocks.provisioner.hetzner.cloud.ssh.SshKey
 import mu.KotlinLogging
 
-
 class TenantProvisioner(
     reference: TenantReference,
     val provisioner: Provisioner,
@@ -51,7 +50,6 @@ class TenantProvisioner(
         }
     }
 
-
     private fun createTenantModel(
         tenant: TenantEntity,
         sshKeys: Set<SshKey> = emptySet()
@@ -68,5 +66,4 @@ class TenantProvisioner(
 
         provisioner.addResourceGroup(createTenantVaultConfig(setOf(networkResourceGroup), tenant))
     }
-
 }

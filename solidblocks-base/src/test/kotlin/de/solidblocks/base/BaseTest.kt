@@ -13,7 +13,7 @@ class BaseTest {
         assertThat(defaultHttpClient().newCall(Request.Builder().url("https://heise.de").get().build()).execute().isSuccessful).isTrue
     }
 
-        @Test
+    @Test
     fun testWaiter() {
         val failedResult = Waiter.defaultWaiter().waitForResult { Result<Any>(NullResource, failed = true) }
         assertThat(failedResult.failed).isTrue

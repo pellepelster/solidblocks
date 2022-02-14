@@ -29,5 +29,4 @@ class StatusRepository(dsl: DSLContext) : BaseRepository(dsl) {
             .limit(1)
             .fetchSingle(STATUS.STATUS_)
     }
-
 }

@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.users.api
 
-import de.solidblocks.cloud.api.MessageResponse
+import de.solidblocks.base.api.MessageResponse
 
 data class LoginResponse(
     val token: String? = null,

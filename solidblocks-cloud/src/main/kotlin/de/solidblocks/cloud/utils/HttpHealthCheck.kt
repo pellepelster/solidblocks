@@ -19,19 +19,18 @@ class HttpHealthCheck {
             try {
                 client.newCall(request).execute().use {
                     if (it.code in 200..399) {
-                        logger.info { "http healthcheck for '${url}' succeeded" }
+                        logger.info { "http healthcheck for '$url' succeeded" }
                         return true
                     }
 
-                    logger.info { "http healthcheck for '${url}' returned ${it.code}" }
+                    logger.info { "http healthcheck for '$url' returned ${it.code}" }
 
                     return false
                 }
             } catch (e: Exception) {
-                logger.debug(e) { "http healthcheck for '${url}' failed" }
+                logger.debug(e) { "http healthcheck for '$url' failed" }
                 return false
             }
         }
     }
-
 }

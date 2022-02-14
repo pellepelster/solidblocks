@@ -2,6 +2,7 @@ package de.solidblocks.cloud.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import de.solidblocks.base.api.MessageResponse
 import de.solidblocks.cloud.model.ErrorCodes
 import io.vertx.core.Future
 import io.vertx.core.Vertx

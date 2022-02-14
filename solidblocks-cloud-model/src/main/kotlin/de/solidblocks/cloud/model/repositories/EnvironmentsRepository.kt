@@ -33,8 +33,6 @@ class EnvironmentsRepository(dsl: DSLContext, val cloudsRepository: CloudsReposi
     ): EnvironmentEntity? {
         val cloud = cloudsRepository.getCloud(cloudReference) ?: return null
 
-        logger.info { "creating environment '$environment' for cloud '${cloudReference.cloud}'" }
-
         val id = UUID.randomUUID()
 
         dsl.insertInto(ENVIRONMENTS)
@@ -200,5 +198,4 @@ class EnvironmentsRepository(dsl: DSLContext, val cloudsRepository: CloudsReposi
             sshPublicKey = list.configValue(SSH_PUBLIC_KEY).value,
         )
     }
-
 }
