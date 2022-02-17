@@ -5,6 +5,7 @@ import de.solidblocks.base.api.messageResponses
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.validateId
+import de.solidblocks.cloud.SchedulerContext
 import de.solidblocks.cloud.clouds.CloudsManager
 import de.solidblocks.cloud.environments.api.EnvironmentCreateRequest
 import de.solidblocks.cloud.model.ErrorCodes
@@ -26,7 +27,7 @@ class EnvironmentsManager(
     val dsl: DSLContext,
     val cloudsManager: CloudsManager,
     val environmentsRepository: EnvironmentsRepository,
-    val environmentScheduler: EnvironmentScheduler,
+    val scheduler: SchedulerContext,
     val usersManager: UsersManager,
 ) {
 
@@ -77,7 +78,7 @@ class EnvironmentsManager(
                     ?: UUID.randomUUID().toString()
             )
 
-            val action = environmentScheduler.scheduleApplyTask(environment.reference)
+            val action = scheduler.scheduleEnvironmentApplyTask(environment.reference)
             CreationResult(environment, actions = listOf(action))
         }
     )

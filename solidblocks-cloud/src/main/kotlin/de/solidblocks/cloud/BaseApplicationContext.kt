@@ -25,7 +25,7 @@ public open class BaseApplicationContext(jdbcUrl: String, startSchedulers: Boole
         status = StatusContext(repositories)
         provisionerContext = ProvisionerContext(repositories, status)
 
-        schedulerContext = SchedulerContext(database, repositories, status, provisionerContext)
+        schedulerContext = SchedulerContext(database, repositories, status, provisionerContext, startSchedulers)
         managers = ManagersContext(database.dsl, repositories, schedulerContext, development)
     }
 

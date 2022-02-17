@@ -1,43 +1,107 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.environments.EnvironmentScheduler
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.kagkarlsson.scheduler.Scheduler
+import com.github.kagkarlsson.scheduler.SchedulerClient
+import com.github.kagkarlsson.scheduler.task.ExecutionContext
+import com.github.kagkarlsson.scheduler.task.TaskInstance
+import com.github.kagkarlsson.scheduler.task.helper.OneTimeTask
+import com.github.kagkarlsson.scheduler.task.helper.Tasks
+import com.github.kagkarlsson.scheduler.task.schedule.FixedDelay
+import de.solidblocks.base.reference.EnvironmentReference
+import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.cloud.model.repositories.RepositoriesContext
-import de.solidblocks.cloud.tenants.TenantsScheduler
+import mu.KotlinLogging
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor
+import net.javacrumbs.shedlock.core.LockConfiguration
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider
+import java.time.Instant
+import java.util.*
 
-class SchedulerContext(
-    val database: SolidblocksDatabase,
-    val repositories: RepositoriesContext,
-    val status: StatusContext,
-    val provisionerContext: ProvisionerContext,
-    startSchedulers: Boolean = true
-) {
+class SchedulerContext(val database: SolidblocksDatabase, val repositories: RepositoriesContext, val status: StatusContext, val provisionerContext: ProvisionerContext, startSchedulers: Boolean = true) {
 
-    val environments: EnvironmentScheduler
+    private val jacksonObjectMapper = jacksonObjectMapper()
 
-    val tenants: TenantsScheduler
+    private val logger = KotlinLogging.logger {}
 
-    init {
+    val scheduler: Scheduler
 
-        val executor = DefaultLockingTaskExecutor(JdbcLockProvider(database.datasource))
+    val executor = DefaultLockingTaskExecutor(JdbcLockProvider(database.datasource))
 
-        environments =
-            EnvironmentScheduler(database.datasource, repositories.environments, provisionerContext, executor)
+    private val environmentApplyTask: OneTimeTask<String> = Tasks.oneTime("environments-apply", String::class.java).execute { inst, _ ->
+        val reference = jacksonObjectMapper.readValue(inst.data, EnvironmentReference::class.java)
+        logger.info { "executing apply for $reference" }
+        executor.executeWithLock<Any>({
+            provisionerContext.createEnvironmentProvisioner(reference).apply()
+        }, LockConfiguration("$reference", Instant.now().plusSeconds(600)))
+    }
 
-        tenants = TenantsScheduler(
-            this.database.datasource,
-            provisionerContext,
-            executor,
-            repositories.tenants,
-            status.tenants,
-            status.environments
-        )
-
-        if (startSchedulers) {
-            environments.startScheduler()
-            tenants.startScheduler()
+    private val environmentHealthCheckTask = Tasks.recurring("environments-healthcheck", FixedDelay.of(CloudConstants.ENVIRONMENT_HEALTHCHECK_INTERVAL)).execute { inst: TaskInstance<Void>, ctx: ExecutionContext ->
+        run {
+            repositories.environments.listEnvironments().forEach {
+                val provisioner = provisionerContext.createEnvironmentProvisioner(it.reference)
+                executor.executeWithLock<Any>({
+                    if (!provisioner.healthcheck()) {
+                        scheduleEnvironmentApplyTask(ctx.schedulerClient, it.reference)
+                    }
+                }, LockConfiguration("${it.reference}", Instant.now().plusSeconds(600)))
+            }
         }
     }
+
+    private val tenantsApplyTask: OneTimeTask<String> = Tasks.oneTime("tenants-apply", String::class.java).execute { inst, _ ->
+        val reference = jacksonObjectMapper.readValue(inst.data, TenantReference::class.java)
+        executor.executeWithLock<Any>({
+            provisionerContext.createTenantProvisioner(reference).apply()
+        }, LockConfiguration("$reference", Instant.now().plusSeconds(600)))
+    }
+
+    private val tenantsHealthCheckTask = Tasks.recurring("tenants-healthcheck", FixedDelay.ofSeconds(15)).execute { inst: TaskInstance<Void>, ctx: ExecutionContext ->
+        run {
+
+            repositories.tenants.listTenants().forEach {
+                if (!status.environments.isOk(it.environment.id)) {
+                    logger.warn { "skipping tenant healthchecks because environment '${it.environment.reference}' is not ready" }
+                    return@run
+                }
+
+                executor.executeWithLock<Any>({
+                    if (status.tenants.needsApply(it.reference)) {
+                        scheduleTenantApplyTask(it.reference)
+                    }
+                }, LockConfiguration("${it.reference}", Instant.now().plusSeconds(600)))
+            }
+        }
+    }
+
+    init {
+        scheduler = Scheduler.create(database.datasource, environmentApplyTask, tenantsApplyTask).startTasks(tenantsHealthCheckTask, environmentHealthCheckTask).threads(5).build()
+
+        if (startSchedulers) {
+            scheduler.start()
+        }
+    }
+
+    fun scheduleEnvironmentApplyTask(reference: EnvironmentReference) = scheduleEnvironmentApplyTask(scheduler, reference)
+
+    private fun scheduleEnvironmentApplyTask(client: SchedulerClient, reference: EnvironmentReference): UUID {
+        val id = UUID.randomUUID()
+
+        client.schedule(environmentApplyTask.instance(id.toString(), jacksonObjectMapper.writeValueAsString(reference)), Instant.now())
+
+        return id
+    }
+
+
+    fun scheduleTenantApplyTask(reference: TenantReference) = scheduleTenantApplyTask(scheduler, reference)
+
+    private fun scheduleTenantApplyTask(client: SchedulerClient, reference: TenantReference): UUID {
+        val id = UUID.randomUUID()
+
+        client.schedule(tenantsApplyTask.instance(id.toString(), jacksonObjectMapper.writeValueAsString(reference)), Instant.now())
+
+        return id
+    }
+
 }

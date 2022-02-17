@@ -5,6 +5,7 @@ import de.solidblocks.base.api.messageResponses
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.reference.TenantReference
 import de.solidblocks.base.validateId
+import de.solidblocks.cloud.SchedulerContext
 import de.solidblocks.cloud.environments.EnvironmentsManager
 import de.solidblocks.cloud.model.ErrorCodes
 import de.solidblocks.cloud.model.ValidationResult
@@ -22,47 +23,47 @@ import org.jooq.TransactionalCallable
 import java.util.*
 
 class TenantsManager(
-    val dsl: DSLContext,
-    val environmentsManager: EnvironmentsManager,
-    val tenantsRepository: TenantsRepository,
-    val tenantsScheduler: TenantsScheduler,
-    val usersManager: UsersManager,
-    val development: Boolean,
+        val dsl: DSLContext,
+        val environmentsManager: EnvironmentsManager,
+        val tenantsRepository: TenantsRepository,
+        val scheduler: SchedulerContext,
+        val usersManager: UsersManager,
+        val development: Boolean,
 ) {
 
     private val logger = KotlinLogging.logger {}
 
     fun createTenantForDefaultEnvironment(email: String, request: TenantCreateRequest): CreationResult<TenantEntity> {
         val environment = environmentsManager.newTenantsDefaultEnvironment(email)
-            ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.DEFAULT_NOT_FOUND)
+                ?: return CreationResult.error(ErrorCodes.ENVIRONMENT.DEFAULT_NOT_FOUND)
 
         return create(environment.reference, email, request)
     }
 
     fun create(reference: EnvironmentReference, email: String, request: TenantCreateRequest) = dsl.transactionResult(
-        TransactionalCallable tc@{
+            TransactionalCallable tc@{
 
-            val environment = environmentsManager.getEnvironment(reference)
-                ?: return@tc CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
+                val environment = environmentsManager.getEnvironment(reference)
+                        ?: return@tc CreationResult.error(ErrorCodes.ENVIRONMENT.NOT_FOUND)
 
-            val result = validate(email, request, reference)
-            if (result.hasErrors()) {
-                return@tc result.toCreationResult()
+                val result = validate(email, request, reference)
+                if (result.hasErrors()) {
+                    return@tc result.toCreationResult()
+                }
+
+                logger.info { "creating tenant '${request.tenant}' for environment '${environment.reference}'" }
+
+                val tenant = tenantsRepository.createTenant(environment.reference, request.tenant!!, nextNetworkCidr(environment))
+                        ?: return@tc CreationResult<TenantEntity>(messages = ErrorCodes.TENANT.CREATE_FAILED.messageResponses(TenantCreateRequest::tenant))
+                usersManager.createTenantUser(
+                        tenant.reference, request.email!!,
+                        request.password
+                                ?: UUID.randomUUID().toString()
+                )
+
+                val action = scheduler.scheduleTenantApplyTask(tenant.reference)
+                CreationResult(tenant, actions = listOf(action))
             }
-
-            logger.info { "creating tenant '${request.tenant}' for environment '${environment.reference}'" }
-
-            val tenant = tenantsRepository.createTenant(environment.reference, request.tenant!!, nextNetworkCidr(environment))
-                ?: return@tc CreationResult<TenantEntity>(messages = ErrorCodes.TENANT.CREATE_FAILED.messageResponses(TenantCreateRequest::tenant))
-            usersManager.createTenantUser(
-                tenant.reference, request.email!!,
-                request.password
-                    ?: UUID.randomUUID().toString()
-            )
-
-            val action = tenantsScheduler.scheduleApplyTask(tenant.reference)
-            CreationResult(tenant, actions = listOf(action))
-        }
     )
 
     fun validate(email: String, request: TenantCreateRequest, reference: EnvironmentReference? = null): ValidationResult {
@@ -79,7 +80,7 @@ class TenantsManager(
 
         if (reference == null) {
             defaultEnvironment = environmentsManager.newTenantsDefaultEnvironment(email)
-                ?: return ValidationResult.error(ErrorCodes.TENANT.DEFAULT_ENVIRONMENT_NOT_FOUND)
+                    ?: return ValidationResult.error(ErrorCodes.TENANT.DEFAULT_ENVIRONMENT_NOT_FOUND)
         }
 
         if (reference != null || defaultEnvironment != null) {
@@ -107,7 +108,7 @@ class TenantsManager(
         val currentNetworks = hetznerCloudApi.allNetworks.networks.map { it.ipRange }
 
         NetworkUtils.nextNetwork(currentNetworks.toSet())
-            ?: throw RuntimeException("could not determine next network CIDR")
+                ?: throw RuntimeException("could not determine next network CIDR")
     }
 
     fun verifyReference(reference: TenantReference): Boolean {

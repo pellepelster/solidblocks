@@ -47,7 +47,9 @@ function task_recreate_integration_test() {
 
   task_cli cloud create \
     --cloud pelle \
-    --domain pelle.io
+    --domain pelle.io \
+    --email pelle@pelle.io \
+    --password password
 
   task_cli environment create \
       --cloud pelle \

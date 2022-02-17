@@ -18,8 +18,8 @@ class ManagersContext(
 ) {
     val users = UsersManager(dsl, repositories.users, repositories.clouds)
     val clouds = CloudsManager(dsl, repositories.clouds, repositories.environments, users, development)
-    val environments = EnvironmentsManager(dsl, clouds, repositories.environments, schedulerContext.environments, users)
-    val tenants = TenantsManager(dsl, environments, repositories.tenants, schedulerContext.tenants, users, development)
+    val environments = EnvironmentsManager(dsl, clouds, repositories.environments, schedulerContext, users)
+    val tenants = TenantsManager(dsl, environments, repositories.tenants, schedulerContext, users, development)
     val services: ServicesManager
 
     init {
