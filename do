@@ -46,12 +46,14 @@ function task_recreate_integration_test() {
   rm -rf "${db_dir}"
 
   task_cli cloud create \
+    --email pelle-cloud@pelle.io \
+    --password password \
     --cloud pelle \
-    --domain pelle.io \
-    --email pelle@pelle.io \
-    --password password
+    --domain pelle.io
 
   task_cli environment create \
+      --email pelle-env@pelle.io \
+      --password password \
       --cloud pelle \
       --environment dev \
       --hetzner-cloud-api-token-read-only "$(pass solidblocks/pelle/hcloud_api_token_ro)" \
@@ -59,14 +61,16 @@ function task_recreate_integration_test() {
       --github-read-only-token "$(pass solidblocks/github/personal_access_token_ro)" \
       --hetzner-dns-api-token "$(pass solidblocks/pelle/dns_api_token)"
 
-  task_cli environment ssh-config \
-    --cloud pelle \
-    --environment dev
+  #task_cli environment ssh-config \
+  #  --cloud pelle \
+  #  --environment dev
 
-  #task_cli tenant create \
-  #  --cloud blcks \
-  #  --environment dev \
-  #  --tenant tenant1
+  task_cli tenant create \
+    --email pelle-tenant@pelle.io \
+    --password password \
+    --cloud pelle \
+    --environment dev \
+    --tenant tenant1 \
 
   #task_cli service create \
   #  --cloud blcks \

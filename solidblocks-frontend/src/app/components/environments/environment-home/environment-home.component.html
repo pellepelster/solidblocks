@@ -1,0 +1,3 @@
+<h2>Environment {{environment?.name}}</h2>
+
+<app-tenants-list-item [tenant]="tenant" *ngFor="let tenant of environment?.tenants"></app-tenants-list-item>

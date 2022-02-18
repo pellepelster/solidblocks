@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core'
 import {HttpClient} from "@angular/common/http"
-import {CloudResponse, LoginResponse, WhoAmIResponse} from "./types";
-import {LoginService} from "../authentication/login.service";
+import {CloudResponse, CloudsResponse} from "./types";
 
 @Injectable({
   providedIn: 'root'
@@ -9,11 +8,15 @@ import {LoginService} from "../authentication/login.service";
 
 export class CloudsService {
 
-  constructor(private http: HttpClient, private loginService: LoginService) {
+  constructor(private http: HttpClient) {
   }
 
   public list() {
-    return this.http.get<CloudResponse>("http://localhost:8080/api/v1/clouds");
+    return this.http.get<CloudsResponse>("http://localhost:8080/api/v1/clouds");
+  }
+
+  public get(id: string) {
+    return this.http.get<CloudResponse>(`http://localhost:8080/api/v1/clouds/${id}`);
   }
 
 }

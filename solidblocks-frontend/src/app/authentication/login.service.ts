@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core'
 import {AuthService} from "../sevices/auth.service"
-import {MessageResponse} from "../sevices/types";
+import {MessageResponse, UserResponse} from "../sevices/types";
 
 const userTokenKey = "user-token";
 
@@ -30,12 +30,12 @@ export class LoginService {
   }
 
   login(email: string, password: string) {
-    return new Promise((resolve, reject) => {
+    return new Promise<UserResponse>((resolve, reject) => {
 
       this.authService.login(email, password).subscribe({
         next: (response) => {
           this.updateToken(response.token)
-          resolve(true)
+          resolve(response.user)
         },
         error: (error) => {
           reject(error)

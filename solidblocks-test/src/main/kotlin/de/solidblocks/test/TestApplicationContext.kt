@@ -3,12 +3,17 @@ package de.solidblocks.test
 import de.solidblocks.base.CreationResult
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
-import de.solidblocks.cloud.BaseApplicationContext
+import de.solidblocks.cloud.ManagersContext
+import de.solidblocks.cloud.ProvisionerContext
+import de.solidblocks.cloud.SchedulerContext
+import de.solidblocks.cloud.StatusContext
 import de.solidblocks.cloud.clouds.api.CloudCreateRequest
 import de.solidblocks.cloud.environments.api.EnvironmentCreateRequest
+import de.solidblocks.cloud.model.SolidblocksDatabase
 import de.solidblocks.cloud.model.entities.CloudEntity
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.entities.TenantEntity
+import de.solidblocks.cloud.model.repositories.RepositoriesContext
 import de.solidblocks.cloud.tenants.api.TenantCreateRequest
 import de.solidblocks.provisioner.minio.MinioCredentials
 import de.solidblocks.test.TestConstants.ADMIN_PASSWORD
@@ -24,13 +29,27 @@ class TestApplicationContext(
     val minioCredentialsProvider: (() -> MinioCredentials)? = null,
     development: Boolean = false
 
-) : BaseApplicationContext(jdbcUrl, development = development) {
+) {
 
-    fun ensureAdminUser() {
-        managers.users.ensureAdminUser(ADMIN_USER, ADMIN_PASSWORD)
-    }
+    val repositories: RepositoriesContext
+    val managers: ManagersContext
+    val provisionerContext: ProvisionerContext
+    val database: SolidblocksDatabase
+    val status: StatusContext
+    val schedulerContext: SchedulerContext
 
     init {
+
+        database = SolidblocksDatabase(jdbcUrl)
+        database.ensureDBSchema()
+
+        repositories = RepositoriesContext(database.dsl)
+        status = StatusContext(repositories)
+        provisionerContext = ProvisionerContext(repositories, status)
+
+        schedulerContext = SchedulerContext(database, repositories, status, provisionerContext, false)
+        managers = ManagersContext(database.dsl, repositories, schedulerContext, development)
+
         ensureAdminUser()
     }
 
@@ -85,5 +104,9 @@ class TestApplicationContext(
         val cloud = createCloud(cloud).data!!.reference
         val environment = createEnvironment(cloud, environment).data!!.reference
         return createTenant(environment, tenant)
+    }
+
+    fun ensureAdminUser() {
+        managers.users.ensureAdminUser(ADMIN_USER, ADMIN_PASSWORD)
     }
 }

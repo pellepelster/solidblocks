@@ -6,7 +6,10 @@ import de.solidblocks.base.resources.ResourcePermissions
 import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.entities.CloudConfigValue
 import de.solidblocks.cloud.model.entities.TenantEntity
-import de.solidblocks.config.db.tables.references.*
+import de.solidblocks.config.db.tables.references.CLOUDS
+import de.solidblocks.config.db.tables.references.CONFIGURATION_VALUES
+import de.solidblocks.config.db.tables.references.ENVIRONMENTS
+import de.solidblocks.config.db.tables.references.TENANTS
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -19,7 +22,8 @@ class TenantsRepository(dsl: DSLContext, val environmentsRepository: Environment
     fun hasTenant(reference: TenantReference, permissions: ResourcePermissions? = null) =
         getTenant(reference, permissions) != null
 
-    fun getTenant(id: UUID): TenantEntity? = listTenants(tenants.ID.eq(id)).firstOrNull()
+    fun getTenant(id: UUID, permissions: ResourcePermissions? = null): TenantEntity? =
+        listTenants(tenants.ID.eq(id), permissions).firstOrNull()
 
     fun getTenant(reference: TenantReference, permissions: ResourcePermissions? = null): TenantEntity? {
         return listTenants(

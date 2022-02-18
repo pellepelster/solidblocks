@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core'
 import {HttpClient} from "@angular/common/http"
-import {CreateTenantResponse, TenantsResponse} from "./types";
-import {LoginService} from "../authentication/login.service";
+import {CreateTenantResponse, TenantResponse, TenantsResponse} from "./types";
 
 @Injectable({
   providedIn: 'root'
@@ -9,11 +8,15 @@ import {LoginService} from "../authentication/login.service";
 
 export class TenantsService {
 
-  constructor(private http: HttpClient, private loginService: LoginService) {
+  constructor(private http: HttpClient) {
   }
 
   public list() {
     return this.http.get<TenantsResponse>("http://localhost:8080/api/v1/tenants");
+  }
+
+  public get(id: string) {
+    return this.http.get<TenantResponse>(`http://localhost:8080/api/v1/tenants/${id}`);
   }
 
   public create(email: String, tenant: String) {

@@ -12,7 +12,7 @@ import java.util.*
 
 class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsRepository) : BaseRepository(dsl) {
 
-    private val services = SERVICES.`as`("services")
+    val services = SERVICES.`as`("services")
 
     fun createService(
         reference: TenantReference,
@@ -41,7 +41,7 @@ class ServicesRepository(dsl: DSLContext, val tenantsRepository: TenantsReposito
         return getService(id)
     }
 
-    private fun listServices(
+    fun listServices(
         filter: Condition? = null,
         permissions: ResourcePermissions? = null
     ): List<ServiceEntity> {

@@ -7,7 +7,7 @@ dependencies {
 
     api(project(":solidblocks-base"))
 
-    api("org.jooq:jooq:3.14.11")
+    api("org.jooq:jooq:3.16.4")
 
     implementation("org.liquibase:liquibase-core:4.6.2")
     runtimeOnly("com.mattbertolini:liquibase-slf4j:4.0.0")

@@ -20,7 +20,7 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
     fun list(rc: RoutingContext) {
         rc.jsonResponse(
             ServicesResponse(
-                servicesManager.services(rc.email()).map {
+                servicesManager.list(rc.email()).map {
                     it.toResponse()
                 }
             )
@@ -35,7 +35,7 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
         if (service == null) {
             rc.jsonResponse(500)
         } else {
-            rc.jsonResponse(ServiceResponseWrapper(service.toResponse()), 201)
+            rc.jsonResponse(ServiceResponseWrapper(service.service.toResponse()), 201)
         }
     }
 

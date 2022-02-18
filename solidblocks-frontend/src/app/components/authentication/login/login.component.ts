@@ -24,10 +24,22 @@ export class LoginComponent extends BaseFormComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.form.value)
     this.loginService.login(this.form.value.email, this.form.value.password).then(
-      () => {
-        this.router.navigate(["/console/home"])
+      (user) => {
+        switch (user.scope) {
+          case "root":
+            this.router.navigate(["/clouds/home"]);
+            break
+          case "cloud":
+            this.router.navigate(["/environments/home"]);
+            break
+          case "environment":
+            this.router.navigate(["/tenants/home"]);
+            break
+          case "tenant":
+            this.router.navigate(["/services/home"]);
+            break
+        }
       },
       (error) => {
         this.handleErrorResponse(error)

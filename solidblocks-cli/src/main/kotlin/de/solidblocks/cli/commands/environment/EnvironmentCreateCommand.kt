@@ -3,8 +3,11 @@ package de.solidblocks.cli.commands.environment
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.reference.CloudReference
+import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cli.commands.BaseCloudDbCommand
 import de.solidblocks.cli.commands.CommandApplicationContext
+import de.solidblocks.cloud.CloudConstants.ADMIN_USER
+import de.solidblocks.cloud.environments.api.EnvironmentCreateRequest
 import kotlin.system.exitProcess
 
 class EnvironmentCreateCommand :
@@ -34,18 +37,18 @@ class EnvironmentCreateCommand :
             exitProcess(1)
         }
 
-        /*
         context.managers.environments.create(
             reference = EnvironmentReference(cloud, environment),
-            environment,
-            "juerge@test.local",
-            "password1",
-            githubReadOnlyToken,
-            hetznerCloudApiTokenReadOnly,
-            hetznerCloudApiTokenReadWrite,
-            hetznerDnsApiToken
+            ADMIN_USER,
+            EnvironmentCreateRequest(
+                environment,
+                email,
+                password,
+                githubReadOnlyToken,
+                hetznerCloudApiTokenReadOnly,
+                hetznerCloudApiTokenReadWrite,
+                hetznerDnsApiToken
+            )
         ) ?: exitProcess(1)
-
-         */
     }
 }

@@ -8,6 +8,7 @@ import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
 import io.restassured.RestAssured.given
 import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.notNullValue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -74,7 +75,8 @@ class TenantsApiTest {
                     "tenant": "tenant1"
                 }
             """.trimIndent()
-        ).post("/api/v1/tenants").then().statusCode(422).body("messages.size()", `is`(1)).body("messages[0].attribute", `is`("tenant")).body("messages[0].code", `is`("duplicate"))
+        ).post("/api/v1/tenants").then().statusCode(422).body("messages.size()", `is`(1))
+            .body("messages[0].attribute", `is`("tenant")).body("messages[0].code", `is`("duplicate"))
 
         // duplicate email
         given().port(httpServer.port).withAuthToken(token).body(
@@ -83,8 +85,34 @@ class TenantsApiTest {
                     "tenant": "tenant12"
                 }
             """.trimIndent()
-        ).post("/api/v1/tenants").then().statusCode(422).body("messages.size()", `is`(1)).body("messages[0].attribute", `is`("email")).body("messages[0].code", `is`("duplicate"))
+        ).post("/api/v1/tenants").then().statusCode(422)
+            .body("messages.size()", `is`(1))
+            .body("messages[0].attribute", `is`("email"))
+            .body("messages[0].code", `is`("duplicate"))
 
-        given().port(httpServer.port).withAuthToken(token).get("/api/v1/tenants").then().assertThat().statusCode(200).assertThat().body("tenants.size()", `is`(1))
+        val tenantsId = given().port(httpServer.port).withAuthToken(token).get("/api/v1/tenants").then().assertThat()
+            .statusCode(200)
+            .assertThat().body("tenants.size()", `is`(1))
+            .assertThat().body("tenants[0].name", `is`("tenant1"))
+            .assertThat().body("tenants[0].id", notNullValue())
+            .extract().body().jsonPath().get<String>("tenants[0].id")
+
+        // get existing environment
+        given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/tenants/{id}", tenantsId).then()
+            .assertThat()
+            .statusCode(200).assertThat()
+            .assertThat().body("tenant.name", `is`("tenant1"))
+            .assertThat().body("tenant.id", `is`(tenantsId))
+
+        // get non existing environments
+        given().port(httpServer.port).with().withAuthToken(token)
+            .get("/api/v1/tenants/f4b21644-ba00-46ff-a445-e7ac2e8762f3").then()
+            .assertThat()
+            .statusCode(404).assertThat()
+
+        // get invalid environment id
+        given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/tenants/xxx").then()
+            .assertThat()
+            .statusCode(400).assertThat()
     }
 }

@@ -2,21 +2,45 @@ package de.solidblocks.cloud.tenants.api
 
 import de.solidblocks.base.api.MessageResponse
 import de.solidblocks.cloud.api.*
+import de.solidblocks.cloud.services.api.toResponse
 import de.solidblocks.cloud.tenants.TenantsManager
 import io.vertx.ext.web.RoutingContext
+import java.util.*
 
 class TenantsApi(val cloudApiHttpServer: CloudApiHttpServer, val tenantsManager: TenantsManager) {
 
     init {
         cloudApiHttpServer.configureSubRouter("/api/v1/tenants", configure = { router ->
+            router.get("/:id").handler(this::get)
+            router.get().handler(this::list)
             router.post().handler(this::create)
             router.post("/validate").handler(this::validate)
-            router.get().handler(this::list)
         })
     }
 
+    fun get(rc: RoutingContext) {
+
+        val id = try {
+            UUID.fromString(rc.pathParam("id"))
+        } catch (e: IllegalArgumentException) {
+            rc.jsonResponse(TenantResponseWrapper(), 400)
+            return
+        }
+
+        val tenant = tenantsManager.getTenant(rc.email(), id)
+
+        if (tenant == null) {
+            rc.jsonResponse(TenantResponseWrapper(), 404)
+            return
+        }
+
+        val services = tenantsManager.tenantServices(rc.email(), tenant.id)
+
+        rc.jsonResponse(TenantResponseWrapper(tenant.toResponse(services.map { it.toResponse() })))
+    }
+
     fun list(rc: RoutingContext) {
-        val tenants = tenantsManager.listTenantsForUser(rc.email())
+        val tenants = tenantsManager.listTenants(rc.email())
 
         rc.jsonResponse(TenantsResponse(tenants.map { it.toResponse() }))
     }

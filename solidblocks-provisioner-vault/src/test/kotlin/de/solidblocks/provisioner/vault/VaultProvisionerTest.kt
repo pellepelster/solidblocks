@@ -48,10 +48,10 @@ class VaultProvisionerTest {
 
         fun vaultTemplateProvider(testEnvironment: TestEnvironment): () -> VaultTemplate {
             if (vaultClient == null) {
-                reference = testEnvironment.createCloudAndEnvironment(
+                reference = testEnvironment.testContext.createCloudEnvironment(
                     UUID.randomUUID().toString(),
                     UUID.randomUUID().toString()
-                )!!
+                ).data!!.reference
 
                 vaultClient = VaultRootClientProvider(
                     reference,

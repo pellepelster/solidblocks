@@ -7,6 +7,7 @@ import de.solidblocks.cloud.model.generateRsaKeyPair
 import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
 import io.restassured.RestAssured.given
+import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -100,7 +101,28 @@ class EnvironmentsApiTest {
         ).post("/api/v1/environments").then().statusCode(422).body("messages.size()", `is`(1))
             .body("messages[0].attribute", `is`("email")).body("messages[0].code", `is`("duplicate"))
 
-        given().port(httpServer.port).withAuthToken(token).get("/api/v1/environments").then().assertThat()
-            .statusCode(200).assertThat().body("environments.size()", `is`(1))
+        val environmentsId = given().port(httpServer.port).withAuthToken(token).get("/api/v1/environments").then().assertThat()
+            .statusCode(200).assertThat()
+            .body("environments.size()", `is`(1))
+            .assertThat().body("environments[0].name", `is`("environment1"))
+            .assertThat().body("environments[0].id", CoreMatchers.notNullValue())
+            .extract().body().jsonPath().get<String>("environments[0].id")
+
+        // get existing environment
+        given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/environments/{id}", environmentsId).then()
+            .assertThat()
+            .statusCode(200).assertThat()
+            .assertThat().body("environment.name", `is`("environment1"))
+            .assertThat().body("environment.id", `is`(environmentsId))
+
+        // get non existing environments
+        given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/environments/f4b21644-ba00-46ff-a445-e7ac2e8762f3").then()
+            .assertThat()
+            .statusCode(404).assertThat()
+
+        // get invalid environment id
+        given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/environments/xxx").then()
+            .assertThat()
+            .statusCode(400).assertThat()
     }
 }

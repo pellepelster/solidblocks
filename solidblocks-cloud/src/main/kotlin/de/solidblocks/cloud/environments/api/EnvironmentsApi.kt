@@ -3,16 +3,39 @@ package de.solidblocks.cloud.environments.api
 import de.solidblocks.base.api.MessageResponse
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.environments.EnvironmentsManager
+import de.solidblocks.cloud.tenants.api.toResponse
 import io.vertx.ext.web.RoutingContext
+import java.util.*
 
 class EnvironmentsApi(val cloudApiHttpServer: CloudApiHttpServer, val environmentsManager: EnvironmentsManager) {
 
     init {
         cloudApiHttpServer.configureSubRouter("/api/v1/environments", configure = { router ->
-            router.post("/validate").handler(this::validate)
+            router.get("/:id").handler(this::get)
             router.get().handler(this::list)
+            router.post("/validate").handler(this::validate)
             router.post().handler(this::create)
         })
+    }
+
+    fun get(rc: RoutingContext) {
+
+        val id = try {
+            UUID.fromString(rc.pathParam("id"))
+        } catch (e: IllegalArgumentException) {
+            rc.jsonResponse(EnvironmentResponseWrapper(), 400)
+            return
+        }
+
+        val environment = environmentsManager.getEnvironment(rc.email(), id)
+
+        if (environment == null) {
+            rc.jsonResponse(EnvironmentResponseWrapper(), 404)
+            return
+        }
+
+        val tenants = environmentsManager.environmentTenants(rc.email(), environment.id)
+        rc.jsonResponse(EnvironmentResponseWrapper(environment.toResponse(tenants.map { it.toResponse() })))
     }
 
     fun list(rc: RoutingContext) {

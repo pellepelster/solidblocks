@@ -5,6 +5,7 @@ import de.solidblocks.core.utils.LinuxCommandExecutor
 import de.solidblocks.test.IntegrationTestEnvironment
 import de.solidblocks.test.IntegrationTestExtension
 import de.solidblocks.test.KDockerComposeContainer
+import de.solidblocks.test.TestConstants.ROOT_DOMAIN
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.*
@@ -183,7 +184,7 @@ class HelloWorldAgentIntegrationTest {
             SOLIDBLOCKS_ENVIRONMENT=${integrationTestEnvironment.reference.environment}
             SOLIDBLOCKS_TENANT=${integrationTestEnvironment.reference.tenant}
             SOLIDBLOCKS_SERVICE=solidblocks-service-helloworld
-            SOLIDBLOCKS_ROOT_DOMAIN=${integrationTestEnvironment.rootDomain}
+            SOLIDBLOCKS_ROOT_DOMAIN=$ROOT_DOMAIN
             SOLIDBLOCKS_VERSION=$solidblocksVersion
             SOLIDBLOCKS_BOOTSTRAP_ADDRESS=http://localhost:${dockerEnvironment.getServicePort("bootstrap", 80)}
             """.trimIndent()

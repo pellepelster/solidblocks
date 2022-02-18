@@ -26,7 +26,7 @@ class StatusRepository(dsl: DSLContext) : BaseRepository(dsl) {
     fun latestStatus(entityId: UUID, interval: Duration) {
         dsl.selectFrom(STATUS).where(STATUS.ENTITY.eq(entityId))
             .and(STATUS.TIMESTAMP.greaterOrEqual(LocalDateTime.now().minus(interval))).orderBy(STATUS.TIMESTAMP.desc())
-            .limit(1)
+            .limit(1).offset(0)
             .fetchSingle(STATUS.STATUS_)
     }
 }

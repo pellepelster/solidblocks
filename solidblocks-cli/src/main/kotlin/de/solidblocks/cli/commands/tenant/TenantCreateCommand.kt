@@ -5,6 +5,8 @@ import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.cli.commands.CommandApplicationContext
 import de.solidblocks.cli.commands.environment.BaseCloudEnvironmentCommand
+import de.solidblocks.cloud.CloudConstants.ADMIN_USER
+import de.solidblocks.cloud.tenants.api.TenantCreateRequest
 import kotlin.system.exitProcess
 
 class TenantCreateCommand :
@@ -27,6 +29,6 @@ class TenantCreateCommand :
             exitProcess(1)
         }
 
-        // context.managers.tenants.create(reference, tenant, email, password)
+        context.managers.tenants.create(reference, ADMIN_USER, TenantCreateRequest(tenant, email, password))
     }
 }

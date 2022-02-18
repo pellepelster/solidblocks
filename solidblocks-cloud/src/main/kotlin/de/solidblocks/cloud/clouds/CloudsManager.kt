@@ -7,6 +7,7 @@ import de.solidblocks.cloud.clouds.api.CloudCreateRequest
 import de.solidblocks.cloud.model.ErrorCodes
 import de.solidblocks.cloud.model.ValidationResult
 import de.solidblocks.cloud.model.entities.CloudEntity
+import de.solidblocks.cloud.model.entities.EnvironmentEntity
 import de.solidblocks.cloud.model.repositories.CloudsRepository
 import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
 import de.solidblocks.cloud.model.toCreationResult
@@ -99,6 +100,19 @@ class CloudsManager(
     fun listClouds(email: String): List<CloudEntity> {
         val user = usersManager.getUser(email) ?: return emptyList()
         return cloudsRepository.listClouds(permissions = user.permissions())
+    }
+
+    fun cloudEnvironments(email: String, id: UUID): List<EnvironmentEntity> {
+        val user = usersManager.getUser(email) ?: return emptyList()
+        return environmentsRepository.listEnvironments(
+            environmentsRepository.environments.CLOUD.eq(id),
+            user.permissions()
+        )
+    }
+
+    fun getCloud(email: String, id: UUID): CloudEntity? {
+        val user = usersManager.getUser(email) ?: return null
+        return cloudsRepository.getCloud(id, user.permissions())
     }
 
     fun hasCloud(reference: CloudReference) = cloudsRepository.hasCloud(reference)

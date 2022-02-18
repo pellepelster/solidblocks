@@ -13,8 +13,10 @@ import de.solidblocks.cloud.model.ModelConstants
 import de.solidblocks.cloud.model.ValidationResult
 import de.solidblocks.cloud.model.entities.CloudEntity
 import de.solidblocks.cloud.model.entities.EnvironmentEntity
+import de.solidblocks.cloud.model.entities.TenantEntity
 import de.solidblocks.cloud.model.entities.createConfigValue
 import de.solidblocks.cloud.model.repositories.EnvironmentsRepository
+import de.solidblocks.cloud.model.repositories.TenantsRepository
 import de.solidblocks.cloud.model.toCreationResult
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.provisioner.hetzner.Hetzner
@@ -27,6 +29,7 @@ class EnvironmentsManager(
     val dsl: DSLContext,
     val cloudsManager: CloudsManager,
     val environmentsRepository: EnvironmentsRepository,
+    val tenantsRepository: TenantsRepository,
     val scheduler: SchedulerContext,
     val usersManager: UsersManager,
 ) {
@@ -137,4 +140,14 @@ class EnvironmentsManager(
     }
 
     fun getEnvironment(reference: EnvironmentReference) = environmentsRepository.getEnvironment(reference)
+
+    fun getEnvironment(email: String, id: UUID): EnvironmentEntity? {
+        val user = usersManager.getUser(email) ?: return null
+        return environmentsRepository.getEnvironment(id, user.permissions())
+    }
+
+    fun environmentTenants(email: String, id: UUID): List<TenantEntity> {
+        val user = usersManager.getUser(email) ?: return emptyList()
+        return tenantsRepository.listTenants(tenantsRepository.tenants.ENVIRONMENT.eq(id), user.permissions())
+    }
 }

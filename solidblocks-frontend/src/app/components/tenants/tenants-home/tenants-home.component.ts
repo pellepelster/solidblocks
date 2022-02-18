@@ -1,5 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-tenants-home',
@@ -7,7 +8,7 @@ import {ActivatedRoute} from "@angular/router";
 })
 export class TenantsHomeComponent implements OnInit, OnDestroy {
 
-  private subscription: any;
+  private subscription: Subscription;
 
   constructor(private route: ActivatedRoute) {
   }

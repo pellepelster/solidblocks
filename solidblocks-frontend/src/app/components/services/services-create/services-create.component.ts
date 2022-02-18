@@ -1,8 +1,8 @@
 import {ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {BaseFormComponent} from "../components/base-form.component";
-import {ToastService} from "../utils/toast.service";
-import {ConfigValueDefinition} from "../sevices/types";
+import {BaseFormComponent} from "../../base-form.component";
+import {ToastService} from "../../../utils/toast.service";
+import {ConfigValueDefinition} from "../../../sevices/types";
 
 @Component({
   selector: 'app-services-create',

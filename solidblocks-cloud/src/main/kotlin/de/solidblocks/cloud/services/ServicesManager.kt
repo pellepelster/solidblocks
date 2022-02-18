@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.services
 
 import de.solidblocks.base.services.ServicesManagerFactoryRegistry
+import de.solidblocks.cloud.model.entities.ServiceEntity
 import de.solidblocks.cloud.model.repositories.ServicesRepository
 import de.solidblocks.cloud.tenants.api.toReference
 import de.solidblocks.cloud.users.UsersManager
@@ -26,6 +27,7 @@ class ServicesManager(private val servicesRepository: ServicesRepository, privat
         }
     }
 
+    /*
     fun services(email: String): List<ServiceInstance> {
         val user = usersManager.getUser(email) ?: return emptyList()
 
@@ -37,6 +39,7 @@ class ServicesManager(private val servicesRepository: ServicesRepository, privat
             }
         }
     }
+    */
 
     fun create(email: String, name: String, type: String): ServiceInstance? {
         val user = usersManager.getUser(email) ?: return null
@@ -64,4 +67,9 @@ class ServicesManager(private val servicesRepository: ServicesRepository, privat
     }
 
     fun serviceCatalog() = servicesManagerFactoryRegistry.serviceCatalog()
+
+    fun list(email: String): List<ServiceEntity> {
+        val user = usersManager.getUser(email) ?: return emptyList()
+        return servicesRepository.listServices(permissions = user.permissions())
+    }
 }
