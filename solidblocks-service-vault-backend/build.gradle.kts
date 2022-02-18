@@ -4,7 +4,8 @@ plugins {
 
 dependencies {
 
-    implementation(project(":solidblocks-cloud"))
     implementation(project(":solidblocks-provisioner-minio"))
     implementation(project(":solidblocks-service-vault-api"))
+    implementation(project(":solidblocks-provisioner-vault"))
+    implementation(project(":solidblocks-service-vault"))
 }

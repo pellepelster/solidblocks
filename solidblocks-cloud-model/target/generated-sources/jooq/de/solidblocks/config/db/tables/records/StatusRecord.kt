@@ -34,7 +34,7 @@ open class StatusRecord() : UpdatableRecordImpl<StatusRecord>(Status.STATUS), Re
         set(value) = set(3, value)
         get() = get(3) as String?
 
-    var timestamp: LocalDateTime?
+    var statusTimestamp: LocalDateTime?
         set(value) = set(4, value)
         get() = get(4) as LocalDateTime?
 
@@ -54,17 +54,17 @@ open class StatusRecord() : UpdatableRecordImpl<StatusRecord>(Status.STATUS), Re
     override fun field2(): Field<UUID?> = Status.STATUS.ENTITY
     override fun field3(): Field<String?> = Status.STATUS.STATUS_
     override fun field4(): Field<String?> = Status.STATUS.CODE
-    override fun field5(): Field<LocalDateTime?> = Status.STATUS.TIMESTAMP
+    override fun field5(): Field<LocalDateTime?> = Status.STATUS.STATUS_TIMESTAMP
     override fun component1(): UUID? = id
     override fun component2(): UUID? = entity
     override fun component3(): String? = status
     override fun component4(): String? = code
-    override fun component5(): LocalDateTime? = timestamp
+    override fun component5(): LocalDateTime? = statusTimestamp
     override fun value1(): UUID? = id
     override fun value2(): UUID? = entity
     override fun value3(): String? = status
     override fun value4(): String? = code
-    override fun value5(): LocalDateTime? = timestamp
+    override fun value5(): LocalDateTime? = statusTimestamp
 
     override fun value1(value: UUID?): StatusRecord {
         this.id = value
@@ -87,7 +87,7 @@ open class StatusRecord() : UpdatableRecordImpl<StatusRecord>(Status.STATUS), Re
     }
 
     override fun value5(value: LocalDateTime?): StatusRecord {
-        this.timestamp = value
+        this.statusTimestamp = value
         return this
     }
 
@@ -103,11 +103,11 @@ open class StatusRecord() : UpdatableRecordImpl<StatusRecord>(Status.STATUS), Re
     /**
      * Create a detached, initialised StatusRecord
      */
-    constructor(id: UUID? = null, entity: UUID? = null, status: String? = null, code: String? = null, timestamp: LocalDateTime? = null) : this() {
+    constructor(id: UUID? = null, entity: UUID? = null, status: String? = null, code: String? = null, statusTimestamp: LocalDateTime? = null) : this() {
         this.id = id
         this.entity = entity
         this.status = status
         this.code = code
-        this.timestamp = timestamp
+        this.statusTimestamp = statusTimestamp
     }
 }

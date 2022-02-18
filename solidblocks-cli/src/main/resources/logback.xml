@@ -14,4 +14,14 @@
     <appender-ref ref="CONSOLE" />
   </logger>
 
+  <!--
+  <logger name="org.jooq.tools.LoggerListener" level="debug">
+    <appender-ref ref="Console"/>
+  </logger>
+
+  <logger name="org.jooq" level="debug">
+    <appender-ref ref="Console"/>
+  </logger>
+  -->
+
 </configuration>

@@ -14,6 +14,7 @@ dependencies {
     api("com.github.kagkarlsson:db-scheduler:10.5")
 
     implementation(project(":solidblocks-service-helloworld-backend"))
+    implementation(project(":solidblocks-service-vault-backend"))
     implementation("org.bouncycastle:bcprov-jdk15to18:1.70")
 
     implementation("io.vertx:vertx-web:4.2.3")

@@ -62,6 +62,15 @@ export interface CreateTenantResponse {
 }
 
 // service
+export interface ServiceCatalogItem {
+  type: string
+  description: string
+}
+
+export interface ServiceCatalogResponse {
+  items: Array<ServiceCatalogItem>
+}
+
 export interface Service {
   id: string
   name: string

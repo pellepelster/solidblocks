@@ -8,7 +8,7 @@ import {
   ValidationErrors,
   Validator
 } from "@angular/forms";
-import {MessageResponse} from "../sevices/types";
+import {MessageResponse} from "../../sevices/types";
 
 @Component({
   selector: 'input-control',

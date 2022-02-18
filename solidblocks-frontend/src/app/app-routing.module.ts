@@ -6,10 +6,8 @@ import {ConsoleHomeComponent} from "./components/console-home/console-home.compo
 import {LogoutComponent} from "./components/authentication/logout/logout.component";
 import {TenantsCreateComponent} from "./components/tenants/tenants-create/tenants-create.component";
 import {TenantsHomeComponent} from "./components/tenants/tenants-home/tenants-home.component";
-import {ServicesCreateComponent} from "./components/services/services-create/services-create.component";
 import {CloudsHomeComponent} from "./components/clouds/clouds-home/clouds-home.component";
 import {EnvironmentsHomeComponent} from "./components/environments/environments-home/environments-home.component";
-import {ServicesHomeComponent} from "./components/services/services-home/services-home.component";
 import {CloudHomeComponent} from "./components/clouds/cloud-home/cloud-home.component";
 import {EnvironmentHomeComponent} from "./components/environments/environment-home/environment-home.component";
 import {TenantHomeComponent} from "./components/tenants/tenant-home/tenant-home.component";
@@ -29,12 +27,11 @@ const routes: Routes = [
   {path: 'tenants/home', component: TenantsHomeComponent},
   {path: 'tenants/:id', component: TenantHomeComponent},
 
-  {path: 'services/home', component: ServicesHomeComponent},
+  {path: 'services', loadChildren: () => import('./components/services/services-module').then(m => m.ServicesModule)},
 
   {path: 'tenants/create', component: TenantsCreateComponent},
   {path: 'tenants/:id', component: TenantsHomeComponent},
   {path: 'console/home', component: ConsoleHomeComponent},
-  {path: 'services/create', component: ServicesCreateComponent},
 ];
 
 @NgModule({

@@ -8,6 +8,7 @@ import de.solidblocks.cloud.services.ServicesManager
 import de.solidblocks.cloud.tenants.TenantsManager
 import de.solidblocks.cloud.users.UsersManager
 import de.solidblocks.service.helloworld.backend.HelloWorldServiceManagerFactory
+import de.solidblocks.vault.agent.VaultServiceManagerFactory
 import org.jooq.DSLContext
 
 class ManagersContext(
@@ -25,6 +26,7 @@ class ManagersContext(
     init {
         val registry = ServicesManagerFactoryRegistry()
         registry.addFactory(HelloWorldServiceManagerFactory())
+        registry.addFactory(VaultServiceManagerFactory())
         services = ServicesManager(repositories.services, users, registry)
     }
 }

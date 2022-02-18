@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core'
 import {HttpClient} from "@angular/common/http"
 import {LoginResponse, WhoAmIResponse} from "./types";
+import {environment} from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -12,11 +13,11 @@ export class AuthService {
   }
 
   public whoAmI() {
-    return this.http.get<WhoAmIResponse>("http://localhost:8080/api/v1/auth/whoami");
+    return this.http.get<WhoAmIResponse>(`${environment.apiAddress}/v1/auth/whoami`);
   }
 
   login(email: String, password: String) {
-    return this.http.post<LoginResponse>("http://localhost:8080/api/v1/auth/login", {
+    return this.http.post<LoginResponse>(`${environment.apiAddress}/v1/auth/login`, {
       email,
       password
     });

@@ -1,3 +1,5 @@
 <h2>Tenant {{tenant?.name}}</h2>
 
 <app-services-list-item [service]="service" *ngFor="let service of tenant?.services"></app-services-list-item>
+
+<a routerLink="/services/create/catalog" routerLinkActive="active" class="btn btn-primary">Create Service</a>

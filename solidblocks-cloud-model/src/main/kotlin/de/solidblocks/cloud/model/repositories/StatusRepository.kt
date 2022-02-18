@@ -9,14 +9,7 @@ import java.util.*
 class StatusRepository(dsl: DSLContext) : BaseRepository(dsl) {
 
     fun updateStatus(entityId: UUID, status: String, code: String) {
-        dsl.insertInto(STATUS)
-            .columns(
-                STATUS.ID,
-                STATUS.ENTITY,
-                STATUS.STATUS_,
-                STATUS.CODE
-            )
-            .values(UUID.randomUUID(), entityId, status, code).execute()
+        dsl.insertInto(STATUS).columns(STATUS.ID, STATUS.ENTITY, STATUS.STATUS_, STATUS.CODE).values(UUID.randomUUID(), entityId, status, code).execute()
     }
 
     fun cleanupEphemeralData() {
@@ -24,9 +17,6 @@ class StatusRepository(dsl: DSLContext) : BaseRepository(dsl) {
     }
 
     fun latestStatus(entityId: UUID, interval: Duration) {
-        dsl.selectFrom(STATUS).where(STATUS.ENTITY.eq(entityId))
-            .and(STATUS.TIMESTAMP.greaterOrEqual(LocalDateTime.now().minus(interval))).orderBy(STATUS.TIMESTAMP.desc())
-            .limit(1).offset(0)
-            .fetchSingle(STATUS.STATUS_)
+        dsl.selectFrom(STATUS).where(STATUS.ENTITY.eq(entityId)).and(STATUS.STATUS_TIMESTAMP.greaterOrEqual(LocalDateTime.now().minus(interval))).orderBy(STATUS.STATUS_TIMESTAMP.desc()).limit(1).offset(0).fetch().firstOrNull()
     }
 }

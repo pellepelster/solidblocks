@@ -1,0 +1,16 @@
+<div>
+  <h2>Create Service</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" #tref>
+
+    <input-control *ngFor="let control of controls" [form]="form" [messages]="messages"
+                   [formControlName]="control.name"></input-control>
+
+    <a routerLink="../catalog" routerLinkActive="active" class="btn btn-primary">Back</a>
+
+    <button class="btn btn-primary" [disabled]="!form.valid" type="submit">Create</button>
+
+  </form>
+</div>
+
+

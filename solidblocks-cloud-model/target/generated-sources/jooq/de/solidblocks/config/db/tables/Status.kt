@@ -78,9 +78,9 @@ open class Status(
     val CODE: TableField<StatusRecord, String?> = createField(DSL.name("CODE"), SQLDataType.VARCHAR(256).nullable(false), this, "")
 
     /**
-     * The column <code>STATUS.TIMESTAMP</code>.
+     * The column <code>STATUS.STATUS_TIMESTAMP</code>.
      */
-    val TIMESTAMP: TableField<StatusRecord, LocalDateTime?> = createField(DSL.name("TIMESTAMP"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("NOW()", SQLDataType.LOCALDATETIME)), this, "")
+    val STATUS_TIMESTAMP: TableField<StatusRecord, LocalDateTime?> = createField(DSL.name("STATUS_TIMESTAMP"), SQLDataType.LOCALDATETIME(6).nullable(false).defaultValue(DSL.field("NOW()", SQLDataType.LOCALDATETIME)), this, "")
 
     private constructor(alias: Name, aliased: Table<StatusRecord>?) : this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<StatusRecord>?, parameters: Array<Field<*>?>?) : this(alias, null, null, aliased, parameters)

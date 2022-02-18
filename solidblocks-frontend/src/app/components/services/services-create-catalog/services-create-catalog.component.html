@@ -1,0 +1,14 @@
+<div>
+  <h3>Services Catalog</h3>
+
+  <app-services-catalog-item
+    (onSelect)="selectItem($event)"
+    [selected]="selectedType === item.type"
+    [item]="item"
+    *ngFor="let item of catalog?.items"></app-services-catalog-item>
+
+  <button routerLink="../config" class="btn btn-primary " [disabled]="!selectedType">Next</button>
+
+</div>
+
+

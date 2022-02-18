@@ -8,6 +8,7 @@ import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
 import liquibase.resource.ClassLoaderResourceAccessor
 import mu.KotlinLogging
+import org.jooq.SQLDialect
 import org.jooq.impl.DataSourceConnectionProvider
 import org.jooq.impl.DefaultConfiguration
 import org.jooq.impl.DefaultDSLContext
@@ -34,6 +35,7 @@ class SolidblocksDatabase(jdbcUrl: String) {
 
         val ds = DataSourceConnectionProvider(datasource)
         val configuration = DefaultConfiguration()
+        configuration.setSQLDialect(SQLDialect.DERBY)
         configuration.set(ds)
 
         dsl = DefaultDSLContext(configuration)

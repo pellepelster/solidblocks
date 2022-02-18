@@ -29,7 +29,10 @@ class ServicesApiTest {
 
         val token = given().port(httpServer.port).login(ADMIN_USER, ADMIN_PASSWORD)
 
-        given().port(httpServer.port).withAuthToken(token).get("/api/v1/services/catalog").then().assertThat().statusCode(200).assertThat().body("items.size()", `is`(1))
+        given().port(httpServer.port).withAuthToken(token).get("/api/v1/services/catalog").then()
+                .assertThat()
+                .statusCode(200)
+                .assertThat().body("items.size()", `is`(1))
     }
 
     @Test
