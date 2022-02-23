@@ -17,13 +17,17 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
         })
     }
 
+    fun catalog(rc: RoutingContext) {
+        rc.jsonResponse(servicesManager.serviceCatalog())
+    }
+
     fun list(rc: RoutingContext) {
         rc.jsonResponse(
-            ServicesResponse(
-                servicesManager.list(rc.email()).map {
-                    it.toResponse()
-                }
-            )
+                ServicesResponse(
+                        servicesManager.list(rc.email()).map {
+                            it.toResponse()
+                        }
+                )
         )
     }
 
@@ -39,7 +43,4 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
         }
     }
 
-    fun catalog(rc: RoutingContext) {
-        rc.jsonResponse(servicesManager.serviceCatalog())
-    }
 }

@@ -8,16 +8,29 @@ import de.solidblocks.test.TestConstants.ADMIN_PASSWORD
 import de.solidblocks.test.TestConstants.ADMIN_USER
 import de.solidblocks.test.TestEnvironment
 import de.solidblocks.test.TestEnvironmentExtension
+import io.restassured.RestAssured
 import io.restassured.RestAssured.given
+import io.restassured.filter.log.RequestLoggingFilter
+import io.restassured.filter.log.ResponseLoggingFilter
 import org.hamcrest.CoreMatchers.`is`
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+
 
 @ExtendWith(TestEnvironmentExtension::class)
 class ServicesApiTest {
 
     val keyPair = generateRsaKeyPair()
     val httpServer = CloudApiHttpServer(privateKey = keyPair.first, publicKey = keyPair.second, port = -1)
+
+    companion object {
+        @BeforeAll
+        fun configureLogging() {
+            RestAssured.filters(RequestLoggingFilter(), ResponseLoggingFilter())
+        }
+
+    }
 
     @Test
     fun testCatalog(testEnvironment: TestEnvironment) {
@@ -32,7 +45,8 @@ class ServicesApiTest {
         given().port(httpServer.port).withAuthToken(token).get("/api/v1/services/catalog").then()
                 .assertThat()
                 .statusCode(200)
-                .assertThat().body("items.size()", `is`(1))
+                .assertThat().body("items.size()", `is`(2))
+                .assertThat().body("items[0].type", `is`("helloworld"))
     }
 
     @Test
@@ -48,15 +62,15 @@ class ServicesApiTest {
         given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/services").then().assertThat().statusCode(200).assertThat().body("services.size()", `is`(0))
 
         given().port(httpServer.port).withAuthToken(token).with().body(
-            """{
+                """{
                     "name": "service1",
                     "type": "helloworld"
                   }
             """.trimIndent()
         )
-            .post("/api/v1/services").then()
-            .assertThat()
-            .statusCode(201)
+                .post("/api/v1/services").then()
+                .assertThat()
+                .statusCode(201)
 
         given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/services").then().assertThat().statusCode(200).assertThat().body("services.size()", `is`(1))
     }
