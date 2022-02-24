@@ -1,6 +1,9 @@
 package de.solidblocks.cloud.services
 
+import de.solidblocks.base.CreationResult
+import de.solidblocks.base.creationResult
 import de.solidblocks.base.services.ServicesManagerFactoryRegistry
+import de.solidblocks.cloud.model.ErrorCodes
 import de.solidblocks.cloud.model.entities.ServiceEntity
 import de.solidblocks.cloud.model.repositories.ServicesRepository
 import de.solidblocks.cloud.tenants.api.toReference
@@ -41,18 +44,19 @@ class ServicesManager(private val servicesRepository: ServicesRepository, privat
     }
     */
 
-    fun create(email: String, name: String, type: String): ServiceInstance? {
-        val user = usersManager.getUser(email) ?: return null
+    fun create(email: String, name: String, type: String): CreationResult<ServiceInstance> {
+
+        val user = usersManager.getUser(email) ?: return ErrorCodes.SERVICES.USER_NOT_FOUND.creationResult()
 
         if (user.tenant == null) {
             logger.warn { "not creating service for user '$email' without tenant" }
-            return null
+            return ErrorCodes.SERVICES.NO_TENANT.creationResult()
         }
 
         val factory = servicesManagerFactoryRegistry.getByType(type)
         if (factory == null) {
             logger.error { "no factory found for service type '$type'" }
-            return null
+            return ErrorCodes.SERVICES.INVALID_TYPE.creationResult()
         }
 
         val service = servicesRepository.createService(user.tenant!!.toReference(), name, type)
@@ -63,7 +67,7 @@ class ServicesManager(private val servicesRepository: ServicesRepository, privat
         val instance = ServiceInstance(service!!, factory.createServiceManager())
         services.add(instance)
 
-        return instance
+        return CreationResult(instance)
     }
 
     fun serviceCatalog() = servicesManagerFactoryRegistry.serviceCatalog()

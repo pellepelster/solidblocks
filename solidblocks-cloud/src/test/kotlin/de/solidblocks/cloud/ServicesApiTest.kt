@@ -62,6 +62,20 @@ class ServicesApiTest {
         given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/services").then().assertThat().statusCode(200).assertThat().body("services.size()", `is`(0))
 
         given().port(httpServer.port).withAuthToken(token).with().body(
+            """{
+                    "name": "service1",
+                    "type": "invalid-service"
+                  }
+            """.trimIndent()
+        )
+            .post("/api/v1/services").then()
+            .assertThat()
+            .statusCode(422)
+            .body("messages.size()", `is`(1))
+            .body("messages[0].code", `is`("services_invalid_type"))
+
+
+        given().port(httpServer.port).withAuthToken(token).with().body(
                 """{
                     "name": "service1",
                     "type": "helloworld"

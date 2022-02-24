@@ -12,6 +12,12 @@ object ErrorCodes {
         const val HOSTNAME_MISSING = "cloud_no_hostname_found"
     }
 
+    object SERVICES {
+        const val NO_TENANT = "services_no_tenant"
+        const val USER_NOT_FOUND = "services_user_not_found"
+        const val INVALID_TYPE = "services_invalid_type"
+    }
+
     object ENVIRONMENT {
 
         const val CREATE_FAILED = "create_failed"
@@ -21,7 +27,6 @@ object ErrorCodes {
         const val DEFAULT_CLOUD_NOT_FOUND = "default_cloud_not_found"
     }
 
-    object EMAIL
 
     object TENANT {
         const val CREATE_FAILED = "create_failed"

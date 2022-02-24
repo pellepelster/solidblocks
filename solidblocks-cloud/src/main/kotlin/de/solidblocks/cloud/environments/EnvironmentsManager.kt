@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.environments
 
 import de.solidblocks.base.CreationResult
-import de.solidblocks.base.api.messageResponses
+import de.solidblocks.base.creationResult
 import de.solidblocks.base.reference.CloudReference
 import de.solidblocks.base.reference.EnvironmentReference
 import de.solidblocks.base.validateId
@@ -73,7 +73,7 @@ class EnvironmentsManager(
                     createConfigValue(Hetzner.HETZNER_DNS_API_TOKEN_RW_KEY, request.hetznerDnsApiToken!!),
                 )
             )
-                ?: return@tc CreationResult<EnvironmentEntity>(messages = ErrorCodes.ENVIRONMENT.CREATE_FAILED.messageResponses(EnvironmentCreateRequest::environment))
+                ?: return@tc ErrorCodes.ENVIRONMENT.CREATE_FAILED.creationResult(EnvironmentCreateRequest::environment)
 
             usersManager.createEnvironmentUser(
                 environment.reference, request.email!!,

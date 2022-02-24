@@ -34,13 +34,14 @@ class ServicesApi(val cloudApiHttpServer: CloudApiHttpServer, val servicesManage
     fun create(rc: RoutingContext) {
         val request = rc.jsonRequest(ServiceCreateRequest::class.java)
 
-        val service = servicesManager.create(rc.email(), request.name, request.type)
+        val result = servicesManager.create(rc.email(), request.name, request.type)
 
-        if (service == null) {
-            rc.jsonResponse(500)
-        } else {
-            rc.jsonResponse(ServiceResponseWrapper(service.service.toResponse()), 201)
+        if (result.hasErrors()) {
+            rc.jsonResponse(ServiceCreateResponse(messages = result.messages), 422)
+            return
         }
+
+        rc.jsonResponse(ServiceCreateResponse(result.data!!.service.toResponse()), 201)
     }
 
 }
