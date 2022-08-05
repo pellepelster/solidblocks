@@ -33,6 +33,7 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
     }
 
     private fun hetznerLabelValueHashString(input: String): String {
+        // TODO hacky workaround due to hetzner meta data limitations
         return hashString(input).subSequence(0, 62).toString()
     }
 

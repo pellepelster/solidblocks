@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-
 @ExtendWith(TestEnvironmentExtension::class)
 class ServicesApiTest {
 
@@ -29,7 +28,6 @@ class ServicesApiTest {
         fun configureLogging() {
             RestAssured.filters(RequestLoggingFilter(), ResponseLoggingFilter())
         }
-
     }
 
     @Test
@@ -43,10 +41,10 @@ class ServicesApiTest {
         val token = given().port(httpServer.port).login(ADMIN_USER, ADMIN_PASSWORD)
 
         given().port(httpServer.port).withAuthToken(token).get("/api/v1/services/catalog").then()
-                .assertThat()
-                .statusCode(200)
-                .assertThat().body("items.size()", `is`(2))
-                .assertThat().body("items[0].type", `is`("helloworld"))
+            .assertThat()
+            .statusCode(200)
+            .assertThat().body("items.size()", `is`(2))
+            .assertThat().body("items[0].type", `is`("helloworld"))
     }
 
     @Test
@@ -74,17 +72,16 @@ class ServicesApiTest {
             .body("messages.size()", `is`(1))
             .body("messages[0].code", `is`("services_invalid_type"))
 
-
         given().port(httpServer.port).withAuthToken(token).with().body(
-                """{
+            """{
                     "name": "service1",
                     "type": "helloworld"
                   }
             """.trimIndent()
         )
-                .post("/api/v1/services").then()
-                .assertThat()
-                .statusCode(201)
+            .post("/api/v1/services").then()
+            .assertThat()
+            .statusCode(201)
 
         given().port(httpServer.port).with().withAuthToken(token).get("/api/v1/services").then().assertThat().statusCode(200).assertThat().body("services.size()", `is`(1))
     }

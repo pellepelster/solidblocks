@@ -123,6 +123,7 @@ class HetznerServerResourceProvisioner(
         request.userData(userData.result!!.ephemeralUserData)
 
         val labels = HetznerLabels()
+
         labels.addHashLabel(resource::sshKeys.name, resource.sshKeys.joinToString { it.name })
         labels.addHashLabel(EPHEMERAL_USER_DATA_KEY, userData.result!!.ephemeralUserData)
         labels.addHashLabel(STATIC_USER_DATA_KEY, userData.result!!.staticUserData)

@@ -27,7 +27,6 @@ object ErrorCodes {
         const val DEFAULT_CLOUD_NOT_FOUND = "default_cloud_not_found"
     }
 
-
     object TENANT {
         const val CREATE_FAILED = "create_failed"
         const val DEFAULT_ENVIRONMENT_NOT_FOUND = "default_environment_not_found"

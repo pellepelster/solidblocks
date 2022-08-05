@@ -16,7 +16,5 @@ class StatusRepository(dsl: DSLContext) : BaseRepository(dsl) {
         dsl.deleteFrom(STATUS).execute()
     }
 
-    fun latestStatus(entityId: UUID, interval: Duration) {
-        dsl.selectFrom(STATUS).where(STATUS.ENTITY.eq(entityId)).and(STATUS.STATUS_TIMESTAMP.greaterOrEqual(LocalDateTime.now().minus(interval))).orderBy(STATUS.STATUS_TIMESTAMP.desc()).limit(1).offset(0).fetch().firstOrNull()
-    }
+    fun latestStatus(entityId: UUID, interval: Duration) = dsl.selectFrom(STATUS).where(STATUS.ENTITY.eq(entityId)).and(STATUS.STATUS_TIMESTAMP.ge(LocalDateTime.now().minus(interval))).orderBy(STATUS.STATUS_TIMESTAMP.desc()).limit(1).offset(0).fetchOne(STATUS.STATUS_)
 }

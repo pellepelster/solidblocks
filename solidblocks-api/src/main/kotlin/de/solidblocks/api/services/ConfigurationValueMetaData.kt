@@ -1,4 +1,3 @@
 package de.solidblocks.api.services
 
-class ConfigurationValueMetaData(val id: String) {
-}
+class ConfigurationValueMetaData(val id: String)

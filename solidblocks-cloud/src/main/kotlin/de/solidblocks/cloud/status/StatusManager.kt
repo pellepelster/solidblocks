@@ -16,6 +16,7 @@ class StatusManager(val repository: StatusRepository, val environmentsRepository
     }
 
     fun isOk(entityId: UUID, interval: Duration): Boolean {
+        println(repository.latestStatus(entityId, interval))
         return Status.OK.toString().equals(repository.latestStatus(entityId, interval))
     }
 }

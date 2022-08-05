@@ -4,7 +4,7 @@ import java.time.Duration
 
 object CloudConstants {
 
-    val ENVIRONMENT_HEALTHCHECK_INTERVAL = Duration.ofSeconds(15)
+    val ENVIRONMENT_HEALTHCHECK_INTERVAL = Duration.ofSeconds(60)
 
     val ADMIN_USER = "admin"
 
