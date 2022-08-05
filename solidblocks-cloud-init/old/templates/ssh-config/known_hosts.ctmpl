@@ -1,3 +1,0 @@
-{{ with secret (printf "%s-ssh-host/config/ca" (env "CLOUD_NAME")) }}
-@cert-authority *.{{ env "ROOT_DOMAIN" }} {{ .Data.public_key }}
-{{ end }}

@@ -1,9 +1,0 @@
-{{ with secret (printf "%s-%s-pki/issue/%s-%s-pki" (env "SOLIDBLOCKS_CLOUD") (env "SOLIDBLOCKS_ENVIRONMENT") (env "SOLIDBLOCKS_CLOUD") (env "SOLIDBLOCKS_ENVIRONMENT")) "alt_names=server.global.nomad" (printf "common_name=%s" (env "SOLIDBLOCKS_HOSTNAME")) "ttl=24h" }}
-{
-  "certificate": "{{ .Data.certificate | base64Encode }}",
-  "private_key": "{{ .Data.private_key | base64Encode }}",
-  "issuing_ca": "{{ .Data.issuing_ca | base64Encode }}"
-}
-{{ end }}
-
-

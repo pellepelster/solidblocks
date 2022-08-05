@@ -1,1 +1,0 @@
-{{ with secret (printf "%s-%s-ssh-user/config/ca" (env "SOLIDBLOCKS_CLOUD") (env "SOLIDBLOCKS_ENVIRONMENT")) }}{{ .Data.public_key }}{{ end }}

@@ -1,3 +1,0 @@
-Host *.{{ env "SOLIDBLOCKS_ENVIRONMENT" }}.{{ env "SOLIDBLOCKS_ROOT_DOMAIN" }}
-  IdentityFile ~/.ssh/id_ed25519
-  IdentityFile ~/.ssh/id_ed25519_signed.pub
