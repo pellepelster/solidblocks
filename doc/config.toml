@@ -1,0 +1,7 @@
+baseURL = 'https://pellepelster.github.io/solidblocks/'
+languageCode = 'en-us'
+title = 'Solidblocks'
+theme = "learn"
+
+[params]
+    themeVariant = "green"

@@ -1,10 +1,10 @@
 .idea/
-.gradle/
 *.iml
 *.ipr
 *.iws
-build
-.bin
-.temp
-derby.log
-/solidblocks-service-helloworld/src/test/resources/helloworld/bootstrap/artefacts/
+/.bin/
+/.cache/
+/doc/public/
+/doc/.hugo_build.lock
+/solidblocks-shell/test/.tmp/
+solidblocks-shell-*.zip
