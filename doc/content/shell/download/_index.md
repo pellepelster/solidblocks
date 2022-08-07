@@ -1,12 +1,14 @@
 ---
 title: Download
-weight: 30
+weight: 20
 disableToc: true
 ---
 
 Helper functions to retrieve data from remote servers.
 
-## download_and_verify_checksum(url, target_file, checksum)
+## Functions
+
+### `download_and_verify_checksum(url, target_file, checksum)`
 
 Downloads the file given by `${url}` to `${target_file}` and verifies if the downloaded file matches the checksum `${checksum}`. If a file is already present at `${target}` download is skipped.
 

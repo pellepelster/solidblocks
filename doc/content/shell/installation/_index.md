@@ -19,12 +19,14 @@ source "${DIR}/solidblocks-shell/download.sh"
 source "${DIR}/solidblocks-shell/software.sh"
 ```
 
-Note than when sourcing in the different files, all dependencies are also automatically loaded. E.g. when using the Hashicorp helpers
+Note than when sourcing in the different files, all dependencies are also automatically loaded. E.g. when using the software helpers
 
 ```shell
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-source "${DIR}/solidblocks-shell/hashicorp.sh"
+source "${DIR}/solidblocks-shell/software.sh"
+
+software_ensure_hugo
 ```
 
 It will automatically also source in `download.sh` and `file.sh` because it needs functions from this file.
