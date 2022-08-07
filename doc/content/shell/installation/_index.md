@@ -17,6 +17,14 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 source "${DIR}/solidblocks-shell/download.sh"
 source "${DIR}/solidblocks-shell/software.sh"
-source "${DIR}/solidblocks-shell/file.sh"
 ```
 
+Note than when sourcing in the different files, all dependencies are also automatically loaded. E.g. when using the Hashicorp helpers
+
+```shell
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/solidblocks-shell/hashicorp.sh"
+```
+
+It will automatically also source in `download.sh` and `file.sh` because it needs functions from this file.

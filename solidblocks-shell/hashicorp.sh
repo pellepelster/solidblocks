@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+source "${_DIR}/download.sh"
+source "${_DIR}/file.sh"
+
 : '
 Generic wrapper for downloading HasiCorp tools built around the convention that product distributions are available at
 https://releases.hashicorp.com/`${product}`/`${version}`/`${product}`_`${product}`_linux_amd64.zip and the downloaded
