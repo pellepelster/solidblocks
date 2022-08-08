@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# see https://pellepelster.github.io/solidblocks/shell/file/#file_extract_to_directorycompressed_file-target_dir
+# see https://pellepelster.github.io/solidblocks/shell/file/#file_extract_to_directory
 function file_extract_to_directory {
     local compressed_file=${1}
     local target_dir=${2}

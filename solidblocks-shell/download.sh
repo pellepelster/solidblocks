@@ -4,7 +4,7 @@ _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${_DIR}/curl.sh"
 
-# see https://pellepelster.github.io/solidblocks/shell/download/#download_and_verify_checksumurl-target_file-checksum
+# see https://pellepelster.github.io/solidblocks/shell/download/#download_and_verify_checksum
 function download_and_verify_checksum {
     local url=${1}
     local target_file=${2}

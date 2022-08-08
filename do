@@ -61,6 +61,8 @@ function task_release {
     semver init --release v0.0.1
   fi
 
+  semver up release
+
   git tag -a "$(semver get release)" -m "$(semver get release)"
   git push --tags
 }
