@@ -1,5 +1,4 @@
-![ctuhl](https://github.com/pellepelster/ctuhl/workflows/ctuhl/badge.svg)
-
+[![solidblocks](https://github.com/pellepelster/solidblocks/actions/workflows/pipeline.yml/badge.svg)](https://github.com/pellepelster/solidblocks/actions/workflows/pipeline.yml)
 
 # Solidblocks
 
