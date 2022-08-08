@@ -18,9 +18,3 @@ Solidblocks is a library of reusable components for infrastructure  automation.
 
 * [Shell]({{%relref "shell/_index.md" %}})
 
-<!--
-{{% notice info %}}
-Your modification will be deployed automatically when merged.
-{{% /notice %}}
-
--->

@@ -94,6 +94,6 @@ function software_export_path() {
   echo "${path}"
 }
 
-function software_ensure_export_path() {
+function software_set_export_path() {
   export PATH="$(software_export_path):${PATH}"
 }

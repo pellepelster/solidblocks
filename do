@@ -15,7 +15,7 @@ VERSION="${GITHUB_REF_NAME:-snapshot}"
 function ensure_environment {
   software_ensure_shellcheck
   software_ensure_hugo
-  software_ensure_export_path
+  software_set_export_path
 }
 
 function task_build_documentation {
