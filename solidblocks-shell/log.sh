@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+function log_echo_err() { cat <<< "$@" 1>&2; }
+
 function log() {
   local log_level=${1}
   shift || true
