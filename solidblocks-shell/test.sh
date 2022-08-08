@@ -1,7 +1,13 @@
 
-TEST_COLOR_RED=$(tput -Txterm-256color setaf 1)
-TEST_COLOR_GREEN=$(tput -Txterm-256color setaf 2)
-TEST_COLOR_RESET=$(tput -Txterm-256color sgr0)
+function tput_wrapper() {
+  if [[ -t 0 ]]; then
+    tput $@
+  fi
+}
+
+TEST_COLOR_RED=$(tput_wrapper -Txterm-256color setaf 1)
+TEST_COLOR_GREEN=$(tput_wrapper -Txterm-256color setaf 2)
+TEST_COLOR_RESET=$(tput_wrapper -Txterm-256color sgr0)
 
 function test_assert_equals {
     local description=${1:-}

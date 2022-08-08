@@ -6,8 +6,16 @@ chapter: true
 
 # Shell
 
-Reusable shell functions for various tasks. 
+Reusable shell functions for infrastructure automation 
 
-* [Download]({{%relref "download/_index.md" %}}) Helper functions to retrieve data from remote servers.
-* [File]({{%relref "file/_index.md" %}}) Functions for local file operations.
-* [Software]({{%relref "software/_index.md" %}}) The software library helps to set up a consistent environment for local development and continuous integration.
+* [Download]({{%relref "shell/download/_index.md" %}}) Secure and reliable data retrieval from remote servers
+* [File]({{%relref "shell/file/_index.md" %}}) Utilities for local file operations
+* [Software]({{%relref "shell/software/_index.md" %}}) Tooling setup for local development and continuous integration environments
+
+All functions are tested on the following distributions
+
+* Amazon Linux 2
+* Debian 10
+* Debian 11
+* Ubuntu 20.04 
+* Ubuntu 22.04

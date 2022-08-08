@@ -4,7 +4,7 @@ weight: 20
 disableToc: true
 ---
 
-Helper functions to retrieve data from remote servers.
+Secure and reliable data retrieval from remote servers
 
 ## Functions
 

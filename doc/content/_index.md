@@ -4,7 +4,7 @@ title: "Solidblocks"
 
 # Solidblocks
 
-Solidblocks is a library of reusable components for infrastructure  automation. 
+Solidblocks is a library of reusable components for infrastructure automation. 
 
 ## Design Goals
 
@@ -16,5 +16,5 @@ Solidblocks is a library of reusable components for infrastructure  automation.
 
 ## Components
 
-* [Shell]({{%relref "shell/_index.md" %}})
+* [Shell]({{%relref "shell/_index.md" %}}) Reusable shell functions for infrastructure automation
 

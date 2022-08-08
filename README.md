@@ -4,13 +4,15 @@
 
 Solidblocks is a library of reusable components for infrastructure  automation, documentation is available here  https://pellepelster.github.io/solidblocks/
 
+## Shell
 
-## Automatic download for commonly used tools
-The software library helps to set up a consistent environment for local development and continuous integration.
+Reusable shell functions for infrastructure automation ([documentation](https://pellepelster.github.io/solidblocks/shell/))
 
 **solidblocks.sh**
 ```
 #!/usr/bin/env bash
+
+source "software.sh"
 
 software_ensure_terraform
 software_set_export_path

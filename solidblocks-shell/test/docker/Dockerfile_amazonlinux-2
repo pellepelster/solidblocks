@@ -1,0 +1,5 @@
+FROM amazonlinux:2
+
+RUN yum update -y
+RUN yum install zip docker jq curl unzip nc zip tar -y
+RUN amazon-linux-extras install docker -y

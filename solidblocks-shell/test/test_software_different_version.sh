@@ -3,13 +3,12 @@
 set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
-TEMP_DIR="${DIR}/.tmp"
-
-source "${DIR}/../test.sh"
-source "${DIR}/../software.sh"
 
 rm -rf "${DIR}/../.bin"
 rm -rf "${DIR}/../.cache"
+
+source "${DIR}/../test.sh"
+source "${DIR}/../software.sh"
 
 software_ensure_consul "1.8.4" "0d74525ee101254f1cca436356e8aee51247d460b56fc2b4f7faef8a6853141f"
 software_ensure_terraform "0.13.4" "a92df4a151d390144040de5d18351301e597d3fae3679a814ea57554f6aa9b24"

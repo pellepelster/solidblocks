@@ -11,6 +11,9 @@ source "${DIR}/../curl.sh"
 source "${DIR}/../docker.sh"
 source "${DIR}/../network.sh"
 
+rm -rf "${DIR}/../.bin"
+rm -rf "${DIR}/../.cache"
+
 docker run --rm -d -p 8080 --name wiremock wiremock/wiremock:2.33.2
 
 MAPPING1=$(cat <<-END

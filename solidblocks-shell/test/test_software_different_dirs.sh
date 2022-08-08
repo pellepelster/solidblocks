@@ -3,8 +3,6 @@
 set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
-TEMP_DIR="${DIR}/.tmp"
-
 
 export BIN_DIR="/tmp/bin_$$"
 export CACHE_DIR="/tmp/cache_$$"

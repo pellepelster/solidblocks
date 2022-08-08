@@ -4,7 +4,7 @@ weight: 30
 disableToc: true
 ---
 
-Helper functions for local file operations.
+Utilities for local file operations
 
 ## Functions
 

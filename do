@@ -11,7 +11,6 @@ source "${DIR}/solidblocks-shell/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
 
-
 function ensure_environment {
   software_ensure_shellcheck
   software_ensure_hugo
@@ -78,6 +77,29 @@ function task_test_shell {
   find "${DIR}/solidblocks-shell/test/"  -name "test_*.sh" -exec {} \;
 }
 
+TESTCONTAINER_IMAGES="amazonlinux-2 debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
+
+function task_test_shell_docker_prepare {
+  (
+    cd "${DIR}/solidblocks-shell/test/docker"
+
+    for image in ${TESTCONTAINER_IMAGES}
+    do
+      docker build -t "solidblocks-testcontainer-${image}" -f "Dockerfile_${image}" .
+    done
+  )
+}
+
+function task_test_shell_docker {
+  for image in ${TESTCONTAINER_IMAGES}
+  do
+      log_divider_header "running tests on '${image}'"
+      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v ${DIR}:/test "solidblocks-testcontainer-${image}" /test/do test-shell
+      log_divider_footer
+  done
+
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -86,6 +108,8 @@ function task_usage {
 arg=${1:-}
 shift || true
 case ${arg} in
+  test-shell-docker-prepare) task_test_shell_docker_prepare "$@" ;;
+  test-shell-docker) task_test_shell_docker "$@" ;;
   test-shell) task_test_shell "$@" ;;
   package-shell) task_package_shell "$@" ;;
   build-documentation) task_build_documentation "$@" ;;
