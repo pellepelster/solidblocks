@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function log() {
   local log_level=${1}
   shift || true
@@ -42,7 +44,7 @@ function log() {
 function log_divider_header() {
     echo ""
     echo "================================================================================"
-    log_info $@
+    log_info "$@"
     echo "--------------------------------------------------------------------------------"
 }
 

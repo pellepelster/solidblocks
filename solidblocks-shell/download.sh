@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+source "${_DIR}/curl.sh"
+
 # see https://pellepelster.github.io/solidblocks/shell/download/#download_and_verify_checksumurl-target_file-checksum
 function download_and_verify_checksum {
     local url=${1}
@@ -18,7 +22,7 @@ function download_and_verify_checksum {
     mkdir -p "$(dirname "${target_file}")" || true
 
     echo -n "downloading ${url}..."
-    curl -sL "${url}" --output "${target_file}" > /dev/null
+    curl_wrapper "${url}" --output "${target_file}" > /dev/null
     echo "done"
 
     echo -n "verifying checksum..."

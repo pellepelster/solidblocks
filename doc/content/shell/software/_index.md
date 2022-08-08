@@ -43,7 +43,46 @@ software_ensure_terraform "0.13.4" "a92df4a151d390144040de5d18351301e597d3fae367
 ```
 
 
-## `software_ensure_terraform(version, checksum)`
-## `software_ensure_consul(version, checksum)`
-## `software_ensure_hugo(version, checksum)`
-## `software_ensure_shellcheck(version, checksum)`
+## `software_ensure_terraform(version = TERRAFORM_VERSION, checksum)`
+Installs [HashiCorp Terraform](https://www.terraform.io/) version TERRAFORM_VERSION
+
+## `software_ensure_consul(version = CONSUL_VERSION, checksum)`
+Installs [HashiCorp Consul](https://www.consul.io/) version CONSUL_VERSION
+
+## `software_ensure_hugo(version = HUGO_VERSION, checksum)`
+Installs [Hugo](https://gohugo.io/) static site generator version HUGO_VERSION
+
+## `software_ensure_shellcheck(version = SHELLCHECK_VERSION, checksum)`
+Installs [ShellCheck](https://www.shellcheck.net/) shell script analysis tool version SHELLCHECK_VERSION
+
+## `software_hashicorp_ensure(product, version, checksum)`
+
+Generic wrapper for downloading HashiCorp tools built around the convention that product distributions are available at https://releases.hashicorp.com/`${product}`/`${version}`/`${product}`_`${product}`_linux_amd64.zip and the downloaded
+zip contains an executable named `${product}` which will be written to `${bin_dir}`.
+
+```shell
+```
+
+
+## `software_export_path`
+Creates a `$PATH` compatible path for all software downloaded with `software_ensure_*`
+
+```shell
+software_ensure_shellcheck
+
+export PATH="${PATH}:$(software_export_path)"
+
+shellcheck --version
+```
+
+## `software_set_export_path`
+
+Updates `$PATH` to include all software downloaded with `software_ensure_*`
+
+```shell
+software_ensure_hugo
+
+software_set_export_path
+
+hugo version
+```
