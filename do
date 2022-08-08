@@ -15,6 +15,7 @@ VERSION="${GITHUB_REF_NAME:-snapshot}"
 function ensure_environment {
   software_ensure_shellcheck
   software_ensure_hugo
+  software_ensure_semver
   software_set_export_path
 }
 
@@ -28,6 +29,7 @@ function task_build_documentation {
       sed -i "s/CONSUL_VERSION/${CONSUL_VERSION}/g" content/shell/software/_index.md
       sed -i "s/HUGO_VERSION/${HUGO_VERSION}/g" content/shell/software/_index.md
       sed -i "s/SHELLCHECK_VERSION/${SHELLCHECK_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/SEMVER_VERSION/${SEMVER_VERSION}/g" content/shell/software/_index.md
       hugo
     )
 }
@@ -50,6 +52,17 @@ function task_package_shell {
 function task_lint {
   ensure_environment
   find "${DIR}/solidblocks-shell" -name "*.sh" -exec shellcheck {} \;
+}
+
+function task_release {
+  ensure_environment
+
+  if [[ ! -f ".semver.yaml" ]]; then
+    semver init --release v0.0.1
+  fi
+
+  git tag -a "$(semver get release)" -m "$(semver get release)"
+  git push --tags
 }
 
 function task_test_shell {
@@ -76,5 +89,6 @@ case ${arg} in
   build-documentation) task_build_documentation "$@" ;;
   serve-documentation) task_serve_documentation "$@" ;;
   lint) task_lint "$@" ;;
+  release) task_release "$@" ;;
   *) task_usage ;;
 esac

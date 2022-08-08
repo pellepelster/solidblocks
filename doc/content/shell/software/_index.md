@@ -61,8 +61,12 @@ Generic wrapper for downloading HashiCorp tools built around the convention that
 zip contains an executable named `${product}` which will be written to `${bin_dir}`.
 
 ```shell
+software_hashicorp_ensure "nomad" "1.3.3" "d908811cebe2a8373e93c4ad3d09af5c706241878ff3f21ee0f182b4ecb571f2"
 ```
 
+## `software_ensure_semver(version = SEMVER_VERSION, checksum)`
+
+Installs [semver](https://github.com/maykonlf/semver-cli) a semantic versioning tool in version SEMVER_VERSION 
 
 ## `software_export_path`
 Creates a `$PATH` compatible path for all software downloaded with `software_ensure_*`
