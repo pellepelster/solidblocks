@@ -60,10 +60,14 @@ function task_release {
     semver init --release v0.0.1
   fi
 
-  semver up release
+  local version="$(semver get release)"
 
-  git tag -a "$(semver get release)" -m "$(semver get release)"
+  cat README_template.md | sed -i "s/SOLIDBLOCKS_VERSION/${version}/g" > README.md
+
+  git tag -a "${version}" -m "${version}"
   git push --tags
+
+  semver up release
 }
 
 function task_test_shell {

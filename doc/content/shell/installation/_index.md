@@ -5,8 +5,8 @@ disableToc: true
 ---
 
 ```shell
-curl -L https://github.com/pellepelster/solidblocks/releases/download/snapshot/solidblocks-shell-snapshot.zip > solidblocks-shell-snapshot.zip
-unzip solidblocks-shell-snapshot.zip
+curl -L https://github.com/pellepelster/solidblocks/releases/download/snapshot/solidblocks-shell-SOLIDBLOCKS_VERSION.zip > solidblocks-shell-SOLIDBLOCKS_VERSION.zip
+unzip solidblocks-shell-SOLIDBLOCKS_VERSION.zip
 ```
 
 After download and extraction the different components can be sourced in via 
