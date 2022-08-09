@@ -41,6 +41,8 @@ software_ensure_shellcheck
 All functions can be called without any parameters and will then install the software in a recent version. An exact version and checksum for the downloaded can also be given to force a specific version.
 
 ```shell
+source "software.sh"
+
 software_ensure_terraform
 
 software_ensure_terraform "0.13.4" "a92df4a151d390144040de5d18351301e597d3fae3679a814ea57554f6aa9b24"
@@ -74,6 +76,8 @@ software_hashicorp_ensure "nomad" "1.3.3" "d908811cebe2a8373e93c4ad3d09af5c70624
 Creates a `$PATH` compatible path for all software downloaded with `software_ensure_*`
 
 ```shell
+source "software.sh"
+
 software_ensure_shellcheck
 
 export PATH="${PATH}:$(software_export_path)"
@@ -85,6 +89,8 @@ shellcheck --version
 Updates `$PATH` to include all software downloaded with `software_ensure_*`
 
 ```shell
+source "software.sh"
+
 software_ensure_hugo
 
 software_set_export_path

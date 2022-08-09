@@ -1,13 +1,8 @@
+#!/usr/bin/env bash
 
-function tput_wrapper() {
-  if [[ -t 0 ]]; then
-    tput $@
-  fi
-}
+_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-TEST_COLOR_RED=$(tput_wrapper -Txterm-256color setaf 1)
-TEST_COLOR_GREEN=$(tput_wrapper -Txterm-256color setaf 2)
-TEST_COLOR_RESET=$(tput_wrapper -Txterm-256color sgr0)
+source "${_DIR}/colors.sh"
 
 function test_assert_equals {
     local description=${1:-}
@@ -15,9 +10,9 @@ function test_assert_equals {
     local actual=${3:-}
 
     if [[ "${expected}" == "${actual}" ]]; then
-        echo "${TEST_COLOR_GREEN}${description} expected '${expected}' and got '${actual}'${TEST_COLOR_RESET}"
+        echo -e "${COLOR_GREEN}${description} expected '${expected}' and got '${actual}'${COLOR_RESET}"
     else
-        echo "${TEST_COLOR_RED}${description} expected '${expected}' but got '${actual}'${TEST_COLOR_RESET}"
+        echo -e "${COLOR_RED}${description} expected '${expected}' but got '${actual}'${COLOR_RESET}"
         exit 1
     fi
 }
@@ -28,9 +23,9 @@ function test_assert_matches {
     local actual=${3:-}
 
     if [[ "${actual}" =~ "${expected}" ]]; then
-        echo "${TEST_COLOR_GREEN}${description} expected '${expected}' and got '${actual}'${TEST_COLOR_RESET}"
+        echo -e "${COLOR_GREEN}${description} expected '${expected}' and got '${actual}'${COLOR_RESET}"
     else
-        echo "${TEST_COLOR_RED}${description} expected '${expected}' but got '${actual}'${TEST_COLOR_RESET}"
+        echo -e "${COLOR_RED}${description} expected '${expected}' but got '${actual}'${COLOR_RESET}"
         exit 1
     fi
 }
@@ -39,10 +34,10 @@ function test_assert_file_not_exists {
     local file=${1:-}
 
     if [[ -f "${file}" ]]; then
-        echo "${TEST_COLOR_RED}file ${file} found${TEST_COLOR_RESET}"
+        echo -e "${COLOR_RED}file ${file} found${COLOR_RESET}"
         exit 1
     else
-        echo "${TEST_COLOR_GREEN}file ${file} not found${TEST_COLOR_RESET}"
+        echo -e "${COLOR_GREEN}file ${file} not found${COLOR_RESET}"
     fi
 }
 
@@ -50,9 +45,9 @@ function test_assert_file_exists {
     local file=${1:-}
 
     if [[ -f "${file}" ]]; then
-        echo "${TEST_COLOR_GREEN}file ${file} found${TEST_COLOR_RESET}"
+        echo -e "${COLOR_GREEN}file ${file} found${COLOR_RESET}"
     else
-        echo "${TEST_COLOR_RED}file ${file} not found${TEST_COLOR_RESET}"
+        echo -e "${COLOR_RED}file ${file} not found${COLOR_RESET}"
         exit 1
     fi
 }

@@ -16,7 +16,7 @@ function network_wait_for_port() {
   local try=0
   while [ $try -lt ${retries} ] && ! nc -z "${host}" "${port}"; do
       try=$((try+1))
-      log_echo_err "waiting for port ${host}:${port} (${try}/${retries}), retrying in ${retry_delay} seconds"
+      log_echo_error "waiting for port ${host}:${port} (${try}/${retries}), retrying in ${retry_delay} seconds"
       sleep "${retry_delay}"
   done
 }
