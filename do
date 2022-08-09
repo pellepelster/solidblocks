@@ -62,7 +62,9 @@ function task_release {
 
   local version="$(semver get release)"
 
-  cat README_template.md | sed -i "s/SOLIDBLOCKS_VERSION/${version}/g" > README.md
+  cat README_template.md | sed --expression "s/SOLIDBLOCKS_VERSION/${version}/g" > README.md
+  git add README.md
+  git commit -m "release ${version}"
 
   git tag -a "${version}" -m "${version}"
   git push --tags

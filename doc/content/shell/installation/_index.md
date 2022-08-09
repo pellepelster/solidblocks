@@ -5,7 +5,7 @@ disableToc: true
 ---
 
 ```shell
-curl -L https://github.com/pellepelster/solidblocks/releases/download/snapshot/solidblocks-shell-SOLIDBLOCKS_VERSION.zip > solidblocks-shell-SOLIDBLOCKS_VERSION.zip
+curl -L https://github.com/pellepelster/solidblocks/releases/download/SOLIDBLOCKS_VERSION/solidblocks-shell-SOLIDBLOCKS_VERSION.zip > solidblocks-shell-SOLIDBLOCKS_VERSION.zip
 unzip solidblocks-shell-SOLIDBLOCKS_VERSION.zip
 ```
 
