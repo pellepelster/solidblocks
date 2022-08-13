@@ -3,6 +3,7 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${_DIR}/colors.sh"
+source "${_DIR}/utils.sh"
 
 function test_assert_equals {
     local description=${1:-}
@@ -53,6 +54,8 @@ function test_assert_file_exists {
 }
 
 function test_assert_json {
+    ensure_command "jq"
+
     local description=${1:-}
     local expected=${2:-}
     local path=${3:-}

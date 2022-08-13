@@ -4,7 +4,7 @@ weight: 50
 disableToc: true
 ---
 
-Generic console and logging and helpers
+Generic console and logging  helpers
 
 ## Functions
 

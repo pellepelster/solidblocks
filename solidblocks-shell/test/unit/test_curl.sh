@@ -6,13 +6,13 @@ set -eu -o pipefail
 
 CURL_WRAPPER_RETRY_DELAY=0.1
 
-source "${DIR}/../test.sh"
-source "${DIR}/../curl.sh"
-source "${DIR}/../docker.sh"
-source "${DIR}/../network.sh"
+source "${DIR}/../../test.sh"
+source "${DIR}/../../curl.sh"
+source "${DIR}/../../docker.sh"
+source "${DIR}/../../network.sh"
 
-rm -rf "${DIR}/../.bin"
-rm -rf "${DIR}/../.cache"
+rm -rf "${DIR}/../../.bin"
+rm -rf "${DIR}/../../.cache"
 
 docker run --rm -d -p 8080 --name wiremock wiremock/wiremock:2.33.2
 
@@ -97,4 +97,4 @@ test_assert_matches "curl_wrapper_invalid_host" "" "$(curl_wrapper "http://nonex
 test_assert_matches "curl_wrapper_invalid_port" "" "$(curl_wrapper "http://localhost:12345")"
 test_assert_matches "curl_wrapper_invalid_scheme" "" "$(curl_wrapper "https://localhost:${PORT}")"
 
-trap "docker rm -f wiremock" EXIT ERR
+trap "docker rm -f wiremock" 0

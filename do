@@ -63,18 +63,21 @@ function task_release {
   local version="$(semver get release)"
 
   cat README_template.md | sed --expression "s/SOLIDBLOCKS_VERSION/${version}/g" > README.md
-  git add README.md
-  git commit -m "release ${version}"
+  #git add README.md
+  #git commit -m "release ${version}"
 
-  git tag -a "${version}" -m "${version}"
-  git push --tags
+  #git tag -a "${version}" -m "${version}"
+  #git push --tags
 
-  semver up release
+  #semver up release
+  #git add .semver.yaml
+  #git commit -m "bump version to $(semver get release)"
+  #git push
 }
 
 function task_test_shell {
 
-  for test in ${DIR}/solidblocks-shell/test/test_*.sh; do
+  for test in ${DIR}/solidblocks-shell/test/unit/test_*.sh; do
       log_divider_header ${test}
       ${test}
       log_divider_footer

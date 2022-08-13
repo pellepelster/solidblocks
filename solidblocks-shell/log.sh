@@ -9,6 +9,9 @@ function log_echo_error() {
   echo -e "${COLOR_RED}${*}${COLOR_RESET}" 1>&2;
 }
 
+# see https://pellepelster.github.io/solidblocks/shell/log/#log_echo_die
+function log_echo_die() { log_echo_error "${*}"; exit 4;}
+
 # see https://pellepelster.github.io/solidblocks/shell/log/#log_divider_header
 function log_divider_header() {
     echo ""
@@ -51,4 +54,4 @@ function log_debug() { log debug "${*}"; }
 function log_error() { log error "${*}"; }
 
 # see https://pellepelster.github.io/solidblocks/shell/log/#log_die
-function log_die() { log emergency "${*}"; exit 1;}
+function log_die() { log emergency "${*}"; exit 4;}

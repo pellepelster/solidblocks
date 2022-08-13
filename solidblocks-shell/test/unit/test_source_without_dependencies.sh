@@ -4,13 +4,11 @@ set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-rm -rf "${DIR}/../.bin"
-rm -rf "${DIR}/../.cache"
+rm -rf "${DIR}/../../.bin"
+rm -rf "${DIR}/../../.cache"
 
-source "${DIR}/../test.sh"
-source "${DIR}/../download.sh"
-source "${DIR}/../file.sh"
-source "${DIR}/../software.sh"
+source "${DIR}/../../test.sh"
+source "${DIR}/../../software.sh"
 
 software_ensure_terraform "0.12.23" "78fd53c0fffd657ee0ab5decac604b0dea2e6c0d4199a9f27db53f081d831a45"
 software_set_export_path
