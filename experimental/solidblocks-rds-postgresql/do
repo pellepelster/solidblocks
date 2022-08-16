@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
+
+source "${DIR}/../../solidblocks-shell/software.sh"
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+function task_test {
+  software_ensure_terraform
+  software_set_export_path
+  (
+    cd "${DIR}/test/terraform"
+    terraform init
+    terraform apply
+  )
+}
+
+function task_build {
+  (
+    cd "${DIR}/test"
+    docker build -t "${DOCKER_IMAGE_NAME}-test" .
+  )
+  (
+    cd "${DIR}"
+    docker build -t "${DOCKER_IMAGE_NAME}" .
+  )
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  *) task_usage ;;
+esac

@@ -1,0 +1,12 @@
+[global]
+repo1-host=backup
+repo1-host-user=pgbackrest
+repo1-path={{ .Env.BACKUP_DIR }}
+
+log-level-console=info
+log-level-file=debug
+config-path=/pgbackrest/config/pgbackrest.conf
+
+[{{ .Env.DB_DATABASE }}]
+pg1-path={{ .Env.DATA_DIR }}
+pg1-socket-path=/rds/socket

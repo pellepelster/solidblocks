@@ -8,3 +8,8 @@
 /doc/.hugo_build.lock
 .tmp/
 solidblocks-shell-*.zip
+.gradle
+.terraform.lock.hcl
+.terraform
+terraform.tfstate
+terraform.tfstate.backup

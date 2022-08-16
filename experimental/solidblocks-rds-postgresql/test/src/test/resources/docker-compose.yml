@@ -1,0 +1,24 @@
+version: '3.5'
+
+services:
+
+  postgresql:
+    image: solidblocks-rds-postgresql
+    environment:
+      - DB_DATABASE
+      - DB_USERNAME
+      - DB_PASSWORD
+      - DB_SSH_PRIVATE_KEY
+      - BACKUP_HOST_PUBLIC_KEY
+      - BACKUP_HOST
+    ports:
+      - "5432"
+
+  backup:
+    image: solidblocks-rds-postgresql-test
+    environment:
+      - DB_DATABASE
+      - DB_SSH_PUBLIC_KEY
+      - BACKUP_HOST_PRIVATE_KEY
+    ports:
+      - "22"
