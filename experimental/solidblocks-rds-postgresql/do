@@ -4,9 +4,11 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
 
-source "${DIR}/../../solidblocks-shell/software.sh"
+source "${DIR}/../../solidblocks-shell/lib/software.sh"
 
 function task_usage {
   echo "Usage: $0 ..."
@@ -21,14 +23,16 @@ function task_test {
     terraform init
     terraform apply --auto-approve
   )
-  task_build
-  "${DIR}/gradlew" check
+  (
+    cd "${DIR}"
+    ./gradlew check
+  )
 }
 
 function task_build {
   (
     cd "${DIR}"
-    docker build -t "${DOCKER_IMAGE_NAME}" .
+    docker build -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}" .
   )
 }
 

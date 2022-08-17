@@ -73,7 +73,7 @@ class RdsPostgresqlIntegrationTest {
         await.until {
             try {
                 val url =
-                    "jdbc:postgresql://${host}:$port/$database?user=$databaseUser&password=$databasePassword"
+                    "jdbc:postgresql://localhost:$port/$database?user=$databaseUser&password=$databasePassword"
 
                 DriverManager.getConnection(url).use { connection ->
                     connection.createStatement().use { statement ->
