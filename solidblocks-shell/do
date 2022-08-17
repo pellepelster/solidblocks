@@ -53,7 +53,7 @@ function task_test_integration {
   for image in ${TESTCONTAINER_IMAGES}
   do
       log_divider_header "running tests on '${image}'"
-      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd)":/test "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" /test/do test-unit
+      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v "${DIR}":/test "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" /test/do test-unit
       log_divider_footer
   done
 
