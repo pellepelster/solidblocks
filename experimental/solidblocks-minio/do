@@ -4,7 +4,7 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
+DOCKER_IMAGE_NAME="solidblocks-minio"
 
 source "${DIR}/../../solidblocks-shell/software.sh"
 
@@ -31,7 +31,6 @@ function task_build {
     docker build -t "${DOCKER_IMAGE_NAME}" .
   )
 }
-
 
 function task_clean {
   "${DIR}/gradlew" clean

@@ -4,7 +4,7 @@ set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-source "${DIR}/../../log.sh"
+source "${DIR}/../../lib/log.sh"
 
 echo ""
 log_echo_error "error message"

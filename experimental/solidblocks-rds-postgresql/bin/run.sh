@@ -23,30 +23,20 @@ if [[ -z "${DB_USERNAME:-}" ]]; then
   exit 1
 fi
 
-if [[ -z "${DB_SSH_PRIVATE_KEY:-}" ]]; then
-  echo "DB_SSH_PRIVATE_KEY not set"
+if [[ -z "${CA_PUBLIC_KEY:-}" ]]; then
+  echo "CA_PUBLIC_KEY not set"
   exit 1
 fi
 
-if [[ -z "${BACKUP_HOST_PUBLIC_KEY:-}" ]]; then
-  echo "BACKUP_HOST_PUBLIC_KEY not set"
-  exit 1
-fi
+
+mkdir -p /rds/certificates
+echo -n "${CA_PUBLIC_KEY}" > /rds/certificates/ca.pem
 
 POSTGRES_BASE_DIR="/usr/libexec/postgresql14"
 POSTGRES_BIN_DIR="${POSTGRES_BASE_DIR}"
 
 mkdir -p "${DATA_DIR}"
 mkdir -p "${BACKUP_DIR}"
-
-mkdir -p ".ssh" || true
-chmod -R 750 ".ssh/"
-
-echo "${DB_SSH_PRIVATE_KEY}" > ".ssh/id_ed25519"
-chmod -R 600 ".ssh/id_ed25519"
-
-echo "${BACKUP_HOST}    ${BACKUP_HOST_PUBLIC_KEY}" > ".ssh/known_hosts"
-chmod -R 600 ".ssh/known_hosts"
 
 chmod 700 "${DATA_DIR}"
 
@@ -82,8 +72,7 @@ function init_db() {
     fi
   fi
 
-  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log --stanza=${DB_DATABASE} stanza-create
-  #sleep 9999999
+  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_DATABASE} stanza-create
 
   if [[ $(psql_count "SELECT count(datname) FROM pg_database WHERE datname = '${DB_DATABASE}';") == "0" ]]; then
     echo "creating database '${DB_DATABASE}'"
@@ -100,7 +89,7 @@ function init_db() {
 
   echo "executing initial backup"
   echo "========================================"
-  #pgbackrest_execute --log-level-console=info backup
+  pgbackrest_execute --log-level-console=info --type=full backup
   echo "========================================"
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${DATA_DIR}" stop
@@ -120,7 +109,8 @@ function pgbackrest_status_code() {
 if [[ ! "$(ls -A ${DATA_DIR})" ]]; then
   echo "data dir is empty"
 
-  if [[ $(pgbackrest_status_code) -eq 0 ]]; then
+  #if [[ $(pgbackrest_status_code) -eq 0 ]]; then
+  if false; then
 
     echo "========================================"
     echo "restoring database from backup"

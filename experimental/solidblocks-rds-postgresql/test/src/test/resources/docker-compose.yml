@@ -8,17 +8,27 @@ services:
       - DB_DATABASE
       - DB_USERNAME
       - DB_PASSWORD
-      - DB_SSH_PRIVATE_KEY
-      - BACKUP_HOST_PUBLIC_KEY
-      - BACKUP_HOST
+      - DB_BACKUP_S3_HOST
+      - DB_BACKUP_S3_BUCKET
+      - DB_BACKUP_S3_ACCESS_KEY
+      - DB_BACKUP_S3_SECRET_KEY
+      - CA_PUBLIC_KEY
     ports:
       - "5432"
 
-  backup:
-    image: solidblocks-rds-postgresql-test
+  minio:
+    image: solidblocks-minio
     environment:
-      - DB_DATABASE
-      - DB_SSH_PUBLIC_KEY
-      - BACKUP_HOST_PRIVATE_KEY
+      - MINIO_ADMIN_USER
+      - MINIO_ADMIN_PASSWORD
+      - MINIO_TLS_PRIVATE_KEY
+      - MINIO_TLS_PUBLIC_KEY
+      - BUCKET_SPECS
+    volumes:
+      - minio:/storage/local
     ports:
-      - "22"
+      - "9000:9000"
+      - "9001:9001"
+      - "443:443"
+volumes:
+  minio:

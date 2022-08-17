@@ -6,13 +6,13 @@ set -eu -o pipefail
 
 CURL_WRAPPER_RETRY_DELAY=0.1
 
-source "${DIR}/../../test.sh"
-source "${DIR}/../../curl.sh"
-source "${DIR}/../../docker.sh"
-source "${DIR}/../../network.sh"
+source "${DIR}/../../lib/test.sh"
+source "${DIR}/../../lib/curl.sh"
+source "${DIR}/../../lib/docker.sh"
+source "${DIR}/../../lib/network.sh"
 
-rm -rf "${DIR}/../../.bin"
-rm -rf "${DIR}/../../.cache"
+rm -rf "${DIR}/../../lib/.bin"
+rm -rf "${DIR}/../../lib/.cache"
 
 docker run --rm -d -p 8080 --name wiremock wiremock/wiremock:2.33.2
 

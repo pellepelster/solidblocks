@@ -1,11 +1,22 @@
 [global]
-repo1-host=backup
-repo1-host-user=pgbackrest
-repo1-path={{ .Env.BACKUP_DIR }}
 
+repo1-type=s3
+repo1-path=/pgbackrest
+
+repo1-s3-endpoint={{ .Env.DB_BACKUP_S3_HOST }}
+repo1-s3-bucket={{ .Env.DB_BACKUP_S3_BUCKET }}
+repo1-s3-region=eu-west-3
+
+repo1-s3-verify-tls=n
+repo1-s3-key={{ .Env.DB_BACKUP_S3_ACCESS_KEY }}
+repo1-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
+
+repo1-storage-ca-file=/rds/certificates/ca.pem
+
+repo1-s3-uri-style=path
+
+repo1-retention-full=1
 log-level-console=info
-log-level-file=debug
-config-path=/pgbackrest/config/pgbackrest.conf
 
 [{{ .Env.DB_DATABASE }}]
 pg1-path={{ .Env.DATA_DIR }}

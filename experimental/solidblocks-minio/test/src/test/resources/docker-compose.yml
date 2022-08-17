@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+
+  minio:
+    image: solidblocks-minio
+    environment:
+      - MINIO_ADMIN_USER
+      - MINIO_ADMIN_PASSWORD
+      - MINIO_TLS_PRIVATE_KEY
+      - MINIO_TLS_PUBLIC_KEY
+      - BUCKET_SPECS
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+      - "443:443"

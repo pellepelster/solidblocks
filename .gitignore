@@ -13,3 +13,5 @@ solidblocks-shell-*.zip
 .terraform
 terraform.tfstate
 terraform.tfstate.backup
+build
+*.pem

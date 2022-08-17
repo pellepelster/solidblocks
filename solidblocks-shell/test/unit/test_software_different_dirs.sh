@@ -7,8 +7,8 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 export BIN_DIR="/tmp/bin_$$"
 export CACHE_DIR="/tmp/cache_$$"
 
-source "${DIR}/../../test.sh"
-source "${DIR}/../../software.sh"
+source "${DIR}/../../lib/test.sh"
+source "${DIR}/../../lib/software.sh"
 
 software_ensure_shellcheck
 software_ensure_hugo

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+TESTCONTAINER_IMAGES="amazonlinux-2 debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
+VERSION="${VERSION:-snapshot}"
+
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
+
+source "${DIR}/lib/log.sh"
+
+function task_build {
+  (
+    mkdir -p "${DIR}/build/solidblocks-shell"
+    cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-shell/"
+    cd "${DIR}/build"
+    zip -r "${DIR}/build/solidblocks-shell-${VERSION}.zip" solidblocks-shell/*.sh
+  )
+}
+
+function task_lint {
+  ensure_environment
+  find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
+}
+
+function task_test_unit {
+
+  for test in ${DIR}/test/unit/test_*.sh; do
+      log_divider_header ${test}
+      ${test}
+      log_divider_footer
+  done
+
+  #find "${DIR}/test/"  -name "test_*.sh" -exec {} \;
+}
+
+
+function task_test_integration_prepare {
+  (
+    cd "${DIR}/test/docker"
+
+    for image in ${TESTCONTAINER_IMAGES}
+    do
+      docker build -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile_${image}" .
+      docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}"
+    done
+  )
+}
+
+function task_test_integration {
+  for image in ${TESTCONTAINER_IMAGES}
+  do
+      log_divider_header "running tests on '${image}'"
+      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v "$(pwd)":/test "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" /test/do test-unit
+      log_divider_footer
+  done
+
+}
+
+function task_test {
+  task_test_unit
+  task_test_integration
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  lint) task_lint "$@" ;;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  test-unit) task_test_unit "$@" ;;
+  test-integration) task_test_integration "$@" ;;
+  test-integration-prepare) task_test_integration_prepare "$@" ;;
+  *) task_usage ;;
+esac

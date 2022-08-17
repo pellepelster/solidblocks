@@ -4,18 +4,35 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-source "${DIR}/solidblocks-shell/download.sh"
-source "${DIR}/solidblocks-shell/software.sh"
-source "${DIR}/solidblocks-shell/file.sh"
-source "${DIR}/solidblocks-shell/log.sh"
+source "${DIR}/solidblocks-shell/lib/download.sh"
+source "${DIR}/solidblocks-shell/lib/software.sh"
+source "${DIR}/solidblocks-shell/lib/file.sh"
+source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
+COMPONENTS="solidblocks-shell"
 
 function ensure_environment {
   software_ensure_shellcheck
   software_ensure_hugo
   software_ensure_semver
   software_set_export_path
+}
+
+function task_build {
+    for component in ${COMPONENTS}; do
+        cd "${DIR}/${component}"
+        VERSION=${VERSION} "./do" build
+    done
+}
+
+function task_test {
+    for component in ${COMPONENTS}; do
+      (
+        cd "${DIR}/${component}"
+        VERSION=${VERSION} "./do" test
+      )
+    done
 }
 
 function task_build_documentation {
@@ -41,18 +58,6 @@ function task_serve_documentation {
     )
 }
 
-function task_package_shell {
-  (
-    cd ${DIR}
-    zip -r "solidblocks-shell-${VERSION}.zip" solidblocks-shell/*.sh
-  )
-}
-
-function task_lint {
-  ensure_environment
-  find "${DIR}/solidblocks-shell" -name "*.sh" -exec shellcheck {} \;
-}
-
 function task_release {
   ensure_environment
 
@@ -75,39 +80,6 @@ function task_release {
   #git push
 }
 
-function task_test_shell {
-
-  for test in ${DIR}/solidblocks-shell/test/unit/test_*.sh; do
-      log_divider_header ${test}
-      ${test}
-      log_divider_footer
-  done
-
-  find "${DIR}/solidblocks-shell/test/"  -name "test_*.sh" -exec {} \;
-}
-
-TESTCONTAINER_IMAGES="amazonlinux-2 debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
-
-function task_test_shell_docker_prepare {
-  (
-    cd "${DIR}/solidblocks-shell/test/docker"
-
-    for image in ${TESTCONTAINER_IMAGES}
-    do
-      docker build -t "solidblocks-testcontainer-${image}" -f "Dockerfile_${image}" .
-    done
-  )
-}
-
-function task_test_shell_docker {
-  for image in ${TESTCONTAINER_IMAGES}
-  do
-      log_divider_header "running tests on '${image}'"
-      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v ${DIR}:/test "solidblocks-testcontainer-${image}" /test/do test-shell
-      log_divider_footer
-  done
-
-}
 
 function task_usage {
   echo "Usage: $0 ..."
@@ -117,13 +89,10 @@ function task_usage {
 arg=${1:-}
 shift || true
 case ${arg} in
-  test-shell-docker-prepare) task_test_shell_docker_prepare "$@" ;;
-  test-shell-docker) task_test_shell_docker "$@" ;;
-  test-shell) task_test_shell "$@" ;;
-  package-shell) task_package_shell "$@" ;;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
   build-documentation) task_build_documentation "$@" ;;
   serve-documentation) task_serve_documentation "$@" ;;
-  lint) task_lint "$@" ;;
   release) task_release "$@" ;;
   *) task_usage ;;
 esac

@@ -5,11 +5,11 @@ set -eu -o pipefail
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 TEMP_DIR="${DIR}/.tmp"
 
-rm -rf "${DIR}/../../.bin"
-rm -rf "${DIR}/../../.cache"
+rm -rf "${DIR}/../../lib/.bin"
+rm -rf "${DIR}/../../lib/.cache"
 
-source "${DIR}/../../test.sh"
-source "${DIR}/../../download.sh"
+source "${DIR}/../../lib/test.sh"
+source "${DIR}/../../lib/download.sh"
 
 # downloaded file
 download_and_verify_checksum "https://releases.hashicorp.com/nomad/0.12.5/nomad_0.12.5_linux_amd64.zip" "${TEMP_DIR}/download_and_verify_checksum_$$/file.zip" "dece264c86a5898a18d62d6ecca469fee71329e444b284416c57bd1e3d76f253"
