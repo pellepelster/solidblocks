@@ -40,10 +40,23 @@ jobs:
           path: |
             solidblocks-shell/build/solidblocks-shell-*.zip
 
+  solidblocks-minio:
+    name: experimental/solidblocks-minio
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: experimental/solidblocks-minio/do build
+      - name: Test
+        run: experimental/solidblocks-minio/do test
+
   release:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: solidblocks-shell
+    needs:
+      - solidblocks-shell
+      - solidblocks-minio
     steps:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
