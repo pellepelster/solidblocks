@@ -70,7 +70,7 @@ jobs:
         with:
           name: solidblocks-minio
           path: /tmp
-      - name: Import Docker Image
+      - name: Import Minio Docker Image
         run: docker load < /tmp/solidblocks-minio-*.tar
       - name: Build
         run: experimental/solidblocks-rds-postgresql/do build
@@ -93,6 +93,12 @@ jobs:
     steps:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
+      - name: Debug
+        run: ls -lsa
+      - name: Import Minio Docker Image
+        run: docker load < solidblocks-minio/solidblocks-minio-*.tar
+      - name: Import RDS Postgresql Docker Image
+        run: docker load < solidblocks-rds-postgresql/solidblocks-rds-postgresql-*.tar
       - name: Release Docker
         run: ./do release-docker
       - name: Release artifacts

@@ -80,13 +80,13 @@ function task_release {
   #git add README.md
   #git commit -m "release ${version}"
 
-  #git tag -a "${version}" -m "${version}"
-  #git push --tags
+  git tag -a "${version}" -m "${version}"
+  git push --tags
 
-  #semver up release
-  #git add .semver.yaml
-  #git commit -m "bump version to $(semver get release)"
-  #git push
+  semver up release
+  git add .semver.yaml
+  git commit -m "bump version to $(semver get release)"
+  git push
 }
 
 
