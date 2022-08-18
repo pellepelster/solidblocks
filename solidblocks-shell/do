@@ -64,6 +64,10 @@ function task_test {
   task_test_integration
 }
 
+function task_release_docker {
+  echo ""
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -78,5 +82,6 @@ case ${arg} in
   test-unit) task_test_unit "$@" ;;
   test-integration) task_test_integration "$@" ;;
   test-integration-prepare) task_test_integration_prepare "$@" ;;
+  release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac

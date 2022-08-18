@@ -93,6 +93,8 @@ jobs:
     steps:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
+      - name: Release Docker
+        run: ./do release-docker
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
         with:

@@ -10,7 +10,7 @@ source "${DIR}/solidblocks-shell/lib/file.sh"
 source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
-COMPONENTS="solidblocks-shell"
+COMPONENTS="solidblocks-shell experimental/solidblocks-minio experimental/solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_ensure_shellcheck
@@ -31,6 +31,15 @@ function task_test {
       (
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" test
+      )
+    done
+}
+
+function task_release_docker {
+    for component in ${COMPONENTS}; do
+      (
+        cd "${DIR}/${component}"
+        VERSION=${VERSION} "./do" release-docker
       )
     done
 }
@@ -94,5 +103,6 @@ case ${arg} in
   build-documentation) task_build_documentation "$@" ;;
   serve-documentation) task_serve_documentation "$@" ;;
   release) task_release "$@" ;;
+  release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac
