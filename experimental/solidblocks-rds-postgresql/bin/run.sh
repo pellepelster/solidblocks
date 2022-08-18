@@ -2,32 +2,39 @@
 
 set -eu
 
-echo "========================================"
-echo "solidblocks-rds-postgres"
-echo "========================================"
+function log() {
+  echo "[solidblocks-rds-postgresql] $*"
+}
 
-gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
+log "starting..."
 
 if [[ -z "${DB_DATABASE:-}" ]]; then
-  echo "DB_DATABASE not set"
+  log "DB_DATABASE not set"
   exit 1
 fi
 
 if [[ -z "${DB_PASSWORD:-}" ]]; then
-  echo "DB_PASSWORD not set"
+  log "DB_PASSWORD not set"
   exit 1
 fi
 
 if [[ -z "${DB_USERNAME:-}" ]]; then
-  echo "DB_USERNAME not set"
+  log "DB_USERNAME not set"
   exit 1
 fi
 
 if [[ -z "${CA_PUBLIC_KEY:-}" ]]; then
-  echo "CA_PUBLIC_KEY not set"
+  log "CA_PUBLIC_KEY not set"
   exit 1
 fi
 
+if ! mount | grep "${LOCAL_STORAGE_DIR}"; then
+    log "storage dir '${LOCAL_STORAGE_DIR}' not mounted"
+    exit 1
+fi
+
+gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
+gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'
 
 mkdir -p /rds/certificates
 echo -n "${CA_PUBLIC_KEY}" > /rds/certificates/ca.pem
@@ -54,6 +61,7 @@ function psql_count() {
 }
 
 function init_db() {
+  log "initializing database instance"
   ${POSTGRES_BIN_DIR}/initdb --username="rds" --encoding=UTF8 --pwfile=<(echo "${DB_PASSWORD}") -D "${DATA_DIR}" || true
   cp -v /rds/config/postgresql.conf "${DATA_DIR}/postgresql.conf"
   cp -v /rds/config/pg_hba.conf "${DATA_DIR}/pg_hba.conf"
@@ -72,25 +80,28 @@ function init_db() {
     fi
   fi
 
+  echo "====================="
+  pgbackrest_execute  info
+  echo "====================="
+  ls -lsa /rds/pgbackrest/spool
+
   pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_DATABASE} stanza-create
 
   if [[ $(psql_count "SELECT count(datname) FROM pg_database WHERE datname = '${DB_DATABASE}';") == "0" ]]; then
-    echo "creating database '${DB_DATABASE}'"
+    log "creating database '${DB_DATABASE}'"
     psql_execute "CREATE DATABASE ${DB_DATABASE}"
   fi
 
   if [[ $(psql_count "SELECT count(u.usename) FROM pg_catalog.pg_user u WHERE u.usename = '${DB_USERNAME}';") == "0" ]]; then
-    echo "creating user '${DB_USERNAME}'"
+    log "creating user '${DB_USERNAME}'"
     psql_execute "CREATE USER ${DB_USERNAME} WITH ENCRYPTED PASSWORD '${DB_PASSWORD}'"
   fi
 
-  echo "granting all privileges for '${DB_USERNAME}' on '${DB_DATABASE}'"
+  log "granting all privileges for '${DB_USERNAME}' on '${DB_DATABASE}'"
   psql_execute "GRANT ALL PRIVILEGES ON DATABASE ${DB_DATABASE} TO ${DB_USERNAME}"
 
-  echo "executing initial backup"
-  echo "========================================"
+  log "executing initial backup"
   pgbackrest_execute --log-level-console=info --type=full backup
-  echo "========================================"
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${DATA_DIR}" stop
 }
@@ -107,35 +118,30 @@ function pgbackrest_status_code() {
 }
 
 if [[ ! "$(ls -A ${DATA_DIR})" ]]; then
-  echo "data dir is empty"
+  log "data dir is empty"
 
-  #if [[ $(pgbackrest_status_code) -eq 0 ]]; then
-  if false; then
+  if [[ $(pgbackrest_status_code) -eq 0 ]]; then
 
-    echo "========================================"
-    echo "restoring database from backup"
+    log "restoring database from backup"
     # make sure we only listen public when DB is ready to go
     pgbackrest_execute --db-path=${DATA_DIR} restore --recovery-option="recovery_end_command=/rds/bin/recovery_complete.sh"
-    echo "========================================"
 
     sleep 5
 
-    echo "========================================"
-    echo "starting db for recovery"
+    log "starting db for recovery"
     ${POSTGRES_BIN_DIR}/pg_ctl -D "${DATA_DIR}" start --options="-c listen_addresses=''"
-    echo "========================================"
 
     while [[ -f /tmp/recovery_complete ]]; do
-      echo "waiting for recovery completion"
+      log "waiting for recovery completion"
       sleep 5
     done
 
     until [[ "$(psql_execute 'SELECT pg_is_in_recovery();' | tr -d '[:space:]')" == "f" ]]; do
-      echo "waiting for server to be ready"
+      log "waiting for server to be ready"
       sleep 5
     done
 
-    echo "setting password for '${DB_USERNAME}'"
+    log "setting password for '${DB_USERNAME}'"
     psql_execute "ALTER USER ${DB_USERNAME} WITH ENCRYPTED PASSWORD '${DB_PASSWORD}'"
 
     ${POSTGRES_BIN_DIR}/pg_ctl -D "${DATA_DIR}" stop
@@ -143,17 +149,16 @@ if [[ ! "$(ls -A ${DATA_DIR})" ]]; then
     init_db
   fi
 else
-  echo "data dir is not empty"
+  log "data dir is not empty"
 
   rm -f /rds/socket/*
   rm -f "${DATA_DIR}/postmaster.pid"
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${DATA_DIR}" start --options="-c listen_addresses=''"
-  echo "setting password for '${DB_USERNAME}'"
+  log "setting password for '${DB_USERNAME}'"
   psql_execute "ALTER USER ${DB_USERNAME} WITH ENCRYPTED PASSWORD '${DB_PASSWORD}'"
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${DATA_DIR}" stop
 fi
 
-echo "starting postgres db"
-
+log "provisioning completed"
 exec ${POSTGRES_BIN_DIR}/postgres -D "${DATA_DIR}"

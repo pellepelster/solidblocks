@@ -28,11 +28,9 @@ dependencies {
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
     testImplementation("ch.qos.logback:logback-classic:1.2.10")
-
     testImplementation("org.postgresql:postgresql:42.4.1")
-
+    testImplementation("org.jdbi:jdbi3-core:3.32.0")
 }
-
 
 tasks.test {
     useJUnitPlatform()

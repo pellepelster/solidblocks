@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-set -eux
-
-consul lock -child-exit-code "solidblocks/instance/{{env "SOLIDBLOCKS_INSTANCE_ID"}}/rds/postgres/{{env "DB_DATABASE"}}/backup-lock" pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{env "DB_DATABASE"}} backup --type=full

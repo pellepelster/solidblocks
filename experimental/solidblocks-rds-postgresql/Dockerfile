@@ -47,10 +47,11 @@ USER ${USER}
 EXPOSE 5432
 WORKDIR ${USER}
 
-COPY templates/ templates/
-COPY bin/ bin/
+COPY --chown=$USER:$USER templates/ templates/
+COPY --chown=$USER:$USER bin/ bin/
 
 RUN mkdir log
 RUN mkdir socket
+RUN mkdir -p pgbackrest/spool
 
 CMD [ "/rds/bin/run.sh" ]

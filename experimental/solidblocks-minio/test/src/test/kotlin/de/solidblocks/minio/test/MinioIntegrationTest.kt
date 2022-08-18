@@ -57,7 +57,7 @@ class MinioIntegrationTest {
     fun doesNotStartIfNoStorageIsMounted() {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        val container = GenericContainer("solidblocks-minio").apply {
+        val container = GenericContainer("solidblocks-minio:snapshot").apply {
             withLogConsumer(logConsumer)
             withEnv(
                 mapOf(
@@ -73,7 +73,7 @@ class MinioIntegrationTest {
             container.start()
         }
 
-        logConsumer.waitForLogLine("storage dir '/storage/local' not mounted")
+        logConsumer.waitForLogLine("[solidblocks-minio] storage dir '/storage/local' not mounted")
     }
 
     @Test
@@ -81,7 +81,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("startsWithStorageMount")
 
-        val container = GenericContainer("solidblocks-minio").apply {
+        val container = GenericContainer("solidblocks-minio:snapshot").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withEnv(
@@ -94,6 +94,7 @@ class MinioIntegrationTest {
             )
         }
         container.start()
+        logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
     }
 
     @Test
@@ -101,7 +102,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        val container = GenericContainer("solidblocks-minio").apply {
+        val container = GenericContainer("solidblocks-minio:snapshot").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withExposedPorts(443)
@@ -121,7 +122,7 @@ class MinioIntegrationTest {
             MinioClient.builder().endpoint("https://localhost:${container.getMappedPort(443)}").httpClient(httpClient)
                 .credentials("admin12345", "admin12345").build()
 
-        logConsumer.waitForLogLine("provisioning completed")
+        logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         assertThat(adminMinioClient.bucketExists(BucketExistsArgs.builder().bucket("${bucket}-new").build())).isFalse
 
         container.execInContainer("/minio/bin/provision.sh", "${bucket}-new:${accessKey}:${secretKey}")
@@ -133,7 +134,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        val container = GenericContainer("solidblocks-minio").apply {
+        val container = GenericContainer("solidblocks-minio:snapshot").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withExposedPorts(443)
@@ -153,7 +154,7 @@ class MinioIntegrationTest {
             MinioClient.builder().endpoint("https://localhost:${container.getMappedPort(443)}").httpClient(httpClient)
                 .credentials("admin12345", "admin12345").build()
 
-        logConsumer.waitForLogLine("provisioning completed")
+        logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         assertThat(minioClient.bucketExists(BucketExistsArgs.builder().bucket("bucket1").build())).isFalse
         assertThat(minioClient.bucketExists(BucketExistsArgs.builder().bucket("bucket2").build())).isFalse
         assertThat(minioClient.bucketExists(BucketExistsArgs.builder().bucket("bucket3").build())).isFalse
@@ -164,7 +165,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        val container = GenericContainer("solidblocks-minio").apply {
+        val container = GenericContainer("solidblocks-minio:snapshot").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withExposedPorts(443)
@@ -184,7 +185,7 @@ class MinioIntegrationTest {
             MinioClient.builder().endpoint("https://localhost:${container.getMappedPort(443)}").httpClient(httpClient)
                 .credentials("admin12345", "admin12345").build()
 
-        logConsumer.waitForLogLine("provisioning completed")
+        logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         assertThat(minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())).isFalse
         assertThat(minioClient.bucketExists(BucketExistsArgs.builder().bucket("${bucket}-new").build())).isFalse
 

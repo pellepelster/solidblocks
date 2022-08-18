@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -eux
+
+pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{ .Env.DB_DATABASE }} backup --type=full

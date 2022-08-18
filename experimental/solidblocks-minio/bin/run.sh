@@ -2,28 +2,32 @@
 
 set -eu
 
+function log() {
+  echo "[solidblocks-minio] $*"
+}
+
 if [[ -z "${MINIO_ADMIN_USER:-}" ]]; then
-  echo "MINIO_ADMIN_USER not set"
+  log "MINIO_ADMIN_USER not set"
   exit 1
 fi
 
 if [[ -z "${MINIO_ADMIN_PASSWORD:-}" ]]; then
-  echo "MINIO_ADMIN_PASSWORD not set"
+  log "MINIO_ADMIN_PASSWORD not set"
   exit 1
 fi
 
 if [[ -z "${MINIO_TLS_PRIVATE_KEY:-}" ]]; then
-  echo "MINIO_TLS_PRIVATE_KEY not set"
+  log "MINIO_TLS_PRIVATE_KEY not set"
   exit 1
 fi
 
 if [[ -z "${MINIO_TLS_PUBLIC_KEY:-}" ]]; then
-  echo "MINIO_TLS_PUBLIC_KEY not set"
+  log "MINIO_TLS_PUBLIC_KEY not set"
   exit 1
 fi
 
 if ! mount | grep "${LOCAL_STORAGE_DIR}"; then
-    echo "storage dir '${LOCAL_STORAGE_DIR}' not mounted"
+    log "storage dir '${LOCAL_STORAGE_DIR}' not mounted"
     exit 1
 fi
 

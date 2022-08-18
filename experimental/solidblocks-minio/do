@@ -34,7 +34,7 @@ function task_test {
 function task_build {
   (
     cd "${DIR}"
-    docker build -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" .
+    docker build -t "${DOCKER_IMAGE_NAME}:${VERSION}" -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" .
     mkdir -p "${DIR}/build"
     docker save "${DOCKER_IMAGE_NAME}" > "${DIR}/build/${DOCKER_IMAGE_NAME}-${VERSION}.tar"
   )

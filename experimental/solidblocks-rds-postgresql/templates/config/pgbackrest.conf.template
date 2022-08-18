@@ -1,5 +1,6 @@
 [global]
 
+spool-path=/rds/pgbackrest/spool
 repo1-type=s3
 repo1-path=/pgbackrest
 

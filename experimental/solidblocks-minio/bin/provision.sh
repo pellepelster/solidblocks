@@ -2,13 +2,17 @@
 
 set -eu
 
+function log() {
+  echo "[solidblocks-minio] $*"
+}
+
 if [[ -z "${MINIO_ADMIN_USER:-}" ]]; then
-  echo "MINIO_ADMIN_USER not set"
+  log "MINIO_ADMIN_USER not set"
   exit 1
 fi
 
 if [[ -z "${MINIO_ADMIN_PASSWORD:-}" ]]; then
-  echo "MINIO_ADMIN_PASSWORD not set"
+  log "MINIO_ADMIN_PASSWORD not set"
   exit 1
 fi
 
@@ -48,7 +52,7 @@ function minio_ensure_bucket() {
 
   mc_wrapper admin user add "${ALIAS}" "${user_access_key}" "${user_secret_key}"
 
-  echo "creating bucket '${bucket}'"
+  log "creating bucket '${bucket}'"
 
   if ! mc_wrapper ls "${ALIAS}/${bucket}"; then
     mc_wrapper mb "${ALIAS}/${bucket}"
@@ -61,7 +65,7 @@ function minio_ensure_bucket() {
 
 function minio_ensure_buckets() {
   if [[ -z $* ]]; then
-    echo "no bucket configurations provided, no buckets will be created"
+    log "no bucket configurations provided, no buckets will be created"
   else
     local bucket_specs=($(echo "$*" | tr '#' "\n"))
 
@@ -86,16 +90,16 @@ function wait_for_minio() {
   MINIO_HOST="localhost"
   MINIO_PORT="443"
 
-  echo "waiting for minio at '${MINIO_HOST}:${MINIO_PORT}'"
+  log "waiting for minio at '${MINIO_HOST}:${MINIO_PORT}'"
   while ! nc -z "${MINIO_HOST}" "${MINIO_PORT}"; do
     sleep 1
-    echo "still waiting for minio at '${MINIO_HOST}:${MINIO_PORT}'"
+    log "still waiting for minio at '${MINIO_HOST}:${MINIO_PORT}'"
   done
-  echo "minio is started at '${MINIO_HOST}:${MINIO_PORT}'"
+  log "minio is started at '${MINIO_HOST}:${MINIO_PORT}'"
 }
 
 wait_for_minio
 
 minio_ensure_buckets "$*"
 
-echo "provisioning completed"
+log "provisioning completed"
