@@ -43,7 +43,6 @@ class RdsPostgresqlIntegrationTest {
         //client.removeNetworkCmd(network.id).exec()
     }
 
-
     @Test
     fun testDatabaseKeepsDataBetweenRestarts(testBed: RdsTestBed) {
 
@@ -189,7 +188,7 @@ class RdsPostgresqlIntegrationTest {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        val container = GenericContainer("solidblocks-rds-postgresql:snapshot").apply {
+        val container = GenericContainer("solidblocks-rds-postgresql").apply {
             withLogConsumer(logConsumer)
             withEnv(
                     mapOf(

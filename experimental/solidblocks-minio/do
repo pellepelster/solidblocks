@@ -4,7 +4,7 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-VERSION="${GITHUB_REF_NAME:-snapshot}"
+export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"

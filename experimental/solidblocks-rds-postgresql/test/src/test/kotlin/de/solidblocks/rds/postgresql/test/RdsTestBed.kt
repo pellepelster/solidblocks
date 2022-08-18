@@ -17,8 +17,17 @@ class RdsTestBed : AfterEachCallback {
 
     private val containers = mutableListOf<GenericContainer<out GenericContainer<*>>>()
 
+
+    fun imageVersion(image: String): String {
+        if (System.getenv("VERSION") != null) {
+            return "${image}:${System.getenv("VERSION")}"
+        }
+
+        return image
+    }
+
     fun createContainer(dockerImageName: String): GenericContainer<out GenericContainer<*>> {
-        val container = GenericContainer(dockerImageName)
+        val container = GenericContainer(imageVersion(dockerImageName))
         containers.add(container)
         return container
     }
@@ -29,7 +38,7 @@ class RdsTestBed : AfterEachCallback {
         val storageDir = initWorldReadableTempDir().absolutePath
 
         logger.info { "starting minio instance with storage dir '${storageDir}'" }
-        val container = createContainer("solidblocks-minio:snapshot").also {
+        val container = createContainer(imageVersion("solidblocks-minio")).also {
             it.withLogConsumer(logConsumer)
             it.withNetworkAliases(RdsPostgresqlIntegrationTest.backupHost)
             it.withNetwork(network)
@@ -49,7 +58,7 @@ class RdsTestBed : AfterEachCallback {
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
     }
 
-    fun createAndStartPostgresContainer(storageDir: File, logConsumer: TestContainersLogConsumer) = GenericContainer("solidblocks-rds-postgresql:snapshot").also {
+    fun createAndStartPostgresContainer(storageDir: File, logConsumer: TestContainersLogConsumer) = GenericContainer("solidblocks-rds-postgresql").also {
         it.withLogConsumer(logConsumer)
         it.withNetwork(network)
         it.withExposedPorts(5432)
