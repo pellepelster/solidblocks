@@ -57,7 +57,7 @@ class MinioIntegrationTest {
     fun doesNotStartIfNoStorageIsMounted() {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        val container = GenericContainer("solidblocks-minio:snapshot").apply {
+        val container = GenericContainer("solidblocks-minio").apply {
             withLogConsumer(logConsumer)
             withEnv(
                 mapOf(
@@ -81,7 +81,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("startsWithStorageMount")
 
-        val container = GenericContainer("solidblocks-minio:snapshot").apply {
+        val container = GenericContainer("solidblocks-minio").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withEnv(
@@ -102,7 +102,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        val container = GenericContainer("solidblocks-minio:snapshot").apply {
+        val container = GenericContainer("solidblocks-minio").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withExposedPorts(443)
@@ -134,7 +134,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        val container = GenericContainer("solidblocks-minio:snapshot").apply {
+        val container = GenericContainer("solidblocks-minio").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withExposedPorts(443)
@@ -165,7 +165,7 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        val container = GenericContainer("solidblocks-minio:snapshot").apply {
+        val container = GenericContainer("solidblocks-minio").apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/local")
             withExposedPorts(443)
