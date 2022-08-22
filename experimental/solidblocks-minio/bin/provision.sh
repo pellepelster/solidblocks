@@ -18,7 +18,7 @@ fi
 
 export PATH="/minio/bin/:${PATH}"
 export ALIAS=local
-export MC_HOST_local="https://${MINIO_ADMIN_USER}:${MINIO_ADMIN_PASSWORD}@localhost"
+export MC_HOST_local="https://${MINIO_ADMIN_USER}:${MINIO_ADMIN_PASSWORD}@localhost:${MINIO_HTTPS_PORT}"
 
 function mc_wrapper() {
  mc --insecure $@
@@ -88,14 +88,13 @@ function minio_ensure_buckets() {
 
 function wait_for_minio() {
   MINIO_HOST="localhost"
-  MINIO_PORT="443"
 
-  log "waiting for minio at '${MINIO_HOST}:${MINIO_PORT}'"
-  while ! nc -z "${MINIO_HOST}" "${MINIO_PORT}"; do
+  log "waiting for minio at '${MINIO_HOST}:${MINIO_HTTPS_PORT}'"
+  while ! nc -z "${MINIO_HOST}" "${MINIO_HTTPS_PORT}"; do
     sleep 1
-    log "still waiting for minio at '${MINIO_HOST}:${MINIO_PORT}'"
+    log "still waiting for minio at '${MINIO_HOST}:${MINIO_HTTPS_PORT}'"
   done
-  log "minio is started at '${MINIO_HOST}:${MINIO_PORT}'"
+  log "minio is started at '${MINIO_HOST}:${MINIO_HTTPS_PORT}'"
 }
 
 wait_for_minio

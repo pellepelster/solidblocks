@@ -139,6 +139,39 @@ class MinioIntegrationTest {
     }
 
     @Test
+    fun startsWithDifferentPort() {
+        val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
+        val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
+
+        val container = GenericContainer(imageVersion("solidblocks-minio")).apply {
+            withLogConsumer(logConsumer)
+            withFileSystemBind(tempDir.absolutePath, "/storage/local")
+            withExposedPorts(8443)
+            withEnv(
+                    mapOf(
+                            "MINIO_HTTPS_PORT" to "8443",
+                            "MINIO_ADMIN_USER" to "admin12345",
+                            "MINIO_ADMIN_PASSWORD" to "admin12345",
+                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
+                            "BUCKET_SPECS" to "${bucket}:${accessKey}:${secretKey}"
+                    )
+            )
+        }
+        container.start()
+
+        val adminMinioClient =
+                MinioClient.builder().endpoint("https://localhost:${container.getMappedPort(8443)}").httpClient(httpClient)
+                        .credentials("admin12345", "admin12345").build()
+
+        logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
+        assertThat(adminMinioClient.bucketExists(BucketExistsArgs.builder().bucket("${bucket}-new").build())).isFalse
+
+        container.execInContainer("/minio/bin/provision.sh", "${bucket}-new:${accessKey}:${secretKey}")
+        assertThat(adminMinioClient.bucketExists(BucketExistsArgs.builder().bucket("${bucket}-new").build())).isTrue
+    }
+
+    @Test
     fun startsWithInvalidBucketSpec() {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")

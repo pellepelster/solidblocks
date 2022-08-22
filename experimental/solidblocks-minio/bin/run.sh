@@ -40,7 +40,7 @@ mkdir -p /minio/certificates
 echo -n "${MINIO_TLS_PRIVATE_KEY}" | base64 -d > /minio/certificates/private.key
 echo -n "${MINIO_TLS_PUBLIC_KEY}" | base64 -d > /minio/certificates/public.crt
 
-MINIO_OPTS="${MINIO_OPTS} --certs-dir /minio/certificates --address :443"
+MINIO_OPTS="${MINIO_OPTS} --certs-dir /minio/certificates --address :${MINIO_HTTPS_PORT}"
 
 /minio/bin/provision.sh "${BUCKET_SPECS:-}" &
 

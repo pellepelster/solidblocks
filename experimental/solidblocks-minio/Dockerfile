@@ -14,6 +14,8 @@ ENV DATA_DIR=${LOCAL_STORAGE_DIR}/data
 
 ENV LANG en_US.utf8
 
+ENV MINIO_HTTPS_PORT=443
+
 RUN addgroup -g $GID $GROUP \
   && adduser $USER \
   -h /$USER \
@@ -47,7 +49,7 @@ RUN curl -L https://dl.min.io/client/mc/release/linux-amd64/mc -o $USER/bin/mc &
 COPY bin/run.sh /${USER}/bin/run.sh
 COPY bin/provision.sh /${USER}/bin/provision.sh
 
-EXPOSE 443
+EXPOSE ${MINIO_HTTPS_PORT}
 EXPOSE 9001
 
 ENTRYPOINT ["/minio/bin/run.sh"]
