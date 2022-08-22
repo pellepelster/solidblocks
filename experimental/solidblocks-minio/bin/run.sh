@@ -37,8 +37,8 @@ export MINIO_ROOT_PASSWORD="${MINIO_ADMIN_PASSWORD}"
 MINIO_OPTS="--console-address :9001"
 
 mkdir -p /minio/certificates
-echo -n "${MINIO_TLS_PRIVATE_KEY}" > /minio/certificates/private.key
-echo -n "${MINIO_TLS_PUBLIC_KEY}" > /minio/certificates/public.crt
+echo -n "${MINIO_TLS_PRIVATE_KEY}" | base64 -d > /minio/certificates/private.key
+echo -n "${MINIO_TLS_PUBLIC_KEY}" | base64 -d > /minio/certificates/public.crt
 
 MINIO_OPTS="${MINIO_OPTS} --certs-dir /minio/certificates --address :443"
 

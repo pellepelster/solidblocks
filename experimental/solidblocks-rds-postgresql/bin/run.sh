@@ -37,7 +37,7 @@ gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | s
 gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'
 
 mkdir -p /rds/certificates
-echo -n "${CA_PUBLIC_KEY}" > /rds/certificates/ca.pem
+echo -n "${CA_PUBLIC_KEY}" | base64 -d > /rds/certificates/ca.pem
 
 POSTGRES_BASE_DIR="/usr/libexec/postgresql14"
 POSTGRES_BIN_DIR="${POSTGRES_BASE_DIR}"

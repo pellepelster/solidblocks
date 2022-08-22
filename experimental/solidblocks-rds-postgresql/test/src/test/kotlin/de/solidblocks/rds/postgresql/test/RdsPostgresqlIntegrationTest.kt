@@ -28,12 +28,12 @@ class RdsPostgresqlIntegrationTest {
         val databaseUser = "user1"
         val databasePassword = "password1"
 
-        val minioCertificatePrivate =
-            RdsPostgresqlIntegrationTest::class.java.getResource("/minio.key.pem").readText()
-        val minioCertificatePublic =
-            RdsPostgresqlIntegrationTest::class.java.getResource("/minio.pem").readText()
-        val caPublic =
-            RdsPostgresqlIntegrationTest::class.java.getResource("/ca.pem").readText()
+        val minioCertificatePrivateBase64 =
+            Base64.getEncoder().encodeToString(RdsPostgresqlIntegrationTest::class.java.getResource("/minio.key.pem").readBytes())
+        val minioCertificatePublicBase64 =
+            Base64.getEncoder().encodeToString(RdsPostgresqlIntegrationTest::class.java.getResource("/minio.pem").readBytes())
+        val caPublicBase64 =
+            Base64.getEncoder().encodeToString(RdsPostgresqlIntegrationTest::class.java.getResource("/ca.pem").readBytes())
 
     }
 
@@ -355,7 +355,7 @@ class RdsPostgresqlIntegrationTest {
                     "DB_USERNAME" to databaseUser,
                     "DB_PASSWORD" to databasePassword,
 
-                    "CA_PUBLIC_KEY" to caPublic,
+                    "CA_PUBLIC_KEY" to caPublicBase64,
                 )
             )
         }

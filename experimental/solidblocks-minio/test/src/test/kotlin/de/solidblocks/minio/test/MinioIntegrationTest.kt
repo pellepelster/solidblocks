@@ -16,6 +16,7 @@ import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.ContainerLaunchException
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.output.Slf4jLogConsumer
+import org.testcontainers.shaded.org.bouncycastle.util.encoders.Base64Encoder
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -32,8 +33,8 @@ class MinioIntegrationTest {
         const val accessKey = "user1"
         const val secretKey = "ccbaa67e-cf26-432f-a11f-0c9e72abccf8"
 
-        val minioCertificatePrivate = MinioIntegrationTest::class.java.getResource("/minio.key.pem")?.readText()
-        val minioCertificatePublic = MinioIntegrationTest::class.java.getResource("/minio.pem")?.readText()
+        val minioCertificatePrivateBase64 = Base64.getEncoder().encodeToString(MinioIntegrationTest::class.java.getResource("/minio.key.pem")?.readBytes())
+        val minioCertificatePublicBase64 = Base64.getEncoder().encodeToString(MinioIntegrationTest::class.java.getResource("/minio.pem")?.readBytes())
 
         private val caPublic = MinioIntegrationTest::class.java.getResource("/ca.pem")?.openStream()
 
@@ -63,8 +64,8 @@ class MinioIntegrationTest {
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
                             "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivate,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublic,
+                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
                     )
             )
         }
@@ -96,8 +97,8 @@ class MinioIntegrationTest {
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
                             "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivate,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublic,
+                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
                     )
             )
         }
@@ -118,8 +119,8 @@ class MinioIntegrationTest {
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
                             "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivate,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublic,
+                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
                             "BUCKET_SPECS" to "${bucket}:${accessKey}:${secretKey}"
                     )
             )
@@ -150,8 +151,8 @@ class MinioIntegrationTest {
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
                             "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivate,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublic,
+                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
                             "BUCKET_SPECS" to "bucket1:aa#bucket2::#bucket3"
                     )
             )
@@ -181,8 +182,8 @@ class MinioIntegrationTest {
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
                             "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivate,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublic
+                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64
                     )
             )
         }

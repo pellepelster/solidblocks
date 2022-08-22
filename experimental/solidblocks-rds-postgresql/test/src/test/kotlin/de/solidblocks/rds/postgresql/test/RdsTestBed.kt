@@ -47,8 +47,8 @@ class RdsTestBed : AfterEachCallback {
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
                             "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to RdsPostgresqlIntegrationTest.minioCertificatePrivate,
-                            "MINIO_TLS_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.minioCertificatePublic,
+                            "MINIO_TLS_PRIVATE_KEY" to RdsPostgresqlIntegrationTest.minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.minioCertificatePublicBase64,
                             "BUCKET_SPECS" to "${RdsPostgresqlIntegrationTest.bucket}:${RdsPostgresqlIntegrationTest.accessKey}:${RdsPostgresqlIntegrationTest.secretKey}"
                     )
             )
@@ -74,7 +74,7 @@ class RdsTestBed : AfterEachCallback {
                         "DB_USERNAME" to RdsPostgresqlIntegrationTest.databaseUser,
                         "DB_PASSWORD" to RdsPostgresqlIntegrationTest.databasePassword,
 
-                        "CA_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.caPublic,
+                        "CA_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.caPublicBase64,
                 )
         )
         it.start()
