@@ -80,11 +80,6 @@ function init_db() {
     fi
   fi
 
-  echo "====================="
-  pgbackrest_execute  info
-  echo "====================="
-  ls -lsa /rds/pgbackrest/spool
-
   pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_DATABASE} stanza-create
 
   if [[ $(psql_count "SELECT count(datname) FROM pg_database WHERE datname = '${DB_DATABASE}';") == "0" ]]; then

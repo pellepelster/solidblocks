@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eu
+
+echo "[solidblocks-rds-postgresql] executing differential backup"
+
+pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{ .Env.DB_DATABASE }} backup --type=diff
