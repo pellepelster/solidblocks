@@ -8,25 +8,47 @@ function log() {
 
 log "starting..."
 
-if [[ -z "${DB_DATABASE:-}" ]]; then
-  log "DB_DATABASE not set"
+# verify common needed variables
+while read var; do
+  [ -z "${!var}" ] && { log "'$var' is empty or not set. Exiting.."
+   exit 1;
+}
+done << EOF
+DB_DATABASE
+DB_PASSWORD
+DB_USERNAME
+EOF
+
+if [[ -z "${DB_BACKUP_S3_CA_PUBLIC_KEY:-}" ]]; then
+  log "DB_BACKUP_S3_CA_PUBLIC_KEY not set"
   exit 1
 fi
 
-if [[ -z "${DB_PASSWORD:-}" ]]; then
-  log "DB_PASSWORD not set"
+if [[ -z "${DB_BACKUP_S3_HOST:-}" ]]; then
+  log "DB_BACKUP_S3_HOST not set"
   exit 1
 fi
 
-if [[ -z "${DB_USERNAME:-}" ]]; then
-  log "DB_USERNAME not set"
+if [[ -z "${DB_BACKUP_S3_BUCKET:-}" ]]; then
+  log "DB_BACKUP_S3_BUCKET not set"
   exit 1
 fi
 
-if [[ -z "${CA_PUBLIC_KEY:-}" ]]; then
-  log "CA_PUBLIC_KEY not set"
+if [[ -z "${DB_BACKUP_S3_ACCESS_KEY:-}" ]]; then
+  log "DB_BACKUP_S3_ACCESS_KEY not set"
   exit 1
 fi
+
+if [[ -z "${DB_BACKUP_S3_SECRET_KEY:-}" ]]; then
+  log "DB_BACKUP_S3_SECRET_KEY not set"
+  exit 1
+fi
+
+if [[ -n "${DB_BACKUP_S3_CA_PUBLIC_KEY:-}" ]]; then
+mkdir -p /rds/certificates
+echo -n "${DB_BACKUP_S3_CA_PUBLIC_KEY}" | base64 -d > /rds/certificates/ca.pem
+fi
+
 
 if ! mount | grep "${LOCAL_STORAGE_DIR}"; then
     log "storage dir '${LOCAL_STORAGE_DIR}' not mounted"
@@ -35,9 +57,6 @@ fi
 
 gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
 gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'
-
-mkdir -p /rds/certificates
-echo -n "${CA_PUBLIC_KEY}" | base64 -d > /rds/certificates/ca.pem
 
 POSTGRES_BASE_DIR="/usr/libexec/postgresql14"
 POSTGRES_BIN_DIR="${POSTGRES_BASE_DIR}"

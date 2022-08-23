@@ -74,7 +74,7 @@ class RdsTestBed : AfterEachCallback {
                         "DB_USERNAME" to RdsPostgresqlIntegrationTest.databaseUser,
                         "DB_PASSWORD" to RdsPostgresqlIntegrationTest.databasePassword,
 
-                        "CA_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.caPublicBase64,
+                        "DB_BACKUP_S3_CA_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.caPublicBase64,
                 )
         )
         it.start()

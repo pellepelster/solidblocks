@@ -355,7 +355,7 @@ class RdsPostgresqlIntegrationTest {
                     "DB_USERNAME" to databaseUser,
                     "DB_PASSWORD" to databasePassword,
 
-                    "CA_PUBLIC_KEY" to caPublicBase64,
+                    "DB_BACKUP_S3_CA_PUBLIC_KEY" to caPublicBase64,
                 )
             )
         }

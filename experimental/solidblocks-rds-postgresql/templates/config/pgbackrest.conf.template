@@ -1,22 +1,26 @@
 [global]
 
 spool-path=/rds/pgbackrest/spool
-repo1-type=s3
-repo1-path=/pgbackrest
 
-repo1-s3-endpoint={{ .Env.DB_BACKUP_S3_HOST }}
-repo1-s3-bucket={{ .Env.DB_BACKUP_S3_BUCKET }}
-repo1-s3-region=eu-west-3
+repo2-type=s3
+repo2-path=/pgbackrest
 
-repo1-s3-verify-tls=n
-repo1-s3-key={{ .Env.DB_BACKUP_S3_ACCESS_KEY }}
-repo1-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
+repo2-s3-endpoint={{ .Env.DB_BACKUP_S3_HOST }}
+repo2-s3-bucket={{ .Env.DB_BACKUP_S3_BUCKET }}
 
-repo1-storage-ca-file=/rds/certificates/ca.pem
+repo2-s3-region=eu-west-3
+repo2-s3-uri-style=path
 
-repo1-s3-uri-style=path
+repo2-s3-key={{ .Env.DB_BACKUP_S3_ACCESS_KEY }}
+repo2-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
 
-repo1-retention-full=1
+{{ if (file.Exists "/rds/certificates/ca.pem") }}
+repo2-storage-ca-file=/rds/certificates/ca.pem
+{{end}}
+
+repo2-retention-full-type=count
+repo2-retention-full=4
+
 log-level-console=info
 
 [{{ .Env.DB_DATABASE }}]
