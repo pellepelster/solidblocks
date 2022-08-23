@@ -6,43 +6,21 @@ function log() {
   echo "[solidblocks-rds-postgresql] $*"
 }
 
-log "starting..."
-
-# verify common needed variables
-while read var; do
-  [ -z "${!var}" ] && { log "'$var' is empty or not set. Exiting.."
-   exit 1;
+function ensure_environment_variables() {
+  # verify common needed variables
+  for var in $@; do
+    if [[ -z "${!var:-}" ]]; then
+      log "'$var' is empty or not set"
+      exit 1;
+    fi
+  done
 }
-done << EOF
-DB_DATABASE
-DB_PASSWORD
-DB_USERNAME
-EOF
 
-if [[ -z "${DB_BACKUP_S3_CA_PUBLIC_KEY:-}" ]]; then
-  log "DB_BACKUP_S3_CA_PUBLIC_KEY not set"
-  exit 1
-fi
+ensure_environment_variables DB_DATABASE DB_PASSWORD DB_USERNAME
 
-if [[ -z "${DB_BACKUP_S3_HOST:-}" ]]; then
-  log "DB_BACKUP_S3_HOST not set"
-  exit 1
-fi
+ensure_environment_variables DB_BACKUP_S3_CA_PUBLIC_KEY DB_BACKUP_S3_HOST DB_BACKUP_S3_BUCKET DB_BACKUP_S3_ACCESS_KEY DB_BACKUP_S3_SECRET_KEY
 
-if [[ -z "${DB_BACKUP_S3_BUCKET:-}" ]]; then
-  log "DB_BACKUP_S3_BUCKET not set"
-  exit 1
-fi
-
-if [[ -z "${DB_BACKUP_S3_ACCESS_KEY:-}" ]]; then
-  log "DB_BACKUP_S3_ACCESS_KEY not set"
-  exit 1
-fi
-
-if [[ -z "${DB_BACKUP_S3_SECRET_KEY:-}" ]]; then
-  log "DB_BACKUP_S3_SECRET_KEY not set"
-  exit 1
-fi
+log "starting..."
 
 if [[ -n "${DB_BACKUP_S3_CA_PUBLIC_KEY:-}" ]]; then
 mkdir -p /rds/certificates
