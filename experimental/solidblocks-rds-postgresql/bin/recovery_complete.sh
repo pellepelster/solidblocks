@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-set -eux
+set -eu
 
 echo "complete" > /tmp/recovery_complete

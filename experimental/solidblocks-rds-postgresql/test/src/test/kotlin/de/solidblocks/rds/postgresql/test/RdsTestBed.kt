@@ -13,7 +13,7 @@ class RdsTestBed : AfterEachCallback {
 
     private val logger = KotlinLogging.logger {}
 
-    val network = Network.newNetwork()
+    private val network = Network.newNetwork()
 
     private val containers = mutableListOf<GenericContainer<out GenericContainer<*>>>()
 
@@ -40,16 +40,16 @@ class RdsTestBed : AfterEachCallback {
         logger.info { "starting minio instance with storage dir '${storageDir}'" }
         val container = createContainer(imageVersion("solidblocks-minio")).also {
             it.withLogConsumer(logConsumer)
-            it.withNetworkAliases(RdsPostgresqlIntegrationTest.backupHost)
+            it.withNetworkAliases(RdsPostgresqlMinioBackupIntegrationTest.backupHost)
             it.withNetwork(network)
-            it.withFileSystemBind(storageDir, "/storage/local")
+            it.withFileSystemBind(storageDir, "/storage/data")
             it.withEnv(
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
                             "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to RdsPostgresqlIntegrationTest.minioCertificatePrivateBase64,
-                            "MINIO_TLS_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.minioCertificatePublicBase64,
-                            "BUCKET_SPECS" to "${RdsPostgresqlIntegrationTest.bucket}:${RdsPostgresqlIntegrationTest.accessKey}:${RdsPostgresqlIntegrationTest.secretKey}"
+                            "MINIO_TLS_PRIVATE_KEY" to RdsPostgresqlMinioBackupIntegrationTest.minioCertificatePrivateBase64,
+                            "MINIO_TLS_PUBLIC_KEY" to RdsPostgresqlMinioBackupIntegrationTest.minioCertificatePublicBase64,
+                            "BUCKET_SPECS" to "${RdsPostgresqlMinioBackupIntegrationTest.bucket}:${RdsPostgresqlMinioBackupIntegrationTest.accessKey}:${RdsPostgresqlMinioBackupIntegrationTest.secretKey}"
                     )
             )
         }
@@ -58,25 +58,25 @@ class RdsTestBed : AfterEachCallback {
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
     }
 
-    fun createAndStartPostgresContainer(storageDir: File, logConsumer: TestContainersLogConsumer) = GenericContainer("solidblocks-rds-postgresql").also {
+    fun createAndStartPostgresContainer(
+        environment: Map<String, String>,
+        storageDir: File,
+        logConsumer: TestContainersLogConsumer,
+        password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword,
+        customizer: (input: GenericContainer<out GenericContainer<*>>) -> Unit = {}
+    ) = GenericContainer("solidblocks-rds-postgresql").also {
         it.withLogConsumer(logConsumer)
         it.withNetwork(network)
         it.withExposedPorts(5432)
-        it.withFileSystemBind(storageDir.absolutePath, "/storage/local")
+        it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
         it.withEnv(
                 mapOf(
-                        "DB_BACKUP_S3_HOST" to RdsPostgresqlIntegrationTest.backupHost,
-                        "DB_BACKUP_S3_BUCKET" to RdsPostgresqlIntegrationTest.bucket,
-                        "DB_BACKUP_S3_ACCESS_KEY" to RdsPostgresqlIntegrationTest.accessKey,
-                        "DB_BACKUP_S3_SECRET_KEY" to RdsPostgresqlIntegrationTest.secretKey,
-
-                        "DB_DATABASE" to RdsPostgresqlIntegrationTest.database,
-                        "DB_USERNAME" to RdsPostgresqlIntegrationTest.databaseUser,
-                        "DB_PASSWORD" to RdsPostgresqlIntegrationTest.databasePassword,
-
-                        "DB_BACKUP_S3_CA_PUBLIC_KEY" to RdsPostgresqlIntegrationTest.caPublicBase64,
-                )
+                        "DB_DATABASE" to RdsPostgresqlMinioBackupIntegrationTest.database,
+                        "DB_USERNAME" to RdsPostgresqlMinioBackupIntegrationTest.databaseUser,
+                        "DB_PASSWORD" to password,
+                ) + environment
         )
+        customizer.invoke(it)
         it.start()
     }
 

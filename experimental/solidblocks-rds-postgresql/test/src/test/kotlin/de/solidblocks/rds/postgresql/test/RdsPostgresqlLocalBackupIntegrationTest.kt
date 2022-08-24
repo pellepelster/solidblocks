@@ -2,79 +2,21 @@ package de.solidblocks.rds.postgresql.test
 
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
-import org.awaitility.kotlin.await
-import org.jdbi.v3.core.Jdbi
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
-import org.testcontainers.containers.ContainerLaunchException
-import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.output.Slf4jLogConsumer
-import java.lang.Exception
 import java.util.*
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(RdsTestBedExtension::class)
-class RdsPostgresqlIntegrationTest {
+class RdsPostgresqlLocalBackupIntegrationTest {
 
     private val logger = KotlinLogging.logger {}
 
     companion object {
-        val backupHost = "minio"
-        val bucket = "database1-backup"
-        val accessKey = "database1-user1"
-        val secretKey = "ccbaa67e-cf26-432f-a11f-0c9e72abccf8"
         val database = "database1"
-        val databaseUser = "user1"
-        val databasePassword = "password1"
-
-        val minioCertificatePrivateBase64 =
-            Base64.getEncoder().encodeToString(RdsPostgresqlIntegrationTest::class.java.getResource("/minio.key.pem").readBytes())
-        val minioCertificatePublicBase64 =
-            Base64.getEncoder().encodeToString(RdsPostgresqlIntegrationTest::class.java.getResource("/minio.pem").readBytes())
-        val caPublicBase64 =
-            Base64.getEncoder().encodeToString(RdsPostgresqlIntegrationTest::class.java.getResource("/ca.pem").readBytes())
-
-    }
-
-    private fun Jdbi.waitForReady() {
-        await.until {
-
-            try {
-                this.useHandle<RuntimeException> {
-                    it.execute("select 1") == 1
-                }
-
-                true
-            } catch (e: Exception) {
-                false
-            }
-
-        }
-    }
-
-
-    private fun Jdbi.createUserTable() {
-        this.useHandle<RuntimeException> {
-            it.execute("CREATE TABLE \"user\" (id VARCHAR PRIMARY KEY, \"name\" VARCHAR)")
-        }
-    }
-
-    private fun Jdbi.insertUser(name: String) {
-        this.useHandle<RuntimeException> {
-            it.createUpdate("INSERT INTO \"user\" (id, \"name\") VALUES (?, ?)")
-                .bind(0, UUID.randomUUID())
-                .bind(1, name)
-                .execute()
-        }
-    }
-
-    private fun Jdbi.selectAllUsers(): List<Map<String, Any>>? {
-        return this.withHandle<List<Map<String, Any>>, RuntimeException> {
-            it.createQuery("SELECT * FROM \"user\" ORDER BY \"name\"")
-                .mapToMap()
-                .list()
-        }
     }
 
     @Test
@@ -82,10 +24,16 @@ class RdsPostgresqlIntegrationTest {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        testBed.createAndStartMinioContainer()
-
         val dataDir = initWorldReadableTempDir()
-        val container = testBed.createAndStartPostgresContainer(dataDir, logConsumer)
+        val localBackupDir = initWorldReadableTempDir()
+
+        val container = testBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), dataDir, logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
 
         // on first start instance should be initialized and an initial backup should be executed
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
@@ -135,12 +83,16 @@ class RdsPostgresqlIntegrationTest {
     @Test
     fun testRestoreDatabaseFromFullBackup(rdsTestBed: RdsTestBed) {
 
-
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        rdsTestBed.createAndStartMinioContainer()
-
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(initWorldReadableTempDir(), logConsumer)
+        val localBackupDir = initWorldReadableTempDir()
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), initWorldReadableTempDir(), logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
 
         // on first start instance should be initialized and an initial backup should be executed
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
@@ -170,7 +122,13 @@ class RdsPostgresqlIntegrationTest {
         postgresContainer1.stop()
         logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(initWorldReadableTempDir(), logConsumer)
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), initWorldReadableTempDir(), logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
 
 
         // on second start without persistent storage restore should be executed
@@ -194,12 +152,16 @@ class RdsPostgresqlIntegrationTest {
     @Test
     fun testRestoreDatabaseFromIncrementalBackup(rdsTestBed: RdsTestBed) {
 
-
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
+        val localBackupDir = initWorldReadableTempDir()
 
-        rdsTestBed.createAndStartMinioContainer()
-
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(initWorldReadableTempDir(), logConsumer)
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), initWorldReadableTempDir(), logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
 
         // on first start instance should be initialized and an initial backup should be executed
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
@@ -240,8 +202,13 @@ class RdsPostgresqlIntegrationTest {
         postgresContainer1.stop()
         logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(initWorldReadableTempDir(), logConsumer)
-
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), initWorldReadableTempDir(), logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
 
         // on second start without persistent storage restore should be executed
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
@@ -267,12 +234,17 @@ class RdsPostgresqlIntegrationTest {
     @Test
     fun testRestoreDatabaseFromDifferentialBackup(rdsTestBed: RdsTestBed) {
 
-
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        rdsTestBed.createAndStartMinioContainer()
+        val localBackupDir = initWorldReadableTempDir()
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), initWorldReadableTempDir(), logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
 
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(initWorldReadableTempDir(), logConsumer)
 
         // on first start instance should be initialized and an initial backup should be executed
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
@@ -313,8 +285,13 @@ class RdsPostgresqlIntegrationTest {
         postgresContainer1.stop()
         logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(initWorldReadableTempDir(), logConsumer)
-
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), initWorldReadableTempDir(), logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
 
         // on second start without persistent storage restore should be executed
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
@@ -337,34 +314,5 @@ class RdsPostgresqlIntegrationTest {
         }
     }
 
-    @Test
-    fun doesNotStartIfNoStorageIsMounted() {
-
-        val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
-
-        val container = GenericContainer("solidblocks-rds-postgresql").apply {
-            withLogConsumer(logConsumer)
-            withEnv(
-                mapOf(
-                    "DB_BACKUP_S3_HOST" to backupHost,
-                    "DB_BACKUP_S3_BUCKET" to bucket,
-                    "DB_BACKUP_S3_ACCESS_KEY" to accessKey,
-                    "DB_BACKUP_S3_SECRET_KEY" to secretKey,
-
-                    "DB_DATABASE" to database,
-                    "DB_USERNAME" to databaseUser,
-                    "DB_PASSWORD" to databasePassword,
-
-                    "DB_BACKUP_S3_CA_PUBLIC_KEY" to caPublicBase64,
-                )
-            )
-        }
-
-        Assertions.assertThrows(ContainerLaunchException::class.java) {
-            container.start()
-        }
-
-        logConsumer.waitForLogLine("[solidblocks-rds-postgresql] storage dir '/storage/local' not mounted")
-    }
 
 }

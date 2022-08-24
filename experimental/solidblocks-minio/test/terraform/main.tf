@@ -16,8 +16,8 @@ resource tls_self_signed_cert ca {
   private_key_pem = tls_private_key.ca.private_key_pem
 
   subject {
-    common_name  = "SolidBlocks Test CA"
-    organization = "SolidBlocks"
+    common_name  = "Solidblocks Test CA"
+    organization = "Solidblocks"
   }
 
   is_ca_certificate     = true
@@ -35,19 +35,14 @@ resource tls_self_signed_cert ca {
   ]
 }
 
-resource local_file kube_ca_key {
-  content  = tls_private_key.ca.private_key_pem
-  filename = "./certificates/ca.key.pem"
-}
 
 # minio
-
 resource tls_private_key minio {
   algorithm   = "ECDSA"
   ecdsa_curve = "P384"
 }
 
-resource tls_cert_request minio1 {
+resource tls_cert_request minio {
   private_key_pem = tls_private_key.minio.private_key_pem
 
   dns_names    = ["localhost"]
@@ -55,12 +50,12 @@ resource tls_cert_request minio1 {
 
   subject {
     common_name  = "localhost"
-    organization = "SolidBlocks"
+    organization = "Solidblocks"
   }
 }
 
-resource tls_locally_signed_cert minio2 {
-  cert_request_pem   = tls_cert_request.minio1.cert_request_pem
+resource tls_locally_signed_cert minio {
+  cert_request_pem   = tls_cert_request.minio.cert_request_pem
 
   ca_private_key_pem = tls_private_key.ca.private_key_pem
   ca_cert_pem        = tls_self_signed_cert.ca.cert_pem
@@ -73,8 +68,12 @@ resource tls_locally_signed_cert minio2 {
   ]
 }
 
+resource local_file ca_key {
+  content  = tls_private_key.ca.private_key_pem
+  filename = "./certificates/ca.key.pem"
+}
 
-resource local_file kube_ca_crt {
+resource local_file ca_crt {
   content  = tls_self_signed_cert.ca.cert_pem
   filename = "../src/test/resources/ca.pem"
 }
@@ -85,6 +84,6 @@ resource local_file minio_key {
 }
 
 resource local_file minio_crt {
-  content  = tls_locally_signed_cert.minio2.cert_pem
+  content  = tls_locally_signed_cert.minio.cert_pem
   filename = "../src/test/resources/minio.pem"
 }

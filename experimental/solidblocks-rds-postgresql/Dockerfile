@@ -3,15 +3,18 @@ FROM alpine:3.15
 ENV GOMPLATE_CHECKSUM=603539aac4e09f98a8ca5b6e5da0c21213221206dc7175a5644255c7a22b936d
 ENV GOMPLATE_VERSION=3.10.0
 
+ENV DB_BACKUP_S3=0
+ENV DB_BACKUP_LOCAL=0
+
 ENV USER=rds
 ENV UID=10000
 
 ENV GROUP=${USER}
 ENV GID=10000
 
-ENV LOCAL_STORAGE_DIR=/storage/local
-ENV DATA_DIR=${LOCAL_STORAGE_DIR}/data
-ENV BACKUP_DIR=${LOCAL_STORAGE_DIR}/backup
+ENV DATA_DIR=/storage/data
+
+ENV DB_ADMIN_USERNAME=${USER}
 
 RUN addgroup -g $GID $GROUP \
   && adduser $USER \
@@ -31,11 +34,12 @@ RUN apk add \
     bash \
     openssh-client \
     curl \
-    pgbackrest
+    pgbackrest \
+    util-linux \
+    musl-locales
 
 RUN chown -R ${USER}:${USER} ${USER}
 
-RUN mkdir -p ${LOCAL_STORAGE_DIR} && chown -R ${USER}:${USER} ${LOCAL_STORAGE_DIR}
 RUN mkdir -p /run/postgresql/ && chown -R ${USER}:${USER} /run/postgresql/
 
 RUN curl -L https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-amd64-slim -o /usr/bin/gomplate && \

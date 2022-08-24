@@ -26,8 +26,8 @@ if [[ -z "${MINIO_TLS_PUBLIC_KEY:-}" ]]; then
   exit 1
 fi
 
-if ! mount | grep "${LOCAL_STORAGE_DIR}"; then
-    log "storage dir '${LOCAL_STORAGE_DIR}' not mounted"
+if ! mount | grep "${DATA_DIR}"; then
+    log "storage dir '${DATA_DIR}' not mounted"
     exit 1
 fi
 

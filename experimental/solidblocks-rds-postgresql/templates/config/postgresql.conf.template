@@ -1,11 +1,12 @@
-archive_command = 'pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/tmp/rds/log --stanza={{ .Env.DB_DATABASE }} archive-push  %p'
+archive_command = 'pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{ .Env.DB_DATABASE }} archive-push  %p'
 archive_mode = on
-archive_timeout = 120
-checkpoint_timeout = 60s                # range 30s-1d
+
 max_wal_senders = 3
 wal_level = replica
+
 listen_addresses = '*'
 unix_socket_directories =  '/rds/socket'
 log_destination = 'stderr'
 logging_collector = 'off'
 
+{{ env.Getenv "DB_POSTGRES_EXTRA_CONFIG" "" }}
