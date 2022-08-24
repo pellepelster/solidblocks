@@ -42,7 +42,7 @@ class RdsTestBed : AfterEachCallback {
             it.withLogConsumer(logConsumer)
             it.withNetworkAliases(RdsPostgresqlIntegrationTest.backupHost)
             it.withNetwork(network)
-            it.withFileSystemBind(storageDir, "/storage/local")
+            it.withFileSystemBind(storageDir, "/storage/data")
             it.withEnv(
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
@@ -62,9 +62,10 @@ class RdsTestBed : AfterEachCallback {
         it.withLogConsumer(logConsumer)
         it.withNetwork(network)
         it.withExposedPorts(5432)
-        it.withFileSystemBind(storageDir.absolutePath, "/storage/local")
+        it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
         it.withEnv(
                 mapOf(
+                        "DB_BACKUP_S3" to "1",
                         "DB_BACKUP_S3_HOST" to RdsPostgresqlIntegrationTest.backupHost,
                         "DB_BACKUP_S3_BUCKET" to RdsPostgresqlIntegrationTest.bucket,
                         "DB_BACKUP_S3_ACCESS_KEY" to RdsPostgresqlIntegrationTest.accessKey,

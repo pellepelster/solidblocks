@@ -74,7 +74,7 @@ class MinioIntegrationTest {
             container.start()
         }
 
-        logConsumer.waitForLogLine("[solidblocks-minio] storage dir '/storage/local' not mounted")
+        logConsumer.waitForLogLine("[solidblocks-minio] storage dir '/storage/data' not mounted")
     }
 
     fun imageVersion(image: String): String {
@@ -92,7 +92,7 @@ class MinioIntegrationTest {
 
         val container = GenericContainer(imageVersion("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
-            withFileSystemBind(tempDir.absolutePath, "/storage/local")
+            withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withEnv(
                     mapOf(
                             "MINIO_ADMIN_USER" to "admin12345",
@@ -113,7 +113,7 @@ class MinioIntegrationTest {
 
         val container = GenericContainer(imageVersion("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
-            withFileSystemBind(tempDir.absolutePath, "/storage/local")
+            withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(443)
             withEnv(
                     mapOf(
@@ -145,7 +145,7 @@ class MinioIntegrationTest {
 
         val container = GenericContainer(imageVersion("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
-            withFileSystemBind(tempDir.absolutePath, "/storage/local")
+            withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(8443)
             withEnv(
                     mapOf(
@@ -178,7 +178,7 @@ class MinioIntegrationTest {
 
         val container = GenericContainer(imageVersion("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
-            withFileSystemBind(tempDir.absolutePath, "/storage/local")
+            withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(443)
             withEnv(
                     mapOf(
@@ -209,7 +209,7 @@ class MinioIntegrationTest {
 
         val container = GenericContainer(imageVersion("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
-            withFileSystemBind(tempDir.absolutePath, "/storage/local")
+            withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(443)
             withEnv(
                     mapOf(

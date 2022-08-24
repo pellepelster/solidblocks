@@ -364,7 +364,7 @@ class RdsPostgresqlIntegrationTest {
             container.start()
         }
 
-        logConsumer.waitForLogLine("[solidblocks-rds-postgresql] storage dir '/storage/local' not mounted")
+        logConsumer.waitForLogLine("[solidblocks-rds-postgresql] storage dir '/storage/data' not mounted")
     }
 
 }

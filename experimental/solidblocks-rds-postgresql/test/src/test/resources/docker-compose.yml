@@ -8,6 +8,7 @@ services:
       - DB_DATABASE
       - DB_USERNAME
       - DB_PASSWORD
+      - DB_BACKUP_S3
       - DB_BACKUP_S3_HOST
       - DB_BACKUP_S3_BUCKET
       - DB_BACKUP_S3_ACCESS_KEY
@@ -25,7 +26,7 @@ services:
       - MINIO_TLS_PUBLIC_KEY
       - BUCKET_SPECS
     volumes:
-      - minio:/storage/local
+      - minio:/storage/data
     ports:
       - "9000:9000"
       - "9001:9001"

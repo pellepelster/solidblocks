@@ -7,7 +7,6 @@ function log() {
 }
 
 function ensure_environment_variables() {
-  # verify common needed variables
   for var in $@; do
     if [[ -z "${!var:-}" ]]; then
       log "'$var' is empty or not set"
@@ -18,20 +17,21 @@ function ensure_environment_variables() {
 
 ensure_environment_variables DB_DATABASE DB_PASSWORD DB_USERNAME
 
-ensure_environment_variables DB_BACKUP_S3_CA_PUBLIC_KEY DB_BACKUP_S3_HOST DB_BACKUP_S3_BUCKET DB_BACKUP_S3_ACCESS_KEY DB_BACKUP_S3_SECRET_KEY
+if [[ ${DB_BACKUP_S3:-0} == 1 ]]; then
+  ensure_environment_variables DB_BACKUP_S3_CA_PUBLIC_KEY DB_BACKUP_S3_HOST DB_BACKUP_S3_BUCKET DB_BACKUP_S3_ACCESS_KEY DB_BACKUP_S3_SECRET_KEY
 
-log "starting..."
-
-if [[ -n "${DB_BACKUP_S3_CA_PUBLIC_KEY:-}" ]]; then
-mkdir -p /rds/certificates
-echo -n "${DB_BACKUP_S3_CA_PUBLIC_KEY}" | base64 -d > /rds/certificates/ca.pem
+  if [[ -n "${DB_BACKUP_S3_CA_PUBLIC_KEY:-}" ]]; then
+    mkdir -p /rds/certificates
+    echo -n "${DB_BACKUP_S3_CA_PUBLIC_KEY}" | base64 -d > /rds/certificates/ca.pem
+  fi
 fi
 
-
-if ! mount | grep "${LOCAL_STORAGE_DIR}"; then
-    log "storage dir '${LOCAL_STORAGE_DIR}' not mounted"
+if ! mount | grep "${DATA_DIR}"; then
+    log "storage dir '${DATA_DIR}' not mounted"
     exit 1
 fi
+
+log "starting..."
 
 gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
 gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'

@@ -9,9 +9,8 @@ ENV UID=10000
 ENV GROUP=${USER}
 ENV GID=10000
 
-ENV LOCAL_STORAGE_DIR=/storage/local
-ENV DATA_DIR=${LOCAL_STORAGE_DIR}/data
-ENV BACKUP_DIR=${LOCAL_STORAGE_DIR}/backup
+ENV DATA_DIR=/storage/data
+ENV BACKUP_DIR=/storage/backup
 
 RUN addgroup -g $GID $GROUP \
   && adduser $USER \
@@ -35,7 +34,6 @@ RUN apk add \
 
 RUN chown -R ${USER}:${USER} ${USER}
 
-RUN mkdir -p ${LOCAL_STORAGE_DIR} && chown -R ${USER}:${USER} ${LOCAL_STORAGE_DIR}
 RUN mkdir -p /run/postgresql/ && chown -R ${USER}:${USER} /run/postgresql/
 
 RUN curl -L https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-amd64-slim -o /usr/bin/gomplate && \
