@@ -18,7 +18,6 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
     private val containers = mutableListOf<GenericContainer<out GenericContainer<*>>>()
 
-
     fun imageVersion(image: String): String {
         if (System.getenv("VERSION") != null) {
             return "${image}:${System.getenv("VERSION")}"
