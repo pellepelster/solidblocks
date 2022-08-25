@@ -1,6 +1,7 @@
 package de.solidblocks.rds.postgresql.test
 
 import mu.KotlinLogging
+import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.testcontainers.DockerClientFactory
@@ -9,7 +10,7 @@ import org.testcontainers.containers.Network
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import java.io.File
 
-class RdsTestBed : AfterEachCallback {
+class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
     private val logger = KotlinLogging.logger {}
 
@@ -59,11 +60,11 @@ class RdsTestBed : AfterEachCallback {
     }
 
     fun createAndStartPostgresContainer(
-        environment: Map<String, String>,
-        storageDir: File,
-        logConsumer: TestContainersLogConsumer,
-        password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword,
-        customizer: (input: GenericContainer<out GenericContainer<*>>) -> Unit = {}
+            environment: Map<String, String>,
+            storageDir: File,
+            logConsumer: TestContainersLogConsumer,
+            password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword,
+            customizer: (input: GenericContainer<out GenericContainer<*>>) -> Unit = {}
     ) = GenericContainer("solidblocks-rds-postgresql").also {
         it.withLogConsumer(logConsumer)
         it.withNetwork(network)
@@ -92,6 +93,14 @@ class RdsTestBed : AfterEachCallback {
             logger.info { "removing container '${it.containerId}'" }
             client.removeContainerCmd(it.containerId).withForce(true).withRemoveVolumes(true).exec()
         }
+    }
+
+    override fun afterAll(context: ExtensionContext?) {
+
+        val client = DockerClientFactory.instance().client()
+
+        logger.info { "removing network '${network.id}'" }
+        client.removeNetworkCmd(network.id).exec()
     }
 
 }
