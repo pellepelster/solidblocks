@@ -10,7 +10,7 @@ DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-minio"
 
-source "${DIR}/../../solidblocks-shell/lib/software.sh"
+source "${DIR}/../solidblocks-shell/lib/software.sh"
 
 function task_usage {
   echo "Usage: $0 ..."

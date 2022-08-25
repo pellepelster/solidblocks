@@ -42,24 +42,24 @@ jobs:
             solidblocks-shell/build/solidblocks-shell-*.zip
 
   solidblocks-minio:
-    name: experimental/solidblocks-minio
+    name: solidblocks-minio
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build
-        run: experimental/solidblocks-minio/do build
+        run: solidblocks-minio/do build
       - name: Test
-        run: experimental/solidblocks-minio/do test
+        run: solidblocks-minio/do test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: solidblocks-minio
           path: |
-            experimental/solidblocks-minio/build/solidblocks-minio-*.tar
+            solidblocks-minio/build/solidblocks-minio-*.tar
 
   solidblocks-rds-postgresql:
-    name: experimental/  solidblocks-rds-postgresql
+    name:  solidblocks-rds-postgresql
     runs-on: ubuntu-latest
     needs:
       - solidblocks-minio
@@ -74,15 +74,15 @@ jobs:
       - name: Import Minio Docker Image
         run: docker load < /tmp/solidblocks-minio-*.tar
       - name: Build
-        run: experimental/solidblocks-rds-postgresql/do build
+        run: solidblocks-rds-postgresql/do build
       - name: Test
-        run: experimental/solidblocks-rds-postgresql/do test
+        run: solidblocks-rds-postgresql/do test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: solidblocks-rds-postgresql
           path: |
-            experimental/solidblocks-rds-postgresql/build/solidblocks-rds-postgresql-*.tar
+            solidblocks-rds-postgresql/build/solidblocks-rds-postgresql-*.tar
 
   release:
     runs-on: ubuntu-latest
