@@ -32,8 +32,6 @@ function task_test_unit {
       ${test}
       log_divider_footer
   done
-
-  #find "${DIR}/test/"  -name "test_*.sh" -exec {} \;
 }
 
 

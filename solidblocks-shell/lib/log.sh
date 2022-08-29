@@ -9,6 +9,10 @@ function log_echo_error() {
   echo -e "${COLOR_RED}${*}${COLOR_RESET}" 1>&2;
 }
 
+function log_echo_warning() {
+  echo -e "${COLOR_YELLOW}${*}${COLOR_RESET}" 1>&2;
+}
+
 # see https://pellepelster.github.io/solidblocks/shell/log/#log_echo_die
 function log_echo_die() { log_echo_error "${*}"; exit 4;}
 
