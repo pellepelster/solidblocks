@@ -102,8 +102,6 @@ jobs:
         uses: actions/checkout@v3
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
-      - name: Debug
-        run: ls -lsa
       - name: Import Minio Docker Image
         run: docker load < solidblocks-minio/solidblocks-minio-*.tar
       - name: Import RDS Postgresql Docker Image
@@ -134,6 +132,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Set SOLIDBLOCKS_SHELL_CHECKSUM
+        run: echo "SOLIDBLOCKS_SHELL_CHECKSUM=$(sha256sum lib/* | head -1 | awk '{ printf  "%1s", $1 }')" >> $GITHUB_ENV
+
       - name: Build Documentation
         run: ./do build-documentation
       - name: Setup Pages
