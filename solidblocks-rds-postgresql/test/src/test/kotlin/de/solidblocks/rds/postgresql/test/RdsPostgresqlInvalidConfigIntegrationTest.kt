@@ -14,6 +14,7 @@ import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(RdsTestBedExtension::class)
+@Disabled
 class RdsPostgresqlInvalidConfigIntegrationTest {
 
     private val logger = KotlinLogging.logger {}
@@ -35,7 +36,6 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
     }
 
     @Test
-    @Disabled
     fun doesNotStartIfNoDataDirIsMounted() {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
