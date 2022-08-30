@@ -23,3 +23,6 @@ echo ""
 log_divider_header "directory content"
 ls -lsa
 log_divider_footer
+
+
+echo "normal ${FORMAT_BOLD}Boldy McBoldface${FORMAT_RESET} normal"

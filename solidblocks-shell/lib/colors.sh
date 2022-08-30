@@ -16,3 +16,8 @@ COLOR_CYAN=$(tput_wrapper -Txterm-256color setaf 6)
 COLOR_WHITE=$(tput_wrapper -Txterm-256color setaf 15)
 
 COLOR_RESET=$(tput_wrapper -Txterm-256color sgr0)
+
+FORMAT_BOLD=$(tput_wrapper bold)
+
+FORMAT_RESET=${COLOR_RESET}
+
