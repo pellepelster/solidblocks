@@ -9,6 +9,7 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import java.io.File
+import java.time.Duration
 
 class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
@@ -69,6 +70,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         it.withNetwork(network)
         it.withExposedPorts(5432)
         it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
+        it.withStartupTimeout(Duration.ofSeconds(30))
         it.withEnv(
                 mapOf(
                         "DB_DATABASE" to RdsPostgresqlMinioBackupIntegrationTest.database,
