@@ -83,6 +83,7 @@ jobs:
           name: solidblocks-rds-postgresql
           path: |
             solidblocks-rds-postgresql/build/solidblocks-rds-postgresql-*.tar
+            solidblocks-rds-postgresql/test/build/reports/**/*
 
   release:
     runs-on: ubuntu-latest
