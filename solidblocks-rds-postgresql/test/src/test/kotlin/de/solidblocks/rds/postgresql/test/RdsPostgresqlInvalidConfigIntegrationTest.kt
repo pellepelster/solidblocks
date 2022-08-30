@@ -2,6 +2,7 @@ package de.solidblocks.rds.postgresql.test
 
 import mu.KotlinLogging
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -27,13 +28,14 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
         val databasePassword = "password1"
 
         val caPublicBase64 =
-            Base64.getEncoder().encodeToString(
-                RdsPostgresqlInvalidConfigIntegrationTest::class.java.getResource("/ca.pem").readBytes()
-            )
+                Base64.getEncoder().encodeToString(
+                        RdsPostgresqlInvalidConfigIntegrationTest::class.java.getResource("/ca.pem").readBytes()
+                )
 
     }
 
     @Test
+    @Disabled
     fun doesNotStartIfNoDataDirIsMounted() {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
@@ -41,19 +43,19 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
         val container = GenericContainer("solidblocks-rds-postgresql").apply {
             withLogConsumer(logConsumer)
             withEnv(
-                mapOf(
-                    "DB_BACKUP_S3" to "1",
-                    "DB_BACKUP_S3_HOST" to backupHost,
-                    "DB_BACKUP_S3_BUCKET" to bucket,
-                    "DB_BACKUP_S3_ACCESS_KEY" to accessKey,
-                    "DB_BACKUP_S3_SECRET_KEY" to secretKey,
+                    mapOf(
+                            "DB_BACKUP_S3" to "1",
+                            "DB_BACKUP_S3_HOST" to backupHost,
+                            "DB_BACKUP_S3_BUCKET" to bucket,
+                            "DB_BACKUP_S3_ACCESS_KEY" to accessKey,
+                            "DB_BACKUP_S3_SECRET_KEY" to secretKey,
 
-                    "DB_DATABASE" to database,
-                    "DB_USERNAME" to databaseUser,
-                    "DB_PASSWORD" to databasePassword,
+                            "DB_DATABASE" to database,
+                            "DB_USERNAME" to databaseUser,
+                            "DB_PASSWORD" to databasePassword,
 
-                    "DB_BACKUP_S3_CA_PUBLIC_KEY" to caPublicBase64,
-                )
+                            "DB_BACKUP_S3_CA_PUBLIC_KEY" to caPublicBase64,
+                    )
             )
         }
 
@@ -71,8 +73,8 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
 
         Assertions.assertThrows(ContainerLaunchException::class.java) {
             rdsTestBed.createAndStartPostgresContainer(
-                mapOf(
-                ), initWorldReadableTempDir(), logConsumer
+                    mapOf(
+                    ), initWorldReadableTempDir(), logConsumer
             )
         }
 
@@ -86,9 +88,9 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
 
         Assertions.assertThrows(ContainerLaunchException::class.java) {
             rdsTestBed.createAndStartPostgresContainer(
-                mapOf(
-                    "DB_BACKUP_LOCAL" to "1"
-                ), initWorldReadableTempDir(), logConsumer
+                    mapOf(
+                            "DB_BACKUP_LOCAL" to "1"
+                    ), initWorldReadableTempDir(), logConsumer
             )
         }
 

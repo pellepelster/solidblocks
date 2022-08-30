@@ -101,6 +101,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         val client = DockerClientFactory.instance().client()
 
         logger.info { "removing network '${network.id}'" }
+        network.close()
         client.removeNetworkCmd(network.id).exec()
     }
 
