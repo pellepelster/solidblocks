@@ -5,11 +5,11 @@ disableToc: true
 ---
 
 ```shell
-SOLIDBLOCKS_SHELL_VERSION="${TEMPLATE_SOLIDBLOCKS_SHELL_VERSION}"
-SOLIDBLOCKS_SHELL_CHECKSUM="${TEMPLATE_SOLIDBLOCKS_SHELL_CHECKSUM}"
+SOLIDBLOCKS_SHELL_VERSION="TEMPLATE_SOLIDBLOCKS_SHELL_VERSION"
+SOLIDBLOCKS_SHELL_CHECKSUM="TEMPLATE_SOLIDBLOCKS_SHELL_CHECKSUM"
 
-curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "solidblocks-shell-${$SOLIDBLOCKS_VERSION}.zip"
-echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${$SOLIDBLOCKS_VERSION}.zip" | sha256sum -c
+curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
 unzip "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
 ```
 

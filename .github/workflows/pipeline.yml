@@ -136,7 +136,7 @@ jobs:
         uses: actions/download-artifact@v3
 
       - name: Set SOLIDBLOCKS_SHELL_CHECKSUM
-        run: echo "SOLIDBLOCKS_SHELL_CHECKSUM=$(sha256sum lib/* | head -1 | awk '{ printf  "%1s", $1 }')" >> $GITHUB_ENV
+        run: echo "SOLIDBLOCKS_SHELL_CHECKSUM=$(sha256sum solidblocks-shell/solidblocks-shell-*.zip | head -1 | awk '{ printf  "%1s", $1 }')" >> $GITHUB_ENV
 
       - name: Build Documentation
         run: ./do build-documentation
