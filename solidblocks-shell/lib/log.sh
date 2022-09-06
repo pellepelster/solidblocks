@@ -4,6 +4,11 @@ _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${_DIR}/colors.sh"
 
+function log_echo() {
+  echo "${*}"
+}
+
+
 # see https://pellepelster.github.io/solidblocks/shell/log/#log_echo_error
 function log_echo_error() {
   echo -e "${COLOR_RED}${*}${COLOR_RESET}" 1>&2;

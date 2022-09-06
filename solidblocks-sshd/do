@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/../solidblocks-shell/lib/docker.sh"
+
+function cleanup {
+
+  log_divider_header "solidblocks-sshd-test"
+  docker logs "solidblocks-sshd-test"
+  log_divider_footer
+
+  docker rm -f "solidblocks-sshd-test"
+  docker_remove_network "solidblocks-sshd-test"
+}
+
+trap cleanup EXIT
+
+function task_build {
+  (
+    cd "${DIR}"
+    docker build -t "solidblocks-sshd-test" .
+
+    docker_ensure_network "solidblocks-sshd-test"
+
+    docker run --rm -d --network solidblocks-sshd-test --name solidblocks-sshd-test  solidblocks-sshd-test
+
+    docker run -it --network solidblocks-sshd-test  positronsecurity/ssh-audit solidblocks-sshd-test
+
+  )
+
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  build) task_build "$@" ;;
+  *) task_usage ;;
+esac

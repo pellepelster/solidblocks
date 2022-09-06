@@ -1,0 +1,40 @@
+# IP and port
+Port 22
+#ListenAddress 0.0.0.0
+
+# HostKeys for protocol version 2
+#
+# /etc/ssh/ssh_host_rsa_key and /etc/ssh/ssh_host_dsa_key are
+# disabled as "NIST Digital Signature Algorithm (DSA) with SHA-1 hash"
+# and "RSA with SHA-1 hash" as SHA-1 is no longer considered secure
+# (see shattered.io).
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+# Authentication
+PermitRootLogin without-password
+
+# Change to yes to enable challenge-response passwords
+ChallengeResponseAuthentication no
+
+# Change to no to disable tunnelled clear text passwords
+PasswordAuthentication no
+
+PrintMotd no
+
+# Anti-DoS
+#
+# Random early drop can be enabled by specifying the three
+# colon separated values “start:rate:full” (e.g. "10:30:60").
+# sshd(8) will refuse connection attempts with a probability
+# of “rate/100” (30%) if there are currently “start” (10)
+# unauthenticated connections. The probability increases
+# linearly and all connection attempts are refused if the
+# number of unauthenticated connections reaches “full” (60).
+MaxStartups 10:30:60
+
+# Crypto
+#
+# Algorithms Ciphers and MACs, according to https://github.com/jtesta/ssh-audit
+KexAlgorithms -sntrup761x25519-sha512@openssh.com,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521
+Ciphers aes256-ctr,aes192-ctr,aes128-ctr
+MACs -hmac-sha2-256,hmac-sha2-512,umac-64@openssh.com,umac-64-etm@openssh.com,umac-128@openssh.com,hmac-sha1,hmac-sha1-etm@openssh.com,
