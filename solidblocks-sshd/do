@@ -9,10 +9,10 @@ source "${DIR}/../solidblocks-shell/lib/docker.sh"
 function cleanup {
 
   log_divider_header "solidblocks-sshd-test"
-  docker logs "solidblocks-sshd-test"
+  docker logs "solidblocks-sshd-test"  || true
   log_divider_footer
 
-  docker rm -f "solidblocks-sshd-test"
+  docker rm -f "solidblocks-sshd-test" || true
   docker_remove_network "solidblocks-sshd-test"
 }
 
@@ -22,15 +22,22 @@ function task_build {
   (
     cd "${DIR}"
     docker build -t "solidblocks-sshd-test" .
+  )
+}
+
+function task_test {
+  (
+    cd "${DIR}"
 
     docker_ensure_network "solidblocks-sshd-test"
-
     docker run --rm -d --network solidblocks-sshd-test --name solidblocks-sshd-test  solidblocks-sshd-test
-
     docker run -it --network solidblocks-sshd-test  positronsecurity/ssh-audit solidblocks-sshd-test
-
   )
 
+}
+
+function task_release_docker {
+  echo "not implemented"
 }
 
 function task_usage {
@@ -42,5 +49,7 @@ arg=${1:-}
 shift || true
 case ${arg} in
   build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac

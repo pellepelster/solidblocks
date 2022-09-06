@@ -9,4 +9,4 @@ RUN apt-get \
         -fuy \
         dist-upgrade
 
-RUN apt-get install --no-install-recommends -qq -y apt-utils ca-certificates zip docker.io jq netcat-openbsd curl unzip xz-utils
+RUN apt-get install --no-install-recommends -qq -y apt-utils ca-certificates zip docker.io jq netcat-openbsd curl unzip xz-utils uuid-runtime

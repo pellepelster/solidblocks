@@ -10,7 +10,7 @@ source "${DIR}/solidblocks-shell/lib/file.sh"
 source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
-COMPONENTS="solidblocks-shell solidblocks-minio solidblocks-rds-postgresql"
+COMPONENTS="solidblocks-sshd solidblocks-shell solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_ensure_shellcheck

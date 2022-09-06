@@ -1,0 +1,295 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+DIR="$(
+  cd "$(dirname "$0")"
+  pwd -P
+)"
+
+export VERSION="${VERSION:-$(date +%Y%m%d%H%m%S)}"
+export SECRETS_DIR="${DIR}/secrets"
+
+###############################################################################
+# do-script setup
+###############################################################################
+
+TEMP_DIR="${DIR}/.tmp.$$"
+mkdir -p "${TEMP_DIR}"
+
+function cleanup {
+  rm -rf "${TEMP_DIR}"
+}
+
+trap cleanup EXIT
+
+###############################################################################
+# bootstrapping
+###############################################################################
+function bootstrap_solidblocks() {
+  local dir="${1:-}"
+
+  SOLIDBLOCKS_SHELL_VERSION="v0.0.41"
+  SOLIDBLOCKS_SHELL_CHECKSUM="7c5cb9a80649a1eb9927ec96820f9d0c5d09afa3f25f6a0f8745b99dcbf931b7"
+
+  if [[ ! -d "${dir}" ]]; then
+    curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" >"solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+    echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" | sha256sum -c
+    unzip "solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip"
+  fi
+}
+
+function task_bootstrap() {
+  bootstrap_solidblocks "${DIR}/solidblocks-shell"
+
+}
+
+function ensure_env() {
+
+  if [[ ! -d "${DIR}/solidblocks-shell" ]]; then
+    bootstrap_solidblocks
+  fi
+
+  source "${DIR}/solidblocks-shell/log.sh"
+  source "${DIR}/solidblocks-shell/utils.sh"
+  source "${DIR}/solidblocks-shell/pass.sh"
+  source "${DIR}/solidblocks-shell/software.sh"
+}
+
+ensure_env
+
+###############################################################################
+# ingress
+###############################################################################
+function task_build {
+  echo "Building Backend..."
+  (
+    cd "${DIR}/backend"
+    ./gradlew assemble
+  )
+}
+
+function task_deploy {
+  software_ensure_terraform
+  software_set_export_path
+
+  echo "Deploying Backend..."
+  (
+    cd "${DIR}/terraform"
+    terraform init
+  )
+}
+
+###############################################################################
+# tests
+###############################################################################
+function task_test_create_environment {
+  parse_environment "${1:-}"
+  ensure_test_environment
+  task_build_ingress
+
+  (
+    cd "${DIR}/test"
+    set_provisioning_environment
+
+    vagrant up "${ENVIRONMENT}"
+  )
+}
+
+function task_test_destroy_environment {
+  parse_environment "${1:-}"
+  ensure_test_environment
+
+  (
+    cd "${DIR}/test"
+    vagrant destroy --force "${ENVIRONMENT}"
+  )
+}
+
+function task_test_provision_environment {
+  parse_environment "${1:-}"
+  ensure_test_environment
+  task_build_ingress
+
+  (
+    cd "${DIR}/test"
+    set_provisioning_environment
+
+    vagrant provision "${ENVIRONMENT}"
+  )
+}
+
+function task_test_environment {
+  parse_environment "${1:-}"
+
+  task_test_destroy_environment "${ENVIRONMENT}"
+  task_test_create_environment "${ENVIRONMENT}"
+  task_test_destroy_environment "${ENVIRONMENT}"
+}
+
+###############################################################################
+# provisioning
+###############################################################################
+function set_provisioning_environment() {
+  export DATABASE_PASSWORD="$(pass_wrapper "${ENVIRONMENT}/database_password")"
+  export DOCKER_REGISTRY_USER="$(pass_wrapper "docker_registry_user")"
+  export DOCKER_REGISTRY_PASSWORD="$(pass_wrapper "docker_registry_password")"
+  export ROOT_PASSWORD="$(pass_wrapper "${ENVIRONMENT}/root_password")"
+}
+
+function task_provision() {
+  task_build_ingress
+
+  parse_environment "${1:-}"
+
+  write_ssh_key
+  set_provisioning_environment
+
+  ansible-playbook -i "${DIR}/ansible/${ENVIRONMENT}" "${DIR}/ansible/${ENVIRONMENT}.yml" \
+    --extra-vars="ansible_ssh_private_key_file=${TEMP_DIR}/${ENVIRONMENT}-ssh.key"
+}
+
+function task_provision_ssh() {
+  parse_environment "${1:-}"
+  ssh -t "user@${ENVIRONMENT_ADDRESS}" "sudo -S sh -c 'useradd -m ansible && mkdir ~ansible/.ssh && echo \"$(pass_wrapper "${ENVIRONMENT}/ansible_ssh_key_public")\" >> ~ansible/.ssh/authorized_keys && chown -R ansible ~ansible/.ssh/ && echo \"ansible ALL=(ALL) NOPASSWD: ALL\" > /etc/sudoers.d/ansible'"
+}
+
+###############################################################################
+# maintenance
+###############################################################################
+function task_ssh() {
+
+  parse_environment "${1:-}"
+
+  write_ssh_key
+
+  ssh -o ServerAliveInterval=10 -i "${TEMP_DIR}/${ENVIRONMENT}-ssh.key" "ansible@${ENVIRONMENT_ADDRESS}"
+}
+
+function task_db_tunnel() {
+  parse_environment "${1:-}"
+
+  pass_wrapper "${ENVIRONMENT}/ansible_ssh_key_private" >"${TEMP_DIR}/${ENVIRONMENT}-ssh.key"
+
+  ssh -t -i "${TEMP_DIR}/${ENVIRONMENT}-ssh.key" -L 5432:localhost:5432 "ansible@${ENVIRONMENT_ADDRESS}" \
+    sudo docker run -ti --rm --publish 5432:5432 --network uz-covid-portal alpine/socat \
+    tcp-listen:5432,fork,reuseaddr tcp-connect:uz-covid-portal-postgres:5432
+}
+
+###############################################################################
+# secret handling
+###############################################################################
+function write_ssh_key() {
+  touch "${TEMP_DIR}/${ENVIRONMENT}-ssh.key"
+  chmod 600 "${TEMP_DIR}/${ENVIRONMENT}-ssh.key"
+  pass_wrapper "${ENVIRONMENT}/ansible_ssh_key_private" >"${TEMP_DIR}/${ENVIRONMENT}-ssh.key"
+}
+
+function task_environment_secret() {
+  parse_environment "${1:-}"
+  pass_wrapper -c "${ENVIRONMENT}/${2:-}"
+}
+
+function task_pass() {
+  pass_wrapper $@
+}
+
+function task_set_secret_docker_registry_user() {
+  parse_environment "${1:-}"
+  pass_wrapper insert --force "docker_registry_user"
+}
+
+function task_set_secret_root_password() {
+  parse_environment "${1:-}"
+  pass_wrapper insert --force "${ENVIRONMENT}/root_password"
+}
+
+function task_set_secret_docker_registry_password() {
+  parse_environment "${1:-}"
+
+  pass_wrapper insert --force "docker_registry_password"
+}
+
+function task_generate_ansible_ssh_key() {
+  parse_environment "${1:-}"
+
+  if [[ -n "$(pass_wrapper "${ENVIRONMENT}/ansible_ssh_key_private")" ]]; then
+    log_echo_die "ansible private ssh key already exists for environment '${ENVIRONMENT}'"
+  fi
+
+  if [[ -n "$(pass_wrapper "${ENVIRONMENT}/ansible_ssh_key_public")" ]]; then
+    log_echo_die "ansible public ssh key already exists for environment '${ENVIRONMENT}'"
+  fi
+
+  ssh-keygen -t ed25519 -f "${TEMP_DIR}/${ENVIRONMENT}.key" -C "${ENVIRONMENT}@uz-covid-portal" -q -N ""
+
+  pass_wrapper insert --force --multiline "${ENVIRONMENT}/ansible_ssh_key_private" <"${TEMP_DIR}/${ENVIRONMENT}.key"
+  pass_wrapper insert --force --multiline "${ENVIRONMENT}/ansible_ssh_key_public" <"${TEMP_DIR}/${ENVIRONMENT}.key.pub"
+}
+
+function task_generate_database_password() {
+  parse_environment "${1:-}"
+
+  if pass_wrapper "${ENVIRONMENT}/database_password" &>/dev/null; then
+    log_echo_die "'database_password' already exists for environment '${ENVIRONMENT}'"
+  fi
+
+  uuidgen | pass_wrapper insert --echo "${ENVIRONMENT}/database_password"
+}
+
+function task_reencrypt_secrets() {
+  pass_wrapper init $(cat "${SECRETS_DIR}/.gpg-id")
+}
+
+###############################################################################
+# argument parsing
+###############################################################################
+ENVIRONMENT=""
+
+function parse_environment() {
+  local environment="${1:-}"
+
+  if [[ -z "${environment}" ]]; then
+    log_echo_die "no environment provided"
+  fi
+
+  case "${environment}" in
+  "prod") ;;
+  "preprod") ;;
+  "test") ;;
+  *) log_echo_die "invalid environment provided (${environment})" ;;
+  esac
+
+  ENVIRONMENT="${environment}"
+  ENVIRONMENT_ADDRESS=$(grep -oP 'ansible_host=[^\s]*' "${DIR}/ansible/${ENVIRONMENT}" | awk -F'=' '{print $2}' | tr -d "[:space:]")
+}
+
+function task_usage {
+  cat <<EOF
+Usage: $0
+
+  bootstrap               initialize the development environment
+
+  ${FORMAT_BOLD}development${FORMAT_RESET}
+
+    build                 build the backend
+    test                  run the backend integration tests
+
+    ssh                   <environment>         open ssh session to the environments host
+    db-tunnel             <environment>         open database tunnel to the hosts postgres db
+EOF
+  exit 1
+}
+
+ARG=${1:-}
+shift || true
+case ${ARG} in
+bootstrap) task_bootstrap "$@" ;;
+
+  re-encrypt-secrets) task_reencrypt_secrets "$@" ;;
+
+  build) task_build "$@" ;;
+  deploy) task_deploy "$@" ;;
+
+*) task_usage ;;
+esac
