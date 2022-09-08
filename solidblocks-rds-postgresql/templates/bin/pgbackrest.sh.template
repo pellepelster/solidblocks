@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -eu
+
+pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{ .Env.DB_DATABASE }} $@

@@ -2,6 +2,8 @@
 
 set -eu
 
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
 echo "[solidblocks-rds-postgresql] executing differential backup"
 
-pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{ .Env.DB_DATABASE }} backup --type=diff
+"${DIR}/pgbackrest.sh"  backup --type=diff

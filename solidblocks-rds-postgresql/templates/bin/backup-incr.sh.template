@@ -2,6 +2,8 @@
 
 set -eu
 
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
 echo "[solidblocks-rds-postgresql] executing incremental backup"
 
-pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{ .Env.DB_DATABASE }} backup --type=incr
+"${DIR}/pgbackrest.sh" backup --type=incr
