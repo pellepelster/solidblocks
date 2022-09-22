@@ -15,7 +15,7 @@ function ensure_environment_variables() {
   done
 }
 
-ensure_environment_variables DB_INSTANCE_NAME DB_DATABASE DB_PASSWORD DB_USERNAME
+ensure_environment_variables DB_INSTANCE_NAME
 
 if [[ $((DB_BACKUP_S3 + DB_BACKUP_LOCAL)) == 0 ]]; then
   log "either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated"
@@ -74,17 +74,36 @@ function psql_count() {
 }
 
 function ensure_databases() {
-  ensure_database "${DB_DATABASE}"
 
-  for index in {1..10}; do
-    local db_database_var="DB_DATABASE_${index}"
+    for database_var in "${!DB_DATABASE_@}"; do
 
-    if [[ -z "${!db_database_var:-}" ]]; then
-      echo "no config found for ${db_database_var}"
-    else
-      ensure_database "${!db_database_var:-}"
-    fi
-  done
+      local database_id="${database_var#"DB_DATABASE_"}"
+      local database="${!database_var:-}"
+      if [[ -z "${database}" ]]; then
+        echo "provided database name was empty"
+        continue
+      fi
+
+      local database_user_var="DB_USERNAME_${database_id}"
+      local username="${!database_user_var:-}"
+      if [[ -z "${username}" ]]; then
+        echo "no username provided for database '${database}'"
+        continue
+      fi
+
+
+      local database_password_var="DB_PASSWORD_${database_id}"
+      local password="${!database_password_var:-}"
+      if [[ -z "${password}" ]]; then
+        echo "no password provided for database '${database}'"
+        continue
+      fi
+
+      echo "ensuring database '${database}' with user '${username}'"
+      ensure_database "${database}"
+      ensure_db_user "${database}" "${username}" "${password}"
+
+    done
 }
 
 function ensure_database() {
@@ -96,27 +115,10 @@ function ensure_database() {
   fi
 }
 
-function ensure_db_users() {
-  ensure_db_user "${DB_DATABASE}" "${DB_USERNAME}" "${DB_PASSWORD}" "default"
-
-  for index in {1..10}; do
-    local db_database_var="DB_DATABASE_${index}"
-    local db_username_var="DB_USERNAME_${index}"
-    local db_password_var="DB_PASSWORD_${index}"
-
-    if [[ -z "${!db_database_var:-}" ]] || [[ -z "${!db_username_var:-}" ]] || [[ -z "${!db_password_var:-}" ]]; then
-      echo "no config found for ${db_database_var}/${db_username_var}/${db_password_var}"
-    else
-      ensure_db_user "${!db_database_var:-}" "${!db_username_var:-}" "${!db_password_var:-}" "${index}"
-    fi
-  done
-}
-
 function ensure_db_user() {
   local database="${1:-}"
   local username="${2:-}"
   local password="${3:-}"
-  local stable_user_id="${4:-}"
 
   if [[ $(psql_count "${database}" "SELECT count(u.usename) FROM pg_catalog.pg_user u WHERE u.usename = '${username}';") == "0" ]]; then
     log "creating user '${username}'"
@@ -128,8 +130,8 @@ function ensure_db_user() {
 
   log "granting all privileges for '${username}' on '${database}'"
 
-  if [[ -f "${PG_DATA_DIR}/solidblocks_current_db_username_${stable_user_id}" ]]; then
-    local last_db_username=$(cat "${PG_DATA_DIR}/solidblocks_current_db_username_${stable_user_id}")
+  if [[ -f "${PG_DATA_DIR}/solidblocks_current_db_username_${database}" ]]; then
+    local last_db_username=$(cat "${PG_DATA_DIR}/solidblocks_current_db_username_${database}")
 
     if [[ "${last_db_username}" != "${username}" ]]; then
       log "reassigning ownerships from '${last_db_username}' to '${username}'"
@@ -141,7 +143,7 @@ function ensure_db_user() {
     fi
   fi
 
-  echo "${username}" > "${PG_DATA_DIR}/solidblocks_current_db_username_${stable_user_id}"
+  echo "${username}" > "${PG_DATA_DIR}/solidblocks_current_db_username_${database}"
 }
 
 function init_db() {
@@ -157,7 +159,6 @@ function init_db() {
   pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_INSTANCE_NAME} stanza-create
 
   ensure_databases
-  ensure_db_users
 
   log "executing initial backup"
   pgbackrest_execute --log-level-console=info --type=full backup
@@ -200,7 +201,7 @@ if [[ ! "$(ls -A ${PG_DATA_DIR})" ]]; then
       sleep 5
     done
 
-    ensure_db_users
+    ensure_databases
 
     ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
   else
@@ -215,7 +216,6 @@ else
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
 
   ensure_databases
-  ensure_db_users
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
 fi

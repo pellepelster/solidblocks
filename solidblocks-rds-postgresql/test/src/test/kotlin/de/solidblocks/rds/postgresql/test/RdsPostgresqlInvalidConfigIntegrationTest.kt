@@ -1,5 +1,6 @@
 package de.solidblocks.rds.postgresql.test
 
+import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.database
 import mu.KotlinLogging
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
@@ -50,10 +51,10 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
                             "DB_BACKUP_S3_ACCESS_KEY" to accessKey,
                             "DB_BACKUP_S3_SECRET_KEY" to secretKey,
 
-                            "DB_DATABASE" to database,
                             "DB_INSTANCE_NAME" to database,
-                            "DB_USERNAME" to databaseUser,
-                            "DB_PASSWORD" to databasePassword,
+                            "DB_DATABASE_${RdsPostgresqlMinioBackupIntegrationTest.database}" to database,
+                            "DB_USERNAME_${RdsPostgresqlMinioBackupIntegrationTest.database}" to databaseUser,
+                            "DB_PASSWORD_${RdsPostgresqlMinioBackupIntegrationTest.database}" to databasePassword,
 
                             "DB_BACKUP_S3_CA_PUBLIC_KEY" to caPublicBase64,
                     )

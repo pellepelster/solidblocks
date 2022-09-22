@@ -57,8 +57,8 @@ class RdsPostgresqlConfigurationTest {
         container.stop()
         logConsumer.clear()
         container.withEnv(mapOf(
-                "DB_USERNAME" to "new-user",
-                "DB_PASSWORD" to "new-password",
+                "DB_USERNAME_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-user",
+                "DB_PASSWORD_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-password",
         )).start()
 
         // on second start with persistent storage no initializing ord backup should be executed
@@ -124,8 +124,8 @@ class RdsPostgresqlConfigurationTest {
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
                 mapOf(
                         "DB_BACKUP_LOCAL" to "1",
-                        "DB_USERNAME" to "new-user",
-                        "DB_PASSWORD" to "new-password",
+                        "DB_USERNAME_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-user",
+                        "DB_PASSWORD_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-password",
                         ), initWorldReadableTempDir(), logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
@@ -203,9 +203,9 @@ class RdsPostgresqlConfigurationTest {
         val container = testBed.createAndStartPostgresContainer(
                 mapOf(
                         "DB_BACKUP_LOCAL" to "1",
-                        "DB_DATABASE_1" to "extra-database-1",
-                        "DB_USERNAME_1" to "extra-user-1",
-                        "DB_PASSWORD_1" to "extra-password-1",
+                        "DB_DATABASE_extra_database_1" to "extra-database-1",
+                        "DB_USERNAME_extra_database_1" to "extra-user-1",
+                        "DB_PASSWORD_extra_database_1" to "extra-password-1",
                 ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")

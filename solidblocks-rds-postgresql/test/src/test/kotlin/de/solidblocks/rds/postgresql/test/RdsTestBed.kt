@@ -1,5 +1,8 @@
 package de.solidblocks.rds.postgresql.test
 
+import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.database
+import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.databasePassword
+import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.databaseUser
 import mu.KotlinLogging
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.AfterEachCallback
@@ -63,7 +66,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
             environment: Map<String, String>,
             storageDir: File,
             logConsumer: TestContainersLogConsumer,
-            password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword,
+            password: String = databasePassword,
             customizer: (input: GenericContainer<out GenericContainer<*>>) -> Unit = {}
     ) = GenericContainer("solidblocks-rds-postgresql").also {
         it.withLogConsumer(logConsumer)
@@ -73,10 +76,10 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         it.withStartupTimeout(Duration.ofSeconds(30))
         it.withEnv(
                 mapOf(
-                        "DB_INSTANCE_NAME" to RdsPostgresqlMinioBackupIntegrationTest.database,
-                        "DB_DATABASE" to RdsPostgresqlMinioBackupIntegrationTest.database,
-                        "DB_USERNAME" to RdsPostgresqlMinioBackupIntegrationTest.databaseUser,
-                        "DB_PASSWORD" to password,
+                        "DB_INSTANCE_NAME" to database,
+                        "DB_DATABASE_$database" to database,
+                        "DB_USERNAME_$database" to databaseUser,
+                        "DB_PASSWORD_$database" to password,
                 ) + environment
         )
         customizer.invoke(it)
