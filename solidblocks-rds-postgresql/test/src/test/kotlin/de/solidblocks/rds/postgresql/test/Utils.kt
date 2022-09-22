@@ -20,9 +20,9 @@ fun initWorldReadableTempDir(): File {
     return File(tempDir)
 }
 
-fun GenericContainer<out GenericContainer<*>>.createJdbi(username: String = RdsPostgresqlMinioBackupIntegrationTest.databaseUser, password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword): Jdbi {
+fun GenericContainer<out GenericContainer<*>>.createJdbi(username: String = RdsPostgresqlMinioBackupIntegrationTest.databaseUser, password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword, database: String = RdsPostgresqlMinioBackupIntegrationTest.database): Jdbi {
     val port = this.getMappedPort(5432)
-    return Jdbi.create("jdbc:postgresql://localhost:$port/${RdsPostgresqlMinioBackupIntegrationTest.database}?user=${username}&password=${password}")
+    return Jdbi.create("jdbc:postgresql://localhost:$port/${database}?user=${username}&password=${password}")
 }
 
 fun Jdbi.createUserTable() {
@@ -50,7 +50,6 @@ fun Jdbi.selectAllUsers(): List<Map<String, Any>>? {
 
 fun Jdbi.waitForReady() {
     await.until {
-
         try {
             this.useHandle<RuntimeException> {
                 it.execute("select 1") == 1

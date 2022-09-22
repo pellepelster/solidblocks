@@ -192,5 +192,35 @@ class RdsPostgresqlConfigurationTest {
         assertThat(settings.filter { it["name"] == "checkpoint_timeout" }.first()["setting"]).isEqualTo("301")
     }
 
+    @Test
+    fun testCreatesExtraDatabases(testBed: RdsTestBed) {
 
+        val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
+
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val container = testBed.createAndStartPostgresContainer(
+                mapOf(
+                        "DB_BACKUP_LOCAL" to "1",
+                        "DB_DATABASE_1" to "extra-database-1",
+                        "DB_USERNAME_1" to "extra-user-1",
+                        "DB_PASSWORD_1" to "extra-password-1",
+                ), dataDir, logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        // on first start instance should be initialized and an initial backup should be executed
+        logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+        logConsumer.assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+        logConsumer.assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+        logConsumer.assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+        logConsumer.assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+        logConsumer.waitForLogLine("database system is ready to accept connections")
+
+        container.createJdbi("extra-user-1", "extra-password-1", "extra-database-1").also {
+            it.waitForReady()
+        }
+    }
 }

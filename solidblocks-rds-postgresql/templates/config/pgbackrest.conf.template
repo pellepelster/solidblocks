@@ -37,6 +37,6 @@ repo2-retention-diff={{ env.Getenv "DB_BACKUP_LOCAL_RETENTION_DIFF" "7" }}
 
 log-level-console=info
 
-[{{ .Env.DB_DATABASE }}]
+[{{ .Env.DB_INSTANCE_NAME }}]
 pg1-path={{ .Env.PG_DATA_DIR }}
 pg1-socket-path=/rds/socket

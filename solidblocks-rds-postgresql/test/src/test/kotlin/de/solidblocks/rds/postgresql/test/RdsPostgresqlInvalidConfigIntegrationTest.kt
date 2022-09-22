@@ -51,6 +51,7 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
                             "DB_BACKUP_S3_SECRET_KEY" to secretKey,
 
                             "DB_DATABASE" to database,
+                            "DB_INSTANCE_NAME" to database,
                             "DB_USERNAME" to databaseUser,
                             "DB_PASSWORD" to databasePassword,
 

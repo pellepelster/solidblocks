@@ -15,7 +15,7 @@ function ensure_environment_variables() {
   done
 }
 
-ensure_environment_variables DB_DATABASE DB_PASSWORD DB_USERNAME
+ensure_environment_variables DB_INSTANCE_NAME DB_DATABASE DB_PASSWORD DB_USERNAME
 
 if [[ $((DB_BACKUP_S3 + DB_BACKUP_LOCAL)) == 0 ]]; then
   log "either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated"
@@ -49,7 +49,7 @@ fi
 
 log "starting..."
 
-export PG_DATA_DIR="${DATA_DIR}/${DB_DATABASE}"
+export PG_DATA_DIR="${DATA_DIR}/${DB_INSTANCE_NAME}"
 
 gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
 gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'
@@ -66,45 +66,82 @@ function psql_execute() {
 }
 
 function pgbackrest_execute() {
-  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log --stanza=${DB_DATABASE} "$@"
+  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log --stanza=${DB_INSTANCE_NAME} "$@"
 }
 
 function psql_count() {
   psql_execute "${1}" "${2}" | tr -d '[:space:]'
 }
 
+function ensure_databases() {
+  ensure_database "${DB_DATABASE}"
+
+  for index in {1..10}; do
+    local db_database_var="DB_DATABASE_${index}"
+
+    if [[ -z "${!db_database_var:-}" ]]; then
+      echo "no config found for ${db_database_var}"
+    else
+      ensure_database "${!db_database_var:-}"
+    fi
+  done
+}
+
 function ensure_database() {
-  if [[ $(psql_count "postgres" "SELECT count(datname) FROM pg_database WHERE datname = '${DB_DATABASE}';") == "0" ]]; then
-    log "creating database '${DB_DATABASE}'"
-    psql_execute "postgres" "CREATE DATABASE \"${DB_DATABASE}\""
+  local database="${1:-}"
+
+  if [[ $(psql_count "postgres" "SELECT count(datname) FROM pg_database WHERE datname = '${database}';") == "0" ]]; then
+    log "creating database '${database}'"
+    psql_execute "postgres" "CREATE DATABASE \"${database}\""
   fi
 }
 
-function ensure_user() {
-  if [[ $(psql_count "${DB_DATABASE}" "SELECT count(u.usename) FROM pg_catalog.pg_user u WHERE u.usename = '${DB_USERNAME}';") == "0" ]]; then
-    log "creating user '${DB_USERNAME}'"
-    psql_execute "${DB_DATABASE}" "CREATE USER \"${DB_USERNAME}\" WITH ENCRYPTED PASSWORD '${DB_PASSWORD}'"
+function ensure_db_users() {
+  ensure_db_user "${DB_DATABASE}" "${DB_USERNAME}" "${DB_PASSWORD}" "default"
+
+  for index in {1..10}; do
+    local db_database_var="DB_DATABASE_${index}"
+    local db_username_var="DB_USERNAME_${index}"
+    local db_password_var="DB_PASSWORD_${index}"
+
+    if [[ -z "${!db_database_var:-}" ]] || [[ -z "${!db_username_var:-}" ]] || [[ -z "${!db_password_var:-}" ]]; then
+      echo "no config found for ${db_database_var}/${db_username_var}/${db_password_var}"
+    else
+      ensure_db_user "${!db_database_var:-}" "${!db_username_var:-}" "${!db_password_var:-}" "${index}"
+    fi
+  done
+}
+
+function ensure_db_user() {
+  local database="${1:-}"
+  local username="${2:-}"
+  local password="${3:-}"
+  local stable_user_id="${4:-}"
+
+  if [[ $(psql_count "${database}" "SELECT count(u.usename) FROM pg_catalog.pg_user u WHERE u.usename = '${username}';") == "0" ]]; then
+    log "creating user '${username}'"
+    psql_execute "${database}" "CREATE USER \"${username}\" WITH ENCRYPTED PASSWORD '${password}'"
   else
-    log "setting password for '${DB_USERNAME}'"
-    psql_execute "${DB_DATABASE}" "ALTER USER \"${DB_USERNAME}\" WITH ENCRYPTED PASSWORD '${DB_PASSWORD}'"
+    log "setting password for '${username}'"
+    psql_execute "${database}" "ALTER USER \"${username}\" WITH ENCRYPTED PASSWORD '${password}'"
   fi
 
-  log "granting all privileges for '${DB_USERNAME}' on '${DB_DATABASE}'"
+  log "granting all privileges for '${username}' on '${database}'"
 
-  if [[ -f "${PG_DATA_DIR}/solidblocks_current_db_username" ]]; then
-    local last_db_username=$(cat "${PG_DATA_DIR}/solidblocks_current_db_username")
+  if [[ -f "${PG_DATA_DIR}/solidblocks_current_db_username_${stable_user_id}" ]]; then
+    local last_db_username=$(cat "${PG_DATA_DIR}/solidblocks_current_db_username_${stable_user_id}")
 
-    if [[ "${last_db_username}" != "${DB_USERNAME}" ]]; then
-      log "reassigning ownerships from '${last_db_username}' to '${DB_USERNAME}'"
+    if [[ "${last_db_username}" != "${username}" ]]; then
+      log "reassigning ownerships from '${last_db_username}' to '${username}'"
 
-      psql_execute "${DB_DATABASE}" "REASSIGN OWNED BY \"${last_db_username}\" TO \"${DB_USERNAME}\""
-      psql_execute "${DB_DATABASE}" "GRANT ALL PRIVILEGES ON DATABASE \"${DB_DATABASE}\" TO \"${DB_USERNAME}\""
-      psql_execute "${DB_DATABASE}" "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${DB_USERNAME}\""
-      psql_execute "${DB_DATABASE}" "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"${DB_USERNAME}\""
+      psql_execute "${database}" "REASSIGN OWNED BY \"${last_db_username}\" TO \"${username}\""
+      psql_execute "${database}" "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" TO \"${username}\""
+      psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${username}\""
+      psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"${username}\""
     fi
   fi
 
-  echo "${DB_USERNAME}" > "${PG_DATA_DIR}/solidblocks_current_db_username"
+  echo "${username}" > "${PG_DATA_DIR}/solidblocks_current_db_username_${stable_user_id}"
 }
 
 function init_db() {
@@ -117,10 +154,10 @@ function init_db() {
   # make sure we only listen public when DB is ready to go
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
 
-  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_DATABASE} stanza-create
+  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_INSTANCE_NAME} stanza-create
 
-  ensure_database
-  ensure_user
+  ensure_databases
+  ensure_db_users
 
   log "executing initial backup"
   pgbackrest_execute --log-level-console=info --type=full backup
@@ -132,7 +169,7 @@ function pgbackrest_status_code() {
   PGBACKREST_INFO=$(pgbackrest_execute --output=json info)
 
   if [[ $(echo ${PGBACKREST_INFO} | jq length) -gt 0 ]]; then
-    BACKUP_INFO=$(echo ${PGBACKREST_INFO} | jq ".[] | select(.name == \"${DB_DATABASE}\")")
+    BACKUP_INFO=$(echo ${PGBACKREST_INFO} | jq ".[] | select(.name == \"${DB_INSTANCE_NAME}\")")
     echo ${BACKUP_INFO} | jq -r '.status.code'
   else
     echo "99"
@@ -163,7 +200,7 @@ if [[ ! "$(ls -A ${PG_DATA_DIR})" ]]; then
       sleep 5
     done
 
-    ensure_user
+    ensure_db_users
 
     ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
   else
@@ -177,8 +214,8 @@ else
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
 
-  ensure_database
-  ensure_user
+  ensure_databases
+  ensure_db_users
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
 fi
@@ -188,3 +225,4 @@ cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
 
 log "provisioning completed"
 exec ${POSTGRES_BIN_DIR}/postgres -D "${PG_DATA_DIR}"
+

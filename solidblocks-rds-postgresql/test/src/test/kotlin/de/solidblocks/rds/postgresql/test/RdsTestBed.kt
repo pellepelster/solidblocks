@@ -73,6 +73,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         it.withStartupTimeout(Duration.ofSeconds(30))
         it.withEnv(
                 mapOf(
+                        "DB_INSTANCE_NAME" to RdsPostgresqlMinioBackupIntegrationTest.database,
                         "DB_DATABASE" to RdsPostgresqlMinioBackupIntegrationTest.database,
                         "DB_USERNAME" to RdsPostgresqlMinioBackupIntegrationTest.databaseUser,
                         "DB_PASSWORD" to password,

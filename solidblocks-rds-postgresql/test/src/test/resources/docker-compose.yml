@@ -5,6 +5,7 @@ services:
   postgresql:
     image: solidblocks-rds-postgresql
     environment:
+      - DB_INSTANCE_NAME
       - DB_DATABASE
       - DB_USERNAME
       - DB_PASSWORD
