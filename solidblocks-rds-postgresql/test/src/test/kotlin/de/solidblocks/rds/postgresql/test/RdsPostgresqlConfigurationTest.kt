@@ -151,7 +151,6 @@ class RdsPostgresqlConfigurationTest {
 
     }
 
-
     @Test
     fun testSetCustomPostgresConfig(testBed: RdsTestBed) {
 
@@ -190,6 +189,30 @@ class RdsPostgresqlConfigurationTest {
         //}
 
         assertThat(settings.filter { it["name"] == "checkpoint_timeout" }.first()["setting"]).isEqualTo("301")
+    }
+    @Test
+    fun testHasCreateSchemaPermissions(testBed: RdsTestBed) {
+
+        val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
+
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val container = testBed.createAndStartPostgresContainer(
+                mapOf(
+                        "DB_BACKUP_LOCAL" to "1"
+                ), dataDir, logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        logConsumer.waitForLogLine("database system is ready to accept connections")
+
+
+        container.createJdbi().useHandle<Exception> {
+            it.execute("CREATE SCHEMA myschema;")
+        }
+
     }
 
     @Test

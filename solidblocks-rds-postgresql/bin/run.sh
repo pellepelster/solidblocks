@@ -115,6 +115,13 @@ function ensure_database() {
   fi
 }
 
+function set_permissions() {
+  log "setting permissions for '${username}'"
+  psql_execute "${database}" "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" TO \"${username}\""
+  psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${username}\""
+  psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"${username}\""
+}
+
 function ensure_db_user() {
   local database="${1:-}"
   local username="${2:-}"
@@ -123,6 +130,7 @@ function ensure_db_user() {
   if [[ $(psql_count "${database}" "SELECT count(u.usename) FROM pg_catalog.pg_user u WHERE u.usename = '${username}';") == "0" ]]; then
     log "creating user '${username}'"
     psql_execute "${database}" "CREATE USER \"${username}\" WITH ENCRYPTED PASSWORD '${password}'"
+    set_permissions
   else
     log "setting password for '${username}'"
     psql_execute "${database}" "ALTER USER \"${username}\" WITH ENCRYPTED PASSWORD '${password}'"
@@ -137,9 +145,7 @@ function ensure_db_user() {
       log "reassigning ownerships from '${last_db_username}' to '${username}'"
 
       psql_execute "${database}" "REASSIGN OWNED BY \"${last_db_username}\" TO \"${username}\""
-      psql_execute "${database}" "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" TO \"${username}\""
-      psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${username}\""
-      psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"${username}\""
+      set_permissions
     fi
   fi
 
