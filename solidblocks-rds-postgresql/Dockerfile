@@ -14,8 +14,6 @@ ENV GID=10000
 
 ENV DATA_DIR=/storage/data
 
-ENV DB_ADMIN_USERNAME=${USER}
-
 RUN addgroup -g $GID $GROUP \
   && adduser $USER \
   -h /$USER \

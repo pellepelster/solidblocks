@@ -85,7 +85,7 @@ class RdsPostgresqlConfigurationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
         val localBackupDir = initWorldReadableTempDir()
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val container1 = rdsTestBed.createAndStartPostgresContainer(
                 mapOf(
                         "DB_BACKUP_LOCAL" to "1",
                 ), initWorldReadableTempDir(), logConsumer
@@ -104,7 +104,7 @@ class RdsPostgresqlConfigurationTest {
 
         val user = UUID.randomUUID().toString()
 
-        postgresContainer1.createJdbi().also {
+        container1.createJdbi().also {
 
             it.waitForReady()
             it.createUserTable()
@@ -116,12 +116,12 @@ class RdsPostgresqlConfigurationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        container1.execInContainer("/rds/bin/backup-full.sh")
 
-        postgresContainer1.stop()
+        container1.stop()
         logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val container2 = rdsTestBed.createAndStartPostgresContainer(
                 mapOf(
                         "DB_BACKUP_LOCAL" to "1",
                         "DB_USERNAME_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-user",
@@ -140,7 +140,7 @@ class RdsPostgresqlConfigurationTest {
         logConsumer.assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
         logConsumer.waitForLogLine("database system is ready to accept connections")
 
-        postgresContainer2.createJdbi("new-user", "new-password").also {
+        container2.createJdbi("new-user", "new-password").also {
 
             it.waitForReady()
 
@@ -190,6 +190,7 @@ class RdsPostgresqlConfigurationTest {
 
         assertThat(settings.filter { it["name"] == "checkpoint_timeout" }.first()["setting"]).isEqualTo("301")
     }
+
     @Test
     fun testHasCreateSchemaPermissions(testBed: RdsTestBed) {
 
@@ -208,9 +209,50 @@ class RdsPostgresqlConfigurationTest {
 
         logConsumer.waitForLogLine("database system is ready to accept connections")
 
-
         container.createJdbi().useHandle<Exception> {
             it.execute("CREATE SCHEMA myschema;")
+        }
+    }
+
+    @Test
+    fun testHasAdminPassword(testBed: RdsTestBed) {
+
+        val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
+
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val container1 = testBed.createAndStartPostgresContainer(
+                mapOf(
+                        "DB_ADMIN_PASSWORD" to "my-database-password",
+                        "DB_BACKUP_LOCAL" to "1"
+                ), dataDir, logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        logConsumer.waitForLogLine("database system is ready to accept connections")
+
+        container1.createJdbi("rds", "my-database-password").useHandle<Exception> {
+            it.execute("SELECT version()")
+        }
+
+        container1.stop()
+        logConsumer.clear()
+
+        val container2 = testBed.createAndStartPostgresContainer(
+                mapOf(
+                        "DB_ADMIN_PASSWORD" to "new-database-password",
+                        "DB_BACKUP_LOCAL" to "1"
+                ), dataDir, logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        logConsumer.waitForLogLine("database system is ready to accept connections")
+
+        container2.createJdbi("rds", "new-database-password").useHandle<Exception> {
+            it.execute("SELECT version()")
         }
 
     }

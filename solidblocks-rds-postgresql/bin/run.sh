@@ -2,6 +2,9 @@
 
 set -eu
 
+export DB_ADMIN_USERNAME="${USER}"
+export DB_ADMIN_PASSWORD="${DB_ADMIN_PASSWORD:-$(uuidgen)}"
+
 function log() {
   echo "[solidblocks-rds-postgresql] $*"
 }
@@ -115,7 +118,7 @@ function ensure_database() {
   fi
 }
 
-function set_permissions() {
+function ensure_permissions() {
   log "setting permissions for '${username}'"
   psql_execute "${database}" "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" TO \"${username}\""
   psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${username}\""
@@ -147,14 +150,14 @@ function ensure_db_user() {
     fi
   fi
 
-  set_permissions
+  ensure_permissions
 
   echo "${username}" > "${PG_DATA_DIR}/solidblocks_current_db_username_${database}"
 }
 
 function init_db() {
   log "initializing database instance"
-  ${POSTGRES_BIN_DIR}/initdb --username="${DB_ADMIN_USERNAME}" --encoding=UTF8 --pwfile=<(uuidgen) -D "${PG_DATA_DIR}" || true
+  ${POSTGRES_BIN_DIR}/initdb --username="${DB_ADMIN_USERNAME}" --encoding=UTF8 --pwfile=<(echo "${DB_ADMIN_PASSWORD}") -D "${PG_DATA_DIR}" || true
 
   cp -v /rds/config/postgresql.conf "${PG_DATA_DIR}/postgresql.conf"
   cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
@@ -222,6 +225,9 @@ else
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
 
   ensure_databases
+
+  log "setting password for '${DB_ADMIN_USERNAME}'"
+  psql_execute "postgres" "ALTER USER \"${DB_ADMIN_USERNAME}\" WITH ENCRYPTED PASSWORD '${DB_ADMIN_PASSWORD}'"
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
 fi
