@@ -130,7 +130,6 @@ function ensure_db_user() {
   if [[ $(psql_count "${database}" "SELECT count(u.usename) FROM pg_catalog.pg_user u WHERE u.usename = '${username}';") == "0" ]]; then
     log "creating user '${username}'"
     psql_execute "${database}" "CREATE USER \"${username}\" WITH ENCRYPTED PASSWORD '${password}'"
-    set_permissions
   else
     log "setting password for '${username}'"
     psql_execute "${database}" "ALTER USER \"${username}\" WITH ENCRYPTED PASSWORD '${password}'"
@@ -145,9 +144,10 @@ function ensure_db_user() {
       log "reassigning ownerships from '${last_db_username}' to '${username}'"
 
       psql_execute "${database}" "REASSIGN OWNED BY \"${last_db_username}\" TO \"${username}\""
-      set_permissions
     fi
   fi
+
+  set_permissions
 
   echo "${username}" > "${PG_DATA_DIR}/solidblocks_current_db_username_${database}"
 }
