@@ -56,6 +56,7 @@ function task_build_documentation {
       sed -i "s/HUGO_VERSION/${HUGO_VERSION}/g" content/shell/software/_index.md
       sed -i "s/SHELLCHECK_VERSION/${SHELLCHECK_VERSION}/g" content/shell/software/_index.md
       sed -i "s/SEMVER_VERSION/${SEMVER_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/SOLIDBLOCKS_VERSION/${version}/g" content/rds/_index.md
       hugo
     )
 }
