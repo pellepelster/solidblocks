@@ -45,6 +45,8 @@ function task_release_docker {
 }
 
 function task_build_documentation {
+    local version="$(semver get release)"
+
     ensure_environment
     (
       cd "${DIR}/doc"
