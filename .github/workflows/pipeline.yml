@@ -59,6 +59,13 @@ jobs:
           name: solidblocks-minio
           path: |
             solidblocks-minio/build/solidblocks-minio-*.tar
+      - name: Archive Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: solidblocks-minio-test
+          path: |
+            solidblocks-minio/test/build/reports/tests
 
   solidblocks-rds-postgresql:
     name:  solidblocks-rds-postgresql
