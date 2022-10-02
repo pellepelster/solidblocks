@@ -45,9 +45,8 @@ function task_release_docker {
 }
 
 function task_build_documentation {
-    export VERSION="$(semver get release)"
-
     ensure_environment
+    export VERSION="$(semver get release)"
     (
       cd "${DIR}/doc"
       sed -i "s/TEMPLATE_SOLIDBLOCKS_SHELL_VERSION/${VERSION}/g" content/shell/installation/_index.md
