@@ -85,6 +85,12 @@ jobs:
           name: solidblocks-rds-postgresql
           path: |
             solidblocks-rds-postgresql/build/solidblocks-rds-postgresql-*.tar
+      - name: Archive Test Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: solidblocks-rds-postgresql-test
+          path: |
+            solidblocks-rds-postgresql/test/build/reports/test/**/*
 
   release:
     runs-on: ubuntu-latest

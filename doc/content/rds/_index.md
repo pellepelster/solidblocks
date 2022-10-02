@@ -193,7 +193,6 @@ $ mkdir postgres_data && sudo chown 10000:10000 postgres_data
 
 and just restart the container again. It will automatically detect the empty data dir and restore the latest backup from the backup repository.
 
-
 ```
 $ docker run \
     --name instance1 \
