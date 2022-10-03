@@ -11,17 +11,50 @@ A containerized [PostgreSQL](https://www.postgresql.org/) database with all batt
 ## Configuration
 RDS PostgreSQL aims at being easy to use while keeping data a safe as possible. Based on the conventions of the [official PostgreSQL docker image](https://hub.docker.com/_/postgres) it can be configured by tuning different environment variables.
 
-The minimal needed configuration to start the database is
+### Global
+| configuration                    | type         | description                                                                                                                                                                     |
+|----------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_INSTANCE_NAME`               | environment  | unique name of this database instance                                                                                                                                           |
+| `DB_ADMIN_PASSWORD`              | environment  | Password for the db superuser, if not set a random password will be assigned. Username for the superuser is `rds`                                                               |
+| `DB_POSTGRES_EXTRA_CONFIG`       | environment  | Extra postgres configurations options for the `postgresql.conf`                                                                                                                 |
+| /some/data/dir:/storage/data     | mount        | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions               |
+| /some/backup/dir:/storage/backup | mount        | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions |
 
-| configuration                     | type        | description                                                                            |
-|-----------------------------------|-------------|----------------------------------------------------------------------------------------|
-| `DB_INSTANCE_NAME`                | environment | unique name of this database instance                                                  |----------------------------------------|-------------|----------------------------------------------------------------------------------------|
-| `DB_DATABASE_${database_id}`      | environment | name of the database that implicitly will be crated when the PostgreSQL is initialized | 
-| `DB_USERNAME_${database_id}`      | environment | name ot the user who will be granted full access to `DB_DATABASE`                      |
-| `DB_PASSWORD_${database_id}`      | environment | password for the database user                                                         |
-| `DB_BACKUP_LOCAL`/`DB_BACKUP_S3`  | environment | flag indicating what storage to use as backup repository                               |
-| /some/data/dir:/storage/data      | mount       | container volume mount for the PostgreSQL data directory                               |
-| /some/backup/dir:/storage/backup  | mount       | container volume mount for the pgBackRest backup repository directory                  |
+### Local Backup
+
+Based on the functionality of [pgBackRest](https://pgbackrest.org/) two types of backup repositories are supported. Local filesystem (`local`), or an S3 compatible object storage (`s3`). Those can be configured individually, but at least one type has to be configured.
+
+| configuration                         | type         | description                                                                                                                                                       |
+|---------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_BACKUP_LOCAL`                     | environment  | Flag to enable local filesystem as backup repository                                                                                                              |
+| `DB_BACKUP_LOCAL_RETENTION_FULL_TYPE` | environment  | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type) |
+| `DB_BACKUP_LOCAL_RETENTION_FULL`      | environment  | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)           |
+| `DB_BACKUP_LOCAL_RETENTION_DIFF`      | environment  | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)           |                                                                                                                                                                                |
+
+### S3 Backup
+
+| configuration                      | type         | description                                                                                                                                                       |
+|------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_BACKUP_S3`                     | environment  | Flag to enable S3 object storage as backup repository                                                                                                             |
+| `DB_BACKUP_S3_HOST`                | environment  | Hostname of the S3 object storage service                                                                                                                         |
+| `DB_BACKUP_S3_BUCKET`              | environment  | Bucket for the backup repository                                                                                                                                  |
+| `DB_BACKUP_S3_ACCESS_KEY`          | environment  | Access key for the backup bucket                                                                                                                                  |
+| `DB_BACKUP_S3_SECRET_KEY`          | environment  | Secret key for the backup bucket                                                                                                                                  |
+| `DB_BACKUP_S3_CA_PUBLIC_KEY`       | environment  | Public key for the CA that issued the certificates for the `DB_BACKUP_S3_HOST`. Useful when a non SaaS solution like [minIO](https://min.io/) is used.            |
+| `DB_BACKUP_S3_RETENTION_FULL_TYPE` | environment  | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type) |
+| `DB_BACKUP_S3_RETENTION_FULL`      | environment  | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)           |
+| `DB_BACKUP_S3_RETENTION_DIFF`      | environment  | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)           |                                                                                                                                                                                |
+
+
+### Databases
+
+Multiple databases can automatically be provisioned by providing configurations for multiple distinct unique `${database_id}
+
+| per database configuration       | type      | description                                                                            |
+|----------------------------------|-----------|----------------------------------------------------------------------------------------|
+| `DB_DATABASE_${database_id}`     | environment | name of the database that implicitly will be crated when the PostgreSQL is initialized | 
+| `DB_USERNAME_${database_id}`     | environment | name ot the user who will be granted full access to `DB_DATABASE_${database_id}`                      |
+| `DB_PASSWORD_${database_id}`     | environment | password for the database user                                                         |
 
 
 If any of those settings are missing or invalid, the container will complain with a log message and exit with an error code:
