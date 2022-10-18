@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:replace="fragments/head"></div>
+<body class="p-2">
+
+<div th:replace="fragments/breadcrumbs :: breadcrumbs('Environment Variables')"></div>
+
+<hr />
+
+<h2 class="text-center">Environment Variables</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Value</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="env : ${environmentVariables}">
+        <td th:text="${env.key}">keyvalue</td>
+        <td th:text="${env.value}">num</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+<nav th:fragment="breadcrumbs(current)" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li th:unless="${#strings.isEmpty(current)}" class="breadcrumb-item active" aria-current="page" th:text="${current}">current</li>
+    </ol>
+</nav>

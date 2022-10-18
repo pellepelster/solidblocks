@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+export VERSION="${GITHUB_REF_NAME:-snapshot}"
+
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
+DOCKER_IMAGE_NAME="solidblocks-debug-container"
+
+source "${DIR}/../solidblocks-shell/lib/software.sh"
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+function task_test {
+  (
+    cd "${DIR}"
+    ./gradlew integrationTest
+  )
+}
+
+function task_build {
+  (
+    ./gradlew assemble
+    cd "${DIR}"
+    docker build --build-arg VERSION=${VERSION} -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
+    mkdir -p "${DIR}/build"
+    docker save "${DOCKER_IMAGE_NAME}:${VERSION}" > "${DIR}/build/${DOCKER_IMAGE_NAME}-${VERSION}.tar"
+  )
+}
+
+function task_release_docker {
+  docker tag "${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
+  docker push  "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
+
+  docker tag "${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
+  docker push "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
+}
+
+function task_clean {
+  "${DIR}/gradlew" clean
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  clean) task_clean "$@" ;;
+  release-docker) task_release_docker "$@" ;;
+  *) task_usage ;;
+esac

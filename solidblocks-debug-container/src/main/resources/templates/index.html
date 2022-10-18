@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:replace="fragments/head"></div>
+<body class="p-2">
+
+<div th:replace="fragments/breadcrumbs :: breadcrumbs('')"></div>
+
+<hr />
+
+<h2 class="text-center">Solidblocks Debug Container</h2>
+
+<div class="container pt-4">
+    <div class="row">
+        <div class="col-sm">
+
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Environment Variables</h5>
+                    <p class="card-text">Show the containers environment variables.</p>
+                    <a href="/environment-variables" class="btn btn-primary">Environment Variables</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

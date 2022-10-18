@@ -67,6 +67,30 @@ jobs:
           path: |
             solidblocks-minio/test/build/reports/tests
 
+  solidblocks-debug-container:
+    name: solidblocks-debug-container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: solidblocks-debug-container/do build
+      - name: Test
+        run: solidblocks-debug-container/do test
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: solidblocks-debug-container
+          path: |
+            solidblocks-debug-container/build/solidblocks-debug-container-*.tar
+      - name: Archive Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: solidblocks-debug-container-test
+          path: |
+            solidblocks-debug-container/test/build/reports/tests
+
   solidblocks-rds-postgresql:
     name:  solidblocks-rds-postgresql
     runs-on: ubuntu-latest
@@ -107,6 +131,7 @@ jobs:
       - solidblocks-shell
       - solidblocks-minio
       - solidblocks-rds-postgresql
+      - solidblocks-debug-container
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
