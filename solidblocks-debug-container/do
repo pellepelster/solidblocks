@@ -26,6 +26,7 @@ function task_test {
 
 function task_build {
   (
+    cd "${DIR}"
     ./gradlew assemble
     cd "${DIR}"
     docker build --build-arg VERSION=${VERSION} -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
