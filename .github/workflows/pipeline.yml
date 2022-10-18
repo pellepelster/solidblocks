@@ -89,7 +89,7 @@ jobs:
         with:
           name: solidblocks-debug-container-test
           path: |
-            solidblocks-debug-container/test/build/reports/tests
+            solidblocks-debug-container/build/reports/tests
 
   solidblocks-rds-postgresql:
     name:  solidblocks-rds-postgresql
