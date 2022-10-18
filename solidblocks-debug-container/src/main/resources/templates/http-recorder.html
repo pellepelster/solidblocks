@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:replace="fragments/head"></div>
+<body class="p-2">
+
+<div th:replace="fragments/breadcrumbs :: breadcrumbs('HTTP Recorder')"></div>
+
+<hr/>
+
+<h2 class="text-center">HTTP Recorder</h2>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Time</th>
+        <th>Scheme</th>
+        <th>Client</th>
+        <th>Method</th>
+        <th>URI</th>
+        <th>Headers</th>
+    </tr>
+    </thead>
+    <tbody id="requests"
+           hx-trigger="every 1s"
+           hx-target="#requests"
+           hx-swap="innerHTML"
+           hx-get="/http-recorder/requests">
+    <tr>
+        <td colspan="3">
+            Loading...
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

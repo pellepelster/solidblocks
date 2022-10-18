@@ -50,6 +50,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.webjars.npm:bootstrap:5.2.2")
     implementation("org.webjars:webjars-locator:0.45")
+    implementation("org.webjars.npm:htmx.org:1.8.2")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     integrationTestImplementation("org.junit.jupiter:junit-jupiter-api")

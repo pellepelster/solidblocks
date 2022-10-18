@@ -1,0 +1,31 @@
+<tr th:each="request : ${requests}">
+    <td th:text="${#dates.formatISO(request.timestamp)}">timestamp</td>
+    <td th:text="${request.scheme}">scheme</td>
+    <td th:text="${request.remoteHost + ':' + request.remotePort}">remoteHost:remotePort</td>
+    <td th:switch="${request.method}">
+        <span th:case="'GET'" class="badge bg-success text-light" th:text="${request.method}">method</span>
+        <span th:case="'OPTIONS'" class="badge bg-success text-light" th:text="${request.method}">method</span>
+        <span th:case="'HEAD'" class="badge bg-success text-light" th:text="${request.method}">method</span>
+        <span th:case="'POST'" class="badge bg-primary text-light" th:text="${request.method}">method</span>
+        <span th:case="'PUT'" class="badge bg-primary text-light" th:text="${request.method}">method</span>
+        <span th:case="'DELETE'" class="badge bg-danger text-light" th:text="${request.method}">method</span>
+        <span th:case="*" class="badge bg-info text-dark" th:text="${request.method}">method</span>
+    </td>
+    <td th:text="${request.uri}">uri</td>
+    <td>
+        <table class="table-light table-sm">
+            <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="header : ${request.headers}">
+                <td th:text="${header.key}">key</td>
+                <td th:text="${header.value}">value</td>
+            </tr>
+            </tbody>
+        </table>
+    </td>
+</tr>

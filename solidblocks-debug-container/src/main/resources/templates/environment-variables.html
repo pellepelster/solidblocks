@@ -11,16 +11,16 @@
 
 <table class="table">
     <thead>
-    <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Value</th>
-    </tr>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Value</th>
+        </tr>
     </thead>
     <tbody>
-    <tr th:each="env : ${environmentVariables}">
-        <td th:text="${env.key}">keyvalue</td>
-        <td th:text="${env.value}">num</td>
-    </tr>
+        <tr th:each="env : ${environmentVariables}">
+            <td th:text="${env.key}">keyvalue</td>
+            <td th:text="${env.value}">num</td>
+        </tr>
     </tbody>
 </table>
 
