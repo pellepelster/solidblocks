@@ -222,6 +222,9 @@ else
   rm -f /rds/socket/*
   rm -f "${PG_DATA_DIR}/postmaster.pid"
 
+  cp -v /rds/config/postgresql.conf "${PG_DATA_DIR}/postgresql.conf"
+  cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
+
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
 
   ensure_databases
