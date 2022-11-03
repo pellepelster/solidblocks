@@ -1,12 +1,18 @@
 package de.solidblocks.rds.postgresql.test
 
+import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.database
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.output.Slf4jLogConsumer
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
 import java.util.*
+import kotlin.io.path.pathString
+import kotlin.io.path.writeText
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -14,6 +20,80 @@ import java.util.*
 class RdsPostgresqlConfigurationTest {
 
     private val logger = KotlinLogging.logger {}
+
+    @Test
+    fun testExecutesInitSql(testBed: RdsTestBed) {
+
+        val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
+
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val initSqlFile = Files.createTempFile("init_sql", "sql")
+        initSqlFile.writeText("CREATE TABLE \"table1\" (id VARCHAR PRIMARY KEY, \"name\" VARCHAR)")
+        Files.setPosixFilePermissions(initSqlFile, PosixFilePermissions.fromString("rwxrwxrwx"))
+
+        val container = testBed.createAndStartPostgresContainer(
+                mapOf(
+                        "DB_BACKUP_LOCAL" to "1",
+                        "DB_INIT_SQL_$database" to "/init_sql.sql",
+                ), dataDir, logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+            it.withFileSystemBind(initSqlFile.pathString, "/init_sql.sql")
+        }
+
+        logConsumer.waitForLogLine("database system is ready to accept connections")
+
+
+        val name = UUID.randomUUID().toString()
+
+        container.createJdbi().also {
+
+            it.waitForReady()
+            it.useHandle<RuntimeException> {
+                it.createUpdate("INSERT INTO \"table1\" (id, \"name\") VALUES (?, ?)")
+                        .bind(0, UUID.randomUUID())
+                        .bind(1, name)
+                        .execute()
+
+            }
+
+            it.useHandle<RuntimeException> {
+                val result = it.createQuery("SELECT * FROM \"table1\" ORDER BY \"name\"")
+                        .mapToMap()
+                        .list()
+
+                assertThat(result).filteredOn {
+                    it["name"] == name
+                }.hasSize(1)
+            }
+        }
+    }
+
+    @Test
+    fun testIgnoresUnreadableInitSql(testBed: RdsTestBed) {
+
+        val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
+
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val initSqlFile = Files.createTempFile("init_sql", "sql")
+        initSqlFile.writeText("CREATE TABLE \"table1\" (id VARCHAR PRIMARY KEY, \"name\" VARCHAR)")
+
+        testBed.createAndStartPostgresContainer(
+                mapOf(
+                        "DB_BACKUP_LOCAL" to "1",
+                        "DB_INIT_SQL_$database" to "/init_sql.sql",
+                ), dataDir, logConsumer
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+            it.withFileSystemBind(initSqlFile.pathString, "/init_sql.sql")
+        }
+
+        logConsumer.waitForLogLine("database system is ready to accept connections")
+    }
 
     @Test
     fun testChangesUsernameAndPasswordAfterRestart(testBed: RdsTestBed) {
@@ -57,8 +137,8 @@ class RdsPostgresqlConfigurationTest {
         container.stop()
         logConsumer.clear()
         container.withEnv(mapOf(
-                "DB_USERNAME_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-user",
-                "DB_PASSWORD_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-password",
+                "DB_USERNAME_$database" to "new-user",
+                "DB_PASSWORD_$database" to "new-password",
         )).start()
 
         // on second start with persistent storage no initializing ord backup should be executed
@@ -124,9 +204,9 @@ class RdsPostgresqlConfigurationTest {
         val container2 = rdsTestBed.createAndStartPostgresContainer(
                 mapOf(
                         "DB_BACKUP_LOCAL" to "1",
-                        "DB_USERNAME_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-user",
-                        "DB_PASSWORD_${RdsPostgresqlMinioBackupIntegrationTest.database}" to "new-password",
-                        ), initWorldReadableTempDir(), logConsumer
+                        "DB_USERNAME_$database" to "new-user",
+                        "DB_PASSWORD_$database" to "new-password",
+                ), initWorldReadableTempDir(), logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }

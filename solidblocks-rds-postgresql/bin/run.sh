@@ -65,7 +65,13 @@ mkdir -p "${PG_DATA_DIR}"
 function psql_execute() {
   local database=${1:-}
   local query=${2:-}
-  psql -h /rds/socket --username "${DB_ADMIN_USERNAME}" --field-separator-zero --record-separator-zero --tuples-only --quiet -c "${query}" "${database}"
+  psql -h /rds/socket --username "${DB_ADMIN_USERNAME}" --field-separator-zero --record-separator-zero --tuples-only --quiet --command "${query}" "${database}"
+}
+
+function pgbackrest_execute_file() {
+  local database=${1:-}
+  local file=${2:-}
+  psql -h /rds/socket --username "${DB_ADMIN_USERNAME}" --file "${file}" "${database}"
 }
 
 function pgbackrest_execute() {
@@ -115,6 +121,19 @@ function ensure_database() {
   if [[ $(psql_count "postgres" "SELECT count(datname) FROM pg_database WHERE datname = '${database}';") == "0" ]]; then
     log "creating database '${database}'"
     psql_execute "postgres" "CREATE DATABASE \"${database}\""
+
+    local database_init_sql_var="DB_INIT_SQL_${database_id}"
+    local database_init_sql="${!database_init_sql_var:-}"
+
+    if [[ -n "${database_init_sql}" ]]; then
+      if [[ -r "${database_init_sql}" ]]; then
+        echo "executing init sql file '${database_init_sql}'"
+        pgbackrest_execute_file "${database}" "${database_init_sql}"
+      else
+        echo "no init sql file found at '${database_init_sql}' ot the file is not readable"
+      fi
+    fi
+
   fi
 }
 
