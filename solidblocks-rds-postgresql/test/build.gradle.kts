@@ -23,6 +23,9 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:${Versions.testContainersVersion}")
     testImplementation("org.testcontainers:junit-jupiter:${Versions.testContainersVersion}")
 
+    testImplementation("org.eclipse:yasson:1.0.1")
+    testImplementation("org.glassfish:javax.json:1.1.2")
+
     testImplementation("io.mockk:mockk:1.12.4")
     testImplementation("org.awaitility:awaitility:4.2.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")

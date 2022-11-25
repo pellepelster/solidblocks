@@ -20,8 +20,8 @@ All functions are tested on the following distributions
 
 #### Installation
 ```
-curl -L https://github.com/pellepelster/solidblocks/releases/download/v0.0.63/solidblocks-shell-v0.0.63.zip > solidblocks-shell-v0.0.63.zip
-unzip solidblocks-shell-v0.0.63.zip
+curl -L https://github.com/pellepelster/solidblocks/releases/download/v0.0.66/solidblocks-shell-v0.0.66.zip > solidblocks-shell-v0.0.66.zip
+unzip solidblocks-shell-v0.0.66.zip
 ```
 
 #### Create Script
