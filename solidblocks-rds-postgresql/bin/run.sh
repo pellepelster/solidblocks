@@ -68,14 +68,14 @@ function psql_execute() {
   psql -h /rds/socket --username "${DB_ADMIN_USERNAME}" --field-separator-zero --record-separator-zero --tuples-only --quiet --command "${query}" "${database}"
 }
 
-function pgbackrest_execute_file() {
+function pgbackrest_default_arguments() {
+  echo "--config /rds/config/pgbackrest.conf --log-path=/rds/log --stanza=${DB_INSTANCE_NAME}"
+}
+
+function psql_execute_file() {
   local database=${1:-}
   local file=${2:-}
   psql -h /rds/socket --username "${DB_ADMIN_USERNAME}" --file "${file}" "${database}"
-}
-
-function pgbackrest_execute() {
-  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log --stanza=${DB_INSTANCE_NAME} "$@"
 }
 
 function psql_count() {
@@ -128,7 +128,7 @@ function ensure_database() {
     if [[ -n "${database_init_sql}" ]]; then
       if [[ -r "${database_init_sql}" ]]; then
         echo "executing init sql file '${database_init_sql}'"
-        pgbackrest_execute_file "${database}" "${database_init_sql}"
+        psql_execute_file "${database}" "${database_init_sql}"
       else
         echo "no init sql file found at '${database_init_sql}' ot the file is not readable"
       fi
@@ -189,13 +189,13 @@ function init_db() {
   ensure_databases
 
   log "executing initial backup"
-  pgbackrest_execute --log-level-console=info --type=full backup
+  pgbackrest $(pgbackrest_default_arguments) --log-level-console=info --type=full backup
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
 }
 
 function pgbackrest_status_code() {
-  PGBACKREST_INFO=$(pgbackrest_execute --output=json info)
+  PGBACKREST_INFO=$(pgbackrest $(pgbackrest_default_arguments) --output=json info)
 
   if [[ $(echo ${PGBACKREST_INFO} | jq length) -gt 0 ]]; then
     BACKUP_INFO=$(echo ${PGBACKREST_INFO} | jq ".[] | select(.name == \"${DB_INSTANCE_NAME}\")")
@@ -205,14 +205,22 @@ function pgbackrest_status_code() {
   fi
 }
 
+function pgbackrest_default_restore_arguments() {
+  echo $(pgbackrest_default_arguments) --db-path=${PG_DATA_DIR} restore --recovery-option="recovery_end_command=/rds/bin/recovery_complete.sh"
+}
+
 if [[ ! "$(ls -A ${PG_DATA_DIR})" ]]; then
   log "data dir is empty"
 
   if [[ $(pgbackrest_status_code) -eq 0 ]]; then
 
-    log "restoring database from backup"
-    # make sure we only listen public when DB is ready to go
-    pgbackrest_execute --db-path=${PG_DATA_DIR} restore --recovery-option="recovery_end_command=/rds/bin/recovery_complete.sh"
+    if [[ -z "${DB_RESTORE_PITR:-}" ]]; then
+      log "restoring database from backup (latest)"
+      pgbackrest $(pgbackrest_default_restore_arguments)
+    else
+      log "restoring database from backup (${DB_RESTORE_PITR})"
+      pgbackrest $(pgbackrest_default_restore_arguments) --type=time --target="${DB_RESTORE_PITR}" --target-action=promote
+    fi
 
     sleep 5
 
