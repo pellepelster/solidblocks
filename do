@@ -51,12 +51,14 @@ function task_build_documentation {
       cd "${DIR}/doc"
       sed -i "s/TEMPLATE_SOLIDBLOCKS_SHELL_VERSION/${VERSION}/g" content/shell/installation/_index.md
       sed -i "s/TEMPLATE_SOLIDBLOCKS_SHELL_CHECKSUM/${SOLIDBLOCKS_SHELL_CHECKSUM:-}/g" content/shell/installation/_index.md
+
       source "${DIR}/solidblocks-shell/lib/software.sh"
       sed -i "s/TERRAFORM_VERSION/${TERRAFORM_VERSION}/g" content/shell/software/_index.md
       sed -i "s/CONSUL_VERSION/${CONSUL_VERSION}/g" content/shell/software/_index.md
       sed -i "s/HUGO_VERSION/${HUGO_VERSION}/g" content/shell/software/_index.md
       sed -i "s/SHELLCHECK_VERSION/${SHELLCHECK_VERSION}/g" content/shell/software/_index.md
       sed -i "s/SEMVER_VERSION/${SEMVER_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/TERRAGRUNT_VERSION/${TERRAGRUNT_VERSION}/g" content/shell/software/_index.md
       sed -i "s/SOLIDBLOCKS_VERSION/${VERSION}/g" content/rds/_index.md
       hugo
     )

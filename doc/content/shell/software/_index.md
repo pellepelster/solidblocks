@@ -63,14 +63,22 @@ Installs [ShellCheck](https://www.shellcheck.net/) shell script analysis tool ve
 ## `software_ensure_semver(version = SEMVER_VERSION, checksum)`  {#software_ensure_semver}
 Installs [semver](https://github.com/maykonlf/semver-cli) a semantic versioning tool in version SEMVER_VERSION
 
+## `software_ensure_terragrunt(version = TERRAGRUNT_VERSION, checksum)`  {#software_ensure_terragrunt}
+Installs [terragrunt](https://terragrunt.gruntwork.io/) a semantic versioning tool in version TERRAGRUNT_VERSION
+
 
 ## `software_hashicorp_ensure(product, version, checksum)` {#software_hashicorp_ensure}
-Generic wrapper for downloading HashiCorp tools built around the convention that product distributions are available at https://releases.hashicorp.com/`${product}`/`${version}`/`${product}`_`${product}`_linux_amd64.zip and the downloaded
+Generic wrapper for downloading HashiCorp tools built around the convention that product distributions are available at https://releases.hashicorp.com/${product}/${version}/${product}_${product}_linux_amd64.zip and the downloaded
 zip contains an executable named `${product}` which will be written to `${bin_dir}`.
 
 ```shell
 software_hashicorp_ensure "nomad" "1.3.3" "d908811cebe2a8373e93c4ad3d09af5c706241878ff3f21ee0f182b4ecb571f2"
 ```
+
+## `software_github_ensure_bin(user, repository, version, bin_name, checksum)` {#software_github_ensure_bin}
+
+Generic wrapper for binary release download from Github built around the Github releases convention https://github.com/${user}/${repository}/releases/download/v${version}/${bin_name}_linux_amd64.
+
 
 ## `software_export_path` {#software_export_path}
 Creates a `$PATH` compatible path for all software downloaded with `software_ensure_*`

@@ -102,6 +102,43 @@ function software_ensure_consul {
 }
 
 ###########################################
+#                github                   #
+###########################################
+
+# see https://pellepelster.github.io/solidblocks/shell/software/#software_github_ensure_bin
+function software_github_ensure_bin {
+    local user="${1:-}"
+    local repository="${2:-}"
+    local version="${3:-}"
+    local bin_name="${4:-}"
+    local checksum="${5:-}"
+
+    mkdir -p "${CACHE_DIR}" || true
+    mkdir -p "${BIN_DIR}" || true
+
+    local target_file="${BIN_DIR}/${bin_name}"
+    local url="https://github.com/${user}/${repository}/releases/download/v${version}/${bin_name}_linux_amd64"
+
+    download_and_verify_checksum "${url}" "${target_file}" "${checksum}"
+    chmod +x "${target_file}"
+}
+
+###########################################
+#              terragrunt                 #
+###########################################
+
+TERRAGRUNT_VERSION="0.43.0"
+TERRAGRUNT_CHECKSUM="e5ceb5ff1b0871a5836cd4877793828cd2baeec0b89bbd3b5c1b0e5150c0f017"
+
+# see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_terragrunt
+function software_ensure_terragrunt {
+  local version=${1:-$TERRAGRUNT_VERSION}
+  local checksum=${2:-$TERRAGRUNT_CHECKSUM}
+
+  software_github_ensure_bin "gruntwork-io" "terragrunt" "${version}" "terragrunt" "${checksum}"
+}
+
+###########################################
 #                 path                    #
 ###########################################
 

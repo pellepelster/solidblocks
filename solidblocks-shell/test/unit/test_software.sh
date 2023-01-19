@@ -10,6 +10,7 @@ rm -rf "${DIR}/../../lib/.cache"
 source "${DIR}/../../lib/test.sh"
 source "${DIR}/../../lib/software.sh"
 
+software_ensure_terragrunt
 software_ensure_consul
 software_ensure_terraform
 software_ensure_shellcheck
@@ -21,6 +22,7 @@ test_assert_matches "hugo" "hugo v0.101.0-466fa43c16709b4483689930a4f9ac8add5c9f
 test_assert_matches "shellcheck" "version: 0.8.0" "$(shellcheck --version | grep "version:")"
 test_assert_matches "terraform" "Terraform v1.2.6" "$(terraform version | grep "Terraform v")"
 test_assert_matches "consul" "Consul v1.12.3" "$(consul version | grep "Consul v")"
+test_assert_matches "terragrunt" "terragrunt version v0.43.0" "$(terragrunt --version | grep "terragrunt version")"
 
 test_assert_file_exists "${DIR}/../../lib/.bin/shellcheck-v0.8.0/shellcheck"
 test_assert_file_exists "${DIR}/../../lib/.cache/shellcheck-v0.8.0.linux.x86_64.tar.xz"
