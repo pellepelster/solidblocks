@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 

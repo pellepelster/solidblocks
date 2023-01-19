@@ -1,12 +1,3 @@
----
-title: Installation
-weight: 10
-disableToc: true
----
-
-The following example is a minimal example skeleton for using solidblocks
-
-```shell
 #!/usr/bin/env bash
 
 set -eu -o pipefail
@@ -18,8 +9,8 @@ function bootstrap_solidblocks() {
   local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
   local install_dir="${1:-${default_dir}/.solidblocks-shell}"
 
-  SOLIDBLOCKS_SHELL_VERSION="TEMPLATE_SOLIDBLOCKS_SHELL_VERSION"
-  SOLIDBLOCKS_SHELL_CHECKSUM="TEMPLATE_SOLIDBLOCKS_SHELL_CHECKSUM"
+  SOLIDBLOCKS_SHELL_VERSION="v0.0.65"
+  SOLIDBLOCKS_SHELL_CHECKSUM="b24f0a60d5d7e713b8706f6b898a5467d6ac768542b86ac079e9d9a7fde9ed01"
 
   local temp_file="$(mktemp)"
 
@@ -85,20 +76,3 @@ case ${ARG} in
   terraform) task_terraform "$@" ;;
   *) task_usage ;;
 esac
-```
-
-After download and extraction the different components can be sourced in via
-
-
-```shell
-DIR="$(cd "$(dirname "$0")" ; pwd -P)"
-
-source "${DIR}/.solidblocks-shell/software.sh"
-
-software_ensure_terraform
-```
-
-{{% notice info %}}
-Note than when sourcing in the different files, all dependencies are also automatically loaded. E.g. when using the software helpers it will automatically also source in `download.sh` and `file.sh` because it needs functions from this file.
-{{% /notice %}}
-

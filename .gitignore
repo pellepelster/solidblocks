@@ -15,4 +15,4 @@ terraform.tfstate
 terraform.tfstate.backup
 build
 *.pem
-/solidblocks-shell/examples/single-project/solidblocks-shell/
+/solidblocks-shell/examples/minimal-skeleton/solidblocks-shell/
