@@ -20,8 +20,22 @@ All functions are tested on the following distributions
 
 #### Installation
 ```
-curl -L https://github.com/pellepelster/solidblocks/releases/download/v0.0.66/solidblocks-shell-v0.0.66.zip > solidblocks-shell-v0.0.66.zip
-unzip solidblocks-shell-v0.0.66.zip
+function bootstrap_solidblocks() {
+  local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
+  local install_dir="${1:-${default_dir}/.solidblocks-shell}"
+
+  SOLIDBLOCKS_SHELL_VERSION="v0.0.68"
+  SOLIDBLOCKS_SHELL_CHECKSUM="1a7bb1d03b35e4cb94d825ec542d6f51c2c3cc1a3c387b0dea61eb4be32760a7"
+
+  local temp_file="$(mktemp)"
+
+  mkdir -p "${install_dir}"
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
+  echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  ${temp_file}" | sha256sum -c
+  cd "${install_dir}"
+  unzip -o -j "${temp_file}" -d "${install_dir}"
+  rm -f "${temp_file}"
+}
 ```
 
 #### Create Script
