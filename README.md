@@ -19,7 +19,7 @@ All functions are tested on the following distributions
 ### Usage example
 
 #### Installation
-```
+```shell
 function bootstrap_solidblocks() {
   local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
   local install_dir="${1:-${default_dir}/.solidblocks-shell}"
@@ -42,7 +42,7 @@ bootstrap_solidblocks
 
 #### Create Script
 **example.sh**
-```
+```shell
 #!/usr/bin/env bash
 
 source "solidblocks-shell/software.sh"
