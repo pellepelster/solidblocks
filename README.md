@@ -36,6 +36,8 @@ function bootstrap_solidblocks() {
   unzip -o -j "${temp_file}" -d "${install_dir}"
   rm -f "${temp_file}"
 }
+
+bootstrap_solidblocks
 ```
 
 #### Create Script
