@@ -23,7 +23,7 @@ function test_assert_matches {
     local expected=${2:-}
     local actual=${3:-}
 
-    if [[ "${actual}" =~ "${expected}" ]]; then
+    if [[ "${actual}" =~ ${expected} ]]; then
         echo -e "${COLOR_GREEN}${description} expected '${expected}' and got '${actual}'${COLOR_RESET}"
     else
         echo -e "${COLOR_RED}${description} expected '${expected}' but got '${actual}'${COLOR_RESET}"

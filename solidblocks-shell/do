@@ -48,6 +48,13 @@ function task_test_integration_prepare {
 }
 
 function task_test_integration {
+
+  for test in ${DIR}/test/integration/test_*.sh; do
+      log_divider_header ${test}
+      ${test}
+      log_divider_footer
+  done
+
   for image in ${TESTCONTAINER_IMAGES}
   do
       log_divider_header "running tests on '${image}'"
