@@ -11,7 +11,7 @@ test_assert_matches "non owned bucket"      "error(.*)"         "$(aws_bucket_ex
 test_assert_equals  "non existing bucket"   "bucket_not_found"  "$(aws_bucket_exists "$(uuidgen)")"
 test_assert_matches "bucket name too short" "error(.*)"         "$(aws_bucket_exists "xx")"
 
-TEST_BUCKET_NAME="test-solidblocks"
+TEST_BUCKET_NAME="test-$(uuidgen)"
 
 test_assert_equals "non existing bucket"    "bucket_not_found"        "$(aws_bucket_exists "${TEST_BUCKET_NAME}")"
 aws_bucket_ensure "${TEST_BUCKET_NAME}"

@@ -109,7 +109,7 @@ function aws_bucket_exists() {
 # see https://pellepelster.github.io/solidblocks/shell/aws/#aws_bucket_ensure
 function aws_bucket_ensure() {
   local bucket_name="${1:-}"
-  local location="${2:-eu-west-1}"
+  local region="${2:-eu-central-1}"
 
   local status="$(aws_bucket_exists "${bucket_name}")"
 
@@ -120,14 +120,20 @@ function aws_bucket_ensure() {
   if [[ "${status}" == "bucket_not_found" ]]; then
     log_echo "creating bucket '${bucket_name}'"
     local create_result=$(aws s3api create-bucket \
-          --region ${location} \
+          --region "${region}" \
           --output json \
           --acl private \
           --bucket "${bucket_name}" \
-          --create-bucket-configuration LocationConstraint=${location})
+          --create-bucket-configuration LocationConstraint=${region})
 
-    local bucket_location="$(echo "${create_result}" | jq -r '.Location')"
-    log_echo "created bucket '${bucket_name}' (${bucket_location})"
+    local location="$(echo "${create_result}" | jq -r '.Location')"
+    log_echo "created bucket '${bucket_name}' (${location})"
+
+    while [[ "$(aws_bucket_exists "${bucket_name}")" != "bucket_exists" ]]; do
+      sleep 1
+      log_echo "waiting for bucket '${bucket_name}' creation to finish"
+    done
+
   else
     log_echo "bucket '${bucket_name}' already exists"
   fi

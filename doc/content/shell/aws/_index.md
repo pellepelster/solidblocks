@@ -18,7 +18,7 @@ source "aws.sh"
 aws_dynamodb_ensure "my-table" "AttributeName=attribute1,AttributeType=S" "AttributeName=attribute1,KeyType=HASH"
 ```
 
-### `aws_bucket_ensure(bucket_name, [location=eu-west-1])` {#aws_bucket_ensure}
+### `aws_bucket_ensure(bucket_name, [location=eu-central-1])` {#aws_bucket_ensure}
 
 Creates a new S3 bucket named `bucket_name` if it not already exists. The command will fail if bucket creation fails.
 
