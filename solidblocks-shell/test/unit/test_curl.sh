@@ -10,9 +10,7 @@ source "${DIR}/../../lib/test.sh"
 source "${DIR}/../../lib/curl.sh"
 source "${DIR}/../../lib/docker.sh"
 source "${DIR}/../../lib/network.sh"
-
-rm -rf "${DIR}/../../lib/.bin"
-rm -rf "${DIR}/../../lib/.cache"
+source "${DIR}/utils.sh"
 
 docker run --rm -d -p 8080 --name wiremock wiremock/wiremock:2.33.2
 

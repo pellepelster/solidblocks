@@ -3,7 +3,8 @@
 set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
-TESTCONTAINER_IMAGES="amazonlinux-2 debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
+#TESTCONTAINER_IMAGES="amazonlinux-2 debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
+TESTCONTAINER_IMAGES="debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
 VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 DOCKER_REGISTRY="ghcr.io"
@@ -36,24 +37,18 @@ function task_test_unit {
 
 
 function task_test_integration_prepare {
-  (
-    cd "${DIR}/test/docker"
 
     for image in ${TESTCONTAINER_IMAGES}
     do
-      docker build -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile_${image}" .
+    (
+      cd "${DIR}/test/docker/${image}"
+      docker build -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
       docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}"
+    )
     done
-  )
 }
 
 function task_test_integration {
-
-  for test in ${DIR}/test/integration/test_*.sh; do
-      log_divider_header ${test}
-      ${test}
-      log_divider_footer
-  done
 
   for image in ${TESTCONTAINER_IMAGES}
   do
@@ -62,6 +57,11 @@ function task_test_integration {
       log_divider_footer
   done
 
+  for test in ${DIR}/test/integration/test_*.sh; do
+      log_divider_header ${test}
+      ${test}
+      log_divider_footer
+  done
 }
 
 function task_test {

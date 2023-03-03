@@ -4,11 +4,9 @@ set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-rm -rf "${DIR}/../../lib/.bin"
-rm -rf "${DIR}/../../lib/.cache"
-
 source "${DIR}/../../lib/test.sh"
 source "${DIR}/../../lib/software.sh"
+source "${DIR}/utils.sh"
 
 software_ensure_terragrunt
 software_ensure_consul

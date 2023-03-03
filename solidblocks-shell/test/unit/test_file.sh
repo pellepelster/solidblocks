@@ -3,13 +3,10 @@
 set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
-TEMP_DIR="${DIR}/.tmp"
-
-rm -rf "${DIR}/../../lib/.bin"
-rm -rf "${DIR}/../../lib/.cache"
 
 source "${DIR}/../../lib/test.sh"
 source "${DIR}/../../lib/file.sh"
+source "${DIR}/utils.sh"
 
 mkdir "${TEMP_DIR}/file_extract_to_directory_$$"
 (
