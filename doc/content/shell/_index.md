@@ -14,6 +14,7 @@ Reusable shell functions for infrastructure automation
 * [Log]({{%relref "shell/log/_index.md" %}}) Generic console and logging and helpers
 * [AWS]({{%relref "shell/aws/_index.md" %}}) Utilities for the AWS cloud API
 * [Terraform]({{%relref "shell/terraform/_index.md" %}}) Wrappers and helpers for Terraform
+* [Python]({{%relref "shell/python/_index.md" %}}) Wrappers and helpers for Python
 
 All functions are tested on the following distributions
 
