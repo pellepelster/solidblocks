@@ -1,0 +1,17 @@
+SOLIDBLOCKS_SHELL_VERSION="__SOLIDBLOCKS_VERSION__"
+SOLIDBLOCKS_SHELL_CHECKSUM="__SOLIDBLOCKS_SHELL_CHECKSUM__"
+
+# self contained function for initial Solidblocks bootstrapping
+function bootstrap_solidblocks() {
+  local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
+  local install_dir="${1:-${default_dir}/.solidblocks-shell}"
+
+  local temp_file="$(mktemp)"
+
+  mkdir -p "${install_dir}"
+  curl -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
+  echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  ${temp_file}" | sha256sum -c
+  cd "${install_dir}"
+  unzip -o -j "${temp_file}" -d "${install_dir}"
+  rm -f "${temp_file}"
+}

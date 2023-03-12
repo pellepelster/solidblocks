@@ -4,87 +4,17 @@ weight: 10
 disableToc: true
 ---
 
-The following example is a minimal example skeleton for using solidblocks
+Releases are viable via [https://github.com/pellepelster/solidblocks/releases](https://github.com/pellepelster/solidblocks/releases), for direct usage in shell-scripts the following helper function provides automatic installation
+
 
 ```shell
-#!/usr/bin/env bash
+{{% include "/generated/shell_bootstrap_solidblocks" %}}
+```
 
-set -eu -o pipefail
+A full example that you can use as a skeleton for your own scripts
 
-DIR="$(cd "$(dirname "$0")" ; pwd -P)"
-
-# self contained function for solidblocks bootstrap
-function bootstrap_solidblocks() {
-  local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
-  local install_dir="${1:-${default_dir}/.solidblocks-shell}"
-
-  SOLIDBLOCKS_SHELL_VERSION="TEMPLATE_SOLIDBLOCKS_SHELL_VERSION"
-  SOLIDBLOCKS_SHELL_CHECKSUM="TEMPLATE_SOLIDBLOCKS_SHELL_CHECKSUM"
-
-  local temp_file="$(mktemp)"
-
-  mkdir -p "${install_dir}"
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
-  echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  ${temp_file}" | sha256sum -c
-  cd "${install_dir}"
-  unzip -o -j "${temp_file}" -d "${install_dir}"
-  rm -f "${temp_file}"
-}
-
-# sets up solidblocks and all needed software
-function task_bootstrap() {
-  bootstrap_solidblocks
-  ensure_environment
-  software_ensure_terraform
-}
-
-# makes sure all lib functions are available and all software is on the $PATH
-function ensure_environment() {
-
-  if [[ ! -d "${DIR}/.solidblocks-shell" ]]; then
-    echo "environment is not bootstrapped, please run ./do bootstrap first"
-    exit 1
-  fi
-
-  source "${DIR}/.solidblocks-shell/log.sh"
-  source "${DIR}/.solidblocks-shell/utils.sh"
-  source "${DIR}/.solidblocks-shell/pass.sh"
-  source "${DIR}/.solidblocks-shell/colors.sh"
-  source "${DIR}/.solidblocks-shell/software.sh"
-
-  software_set_export_path
-}
-
-function task_terraform {
-  terraform -version
-}
-
-function task_usage {
-  cat <<EOF
-Usage: $0
-
-  bootstrap               initialize the development environment
-
-  ${FORMAT_BOLD}deployment${FORMAT_RESET}
-
-    terraform             run terraform
-EOF
-  exit 1
-}
-
-ARG=${1:-}
-shift || true
-
-case "${ARG}" in
-bootstrap) ;;
-*) ensure_environment ;;
-esac
-
-case ${ARG} in
-  bootstrap) task_bootstrap "$@" ;;
-  terraform) task_terraform "$@" ;;
-  *) task_usage ;;
-esac
+```shell
+{{% include "/generated/shell_minimal_skeleton_do" %}}
 ```
 
 After download and extraction the different components can be sourced in via
@@ -101,4 +31,3 @@ software_ensure_terraform
 {{% notice info %}}
 Note than when sourcing in the different files, all dependencies are also automatically loaded. E.g. when using the software helpers it will automatically also source in `download.sh` and `file.sh` because it needs functions from this file.
 {{% /notice %}}
-

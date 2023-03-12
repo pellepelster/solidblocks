@@ -65,7 +65,7 @@ $ docker run \
     -e DB_DATABASE_db1=database1 \
     -e DB_USERNAME_db1=user1 \
     -e DB_PASSWORD_db1=password1 \
-    pellepelster/solidblocks-rds-postgresql:SOLIDBLOCKS_VERSION 
+    pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__ 
 
 [solidblocks-rds-postgresql] either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated
 ```
@@ -80,7 +80,7 @@ $ docker run \
     -e DB_PASSWORD_db1=password1 \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_data:/storage/data" \
-    pellepelster/solidblocks-rds-postgresql:SOLIDBLOCKS_VERSION
+    pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
 
 [solidblocks-rds-postgresql] local backup dir '/storage/backup' not mounted
 
@@ -92,7 +92,7 @@ $ docker run \
     -e DB_PASSWORD_db1=password1 \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
-    pellepelster/solidblocks-rds-postgresql:SOLIDBLOCKS_VERSION
+    pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
 
 [solidblocks-rds-postgresql] data dir '/storage/data' not mounted
 ```
@@ -116,7 +116,7 @@ $ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    pellepelster/solidblocks-rds-postgresql:SOLIDBLOCKS_VERSION
+    pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
 
 [solidblocks-rds-postgresql] data dir is empty
 [solidblocks-rds-postgresql] initializing database instance
@@ -236,5 +236,5 @@ $ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    pellepelster/solidblocks-rds-postgresql:SOLIDBLOCKS_VERSION
+    pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
 ```

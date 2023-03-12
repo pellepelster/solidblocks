@@ -80,7 +80,6 @@ MAPPING3=$(cat <<-END
 END
 )
 
-
 PORT=$(docker_mapped_tcp_port "wiremock" "8080")
 network_wait_for_port "${PORT}"
 
@@ -95,4 +94,9 @@ test_assert_matches "curl_wrapper_invalid_host" "" "$(curl_wrapper "http://nonex
 test_assert_matches "curl_wrapper_invalid_port" "" "$(curl_wrapper "http://localhost:12345")"
 test_assert_matches "curl_wrapper_invalid_scheme" "" "$(curl_wrapper "https://localhost:${PORT}")"
 
-trap "docker rm -f wiremock" 0
+function clean() {
+  clean_temp_dir
+  docker rm -f wiremock
+}
+
+trap clean HUP INT QUIT TERM EXIT

@@ -6,8 +6,9 @@ chapter: true
 
 # Shell
 
-Reusable shell functions for infrastructure automation 
+Reusable shell functions for infrastructure automation and developer experience 
 
+* [Installation]({{%relref "shell/installation/_index.md" %}}) Installation
 * [Download]({{%relref "shell/download/_index.md" %}}) Secure and reliable data retrieval from remote servers
 * [File]({{%relref "shell/file/_index.md" %}}) Utilities for local file operations
 * [Software]({{%relref "shell/software/_index.md" %}}) Tooling setup for local development and continuous integration environments

@@ -4,7 +4,7 @@ title: "Solidblocks"
 
 # Solidblocks
 
-Solidblocks is a library of reusable components for infrastructure automation. 
+Solidblocks is a library of reusable components for infrastructure operation, automation and developer experience. It consists of several components, each covering a different infrastructure aspect. 
 
 ## Design Goals
 
@@ -16,5 +16,5 @@ Solidblocks is a library of reusable components for infrastructure automation.
 
 ## Components
 
-* [Shell]({{%relref "shell/_index.md" %}}) Reusable shell functions for infrastructure automation
+* [Shell]({{%relref "shell/_index.md" %}}) Reusable shell functions for infrastructure automation and developer experience
 * [RDS]({{%relref "rds/_index.md" %}}) A containerized [PostgreSQL](https://www.postgresql.org/) database with all batteries included backup solution powered by [pgBackRest](https://pgbackrest.org/)

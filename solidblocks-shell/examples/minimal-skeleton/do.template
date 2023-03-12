@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+__BOOTSTRAP_SOLIDBLOCKS__
+
+# makes sure all needed shell functions functions are available and all bootstrapped software is on the $PATH
+function ensure_environment() {
+
+  if [[ ! -d "${DIR}/.solidblocks-shell" ]]; then
+    echo "environment is not bootstrapped, please run ./do bootstrap first"
+    exit 1
+  fi
+
+  # included needed shell functions
+  source "${DIR}/.solidblocks-shell/log.sh"
+  source "${DIR}/.solidblocks-shell/utils.sh"
+  source "${DIR}/.solidblocks-shell/pass.sh"
+  source "${DIR}/.solidblocks-shell/colors.sh"
+  source "${DIR}/.solidblocks-shell/software.sh"
+
+  # ensure $PATH contains all software downloaded via the `software_ensure_*` functions
+  software_set_export_path
+}
+
+# bootstrap Solidblocks, and all other software needed using the software installer helpers from https://pellepelster.github.io/solidblocks/shell/software/
+function task_bootstrap() {
+  bootstrap_solidblocks
+  ensure_environment
+  software_ensure_terraform
+}
+
+# run the downloaded terraform version, ensure_environment ensures the downloaded versions takes precedence over any system binaries
+function task_terraform {
+  terraform -version
+}
+
+#
+function task_usage {
+  cat <<EOF
+Usage: $0
+
+  bootstrap               initialize the development environment
+
+  ${FORMAT_BOLD}deployment${FORMAT_RESET}
+
+    terraform             run terraform
+EOF
+  exit 1
+}
+
+ARG=${1:-}
+shift || true
+
+# if we see the boostrap command assume Solidshell is not yet initialized and skip environment setup
+case "${ARG}" in
+  bootstrap) ;;
+  *) ensure_environment ;;
+esac
+
+case ${ARG} in
+  bootstrap) task_bootstrap "$@" ;;
+  terraform) task_terraform "$@" ;;
+  *) task_usage ;;
+esac

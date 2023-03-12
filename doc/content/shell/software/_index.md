@@ -48,23 +48,23 @@ software_ensure_terraform
 software_ensure_terraform "0.13.4" "a92df4a151d390144040de5d18351301e597d3fae3679a814ea57554f6aa9b24"
 ```
 
-## `software_ensure_terraform(version = TERRAFORM_VERSION, checksum)` {#software_ensure_terraform}
-Installs [HashiCorp Terraform](https://www.terraform.io/) version TERRAFORM_VERSION
+## `software_ensure_terraform(version = __TERRAFORM_VERSION__, checksum)` {#software_ensure_terraform}
+Installs [HashiCorp Terraform](https://www.terraform.io/) version __TERRAFORM_VERSION__
 
-## `software_ensure_consul(version = CONSUL_VERSION, checksum)` {#software_ensure_consul}
-Installs [HashiCorp Consul](https://www.consul.io/) version CONSUL_VERSION
+## `software_ensure_consul(version = __CONSUL_VERSION__, checksum)` {#software_ensure_consul}
+Installs [HashiCorp Consul](https://www.consul.io/) version __CONSUL_VERSION__
 
 ## `software_ensure_hugo(version = HUGO_VERSION, checksum)` {#software_ensure_hugo}
-Installs [Hugo](https://gohugo.io/) static site generator version HUGO_VERSION
+Installs [Hugo](https://gohugo.io/) static site generator version __HUGO_VERSION__
 
-## `software_ensure_shellcheck(version = SHELLCHECK_VERSION, checksum)` {#software_ensure_shellcheck}
-Installs [ShellCheck](https://www.shellcheck.net/) shell script analysis tool version SHELLCHECK_VERSION
+## `software_ensure_shellcheck(version = __SHELLCHECK_VERSION__, checksum)` {#software_ensure_shellcheck}
+Installs [ShellCheck](https://www.shellcheck.net/) shell script analysis tool version __SHELLCHECK_VERSION__
 
-## `software_ensure_semver(version = SEMVER_VERSION, checksum)`  {#software_ensure_semver}
-Installs [semver](https://github.com/maykonlf/semver-cli) a semantic versioning tool in version SEMVER_VERSION
+## `software_ensure_semver(version = __SEMVER_VERSION__, checksum)`  {#software_ensure_semver}
+Installs [semver](https://github.com/maykonlf/semver-cli) a semantic versioning tool in version __SEMVER_VERSION__
 
-## `software_ensure_terragrunt(version = TERRAGRUNT_VERSION, checksum)`  {#software_ensure_terragrunt}
-Installs [terragrunt](https://terragrunt.gruntwork.io/) a semantic versioning tool in version TERRAGRUNT_VERSION
+## `software_ensure_terragrunt(version = __TERRAGRUNT_VERSION__, checksum)`  {#software_ensure_terragrunt}
+Installs [terragrunt](https://terragrunt.gruntwork.io/) a semantic versioning tool in version __TERRAGRUNT_VERSION__
 
 
 ## `software_hashicorp_ensure(product, version, checksum)` {#software_hashicorp_ensure}

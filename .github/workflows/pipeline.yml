@@ -20,25 +20,6 @@ permissions:
   packages: write
 
 jobs:
-
-  debug:
-    runs-on: ubuntu-latest
-    env:
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    steps:
-      - name: debug1
-        run: | 
-          curl -L -o install-aws.sh https://raw.githubusercontent.com/unfor19/install-aws-cli-action/master/entrypoint.sh
-          chmod +x install-aws.sh
-          sudo ./install-aws.sh "v2" "amd64"
-          rm install-aws.sh
-          env
-          aws --version
-      - name: debug2
-        run: aws sts get-caller-identity
-
   solidblocks-shell:
     runs-on: ubuntu-latest
     env:
@@ -215,7 +196,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: './doc/public'
+          path: './build/documentation'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@main

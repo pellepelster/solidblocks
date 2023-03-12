@@ -24,6 +24,8 @@ function task_build {
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" build
     done
+    mkdir -p "${DIR}/doc/generated"
+    cp -rv ${DIR}/*/build/documentation/* "${DIR}/doc/generated"
 }
 
 function task_test {
@@ -47,21 +49,25 @@ function task_release_docker {
 function task_build_documentation {
     ensure_environment
     export VERSION="$(semver get release)"
+    mkdir -p "${DIR}/build/documentation"
     (
-      cd "${DIR}/doc"
-      sed -i "s/TEMPLATE_SOLIDBLOCKS_SHELL_VERSION/${VERSION}/g" content/shell/installation/_index.md
-      sed -i "s/TEMPLATE_SOLIDBLOCKS_SHELL_CHECKSUM/${SOLIDBLOCKS_SHELL_CHECKSUM:-}/g" content/shell/installation/_index.md
+      cd "${DIR}/build/documentation"
+
+      cp -r ${DIR}/doc/* ./
 
       source "${DIR}/solidblocks-shell/lib/software.sh"
-      sed -i "s/TERRAFORM_VERSION/${TERRAFORM_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/CONSUL_VERSION/${CONSUL_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/HUGO_VERSION/${HUGO_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/SHELLCHECK_VERSION/${SHELLCHECK_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/SEMVER_VERSION/${SEMVER_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/TERRAGRUNT_VERSION/${TERRAGRUNT_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/SOLIDBLOCKS_VERSION/${VERSION}/g" content/rds/_index.md
+      sed -i "s/__TERRAFORM_VERSION__/${TERRAFORM_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/__CONSUL_VERSION__/${CONSUL_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/__HUGO_VERSION__/${HUGO_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/__SHELLCHECK_VERSION__/${SHELLCHECK_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/__SEMVER_VERSION__/${SEMVER_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/__TERRAGRUNT_VERSION__/${TERRAGRUNT_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/rds/_index.md
       hugo
     )
+
+  sed "/__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__/e cat ${DIR}/solidblocks-shell/build/documentation/shell_minimal_skeleton_do" "${DIR}/README_template.md" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__" > "${DIR}/README.md"
+
 }
 
 function task_serve_documentation {
@@ -81,9 +87,8 @@ function task_release {
 
   local version="$(semver get release)"
 
-  cat README_template.md | sed --expression "s/SOLIDBLOCKS_VERSION/${version}/g" > README.md
-  #git add README.md
-  #git commit -m "release ${version}"
+  git add README.md
+  git commit -m "release ${version}"
 
   git tag -a "${version}" -m "${version}"
   git push --tags
@@ -100,9 +105,10 @@ function task_usage {
   exit 1
 }
 
-arg=${1:-}
+ARG=${1:-}
 shift || true
-case ${arg} in
+
+case ${ARG} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   build-documentation) task_build_documentation "$@" ;;
