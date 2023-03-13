@@ -27,7 +27,7 @@ function task_build {
       --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g"  < "${DIR}/installer/bootstrap_solidblocks.template" > "${DIR}/build/documentation/shell_bootstrap_solidblocks"
 
     sed "/__BOOTSTRAP_SOLIDBLOCKS__/e cat ${DIR}/build/documentation/shell_bootstrap_solidblocks" "${DIR}/examples/minimal-skeleton/do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS__" > "${DIR}/build/documentation/shell_minimal_skeleton_do"
-    chmod +x "${DIR}/examples/minimal-skeleton/do"
+    chmod +x "${DIR}/build/documentation/shell_minimal_skeleton_do"
   )
 }
 
