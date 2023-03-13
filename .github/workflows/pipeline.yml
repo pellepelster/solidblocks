@@ -45,6 +45,8 @@ jobs:
           name: solidblocks-shell
           path: |
             solidblocks-shell/build/solidblocks-shell-*.zip
+            solidblocks-shell/build/documentation/shell_bootstrap_solidblocks
+            solidblocks-shell/build/documentation/shell_minimal_skeleton_do
 
   solidblocks-minio:
     name: solidblocks-minio
@@ -169,6 +171,7 @@ jobs:
         with:
           files: |
             solidblocks-shell/solidblocks-shell-*.zip
+            solidblocks-shell/documentation/*
 
 
   documentation:

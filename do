@@ -10,7 +10,8 @@ source "${DIR}/solidblocks-shell/lib/file.sh"
 source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
-COMPONENTS="solidblocks-debug-container solidblocks-sshd solidblocks-shell solidblocks-minio solidblocks-rds-postgresql"
+
+COMPONENTS="solidblocks-shell solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_ensure_shellcheck
@@ -88,8 +89,8 @@ function task_release {
 
   local version="$(semver get release)"
 
-  git add README.md || true
-  git commit --allow-empty -m "release ${version}"
+  #git add README.md || true
+  #git commit --allow-empty -m "release ${version}"
 
   git tag -a "${version}" -m "${version}"
   git push --tags

@@ -5,7 +5,8 @@ set -eu
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 #TESTCONTAINER_IMAGES="amazonlinux-2 debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
 TESTCONTAINER_IMAGES="debian-10 debian-11 ubuntu-20.04 ubuntu-22.04"
-VERSION="${GITHUB_REF_NAME:-snapshot}"
+
+export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
@@ -61,6 +62,12 @@ function task_test_integration_prepare {
 
 function task_test_integration {
 
+  for test in ${DIR}/test/integration/test_b*.sh; do
+      log_divider_header ${test}
+      VERSION=${VERSION} ${test}
+      log_divider_footer
+  done
+
   for image in ${TESTCONTAINER_IMAGES}
   do
       log_divider_header "running tests on '${image}'"
@@ -68,11 +75,6 @@ function task_test_integration {
       log_divider_footer
   done
 
-  for test in ${DIR}/test/integration/test_*.sh; do
-      log_divider_header ${test}
-      ${test}
-      log_divider_footer
-  done
 }
 
 function task_test {
@@ -84,6 +86,10 @@ function task_release_docker {
   echo ""
 }
 
+function task_clean {
+  rm -rf "${DIR}/build"
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -93,6 +99,7 @@ arg=${1:-}
 shift || true
 case ${arg} in
   lint) task_lint "$@" ;;
+  clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   test-unit) task_test_unit "$@" ;;
