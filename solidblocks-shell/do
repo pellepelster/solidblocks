@@ -17,6 +17,7 @@ function task_build {
     mkdir -p "${DIR}/build/solidblocks-shell"
     cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-shell/"
     cd "${DIR}/build"
+    echo "creating distribution '${DIR}/build/solidblocks-shell-${VERSION}.zip'"
     zip -r "${DIR}/build/solidblocks-shell-${VERSION}.zip" solidblocks-shell/*.sh
 
     mkdir -p "${DIR}/build/documentation"
