@@ -80,6 +80,7 @@ function task_serve_documentation {
 
 function task_release {
   ensure_environment
+  task_build_documentation
 
   if [[ ! -f ".semver.yaml" ]]; then
     semver init --release v0.0.1
