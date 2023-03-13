@@ -88,8 +88,8 @@ function task_release {
 
   local version="$(semver get release)"
 
-  git add README.md
-  git commit -m "release ${version}"
+  git add README.md || true
+  git commit --allow-empty -m "release ${version}"
 
   git tag -a "${version}" -m "${version}"
   git push --tags
