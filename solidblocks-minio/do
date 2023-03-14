@@ -53,7 +53,7 @@ function task_release_docker {
 }
 
 function task_clean {
-  "${DIR}/gradlew" clean
+  rm -rf "${DIR}/build"
   rm -rf ${DIR}/test/terraform/.terraform
   rm -rf ${DIR}/test/terraform/*.tfstate
   rm -rf ${DIR}/test/terraform/*.tfstate.backup

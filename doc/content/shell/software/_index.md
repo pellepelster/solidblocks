@@ -54,7 +54,7 @@ Installs [HashiCorp Terraform](https://www.terraform.io/) version __TERRAFORM_VE
 ## `software_ensure_consul(version = __CONSUL_VERSION__, checksum)` {#software_ensure_consul}
 Installs [HashiCorp Consul](https://www.consul.io/) version __CONSUL_VERSION__
 
-## `software_ensure_hugo(version = HUGO_VERSION, checksum)` {#software_ensure_hugo}
+## `software_ensure_hugo(version = __HUGO_VERSION__, checksum)` {#software_ensure_hugo}
 Installs [Hugo](https://gohugo.io/) static site generator version __HUGO_VERSION__
 
 ## `software_ensure_shellcheck(version = __SHELLCHECK_VERSION__, checksum)` {#software_ensure_shellcheck}

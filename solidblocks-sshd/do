@@ -6,18 +6,6 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 source "${DIR}/../solidblocks-shell/lib/docker.sh"
 
-function cleanup {
-
-  log_divider_header "solidblocks-sshd-test"
-  docker logs "solidblocks-sshd-test"  || true
-  log_divider_footer
-
-  docker rm -f "solidblocks-sshd-test" || true
-  docker_remove_network "solidblocks-sshd-test"
-}
-
-trap cleanup EXIT
-
 function task_build {
   (
     cd "${DIR}"
@@ -31,6 +19,8 @@ function task_test {
     exit 0
   fi
 
+  trap task_clean EXIT
+
   (
     cd "${DIR}"
 
@@ -38,7 +28,15 @@ function task_test {
     docker run --rm -d --network solidblocks-sshd-test --name solidblocks-sshd-test  solidblocks-sshd-test
     docker run -it --network solidblocks-sshd-test  positronsecurity/ssh-audit solidblocks-sshd-test
   )
+}
 
+function task_clean {
+  log_divider_header "solidblocks-sshd-test"
+  docker logs "solidblocks-sshd-test" || true
+  log_divider_footer
+
+  docker rm -f "solidblocks-sshd-test" || true
+  docker_remove_network "solidblocks-sshd-test"
 }
 
 function task_release_docker {
@@ -55,6 +53,7 @@ shift || true
 case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  clean) task_clean "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac

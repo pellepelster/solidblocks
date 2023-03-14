@@ -11,14 +11,15 @@ Solidblocks is a library of reusable components for infrastructure operation, au
 Reusable shell functions for infrastructure automation and developer experience. See below for a full example how the shell functions can easily be used in any shell script:
 
 ```shell
+
 #!/usr/bin/env bash
 
 set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-SOLIDBLOCKS_SHELL_VERSION="snapshot"
-SOLIDBLOCKS_SHELL_CHECKSUM="2c8fef536e0c4002b8e0db47a03d6c387d0adef160a8715fdb72d2b34f7ca8d1"
+SOLIDBLOCKS_SHELL_VERSION="v0.0.76"
+SOLIDBLOCKS_SHELL_CHECKSUM="8ef551f879cde55032ae5772abf8e51bb5139c1e0b11791c40aad0bb12196448"
 
 # self contained function for initial Solidblocks bootstrapping
 function bootstrap_solidblocks() {

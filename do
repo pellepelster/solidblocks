@@ -22,11 +22,25 @@ function ensure_environment {
 
 function task_build {
     for component in ${COMPONENTS}; do
+      (
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" build
+      )
     done
     mkdir -p "${DIR}/doc/generated"
     cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated"
+}
+
+function task_clean {
+
+    rm -rf "${DIR}/build"
+
+    for component in ${COMPONENTS}; do
+        (
+          cd "${DIR}/${component}"
+          "./do" clean
+        )
+    done
 }
 
 function task_test {
@@ -94,9 +108,6 @@ function task_release {
 
   local version="$(semver get release)"
 
-  #git add README.md || true
-  #git commit --allow-empty -m "release ${version}"
-
   git tag -a "${version}" -m "${version}"
   git push --tags
 
@@ -117,6 +128,7 @@ shift || true
 
 case ${ARG} in
   build) task_build "$@" ;;
+  clean) task_clean "$@" ;;
   test) task_test "$@" ;;
   build-documentation) task_build_documentation "$@" ;;
   serve-documentation) task_serve_documentation "$@" ;;
