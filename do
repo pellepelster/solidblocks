@@ -74,9 +74,6 @@ function task_build_documentation {
       sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/rds/_index.md
       hugo
     )
-
-  sed "/__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__/e cat ${DIR}/solidblocks-shell/build/documentation/generated/shell_minimal_skeleton_do" "${DIR}/README_template.md" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__" > "${DIR}/README.md"
-
 }
 
 function task_serve_documentation {
@@ -89,7 +86,6 @@ function task_serve_documentation {
 
 function task_release {
   ensure_environment
-  task_build_documentation
 
   if [[ ! -f ".semver.yaml" ]]; then
     semver init --release v0.0.1
