@@ -30,6 +30,10 @@ function task_build {
 }
 
 function task_test {
+    if [[ -n "${SKIP_TESTS}" ]]; then
+      exit 0
+    fi
+
     for component in ${COMPONENTS}; do
       (
         cd "${DIR}/${component}"

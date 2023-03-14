@@ -18,6 +18,10 @@ function task_usage {
 }
 
 function task_test {
+  if [[ -n "${SKIP_TESTS}" ]]; then
+    exit 0
+  fi
+
   software_ensure_terraform
   software_set_export_path
   (
