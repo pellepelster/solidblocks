@@ -45,8 +45,7 @@ jobs:
           name: solidblocks-shell
           path: |
             solidblocks-shell/build/solidblocks-shell-*.zip
-            solidblocks-shell/build/documentation/shell_bootstrap_solidblocks
-            solidblocks-shell/build/documentation/shell_minimal_skeleton_do
+            solidblocks-shell/build/documentation/generated/*
 
   solidblocks-minio:
     name: solidblocks-minio
@@ -176,7 +175,12 @@ jobs:
 
   documentation:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: release
+    needs:
+      - release
+      - solidblocks-shell
+      - solidblocks-minio
+      - solidblocks-rds-postgresql
+      - solidblocks-debug-container
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -188,10 +192,6 @@ jobs:
           submodules: recursive
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
-
-      - name: Set SOLIDBLOCKS_SHELL_CHECKSUM
-        run: echo "SOLIDBLOCKS_SHELL_CHECKSUM=$(sha256sum solidblocks-shell/solidblocks-shell-*.zip | head -1 | awk '{ printf  "%1s", $1 }')" >> $GITHUB_ENV
-
       - name: Build Documentation
         run: ./do build-documentation
       - name: Setup Pages

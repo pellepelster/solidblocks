@@ -26,7 +26,7 @@ function task_build {
         VERSION=${VERSION} "./do" build
     done
     mkdir -p "${DIR}/doc/generated"
-    cp -rv ${DIR}/*/build/documentation/* "${DIR}/doc/generated"
+    cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated"
 }
 
 function task_test {
@@ -49,6 +49,10 @@ function task_release_docker {
 
 function task_build_documentation {
     ensure_environment
+
+    cp -rv ${DIR}/*/documentation/generated/* "${DIR}/doc/generated"
+
+
     export VERSION="$(semver get release)"
     mkdir -p "${DIR}/build/documentation"
     (
@@ -67,7 +71,7 @@ function task_build_documentation {
       hugo
     )
 
-  sed "/__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__/e cat ${DIR}/solidblocks-shell/build/documentation/shell_minimal_skeleton_do" "${DIR}/README_template.md" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__" > "${DIR}/README.md"
+  sed "/__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__/e cat ${DIR}/solidblocks-shell/build/documentation/generated/shell_minimal_skeleton_do" "${DIR}/README_template.md" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_MINIMAL_SKELETON__" > "${DIR}/README.md"
 
 }
 

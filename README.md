@@ -18,25 +18,26 @@ set -eu -o pipefail
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 SOLIDBLOCKS_SHELL_VERSION="snapshot"
-SOLIDBLOCKS_SHELL_CHECKSUM="141811205a715840a8a3d0e55105eaf754f917cf56df6a1e1767e0984dd26ae6"
+SOLIDBLOCKS_SHELL_CHECKSUM="2c8fef536e0c4002b8e0db47a03d6c387d0adef160a8715fdb72d2b34f7ca8d1"
 
 # self contained function for initial Solidblocks bootstrapping
 function bootstrap_solidblocks() {
   local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
   local install_dir="${1:-${default_dir}/.solidblocks-shell}"
-
   local temp_file="$(mktemp)"
 
-  mkdir -p "${install_dir}"
-  curl -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
+  curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
+  file ${temp_file}
   echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  ${temp_file}" | sha256sum -c
-  cd "${install_dir}"
-  unzip -o -j "${temp_file}" -d "${install_dir}"
-  rm -f "${temp_file}"
+  mkdir -p "${install_dir}" || true
+  (
+      cd "${install_dir}"
+      unzip -o -j "${temp_file}" -d "${install_dir}"
+      rm -f "${temp_file}"
+  )
 }
 
-# makes sure all lib functions are available
-# and all bootstrapped software is on the $PATH
+# makes sure all needed shell functions functions are available and all bootstrapped software is on the $PATH
 function ensure_environment() {
 
   if [[ ! -d "${DIR}/.solidblocks-shell" ]]; then
@@ -44,26 +45,25 @@ function ensure_environment() {
     exit 1
   fi
 
+  # included needed shell functions
   source "${DIR}/.solidblocks-shell/log.sh"
   source "${DIR}/.solidblocks-shell/utils.sh"
   source "${DIR}/.solidblocks-shell/pass.sh"
   source "${DIR}/.solidblocks-shell/colors.sh"
   source "${DIR}/.solidblocks-shell/software.sh"
 
+  # ensure $PATH contains all software downloaded via the `software_ensure_*` functions
   software_set_export_path
 }
 
-# bootstrapping of Solidblocks and all
-# needed software for the project
+# bootstrap Solidblocks, and all other software needed using the software installer helpers from https://pellepelster.github.io/solidblocks/shell/software/
 function task_bootstrap() {
   bootstrap_solidblocks
   ensure_environment
-
   software_ensure_terraform
 }
 
-# run the downloaded terraform version, ensure_environment ensures
-# the downloaded versions takes precedence over any system binaries
+# run the downloaded terraform version, ensure_environment ensures the downloaded versions takes precedence over any system binaries
 function task_terraform {
   terraform -version
 }

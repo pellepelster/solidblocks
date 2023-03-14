@@ -21,15 +21,15 @@ function task_build {
     echo "creating distribution '${DIR}/build/solidblocks-shell-${VERSION}.zip'"
     zip -r "${DIR}/build/solidblocks-shell-${VERSION}.zip" solidblocks-shell/*.sh
 
-    mkdir -p "${DIR}/build/documentation"
+    mkdir -p "${DIR}/build/documentation/generated"
 
     local checksum="$(sha256sum "${DIR}/build/solidblocks-shell-${VERSION}.zip" | cut -f 1 -d " ")"
     sed \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g"  < "${DIR}/installer/bootstrap_solidblocks.template" > "${DIR}/build/documentation/shell_bootstrap_solidblocks"
+      --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g"  < "${DIR}/installer/bootstrap_solidblocks.template" > "${DIR}/build/documentation/generated/shell_bootstrap_solidblocks"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS__/e cat ${DIR}/build/documentation/shell_bootstrap_solidblocks" "${DIR}/examples/minimal-skeleton/do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS__" > "${DIR}/build/documentation/shell_minimal_skeleton_do"
-    chmod +x "${DIR}/build/documentation/shell_minimal_skeleton_do"
+    sed "/__BOOTSTRAP_SOLIDBLOCKS__/e cat ${DIR}/build/documentation/generated/shell_bootstrap_solidblocks" "${DIR}/examples/minimal-skeleton/do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS__" > "${DIR}/build/documentation/generated/shell_minimal_skeleton_do"
+    chmod +x "${DIR}/build/documentation/generated/shell_minimal_skeleton_do"
   )
 }
 

@@ -16,7 +16,7 @@ docker run -it -d --rm --name "${TEST_ID}" -p 80 -v "${TEMP_DIR}:/usr/share/ngin
 
 sleep 2
 
-cp "${DIR}/../../build/documentation/shell_minimal_skeleton_do" "${TEMP_DIR}"
+cp "${DIR}/../../build/documentation/generated/shell_minimal_skeleton_do" "${TEMP_DIR}"
 
 SOLIDBLOCKS_BASE_URL="http://localhost:$(docker_mapped_tcp_port "${TEST_ID}" "80")" "${TEMP_DIR}/shell_minimal_skeleton_do" bootstrap
 
