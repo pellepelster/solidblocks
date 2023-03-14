@@ -18,6 +18,8 @@ COLOR_WHITE=$(tput_wrapper -Txterm-256color setaf 15)
 COLOR_RESET=$(tput_wrapper -Txterm-256color sgr0)
 
 FORMAT_BOLD=$(tput_wrapper bold)
+FORMAT_DIM=$(tput_wrapper dim)
+FORMAT_UNDERLINE=$(tput_wrapper smul)
 
 FORMAT_RESET=${COLOR_RESET}
 

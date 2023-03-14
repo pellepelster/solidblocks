@@ -61,7 +61,7 @@ function ensure_environment() {
   source "${DIR}/.solidblocks-shell/log.sh"
   source "${DIR}/.solidblocks-shell/utils.sh"
   source "${DIR}/.solidblocks-shell/pass.sh"
-  source "${DIR}/.solidblocks-shell/colors.sh"
+  source "${DIR}/.solidblocks-shell/text.sh"
   source "${DIR}/.solidblocks-shell/software.sh"
 
   # ensure $PATH contains all software downloaded via the `software_ensure_*` functions

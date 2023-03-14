@@ -2,7 +2,7 @@
 
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "${_DIR}/colors.sh"
+source "${_DIR}/text.sh"
 source "${_DIR}/utils.sh"
 
 function test_assert_equals {
