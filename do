@@ -54,6 +54,7 @@ function task_release_docker {
 function task_build_documentation {
     ensure_environment
 
+    mkdir -p "${DIR}/doc/generated"
     cp -rv ${DIR}/*/documentation/generated/* "${DIR}/doc/generated"
 
 
