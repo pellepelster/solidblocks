@@ -8,7 +8,18 @@ Solidblocks is a library of reusable components for infrastructure operation, au
 
 ### Solidblocks Shell
 
-Reusable shell functions for infrastructure automation and developer experience. See below for a full example how the shell functions can easily be used in any shell script:
+Reusable shell functions for infrastructure automation and developer experience
+
+* [Download](https://pellepelster.github.io/solidblocks/shell/download/) Secure and reliable data retrieval from remote servers
+* [File](https://pellepelster.github.io/solidblocks/shell/file/) Utilities for local file operations
+* [Software](https://pellepelster.github.io/solidblocks/shell/software/) Tooling setup for local development and continuous integration environments
+* [Log](https://pellepelster.github.io/solidblocks/shell/log/) Generic console and logging and helpers
+* [AWS](https://pellepelster.github.io/solidblocks/shell/aws/) Utilities for the AWS cloud API
+* [Terraform](https://pellepelster.github.io/solidblocks/shell/terraform/) Wrappers and helpers for Terraform
+* [Python](https://pellepelster.github.io/solidblocks/shell/python/) Wrappers and helpers for Python
+
+
+See below for a full example how the shell functions can easily be used in any shell script:
 
 ```shell
 
