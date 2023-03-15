@@ -18,10 +18,10 @@ function docker_ensure_network() {
   local name=${1:-}
 
   if [[ -z "$(docker network ls --quiet --filter "Name=${name}")" ]]; then
-    log_echo "creating docker network '${name}'"
+    log_echo_info "creating docker network '${name}'"
     docker network create "${name}"
   else
-    log_echo "docker network '${name}' already exists"
+    log_echo_info "docker network '${name}' already exists"
   fi
 
 }
@@ -29,8 +29,8 @@ function docker_ensure_network() {
 function docker_remove_network() {
   local name=${1:-}
 
-  if [[ ! -z "$(docker network ls --quiet --filter "Name=${name}")" ]]; then
-    log_echo "removing docker network '${name}'"
+  if [[ -n "$(docker network ls --quiet --filter "Name=${name}")" ]]; then
+    log_echo_info "removing docker network '${name}'"
     docker network remove "${name}"
   fi
 

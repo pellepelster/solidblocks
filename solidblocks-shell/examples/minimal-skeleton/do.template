@@ -16,8 +16,6 @@ function ensure_environment() {
 
   # included needed shell functions
   source "${DIR}/.solidblocks-shell/log.sh"
-  source "${DIR}/.solidblocks-shell/utils.sh"
-  source "${DIR}/.solidblocks-shell/pass.sh"
   source "${DIR}/.solidblocks-shell/text.sh"
   source "${DIR}/.solidblocks-shell/software.sh"
 
@@ -54,7 +52,7 @@ EOF
 ARG=${1:-}
 shift || true
 
-# if we see the boostrap command assume Solidshell is not yet initialized and skip environment setup
+# if we see the bootstrap command assume Solidshell is not yet initialized and skip environment setup
 case "${ARG}" in
   bootstrap) ;;
   *) ensure_environment ;;

@@ -43,7 +43,7 @@ function aws_dynamodb_ensure() {
   fi
 
   if [[ "${status}" == "table_not_found" ]]; then
-    log_echo "creating table '${table_name}'"
+    log_echo_info "creating table '${table_name}'"
 
     aws dynamodb create-table \
       --table-name "${table_name}" \
@@ -55,13 +55,13 @@ function aws_dynamodb_ensure() {
     local table_status="$(aws_dynamodb_table_status "${table_name}")"
     while [[ "${table_status}" != "ACTIVE" ]]; do
       sleep 1
-      log_echo "waiting for table '${table_name}' to become ready, current status is '${table_status}'"
+      log_echo_info "waiting for table '${table_name}' to become ready, current status is '${table_status}'"
       table_status="$(aws_dynamodb_table_status "${table_name}")"
     done
 
-    log_echo "created table '${table_name}'"
+    log_echo_info "created table '${table_name}'"
   else
-    log_echo "table '${table_name}' already exists"
+    log_echo_info "table '${table_name}' already exists"
   fi
 }
 
@@ -71,7 +71,7 @@ function aws_dynamodb_delete() {
   local status="$(aws_dynamodb_table_exists "${table_name}")"
 
   if [[ "${status}" == "table_exists" ]]; then
-    log_echo "deleting table '${table_name}'"
+    log_echo_info "deleting table '${table_name}'"
 
     aws dynamodb delete-table \
       --output json \
@@ -79,11 +79,11 @@ function aws_dynamodb_delete() {
 
     while [[ "$(aws_dynamodb_table_exists "${table_name}")" != "table_not_found" ]]; do
       sleep 1
-      log_echo "waiting for table '${table_name}' to be deleted"
+      log_echo_info "waiting for table '${table_name}' to be deleted"
     done
 
   else
-    log_echo "table '${table_name}' does not exist"
+    log_echo_info "table '${table_name}' does not exist"
   fi
 }
 
@@ -118,7 +118,7 @@ function aws_bucket_ensure() {
   fi
 
   if [[ "${status}" == "bucket_not_found" ]]; then
-    log_echo "creating bucket '${bucket_name}'"
+    log_echo_info "creating bucket '${bucket_name}'"
     local create_result=$(aws s3api create-bucket \
           --region "${region}" \
           --output json \
@@ -127,15 +127,15 @@ function aws_bucket_ensure() {
           --create-bucket-configuration LocationConstraint=${region})
 
     local location="$(echo "${create_result}" | jq -r '.Location')"
-    log_echo "created bucket '${bucket_name}' (${location})"
+    log_echo_info "created bucket '${bucket_name}' (${location})"
 
     while [[ "$(aws_bucket_exists "${bucket_name}")" != "bucket_exists" ]]; do
       sleep 1
-      log_echo "waiting for bucket '${bucket_name}' creation to finish"
+      log_echo_info "waiting for bucket '${bucket_name}' creation to finish"
     done
 
   else
-    log_echo "bucket '${bucket_name}' already exists"
+    log_echo_info "bucket '${bucket_name}' already exists"
   fi
 }
 
