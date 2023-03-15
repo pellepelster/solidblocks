@@ -44,7 +44,7 @@ function task_clean {
 }
 
 function task_test {
-    if [[ -n "${SKIP_TESTS}" ]]; then
+    if [[ -n "${SKIP_TESTS:-}" ]]; then
       exit 0
     fi
 
