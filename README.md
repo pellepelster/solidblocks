@@ -14,6 +14,7 @@ Reusable shell functions for infrastructure automation and developer experience
 * [File](https://pellepelster.github.io/solidblocks/shell/file/) Utilities for local file operations
 * [Software](https://pellepelster.github.io/solidblocks/shell/software/) Tooling setup for local development and continuous integration environments
 * [Log](https://pellepelster.github.io/solidblocks/shell/log/) Generic console and logging and helpers
+* [Text](https://pellepelster.github.io/solidblocks/shell/text/) Constants for console text formatting
 * [AWS](https://pellepelster.github.io/solidblocks/shell/aws/) Utilities for the AWS cloud API
 * [Terraform](https://pellepelster.github.io/solidblocks/shell/terraform/) Wrappers and helpers for Terraform
 * [Python](https://pellepelster.github.io/solidblocks/shell/python/) Wrappers and helpers for Python
@@ -29,18 +30,19 @@ set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-SOLIDBLOCKS_SHELL_VERSION="v0.0.76"
-SOLIDBLOCKS_SHELL_CHECKSUM="8ef551f879cde55032ae5772abf8e51bb5139c1e0b11791c40aad0bb12196448"
+SOLIDBLOCKS_SHELL_VERSION="v0.0.78"
+SOLIDBLOCKS_SHELL_CHECKSUM="fb4f7f4ed40f57c38fae1c14d399f375f843167f0b61a697171399fbdb44b420"
 
 # self contained function for initial Solidblocks bootstrapping
 function bootstrap_solidblocks() {
   local default_dir="$(cd "$(dirname "$0")" ; pwd -P)"
   local install_dir="${1:-${default_dir}/.solidblocks-shell}"
+
   local temp_file="$(mktemp)"
 
   curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
-  file ${temp_file}
   echo "${SOLIDBLOCKS_SHELL_CHECKSUM}  ${temp_file}" | sha256sum -c
+
   mkdir -p "${install_dir}" || true
   (
       cd "${install_dir}"
@@ -59,8 +61,6 @@ function ensure_environment() {
 
   # included needed shell functions
   source "${DIR}/.solidblocks-shell/log.sh"
-  source "${DIR}/.solidblocks-shell/utils.sh"
-  source "${DIR}/.solidblocks-shell/pass.sh"
   source "${DIR}/.solidblocks-shell/text.sh"
   source "${DIR}/.solidblocks-shell/software.sh"
 
@@ -80,7 +80,7 @@ function task_terraform {
   terraform -version
 }
 
-#
+# provide some meaningful help using shell formatting from https://pellepelster.github.io/solidblocks/shell/text/
 function task_usage {
   cat <<EOF
 Usage: $0
@@ -97,7 +97,7 @@ EOF
 ARG=${1:-}
 shift || true
 
-# if we see the boostrap command assume Solidshell is not yet initialized and skip environment setup
+# if we see the bootstrap command assume Solidshell is not yet initialized and skip environment setup
 case "${ARG}" in
   bootstrap) ;;
   *) ensure_environment ;;

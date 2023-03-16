@@ -100,8 +100,6 @@ function task_serve_documentation {
 }
 
 function task_release {
-  ensure_environment
-
   if [[ ! -f ".semver.yaml" ]]; then
     semver init --release v0.0.1
   fi
@@ -125,6 +123,11 @@ function task_usage {
 
 ARG=${1:-}
 shift || true
+
+case "${ARG}" in
+  bootstrap) ;;
+  *) ensure_environment ;;
+esac
 
 case ${ARG} in
   build) task_build "$@" ;;
