@@ -59,8 +59,8 @@ function minio_ensure_bucket() {
   fi
 
   minio_bucket_policy "${bucket}" > "/tmp/${user_access_key}_policy.$$"
-  mc_wrapper admin policy add "${ALIAS}" "${bucket}_bucket_access" "/tmp/${user_access_key}_policy.$$"
-  mc_wrapper admin policy set "${ALIAS}" "${bucket}_bucket_access" "user=${user_access_key}"
+  mc_wrapper admin policy create "${ALIAS}" "${bucket}_bucket_access" "/tmp/${user_access_key}_policy.$$"
+  mc_wrapper admin policy attach "${ALIAS}" "${bucket}_bucket_access" "--user" "${user_access_key}"
 }
 
 function minio_ensure_buckets() {
