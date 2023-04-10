@@ -18,3 +18,5 @@ build
 /solidblocks-shell/examples/minimal-skeleton/solidblocks-shell/
 /solidblocks-shell/installer/bootstrap_solidblocks
 /doc/generated/
+venv
+__pycache__
