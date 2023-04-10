@@ -75,6 +75,13 @@ zip contains an executable named `${product}` which will be written to `${bin_di
 software_hashicorp_ensure "nomad" "1.3.3" "d908811cebe2a8373e93c4ad3d09af5c706241878ff3f21ee0f182b4ecb571f2"
 ```
 
+## `software_hashicorp_ensure(version = __RESTIC_VERSION__, checksum = __RESTIC_CHECKSUM__)` {#software_ensure_restic}
+Install the [restic](https://restic.net/) backup solution
+
+```shell
+software_ensure_restic
+```
+
 ## `software_github_ensure_bin(user, repository, version, bin_name, checksum)` {#software_github_ensure_bin}
 
 Generic wrapper for binary release download from Github built around the Github releases convention https://github.com/${user}/${repository}/releases/download/v${version}/${bin_name}_linux_amd64.

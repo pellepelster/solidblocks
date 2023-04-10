@@ -86,6 +86,7 @@ function task_build_documentation {
       sed -i "s/__SHELLCHECK_VERSION__/${SHELLCHECK_VERSION}/g" content/shell/software/_index.md
       sed -i "s/__SEMVER_VERSION__/${SEMVER_VERSION}/g" content/shell/software/_index.md
       sed -i "s/__TERRAGRUNT_VERSION__/${TERRAGRUNT_VERSION}/g" content/shell/software/_index.md
+      sed -i "s/__RESTIC_VERSION__/${RESTIC_VERSION}/g" content/shell/software/_index.md
       sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/rds/_index.md
       hugo
     )

@@ -10,6 +10,11 @@ source "${_DIR}/file.sh"
 BIN_DIR="${BIN_DIR:-$_DIR/.bin}"
 CACHE_DIR="${CACHE_DIR:-$_DIR/.cache}"
 
+function software_ensure_dirs() {
+  mkdir -p "${CACHE_DIR}" || true
+  mkdir -p "${BIN_DIR}" || true
+}
+
 ###########################################
 #              shellcheck                 #
 ###########################################
@@ -21,6 +26,8 @@ SHELLCHECK_CHECKSUM="ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad0
 function software_ensure_shellcheck() {
   local version=${1:-$SHELLCHECK_VERSION}
   local checksum=${2:-$SHELLCHECK_CHECKSUM}
+
+  software_ensure_dirs
 
   download_and_verify_checksum "https://github.com/koalaman/shellcheck/releases/download/${version}/shellcheck-${version}.linux.x86_64.tar.xz" "${CACHE_DIR}/shellcheck-${version}.linux.x86_64.tar.xz" ${checksum}
   file_extract_to_directory "${CACHE_DIR}/shellcheck-${version}.linux.x86_64.tar.xz" "${BIN_DIR}"
@@ -39,6 +46,8 @@ function software_ensure_semver() {
   local version=${1:-$SEMVER_VERSION}
   local checksum=${2:-$SEMVER_CHECKSUM}
 
+  software_ensure_dirs
+
   download_and_verify_checksum "https://github.com/maykonlf/semver-cli/releases/download/${version}/semver-linux-amd64.zip" "${CACHE_DIR}/semver-linux-amd64_${version}.zip" ${checksum}
   file_extract_to_directory "${CACHE_DIR}/semver-linux-amd64_${version}.zip" "${BIN_DIR}"
 }
@@ -55,6 +64,8 @@ function software_ensure_hugo() {
   local version=${1:-$HUGO_VERSION}
   local checksum=${2:-$HUGO_CHECKSUM}
 
+  software_ensure_dirs
+
   download_and_verify_checksum "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_${version}_Linux-64bit.tar.gz" "${CACHE_DIR}/hugo_${version}_Linux-64bit.tar.gz" ${checksum}
   file_extract_to_directory "${CACHE_DIR}/hugo_${version}_Linux-64bit.tar.gz" "${BIN_DIR}"
 }
@@ -69,8 +80,7 @@ function software_hashicorp_ensure {
     local version="${2:-}"
     local checksum="${3:-}"
 
-    mkdir -p "${CACHE_DIR}" || true
-    mkdir -p "${BIN_DIR}" || true
+    software_ensure_dirs
 
     local target_file="${CACHE_DIR}/${product}-${version}.zip"
     local url="https://releases.hashicorp.com/${product}/${version}/${product}_${version}_linux_amd64.zip"
@@ -87,6 +97,8 @@ function software_ensure_terraform {
   local version=${1:-$TERRAFORM_VERSION}
   local checksum=${2:-$TERRAFORM_CHECKSUM}
 
+  software_ensure_dirs
+
   software_hashicorp_ensure "terraform" "${version}" "${checksum}"
 }
 
@@ -97,6 +109,8 @@ CONSUL_CHECKSUM="620a47cfba34bdf918b4c3238d22f6318b29403888cfd927c6006a4ac1b1c9f
 function software_ensure_consul {
   local version=${1:-$CONSUL_VERSION}
   local checksum=${2:-$CONSUL_CHECKSUM}
+
+  software_ensure_dirs
 
   software_hashicorp_ensure "consul" "${version}" "${checksum}"
 }
@@ -113,8 +127,7 @@ function software_github_ensure_bin {
     local bin_name="${4:-}"
     local checksum="${5:-}"
 
-    mkdir -p "${CACHE_DIR}" || true
-    mkdir -p "${BIN_DIR}" || true
+    software_ensure_dirs
 
     local target_file="${BIN_DIR}/${bin_name}"
     local url="https://github.com/${user}/${repository}/releases/download/v${version}/${bin_name}_linux_amd64"
@@ -135,7 +148,30 @@ function software_ensure_terragrunt {
   local version=${1:-$TERRAGRUNT_VERSION}
   local checksum=${2:-$TERRAGRUNT_CHECKSUM}
 
+  software_ensure_dirs
+
   software_github_ensure_bin "gruntwork-io" "terragrunt" "${version}" "terragrunt" "${checksum}"
+}
+
+###########################################
+#                 restic                  #
+###########################################
+
+RESTIC_VERSION="0.15.1"
+RESTIC_CHECKSUM="3631e3c3833c84ba71f22ea3df20381676abc7476a7f6d14424d9abfada91414"
+
+# see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_restic
+function software_ensure_restic {
+  local version=${1:-$RESTIC_VERSION}
+  local checksum=${2:-$RESTIC_CHECKSUM}
+
+  ensure_command "bunzip2"
+
+  software_ensure_dirs
+
+  download_and_verify_checksum "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic_${RESTIC_VERSION}_linux_amd64.bz2" "${CACHE_DIR}/restic_${RESTIC_VERSION}_linux_amd64.bz2" "${RESTIC_CHECKSUM}"
+  bunzip2 --stdout "${CACHE_DIR}/restic_${RESTIC_VERSION}_linux_amd64.bz2" > "${BIN_DIR}/restic"
+  chmod +x "${BIN_DIR}/restic"
 }
 
 ###########################################
