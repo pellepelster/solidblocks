@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
 function python_hash_requirements() {
   local dir="${1:-.}"
   sha256sum < "${dir}/requirements.txt" | cut -f 1 -d " "
