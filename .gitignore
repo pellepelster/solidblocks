@@ -21,3 +21,5 @@ build
 venv
 __pycache__
 .terraform.tfstate.lock.info
+/solidblocks-cloud/test/terraform/test_id_rsa
+/solidblocks-cloud/test/terraform/test_id_rsa.pub
