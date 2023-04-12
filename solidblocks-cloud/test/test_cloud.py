@@ -20,3 +20,5 @@ def test_solidblocks_dirs(host, dir):
 
 def test_bootstrap(host):
     wait_for_cloud_init(host)
+    assert host.file(f"/solidblocks//lib/storage.sh").is_file
+

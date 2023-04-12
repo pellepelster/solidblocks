@@ -19,9 +19,11 @@ function task_build {
   (
     mkdir -p "${DIR}/build/solidblocks-cloud/lib"
     cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-cloud/lib/"
-    cd "${DIR}/build"
+
+    cd "${DIR}/build/solidblocks-cloud"
+
     echo "creating distribution '${DIR}/build/solidblocks-cloud-${VERSION}.zip'"
-    zip -r "${DIR}/build/solidblocks-cloud-${VERSION}.zip" solidblocks-cloud/**
+    zip -r "${DIR}/build/solidblocks-cloud-${VERSION}.zip" *
 
     mkdir -p "${DIR}/build/documentation/generated"
 
@@ -76,7 +78,7 @@ function task_test {
 function task_ssh_test {
   (
     cd ${DIR}/test/terraform
-    ssh -F ${DIR}/test/terraform/ssh_config test
+    ssh -F ${DIR}/test/terraform/ssh_config test ${@}
   )
 }
 
@@ -96,10 +98,10 @@ function task_usage {
 arg=${1:-}
 shift || true
 case ${arg} in
-lint) task_lint "$@" ;;
-clean) task_clean "$@" ;;
-build) task_build "$@" ;;
-test) task_test "$@" ;;
-ssh-test) task_ssh_test "$@" ;;
-*) task_usage ;;
+  lint) task_lint "$@" ;;
+  clean) task_clean "$@" ;;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  ssh-test) task_ssh_test "$@" ;;
+  *) task_usage ;;
 esac

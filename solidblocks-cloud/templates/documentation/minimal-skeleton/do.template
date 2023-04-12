@@ -7,3 +7,5 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 __BOOTSTRAP_SOLIDBLOCKS_CLOUD__
 
 bootstrap_solidblocks
+
+storage_mount "${STORAGE_DEVICE}" "/data1"
