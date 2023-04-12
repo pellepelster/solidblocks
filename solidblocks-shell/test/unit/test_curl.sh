@@ -83,7 +83,10 @@ END
 PORT=$(docker_mapped_tcp_port "wiremock" "8080")
 network_wait_for_port "${PORT}"
 
-curl_wrapper "http://localhost:${PORT}/__admin"
+while ! curl "http://localhost:${PORT}/__admin"; do
+  log_echo_error "waiting for wiremock"
+  sleep 1
+done
 
 curl -X POST --silent --data "${MAPPING1}" "http://localhost:${PORT}/__admin/mappings" > /dev/null
 curl -X POST --silent --data "${MAPPING2}" "http://localhost:${PORT}/__admin/mappings" > /dev/null
