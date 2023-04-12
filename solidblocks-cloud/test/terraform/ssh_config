@@ -1,0 +1,7 @@
+Host test
+    HostName 195.201.123.237
+    User root
+    IdentityFile /home/pelle/git/solidblocks/solidblocks-cloud/test/terraform/test_id_rsa
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+

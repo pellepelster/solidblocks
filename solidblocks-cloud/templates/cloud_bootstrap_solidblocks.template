@@ -1,0 +1,58 @@
+export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
+export SOLIDBLOCKS_DEVELOPMENT_MODE="${SOLIDBLOCKS_DEVELOPMENT_MODE:-0}"
+
+function bootstrap_package_update {
+  apt-get update
+}
+
+function bootstrap_package_update_system() {
+    apt-get \
+        -o Dpkg::Options::="--force-confnew" \
+        --force-yes \
+        -fuy \
+        dist-upgrade
+}
+
+function bootstrap_package_check_and_install {
+	local package=${1}
+
+	echo -n "checking if package '${package}' is installed..."
+
+	if [[ $(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -c "ok installed") -eq 0 ]];
+	then
+		echo "not found, installing now"
+		while ! DEBIAN_FRONTEND="noninteractive" apt-get install --no-install-recommends -qq -y "${package}"; do
+    		echo "installing failed retrying in 30 seconds"
+    		sleep 30
+    		apt-get update
+		done
+	else
+		echo "ok"
+	fi
+}
+
+function bootstrap_solidblocks() {
+  groupadd solidblocks
+  useradd solidblocks -g solidblocks
+
+  # shellcheck disable=SC2086
+  mkdir -p ${SOLIDBLOCKS_DIR}/{templates,lib}
+
+  chmod 770 ${SOLIDBLOCKS_DIR}
+  chown solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
+
+  chmod -R 770 ${SOLIDBLOCKS_DIR}
+  chown -R solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
+
+  #(
+  #    local temp_file="$(mktemp)"
+  #    #TODO verify checksum
+  #    #curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_SHELL_VERSION}/solidblocks-shell-${SOLIDBLOCKS_SHELL_VERSION}.zip" > "${temp_file}"
+  #    curl_wrapper \
+  #      "${REPOSITORY_BASE_ADDRESS:-https://pub-3b1d32d9ecc04ba18ced90b53fc2b338.r2.dev}/solidblocks-rds-controller/solidblocks-rds-cloud-init/${SOLIDBLOCKS_VERSION}/solidblocks-rds-cloud-init-${SOLIDBLOCKS_VERSION}-assets.jar" > "${temp_file}"
+  #    cd "${SOLIDBLOCKS_DIR}" || exit 1
+  #    unzip "${temp_file}"
+  #    rm -rf "${temp_file}"
+  #)
+  #source "${SOLIDBLOCKS_DIR}/lib/storage.sh"
+}

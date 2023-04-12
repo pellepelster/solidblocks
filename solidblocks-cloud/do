@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(
+  cd "$(dirname "$0")"
+  pwd -P
+)"
+
+export VERSION="${GITHUB_REF_NAME:-snapshot}"
+
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
+
+source "${DIR}/../solidblocks-shell/lib/log.sh"
+source "${DIR}/../solidblocks-shell/lib/python.sh"
+
+function task_build {
+  (
+    mkdir -p "${DIR}/build/solidblocks-cloud/lib"
+    cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-cloud/lib/"
+    cd "${DIR}/build"
+    echo "creating distribution '${DIR}/build/solidblocks-cloud-${VERSION}.zip'"
+    zip -r "${DIR}/build/solidblocks-cloud-${VERSION}.zip" solidblocks-cloud/**
+
+    mkdir -p "${DIR}/build/documentation/generated"
+
+    local checksum="$(sha256sum "${DIR}/build/solidblocks-cloud-${VERSION}.zip" | cut -f 1 -d " ")"
+
+    sed \
+      --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
+      --expression="s/__SOLIDBLOCKS_CLOUD_CHECKSUM__/${checksum}/g"  < "${DIR}/templates/cloud_bootstrap_solidblocks.template" > "${DIR}/build/documentation/generated/cloud_bootstrap_solidblocks"
+
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/documentation/generated/cloud_bootstrap_solidblocks" "${DIR}/templates/documentation/minimal-skeleton/do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/documentation/generated/cloud_minimal_skeleton"
+    chmod +x "${DIR}/build/documentation/generated/cloud_minimal_skeleton"
+  )
+}
+
+function task_lint {
+  ensure_environment
+  find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
+}
+
+function terraform_wrapper {
+  (
+    cd ${DIR}/test/terraform
+    terraform init
+
+    export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
+    export AWS_DEFAULT_REGION="eu-central-1"
+    export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/secret_access_key)}"
+    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/access_key)}" #
+
+    terraform ${@}
+  )
+}
+
+
+function task_test {
+  if [[ -n "${SKIP_TESTS:-}" ]]; then
+    exit 0
+  fi
+
+  python_ensure_venv
+  terraform_wrapper apply -auto-approve
+
+  while ! ssh -F ${DIR}/test/terraform/ssh_config test whoami; do
+    log_echo_error "waiting for test server"
+    sleep 1
+  done
+
+  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test --show-capture=all -s "${DIR}/test"
+
+}
+
+function task_ssh_test {
+  (
+    cd ${DIR}/test/terraform
+    ssh -F ${DIR}/test/terraform/ssh_config test
+  )
+}
+
+function task_clean {
+  (
+    cd ${DIR}/test/terraform
+    terraform_wrapper destroy -auto-approve
+  )
+  rm -rf "${DIR}/build"
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+lint) task_lint "$@" ;;
+clean) task_clean "$@" ;;
+build) task_build "$@" ;;
+test) task_test "$@" ;;
+ssh-test) task_ssh_test "$@" ;;
+*) task_usage ;;
+esac
