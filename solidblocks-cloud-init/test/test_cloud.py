@@ -22,3 +22,9 @@ def test_bootstrap(host):
     wait_for_cloud_init(host)
     assert host.file(f"/solidblocks//lib/storage.sh").is_file
 
+
+def test_storge_mount(host):
+    wait_for_cloud_init(host)
+
+    assert host.mount_point(f"/data1").exists
+    assert host.mount_point(f"/data1").filesystem == "ext4"

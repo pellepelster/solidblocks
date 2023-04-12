@@ -30,7 +30,7 @@ resource hcloud_server "test" {
   location    = var.location
   user_data   = templatefile("${path.module}/cloud_init.sh", {
     solidblocks_base_url   = "https://${aws_s3_bucket.bootstrap.bucket_domain_name}"
-    cloud_minimal_skeleton = file("${path.module}/../../build/documentation/generated/cloud_minimal_skeleton")
+    cloud_minimal_skeleton = file("${path.module}/../../build/documentation/generated/cloud_init_minimal_skeleton")
     storage_device         = hcloud_volume.test.linux_device
   })
 }
@@ -69,8 +69,8 @@ resource "aws_s3_bucket" "bootstrap" {
 
 resource "aws_s3_object" "bootstrap" {
   bucket = aws_s3_bucket.bootstrap.id
-  key    = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/solidblocks-cloud-${var.solidblocks_version}.zip"
-  source = "${path.module}/../../build/solidblocks-cloud-snapshot.zip"
+  key    = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/solidblocks-cloud-init-${var.solidblocks_version}.zip"
+  source = "${path.module}/../../build/solidblocks-cloud-init-snapshot.zip"
   acl    = "public-read"
-  etag   = filemd5("${path.module}/../../build/solidblocks-cloud-snapshot.zip")
+  etag   = filemd5("${path.module}/../../build/solidblocks-cloud-init-snapshot.zip")
 }

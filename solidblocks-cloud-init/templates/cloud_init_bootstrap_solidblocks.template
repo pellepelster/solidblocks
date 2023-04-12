@@ -52,7 +52,7 @@ function bootstrap_solidblocks() {
 
   local temp_file="$(mktemp)"
 
-  curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-${SOLIDBLOCKS_VERSION}.zip" > "${temp_file}"
+  curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.zip" > "${temp_file}"
   echo "${SOLIDBLOCKS_CLOUD_CHECKSUM}  ${temp_file}" | sha256sum -c
 
   (

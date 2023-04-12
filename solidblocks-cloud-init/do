@@ -17,24 +17,24 @@ source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_build {
   (
-    mkdir -p "${DIR}/build/solidblocks-cloud/lib"
-    cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-cloud/lib/"
+    mkdir -p "${DIR}/build/solidblocks-cloud-init/lib"
+    cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-cloud-init/lib/"
 
-    cd "${DIR}/build/solidblocks-cloud"
+    cd "${DIR}/build/solidblocks-cloud-init"
 
-    echo "creating distribution '${DIR}/build/solidblocks-cloud-${VERSION}.zip'"
-    zip -r "${DIR}/build/solidblocks-cloud-${VERSION}.zip" *
+    echo "creating distribution '${DIR}/build/solidblocks-cloud-init-${VERSION}.zip'"
+    zip -r "${DIR}/build/solidblocks-cloud-init-${VERSION}.zip" *
 
     mkdir -p "${DIR}/build/documentation/generated"
 
-    local checksum="$(sha256sum "${DIR}/build/solidblocks-cloud-${VERSION}.zip" | cut -f 1 -d " ")"
+    local checksum="$(sha256sum "${DIR}/build/solidblocks-cloud-init-${VERSION}.zip" | cut -f 1 -d " ")"
 
     sed \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_CLOUD_CHECKSUM__/${checksum}/g"  < "${DIR}/templates/cloud_bootstrap_solidblocks.template" > "${DIR}/build/documentation/generated/cloud_bootstrap_solidblocks"
+      --expression="s/__SOLIDBLOCKS_CLOUD_CHECKSUM__/${checksum}/g"  < "${DIR}/templates/cloud_init_bootstrap_solidblocks.template" > "${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/documentation/generated/cloud_bootstrap_solidblocks" "${DIR}/templates/documentation/minimal-skeleton/do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/documentation/generated/cloud_minimal_skeleton"
-    chmod +x "${DIR}/build/documentation/generated/cloud_minimal_skeleton"
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks" "${DIR}/templates/documentation/minimal-skeleton.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/documentation/generated/cloud_init_minimal_skeleton"
+    chmod +x "${DIR}/build/documentation/generated/cloud_init_minimal_skeleton"
   )
 }
 
