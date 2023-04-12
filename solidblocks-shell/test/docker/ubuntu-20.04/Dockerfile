@@ -21,4 +21,5 @@ RUN apt-get install --no-install-recommends -qq -y \
     xz-utils \
     python3 \
     python3-venv \
-    uuid-runtime
+    uuid-runtime \
+    bzip2

@@ -54,7 +54,7 @@ function task_test_integration_prepare {
     do
     (
       cd "${DIR}/test/docker/${image}"
-      docker build -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
+      docker build --no-cache -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
       docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}"
     )
     done

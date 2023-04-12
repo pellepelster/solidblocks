@@ -10,5 +10,6 @@ RUN yum install -y \
     zip \
     tar \
     util-linux \
-    python
+    python \
+    bzip2
 RUN amazon-linux-extras install docker -y
