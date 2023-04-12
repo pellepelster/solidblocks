@@ -27,7 +27,7 @@ ENV LANG en_US.utf8
 
 RUN apk upgrade --available
 RUN apk add \
-    postgresql \
+    postgresql14 \
     jq \
     bash \
     openssh-client \
