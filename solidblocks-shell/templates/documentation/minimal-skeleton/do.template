@@ -4,7 +4,7 @@ set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-__BOOTSTRAP_SOLIDBLOCKS__
+__BOOTSTRAP_SOLIDBLOCKS_SHELL__
 
 # makes sure all needed shell functions functions are available and all bootstrapped software is on the $PATH
 function ensure_environment() {
