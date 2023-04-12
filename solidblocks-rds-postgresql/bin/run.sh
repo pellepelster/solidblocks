@@ -57,7 +57,7 @@ export PG_DATA_DIR="${DATA_DIR}/${DB_INSTANCE_NAME}"
 gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
 gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'
 
-POSTGRES_BASE_DIR="/usr/libexec/postgresql14"
+POSTGRES_BASE_DIR="/usr/libexec/postgresql"
 POSTGRES_BIN_DIR="${POSTGRES_BASE_DIR}"
 
 mkdir -p "${PG_DATA_DIR}"

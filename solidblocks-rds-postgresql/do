@@ -38,7 +38,7 @@ function task_test {
 function task_build {
   (
     cd "${DIR}"
-    docker build -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
+    docker build --no-cache -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
     mkdir -p "${DIR}/build"
     docker save "${DOCKER_IMAGE_NAME}:${VERSION}" > "${DIR}/build/${DOCKER_IMAGE_NAME}-${VERSION}.tar"
   )
