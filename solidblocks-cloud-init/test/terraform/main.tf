@@ -22,6 +22,11 @@ resource hcloud_volume "test" {
   location = var.location
 }
 
+resource hcloud_volume_attachment test {
+  server_id = hcloud_server.test.id
+  volume_id = hcloud_volume.test.id
+}
+
 resource hcloud_server "test" {
   name        = "test-${random_string.test_id.id}"
   image       = "debian-11"
@@ -34,12 +39,6 @@ resource hcloud_server "test" {
     storage_device         = hcloud_volume.test.linux_device
   })
 }
-
-resource hcloud_volume_attachment test {
-  server_id = hcloud_server.test.id
-  volume_id = hcloud_volume.test.id
-}
-
 
 resource "local_file" "ssh_private_key" {
   content         = tls_private_key.ssh_key.private_key_openssh

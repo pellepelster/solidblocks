@@ -93,6 +93,10 @@ function task_clean {
   rm -rf "${DIR}/build"
 }
 
+function task_release_docker {
+  echo ""
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -106,5 +110,6 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   ssh-test) task_ssh_test "$@" ;;
+  release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac
