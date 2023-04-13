@@ -69,7 +69,7 @@ function task_test {
   done
 
   "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test --show-capture=all -s "${DIR}/test"
-
+  clean_cloud_resources
 }
 
 function task_ssh_test {
@@ -79,11 +79,15 @@ function task_ssh_test {
   )
 }
 
-function task_clean {
+function clean_cloud_resources() {
   (
     cd ${DIR}/test/terraform
     terraform_wrapper destroy -auto-approve -var="solidblocks_version=${VERSION}"
   )
+}
+
+function task_clean {
+  clean_cloud_resources
   rm -rf "${DIR}/build"
 }
 
