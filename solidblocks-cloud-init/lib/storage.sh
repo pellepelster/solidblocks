@@ -1,3 +1,4 @@
+# see https://pellepelster.github.io/solidblocks/cloud-init/storage/#storage_mount
 function storage_mount() {
 
     local storage_device="${1:-}"

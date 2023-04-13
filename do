@@ -11,7 +11,7 @@ source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
 
-COMPONENTS="solidblocks-shell solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
+COMPONENTS="solidblocks-shell solidblocks-cloud-init solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_ensure_shellcheck
@@ -69,7 +69,7 @@ function task_build_documentation {
     ensure_environment
 
     mkdir -p "${DIR}/doc/generated"
-    cp -rv ${DIR}/*/documentation/generated/* "${DIR}/doc/generated"
+    cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated"
 
 
     export VERSION="$(semver get release)"
