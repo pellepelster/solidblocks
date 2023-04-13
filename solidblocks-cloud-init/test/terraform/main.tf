@@ -70,7 +70,7 @@ resource "aws_s3_bucket" "bootstrap" {
 resource "aws_s3_object" "bootstrap" {
   bucket = aws_s3_bucket.bootstrap.id
   key    = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/solidblocks-cloud-init-${var.solidblocks_version}.zip"
-  source = "${path.module}/../../build/solidblocks-cloud-init-snapshot.zip"
+  source = "${path.module}/../../build/solidblocks-cloud-init-${var.solidblocks_version}.zip"
   acl    = "public-read"
-  etag   = filemd5("${path.module}/../../build/solidblocks-cloud-init-snapshot.zip")
+  etag   = filemd5("${path.module}/../../build/solidblocks-cloud-init-${var.solidblocks_version}.zip")
 }

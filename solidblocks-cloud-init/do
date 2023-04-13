@@ -9,9 +9,6 @@ DIR="$(
 
 export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
-DOCKER_REGISTRY="ghcr.io"
-DOCKER_REPOSITORY="pellepelster"
-
 source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
@@ -63,8 +60,8 @@ function task_test {
     exit 0
   fi
 
-  python_ensure_venv
-  terraform_wrapper apply -auto-approve
+  python_ensure_venv "${DIR}"
+  terraform_wrapper apply -auto-approve -var="solidblocks_version=${VERSION}"
 
   while ! ssh -F ${DIR}/test/terraform/ssh_config test whoami; do
     log_echo_error "waiting for test server"
@@ -85,7 +82,7 @@ function task_ssh_test {
 function task_clean {
   (
     cd ${DIR}/test/terraform
-    terraform_wrapper destroy -auto-approve
+    terraform_wrapper destroy -auto-approve -var="solidblocks_version=${VERSION}"
   )
   rm -rf "${DIR}/build"
 }

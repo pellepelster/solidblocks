@@ -49,6 +49,28 @@ jobs:
             solidblocks-shell/build/solidblocks-shell-*.zip
             solidblocks-shell/build/documentation/generated/*
 
+  solidblocks-cloud-init:
+    runs-on: ubuntu-latest
+    env:
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: solidblocks-cloud-init/do build
+      - name: Test
+        run: solidblocks-cloud-init/do test
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: solidblocks-cloud-init
+          path: |
+            solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
+            solidblocks-cloud-init/build/documentation/generated/*
+
   solidblocks-minio:
     name: solidblocks-minio
     runs-on: ubuntu-latest
