@@ -8,13 +8,11 @@ Utilities for storage handling
 
 ## Functions
 
-### `aws_dynamodb_ensure(table_name, attribute_definitions, key_schema)` {#aws_dynamodb_ensure}
+### `storage_mount(storage_device, storage_dir)` {#storage_mount}
 
-Creates a new DynamoDB table named `table_name` if it not already exists. The command will wait until the table is completely provisioned and ready to use. The parameters `attribute_definitions` and `key_schema` need to be provided according to the schema documented in the AWS DynamoDB [create-table](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/dynamodb/create-table.html) documentation.
+Waits for `storage_device` to appear and be ready, and then mounts it to `storage_dir` and ensure it is mounted on reboot by adding it to `/etc/fstab`.
 
 ```shell
-source "aws.sh"
-
-aws_dynamodb_ensure "my-table" "AttributeName=attribute1,AttributeType=S" "AttributeName=attribute1,KeyType=HASH"
+storage_mount "/dev/sdb1" "/data1"
 ```
 

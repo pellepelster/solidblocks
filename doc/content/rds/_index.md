@@ -1,6 +1,6 @@
 ---
 title: RDS PostgreSQL
-weight: 15
+weight: 30
 disableToc: true
 ---
 

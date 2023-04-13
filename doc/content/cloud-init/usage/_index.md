@@ -1,18 +1,11 @@
 ---
-title: Storage
-weight: 10
+title: Usage
+weight: 5
 disableToc: true
 ---
 
-Utilities for storage handling
-
-## Functions
-
-### `storage_mount(storage_device, storage_dir)` {#storage_mount}
-
-Waits for `storage_device` to appear and be ready, and then mounts it to `storage_dir` and ensure it is mounted on reboot by adding it to `/etc/fstab`.
+To use Solidblocks Cloud-Init un you user data, include the following snippet
 
 ```shell
-storage_mount "/dev/sdb1" "/data1"
+{{% include "/generated/cloud_init_bootstrap_solidblocks" %}}
 ```
-

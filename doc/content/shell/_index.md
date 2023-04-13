@@ -1,6 +1,6 @@
 ---
 title: Shell
-weight: 5
+weight: 10
 chapter: true
 ---
 
