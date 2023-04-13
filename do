@@ -69,8 +69,10 @@ function task_build_documentation {
     ensure_environment
 
     mkdir -p "${DIR}/doc/generated"
+    # local
     cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated"
-
+    # ci
+    cp -rv ${DIR}/*/documentation/generated/* "${DIR}/doc/generated"
 
     export VERSION="$(semver get release)"
     mkdir -p "${DIR}/build/documentation"
