@@ -30,7 +30,7 @@ function task_build {
     sed \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
       --expression="s/__SOLIDBLOCKS_CLOUD_CHECKSUM__/${checksum}/g"  < "${DIR}/templates/cloud_init_bootstrap_solidblocks.template" > "${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks"
-    cp "${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks" "${DIR}/build/snippets/cloud_init_bootstrap_solidblocks"
+    cp "${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks" "${DIR}/build/snippets/cloud_snippet_init_bootstrap_solidblocks"
 
     sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks" "${DIR}/templates/documentation/minimal-skeleton.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/documentation/generated/cloud_init_minimal_skeleton"
     chmod +x "${DIR}/build/documentation/generated/cloud_init_minimal_skeleton"
