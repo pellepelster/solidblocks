@@ -9,11 +9,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(RdsTestBedExtension::class)
+@DisabledIfEnvironmentVariable(named = "SKIP_LONGRUNNING_TESTS", matches = ".*")
 class RdsPostgresqlAwsS3BackupIntegrationTest {
 
     private val logger = KotlinLogging.logger {}
