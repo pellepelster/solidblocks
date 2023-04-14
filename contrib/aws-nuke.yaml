@@ -1,0 +1,13 @@
+---
+regions:
+  - "eu-central-1"
+
+account-blocklist:
+  - 938746843251
+
+resource-types:
+  excludes:
+    - IAMUser
+
+accounts:
+  938746843258:

@@ -31,6 +31,18 @@ function task_build {
     cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated"
 }
 
+function task_clean_aws {
+  docker run \
+    --rm -it \
+    -v $(pwd)/contrib/aws-nuke.yaml:/home/aws-nuke/config.yml \
+    quay.io/rebuy/aws-nuke:v2.22.1 \
+    --access-key-id "$(pass solidblocks/aws/admin/access_key)" \
+    --secret-access-key "$(pass solidblocks/aws/admin/secret_access_key)" \
+    --config /home/aws-nuke/config.yml \
+    --no-dry-run \
+    --force
+
+}
 function task_clean {
 
     rm -rf "${DIR}/build"
@@ -135,6 +147,7 @@ esac
 case ${ARG} in
   build) task_build "$@" ;;
   clean) task_clean "$@" ;;
+  clean-aws) task_clean_aws "$@" ;;
   test) task_test "$@" ;;
   build-documentation) task_build_documentation "$@" ;;
   serve-documentation) task_serve_documentation "$@" ;;
