@@ -70,9 +70,9 @@ function task_build_documentation {
 
     mkdir -p "${DIR}/doc/generated"
     # local
-    cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated"
+    cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated" || true
     # ci
-    cp -rv ${DIR}/*/documentation/generated/* "${DIR}/doc/generated"
+    cp -rv ${DIR}/*/documentation/generated/* "${DIR}/doc/generated" || true
 
     export VERSION="$(semver get release)"
     mkdir -p "${DIR}/build/documentation"
