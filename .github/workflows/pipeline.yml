@@ -10,7 +10,7 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 concurrency:
-  group: solidblocks
+  group: solidblocks-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
