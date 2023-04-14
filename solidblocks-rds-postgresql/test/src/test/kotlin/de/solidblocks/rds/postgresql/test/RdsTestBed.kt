@@ -73,7 +73,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         it.withNetwork(network)
         it.withExposedPorts(5432)
         it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
-        it.withStartupTimeout(Duration.ofSeconds(60))
+        it.withStartupTimeout(Duration.ofSeconds(120))
         it.withEnv(
                 mapOf(
                         "DB_INSTANCE_NAME" to database,

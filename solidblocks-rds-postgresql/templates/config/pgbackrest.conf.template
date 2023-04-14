@@ -2,15 +2,15 @@
 
 spool-path=/rds/pgbackrest/spool
 
-{{ if eq (env.Getenv "DB_BACKUP_S3") "1" }}
+{{ if eq (getenv "DB_BACKUP_S3") "1" }}
 repo1-type=s3
 repo1-path=/pgbackrest
 
-repo1-s3-endpoint={{ .Env.DB_BACKUP_S3_HOST }}
-repo1-s3-bucket={{ .Env.DB_BACKUP_S3_BUCKET }}
+repo1-s3-region={{ getenv "DB_BACKUP_S3_REGION" "eu-central-1" }}
+repo1-s3-endpoint={{ getenv "DB_BACKUP_S3_HOST" "s3.eu-central-1.amazonaws.com" }}
 
-repo1-s3-region=eu-west-3
-repo1-s3-uri-style=path
+repo1-s3-bucket={{ .Env.DB_BACKUP_S3_BUCKET }}
+repo1-s3-uri-style={{ getenv "DB_BACKUP_S3_URI_STYLE" "host" }}
 
 repo1-s3-key={{ .Env.DB_BACKUP_S3_ACCESS_KEY }}
 repo1-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
@@ -19,20 +19,20 @@ repo1-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
 repo1-storage-ca-file=/rds/certificates/ca.pem
 {{end}}
 
-repo1-retention-full-type={{ env.Getenv "DB_BACKUP_S3_RETENTION_FULL_TYPE" "count" }}
-repo1-retention-full={{ env.Getenv "DB_BACKUP_S3_RETENTION_FULL" "7" }}
+repo1-retention-full-type={{ getenv "DB_BACKUP_S3_RETENTION_FULL_TYPE" "count" }}
+repo1-retention-full={{ getenv "DB_BACKUP_S3_RETENTION_FULL" "7" }}
 
-repo1-retention-diff={{ env.Getenv "DB_BACKUP_S3_RETENTION_DIFF" "4" }}
+repo1-retention-diff={{ getenv "DB_BACKUP_S3_RETENTION_DIFF" "4" }}
 {{end}}
 
-{{ if eq (env.Getenv "DB_BACKUP_LOCAL") "1" }}
+{{ if eq (getenv "DB_BACKUP_LOCAL") "1" }}
 repo2-type=posix
 repo2-path={{ .Env.DB_BACKUP_LOCAL_DIR }}
 
-repo2-retention-full-type={{ env.Getenv "DB_BACKUP_LOCAL_RETENTION_FULL_TYPE" "count" }}
-repo2-retention-full={{ env.Getenv "DB_BACKUP_LOCAL_RETENTION_FULL" "7" }}
+repo2-retention-full-type={{ getenv "DB_BACKUP_LOCAL_RETENTION_FULL_TYPE" "count" }}
+repo2-retention-full={{ getenv "DB_BACKUP_LOCAL_RETENTION_FULL" "7" }}
 
-repo2-retention-diff={{ env.Getenv "DB_BACKUP_LOCAL_RETENTION_DIFF" "7" }}
+repo2-retention-diff={{ getenv "DB_BACKUP_LOCAL_RETENTION_DIFF" "7" }}
 {{end}}
 
 log-level-console=info

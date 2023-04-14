@@ -1,66 +1,80 @@
 package de.solidblocks.rds.postgresql.test
 
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import java.util.*
 
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(RdsTestBedExtension::class)
-class RdsPostgresqlMinioBackupIntegrationTest {
+class RdsPostgresqlAwsS3BackupIntegrationTest {
 
     private val logger = KotlinLogging.logger {}
 
     companion object {
-        const val backupHost = "minio"
-        const val bucket = "database1-backup"
-        const val accessKey = "database1-user1"
-        const val secretKey = "ccbaa67e-cf26-432f-a11f-0c9e72abccf8"
-        const val database = "database1"
-        const val databaseUser = "user1"
-        const val databasePassword = "password1"
+        val bucket = "test-${UUID.randomUUID()}"
 
-        val minioCertificatePrivateBase64 =
-            Base64.getEncoder()
-                .encodeToString(
-                    RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/minio.key.pem").readBytes()
-                )
-        val minioCertificatePublicBase64 =
-            Base64.getEncoder()
-                .encodeToString(
-                    RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/minio.pem").readBytes()
-                )
-        val caPublicBase64 =
-            Base64.getEncoder()
-                .encodeToString(RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/ca.pem").readBytes())
-
+        val s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_CENTRAL_1).build()
 
         val s3BackupEnv = mapOf(
-            "DB_BACKUP_S3" to "1",
-            "DB_BACKUP_S3_CA_PUBLIC_KEY" to caPublicBase64,
-            "DB_BACKUP_S3_HOST" to backupHost,
-            "DB_BACKUP_S3_BUCKET" to bucket,
-            "DB_BACKUP_S3_ACCESS_KEY" to accessKey,
-            "DB_BACKUP_S3_SECRET_KEY" to secretKey,
-            "DB_BACKUP_S3_URI_STYLE" to "path"
+                "DB_BACKUP_S3" to "1",
+                "DB_BACKUP_S3_BUCKET" to bucket,
+                "DB_BACKUP_S3_ACCESS_KEY" to System.getenv("AWS_ACCESS_KEY_ID"),
+                "DB_BACKUP_S3_SECRET_KEY" to System.getenv("AWS_SECRET_ACCESS_KEY")
         )
     }
 
+    @BeforeEach
+    fun initTestBed() {
+        destroyTestBed()
+
+        if (!s3.doesBucketExistV2(bucket)) {
+            s3.createBucket(bucket)
+        }
+
+        while (!s3.doesBucketExistV2(bucket)) {
+            Thread.sleep(1000)
+        }
+    }
+
+    @AfterEach
+    fun destroyTestBed() {
+
+        if (s3.doesBucketExistV2(bucket)) {
+
+            var objectListing = s3.listObjects(bucket)
+
+            while (true) {
+                for (objectSummary in objectListing.getObjectSummaries()) {
+                    s3.deleteObject(bucket, objectSummary.getKey())
+                }
+                if (objectListing.isTruncated()) {
+                    objectListing = s3.listNextBatchOfObjects(objectListing)
+                } else {
+                    break
+                }
+            }
+
+
+            s3.deleteBucket(bucket)
+        }
+    }
 
     @Test
     fun testDatabaseKeepsDataBetweenRestarts(testBed: RdsTestBed) {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        testBed.createAndStartMinioContainer()
-
         val dataDir = initWorldReadableTempDir()
         val container = testBed.createAndStartPostgresContainer(
-            s3BackupEnv, dataDir, logConsumer
+                s3BackupEnv, dataDir, logConsumer
         )
 
         // on first start instance should be initialized and an initial backup should be executed
@@ -114,10 +128,8 @@ class RdsPostgresqlMinioBackupIntegrationTest {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        rdsTestBed.createAndStartMinioContainer()
-
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
-            s3BackupEnv, initWorldReadableTempDir(), logConsumer
+                s3BackupEnv, initWorldReadableTempDir(), logConsumer
         )
 
         // on first start instance should be initialized and an initial backup should be executed
@@ -149,7 +161,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         logConsumer.clear()
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
-            s3BackupEnv, initWorldReadableTempDir(), logConsumer
+                s3BackupEnv, initWorldReadableTempDir(), logConsumer
         )
 
 
@@ -176,10 +188,8 @@ class RdsPostgresqlMinioBackupIntegrationTest {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        rdsTestBed.createAndStartMinioContainer()
-
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
-            s3BackupEnv, initWorldReadableTempDir(), logConsumer
+                s3BackupEnv, initWorldReadableTempDir(), logConsumer
         )
 
         // on first start instance should be initialized and an initial backup should be executed
@@ -222,7 +232,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         logConsumer.clear()
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
-            s3BackupEnv, initWorldReadableTempDir(), logConsumer
+                s3BackupEnv, initWorldReadableTempDir(), logConsumer
         )
 
 
@@ -253,10 +263,8 @@ class RdsPostgresqlMinioBackupIntegrationTest {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        rdsTestBed.createAndStartMinioContainer()
-
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
-            s3BackupEnv, initWorldReadableTempDir(), logConsumer
+                s3BackupEnv, initWorldReadableTempDir(), logConsumer
         )
 
         // on first start instance should be initialized and an initial backup should be executed
@@ -299,7 +307,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         logConsumer.clear()
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
-            s3BackupEnv, initWorldReadableTempDir(), logConsumer
+                s3BackupEnv, initWorldReadableTempDir(), logConsumer
         )
 
 

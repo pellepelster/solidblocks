@@ -4,7 +4,7 @@ object Versions {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21" // <1>
+    id("org.jetbrains.kotlin.jvm") version "1.8.20"
 }
 
 repositories {
@@ -33,6 +33,8 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:1.2.10")
     testImplementation("org.postgresql:postgresql:42.4.1")
     testImplementation("org.jdbi:jdbi3-core:3.32.0")
+
+    testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.449")
 }
 
 tasks.test {
@@ -41,11 +43,11 @@ tasks.test {
     testLogging {
         this.showStandardStreams = true
         events = setOf(
-                org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
-                org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
-                org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-                org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT,
-                org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
+            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
         )
     }
 }

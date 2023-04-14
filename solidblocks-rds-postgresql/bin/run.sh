@@ -26,7 +26,7 @@ if [[ $((DB_BACKUP_S3 + DB_BACKUP_LOCAL)) == 0 ]]; then
 fi
 
 if [[ ${DB_BACKUP_S3:-0} == 1 ]]; then
-  ensure_environment_variables DB_BACKUP_S3_CA_PUBLIC_KEY DB_BACKUP_S3_HOST DB_BACKUP_S3_BUCKET DB_BACKUP_S3_ACCESS_KEY DB_BACKUP_S3_SECRET_KEY
+  ensure_environment_variables DB_BACKUP_S3_BUCKET DB_BACKUP_S3_ACCESS_KEY DB_BACKUP_S3_SECRET_KEY
 
   if [[ -n "${DB_BACKUP_S3_CA_PUBLIC_KEY:-}" ]]; then
     mkdir -p /rds/certificates
