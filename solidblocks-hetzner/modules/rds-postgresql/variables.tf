@@ -21,6 +21,7 @@ variable "data_volume" {
 variable "backup_volume" {
   type        = number
   description = "backup volume id"
+  default     = 0
 }
 
 variable "solidblocks_base_url" {
@@ -44,9 +45,11 @@ variable "db_backup_s3_bucket" {
 }
 
 variable "db_backup_s3_access_key" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "db_backup_s3_secret_key" {
-  type = string
+  type    = string
+  default = ""
 }

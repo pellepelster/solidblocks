@@ -84,7 +84,10 @@ groupadd --gid 10000 rds
 useradd --gid rds --uid 10000 rds
 
 storage_mount "$${STORAGE_DEVICE_DATA}" "/storage/data"
-storage_mount "$${STORAGE_DEVICE_BACKUP}" "/storage/backup"
+
+if [[ -n $${STORAGE_DEVICE_BACKUP} ]]; then
+  storage_mount "$${STORAGE_DEVICE_BACKUP}" "/storage/backup"
+fi
 
 chown -R rds:rds "/storage"
 
