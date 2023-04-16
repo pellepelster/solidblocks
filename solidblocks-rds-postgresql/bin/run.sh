@@ -210,7 +210,7 @@ function pgbackrest_default_restore_arguments() {
 }
 
 if [[ -z "$(ls -A ${PG_DATA_DIR})" ]]; then
-  log "data dir '${PG_DATA_DIR}' is empty"
+  log "data dir is empty"
 
   if [[ $(pgbackrest_status_code) -eq 0 ]]; then
 
@@ -244,7 +244,7 @@ if [[ -z "$(ls -A ${PG_DATA_DIR})" ]]; then
     init_db
   fi
 else
-  log "data dir '${PG_DATA_DIR}' is not empty"
+  log "data dir is not empty"
 
   rm -f /rds/socket/*
   rm -f "${PG_DATA_DIR}/postmaster.pid"
