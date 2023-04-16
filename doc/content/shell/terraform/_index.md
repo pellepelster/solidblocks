@@ -1,7 +1,6 @@
 ---
 title: Terraform
 weight: 70
-disableToc: true
 ---
 
 Wrappers and helpers for Terraform

@@ -1,7 +1,6 @@
 ---
 title: Log
 weight: 50
-disableToc: true
 ---
 
 Generic console and logging  helpers

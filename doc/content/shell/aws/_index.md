@@ -1,7 +1,6 @@
 ---
 title: AWS
 weight: 60
-disableToc: true
 ---
 
 Utilities for the AWS cloud API

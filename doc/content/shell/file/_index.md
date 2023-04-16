@@ -1,7 +1,6 @@
 ---
 title: File
 weight: 30
-disableToc: true
 ---
 
 Utilities for local file operations

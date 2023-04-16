@@ -1,7 +1,6 @@
 ---
 title: Storage
 weight: 10
-disableToc: true
 ---
 
 Utilities for storage handling

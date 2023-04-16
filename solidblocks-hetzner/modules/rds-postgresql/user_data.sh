@@ -65,9 +65,11 @@ services:
     environment:
       - "DB_INSTANCE_NAME=${rds_instance_id}"
       - "DB_PASSWORD=very-secret"
+
       - "DB_DATABASE_database1=database1"
       - "DB_USERNAME_database1=user1"
       - "DB_PASSWORD_database1=password1"
+
       - "DB_BACKUP_S3=1"
       - "DB_BACKUP_S3_BUCKET=${db_backup_s3_bucket}"
       - "DB_BACKUP_S3_ACCESS_KEY=${db_backup_s3_access_key}"

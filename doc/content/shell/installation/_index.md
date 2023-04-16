@@ -1,20 +1,19 @@
 ---
 title: Installation
 weight: 10
-disableToc: true
 ---
 
 Releases are viable via [https://github.com/pellepelster/solidblocks/releases](https://github.com/pellepelster/solidblocks/releases), for direct usage in shell-scripts the following helper function provides automatic installation
 
 
 ```shell
-{{% include "/generated/shell_bootstrap_solidblocks" %}}
+{{% include "/snippets/shell_bootstrap_solidblocks" %}}
 ```
 
 A full example that you can use as a skeleton for your own scripts
 
 ```shell
-{{% include "/generated/shell_minimal_skeleton_do" %}}
+{{% include "/snippets/shell_minimal_skeleton_do" %}}
 ```
 
 After download and extraction the different components can be sourced in via

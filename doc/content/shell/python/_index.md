@@ -1,7 +1,6 @@
 ---
 title: Python
 weight: 80
-disableToc: true
 ---
 
 Wrappers and helpers for Python

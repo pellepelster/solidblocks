@@ -50,7 +50,8 @@ function terraform_wrapper {
 }
 
 function test_setup_testbed() {
-  terraform_wrapper "storage" apply -auto-approve
+  terraform_wrapper "s3" apply -auto-approve
+  terraform_wrapper "backup" apply -auto-approve
   terraform_wrapper "instance" apply -auto-approve
 
   while ! ssh -F ${DIR}/test/terraform/instance/ssh_config test whoami; do
@@ -104,6 +105,7 @@ function test_restore_from_s3() {
 
   log_divider_header "destroy instance"
   terraform_wrapper "instance" destroy -auto-approve
+  terraform_wrapper "backup" destroy -auto-approve
   log_divider_footer
 
   log_divider_header "re-create instance"
@@ -148,7 +150,8 @@ function task_test {
 
 function test_clean_testbed() {
   terraform_wrapper "instance" destroy -auto-approve
-  terraform_wrapper "storage" destroy -auto-approve
+  terraform_wrapper "backup" destroy -auto-approve
+  terraform_wrapper "s3" destroy -auto-approve
 }
 
 

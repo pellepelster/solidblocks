@@ -1,7 +1,6 @@
 ---
 title: Software
 weight: 40
-disableToc: true
 ---
 
 Tooling setup for local development and continuous integration environments.

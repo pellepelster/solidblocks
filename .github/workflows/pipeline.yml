@@ -47,7 +47,6 @@ jobs:
           name: solidblocks-shell
           path: |
             solidblocks-shell/build/solidblocks-shell-*.zip
-            solidblocks-shell/build/documentation/generated/*
             solidblocks-shell/build/snippets/*
 
   solidblocks-cloud-init:
@@ -70,7 +69,6 @@ jobs:
           name: solidblocks-cloud-init
           path: |
             solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
-            solidblocks-cloud-init/build/documentation/generated/*
             solidblocks-cloud-init/build/snippets/*
 
   solidblocks-minio:
@@ -202,10 +200,8 @@ jobs:
         with:
           files: |
             solidblocks-shell/solidblocks-shell-*.zip
-            solidblocks-shell/documentation/generated/*
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
-            solidblocks-cloud-init/documentation/generated/*
             solidblocks-cloud-init/snippets/*
 
 

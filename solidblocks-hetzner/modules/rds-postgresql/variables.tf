@@ -12,6 +12,15 @@ variable "ssh_keys" {
   type        = list(number)
   description = "ssh keys for instance access"
 }
+/*
+variable "databases" {
+  type = list(object({
+    id       = string
+    user     = string
+    password = string
+  }))
+}
+*/
 
 variable "data_volume" {
   type        = number

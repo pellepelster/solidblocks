@@ -27,8 +27,6 @@ function task_build {
         VERSION=${VERSION} "./do" build
       )
     done
-    mkdir -p "${DIR}/doc/generated"
-    cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated"
 }
 
 function task_clean_aws {
@@ -80,11 +78,11 @@ function task_release_docker {
 function task_build_documentation {
     ensure_environment
 
-    mkdir -p "${DIR}/doc/generated"
+    mkdir -p "${DIR}/doc/snippets"
     # local
-    cp -rv ${DIR}/*/build/documentation/generated/* "${DIR}/doc/generated" || true
+    cp -rv ${DIR}/*/build/snippets/* "${DIR}/doc/snippets" || true
     # ci
-    cp -rv ${DIR}/*/documentation/generated/* "${DIR}/doc/generated" || true
+    cp -rv ${DIR}/*/snippets/* "${DIR}/doc/snippets" || true
 
     export VERSION="$(semver get release)"
     mkdir -p "${DIR}/build/documentation"

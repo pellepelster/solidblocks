@@ -1,7 +1,6 @@
 ---
 title: Download
 weight: 20
-disableToc: true
 ---
 
 Secure and reliable data retrieval from remote servers

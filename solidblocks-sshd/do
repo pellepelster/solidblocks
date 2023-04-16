@@ -31,12 +31,11 @@ function task_test {
 }
 
 function task_clean {
-  log_divider_header "solidblocks-sshd-test"
-  docker logs "solidblocks-sshd-test" || true
-  log_divider_footer
-
-  docker rm -f "solidblocks-sshd-test" || true
-  docker_remove_network "solidblocks-sshd-test"
+  if docker ps | grep "solidblocks-sshd-test"; then
+    docker logs "solidblocks-sshd-test" || true
+    docker rm -f "solidblocks-sshd-test" || true
+    docker_remove_network "solidblocks-sshd-test"
+  fi
 }
 
 function task_release_docker {

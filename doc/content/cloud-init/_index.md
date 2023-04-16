@@ -1,7 +1,6 @@
 ---
 title: Cloud-Init
 weight: 20
-disableToc: true
 ---
 
 Based on [Shell]({{%relref "shell/_index.md" %}}) reusable shell functions for typical [Cloud-Init](https://cloudinit.readthedocs.io/en/latest/) user-data usage scenarios

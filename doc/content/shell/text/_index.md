@@ -1,7 +1,6 @@
 ---
 title: Text
 weight: 50
-disableToc: true
 ---
 
 Constants for console text formatting

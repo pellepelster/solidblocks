@@ -209,8 +209,8 @@ function pgbackrest_default_restore_arguments() {
   echo $(pgbackrest_default_arguments) --db-path=${PG_DATA_DIR} restore --recovery-option="recovery_end_command=/rds/bin/recovery_complete.sh"
 }
 
-if [[ ! "$(ls -A ${PG_DATA_DIR})" ]]; then
-  log "data dir is empty"
+if [[ -z "$(ls -A ${PG_DATA_DIR})" ]]; then
+  log "data dir '${PG_DATA_DIR}' is empty"
 
   if [[ $(pgbackrest_status_code) -eq 0 ]]; then
 
@@ -244,7 +244,7 @@ if [[ ! "$(ls -A ${PG_DATA_DIR})" ]]; then
     init_db
   fi
 else
-  log "data dir is not empty"
+  log "data dir '${PG_DATA_DIR}' is not empty"
 
   rm -f /rds/socket/*
   rm -f "${PG_DATA_DIR}/postmaster.pid"

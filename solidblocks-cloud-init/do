@@ -22,18 +22,16 @@ function task_build {
     echo "creating distribution '${DIR}/build/solidblocks-cloud-init-${VERSION}.zip'"
     zip -r "${DIR}/build/solidblocks-cloud-init-${VERSION}.zip" *
 
-    mkdir -p "${DIR}/build/documentation/generated"
     mkdir -p "${DIR}/build/snippets"
 
     local checksum="$(sha256sum "${DIR}/build/solidblocks-cloud-init-${VERSION}.zip" | cut -f 1 -d " ")"
 
     sed \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_CLOUD_CHECKSUM__/${checksum}/g"  < "${DIR}/templates/cloud_init_bootstrap_solidblocks.template" > "${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks"
-    cp "${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks" "${DIR}/build/snippets/cloud_snippet_init_bootstrap_solidblocks"
+      --expression="s/__SOLIDBLOCKS_CLOUD_CHECKSUM__/${checksum}/g"  < "${DIR}/templates/snippets/cloud_init_bootstrap_solidblocks.template" > "${DIR}/build/snippets/cloud_init_bootstrap_solidblocks"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/documentation/generated/cloud_init_bootstrap_solidblocks" "${DIR}/templates/documentation/minimal-skeleton.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/documentation/generated/cloud_init_minimal_skeleton"
-    chmod +x "${DIR}/build/documentation/generated/cloud_init_minimal_skeleton"
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/snippets/cloud_init_bootstrap_solidblocks" "${DIR}/templates/snippets/cloud_init_minimal_skeleton.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/snippets/cloud_init_minimal_skeleton"
+    chmod +x "${DIR}/build/snippets/cloud_init_minimal_skeleton"
   )
 }
 
@@ -49,8 +47,8 @@ function terraform_wrapper {
 
     export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
     export AWS_DEFAULT_REGION="eu-central-1"
-    export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/secret_access_key)}"
-    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/access_key)}" #
+    export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
+    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
 
     terraform ${@}
   )
@@ -89,7 +87,7 @@ function clean_cloud_resources() {
 }
 
 function task_clean {
-  clean_cloud_resources
+  clean_cloud_resources || true
   rm -rf "${DIR}/build"
 }
 

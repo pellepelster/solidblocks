@@ -1,10 +1,7 @@
 ---
 title: Shell
 weight: 10
-chapter: true
 ---
-
-# Shell
 
 Reusable shell functions for infrastructure automation and developer experience 
 

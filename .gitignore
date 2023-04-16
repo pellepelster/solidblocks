@@ -15,9 +15,7 @@ terraform.tfstate
 terraform.tfstate.backup
 build
 *.pem
-/solidblocks-shell/documentation/minimal-skeleton/solidblocks-shell/
-/solidblocks-shell/documentation/bootstrap_solidblocks
-/doc/generated/
+/doc/snippets/
 venv
 __pycache__
 .terraform.tfstate.lock.info

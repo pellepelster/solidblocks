@@ -14,15 +14,8 @@ resource "aws_s3_object" "bootstrap_zip" {
 resource "aws_s3_object" "bootstrap_snippet" {
   bucket = aws_s3_bucket.bootstrap.id
   key    = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/cloud_init_bootstrap_solidblocks"
-  source = "${path.module}/../../../../solidblocks-cloud-init/build/snippets/cloud_snippet_init_bootstrap_solidblocks"
+  source = "${path.module}/../../../../solidblocks-cloud-init/build/snippets/cloud_init_bootstrap_solidblocks"
   acl    = "public-read"
-  etag   = filemd5("${path.module}/../../../../solidblocks-cloud-init/build/snippets/cloud_snippet_init_bootstrap_solidblocks")
-}
-
-resource hcloud_volume "data" {
-  name     = "test-data-${var.test_id}"
-  size     = 32
-  format   = "ext4"
-  location = var.location
+  etag   = filemd5("${path.module}/../../../../solidblocks-cloud-init/build/snippets/cloud_init_bootstrap_solidblocks")
 }
 
