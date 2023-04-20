@@ -26,6 +26,9 @@ resource hcloud_server "rds" {
     storage_device_backup            = try(data.hcloud_volume.backup[0].linux_device, "")
     cloud_init_bootstrap_solidblocks = data.http.cloud_init_bootstrap_solidblocks.response_body
 
+    backup_full_calendar = var.backup_full_calendar
+    backup_incr_calendar = var.backup_incr_calendar
+
     db_backup_s3_bucket     = var.backup_s3_bucket
     db_backup_s3_access_key = var.backup_s3_access_key
     db_backup_s3_secret_key = var.backup_s3_secret_key

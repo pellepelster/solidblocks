@@ -29,6 +29,35 @@ function configure_ufw {
   ufw allow 5432
 }
 
+function rds_service_systemd_backup_config {
+local backup_type="$${1:-}"
+cat <<-EOF
+[Unit]
+Description=full backup for %i
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/dockerfiles/%i
+ExecStart=/usr/bin/docker-compose exec -T ${db_instance_name} /rds/bin/backup-$${backup_type}.sh
+EOF
+}
+
+function rds_service_systemd_backup_timer {
+local backup_type="$${1:-}"
+local backup_calendar="$${2:-}"
+cat <<-EOF
+[Unit]
+Description=full backup for %i
+
+[Timer]
+OnCalendar=$${backup_calendar}
+
+Unit=rds-backup-$${backup_type}@%i.service
+[Install]
+WantedBy=multi-user.target
+EOF
+}
+
 function rds_service_systemd_config {
 cat <<-EOF
 [Unit]
@@ -100,7 +129,16 @@ mkdir -p "/opt/dockerfiles/${db_instance_name}"
 docker_compose_config > "/opt/dockerfiles/${db_instance_name}/docker-compose.yml"
 
 rds_service_systemd_config > /etc/systemd/system/rds@.service
+rds_service_systemd_backup_config "full" > /etc/systemd/system/rds-backup-full@.service
+rds_service_systemd_backup_timer "full" "${backup_full_calendar}" > /etc/systemd/system/rds-backup-full@.timer
+
+rds_service_systemd_backup_config "incr" > /etc/systemd/system/rds-backup-incr@.service
+rds_service_systemd_backup_timer "incr" "${backup_incr_calendar}" > /etc/systemd/system/rds-backup-incr@.timer
 
 systemctl daemon-reload
+
 systemctl enable rds@${db_instance_name}
 systemctl start rds@${db_instance_name}
+
+systemctl enable rds-backup-full@${db_instance_name}.timer
+systemctl enable rds-backup-incr@${db_instance_name}.timer

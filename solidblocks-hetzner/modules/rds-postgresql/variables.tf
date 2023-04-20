@@ -53,3 +53,13 @@ variable "backup_s3_secret_key" {
   type    = string
   default = ""
 }
+
+variable "backup_full_calendar" {
+  type    = string
+  default = "*-*-* 20:00:00"
+}
+
+variable "backup_incr_calendar" {
+  type    = string
+  default = "*-*-* *:00:55"
+}

@@ -2,8 +2,7 @@
 
 set -eu
 
-DIR="$(
-  cd "$(dirname "$0")"
+DIR="$( cd "$(dirname "$0")"
   pwd -P
 )"
 
@@ -49,7 +48,7 @@ function terraform_wrapper {
   )
 }
 
-function task_test_snippets() {
+function task_test_snippets () {
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" apply -auto-approve
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" destroy -auto-approve
 }
@@ -181,11 +180,11 @@ function task_usage {
 arg=${1:-}
 shift || true
 case ${arg} in
-lint) task_lint "$@" ;;
-clean) task_clean "$@" ;;
-build) task_build "$@" ;;
-test) task_test "$@" ;;
-ssh-test) task_ssh_test "$@" ;;
-test-snippets) task_test_snippets "$@" ;;
-*) task_usage ;;
+  lint) task_lint "$@" ;;
+  clean) task_clean "$@" ;;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  ssh-test) task_ssh_test "$@" ;;
+  test-snippets) task_test_snippets "$@" ;;
+  *) task_usage ;;
 esac

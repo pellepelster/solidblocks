@@ -31,6 +31,6 @@ module "rds-postgresql" {
   data_volume = hcloud_volume.data.id
 
   backup_s3_bucket     = aws_s3_bucket.backup.id
-  backup_s3_access_key = var.db_backup_s3_access_key
-  backup_s3_secret_key = var.db_backup_s3_secret_key
+  backup_s3_access_key = var.backup_s3_access_key
+  backup_s3_secret_key = var.backup_s3_secret_key
 }
