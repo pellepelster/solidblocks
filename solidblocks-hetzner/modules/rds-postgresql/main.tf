@@ -14,7 +14,7 @@ data hcloud_volume backup {
 resource hcloud_server "rds" {
   name        = var.name
   image       = "debian-11"
-  server_type = "cx11"
+  server_type = var.server_type
   ssh_keys    = var.ssh_keys
   location    = var.location
 

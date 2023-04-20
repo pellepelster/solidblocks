@@ -41,25 +41,36 @@ variable "solidblocks_version" {
 }
 
 variable "backup_s3_bucket" {
-  type = string
+  type        = string
+  description = "AWS bucket name for S3 backups"
 }
 
 variable "backup_s3_access_key" {
-  type    = string
-  default = ""
+  type        = string
+  description = "AWS access key for S3 backups"
+  default     = ""
 }
 
 variable "backup_s3_secret_key" {
-  type    = string
-  default = ""
+  type        = string
+  description = "AWS secret key for S3 backups"
+  default     = ""
 }
 
 variable "backup_full_calendar" {
-  type    = string
-  default = "*-*-* 20:00:00"
+  type        = string
+  description = "systemd timer spec for full backups"
+  default     = "*-*-* 20:00:00"
 }
 
 variable "backup_incr_calendar" {
-  type    = string
-  default = "*-*-* *:00:55"
+  type        = string
+  description = "systemd timer spec for incremental backups"
+  default     = "*-*-* *:00:55"
+}
+
+variable "server_type" {
+  type        = string
+  description = "hetzner cloud server type"
+  default     = "cx11"
 }

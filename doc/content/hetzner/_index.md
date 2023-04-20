@@ -24,6 +24,7 @@ avoid data loss it is not possible to run the database without one of the backup
 | `db_backup_s3_secret_key` | &lt;none&gt;   | see `db_backup_s3_bucket`                                                                                                                                                                       |
 | `backup_full_calendar`    | *-*-* 20:00:00 | systemd timer spec for full backups, see also [systemd.time](https://man.archlinux.org/man/systemd.time.7)                                                                                      |
 | `backup_incr_calendar`    | *-*-* *:00:55  | systemd timer spec for incremental backups, see also [systemd.time](https://man.archlinux.org/man/systemd.time.7)                                                                               |
+| `server_type`             | cx11           | [Hetzner server type](https://docs.hetzner.com/cloud/servers/overview)                                                                                                                          |
 
 ### S3 Backed Backup
 
