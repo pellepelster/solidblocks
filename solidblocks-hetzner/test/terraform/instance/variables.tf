@@ -9,10 +9,10 @@ variable "test_id" {
   type = string
 }
 
-variable "db_backup_s3_access_key" {
+variable "backup_s3_access_key" {
   type = string
 }
 
-variable "db_backup_s3_secret_key" {
+variable "backup_s3_secret_key" {
   type = string
 }

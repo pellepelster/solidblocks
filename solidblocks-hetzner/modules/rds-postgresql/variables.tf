@@ -1,4 +1,4 @@
-variable "id" {
+variable "name" {
   type        = string
   description = "unique name for the postgres rds instance"
 }
@@ -12,15 +12,6 @@ variable "ssh_keys" {
   type        = list(number)
   description = "ssh keys for instance access"
 }
-/*
-variable "databases" {
-  type = list(object({
-    id       = string
-    user     = string
-    password = string
-  }))
-}
-*/
 
 variable "data_volume" {
   type        = number
@@ -49,16 +40,16 @@ variable "solidblocks_version" {
   default = "v0.0.84"
 }
 
-variable "db_backup_s3_bucket" {
+variable "backup_s3_bucket" {
   type = string
 }
 
-variable "db_backup_s3_access_key" {
+variable "backup_s3_access_key" {
   type    = string
   default = ""
 }
 
-variable "db_backup_s3_secret_key" {
+variable "backup_s3_secret_key" {
   type    = string
   default = ""
 }

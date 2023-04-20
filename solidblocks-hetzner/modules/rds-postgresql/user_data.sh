@@ -60,10 +60,10 @@ function docker_compose_config {
 cat <<-EOF
 version: "3"
 services:
-  ${rds_instance_id}:
+  ${db_instance_name}:
     image: ghcr.io/pellepelster/solidblocks-rds-postgresql:${solidblocks_version}
     environment:
-      - "DB_INSTANCE_NAME=${rds_instance_id}"
+      - "DB_INSTANCE_NAME=${db_instance_name}"
       - "DB_PASSWORD=very-secret"
 
       - "DB_DATABASE_database1=database1"
@@ -96,11 +96,11 @@ chown -R rds:rds "/storage"
 install_prerequisites
 configure_ufw
 
-mkdir -p "/opt/dockerfiles/${rds_instance_id}"
-docker_compose_config > "/opt/dockerfiles/${rds_instance_id}/docker-compose.yml"
+mkdir -p "/opt/dockerfiles/${db_instance_name}"
+docker_compose_config > "/opt/dockerfiles/${db_instance_name}/docker-compose.yml"
 
 rds_service_systemd_config > /etc/systemd/system/rds@.service
 
 systemctl daemon-reload
-systemctl enable rds@${rds_instance_id}
-systemctl start rds@${rds_instance_id}
+systemctl enable rds@${db_instance_name}
+systemctl start rds@${db_instance_name}

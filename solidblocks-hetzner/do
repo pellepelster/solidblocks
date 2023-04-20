@@ -29,7 +29,7 @@ function terraform_wrapper {
   shift || true
 
   (
-    cd "${DIR}/test/terraform/${module}"
+    cd "${DIR}/${module}"
 
     if [[ ! -d ".terraform" ]]; then
       terraform init
@@ -40,8 +40,8 @@ function terraform_wrapper {
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
     export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
 
-    export TF_VAR_db_backup_s3_access_key="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
-    export TF_VAR_db_backup_s3_secret_key="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
+    export TF_VAR_backup_s3_access_key="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
+    export TF_VAR_backup_s3_secret_key="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
     export TF_VAR_test_id="${TEST_ID}"
     export TF_VAR_solidblocks_version=${VERSION}
 
@@ -49,10 +49,15 @@ function terraform_wrapper {
   )
 }
 
+function task_test_snippets() {
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" destroy -auto-approve
+}
+
 function test_setup_testbed() {
-  terraform_wrapper "s3" apply -auto-approve
-  terraform_wrapper "backup" apply -auto-approve
-  terraform_wrapper "instance" apply -auto-approve
+  terraform_wrapper "test/terraform/s3" apply -auto-approve
+  terraform_wrapper "test/terraform/backup" apply -auto-approve
+  terraform_wrapper "test/terraform/instance" apply -auto-approve
 
   while ! ssh -F ${DIR}/test/terraform/instance/ssh_config test whoami; do
     log_echo_warning "waiting for ssh"
@@ -66,7 +71,7 @@ function test_base() {
 }
 
 function create_table {
-cat <<-EOF
+  cat <<-EOF
 CREATE TABLE dogs (
 	id serial PRIMARY KEY,
 	name VARCHAR ( 50 ) UNIQUE NOT NULL
@@ -75,13 +80,13 @@ EOF
 }
 
 function insert_dog {
-cat <<-EOF
+  cat <<-EOF
 INSERT into dogs (name) VALUES ('rudi');
 EOF
 }
 
 function psql_wrapper() {
-  PGPASSWORD=password1 psql --host "$(terraform_wrapper "instance" output -raw ipv4_address)" --user "user1" database1
+  PGPASSWORD=password1 psql --host "$(terraform_wrapper "test/terraform/instance" output -raw ipv4_address)" --user "user1" database1
 }
 
 function test_restore_from_s3() {
@@ -104,16 +109,18 @@ function test_restore_from_s3() {
   log_divider_footer
 
   log_divider_header "destroy instance"
-  terraform_wrapper "instance" destroy -auto-approve
-  terraform_wrapper "backup" destroy -auto-approve
+  terraform_wrapper "test/terraform/instance" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup" destroy -auto-approve
   log_divider_footer
 
   log_divider_header "re-create instance"
-  terraform_wrapper "instance" apply -auto-approve
+  terraform_wrapper "test/terraform/instance" apply -auto-approve
   log_divider_footer
 
   test_wait_for_docker
   test_wait_for_sql
+
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
 
   test_clean_testbed
 }
@@ -149,11 +156,10 @@ function task_test {
 }
 
 function test_clean_testbed() {
-  terraform_wrapper "instance" destroy -auto-approve
-  terraform_wrapper "backup" destroy -auto-approve
-  terraform_wrapper "s3" destroy -auto-approve
+  terraform_wrapper "test/terraform/instance" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup" destroy -auto-approve
+  terraform_wrapper "test/terraform/s3" destroy -auto-approve
 }
-
 
 function task_ssh_test {
   (
@@ -175,10 +181,11 @@ function task_usage {
 arg=${1:-}
 shift || true
 case ${arg} in
-  lint) task_lint "$@" ;;
-  clean) task_clean "$@" ;;
-  build) task_build "$@" ;;
-  test) task_test "$@" ;;
-  ssh-test) task_ssh_test "$@" ;;
-  *) task_usage ;;
+lint) task_lint "$@" ;;
+clean) task_clean "$@" ;;
+build) task_build "$@" ;;
+test) task_test "$@" ;;
+ssh-test) task_ssh_test "$@" ;;
+test-snippets) task_test_snippets "$@" ;;
+*) task_usage ;;
 esac
