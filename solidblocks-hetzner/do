@@ -7,15 +7,19 @@ DIR="$( cd "$(dirname "$0")"
 )"
 
 export VERSION="${GITHUB_REF_NAME:-snapshot}"
-#export TEST_ID="$(echo $RANDOM | md5sum | head -c 8; echo;)"
-export TEST_ID="${USER}"
+export TEST_ID="$(echo $RANDOM | md5sum | head -c 8; echo;)"
+#export TEST_ID="${USER}"
 
 source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_build {
   #sed "/__CLOUD_INIT_BOOTSTRAP_SOLIDBLOCKS__/e cat ${DIR}/../solidblocks-cloud-init/build/snippets/cloud_init_bootstrap_solidblocks" "${DIR}/templates/rds-postgresql/user-data.sh" | grep -v "__CLOUD_INIT_BOOTSTRAP_SOLIDBLOCKS__" > "${DIR}/modules/rds-postgresql/user-data.sh"
-  echo ""
+  mkdir -p "${DIR}/build/snippets"
+  (
+    cd "${DIR}/snippets"
+    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-s3-backup.zip" hetzner-postgres-rds-s3-backup/*.tf
+  )
 }
 
 function task_lint {
@@ -147,7 +151,7 @@ function task_test {
     exit 0
   fi
 
-  python_ensure_venv
+  python_ensure_venv "${DIR}"
 
   #test_base
   test_restore_from_s3

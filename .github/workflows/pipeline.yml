@@ -71,6 +71,35 @@ jobs:
             solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/build/snippets/*
 
+  solidblocks-hetzner:
+    runs-on: ubuntu-latest
+    needs:
+      - solidblocks-cloud-init
+    env:
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: install postgresql-client
+        run: sudo apt-get install -y postgresql-client
+      - name: debug
+        run: ls -lsa solidblocks-cloud-init
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+      - name: Build
+        run: solidblocks-hetzner/do build
+      - name: Test
+        run: solidblocks-hetzner/do test
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: solidblocks-hetzner
+          path: |
+            solidblocks-hetzner/build/snippets/*
+
   solidblocks-minio:
     name: solidblocks-minio
     runs-on: ubuntu-latest
@@ -170,6 +199,7 @@ jobs:
       - solidblocks-cloud-init
       - solidblocks-minio
       - solidblocks-rds-postgresql
+      - solidblocks-hetzner
       - solidblocks-debug-container
     steps:
       - name: Login to GitHub Container Registry
@@ -203,6 +233,7 @@ jobs:
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
+            solidblocks-hetzner/snippets/*
 
 
   documentation:
