@@ -79,10 +79,11 @@ function task_build_documentation {
     ensure_environment
 
     mkdir -p "${DIR}/doc/snippets"
+
     # local
-    cp -rv ${DIR}/*/build/snippets/* "${DIR}/doc/snippets" || true
+    rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${DIR}/doc/snippets"
     # ci
-    cp -rv ${DIR}/*/snippets/* "${DIR}/doc/snippets" || true
+    rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${DIR}/doc/snippets"
 
     export VERSION="$(semver get release)"
     mkdir -p "${DIR}/build/documentation"
