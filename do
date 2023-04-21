@@ -80,10 +80,11 @@ function task_build_documentation {
 
     mkdir -p "${DIR}/doc/snippets"
 
-    # local
-    rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${DIR}/doc/snippets"
-    # ci
-    rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${DIR}/doc/snippets"
+    if [[ -n "${CI:-}" ]]; then
+      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${DIR}/doc/snippets"
+    else
+      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${DIR}/doc/snippets"
+    fi
 
     export VERSION="$(semver get release)"
     mkdir -p "${DIR}/build/documentation"
