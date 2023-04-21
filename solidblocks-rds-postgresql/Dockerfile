@@ -1,8 +1,5 @@
 FROM alpine:3.17.3
 
-ENV GOMPLATE_CHECKSUM=38640b4bd624254650fadb99de05fb13744ce84301abb45ce6bdbacea125f06c
-ENV GOMPLATE_VERSION=3.11.4
-
 ENV DB_BACKUP_S3=0
 ENV DB_BACKUP_LOCAL=0
 
@@ -40,9 +37,8 @@ RUN chown -R ${USER}:${USER} ${USER}
 
 RUN mkdir -p /run/postgresql/ && chown -R ${USER}:${USER} /run/postgresql/
 
-RUN curl -L https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-amd64-slim -o /usr/bin/gomplate && \
-  echo "${GOMPLATE_CHECKSUM}  /usr/bin/gomplate" | sha256sum -c && \
-  chmod +x /usr/bin/gomplate
+COPY install/ /tmp/install/
+RUN /tmp/install/install_gomplate.sh
 
 USER ${USER}
 
