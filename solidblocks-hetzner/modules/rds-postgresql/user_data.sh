@@ -8,7 +8,10 @@ DB_BACKUP_S3_SECRET_KEY="${db_backup_s3_secret_key}"
 
 SOLIDBLOCKS_BASE_URL="${solidblocks_base_url}"
 STORAGE_DEVICE_DATA="${storage_device_data}"
+
+%{~ if storage_device_backup != null ~}
 STORAGE_DEVICE_BACKUP="${storage_device_backup}"
+%{~ endif ~}
 
 ${cloud_init_bootstrap_solidblocks}
 
@@ -94,21 +97,24 @@ services:
     container_name: ${db_instance_name}_postgresql
     environment:
       - "DB_INSTANCE_NAME=${db_instance_name}"
-      - "DB_PASSWORD=very-secret"
-
-      - "DB_DATABASE_database1=database1"
-      - "DB_USERNAME_database1=user1"
-      - "DB_PASSWORD_database1=password1"
-
+      %{~ for database in databases ~}
+      - "DB_DATABASE_${database.id}=${database.id}"
+      - "DB_USERNAME_${database.id}=${database.user}"
+      - "DB_PASSWORD_${database.id}=${database.password}"
+      %{~ endfor ~}
+      %{~ if db_backup_s3_bucket != null && db_backup_s3_access_key != null && db_backup_s3_secret_key != null ~}
       - "DB_BACKUP_S3=1"
       - "DB_BACKUP_S3_BUCKET=${db_backup_s3_bucket}"
       - "DB_BACKUP_S3_ACCESS_KEY=${db_backup_s3_access_key}"
       - "DB_BACKUP_S3_SECRET_KEY=${db_backup_s3_secret_key}"
+      %{~ endif ~}
     ports:
       - "5432:5432"
     volumes:
       - "/storage/data:/storage/data"
+      %{~ if storage_device_backup != null ~}
       - "/storage/backup:/storage/backup"
+      %{~ endif ~}
 EOF
 }
 
@@ -117,9 +123,9 @@ useradd --gid rds --uid 10000 rds
 
 storage_mount "$${STORAGE_DEVICE_DATA}" "/storage/data"
 
-if [[ -n $${STORAGE_DEVICE_BACKUP} ]]; then
-  storage_mount "$${STORAGE_DEVICE_BACKUP}" "/storage/backup"
-fi
+%{~ if storage_device_backup != null ~}
+storage_mount "$${STORAGE_DEVICE_BACKUP}" "/storage/backup"
+%{~ endif ~}
 
 chown -R rds:rds "/storage"
 

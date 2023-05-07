@@ -42,19 +42,20 @@ variable "solidblocks_version" {
 
 variable "backup_s3_bucket" {
   type        = string
-  description = "AWS bucket name for S3 backups"
+  description = "AWS bucket name for S3 backups. To enable S3 backups 'backup_s3_bucket', 'backup_s3_access_key' and 'backup_s3_secret_key' have to be provided."
+  default     = null
 }
 
 variable "backup_s3_access_key" {
   type        = string
-  description = "AWS access key for S3 backups"
-  default     = ""
+  description = "AWS access key for S3 backups. To enable S3 backups 'backup_s3_bucket', 'backup_s3_access_key' and 'backup_s3_secret_key' have to be provided."
+  default     = null
 }
 
 variable "backup_s3_secret_key" {
   type        = string
-  description = "AWS secret key for S3 backups"
-  default     = ""
+  description = "AWS secret key for S3 backups. To enable S3 backups 'backup_s3_bucket', 'backup_s3_access_key' and 'backup_s3_secret_key' have to be provided."
+  default     = null
 }
 
 variable "backup_full_calendar" {
@@ -73,4 +74,8 @@ variable "server_type" {
   type        = string
   description = "hetzner cloud server type"
   default     = "cx11"
+}
+
+variable "databases" {
+  type = list(object({ id : string, user : string, password : string }))
 }

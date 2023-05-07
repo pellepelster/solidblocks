@@ -53,14 +53,14 @@ least one type has to be configured.
 
 ### Databases
 
-Multiple databases can automatically be provisioned by providing configurations for multiple distinct unique `
-${database_id}
+Multiple databases can automatically be provisioned by providing configurations for multiple distinct
+unique `${database_id}`s
 
-| per database configuration   | type        | description                                                                            |
-|------------------------------|-------------|----------------------------------------------------------------------------------------|
-| `DB_DATABASE_${database_id}` | environment | name of the database that implicitly will be crated when the PostgreSQL is initialized | 
-| `DB_USERNAME_${database_id}` | environment | name ot the user who will be granted full access to `DB_DATABASE_${database_id}`       |
-| `DB_PASSWORD_${database_id}` | environment | password for the database user                                                         |
+| per database configuration   | type        | description                                                                      |
+|------------------------------|-------------|----------------------------------------------------------------------------------|
+| `DB_DATABASE_${database_id}` | environment | name of the database that will be crated when the PostgreSQL is initialized      | 
+| `DB_USERNAME_${database_id}` | environment | name ot the user who will be granted full access to `DB_DATABASE_${database_id}` |
+| `DB_PASSWORD_${database_id}` | environment | password for the database user                                                   |
 
 If any of those settings are missing or invalid, the container will complain with a log message and exit with an error
 code:
