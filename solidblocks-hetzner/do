@@ -57,20 +57,30 @@ function task_test_snippets () {
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" destroy -auto-approve
 }
 
-function test_setup_testbed() {
-  terraform_wrapper "test/terraform/s3" apply -auto-approve
-  terraform_wrapper "test/terraform/backup" apply -auto-approve
-  terraform_wrapper "test/terraform/instance" apply -auto-approve
+function test_setup_testbed_s3() {
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
 
-  while ! ssh -F ${DIR}/test/terraform/instance/ssh_config test whoami; do
+  test_wait_for_ssh
+}
+
+function test_setup_testbed_local() {
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_local" apply -auto-approve
+
+  test_wait_for_ssh
+}
+
+function test_wait_for_ssh() {
+  while ! task_test_ssh whoami; do
     log_echo_warning "waiting for ssh"
     sleep 10
   done
 }
 
 function test_base() {
-  test_setup_testbed
-  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/instance/ssh_config --hosts=test --show-capture=all -s "${DIR}/test/test_base.py"
+  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) --show-capture=all -s "${DIR}/test/test_base.py"
 }
 
 function create_table {
@@ -88,13 +98,16 @@ INSERT into dogs (name) VALUES ('rudi');
 EOF
 }
 
-function psql_wrapper() {
-  PGPASSWORD=password1 psql --host "$(terraform_wrapper "test/terraform/instance" output -raw ipv4_address)" --user "user1" database1
+function test_ip_address() {
+  cat "${DIR}/test/terraform/ipv4_address"
 }
 
-function test_restore_from_s3() {
-  #test_clean_testbed
-  test_setup_testbed
+function psql_wrapper() {
+  PGPASSWORD=password1 psql --host "$(test_ip_address)" --user "user1" database1
+}
+
+function test_restore_from_local() {
+  test_setup_testbed_local
 
   test_wait_for_docker
   test_wait_for_sql
@@ -112,12 +125,11 @@ function test_restore_from_s3() {
   log_divider_footer
 
   log_divider_header "destroy instance"
-  terraform_wrapper "test/terraform/instance" destroy -auto-approve
-  terraform_wrapper "test/terraform/backup" destroy -auto-approve
+  terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
   log_divider_footer
 
   log_divider_header "re-create instance"
-  terraform_wrapper "test/terraform/instance" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_local" apply -auto-approve
   log_divider_footer
 
   test_wait_for_docker
@@ -125,7 +137,42 @@ function test_restore_from_s3() {
 
   echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
 
-  test_clean_testbed
+  test_clean_testbed_local
+}
+
+function test_restore_from_s3() {
+  #test_clean_testbed
+  test_setup_testbed_s3
+
+  test_wait_for_docker
+  test_wait_for_sql
+
+  log_divider_header "create test table"
+  create_table | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "add test data"
+  insert_dog | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "trigger full backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
+  log_divider_footer
+
+  log_divider_header "destroy instance"
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  log_divider_footer
+
+  log_divider_header "re-create instance"
+  terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  test_wait_for_sql
+
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
+
+  test_clean_testbed_s3
 }
 
 function test_wait_for_docker() {
@@ -155,24 +202,27 @@ function task_test {
 
   #test_base
   test_restore_from_s3
+  test_restore_from_local
 
 }
 
-function test_clean_testbed() {
-  terraform_wrapper "test/terraform/instance" destroy -auto-approve
-  terraform_wrapper "test/terraform/backup" destroy -auto-approve
-  terraform_wrapper "test/terraform/s3" destroy -auto-approve
+function test_clean_testbed_s3() {
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  terraform_wrapper "test/terraform/base" destroy -auto-approve
+}
+
+function test_clean_testbed_local() {
+  terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
+  terraform_wrapper "test/terraform/base" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve
 }
 
 function task_test_ssh {
-  (
-    cd ${DIR}/test/terraform/instance/
-    ssh -F ${DIR}/test/terraform/instance/ssh_config test ${@}
-  )
+  ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
 }
 
 function task_clean {
-  test_clean_testbed
+  test_clean_testbed_s3
   rm -rf "${DIR}/build"
 }
 

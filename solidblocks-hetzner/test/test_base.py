@@ -1,7 +1,5 @@
 import time
 
-import pytest
-
 
 def wait_for_cloud_init(host):
     while not host.file("/run/cloud-init/result.json").exists:

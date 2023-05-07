@@ -1,0 +1,6 @@
+Host *
+    User root
+    IdentityFile ${identity_file}
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+

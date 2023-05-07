@@ -1,17 +1,3 @@
-resource "tls_private_key" "ssh_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "hcloud_ssh_key" "ssh_key" {
-  name       = "test-${var.test_id}"
-  public_key = tls_private_key.ssh_key.public_key_openssh
-}
-
-data "aws_s3_bucket" "bootstrap" {
-  bucket = "test-${var.test_id}"
-}
-
 resource hcloud_volume "data" {
   name     = "test-data-${var.test_id}"
   size     = 32
@@ -24,7 +10,7 @@ module "rds-postgresql-1" {
   name   = "rds-postgresql-${var.test_id}"
 
   location = "nbg1"
-  ssh_keys = [hcloud_ssh_key.ssh_key.id]
+  ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
 
   data_volume = hcloud_volume.data.id
 

@@ -2,14 +2,10 @@
 
 set -eu -o pipefail
 
-DB_BACKUP_S3_BUCKET="${db_backup_s3_bucket}"
-DB_BACKUP_S3_ACCESS_KEY="${db_backup_s3_access_key}"
-DB_BACKUP_S3_SECRET_KEY="${db_backup_s3_secret_key}"
-
 SOLIDBLOCKS_BASE_URL="${solidblocks_base_url}"
 STORAGE_DEVICE_DATA="${storage_device_data}"
 
-%{~ if storage_device_backup != null ~}
+%{~ if storage_device_backup != "" ~}
 STORAGE_DEVICE_BACKUP="${storage_device_backup}"
 %{~ endif ~}
 
@@ -102,17 +98,20 @@ services:
       - "DB_USERNAME_${database.id}=${database.user}"
       - "DB_PASSWORD_${database.id}=${database.password}"
       %{~ endfor ~}
-      %{~ if db_backup_s3_bucket != null && db_backup_s3_access_key != null && db_backup_s3_secret_key != null ~}
+      %{~ if db_backup_s3_bucket != "" && db_backup_s3_access_key != "" && db_backup_s3_secret_key != "" ~}
       - "DB_BACKUP_S3=1"
       - "DB_BACKUP_S3_BUCKET=${db_backup_s3_bucket}"
       - "DB_BACKUP_S3_ACCESS_KEY=${db_backup_s3_access_key}"
       - "DB_BACKUP_S3_SECRET_KEY=${db_backup_s3_secret_key}"
       %{~ endif ~}
+      %{~ if storage_device_backup != "" ~}
+      - "DB_BACKUP_LOCAL=1"
+      %{~ endif ~}
     ports:
       - "5432:5432"
     volumes:
       - "/storage/data:/storage/data"
-      %{~ if storage_device_backup != null ~}
+      %{~ if storage_device_backup != "" ~}
       - "/storage/backup:/storage/backup"
       %{~ endif ~}
 EOF
@@ -123,7 +122,7 @@ useradd --gid rds --uid 10000 rds
 
 storage_mount "$${STORAGE_DEVICE_DATA}" "/storage/data"
 
-%{~ if storage_device_backup != null ~}
+%{~ if storage_device_backup != "" ~}
 storage_mount "$${STORAGE_DEVICE_BACKUP}" "/storage/backup"
 %{~ endif ~}
 

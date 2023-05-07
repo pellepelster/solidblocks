@@ -19,9 +19,7 @@ build
 venv
 __pycache__
 .terraform.tfstate.lock.info
-/solidblocks-cloud-init/test/terraform/test_id_rsa
-/solidblocks-cloud-init/test/terraform/test_id_rsa.pub
-/solidblocks-cloud/test/terraform/ssh_config.template
-/solidblocks-hetzner/test/terraform/instance/ssh_config
-/solidblocks-hetzner/test/terraform/instance/test_id_rsa
-/solidblocks-hetzner/test/terraform/instance/test_id_rsa.pub
+/solidblocks-hetzner/test/terraform/ssh_config
+/solidblocks-hetzner/test/terraform/test_id_rsa
+/solidblocks-hetzner/test/terraform/test_id_rsa.pub
+
