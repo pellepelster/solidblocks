@@ -19,6 +19,7 @@ function task_build {
   (
     cd "${DIR}/snippets"
     zip -r "${DIR}/build/snippets/hetzner-postgres-rds-s3-backup.zip" hetzner-postgres-rds-s3-backup/*.tf
+    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-local-backup.zip" hetzner-postgres-rds-s3-backup/*.tf
   )
 }
 
@@ -55,6 +56,8 @@ function terraform_wrapper {
 function task_test_snippets () {
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" apply -auto-approve
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup" destroy -auto-approve
 }
 
 function test_setup_testbed_s3() {

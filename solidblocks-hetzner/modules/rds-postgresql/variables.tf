@@ -77,5 +77,6 @@ variable "server_type" {
 }
 
 variable "databases" {
-  type = list(object({ id : string, user : string, password : string }))
+  type        = list(object({ id : string, user : string, password : string }))
+  description = "A list of databases to create when the instance is initialized, for example: '{ id : \"database1\", user : \"user1\", password : \"password1\" }'"
 }

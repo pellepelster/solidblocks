@@ -61,6 +61,8 @@ function task_test {
   fi
 
   python_ensure_venv "${DIR}"
+
+  clean_cloud_resources
   terraform_wrapper apply -auto-approve -var="solidblocks_version=${VERSION}"
 
   while ! ssh -F ${DIR}/test/terraform/ssh_config test whoami; do

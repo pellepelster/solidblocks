@@ -11,7 +11,7 @@ source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
 
-COMPONENTS="solidblocks-shell solidblocks-cloud-init solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
+COMPONENTS="solidblocks-shell solidblocks-hetzner solidblocks-cloud-init solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_ensure_shellcheck
@@ -83,6 +83,7 @@ function task_build_documentation {
     if [[ -n "${CI:-}" ]]; then
       rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${DIR}/doc/snippets"
     else
+      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${DIR}/doc/snippets"
       rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${DIR}/doc/snippets"
     fi
 

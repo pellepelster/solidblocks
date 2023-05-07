@@ -28,14 +28,16 @@ Based on the functionality of [pgBackRest](https://pgbackrest.org/) two types of
 Local filesystem (`local`), or an S3 compatible object storage (`s3`). Those can be configured individually, but at
 least one type has to be configured.
 
-| configuration                         | type        | description                                                                                                                                                       |
-|---------------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_BACKUP_LOCAL`                     | environment | Flag to enable local filesystem as backup repository                                                                                                              |
-| `DB_BACKUP_LOCAL_RETENTION_FULL_TYPE` | environment | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type) |
-| `DB_BACKUP_LOCAL_RETENTION_FULL`      | environment | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)           |
-| `DB_BACKUP_LOCAL_RETENTION_DIFF`      | environment | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)           |                                                                                                                                                                                |
+| configuration                         | type        | default | description                                                                                                                                                       |
+|---------------------------------------|-------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_BACKUP_LOCAL`                     | environment | 0       | Flag to enable local filesystem as backup repository                                                                                                              |
+| `DB_BACKUP_LOCAL_RETENTION_FULL_TYPE` | environment | count   | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type) |
+| `DB_BACKUP_LOCAL_RETENTION_FULL`      | environment | 7       | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)           |
+| `DB_BACKUP_LOCAL_RETENTION_DIFF`      | environment | 4       | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)           |                                                                                                                                                                   |
 
 ### S3 Backup
+
+S3 backup needs an S3 compatible backend. For non-AWS backends (like Minio) `DB_BACKUP_S3_URI_STYLE` and `DB_BACKUP_S3_HOST`can be used to configure non-AWS servers.
 
 | configuration                      | type        | default                       | description                                                                                                                                                                      |
 |------------------------------------|-------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
