@@ -93,7 +93,7 @@ function psql_wrapper() {
 }
 
 function test_restore_from_s3() {
-  test_clean_testbed
+  #test_clean_testbed
   test_setup_testbed
 
   test_wait_for_docker
@@ -108,7 +108,7 @@ function test_restore_from_s3() {
   log_divider_footer
 
   log_divider_header "trigger full backup"
-  task_ssh_test docker exec rds-postgresql-1_rds-postgresql-1_1 /rds/bin/backup-full.sh
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
   log_divider_footer
 
   log_divider_header "destroy instance"
@@ -130,7 +130,7 @@ function test_restore_from_s3() {
 
 function test_wait_for_docker() {
   log_divider_header "waiting for rds docker instance"
-  while ! task_ssh_test docker exec rds-postgresql-1_rds-postgresql-1_1 whoami; do
+  while ! task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" whoami; do
     log_echo_warning "still waiting"
     sleep 5
   done
@@ -164,7 +164,7 @@ function test_clean_testbed() {
   terraform_wrapper "test/terraform/s3" destroy -auto-approve
 }
 
-function task_ssh_test {
+function task_test_ssh {
   (
     cd ${DIR}/test/terraform/instance/
     ssh -F ${DIR}/test/terraform/instance/ssh_config test ${@}
@@ -188,7 +188,7 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
-  ssh-test) task_ssh_test "$@" ;;
+  test-ssh) task_test_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
   *) task_usage ;;
 esac
