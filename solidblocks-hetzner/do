@@ -220,6 +220,11 @@ function test_clean_testbed_local() {
   terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve
 }
 
+function task_release_docker {
+  echo "not implemented"
+
+}
+
 function task_test_ssh {
   ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
 }
@@ -243,5 +248,6 @@ case ${arg} in
   test) task_test "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
+  release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac
