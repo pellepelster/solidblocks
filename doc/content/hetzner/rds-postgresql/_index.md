@@ -1,6 +1,13 @@
-# RDS PostgreSQL
+---
+title: RDS PostgreSQL
+weight: 50
+---
 
-See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/)  for more details and usage examples.
+Based on the [RDS PostgreSQL]({{%relref "rds/_index.md" %}}) docker image this Terraform module provides a
+ready to use PostgreSQL server that is backed up to a S3 compatible object store.
+
+The module supports two backup methods either local storage (Hetzner cloud Volume) or a S3 compatible object store. To
+avoid data loss it is not possible to run the database without one of the backup methods enabled.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -54,3 +61,37 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 |------|-------------|
 | <a name="output_ipv4_address"></a> [ipv4\_address](#output\_ipv4\_address) | IpV4 address of the created server |
 <!-- END_TF_DOCS -->
+
+## Examples
+
+### S3 Backed Backup
+
+Below a minimal example of a PostgreSQL database using S3 as backup storage backend.
+
+**main.tf**
+
+```shell
+{{% include "/snippets/hetzner-postgres-rds-s3-backup/main.tf" %}}
+```
+
+**variables.tf**
+
+```shell
+{{% include "/snippets/hetzner-postgres-rds-s3-backup/variables.tf" %}}
+```
+
+### Local attached storage Backup
+
+Below a minimal example of a PostgreSQL database using a local volume backup storage backend.
+
+**main.tf**
+
+```shell
+{{% include "/snippets/hetzner-postgres-rds-local-backup/main.tf" %}}
+```
+
+**variables.tf**
+
+```shell
+{{% include "/snippets/hetzner-postgres-rds-local-backup/variables.tf" %}}
+```

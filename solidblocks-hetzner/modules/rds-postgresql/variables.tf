@@ -30,16 +30,6 @@ variable "solidblocks_base_url" {
   description = "override base url for testing purposes"
 }
 
-variable "solidblocks_cloud_init_version" {
-  type    = string
-  default = "v0.0.84"
-}
-
-variable "solidblocks_version" {
-  type    = string
-  default = "v0.0.84"
-}
-
 variable "backup_s3_bucket" {
   type        = string
   description = "AWS bucket name for S3 backups. To enable S3 backups 'backup_s3_bucket', 'backup_s3_access_key' and 'backup_s3_secret_key' have to be provided."
@@ -78,5 +68,17 @@ variable "server_type" {
 
 variable "databases" {
   type        = list(object({ id : string, user : string, password : string }))
-  description = "A list of databases to create when the instance is initialized, for example: '{ id : \"database1\", user : \"user1\", password : \"password1\" }'"
+  description = "A list of databases to create when the instance is initialized, for example: `{ id : \"database1\", user : \"user1\", password : \"password1\" }`{"
+}
+
+variable "solidblocks_cloud_init_version" {
+  type        = string
+  description = "used for integration tests to inject test versions"
+  default     = "v0.0.84"
+}
+
+variable "solidblocks_version" {
+  type        = string
+  description = "used for integration tests to inject test versions"
+  default     = "v0.0.84"
 }
