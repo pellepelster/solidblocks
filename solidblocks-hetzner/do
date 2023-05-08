@@ -14,6 +14,8 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_build {
+  cp ${DIR}/../solidblocks-cloud-init/*/cloud_init_bootstrap_solidblocks "${DIR}/modules/rds-postgresql/cloud_init_bootstrap_solidblocks"
+
   #sed "/__CLOUD_INIT_BOOTSTRAP_SOLIDBLOCKS__/e cat ${DIR}/../solidblocks-cloud-init/build/snippets/cloud_init_bootstrap_solidblocks" "${DIR}/templates/rds-postgresql/user-data.sh" | grep -v "__CLOUD_INIT_BOOTSTRAP_SOLIDBLOCKS__" > "${DIR}/modules/rds-postgresql/user-data.sh"
   mkdir -p "${DIR}/build/snippets"
   (

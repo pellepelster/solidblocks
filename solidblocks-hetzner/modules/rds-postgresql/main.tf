@@ -1,7 +1,3 @@
-data "http" "cloud_init_bootstrap_solidblocks" {
-  url = "${var.solidblocks_base_url}/pellepelster/solidblocks/releases/download/${var.solidblocks_cloud_init_version}/cloud_init_bootstrap_solidblocks"
-}
-
 data hcloud_volume data {
   id = var.data_volume
 }
@@ -24,7 +20,7 @@ resource hcloud_server "rds" {
     solidblocks_base_url             = var.solidblocks_base_url
     storage_device_data              = data.hcloud_volume.data.linux_device
     storage_device_backup            = try(data.hcloud_volume.backup[0].linux_device, "")
-    cloud_init_bootstrap_solidblocks = data.http.cloud_init_bootstrap_solidblocks.response_body
+    cloud_init_bootstrap_solidblocks = file("${path.module}/cloud_init_bootstrap_solidblocks")
 
     backup_full_calendar = var.backup_full_calendar
     backup_incr_calendar = var.backup_incr_calendar
