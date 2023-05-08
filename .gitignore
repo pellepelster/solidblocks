@@ -22,4 +22,4 @@ __pycache__
 /solidblocks-hetzner/test/terraform/ssh_config
 /solidblocks-hetzner/test/terraform/test_id_rsa
 /solidblocks-hetzner/test/terraform/test_id_rsa.pub
-
+/solidblocks-hetzner/test/terraform/ipv4_address
