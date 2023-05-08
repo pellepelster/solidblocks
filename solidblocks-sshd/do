@@ -3,13 +3,14 @@
 set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
 source "${DIR}/../solidblocks-shell/lib/docker.sh"
 
 function task_build {
   (
     cd "${DIR}"
-    docker build -t "solidblocks-sshd-test" .
+    docker build ${DOCKER_OPTIONS} -t "solidblocks-sshd-test" .
   )
 }
 

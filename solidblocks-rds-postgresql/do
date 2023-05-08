@@ -9,6 +9,7 @@ export VERSION="${GITHUB_REF_NAME:-snapshot}"
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
 source "${DIR}/../solidblocks-shell/lib/software.sh"
 
@@ -47,7 +48,7 @@ function task_build {
     #  docker buildx build --no-cache --platform linux/arm,linux/amd64,linux/arm64 --push -t "${DOCKER_IMAGE_NAME}:${VERSION}" -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" .
     #fi
 
-    docker build --no-cache -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
+    docker build ${DOCKER_OPTIONS} -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
     docker save "${DOCKER_IMAGE_NAME}:${VERSION}" > "${DIR}/build/${DOCKER_IMAGE_NAME}-${VERSION}.tar"
   )
 }

@@ -10,6 +10,7 @@ export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
 source "${DIR}/lib/log.sh"
 
@@ -54,7 +55,7 @@ function task_test_integration_prepare {
     do
     (
       cd "${DIR}/test/docker/${image}"
-      docker build --no-cache -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
+      docker build ${DOCKER_OPTIONS} -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
       docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}"
     )
     done
