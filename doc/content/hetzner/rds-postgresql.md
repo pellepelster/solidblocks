@@ -41,12 +41,13 @@ avoid data loss it is not possible to run the database without one of the backup
 |------|-------------|------|---------|:--------:|
 | <a name="input_backup_full_calendar"></a> [backup\_full\_calendar](#input\_backup\_full\_calendar) | systemd timer spec for full backups | `string` | `"*-*-* 20:00:00"` | no |
 | <a name="input_backup_incr_calendar"></a> [backup\_incr\_calendar](#input\_backup\_incr\_calendar) | systemd timer spec for incremental backups | `string` | `"*-*-* *:00:55"` | no |
-| <a name="input_backup_s3_access_key"></a> [backup\_s3\_access\_key](#input\_backup\_s3\_access\_key) | AWS access key for S3 backups. To enable S3 backups 'backup\_s3\_bucket', 'backup\_s3\_access\_key' and 'backup\_s3\_secret\_key' have to be provided. | `string` | `null` | no |
-| <a name="input_backup_s3_bucket"></a> [backup\_s3\_bucket](#input\_backup\_s3\_bucket) | AWS bucket name for S3 backups. To enable S3 backups 'backup\_s3\_bucket', 'backup\_s3\_access\_key' and 'backup\_s3\_secret\_key' have to be provided. | `string` | `null` | no |
-| <a name="input_backup_s3_secret_key"></a> [backup\_s3\_secret\_key](#input\_backup\_s3\_secret\_key) | AWS secret key for S3 backups. To enable S3 backups 'backup\_s3\_bucket', 'backup\_s3\_access\_key' and 'backup\_s3\_secret\_key' have to be provided. | `string` | `null` | no |
+| <a name="input_backup_s3_access_key"></a> [backup\_s3\_access\_key](#input\_backup\_s3\_access\_key) | AWS access key for S3 backups. To enable S3 backups `backup_s3_bucket`, `backup_s3_access_key` and `backup_s3_secret_key` have to be provided. | `string` | `null` | no |
+| <a name="input_backup_s3_bucket"></a> [backup\_s3\_bucket](#input\_backup\_s3\_bucket) | AWS bucket name for S3 backups. To enable S3 backups `backup_s3_bucket`, `backup_s3_access_key` and `backup_s3_secret_key` have to be provided. | `string` | `null` | no |
+| <a name="input_backup_s3_secret_key"></a> [backup\_s3\_secret\_key](#input\_backup\_s3\_secret\_key) | AWS secret key for S3 backups. To enable S3 backups `backup_s3_bucket` `backup_s3_access_key` and `backup_s3_secret_key` have to be provided. | `string` | `null` | no |
 | <a name="input_backup_volume"></a> [backup\_volume](#input\_backup\_volume) | backup volume id | `string` | `0` | no |
 | <a name="input_data_volume"></a> [data\_volume](#input\_data\_volume) | data volume id | `number` | n/a | yes |
 | <a name="input_databases"></a> [databases](#input\_databases) | A list of databases to create when the instance is initialized, for example: `{ id : "database1", user : "user1", password : "password1" }`{ | `list(object({ id : string, user : string, password : string }))` | n/a | yes |
+| <a name="input_labels"></a> [labels](#input\_labels) | A list of labels to be attached to the server instance. | `object` | `{}` | no |
 | <a name="input_location"></a> [location](#input\_location) | hetzner location | `string` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | unique name for the postgres rds instance | `string` | n/a | yes |
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | hetzner cloud server type | `string` | `"cx11"` | no |
@@ -60,6 +61,7 @@ avoid data loss it is not possible to run the database without one of the backup
 | Name | Description |
 |------|-------------|
 | <a name="output_ipv4_address"></a> [ipv4\_address](#output\_ipv4\_address) | IpV4 address of the created server |
+| <a name="output_this_server_id"></a> [this\_server\_id](#output\_this\_server\_id) | Hetzner ID of the created server |
 <!-- END_TF_DOCS -->
 
 ## Examples
