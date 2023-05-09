@@ -11,7 +11,7 @@ source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
 
-COMPONENTS="solidblocks-shell solidblocks-hetzner solidblocks-cloud-init solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
+COMPONENTS="solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_ensure_shellcheck
@@ -44,6 +44,8 @@ function task_clean_aws {
 function task_clean {
 
     rm -rf "${DIR}/build"
+    rm -rf "${DIR}/doc/generated"
+    rm -rf "${DIR}/doc/snippets"
 
     for component in ${COMPONENTS}; do
         (

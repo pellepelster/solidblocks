@@ -20,8 +20,8 @@ function task_build {
   mkdir -p "${DIR}/build/snippets"
   (
     cd "${DIR}/snippets"
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-s3-backup.zip" hetzner-postgres-rds-s3-backup/*.tf
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-local-backup.zip" hetzner-postgres-rds-s3-backup/*.tf
+    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-s3-backup.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-local-backup.zip" hetzner-postgres-rds-s3-backup/**/*.tf
   )
 
   if which terraform-docs; then
@@ -281,7 +281,7 @@ function task_test_ssh {
 }
 
 function task_clean {
-  test_clean_testbed_s3
+  #test_clean_testbed_s3
   rm -rf "${DIR}/build"
 }
 
