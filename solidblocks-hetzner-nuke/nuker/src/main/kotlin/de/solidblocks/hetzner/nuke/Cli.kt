@@ -6,12 +6,10 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 
-
 class CliCommand : CliktCommand() {
     override fun run() {
     }
 }
-
 
 class NukeCommand : CliktCommand(help = "delete all Hetzner cloud resources") {
     val hcloudToken by option("--hcloud-token", envvar = "HCLOUD_TOKEN").required()

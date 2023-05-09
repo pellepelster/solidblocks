@@ -27,6 +27,15 @@ class Nuker(apiToken: String) {
 
     fun deleteAll(doNuke: Boolean) {
 
+        if (doNuke) {
+            var count = 15
+            while (count > 0) {
+                logger.info { "waiting before starting delete ${count} seconds left..." }
+                Thread.sleep(1000)
+                count--
+            }
+        }
+
         this.deleteResources(
             "volume",
             hetznerCloudAPI.volumes.volumes,
@@ -112,7 +121,6 @@ class Nuker(apiToken: String) {
 
         resources.forEach {
             val resource = mapper.invoke(it)
-
             if (doNuke) {
                 logger.info { "deleting ${resourceLogName} '${resource.second}'" }
                 delete.invoke(resource.first)
