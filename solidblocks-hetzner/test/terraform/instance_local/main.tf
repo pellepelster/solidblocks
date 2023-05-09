@@ -1,9 +1,11 @@
-resource hcloud_volume "data" {
+resource "hcloud_volume" "data" {
   name     = "test-data-${var.test_id}"
   size     = 32
   format   = "ext4"
   location = var.location
 }
+
+
 
 module "rds-postgresql-1" {
   source = "../../../modules/rds-postgresql"

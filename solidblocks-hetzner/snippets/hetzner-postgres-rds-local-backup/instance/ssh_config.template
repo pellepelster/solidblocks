@@ -1,5 +1,4 @@
-Host test
-    HostName ${hostname}
+Host *
     User root
     IdentityFile ${identity_file}
     StrictHostKeyChecking no

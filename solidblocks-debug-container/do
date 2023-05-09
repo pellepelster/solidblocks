@@ -9,6 +9,7 @@ export VERSION="${GITHUB_REF_NAME:-snapshot}"
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-debug-container"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
 source "${DIR}/../solidblocks-shell/lib/software.sh"
 
@@ -33,7 +34,7 @@ function task_build {
     cd "${DIR}"
     ./gradlew assemble
     cd "${DIR}"
-    docker build --build-arg VERSION=${VERSION} -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
+    docker build ${DOCKER_OPTIONS} --build-arg VERSION=${VERSION} -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
     mkdir -p "${DIR}/build"
     docker save "${DOCKER_IMAGE_NAME}:${VERSION}" > "${DIR}/build/${DOCKER_IMAGE_NAME}-${VERSION}.tar"
   )

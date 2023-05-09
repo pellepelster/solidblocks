@@ -14,7 +14,7 @@ resource "local_file" "ssh_public_config" {
   content = templatefile("${path.module}/ssh_config.template", {
     "hostname"      = module.rds-postgresql.ipv4_address
     "identity_file" = abspath(local_file.ssh_private_key.filename)
-  }
+    }
   )
   filename        = "${path.module}/ssh_config"
   file_permission = "0600"

@@ -6,7 +6,7 @@ terraform {
     }
     hcloud = {
       source  = "hetznercloud/hcloud"
-      version = "1.38.0"
+      version = "1.38.2"
     }
   }
 }
@@ -15,4 +15,4 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-provider hcloud {}
+provider "hcloud" {}

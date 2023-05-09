@@ -1,4 +1,4 @@
-resource hcloud_volume "backup" {
+resource "hcloud_volume" "backup" {
   name     = "test-backup-${var.test_id}"
   size     = 32
   format   = "ext4"

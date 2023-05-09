@@ -9,8 +9,8 @@ on:
       - 'v[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
-#env:
-#  SKIP_TESTS: true
+env:
+  SKIP_TESTS: true
 
 concurrency:
   group: solidblocks-${{ github.ref }}
@@ -244,7 +244,7 @@ jobs:
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
-            solidblocks-hetzner/snippets/*
+            solidblocks-hetzner/*
 
 
   documentation:
@@ -256,6 +256,7 @@ jobs:
       - solidblocks-rds-postgresql
       - solidblocks-debug-container
       - solidblocks-cloud-init
+      - solidblocks-hetzner
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

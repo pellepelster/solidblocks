@@ -19,7 +19,7 @@ variable "data_volume" {
 }
 
 variable "backup_volume" {
-  type        = number
+  type        = string
   description = "backup volume id"
   default     = 0
 }
@@ -28,16 +28,6 @@ variable "solidblocks_base_url" {
   type        = string
   default     = "https://github.com"
   description = "override base url for testing purposes"
-}
-
-variable "solidblocks_cloud_init_version" {
-  type    = string
-  default = "v0.0.84"
-}
-
-variable "solidblocks_version" {
-  type    = string
-  default = "v0.0.84"
 }
 
 variable "backup_s3_bucket" {
@@ -78,7 +68,19 @@ variable "server_type" {
 
 variable "databases" {
   type        = list(object({ id : string, user : string, password : string }))
-  description = "A list of databases to create when the instance is initialized, for example: '{ id : \"database1\", user : \"user1\", password : \"password1\" }'"
+  description = "A list of databases to create when the instance is initialized, for example: `{ id : \"database1\", user : \"user1\", password : \"password1\" }`{"
+}
+
+variable "solidblocks_cloud_init_version" {
+  type        = string
+  description = "used for integration tests to inject test versions"
+  default     = "v0.0.93"
+}
+
+variable "solidblocks_version" {
+  type        = string
+  description = "used for integration tests to inject test versions"
+  default     = "v0.0.93"
 }
 
 variable "labels" {

@@ -89,7 +89,7 @@ function clean_cloud_resources() {
 }
 
 function task_clean {
-  clean_cloud_resources || true
+  #clean_cloud_resources || true
   rm -rf "${DIR}/build"
 }
 

@@ -1,15 +1,9 @@
-resource hcloud_volume "data" {
-  name     = "rds-postgresql-data"
-  size     = 32
-  format   = "ext4"
-  location = var.hetzner_location
+data "aws_s3_bucket" "backup" {
+  bucket = "test-rds-postgresql-backup"
 }
 
-resource hcloud_volume "backup" {
-  name     = "rds-postgresql-backup"
-  size     = 32
-  format   = "ext4"
-  location = var.hetzner_location
+data "hcloud_volume" "data" {
+  name = "rds-postgresql-data"
 }
 
 resource "tls_private_key" "ssh_key" {
@@ -30,8 +24,11 @@ module "rds-postgresql" {
 
   ssh_keys = [hcloud_ssh_key.ssh_key.id]
 
-  data_volume   = hcloud_volume.data.id
-  backup_volume = hcloud_volume.backup.id
+  data_volume = data.hcloud_volume.data.id
+
+  backup_s3_bucket     = data.aws_s3_bucket.backup.id
+  backup_s3_access_key = var.backup_s3_access_key
+  backup_s3_secret_key = var.backup_s3_secret_key
 
   databases = [
     { id : "database1", user : "user1", password : "password1" }
