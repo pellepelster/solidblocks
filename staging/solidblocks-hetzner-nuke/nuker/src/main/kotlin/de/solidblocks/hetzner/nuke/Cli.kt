@@ -8,26 +8,22 @@ import com.github.ajalt.clikt.parameters.options.required
 
 
 class CliCommand : CliktCommand() {
-    val verbose by option().flag("--no-verbose")
     override fun run() {
-        echo("Verbose mode is ${if (verbose) "on" else "off"}")
     }
 }
 
 
-class NukeCommand : CliktCommand() {
+class NukeCommand : CliktCommand(help = "delete all Hetzner cloud resources") {
     val hcloudToken by option("--hcloud-token", envvar = "HCLOUD_TOKEN").required()
     override fun run() {
-        val nuker = Nuker(hcloudToken)
-        nuker.deleteAllVolumes(true)
+        Nuker(hcloudToken).deleteAll(true)
     }
 }
 
-class SimulateCommand : CliktCommand() {
+class SimulateCommand : CliktCommand(help = "simulate deletion of all Hetzner cloud resources") {
     val hcloudToken by option("--hcloud-token", envvar = "HCLOUD_TOKEN").required()
     override fun run() {
-        val nuker = Nuker(hcloudToken)
-        nuker.deleteAllVolumes(false)
+        Nuker(hcloudToken).deleteAll(false)
     }
 }
 
