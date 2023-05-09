@@ -9,11 +9,12 @@ on:
       - 'v[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
-#env:
-#  SKIP_TESTS: true
+env:
+  SKIP_TESTS: true
 
 concurrency:
-  group: solidblocks-${{ github.ref }}
+  group: solidblocks
+  #group: solidblocks-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -76,6 +77,14 @@ jobs:
 
   solidblocks-hetzner-nuke:
     runs-on: ubuntu-latest
+    needs:
+      - release
+      - solidblocks-shell
+      - solidblocks-minio
+      - solidblocks-rds-postgresql
+      - solidblocks-debug-container
+      - solidblocks-cloud-init
+      - solidblocks-hetzner
     env:
       HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
     steps:
