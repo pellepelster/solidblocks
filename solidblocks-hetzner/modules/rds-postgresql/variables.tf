@@ -82,3 +82,9 @@ variable "solidblocks_version" {
   description = "used for integration tests to inject test versions"
   default     = "v0.0.93"
 }
+
+variable "labels" {
+  type        = object
+  description = "A list of labels to be attached to the server instance."
+  default     = {}
+}

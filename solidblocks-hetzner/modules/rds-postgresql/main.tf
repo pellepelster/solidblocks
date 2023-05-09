@@ -36,6 +36,8 @@ resource "hcloud_server" "rds" {
 
     databases = var.databases
   })
+
+  labels = var.labels
 }
 
 resource "hcloud_volume_attachment" "data" {
