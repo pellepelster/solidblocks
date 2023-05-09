@@ -7,4 +7,4 @@ terraform {
   }
 }
 
-provider hcloud {}
+provider "hcloud" {}

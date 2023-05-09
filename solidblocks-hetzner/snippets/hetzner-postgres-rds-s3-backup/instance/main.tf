@@ -2,7 +2,7 @@ data "aws_s3_bucket" "backup" {
   bucket = "test-rds-postgresql-backup"
 }
 
-data hcloud_volume "data" {
+data "hcloud_volume" "data" {
   name = "rds-postgresql-data"
 }
 
@@ -17,8 +17,7 @@ resource "hcloud_ssh_key" "ssh_key" {
 }
 
 module "rds-postgresql" {
-  #source = "github.com/pellepelster/solidblocks//solidblocks-hetzner/modules/rds-postgresql"
-  source = "/home/pelle/git/solidblocks/solidblocks-hetzner/modules/rds-postgresql"
+  source = "github.com/pellepelster/solidblocks//solidblocks-hetzner/modules/rds-postgresql"
 
   name     = "rds-postgresql"
   location = var.hetzner_location

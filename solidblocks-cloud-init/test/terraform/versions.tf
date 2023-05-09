@@ -13,4 +13,4 @@ terraform {
 
 provider "aws" {}
 
-provider hcloud {}
+provider "hcloud" {}

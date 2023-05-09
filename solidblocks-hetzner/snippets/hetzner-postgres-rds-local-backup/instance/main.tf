@@ -8,20 +8,19 @@ resource "hcloud_ssh_key" "ssh_key" {
   public_key = tls_private_key.ssh_key.public_key_openssh
 }
 
-data hcloud_volume "data" {
+data "hcloud_volume" "data" {
   name = "rds-postgresql-data"
 }
 
-data hcloud_volume "backup" {
+data "hcloud_volume" "backup" {
   name = "rds-postgresql-backup"
 }
 
 
 module "rds-postgresql" {
-  #source = "github.com/pellepelster/solidblocks//solidblocks-hetzner/modules/rds-postgresql"
-  source = "/home/pelle/git/solidblocks/solidblocks-hetzner/modules/rds-postgresql"
+  source = "github.com/pellepelster/solidblocks//solidblocks-hetzner/modules/rds-postgresql"
 
-  name   = "rds-postgresql"
+  name     = "rds-postgresql"
   location = var.hetzner_location
   ssh_keys = [hcloud_ssh_key.ssh_key.id]
 

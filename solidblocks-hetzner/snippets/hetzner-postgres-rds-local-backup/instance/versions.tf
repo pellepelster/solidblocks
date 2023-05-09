@@ -15,4 +15,4 @@ provider "aws" {
   region = var.aws_region
 }
 
-provider hcloud {}
+provider "hcloud" {}

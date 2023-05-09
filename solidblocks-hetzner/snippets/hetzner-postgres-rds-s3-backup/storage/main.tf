@@ -3,7 +3,7 @@ resource "aws_s3_bucket" "backup" {
   force_destroy = true
 }
 
-resource hcloud_volume "data" {
+resource "hcloud_volume" "data" {
   name     = "rds-postgresql-data"
   size     = 32
   format   = "ext4"
