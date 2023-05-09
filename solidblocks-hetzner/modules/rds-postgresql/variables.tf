@@ -84,7 +84,7 @@ variable "solidblocks_version" {
 }
 
 variable "labels" {
-  type        = object
+  type        = map(any)
   description = "A list of labels to be attached to the server instance."
   default     = {}
 }
