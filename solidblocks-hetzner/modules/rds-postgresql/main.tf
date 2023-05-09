@@ -34,6 +34,8 @@ resource hcloud_server "rds" {
     db_backup_s3_secret_key = var.backup_s3_secret_key == null ? "" : var.backup_s3_secret_key
 
     databases = var.databases
+    
+    labels = var.labels
   })
 }
 
