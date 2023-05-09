@@ -16,8 +16,6 @@ function clean_temp_dir {
   rm -rf "${TEMP_DIR}"
 }
 
-source "${DIR}/../../solidblocks-shell/lib/software.sh"
-
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
