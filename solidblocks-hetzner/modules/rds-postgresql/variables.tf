@@ -19,7 +19,7 @@ variable "data_volume" {
 }
 
 variable "backup_volume" {
-  type        = number
+  type        = string
   description = "backup volume id"
   default     = 0
 }
@@ -74,11 +74,11 @@ variable "databases" {
 variable "solidblocks_cloud_init_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.0.84"
+  default     = "v0.0.93"
 }
 
 variable "solidblocks_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.0.84"
+  default     = "v0.0.93"
 }

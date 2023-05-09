@@ -60,11 +60,55 @@ function terraform_wrapper {
   )
 }
 
+function task_test_snippets_psql_wrapper() {
+  local module="${1:-}"
+  PGPASSWORD=password1 psql --host "$(terraform_wrapper "${module}" output -raw ipv4_address)" --user "user1" database1
+}
+
+function task_test_snippets_ssh {
+  local module="${1:-}"
+  ssh -F "${DIR}/${module}/ssh_config" $(terraform_wrapper "${module}" output -raw ipv4_address) ${@}
+}
+
+function task_test_snippets_local () {
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" init -upgrade
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" init -upgrade
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" apply -auto-approve
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-local-backup/instance"; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" destroy -auto-approve
+}
+
+function task_test_snippets_s3 () {
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" init -upgrade
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" init -upgrade
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" apply -auto-approve
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance"; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" destroy -auto-approve
+}
+
 function task_test_snippets () {
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" apply -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup" destroy -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup" apply -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup" destroy -auto-approve
+  task_test_snippets_local
+  task_test_snippets_s3
 }
 
 function test_setup_testbed_s3() {

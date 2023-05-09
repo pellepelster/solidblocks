@@ -6,7 +6,6 @@ variable "aws_region" {
   default = "eu-central-1"
 }
 
-
 variable "backup_s3_access_key" {
   type = string
 }
