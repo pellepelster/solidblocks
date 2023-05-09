@@ -78,7 +78,6 @@ jobs:
   solidblocks-hetzner-nuke:
     runs-on: ubuntu-latest
     needs:
-      - release
       - solidblocks-shell
       - solidblocks-minio
       - solidblocks-rds-postgresql
@@ -243,6 +242,7 @@ jobs:
       - solidblocks-rds-postgresql
       - solidblocks-hetzner
       - solidblocks-debug-container
+      - solidblocks-hetzner-nuke
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
@@ -275,19 +275,13 @@ jobs:
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
-            solidblocks-hetzner/*
+            solidblocks-hetzner/*.zip
 
 
   documentation:
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - release
-      - solidblocks-shell
-      - solidblocks-minio
-      - solidblocks-rds-postgresql
-      - solidblocks-debug-container
-      - solidblocks-cloud-init
-      - solidblocks-hetzner
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
