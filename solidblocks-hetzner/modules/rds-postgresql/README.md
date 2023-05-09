@@ -62,7 +62,7 @@ Example for attaching the RDS host into a private network:
 | <a name="input_backup_volume"></a> [backup\_volume](#input\_backup\_volume) | backup volume id | `string` | `0` | no |
 | <a name="input_data_volume"></a> [data\_volume](#input\_data\_volume) | data volume id | `number` | n/a | yes |
 | <a name="input_databases"></a> [databases](#input\_databases) | A list of databases to create when the instance is initialized, for example: `{ id : "database1", user : "user1", password : "password1" }`{ | `list(object({ id : string, user : string, password : string }))` | n/a | yes |
-| <a name="input_labels"></a> [labels](#input\_labels) | A list of labels to be attached to the server instance. | `object` | `{}` | no |
+| <a name="input_labels"></a> [labels](#input\_labels) | A list of labels to be attached to the server instance. | `map(any)` | `{}` | no |
 | <a name="input_location"></a> [location](#input\_location) | hetzner location | `string` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | unique name for the postgres rds instance | `string` | n/a | yes |
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | hetzner cloud server type | `string` | `"cx11"` | no |
