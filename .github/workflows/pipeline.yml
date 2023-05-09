@@ -244,7 +244,7 @@ jobs:
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
-            solidblocks-hetzner/snippets/*
+            solidblocks-hetzner/*
 
 
   documentation:
