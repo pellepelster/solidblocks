@@ -50,7 +50,7 @@ S3 is used as a webserver because it is easily scriptable.
 
 ## Secrets
 
-For cloud provider specific integration tests credentials are needed, that are either pulled from a
+For cloud provider specific integration tests credentials are needed, that are either used from environment variables, or if not set pulled from a
 local [pass](https://www.passwordstore.org/)-based password store.
 
 ### AWS

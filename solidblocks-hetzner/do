@@ -15,7 +15,7 @@ source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_build {
   shopt -s globstar
-  cp ${DIR}/../solidblocks-cloud-init/**/cloud_init_bootstrap_solidblocks "${DIR}/modules/rds-postgresql/cloud_init_bootstrap_solidblocks"
+  cp ${DIR}/../solidblocks-cloud-init/**/cloud_init_bootstrap_solidblocks "${DIR}/modules/rds-postgresql/cloud_init_bootstrap_solidblocks" ||  { log_die "dependency artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
 
   mkdir -p "${DIR}/build/snippets"
   (
@@ -133,10 +133,6 @@ function test_wait_for_ssh() {
   done
 }
 
-function test_base() {
-  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) --show-capture=all -s "${DIR}/test/test_base.py"
-}
-
 function create_table {
   cat <<-EOF
 CREATE TABLE dogs (
@@ -163,6 +159,7 @@ function psql_wrapper() {
 function test_restore_from_local() {
   test_setup_testbed_local
 
+  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) --show-capture=all -s "${DIR}/test/test_local.py"
   test_wait_for_docker
   test_wait_for_sql
 
@@ -198,6 +195,7 @@ function test_restore_from_s3() {
   #test_clean_testbed
   test_setup_testbed_s3
 
+  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) --show-capture=all -s "${DIR}/test/test_s3.py"
   test_wait_for_docker
   test_wait_for_sql
 
@@ -254,10 +252,8 @@ function task_test {
 
   python_ensure_venv "${DIR}"
 
-  #test_base
   test_restore_from_s3
   test_restore_from_local
-
 }
 
 function test_clean_testbed_s3() {
@@ -297,6 +293,8 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  test-restore-local) test_restore_from_local "$@" ;;
+  test-restore-s3) test_restore_from_s3 "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
   release-docker) task_release_docker "$@" ;;
