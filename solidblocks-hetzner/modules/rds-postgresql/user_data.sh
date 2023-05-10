@@ -148,3 +148,7 @@ systemctl start rds@${db_instance_name}
 
 systemctl enable rds-backup-full@${db_instance_name}.timer
 systemctl enable rds-backup-incr@${db_instance_name}.timer
+
+# start of extra_user_data
+${extra_user_data}
+# end of extra_user_data

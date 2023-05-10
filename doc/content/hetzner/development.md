@@ -26,7 +26,7 @@ or individually
 ./do test-restore-[local|s3]
 ```
 
-After machine setup and before each test is started a [pyinfra](https://pyinfra.com/) based test is started that can be used to assert the state
+After machine setup and before each test is started a [testinfra](https://testinfra.readthedocs.io/en/latest/) based test is started that can be used to assert the state
 of the created virtual machine hosting the database (`test/test_local.py` and `test/test_s3.py`).
 
 In case of test failures the currently provisioned test machine can be reached via ssh with

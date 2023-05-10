@@ -159,7 +159,7 @@ function psql_wrapper() {
 function test_restore_from_local() {
   test_setup_testbed_local
 
-  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) --show-capture=all -s "${DIR}/test/test_local.py"
+  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
   test_wait_for_docker
   test_wait_for_sql
 
@@ -195,7 +195,7 @@ function test_restore_from_s3() {
   #test_clean_testbed
   test_setup_testbed_s3
 
-  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) --show-capture=all -s "${DIR}/test/test_s3.py"
+  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
   test_wait_for_docker
   test_wait_for_sql
 
@@ -252,8 +252,8 @@ function task_test {
 
   python_ensure_venv "${DIR}"
 
-  test_restore_from_s3
   test_restore_from_local
+  test_restore_from_s3
 }
 
 function test_clean_testbed_s3() {

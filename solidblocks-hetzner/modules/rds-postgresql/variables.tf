@@ -71,6 +71,12 @@ variable "databases" {
   description = "A list of databases to create when the instance is initialized, for example: `{ id : \"database1\", user : \"user1\", password : \"password1\" }`{"
 }
 
+variable "extra_user_data" {
+  type        = string
+  description = "user data script that is executed after the database setup is completed"
+  default     = ""
+}
+
 variable "solidblocks_cloud_init_version" {
   type        = string
   description = "used for integration tests to inject test versions"

@@ -6,7 +6,6 @@ resource "hcloud_volume" "data" {
 }
 
 
-
 module "rds-postgresql-1" {
   source = "../../../modules/rds-postgresql"
   name   = "rds-postgresql-${var.test_id}"
@@ -23,4 +22,6 @@ module "rds-postgresql-1" {
   databases = [
     { id : "database1", user : "user1", password : "password1" }
   ]
+
+  extra_user_data = file("${path.module}/extra_user_data.sh")
 }
