@@ -1,6 +1,7 @@
 ---
 title: Log
 weight: 50
+description: Generic console and logging and helpers
 ---
 
 Generic console and logging  helpers

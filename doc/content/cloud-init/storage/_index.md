@@ -1,6 +1,7 @@
 ---
 title: Storage
 weight: 10
+description: Utilities for storage handling
 ---
 
 Utilities for storage handling

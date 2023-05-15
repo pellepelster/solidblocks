@@ -1,6 +1,7 @@
 ---
 title: Development
 weight: 99
+description: Guide for development of Solidblocks
 ---
 
 ## Repository Structure
@@ -29,7 +30,7 @@ The documentation is based on [hugo](https://gohugo.io/). Each component contrib
 documentation should do so by adding the snippets to the components `build/snippets` folder, so after
 running `./do build-documentation` they can be included like this:
 
-```
+```shell
 {{%/* include "/snippets/shell_bootstrap_solidblocks" */%}}
 ```
 

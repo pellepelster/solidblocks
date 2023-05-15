@@ -1,19 +1,13 @@
 ---
 title: Shell
 weight: 10
+description: Reusable shell functions for infrastructure automation and developer experience
 ---
 
 Reusable shell functions for infrastructure automation and developer experience 
 
-* [Installation]({{%relref "shell/installation/_index.md" %}}) Installation
-* [Download]({{%relref "shell/download/_index.md" %}}) Secure and reliable data retrieval from remote servers
-* [File]({{%relref "shell/file/_index.md" %}}) Utilities for local file operations
-* [Software]({{%relref "shell/software/_index.md" %}}) Tooling setup for local development and continuous integration environments
-* [Log]({{%relref "shell/log/_index.md" %}}) Generic console and logging and helpers
-* [Text]({{%relref "shell/text/_index.md" %}}) Constants for console text formatting
-* [AWS]({{%relref "shell/aws/_index.md" %}}) Utilities for the AWS cloud API
-* [Terraform]({{%relref "shell/terraform/_index.md" %}}) Wrappers and helpers for Terraform
-* [Python]({{%relref "shell/python/_index.md" %}}) Wrappers and helpers for Python
+{{% children description="true" %}}
+
 
 All functions are tested on the following distributions
 

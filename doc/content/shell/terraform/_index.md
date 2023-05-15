@@ -1,6 +1,7 @@
 ---
 title: Terraform
 weight: 70
+description: Wrappers and helpers for Terraform
 ---
 
 Wrappers and helpers for Terraform

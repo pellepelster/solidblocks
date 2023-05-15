@@ -1,11 +1,12 @@
 ---
 title: Software
 weight: 40
+description: Tooling setup for local development and continuous integration environments
 ---
 
 Tooling setup for local development and continuous integration environments.
 
-Based on the functionality from [Download]({{%relref "download/_index.md" %}}) and [File]({{%relref "download/_index.md" %}}) this library offers automatic installation for various software packages.
+Based on the functionality from [Download]({{%relref "../download/_index.md" %}}) and [File]({{%relref "../download/_index.md" %}}) this library offers automatic installation for various software packages.
 
 The packages will be downloaded to a local `.cache` directory, extracted to `.bin` directory and executed from there. This helps to avoid polluting the system with software only needed for your project and also avoids version conflicts in case other projects use different versions of the same tool.
 

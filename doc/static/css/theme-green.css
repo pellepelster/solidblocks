@@ -135,3 +135,15 @@ a:hover {
 #logo {
     color: var(--MENU-SECTION-ACTIVE-CATEGORY-BG-color);
 }
+
+p {
+    font-size: 1.2rem;
+}
+
+body {
+    font-size: 1.2rem;
+}
+
+.children-li p {
+    font-size: 1.2rem;
+}

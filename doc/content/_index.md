@@ -16,11 +16,7 @@ Solidblocks is a library of reusable components for infrastructure operation, au
 
 ## Components
 
-* [Shell]({{%relref "shell/_index.md" %}}) Reusable shell functions for infrastructure automation and developer experience
-* [Cloud-Init]({{%relref "cloud-init/_index.md" %}}) Based on [Shell]({{%relref "shell/_index.md" %}}) reusable shell functions for typical [Cloud-Init](https://cloudinit.readthedocs.io/en/latest/) user-data usage scenarios
-* [RDS]({{%relref "rds/_index.md" %}}) A containerized [PostgreSQL](https://www.postgresql.org/) database with all batteries included backup solution powered by [pgBackRest](https://pgbackrest.org/)
-* [Hetzner]({{%relref "hetzner/_index.md" %}}) A collection of infrastructure components for the [Hetzner Cloud](https://cloud.hetzner.de)
-
+{{% children description="true" %}}
 
 ## Development
 

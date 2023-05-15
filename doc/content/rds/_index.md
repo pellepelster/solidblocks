@@ -1,9 +1,10 @@
 ---
 title: RDS PostgreSQL
 weight: 30
+description: A containerized PostgreSQL database with an all batteries included backup solution powered by pgBackRest
 ---
 
-A containerized [PostgreSQL](https://www.postgresql.org/) database with all batteries included backup solution powered
+A containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution powered
 by [pgBackRest](https://pgbackrest.org/)
 
 ## Configuration

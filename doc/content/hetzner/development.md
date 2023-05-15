@@ -1,6 +1,7 @@
 ---
 title: Development
 weight: 99
+description: Guide for development of Solidblocks Hetzner
 ---
 
 ## Testing

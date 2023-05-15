@@ -1,6 +1,7 @@
 ---
 title: AWS
 weight: 60
+description: Utilities for the AWS cloud API
 ---
 
 Utilities for the AWS cloud API

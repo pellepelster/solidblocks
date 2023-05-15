@@ -1,6 +1,7 @@
 ---
 title: RDS PostgreSQL
 weight: 50
+description: RDS PostgreSQL Terraform module
 ---
 
 Based on the [RDS PostgreSQL]({{%relref "rds/_index.md" %}}) docker image this Terraform module provides a

@@ -1,6 +1,7 @@
 ---
 title: Text
 weight: 50
+description: Constants for console text formatting
 ---
 
 Constants for console text formatting

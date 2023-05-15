@@ -1,6 +1,7 @@
 ---
 title: Installation
 weight: 10
+description: Installation instructions
 ---
 
 Releases are viable via [https://github.com/pellepelster/solidblocks/releases](https://github.com/pellepelster/solidblocks/releases), for direct usage in shell-scripts the following helper function provides automatic installation
