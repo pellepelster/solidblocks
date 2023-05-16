@@ -31,6 +31,9 @@ function task_build {
 
     sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell_bootstrap_solidblocks" "${DIR}/templates/snippets/shell_minimal_skeleton_do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell_minimal_skeleton_do"
     chmod +x "${DIR}/build/snippets/shell_minimal_skeleton_do"
+
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell_bootstrap_solidblocks" "${DIR}/templates/snippets/shell_kitchen_sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell_kitchen_sink.sh"
+    chmod +x "${DIR}/build/snippets/shell_kitchen_sink.sh"
   )
 }
 
@@ -63,7 +66,7 @@ function task_test_integration_prepare {
 
 function task_test_integration {
 
-  for test in ${DIR}/test/integration/test_b*.sh; do
+  for test in ${DIR}/test/integration/test_*.sh; do
       log_divider_header ${test}
       VERSION=${VERSION} ${test}
       log_divider_footer
