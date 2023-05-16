@@ -32,6 +32,9 @@ function task_build {
 
     sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/snippets/cloud_init_bootstrap_solidblocks" "${DIR}/templates/snippets/cloud_init_minimal_skeleton.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/snippets/cloud_init_minimal_skeleton"
     chmod +x "${DIR}/build/snippets/cloud_init_minimal_skeleton"
+
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/snippets/cloud_init_bootstrap_solidblocks" "${DIR}/templates/snippets/cloud_init_kitchen_sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/snippets/cloud_init_kitchen_sink.sh"
+    chmod +x "${DIR}/build/snippets/cloud_init_kitchen_sink.sh"
   )
 }
 

@@ -68,8 +68,8 @@ unique `${database_id}`s
 If any of those settings are missing or invalid, the container will complain with a log message and exit with an error
 code:
 
-```
-$ docker run \
+```shell
+docker run \
     -e DB_INSTANCE_NAME=instance1 \
     -e DB_DATABASE_db1=database1 \
     -e DB_USERNAME_db1=user1 \
@@ -82,8 +82,8 @@ $ docker run \
 analogous if you try to start the container with the right configuration but with missing mounts it will result in
 similar messages:
 
-```
-$ docker run \
+```shell
+docker run \
     -e DB_INSTANCE_NAME=instance1 \
     -e DB_DATABASE_db1=database1 \
     -e DB_USERNAME_db1=user1 \
@@ -94,8 +94,7 @@ $ docker run \
 
 [solidblocks-rds-postgresql] local backup dir '/storage/backup' not mounted
 
-
-$ docker run \
+docker run \
     -e DB_INSTANCE_NAME=instance1 \
     -e DB_DATABASE_db1=database1 \
     -e DB_USERNAME_db1=user1 \
@@ -116,10 +115,10 @@ initial backup to validate the backup repositories are working as expected.
 > The database inside the container runs with a non-root user with a `uid` and `gid` of 10000 so for the mounts the
 > correct permissions need to be ensured
 
-```
-$ mkdir postgres_{data,backup} && sudo chown 10000:10000 postgres_{data,backup}
+```shell
+mkdir postgres_{data,backup} && sudo chown 10000:10000 postgres_{data,backup}
 
-$ docker run \
+docker run \
     --name instance1 \
     -e DB_INSTANCE_NAME=instance1 \
     -e DB_DATABASE_db1=database1 \
@@ -192,8 +191,8 @@ ensuring database 'database1' with user 'user1'
 
 Backups can be triggered via
 
-```
-$ docker exec instance1 /rds/bin/backup-[full|incr|diff].sh
+```shell
+docker exec instance1 /rds/bin/backup-[full|incr|diff].sh
 ```
 
 where `full`, `incr` and `diff` refer to the available backup types of
@@ -201,8 +200,8 @@ the [pgBackRest backup command](https://pgbackrest.org/command.html#command-back
 
 Information about currently available backups can be retrieved with:
 
-```
-$ docker exec instance1 /rds/bin/backup-info.sh
+```shell
+docker exec instance1 /rds/bin/backup-info.sh
 
 stanza: instance1
     status: ok
@@ -226,22 +225,22 @@ stanza: instance1
 
 to restore a backup, just stop the container:
 
-```
-$ docker rm --force instance1
+```shell
+docker rm --force instance1
 ```
 
 remove the data dir
 
-```
-$ sudo rm -rf postgres_data
-$ mkdir postgres_data && sudo chown 10000:10000 postgres_data
+```shell
+sudo rm -rf postgres_data
+mkdir postgres_data && sudo chown 10000:10000 postgres_data
 ```
 
 and just restart the container again. It will automatically detect the empty data dir and restore the latest backup from
 the backup repository.
 
-```
-$ docker run \
+```shell
+docker run \
     --name instance1 \
     -e DB_INSTANCE_NAME=instance1 \
     -e DB_DATABASE_db1=database1 \
@@ -251,4 +250,4 @@ $ docker run \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
     pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
-```
+``` 

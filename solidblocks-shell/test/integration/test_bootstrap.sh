@@ -16,9 +16,18 @@ docker run -it -d --rm --name "${TEST_ID}" -p 80 -v "${TEMP_DIR}:/usr/share/ngin
 
 sleep 2
 
+cp "${DIR}/../../build/snippets/shell_kitchen_sink.sh" "${TEMP_DIR}"
+
+export SOLIDBLOCKS_BASE_URL="http://localhost:$(docker_mapped_tcp_port "${TEST_ID}" "80")"
+
+"${TEMP_DIR}/shell_kitchen_sink.sh" bootstrap
+"${TEMP_DIR}/shell_kitchen_sink.sh" log
+"${TEMP_DIR}/shell_kitchen_sink.sh" terraform
+"${TEMP_DIR}/shell_kitchen_sink.sh" text
+
 cp "${DIR}/../../build/snippets/shell_minimal_skeleton_do" "${TEMP_DIR}"
 
-SOLIDBLOCKS_BASE_URL="http://localhost:$(docker_mapped_tcp_port "${TEST_ID}" "80")" "${TEMP_DIR}/shell_minimal_skeleton_do" bootstrap
+"${TEMP_DIR}/shell_minimal_skeleton_do" bootstrap
 
 function clean() {
   clean_temp_dir

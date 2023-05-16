@@ -16,3 +16,10 @@ All functions are tested on the following distributions
 * Debian 11
 * Ubuntu 20.04 
 * Ubuntu 22.04
+
+
+## Kitchen Sink Usage Example
+
+```shell
+{{% include "/snippets/shell_kitchen_sink.sh" %}}
+```
