@@ -2,11 +2,175 @@
 
 # Solidblocks
 
-Solidblocks is a library of reusable components for infrastructure operation, automation and developer experience. It consists of several components, each covering a different infrastructure aspect, full documentation is available at https://pellepelster.github.io/solidblocks/.
+Solidblocks is a library of reusable components for infrastructure operations, automation and developer experience. It consists of several components, each covering a different infrastructure aspect, full documentation is available at https://pellepelster.github.io/solidblocks/.
 
 ## Components
 
-### Solidblocks Shell
+### [Solidblocks Hetzner Nuke](https://pellepelster.github.io/solidblocks/hetzner/nuke/) 
+
+Hetzner nuke is a tool to delete all resources in a Hetzner account, similar to aws-nuke.
+
+#### Usage Example
+
+```shell
+docker run -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.5 nuke
+```
+
+### [Solidblocks Cloud Init](https://pellepelster.github.io/solidblocks/cloud-init/)
+
+Based on [Shell](https://pellepelster.github.io/solidblocks/shell/) reusable shell functions for typical [Cloud-Init](https://cloudinit.readthedocs.io/en/latest/) user-data usage scenarios
+
+#### Usage Example
+
+```shell
+
+
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
+export SOLIDBLOCKS_DEVELOPMENT_MODE="${SOLIDBLOCKS_DEVELOPMENT_MODE:-0}"
+
+SOLIDBLOCKS_VERSION="v0.1.5"
+SOLIDBLOCKS_CLOUD_CHECKSUM="b21d60efe7b7bfd0ef26f2aceab2cb748324e4e92ad58c1c400fc7d55800ab3d"
+
+function bootstrap_package_update {
+  apt-get update
+}
+
+function bootstrap_package_update_system() {
+    apt-get \
+        -o Dpkg::Options::="--force-confnew" \
+        --force-yes \
+        -fuy \
+        dist-upgrade
+}
+
+function bootstrap_package_check_and_install {
+	local package=${1}
+
+	echo -n "checking if package '${package}' is installed..."
+
+	if [[ $(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -c "ok installed") -eq 0 ]];
+	then
+		echo "not found, installing now"
+		while ! DEBIAN_FRONTEND="noninteractive" apt-get install --no-install-recommends -qq -y "${package}"; do
+    		echo "installing failed retrying in 30 seconds"
+    		sleep 30
+    		apt-get update
+		done
+	else
+		echo "ok"
+	fi
+}
+
+function bootstrap_solidblocks() {
+  bootstrap_package_update
+  bootstrap_package_check_and_install "unzip"
+
+  groupadd solidblocks
+  useradd solidblocks -g solidblocks
+
+  # shellcheck disable=SC2086
+  mkdir -p ${SOLIDBLOCKS_DIR}/{templates,lib}
+
+  chmod 770 ${SOLIDBLOCKS_DIR}
+  chown solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
+
+  chmod -R 770 ${SOLIDBLOCKS_DIR}
+  chown -R solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
+
+  local temp_file="$(mktemp)"
+
+  curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.zip" > "${temp_file}"
+  echo "${SOLIDBLOCKS_CLOUD_CHECKSUM}  ${temp_file}" | sha256sum -c
+
+  (
+    cd "${SOLIDBLOCKS_DIR}" || exit 1
+    unzip "${temp_file}"
+    rm -rf "${temp_file}"
+  )
+
+  source "${SOLIDBLOCKS_DIR}/lib/storage.sh"
+}
+
+bootstrap_solidblocks
+
+storage_mount "/dev/sdb1" "/data1"
+```
+
+### [Solidblocks RDS PostgreSQL](https://pellepelster.github.io/solidblocks/rds/)
+
+A containerized PostgreSQL database with all batteries included backup solution powered by pgBackRest
+
+#### Usage Example
+
+```shell
+mkdir postgres_{data,backup} && sudo chown 10000:10000 postgres_{data,backup}
+
+docker run \
+    --name instance1 \
+    -e DB_INSTANCE_NAME=instance1 \
+    -e DB_DATABASE_db1=database1 \
+    -e DB_USERNAME_db1=user1 \
+    -e DB_PASSWORD_db1=password1 \
+    -e DB_BACKUP_LOCAL=1 \
+    -v "$(pwd)/postgres_backup:/storage/backup" \
+    -v "$(pwd)/postgres_data:/storage/data" \
+    pellepelster/solidblocks-rds-postgresql:v0.1.5
+```
+
+### [Solidblocks Hetzner RDS PostgreSQL](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/)
+
+Based on the RDS PostgreSQL docker image this Terraform module provides a ready to use PostgreSQL server that is backed up to a S3 compatible object store.
+
+
+#### Usage Example
+
+```terraform
+data "aws_s3_bucket" "backup" {
+  bucket = "test-rds-postgresql-backup"
+}
+
+data "hcloud_volume" "data" {
+  name = "rds-postgresql-data"
+}
+
+resource "tls_private_key" "ssh_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "hcloud_ssh_key" "ssh_key" {
+  name       = "rds-postgresql"
+  public_key = tls_private_key.ssh_key.public_key_openssh
+}
+
+module "rds-postgresql" {
+  source  = "pellepelster/solidblocks-rds-postgresql/hcloud"
+  version = "0.1.5"
+
+  name     = "rds-postgresql"
+  location = var.hetzner_location
+
+  ssh_keys = [hcloud_ssh_key.ssh_key.id]
+
+  data_volume = data.hcloud_volume.data.id
+
+  backup_s3_bucket     = data.aws_s3_bucket.backup.id
+  backup_s3_access_key = var.backup_s3_access_key
+  backup_s3_secret_key = var.backup_s3_secret_key
+
+  databases = [
+    { id : "database1", user : "user1", password : "password1" }
+  ]
+}
+```
+
+### [Solidblocks Shell](https://pellepelster.github.io/solidblocks/shell/)
 
 Reusable shell functions for infrastructure automation and developer experience
 
@@ -20,9 +184,10 @@ Reusable shell functions for infrastructure automation and developer experience
 * [Python](https://pellepelster.github.io/solidblocks/shell/python/) Wrappers and helpers for Python
 
 
-See below for a full example how the shell functions can easily be used in any shell script:
+#### Usage example
 
 ```shell
+
 
 #!/usr/bin/env bash
 
@@ -30,8 +195,8 @@ set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-SOLIDBLOCKS_SHELL_VERSION="v0.0.78"
-SOLIDBLOCKS_SHELL_CHECKSUM="fb4f7f4ed40f57c38fae1c14d399f375f843167f0b61a697171399fbdb44b420"
+SOLIDBLOCKS_SHELL_VERSION="v0.1.5"
+SOLIDBLOCKS_SHELL_CHECKSUM="08ebe58cd648c9f4efc8f180a57f7a73ebb7ad7d28595f23a61d2d6588a51ab2"
 
 # self contained function for initial Solidblocks bootstrapping
 function bootstrap_solidblocks() {
@@ -80,16 +245,37 @@ function task_terraform {
   terraform -version
 }
 
+function task_log {
+    log_info "info message"
+    log_success "success message"
+    log_warning "warning message"
+    log_debug "debug message"
+    log_error "error message"
+}
+
+function task_text {
+    echo "${FORMAT_DIM}Dim${FORMAT_RESET}"
+    echo "${FORMAT_UNDERLINE}Underline${FORMAT_RESET}"
+    echo "${FORMAT_BOLD}Bold${FORMAT_RESET}"
+    echo "${COLOR_RED}Red${COLOR_RESET}"
+    echo "${COLOR_GREEN}Green${COLOR_RESET}"
+    echo "${COLOR_YELLOW}Yellow${COLOR_RESET}"
+    echo "${COLOR_BLACK}Black${COLOR_RESET}"
+    echo "${COLOR_BLUE}Blue${COLOR_RESET}"
+    echo "${COLOR_MAGENTA}Magenta${COLOR_RESET}"
+    echo "${COLOR_CYAN}Cyan${COLOR_RESET}"
+    echo "${COLOR_WHITE}White${COLOR_RESET}"
+}
+
 # provide some meaningful help using shell formatting from https://pellepelster.github.io/solidblocks/shell/text/
 function task_usage {
   cat <<EOF
 Usage: $0
 
-  bootstrap               initialize the development environment
-
-  ${FORMAT_BOLD}deployment${FORMAT_RESET}
-
-    terraform             run terraform
+  bootstrap             initialize the development environment
+  terraform             run terraform
+  log                   log some stuff
+  text                  print soe fancy text formats
 EOF
   exit 1
 }
@@ -106,6 +292,8 @@ esac
 case ${ARG} in
   bootstrap) task_bootstrap "$@" ;;
   terraform) task_terraform "$@" ;;
+  log)       task_log "$@" ;;
+  text)      task_text "$@" ;;
   *) task_usage ;;
 esac
 ```
