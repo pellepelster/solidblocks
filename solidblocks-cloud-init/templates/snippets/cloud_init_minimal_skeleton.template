@@ -8,4 +8,4 @@ __BOOTSTRAP_SOLIDBLOCKS_CLOUD__
 
 bootstrap_solidblocks
 
-storage_mount "/dev/sdb1" "/data1"
+storage_mount "${STORAGE_DEVICE}" "/data1"
