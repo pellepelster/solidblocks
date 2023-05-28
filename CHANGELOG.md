@@ -1,0 +1,12 @@
+# Solidblocks Changelog
+
+## 0.1.6
+
+**IMPROVEMENTS**
+
+* add options to inject pre- / post-configuration scripts into Hetzner RDS postgresql module
+* add fine-grained network settings controls for Hetzner RDS postgresql module
+
+**DEPRECATIONS**
+
+* `extra_user_data`will be deprecated in favor of `pre_script`/`post_script` for Hetzner RDS postgresql module
