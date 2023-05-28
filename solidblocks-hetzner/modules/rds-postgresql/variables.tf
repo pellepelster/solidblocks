@@ -73,7 +73,19 @@ variable "databases" {
 
 variable "extra_user_data" {
   type        = string
-  description = "user data script that is executed after the database setup is completed"
+  description = "deprecated, please use pre_script/post_script"
+  default     = ""
+}
+
+variable "post_script" {
+  type        = string
+  description = "shell script that will be executed after the server configuration is executed"
+  default     = ""
+}
+
+variable "pre_script" {
+  type        = string
+  description = "shell script that will be executed before the server configuration is executed"
   default     = ""
 }
 
@@ -93,4 +105,28 @@ variable "labels" {
   type        = map(any)
   description = "A list of labels to be attached to the server instance."
   default     = {}
+}
+
+variable "public_net_ipv4_enabled" {
+  type        = bool
+  description = "enable/disable public ip addresses, see also https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#public_net"
+  default     = true
+}
+
+variable "public_net_ipv6_enabled" {
+  type        = bool
+  description = "enable/disable public ip addresses, see also https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#public_net"
+  default     = true
+}
+
+variable "network_id" {
+  type        = number
+  description = "network the created sever should be attached to, network_ip also needs to bet set in that case"
+  default     = 0
+}
+
+variable "network_ip" {
+  type        = string
+  description = "ip address in the attached network"
+  default     = null
 }
