@@ -1,14 +1,7 @@
-data "http" "cloud_init_bootstrap_solidblocks" {
-  url = "${var.solidblocks_base_url}/pellepelster/solidblocks/releases/download/${var.solidblocks_cloud_init_version}/cloud_init_bootstrap_solidblocks"
-}
-
-data "hcloud_volume" "data" {
-  id = var.data_volume
-}
-
-data "hcloud_volume" "backup" {
-  count = var.backup_volume > 0 ? 1 : 0
-  id    = var.backup_volume
+locals {
+  networks = var.network_id > 0 && var.network_ip != null ? [
+    { network_id : var.network_id, network_ip : var.network_ip }
+  ] : []
 }
 
 resource "hcloud_server" "rds" {
@@ -37,7 +30,22 @@ resource "hcloud_server" "rds" {
     databases = var.databases
 
     extra_user_data = var.extra_user_data
+    pre_script      = var.pre_script
+    post_script     = var.post_script
   })
+
+  public_net {
+    ipv4_enabled = var.public_net_ipv4_enabled
+    ipv6_enabled = var.public_net_ipv6_enabled
+  }
+
+  dynamic "network" {
+    for_each = local.networks
+    content {
+      network_id = network.value.network_id
+      ip         = network.value.network_ip
+    }
+  }
 
   labels = var.labels
 }

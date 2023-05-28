@@ -2,6 +2,10 @@
 
 set -eu -o pipefail
 
+# start of pre_script
+${pre_script}
+# end of pre_script
+
 SOLIDBLOCKS_BASE_URL="${solidblocks_base_url}"
 STORAGE_DEVICE_DATA="${storage_device_data}"
 
@@ -152,3 +156,7 @@ systemctl enable rds-backup-incr@${db_instance_name}.timer
 # start of extra_user_data
 ${extra_user_data}
 # end of extra_user_data
+
+# start of post_script
+${post_script}
+# end of post_script
