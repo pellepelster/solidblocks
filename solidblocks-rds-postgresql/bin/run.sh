@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -eu -o pipefail
 
 export DB_ADMIN_USERNAME="${USER}"
 export DB_ADMIN_PASSWORD="${DB_ADMIN_PASSWORD:-$(uuidgen)}"
@@ -271,6 +271,3 @@ cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
 
 log "provisioning completed"
 exec ${POSTGRES_BIN_DIR}/postgres -D "${PG_DATA_DIR}"
-
-
-}
