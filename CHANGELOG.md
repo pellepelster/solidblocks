@@ -5,6 +5,7 @@
 **IMPROVEMENTS**
 
 * add private ip address as output to Hetzner RDS postgresql module
+* make sure new repositories are created after backup config changes
 
 ## 0.1.6
 
