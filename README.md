@@ -16,6 +16,21 @@ Hetzner nuke is a tool to delete all resources in a Hetzner account, similar to 
 docker run -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.5 nuke
 ```
 
+### [Solidblocks Terraform](https://pellepelster.github.io/solidblocks/terraform/) 
+
+Helpers to bootstrap terraform storage backends.
+
+#### Usage Example
+
+```shell
+docker run \
+    -e AWS_REGION="eu-central-1" \
+    -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+    -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+    ghcr.io/pellepelster/solidblocks-terraform:snapshot \
+    backend s3 "${bucket-name}"
+```
+
 ### [Solidblocks Cloud Init](https://pellepelster.github.io/solidblocks/cloud-init/)
 
 Based on [Shell](https://pellepelster.github.io/solidblocks/shell/) reusable shell functions for typical [Cloud-Init](https://cloudinit.readthedocs.io/en/latest/) user-data usage scenarios

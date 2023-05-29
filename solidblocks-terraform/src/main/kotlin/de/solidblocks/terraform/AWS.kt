@@ -67,6 +67,7 @@ class AWS(private val accessKeyId: String, private val secretAccessKey: String, 
             }
         }
 
+        logger.info("example configuration for created backend")
         println()
         println(backendConfig(name, region))
     }

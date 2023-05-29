@@ -1,6 +1,6 @@
 FROM alpine:3.17.3
 
-ENV USER=nuker
+ENV USER=terraform
 ENV UID=10000
 
 ENV GROUP=${USER}
@@ -24,8 +24,8 @@ ENV LANG en_US.utf8
 USER ${USER}
 WORKDIR ${USER}
 
-ADD nuker/build/distributions/nuker.zip nuker.zip
-RUN unzip nuker.zip && \
-    rm -rf nuker.zip
+ADD build/distributions/solidblocks-terraform.zip solidblocks-terraform.zip
+RUN unzip solidblocks-terraform.zip && \
+    rm -rf solidblocks-terraform.zip
 
-ENTRYPOINT [ "/nuker/nuker/bin/nuker" ]
+ENTRYPOINT [ "/terraform/solidblocks-terraform/bin/solidblocks-terraform" ]

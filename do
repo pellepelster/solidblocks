@@ -11,7 +11,7 @@ source "${DIR}/solidblocks-shell/lib/log.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
 
-COMPONENTS="solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
+COMPONENTS="solidblocks-terraform solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_ensure_shellcheck
@@ -106,6 +106,7 @@ function task_build_documentation {
       sed -i "s/__RESTIC_VERSION__/${RESTIC_VERSION}/g" content/shell/software/_index.md
       sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/rds/_index.md
       sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/hetzner/nuke.md
+      sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/terraform/_index.md
       hugo
     )
 }
