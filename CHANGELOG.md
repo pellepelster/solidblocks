@@ -1,4 +1,10 @@
-# Solidblocks Changelog
+# Changelog
+
+## 0.1.8
+
+**IMPROVEMENTS**
+
+* add private ip address as output to Hetzner RDS postgresql module
 
 ## 0.1.6
 

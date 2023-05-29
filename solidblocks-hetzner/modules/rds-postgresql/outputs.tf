@@ -1,6 +1,11 @@
 output "ipv4_address" {
   value       = hcloud_server.rds.ipv4_address
-  description = "IpV4 address of the created server"
+  description = "IpV4 address of the created server if applicable"
+}
+
+output "ipv4_address_private" {
+  value       = one(hcloud_server.rds.network).ip
+  description = "private IpV4 address of the created server if applicable"
 }
 
 output "this_server_id" {
