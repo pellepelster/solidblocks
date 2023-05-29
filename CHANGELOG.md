@@ -1,13 +1,17 @@
 # Changelog
 
-## 0.1.8
+## v0.1.10
+
+* test for release process
+
+## v0.1.8
 
 **IMPROVEMENTS**
 
 * add private ip address as output to Hetzner RDS postgresql module
 * make sure new repositories are created after backup config changes
 
-## 0.1.6
+## v0.1.6
 
 **IMPROVEMENTS**
 

@@ -119,11 +119,25 @@ function task_serve_documentation {
 }
 
 function task_release {
+
   if [[ ! -f ".semver.yaml" ]]; then
     semver init --release v0.0.1
   fi
 
+  task_build
+  task_build_documentation
+
+  if [[ $(git diff --stat) != '' ]]; then
+    echo "repository '${DIR}' is dirty"
+    exit 1
+  fi
+
   local version="$(semver get release)"
+
+  if ! grep "${version}" "${DIR}/CHANGELOG.md"; then
+    echo "version '${version}' not found in changelog"
+    exit 1
+  fi
 
   git tag -a "${version}" -m "${version}"
   git push --tags
