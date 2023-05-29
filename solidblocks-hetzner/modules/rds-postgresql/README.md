@@ -60,6 +60,7 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 
 | Name | Description |
 |------|-------------|
-| <a name="output_ipv4_address"></a> [ipv4\_address](#output\_ipv4\_address) | IpV4 address of the created server |
+| <a name="output_ipv4_address"></a> [ipv4\_address](#output\_ipv4\_address) | IpV4 address of the created server if applicable |
+| <a name="output_ipv4_address_private"></a> [ipv4\_address\_private](#output\_ipv4\_address\_private) | private IpV4 address of the created server if applicable |
 | <a name="output_this_server_id"></a> [this\_server\_id](#output\_this\_server\_id) | Hetzner ID of the created server |
 <!-- END_TF_DOCS -->

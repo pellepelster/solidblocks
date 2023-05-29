@@ -174,6 +174,10 @@ function ensure_db_user() {
   echo "${username}" > "${PG_DATA_DIR}/solidblocks_current_db_username_${database}"
 }
 
+function ensure_stanza() {
+  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_INSTANCE_NAME} stanza-create
+}
+
 function init_db() {
   log "initializing database instance"
   ${POSTGRES_BIN_DIR}/initdb --username="${DB_ADMIN_USERNAME}" --encoding=UTF8 --pwfile=<(echo "${DB_ADMIN_PASSWORD}") -D "${PG_DATA_DIR}" || true
@@ -184,8 +188,7 @@ function init_db() {
   # make sure we only listen public when DB is ready to go
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
 
-  pgbackrest --config /rds/config/pgbackrest.conf --log-path=/rds/log  --log-level-console=info --stanza=${DB_INSTANCE_NAME} stanza-create
-
+  ensure_stanza
   ensure_databases
 
   log "executing initial backup"
@@ -254,6 +257,7 @@ else
 
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
 
+  ensure_stanza
   ensure_databases
 
   log "setting password for '${DB_ADMIN_USERNAME}'"
@@ -268,3 +272,5 @@ cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
 log "provisioning completed"
 exec ${POSTGRES_BIN_DIR}/postgres -D "${PG_DATA_DIR}"
 
+
+}
