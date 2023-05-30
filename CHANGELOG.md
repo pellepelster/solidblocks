@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.11
+
+**IMPROVEMENTS**
+
+* add Terraform state backend initialization helpers, see https://pellepelster.github.io/solidblocks/terraform
+
 ## v0.1.10
 
 * test for release process
