@@ -315,6 +315,10 @@ function task_clean {
   rm -rf "${DIR}/build"
 }
 
+function task_format {
+  echo "<not implemented>"
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -327,6 +331,7 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  format) task_format "$@" ;;
   test-restore-local) test_restore_from_local "$@" ;;
   test-restore-s3) test_restore_from_s3 "$@" ;;
   test-private-network) test_private_network "$@" ;;

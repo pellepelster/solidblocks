@@ -52,11 +52,19 @@ function task_clean {
   "${DIR}/gradlew" clean
 }
 
+function task_format {
+  (
+    cd "${DIR}"
+    ./gradlew spotlessApply
+  )
+}
+
 arg=${1:-}
 shift || true
 case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;

@@ -91,7 +91,11 @@ function task_test {
 }
 
 function task_release_docker {
-  echo ""
+  echo "<not implemented>"
+}
+
+function task_format {
+  echo "<not implemented>"
 }
 
 function task_clean {
@@ -110,6 +114,7 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  format) task_format "$@" ;;
   test-unit) task_test_unit "$@" ;;
   test-integration) task_test_integration "$@" ;;
   test-integration-prepare) task_test_integration_prepare "$@" ;;

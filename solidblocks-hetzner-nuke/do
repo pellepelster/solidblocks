@@ -62,11 +62,18 @@ function task_build {
 }
 
 function task_release_docker {
-  echo "not implemented"
+  echo "<not implemented>"
 }
 
 function task_clean {
-  echo "not implemented"
+  echo "<not implemented>"
+}
+
+function task_format {
+  (
+    cd "${DIR}"
+    ./gradlew spotlessApply
+  )
 }
 
 arg=${1:-}
@@ -74,6 +81,7 @@ shift || true
 case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;

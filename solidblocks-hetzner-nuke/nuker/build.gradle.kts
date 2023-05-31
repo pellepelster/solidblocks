@@ -1,5 +1,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.21"
+    id("com.diffplug.spotless") version "6.19.0"
     application
 }
 

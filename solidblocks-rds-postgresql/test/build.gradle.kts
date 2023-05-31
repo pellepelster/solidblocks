@@ -5,6 +5,7 @@ object Versions {
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.8.20"
+    id("com.diffplug.spotless") version "6.19.0"
 }
 
 repositories {

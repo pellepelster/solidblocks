@@ -14,9 +14,6 @@ VERSION="${GITHUB_REF_NAME:-snapshot}"
 COMPONENTS="solidblocks-terraform solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
-  software_ensure_shellcheck
-  software_ensure_hugo
-  software_ensure_semver
   software_set_export_path
 }
 
@@ -64,6 +61,15 @@ function task_test {
       (
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" test
+      )
+    done
+}
+
+function task_format {
+    for component in ${COMPONENTS}; do
+      (
+        cd "${DIR}/${component}"
+        VERSION=${VERSION} "./do" format
       )
     done
 }
@@ -119,6 +125,12 @@ function task_serve_documentation {
     )
 }
 
+function task_bootstrap() {
+  software_ensure_shellcheck
+  software_ensure_hugo
+  software_ensure_semver
+}
+
 function task_release {
 
   if [[ ! -f ".semver.yaml" ]]; then
@@ -149,7 +161,6 @@ function task_release {
   git push
 }
 
-
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -168,9 +179,11 @@ case ${ARG} in
   clean) task_clean "$@" ;;
   clean-aws) task_clean_aws "$@" ;;
   test) task_test "$@" ;;
+  format) task_format "$@" ;;
   build-documentation) task_build_documentation "$@" ;;
   serve-documentation) task_serve_documentation "$@" ;;
   release) task_release "$@" ;;
   release-docker) task_release_docker "$@" ;;
+  bootstrap) task_bootstrap "$@" ;;
   *) task_usage ;;
 esac

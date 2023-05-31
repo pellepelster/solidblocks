@@ -61,11 +61,16 @@ function task_clean {
   rm -rf ${DIR}/test/terraform/*.lock.hcl
 }
 
+function task_format {
+  echo "<not implemented>"
+}
+
 arg=${1:-}
 shift || true
 case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
