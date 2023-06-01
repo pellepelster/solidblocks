@@ -4,8 +4,11 @@ import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import me.tomsdevsn.hetznercloud.objects.general.Action
 import mu.KotlinLogging
 
-private fun Action.succesfull(): Boolean = this.finished != null && this.status == "success"
+private fun Action.successful(): Boolean = this.finished != null && this.status == "success"
 
+private fun parseTags() {
+
+}
 
 class Nuker(apiToken: String) {
 
@@ -15,13 +18,13 @@ class Nuker(apiToken: String) {
 
     fun waitForAction(action: Action) = Waiter.defaultWaiter().waitFor {
 
-        if (action.succesfull()) {
+        if (action.successful()) {
             return@waitFor true
         }
 
         val actionResult = hetznerCloudAPI.getAction(action.id)
         logger.info { "waiting for action '${actionResult.action.command}' to finish, current status is '${actionResult.action.status}'" }
-        actionResult.action.succesfull()
+        actionResult.action.successful()
     }
 
     fun deleteAll(doNuke: Boolean) {
@@ -138,7 +141,6 @@ class Nuker(apiToken: String) {
 
         return results
     }
-
 
     private fun <T> deleteResources(
         resourceLogName: String,
