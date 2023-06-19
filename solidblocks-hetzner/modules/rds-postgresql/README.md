@@ -7,26 +7,26 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_hcloud"></a> [hcloud](#requirement\_hcloud) | 1.38.2 |
-| <a name="requirement_http"></a> [http](#requirement\_http) | 3.3.0 |
+| <a name="requirement_hcloud"></a> [hcloud](#requirement\_hcloud) | >= 1.38.2 |
+| <a name="requirement_http"></a> [http](#requirement\_http) | >= 3.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | 1.38.2 |
-| <a name="provider_http"></a> [http](#provider\_http) | 3.3.0 |
+| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | >= 1.38.2 |
+| <a name="provider_http"></a> [http](#provider\_http) | >= 3.3.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [hcloud_server.rds](https://registry.terraform.io/providers/hetznercloud/hcloud/1.38.2/docs/resources/server) | resource |
-| [hcloud_volume_attachment.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/1.38.2/docs/resources/volume_attachment) | resource |
-| [hcloud_volume_attachment.data](https://registry.terraform.io/providers/hetznercloud/hcloud/1.38.2/docs/resources/volume_attachment) | resource |
-| [hcloud_volume.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/1.38.2/docs/data-sources/volume) | data source |
-| [hcloud_volume.data](https://registry.terraform.io/providers/hetznercloud/hcloud/1.38.2/docs/data-sources/volume) | data source |
-| [http_http.cloud_init_bootstrap_solidblocks](https://registry.terraform.io/providers/hashicorp/http/3.3.0/docs/data-sources/http) | data source |
+| [hcloud_server.rds](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server) | resource |
+| [hcloud_volume_attachment.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume_attachment) | resource |
+| [hcloud_volume_attachment.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume_attachment) | resource |
+| [hcloud_volume.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
+| [hcloud_volume.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
+| [http_http.cloud_init_bootstrap_solidblocks](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
 
 ## Inputs
 
@@ -52,8 +52,8 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 | <a name="input_public_net_ipv6_enabled"></a> [public\_net\_ipv6\_enabled](#input\_public\_net\_ipv6\_enabled) | enable/disable public ip addresses, see also https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#public_net | `bool` | `true` | no |
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | hetzner cloud server type | `string` | `"cx11"` | no |
 | <a name="input_solidblocks_base_url"></a> [solidblocks\_base\_url](#input\_solidblocks\_base\_url) | override base url for testing purposes | `string` | `"https://github.com"` | no |
-| <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.1.8"` | no |
-| <a name="input_solidblocks_version"></a> [solidblocks\_version](#input\_solidblocks\_version) | used for integration tests to inject test versions | `string` | `"v0.1.8"` | no |
+| <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.1.11"` | no |
+| <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | used for integration tests to inject test versions | `string` | `"v0.1.11"` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys for instance access | `list(number)` | n/a | yes |
 
 ## Outputs
