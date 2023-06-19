@@ -1,10 +1,14 @@
 # Changelog
 
-## v0.1.13
+## v0.1.14
 
 **IMPROVEMENTS**
 
 * update versions and fix documentation
+
+## ~~v0.1.13~~
+
+**REVOKED**
 
 ## v0.1.12
 

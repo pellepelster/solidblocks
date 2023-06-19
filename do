@@ -133,7 +133,7 @@ function task_bootstrap() {
 
 function task_release {
 
-  local previous_tag="$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))"
+  local previous_tag="$(git describe --abbrev=0 --tags)"
   local previous_version="${previous_tag#v}"
 
   if [[ ! -f ".semver.yaml" ]]; then

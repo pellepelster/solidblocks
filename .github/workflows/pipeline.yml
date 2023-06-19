@@ -317,6 +317,8 @@ jobs:
           submodules: recursive
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
+      - name: Bootstrap
+        run: ./do bootstrap
       - name: Build Documentation
         run: ./do build-documentation
       - name: Setup Pages

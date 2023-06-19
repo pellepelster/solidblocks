@@ -1,0 +1,33 @@
+#cloud-config
+
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+packages:
+  - fail2ban
+
+users:
+  - name: root
+    lock_passwd: true
+  - name: ${local.user}
+    groups: users, admin, docker
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${hcloud_ssh_key.christoph.public_key}
+      - ${hcloud_ssh_key.paul.public_key}
+      - ${hcloud_ssh_key.marcus.public_key}
+
+chpasswd:
+  expire: false
+
+runcmd:
+  - sed -i -e '/^#PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+  - sed -i -e '/^#PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i -e '/^#Port/s/^.*$/Port 22022/' /etc/ssh/sshd_config
+  - sed -i '$a AllowUsers ${local.user}' /etc/ssh/sshd_config # Replace with username
+
+power_state:
+  mode: reboot
+  condition: True
