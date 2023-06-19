@@ -93,7 +93,7 @@ cat <<-EOF
 version: "3"
 services:
   ${db_instance_name}:
-    image: ghcr.io/pellepelster/solidblocks-rds-postgresql:${solidblocks_version}
+    image: ghcr.io/pellepelster/solidblocks-rds-postgresql:${solidblocks_rds_version}
     container_name: ${db_instance_name}_postgresql
     environment:
       - "DB_INSTANCE_NAME=${db_instance_name}"

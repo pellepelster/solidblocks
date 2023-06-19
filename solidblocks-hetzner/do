@@ -333,6 +333,7 @@ case ${arg} in
   test-ssh) task_test_ssh "$@" ;;
   test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
+  test-snippet-ssh) task_test_snippets_ssh "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac
