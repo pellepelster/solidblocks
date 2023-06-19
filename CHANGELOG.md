@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.13
+
+**IMPROVEMENTS**
+
+* update versions and fix documentation
+
 ## v0.1.12
 
 **IMPROVEMENTS**

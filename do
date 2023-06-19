@@ -133,6 +133,9 @@ function task_bootstrap() {
 
 function task_release {
 
+  local previous_tag="$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))"
+  local previous_version="${previous_tag#v}"
+
   if [[ ! -f ".semver.yaml" ]]; then
     semver init --release v0.0.1
   fi
@@ -149,6 +152,11 @@ function task_release {
 
   if ! grep "${version}" "${DIR}/CHANGELOG.md"; then
     echo "version '${version}' not found in changelog"
+    exit 1
+  fi
+
+  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md; then
+    echo "previous version '${previous_version}' found in repository"
     exit 1
   fi
 
