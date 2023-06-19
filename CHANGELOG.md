@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.12
+
+**IMPROVEMENTS**
+
+* update Solidblocks versions for Hetzner RDS
+* relax version requirements for Hetzner RDS
+* fix Hetzner RDS module in Terraform registry
+
 ## v0.1.11
 
 **IMPROVEMENTS**
