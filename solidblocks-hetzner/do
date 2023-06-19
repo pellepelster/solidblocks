@@ -152,8 +152,38 @@ function test_ip_address() {
   cat "${DIR}/test/terraform/ipv4_address"
 }
 
+function test_jumphost_ip_address() {
+  cat "${DIR}/test/terraform/jumphost_ipv4_address"
+}
+
 function psql_wrapper() {
   PGPASSWORD=password1 psql --host "$(test_ip_address)" --user "user1" database1
+}
+
+function psql_wrapper_jumphost() {
+  task_test_jumphost_ssh PGPASSWORD=password1 psql --host 10.0.1.4 --user "user1" database1
+}
+
+function test_private_network () {
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
+
+  test_wait_for_ssh
+  task_test_jumphost_ssh
+
+  while ! task_test_jumphost_ssh whoami; do
+    log_echo_warning "waiting for ssh"
+    sleep 10
+  done
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | psql_wrapper_jumphost; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+
 }
 
 function test_restore_from_local() {
@@ -276,6 +306,10 @@ function task_test_ssh {
   ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
 }
 
+function task_test_jumphost_ssh {
+  ssh -F ${DIR}/test/terraform/ssh_config $(test_jumphost_ip_address) ${@}
+}
+
 function task_clean {
   #test_clean_testbed_s3
   rm -rf "${DIR}/build"
@@ -295,7 +329,9 @@ case ${arg} in
   test) task_test "$@" ;;
   test-restore-local) test_restore_from_local "$@" ;;
   test-restore-s3) test_restore_from_s3 "$@" ;;
+  test-private-network) test_private_network "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
+  test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;

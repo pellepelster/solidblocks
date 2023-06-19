@@ -4,7 +4,7 @@ output "ipv4_address" {
 }
 
 output "ipv4_address_private" {
-  value       = one(hcloud_server.rds.network).ip
+  value       = try(one(hcloud_server.rds.network).ip, null)
   description = "private IpV4 address of the created server if applicable"
 }
 
