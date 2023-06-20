@@ -86,6 +86,7 @@ function task_release_docker {
 function task_build_documentation {
     ensure_environment
 
+    rm -rf "${DIR}/doc/snippets"
     mkdir -p "${DIR}/doc/snippets"
 
     if [[ -n "${CI:-}" ]]; then
@@ -132,6 +133,9 @@ function task_bootstrap() {
 }
 
 function task_release {
+
+  # ensure terraform-docs is available
+  terraform-docs --version
 
   local previous_tag="$(git describe --abbrev=0 --tags)"
   local previous_version="${previous_tag#v}"

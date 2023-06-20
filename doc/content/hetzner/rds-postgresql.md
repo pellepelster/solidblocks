@@ -108,21 +108,5 @@ Below a minimal example of a PostgreSQL database using a local volume backup sto
 ### private networking only
 
 ```shell
-resource "hcloud_network" "network01" {
-  name              = "network01"
-  ip_range          = "10.0.1.0/24"
-}
-
-module "database01" {
-  source    = "github.com/pellepelster/solidblocks//solidblocks-hetzner/modules/rds-postgresql"
-  name      = "database01"
-  
-  public_net_ipv4_enabled = false
-  public_net_ipv6_enabled = false
-
-  network_id         = hcloud_network.network1.id
-  network_ip         = "10.0.1.1"
-
-  # [...]
-}
+{{% include "/snippets/hetzner-postgres-rds-private-network/instance/main.tf" %}}
 ```
