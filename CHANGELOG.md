@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.15
+
+**BUGFIXES**
+
+* fix nuke command for hetzner-nuker
+
+**IMPROVEMENTS**
+
+* update documentation
+* verify private network snippets for hetzner rds module
+
 ## v0.1.14
 
 **IMPROVEMENTS**

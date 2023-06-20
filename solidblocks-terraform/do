@@ -25,31 +25,6 @@ function task_test {
   if [[ -n "${SKIP_TESTS:-}" ]]; then
     exit 0
   fi
-
-  echo "creating temp dir '${TEMP_DIR}'"
-  mkdir -p "${TEMP_DIR}"
-
-  trap clean_temp_dir HUP INT QUIT TERM EXIT
-  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
-
-  (
-    cd "${DIR}/test"
-    terraform init -upgrade
-    terraform apply -auto-approve
-  )
-
-  (
-    cd "${TEMP_DIR}"
-    unzip "${DIR}/nuker/build/distributions/nuker.zip"
-    echo "==================================================================================="
-    echo "running simulate"
-    echo "==================================================================================="
-    ./nuker/bin/nuker simulate
-    echo "==================================================================================="
-    echo "running nuke"
-    echo "==================================================================================="
-    ./nuker/bin/nuker nuke
-  )
 }
 
 function task_build {

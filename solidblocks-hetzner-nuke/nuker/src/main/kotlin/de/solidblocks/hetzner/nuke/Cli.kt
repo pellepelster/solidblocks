@@ -36,14 +36,12 @@ public fun validLabelParameter(label: String): Boolean {
 class NukeCommand : CliktCommand(help = "delete all Hetzner cloud resources") {
     private val hcloudToken by option("--hcloud-token", envvar = "HCLOUD_TOKEN").required()
 
+    /*
     private val labels: List<String> by option("--label").multiple().validate {
-
     }
+     */
 
     override fun run() {
-
-        println(labels)
-        System.exit(0)
         Nuker(hcloudToken).deleteAll(true)
     }
 }

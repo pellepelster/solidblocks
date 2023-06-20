@@ -9,8 +9,8 @@ on:
       - 'v[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
-env:
-  SKIP_TESTS: true
+#env:
+#  SKIP_TESTS: true
 
 concurrency:
   #group: solidblocks
@@ -130,6 +130,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - solidblocks-cloud-init
+      - solidblocks-rds-postgresql
     env:
       HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

@@ -92,13 +92,13 @@ variable "pre_script" {
 variable "solidblocks_cloud_init_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.1.14"
+  default     = "v0.1.15"
 }
 
 variable "solidblocks_rds_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.1.14"
+  default     = "v0.1.15"
 }
 
 variable "labels" {
