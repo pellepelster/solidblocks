@@ -13,7 +13,7 @@ Hetzner nuke is a tool to delete all resources in a Hetzner account, similar to 
 #### Usage Example
 
 ```shell
-docker run -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.5 nuke
+docker run -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.15 nuke
 ```
 
 ### [Solidblocks Terraform](https://pellepelster.github.io/solidblocks/terraform/) 
@@ -38,8 +38,6 @@ Based on [Shell](https://pellepelster.github.io/solidblocks/shell/) reusable she
 #### Usage Example
 
 ```shell
-
-
 #!/usr/bin/env bash
 
 set -eu -o pipefail
@@ -49,8 +47,8 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
 export SOLIDBLOCKS_DEVELOPMENT_MODE="${SOLIDBLOCKS_DEVELOPMENT_MODE:-0}"
 
-SOLIDBLOCKS_VERSION="v0.1.5"
-SOLIDBLOCKS_CLOUD_CHECKSUM="b21d60efe7b7bfd0ef26f2aceab2cb748324e4e92ad58c1c400fc7d55800ab3d"
+SOLIDBLOCKS_VERSION="v0.1.15"
+SOLIDBLOCKS_CLOUD_CHECKSUM="405f82aefb78c8099f98e2913699d323398f7238965ef8ce60c96556139ddd03"
 
 function bootstrap_package_update {
   apt-get update
@@ -135,7 +133,7 @@ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    pellepelster/solidblocks-rds-postgresql:v0.1.5
+    pellepelster/solidblocks-rds-postgresql:v0.1.15
 ```
 
 ### [Solidblocks Hetzner RDS PostgreSQL](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/)
@@ -166,7 +164,7 @@ resource "hcloud_ssh_key" "ssh_key" {
 
 module "rds-postgresql" {
   source  = "pellepelster/solidblocks-rds-postgresql/hcloud"
-  version = "0.1.5"
+  version = "0.1.15"
 
   name     = "rds-postgresql"
   location = var.hetzner_location
@@ -202,16 +200,14 @@ Reusable shell functions for infrastructure automation and developer experience
 #### Usage example
 
 ```shell
-
-
 #!/usr/bin/env bash
 
 set -eu -o pipefail
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-SOLIDBLOCKS_SHELL_VERSION="v0.1.5"
-SOLIDBLOCKS_SHELL_CHECKSUM="08ebe58cd648c9f4efc8f180a57f7a73ebb7ad7d28595f23a61d2d6588a51ab2"
+SOLIDBLOCKS_SHELL_VERSION="v0.1.15"
+SOLIDBLOCKS_SHELL_CHECKSUM="12be1afac8ba2166edfa9eb01ca984aa7c1db4350cd8653a711394a22c3b599a"
 
 # self contained function for initial Solidblocks bootstrapping
 function bootstrap_solidblocks() {
