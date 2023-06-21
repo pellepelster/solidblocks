@@ -25,6 +25,7 @@ ENV LANG en_US.utf8
 RUN apk upgrade --available
 RUN apk add \
     postgresql14 \
+    postgresql14-contrib \
     jq \
     bash \
     openssh-client \
@@ -38,7 +39,7 @@ RUN chown -R ${USER}:${USER} ${USER}
 RUN mkdir -p /run/postgresql/ && chown -R ${USER}:${USER} /run/postgresql/
 
 COPY install/ /tmp/install/
-RUN /tmp/install/install_gomplate.sh
+RUN /tmp/install/install_gomplate.sh && rm -rf /tmp/install/
 
 USER ${USER}
 

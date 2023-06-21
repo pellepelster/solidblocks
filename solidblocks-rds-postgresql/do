@@ -32,7 +32,7 @@ function task_test {
   )
   (
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
-    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
+    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}"
 
     cd "${DIR}"
     ./gradlew check
@@ -44,28 +44,17 @@ function task_build {
     cd "${DIR}"
     mkdir -p "${DIR}/build"
 
-    #if [[ -n "${CI:-}" ]]; then
-    #  docker buildx build --no-cache --platform linux/arm,linux/amd64,linux/arm64 --push -t "${DOCKER_IMAGE_NAME}:${VERSION}" -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" .
-    #fi
-
-    docker build ${DOCKER_OPTIONS} \
-      -t "${DOCKER_IMAGE_NAME}" \
-      -t "${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
-      -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
+    docker buildx build \
+      --no-cache \
+      --platform linux/arm,linux/amd64,linux/arm64 \
+      --push \
+        -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
       .
-
-    # push release candidate for usage in integration tests
-    docker save "${DOCKER_IMAGE_NAME}:${VERSION}-rc" > "${DIR}/build/${DOCKER_IMAGE_NAME}-${VERSION}-rc.tar"
-    docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
   )
 }
 
 function task_release_docker {
-  docker tag "${DOCKER_IMAGE_NAME}:${VERSION}-rc" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
-  docker push  "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
-
-  docker tag "${DOCKER_IMAGE_NAME}:${VERSION}-rc" "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
-  docker push "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
+  docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
 }
 
 function task_clean {

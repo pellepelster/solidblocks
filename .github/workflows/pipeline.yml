@@ -241,12 +241,6 @@ jobs:
         run: solidblocks-rds-postgresql/do build
       - name: Test
         run: solidblocks-rds-postgresql/do test
-      - name: Archive Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: solidblocks-rds-postgresql
-          path: |
-            solidblocks-rds-postgresql/build/solidblocks-rds-postgresql-*.tar
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v3
@@ -280,8 +274,6 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Import Minio Docker Image
         run: docker load < solidblocks-minio/solidblocks-minio-*.tar
-      - name: Import RDS Postgresql Docker Image
-        run: docker load < solidblocks-rds-postgresql/solidblocks-rds-postgresql-*.tar
       - name: Import Debug Container Docker Image
         run: docker load < solidblocks-debug-container/solidblocks-debug-container-*.tar
       - name: Login to Docker Hub
@@ -301,7 +293,6 @@ jobs:
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
             solidblocks-hetzner/*.zip
-
 
   documentation:
     if: startsWith(github.ref, 'refs/tags/v')

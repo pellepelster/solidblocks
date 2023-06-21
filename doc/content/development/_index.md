@@ -36,6 +36,19 @@ running `./do build-documentation` they can be included like this:
 
 Snippets should always be tested if feasible to ensure the documentation is correct and runnable.
 
+## Versioning
+
+Versions are derived from the current git context, and default to snapshot if no information is available or injected from CI environment variables. 
+
+```shell
+VERSION="${GITHUB_REF_NAME:-snapshot}"
+```
+
+### Docker Artifacts
+
+To pass docker artifacts between build steps without accidentally releasing an untested docker image, freshly built images are tagged with a `-rc` postfix in the tag, e.g. `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}-rc` and retagged during the release process after all tests are run to `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}`
+
+
 ## Tests
 
 Especially the infrastructure heavy components of Solidblocks rely on downloading released code from Github releases. To

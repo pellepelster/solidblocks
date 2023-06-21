@@ -5,9 +5,9 @@ set -eu
 GOMPLATE_VERSION=3.11.5
 
 declare -A GOMPLATE_CHECKSUMS
-GOMPLATE_CHECKSUMS[amd64]="eb225db8a40758f67a2af0a1f5e2fd78354fdac5e8be095d536bdebcc7a5a432"
-GOMPLATE_CHECKSUMS[armv7]="a5b0affd54abd611aa0cc723d10aa75460dad87861672cdac59375fee7b47793"
-GOMPLATE_CHECKSUMS[arm64]="7b45a64083a1e71b76881541db1554404a391cc1d6942a2a25f26614b069fcaf"
+GOMPLATE_CHECKSUMS[amd64]="16f6a01a0ff22cae1302980c42ce4f98ca20f8c55443ce5a8e62e37fc23487b3"
+GOMPLATE_CHECKSUMS[armv7]="c819e335c6c05a79e42e5d151ee8c0cccd5a7c2d189fed90fab05ab4cc71e607"
+GOMPLATE_CHECKSUMS[arm64]="fd980f9d233902e50f3f03f10ea65f36a2705385358a87aa18b19fb7cdf54c1d"
 
 function go_arch() {
   case $(uname -m) in
@@ -18,6 +18,9 @@ function go_arch() {
   esac
 }
 
-curl -L https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-$(go_arch)-slim -o /usr/bin/gomplate
+curl -L https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-$(go_arch) -o /usr/bin/gomplate
 echo "${GOMPLATE_CHECKSUMS[$(go_arch)]}  /usr/bin/gomplate" | sha256sum -c
 chmod +x /usr/bin/gomplate
+
+# verify install has worked
+#gomplate --version

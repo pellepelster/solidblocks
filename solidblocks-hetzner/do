@@ -183,7 +183,6 @@ function test_private_network () {
   terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
 
   test_wait_for_ssh
-  task_test_jumphost_ssh
 
   while ! task_test_jumphost_ssh whoami; do
     log_echo_warning "waiting for ssh"
@@ -197,6 +196,21 @@ function test_private_network () {
   done
   log_divider_footer
 
+}
+
+function test_arm () {
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_arm" apply -auto-approve
+
+  test_wait_for_ssh
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | psql_wrapper; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
 }
 
 function test_restore_from_local() {
@@ -295,8 +309,17 @@ function task_test {
 
   python_ensure_venv "${DIR}"
 
+  echo "starting test: test_restore_from_local"
   test_restore_from_local
+
+  echo "starting test: test_restore_from_s3"
   test_restore_from_s3
+
+  echo "starting test: test_private_network"
+  test_private_network
+
+  echo "starting test: test_arm"
+  test_arm
 }
 
 function test_clean_testbed_s3() {
@@ -348,6 +371,7 @@ case ${arg} in
   test-restore-local) test_restore_from_local "$@" ;;
   test-restore-s3) test_restore_from_s3 "$@" ;;
   test-private-network) test_private_network "$@" ;;
+  test-arm) test_arm "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
   test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;

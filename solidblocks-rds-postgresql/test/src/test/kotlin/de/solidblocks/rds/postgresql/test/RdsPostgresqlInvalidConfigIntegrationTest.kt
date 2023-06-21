@@ -41,7 +41,7 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
 
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        val container = GenericContainer("solidblocks-rds-postgresql").apply {
+        val container = GenericContainer("ghcr.io/pellepelster/solidblocks-rds-postgresql:${System.getenv("VERSION") ?: "snapshot"}-rc").apply {
             withLogConsumer(logConsumer)
             withEnv(
                     mapOf(

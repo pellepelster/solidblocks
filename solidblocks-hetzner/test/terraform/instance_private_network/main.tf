@@ -18,7 +18,7 @@ resource "hcloud_network_subnet" "subnet1" {
 }
 
 resource "hcloud_server" "jumphost" {
-  name        = "jumphost"
+  name        = "jumphost-${var.test_id}"
   image       = "debian-11"
   server_type = "cx11"
 
@@ -40,7 +40,7 @@ module "rds-postgresql-1" {
   source = "../../../modules/rds-postgresql"
   name   = "rds-postgresql-${var.test_id}"
 
-  location = "nbg1"
+  location = var.location
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
 
   data_volume   = hcloud_volume.data.id
@@ -56,4 +56,6 @@ module "rds-postgresql-1" {
   databases = [
     { id : "database1", user : "user1", password : "password1" }
   ]
+
+  depends_on = [hcloud_network.network1, hcloud_network_subnet.subnet1]
 }

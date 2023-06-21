@@ -68,7 +68,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
             logConsumer: TestContainersLogConsumer,
             password: String = databasePassword,
             customizer: (input: GenericContainer<out GenericContainer<*>>) -> Unit = {}
-    ) = GenericContainer("solidblocks-rds-postgresql").also {
+    ) = GenericContainer("ghcr.io/pellepelster/solidblocks-rds-postgresql:${System.getenv("VERSION") ?: "snapshot"}-rc").also {
         it.withLogConsumer(logConsumer)
         it.withNetwork(network)
         it.withExposedPorts(5432)

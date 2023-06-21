@@ -5,7 +5,6 @@ resource "hcloud_volume" "data" {
   location = var.location
 }
 
-
 module "rds-postgresql-1" {
   source = "../../../modules/rds-postgresql"
   name   = "rds-postgresql-${var.test_id}"
@@ -13,8 +12,12 @@ module "rds-postgresql-1" {
   location = var.location
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
 
-  data_volume   = hcloud_volume.data.id
-  backup_volume = data.hcloud_volume.backup.id
+  server_type = "cax11"
+  data_volume = hcloud_volume.data.id
+
+  backup_s3_bucket     = data.aws_s3_bucket.bootstrap.id
+  backup_s3_access_key = var.backup_s3_access_key
+  backup_s3_secret_key = var.backup_s3_secret_key
 
   solidblocks_base_url           = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
   solidblocks_cloud_init_version = var.solidblocks_version
@@ -23,6 +26,4 @@ module "rds-postgresql-1" {
   databases = [
     { id : "database1", user : "user1", password : "password1" }
   ]
-
-  extra_user_data = file("${path.module}/extra_user_data.sh")
 }

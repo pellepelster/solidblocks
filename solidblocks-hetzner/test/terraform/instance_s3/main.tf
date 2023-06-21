@@ -9,7 +9,7 @@ module "rds-postgresql-1" {
   source = "../../../modules/rds-postgresql"
   name   = "rds-postgresql-${var.test_id}"
 
-  location = "nbg1"
+  location = var.location
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
 
   data_volume = hcloud_volume.data.id
