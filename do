@@ -38,7 +38,18 @@ function task_clean_aws {
     --force
 
 }
+
+function task_clean_hetzner {
+  docker run \
+    --rm \
+    -e HCLOUD_TOKEN="$(pass solidblocks/hetzner/hcloud_api_token)" \
+    --pull always \
+    ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.15 nuke
+}
+
 function task_clean {
+    task_clean_aws
+    task_clean_hetzner
 
     rm -rf "${DIR}/build"
     rm -rf "${DIR}/doc/generated"
@@ -190,6 +201,7 @@ case ${ARG} in
   build) task_build "$@" ;;
   clean) task_clean "$@" ;;
   clean-aws) task_clean_aws "$@" ;;
+  clean-hetzner) task_clean_hetzner "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   build-documentation) task_build_documentation "$@" ;;

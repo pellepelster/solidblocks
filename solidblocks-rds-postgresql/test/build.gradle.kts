@@ -4,7 +4,7 @@ object Versions {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.8.20"
+    id("org.jetbrains.kotlin.jvm") version "1.8.22"
     id("com.diffplug.spotless") version "6.19.0"
 }
 
@@ -26,6 +26,10 @@ dependencies {
 
     testImplementation("org.eclipse:yasson:1.0.1")
     testImplementation("org.glassfish:javax.json:1.1.2")
+
+    testImplementation("io.minio:minio:8.5.4")
+    testImplementation("com.squareup.okhttp3:okhttp-tls:4.11.0")
+    testImplementation("io.github.hakky54:sslcontext-kickstart-for-pem:7.4.5")
 
     testImplementation("io.mockk:mockk:1.12.4")
     testImplementation("org.awaitility:awaitility:4.2.0")

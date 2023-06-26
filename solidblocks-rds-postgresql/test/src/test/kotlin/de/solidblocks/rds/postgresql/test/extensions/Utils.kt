@@ -1,6 +1,9 @@
-package de.solidblocks.rds.postgresql.test
+package de.solidblocks.rds.postgresql.test.extensions
 
+import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest
 import mu.KotlinLogging
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.jdbi.v3.core.Jdbi
 import org.testcontainers.containers.GenericContainer
@@ -20,9 +23,21 @@ fun initWorldReadableTempDir(): File {
     return File(tempDir)
 }
 
-fun GenericContainer<out GenericContainer<*>>.createJdbi(username: String = RdsPostgresqlMinioBackupIntegrationTest.databaseUser, password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword, database: String = RdsPostgresqlMinioBackupIntegrationTest.database): Jdbi {
+fun GenericContainer<out GenericContainer<*>>.createJdbi(
+    username: String = RdsPostgresqlMinioBackupIntegrationTest.databaseUser,
+    password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword,
+    database: String = RdsPostgresqlMinioBackupIntegrationTest.database
+): Jdbi {
     val port = this.getMappedPort(5432)
     return Jdbi.create("jdbc:postgresql://localhost:$port/${database}?user=${username}&password=${password}")
+}
+
+fun GenericContainer<out GenericContainer<*>>.assertBackupFileHeaders(fileHeader: String) {
+    val result = this.execInContainer("/test-dump-backup-file-headers.sh")
+    Assertions.assertThat(result.stdout.lines()).hasSizeGreaterThan(4)
+    Assertions.assertThat(result.stdout.lines().map { it.trim() }).allMatch {
+        it.isBlank() || it == fileHeader
+    }
 }
 
 fun Jdbi.createUserTable() {
@@ -34,19 +49,26 @@ fun Jdbi.createUserTable() {
 fun Jdbi.insertUser(name: String) {
     this.useHandle<RuntimeException> {
         it.createUpdate("INSERT INTO \"user\" (id, \"name\") VALUES (?, ?)")
-                .bind(0, UUID.randomUUID())
-                .bind(1, name)
-                .execute()
+            .bind(0, UUID.randomUUID())
+            .bind(1, name)
+            .execute()
     }
 }
 
 fun Jdbi.selectAllUsers(): List<Map<String, Any>>? {
     return this.withHandle<List<Map<String, Any>>, RuntimeException> {
         it.createQuery("SELECT * FROM \"user\" ORDER BY \"name\"")
-                .mapToMap()
-                .list()
+            .mapToMap()
+            .list()
     }
 }
+
+fun Jdbi.assertHasUserWithName(name: String) {
+    assertThat(this.selectAllUsers()).filteredOn {
+        it["name"] == name
+    }.hasSize(1)
+}
+
 
 fun Jdbi.waitForReady() {
     await.until {
@@ -62,3 +84,8 @@ fun Jdbi.waitForReady() {
 
     }
 }
+
+const val ENCRYPTED_FILE_HEADER = "53 61 6c 74 65 64 5f 5f"
+const val COMPRESSED_FILE_HEADER = "1f 8b 08 00 00 00 00 00"
+
+fun ByteArray.toHex(): String = joinToString(separator = " ") { eachByte -> "%02x".format(eachByte) }

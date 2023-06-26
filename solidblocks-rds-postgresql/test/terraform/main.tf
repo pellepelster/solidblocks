@@ -45,7 +45,7 @@ resource "tls_private_key" "minio" {
 resource "tls_cert_request" "minio" {
   private_key_pem = tls_private_key.minio.private_key_pem
 
-  dns_names    = ["minio"]
+  dns_names    = ["minio", "localhost"]
   ip_addresses = ["172.17.0.2"]
 
   subject {

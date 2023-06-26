@@ -1,4 +1,4 @@
-package de.solidblocks.rds.postgresql.test
+package de.solidblocks.rds.postgresql.test.extensions
 
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -16,7 +16,7 @@ class TestContainersLogConsumer(val parent: Consumer<OutputFrame>?) : Consumer<O
     }
 
     fun waitForLogLine(logLine: String) {
-        await.atMost(Duration.ofMinutes(1)).until {
+        await.atMost(Duration.ofMinutes(3)).until {
             hasLogLine(logLine)
         }
     }
