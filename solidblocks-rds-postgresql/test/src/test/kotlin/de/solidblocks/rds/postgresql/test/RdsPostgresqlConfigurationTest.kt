@@ -21,6 +21,55 @@ class RdsPostgresqlConfigurationTest {
 
     private val logger = KotlinLogging.logger {}
 
+    val expectedExtensions = listOf(
+        "adminpack",
+        "amcheck",
+        "autoinc",
+        "bloom",
+        "btree_gin",
+        "btree_gist",
+        "citext",
+        "cube",
+        "dblink",
+        "dict_int",
+        "dict_xsyn",
+        "earthdistance",
+        "file_fdw",
+        "fuzzystrmatch",
+        "hstore",
+        "insert_username",
+        "intagg",
+        "intarray",
+        "isn",
+        "lo",
+        "ltree",
+        "moddatetime",
+        "old_snapshot",
+        "pageinspect",
+        "pg_buffercache",
+        "pg_freespacemap",
+        "pg_prewarm",
+        "pg_stat_statements",
+        "pg_surgery",
+        "pg_trgm",
+        "pg_visibility",
+        "pgcrypto",
+        "pgrowlocks",
+        "pgstattuple",
+        "plpgsql",
+        "postgres_fdw",
+        "refint",
+        "seg",
+        "sslinfo",
+        "tablefunc",
+        "tcn",
+        "tsm_system_rows",
+        "tsm_system_time",
+        "unaccent",
+        "uuid-ossp",
+        "xml2"
+    )
+
     @Test
     fun testExecutesInitSql(testBed: RdsTestBed) {
 
@@ -34,10 +83,10 @@ class RdsPostgresqlConfigurationTest {
         Files.setPosixFilePermissions(initSqlFile, PosixFilePermissions.fromString("rwxrwxrwx"))
 
         val container = testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1",
-                        "DB_INIT_SQL_$database" to "/init_sql.sql",
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_INIT_SQL_$database" to "/init_sql.sql",
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
             it.withFileSystemBind(initSqlFile.pathString, "/init_sql.sql")
@@ -53,16 +102,16 @@ class RdsPostgresqlConfigurationTest {
             it.waitForReady()
             it.useHandle<RuntimeException> {
                 it.createUpdate("INSERT INTO \"table1\" (id, \"name\") VALUES (?, ?)")
-                        .bind(0, UUID.randomUUID())
-                        .bind(1, name)
-                        .execute()
+                    .bind(0, UUID.randomUUID())
+                    .bind(1, name)
+                    .execute()
 
             }
 
             it.useHandle<RuntimeException> {
                 val result = it.createQuery("SELECT * FROM \"table1\" ORDER BY \"name\"")
-                        .mapToMap()
-                        .list()
+                    .mapToMap()
+                    .list()
 
                 assertThat(result).filteredOn {
                     it["name"] == name
@@ -83,10 +132,10 @@ class RdsPostgresqlConfigurationTest {
         initSqlFile.writeText("CREATE TABLE \"table1\" (id VARCHAR PRIMARY KEY, \"name\" VARCHAR)")
 
         testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1",
-                        "DB_INIT_SQL_$database" to "/init_sql.sql",
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_INIT_SQL_$database" to "/init_sql.sql",
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
             it.withFileSystemBind(initSqlFile.pathString, "/init_sql.sql")
@@ -104,9 +153,9 @@ class RdsPostgresqlConfigurationTest {
         val localBackupDir = initWorldReadableTempDir()
 
         val container = testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1",
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
@@ -136,10 +185,12 @@ class RdsPostgresqlConfigurationTest {
 
         container.stop()
         logConsumer.clear()
-        container.withEnv(mapOf(
+        container.withEnv(
+            mapOf(
                 "DB_USERNAME_$database" to "new-user",
                 "DB_PASSWORD_$database" to "new-password",
-        )).start()
+            )
+        ).start()
 
         // on second start with persistent storage no initializing ord backup should be executed
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
@@ -166,9 +217,9 @@ class RdsPostgresqlConfigurationTest {
 
         val localBackupDir = initWorldReadableTempDir()
         val container1 = rdsTestBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1",
-                ), initWorldReadableTempDir(), logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), initWorldReadableTempDir(), logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
@@ -202,11 +253,11 @@ class RdsPostgresqlConfigurationTest {
         logConsumer.clear()
 
         val container2 = rdsTestBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1",
-                        "DB_USERNAME_$database" to "new-user",
-                        "DB_PASSWORD_$database" to "new-password",
-                ), initWorldReadableTempDir(), logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_USERNAME_$database" to "new-user",
+                "DB_PASSWORD_$database" to "new-password",
+            ), initWorldReadableTempDir(), logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
@@ -240,10 +291,10 @@ class RdsPostgresqlConfigurationTest {
         val localBackupDir = initWorldReadableTempDir()
 
         val container = testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1",
-                        "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = 301",
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = 301",
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
@@ -259,14 +310,26 @@ class RdsPostgresqlConfigurationTest {
 
         val settings = container.createJdbi().withHandle<List<Map<String, Any>>, RuntimeException> {
             it.createQuery("SELECT * FROM \"pg_settings\" ORDER BY \"name\"")
-                    .mapToMap()
-                    .list()
+                .mapToMap()
+                .list()
 
         }
 
-        //settings.forEach {
-        //    println("${it["name"]}=${it["setting"]}")
-        //}
+        val extensions = container.createJdbi().withHandle<List<Map<String, Any>>, RuntimeException> {
+            it.createQuery("SELECT * FROM \"pg_available_extensions\" ORDER BY \"name\"")
+                .mapToMap()
+                .list()
+
+        }
+
+        println("=========== installed extensions =========== ")
+        extensions.forEach {
+            println("| ${it["name"]} | ${it["default_version"]} | ${it["comment"]} |")
+        }
+
+        expectedExtensions.forEach { expectedExtension ->
+            assertThat(extensions.any { it["name"] == expectedExtension })
+        }
 
         assertThat(settings.filter { it["name"] == "checkpoint_timeout" }.first()["setting"]).isEqualTo("301")
     }
@@ -280,9 +343,9 @@ class RdsPostgresqlConfigurationTest {
         val localBackupDir = initWorldReadableTempDir()
 
         val container = testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1"
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1"
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
@@ -303,10 +366,10 @@ class RdsPostgresqlConfigurationTest {
         val localBackupDir = initWorldReadableTempDir()
 
         val container1 = testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_ADMIN_PASSWORD" to "my-database-password",
-                        "DB_BACKUP_LOCAL" to "1"
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_ADMIN_PASSWORD" to "my-database-password",
+                "DB_BACKUP_LOCAL" to "1"
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
@@ -321,10 +384,10 @@ class RdsPostgresqlConfigurationTest {
         logConsumer.clear()
 
         val container2 = testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_ADMIN_PASSWORD" to "new-database-password",
-                        "DB_BACKUP_LOCAL" to "1"
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_ADMIN_PASSWORD" to "new-database-password",
+                "DB_BACKUP_LOCAL" to "1"
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
@@ -346,12 +409,12 @@ class RdsPostgresqlConfigurationTest {
         val localBackupDir = initWorldReadableTempDir()
 
         val container = testBed.createAndStartPostgresContainer(
-                mapOf(
-                        "DB_BACKUP_LOCAL" to "1",
-                        "DB_DATABASE_extra_database_1" to "extra-database-1",
-                        "DB_USERNAME_extra_database_1" to "extra-user-1",
-                        "DB_PASSWORD_extra_database_1" to "extra-password-1",
-                ), dataDir, logConsumer
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_DATABASE_extra_database_1" to "extra-database-1",
+                "DB_USERNAME_extra_database_1" to "extra-user-1",
+                "DB_PASSWORD_extra_database_1" to "extra-password-1",
+            ), dataDir, logConsumer
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }

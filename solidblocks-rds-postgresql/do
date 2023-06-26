@@ -34,7 +34,7 @@ function task_test {
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
     export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}"
 
-    cd "${DIR}"
+    cd "${DIR}/test"
     ./gradlew check
   )
 }
@@ -48,7 +48,7 @@ function task_build {
       --no-cache \
       --platform linux/arm,linux/amd64,linux/arm64 \
       --push \
-        -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
+      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
       .
   )
 }

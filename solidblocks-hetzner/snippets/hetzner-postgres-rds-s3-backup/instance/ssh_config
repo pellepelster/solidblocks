@@ -1,0 +1,6 @@
+Host *
+    User root
+    IdentityFile /home/pelle/git/solidblocks/solidblocks-hetzner/snippets/hetzner-postgres-rds-s3-backup/instance/test_id_rsa
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+

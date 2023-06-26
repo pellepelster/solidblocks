@@ -4,7 +4,8 @@ weight: 30
 description: A containerized PostgreSQL database with an all batteries included backup solution powered by pgBackRest
 ---
 
-A containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution powered
+A containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution
+powered
 by [pgBackRest](https://pgbackrest.org/)
 
 ## Configuration
@@ -38,7 +39,8 @@ least one type has to be configured.
 
 ### S3 Backup
 
-S3 backup needs an S3 compatible backend. For non-AWS backends (like Minio) `DB_BACKUP_S3_URI_STYLE` and `DB_BACKUP_S3_HOST`can be used to configure non-AWS servers.
+S3 backup needs an S3 compatible backend. For non-AWS backends (like Minio) `DB_BACKUP_S3_URI_STYLE`
+and `DB_BACKUP_S3_HOST`can be used to configure non-AWS servers.
 
 | configuration                      | type        | default                       | description                                                                                                                                                                      |
 |------------------------------------|-------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -62,8 +64,11 @@ unique `${database_id}`s
 | per database configuration   | type        | description                                                                      |
 |------------------------------|-------------|----------------------------------------------------------------------------------|
 | `DB_DATABASE_${database_id}` | environment | name of the database that will be crated when the PostgreSQL is initialized      | 
-| `DB_USERNAME_${database_id}` | environment | name ot the user who will be granted full access to `DB_DATABASE_${database_id}` |
+| `DB_USERNAME_${database_id}` | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}` |
 | `DB_PASSWORD_${database_id}` | environment | password for the database user                                                   |
+
+> `DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on start to allow
+> for easy password rotation or username change. Changing `DB_DATABASE_${database_id}` is currently not supported yet 
 
 If any of those settings are missing or invalid, the container will complain with a log message and exit with an error
 code:
@@ -251,3 +256,56 @@ docker run \
     -v "$(pwd)/postgres_data:/storage/data" \
     pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
 ``` 
+
+## Extensions
+
+The following PostgreSQL extensions are available by default
+
+| name               | version | description                                                            |
+|--------------------|---------|------------------------------------------------------------------------|
+| adminpack          | 2.1     | administrative functions for PostgreSQL                                |
+| amcheck            | 1.3     | functions for verifying relation integrity                             |
+| autoinc            | 1.0     | functions for autoincrementing fields                                  |
+| bloom              | 1.0     | bloom access method - signature file based index                       |
+| btree_gin          | 1.3     | support for indexing common datatypes in GIN                           |
+| btree_gist         | 1.6     | support for indexing common datatypes in GiST                          |
+| citext             | 1.6     | data type for case-insensitive character strings                       |
+| cube               | 1.5     | data type for multidimensional cubes                                   |
+| dblink             | 1.2     | connect to other PostgreSQL databases from within a database           |
+| dict_int           | 1.0     | text search dictionary template for integers                           |
+| dict_xsyn          | 1.0     | text search dictionary template for extended synonym processing        |
+| earthdistance      | 1.1     | calculate great-circle distances on the surface of the Earth           |
+| file_fdw           | 1.0     | foreign-data wrapper for flat file access                              |
+| fuzzystrmatch      | 1.1     | determine similarities and distance between strings                    |
+| hstore             | 1.8     | data type for storing sets of (key, value) pairs                       |
+| insert_username    | 1.0     | functions for tracking who changed a table                             |
+| intagg             | 1.1     | integer aggregator and enumerator (obsolete)                           |
+| intarray           | 1.5     | functions, operators, and index support for 1-D arrays of integers     |
+| isn                | 1.2     | data types for international product numbering standards               |
+| lo                 | 1.1     | Large Object maintenance                                               |
+| ltree              | 1.2     | data type for hierarchical tree-like structures                        |
+| moddatetime        | 1.0     | functions for tracking last modification time                          |
+| old_snapshot       | 1.0     | utilities in support of old_snapshot_threshold                         |
+| pageinspect        | 1.9     | inspect the contents of database pages at a low level                  |
+| pg_buffercache     | 1.3     | examine the shared buffer cache                                        |
+| pg_freespacemap    | 1.2     | examine the free space map (FSM)                                       |
+| pg_prewarm         | 1.2     | prewarm relation data                                                  |
+| pg_stat_statements | 1.9     | track planning and execution statistics of all SQL statements executed |
+| pg_surgery         | 1.0     | extension to perform surgery on a damaged relation                     |
+| pg_trgm            | 1.6     | text similarity measurement and index searching based on trigrams      |
+| pg_visibility      | 1.2     | examine the visibility map (VM) and page-level visibility info         |
+| pgcrypto           | 1.3     | cryptographic functions                                                |
+| pgrowlocks         | 1.2     | show row-level locking information                                     |
+| pgstattuple        | 1.5     | show tuple-level statistics                                            |
+| plpgsql            | 1.0     | PL/pgSQL procedural language                                           |
+| postgres_fdw       | 1.1     | foreign-data wrapper for remote PostgreSQL servers                     |
+| refint             | 1.0     | functions for implementing referential integrity (obsolete)            |
+| seg                | 1.4     | data type for representing line segments or floating-point intervals   |
+| sslinfo            | 1.2     | information about SSL certificates                                     |
+| tablefunc          | 1.0     | functions that manipulate whole tables, including crosstab             |
+| tcn                | 1.0     | Triggered change notifications                                         |
+| tsm_system_rows    | 1.0     | TABLESAMPLE method which accepts number of rows as a limit             |
+| tsm_system_time    | 1.0     | TABLESAMPLE method which accepts time in milliseconds as a limit       |
+| unaccent           | 1.1     | text search dictionary that removes accents                            |
+| uuid-ossp          | 1.1     | generate universally unique identifiers (UUIDs)                        |
+| xml2               | 1.1     | XPath querying and XSLT                                                |
