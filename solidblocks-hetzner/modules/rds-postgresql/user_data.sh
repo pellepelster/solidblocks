@@ -23,7 +23,8 @@ function install_prerequisites {
     docker.io \
     docker-compose \
     ufw \
-    uuid
+    uuid \
+    unattended-upgrades
 }
 
 function configure_ufw {
@@ -152,6 +153,10 @@ systemctl start rds@${db_instance_name}
 
 systemctl enable rds-backup-full@${db_instance_name}.timer
 systemctl enable rds-backup-incr@${db_instance_name}.timer
+
+# enable automatic system updates
+systemctl start unattended-upgrades
+systemctl enable unattended-upgrades
 
 # start of extra_user_data
 ${extra_user_data}

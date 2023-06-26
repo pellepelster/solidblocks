@@ -331,7 +331,7 @@ function task_test {
   echo "starting test: task_test_restore_from_s3"
   task_test_restore_from_s3
 
-  echo "starting test: task_test_private_network"
+  #echo "starting test: task_test_private_network"
   #task_test_private_network
 
   echo "starting test: task_test_arm"
