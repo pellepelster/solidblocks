@@ -62,7 +62,7 @@ variable "backup_incr_calendar" {
 
 variable "server_type" {
   type        = string
-  description = "hetzner cloud server type"
+  description = "hetzner cloud server type, supports x86 and ARM architectures"
   default     = "cx11"
 }
 

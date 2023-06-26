@@ -33,7 +33,7 @@ resource "hcloud_server" "jumphost" {
     ip         = "10.0.1.5"
   }
 
-  user_data = "apt-get install postgresql-client"
+  user_data = file("${path.module}/jumphost_user_data.sh")
 }
 
 module "rds-postgresql-1" {

@@ -177,7 +177,11 @@ function psql_wrapper_jumphost() {
   task_test_jumphost_ssh PGPASSWORD=password1 psql --host 10.0.1.4 --user "user1" database1
 }
 
-function test_private_network () {
+function task_test_private_network () {
+  if [[ -n "${SKIP_TESTS:-}" ]]; then
+    exit 0
+  fi
+
   terraform_wrapper "test/terraform/base" apply -auto-approve
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
@@ -198,7 +202,11 @@ function test_private_network () {
 
 }
 
-function test_arm () {
+function task_test_arm () {
+  if [[ -n "${SKIP_TESTS:-}" ]]; then
+    exit 0
+  fi
+
   terraform_wrapper "test/terraform/base" apply -auto-approve
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_arm" apply -auto-approve
@@ -213,9 +221,14 @@ function test_arm () {
   log_divider_footer
 }
 
-function test_restore_from_local() {
+function task_test_restore_from_local() {
+  if [[ -n "${SKIP_TESTS:-}" ]]; then
+    exit 0
+  fi
+
   test_setup_testbed_local
 
+  python_ensure_venv "${DIR}"
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
   test_wait_for_docker
   test_wait_for_sql
@@ -248,10 +261,15 @@ function test_restore_from_local() {
   test_clean_testbed_local
 }
 
-function test_restore_from_s3() {
+function task_test_restore_from_s3() {
+  if [[ -n "${SKIP_TESTS:-}" ]]; then
+    exit 0
+  fi
+
   #test_clean_testbed
   test_setup_testbed_s3
 
+  python_ensure_venv "${DIR}"
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
   test_wait_for_docker
   test_wait_for_sql
@@ -307,19 +325,17 @@ function task_test {
     exit 0
   fi
 
-  python_ensure_venv "${DIR}"
-
   echo "starting test: test_restore_from_local"
-  test_restore_from_local
+  task_test_restore_from_local
 
-  echo "starting test: test_restore_from_s3"
-  test_restore_from_s3
+  echo "starting test: task_test_restore_from_s3"
+  task_test_restore_from_s3
 
-  echo "starting test: test_private_network"
-  #test_private_network
+  echo "starting test: task_test_private_network"
+  #task_test_private_network
 
-  echo "starting test: test_arm"
-  test_arm
+  echo "starting test: task_test_arm"
+  task_test_arm
 }
 
 function test_clean_testbed_s3() {
@@ -368,10 +384,10 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
-  test-restore-local) test_restore_from_local "$@" ;;
-  test-restore-s3) test_restore_from_s3 "$@" ;;
-  test-private-network) test_private_network "$@" ;;
-  test-arm) test_arm "$@" ;;
+  test-restore-local) task_test_restore_from_local "$@" ;;
+  test-restore-s3) task_test_restore_from_s3 "$@" ;;
+  test-private-network) task_test_private_network "$@" ;;
+  test-arm) task_test_arm "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
   test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;

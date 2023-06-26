@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.16
+
+**IMPROVEMENTS**
+
+* add support for ARM instances to Hetzner RDS
+
+**IMPROVEMENTS**
+
 ## v0.1.15
 
 **BUGFIXES**
@@ -9,7 +17,7 @@
 **IMPROVEMENTS**
 
 * update documentation
-* verify private network snippets for hetzner rds module
+* verify private network snippets for Hetzner RDS module
 
 ## v0.1.14
 
