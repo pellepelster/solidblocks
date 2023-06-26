@@ -4,7 +4,12 @@
 
 **IMPROVEMENTS**
 
-* add support for ARM instances to Hetzner RDS
+* add support for ARM instances to Hetzner RDS module
+* clarify behaviour for Hetzner RDS database configuration
+  * document available [extensions](https://pellepelster.github.io/solidblocks/rds/#extensions)
+  * https://pellepelster.github.io/solidblocks/rds/#databases
+  * https://pellepelster.github.io/solidblocks/rds/#input%5c_databases
+* add automatic system updates to Hetzner RDS module using [unattended-upgrades](https://wiki.debian.org/UnattendedUpgrades)
 
 **IMPROVEMENTS**
 
