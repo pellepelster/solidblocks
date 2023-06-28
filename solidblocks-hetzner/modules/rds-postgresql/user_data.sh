@@ -9,6 +9,21 @@ ${pre_script}
 SOLIDBLOCKS_BASE_URL="${solidblocks_base_url}"
 STORAGE_DEVICE_DATA="${storage_device_data}"
 
+# ssl config
+SSL_ENABLE="${ssl_enable}"
+SSL_EMAIL="${ssl_email}"
+SSL_DNS_PROVIDER="${ssl_dns_provider}"
+
+SSL_DOMAINS=""
+%{ for domain in ssl_domains }
+SSL_DOMAINS="$${SSL_DOMAINS} ${domain}"
+%{ endfor }
+
+# ssl dns provider config
+%{ for key, value in ssl_dns_provider_config }
+export ${key}="${value}"
+%{ endfor }
+
 %{~ if storage_device_backup != "" ~}
 STORAGE_DEVICE_BACKUP="${storage_device_backup}"
 %{~ endif ~}
@@ -57,6 +72,7 @@ Description=full backup for %i
 OnCalendar=$${backup_calendar}
 
 Unit=rds-backup-$${backup_type}@%i.service
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -86,6 +102,20 @@ ExecStop=/usr/bin/docker-compose down -v
 
 [Install]
 WantedBy=multi-user.target
+EOF
+}
+
+function lego_run_hook_script {
+cat <<-EOF
+#!/usr/bin/env bash
+
+set -eu
+
+chown rds:rds "\$${LEGO_CERT_PATH}"
+chmod 600 "\$${LEGO_CERT_PATH}"
+
+chown rds:rds "\$${LEGO_CERT_KEY_PATH}"
+chmod 600 "\$${LEGO_CERT_KEY_PATH}"
 EOF
 }
 
@@ -119,11 +149,17 @@ services:
       %{~ if storage_device_backup != "" ~}
       - "/storage/backup:/storage/backup"
       %{~ endif ~}
+      %{~ if ssl_enable ~}
+      - "/storage/data/ssl/certificates/${ssl_domains[0]}.crt:/rds/ssl/server.crt"
+      - "/storage/data/ssl/certificates/${ssl_domains[0]}.key:/rds/ssl/server.key"
+      %{~ endif ~}
 EOF
 }
 
+
+
 groupadd --gid 10000 rds
-useradd --gid rds --uid 10000 rds
+useradd --gid rds --uid 10000 rds --create-home
 
 storage_mount "$${STORAGE_DEVICE_DATA}" "/storage/data"
 
@@ -135,6 +171,12 @@ chown -R rds:rds "/storage"
 
 install_prerequisites
 configure_ufw
+
+if [[ "$${SSL_ENABLE}" == "true" ]]; then
+  lego_run_hook_script > ~rds/lego_run_hook.sh
+  chmod +x ~rds/lego_run_hook.sh
+  lego_setup_dns "/storage/data/ssl" "$${SSL_EMAIL}" "$${SSL_DOMAINS}" "$${SSL_DNS_PROVIDER}" "$(readlink -f ~rds/lego_run_hook.sh)" "https://acme-staging-v02.api.letsencrypt.org/directory"
+fi
 
 mkdir -p "/opt/dockerfiles/${db_instance_name}"
 docker_compose_config > "/opt/dockerfiles/${db_instance_name}/docker-compose.yml"

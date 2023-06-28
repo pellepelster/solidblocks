@@ -12,3 +12,8 @@ output "this_server_id" {
   value       = hcloud_server.rds.id
   description = "Hetzner ID of the created server"
 }
+
+output "user_data" {
+  value     = local.user_data
+  sensitive = false
+}

@@ -45,6 +45,16 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 
+    systemProperties["junit.jupiter.execution.parallel.enabled"] = "true"
+    systemProperties["junit.jupiter.execution.parallel.mode.default"] = "concurrent"
+    systemProperties["junit.jupiter.execution.parallel.config.strategy"] = "fixed"
+
+    if (System.getenv("CI") != null) {
+        systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 4
+    } else {
+        systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 10
+    }
+
     testLogging {
         this.showStandardStreams = true
         events = setOf(

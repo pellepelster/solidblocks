@@ -42,13 +42,15 @@ function bootstrap_solidblocks() {
   useradd solidblocks -g solidblocks
 
   # shellcheck disable=SC2086
-  mkdir -p ${SOLIDBLOCKS_DIR}/{templates,lib}
+  mkdir -p ${SOLIDBLOCKS_DIR}/{templates,lib,secrets}
 
   chmod 770 ${SOLIDBLOCKS_DIR}
   chown solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
 
   chmod -R 770 ${SOLIDBLOCKS_DIR}
   chown -R solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
+
+  chmod -R 700 ${SOLIDBLOCKS_DIR}/secrets
 
   local temp_file="$(mktemp)"
 
@@ -62,4 +64,5 @@ function bootstrap_solidblocks() {
   )
 
   source "${SOLIDBLOCKS_DIR}/lib/storage.sh"
+  source "${SOLIDBLOCKS_DIR}/lib/lego.sh"
 }

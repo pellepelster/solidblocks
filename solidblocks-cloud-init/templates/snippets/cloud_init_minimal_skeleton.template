@@ -9,3 +9,5 @@ __BOOTSTRAP_SOLIDBLOCKS_CLOUD__
 bootstrap_solidblocks
 
 storage_mount "${STORAGE_DEVICE}" "/data1"
+
+lego_setup_dns "${SSL_PATH}" "${SSL_EMAIL}" "${SSL_DOMAINS}" "${SSL_DNS_PROVIDER}" "/bin/true" "https://acme-staging-v02.api.letsencrypt.org/directory"

@@ -55,6 +55,11 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 | <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.1.16"` | no |
 | <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | used for integration tests to inject test versions | `string` | `"v0.1.16"` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys for instance access | `list(number)` | n/a | yes |
+| <a name="input_ssl_dns_provider"></a> [ssl\_dns\_provider](#input\_ssl\_dns\_provider) | provider type to use for letsencrypt DNS challenge, see https://go-acme.github.io/lego/dns/ for available options | `string` | `""` | no |
+| <a name="input_ssl_dns_provider_config"></a> [ssl\_dns\_provider\_config](#input\_ssl\_dns\_provider\_config) | environment config variable to use for DNS provider selected via `ssl_dns_provider`, see documentation for selected provider for required configuration | `map(string)` | `{}` | no |
+| <a name="input_ssl_domains"></a> [ssl\_domains](#input\_ssl\_domains) | domains to use for generated certificate | `list(string)` | `[]` | no |
+| <a name="input_ssl_email"></a> [ssl\_email](#input\_ssl\_email) | email to use for letsencrypt account | `string` | `""` | no |
+| <a name="input_ssl_enable"></a> [ssl\_enable](#input\_ssl\_enable) | enable automatic ssl certificate creation using letsencrypt | `bool` | `false` | no |
 
 ## Outputs
 
@@ -63,4 +68,5 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 | <a name="output_ipv4_address"></a> [ipv4\_address](#output\_ipv4\_address) | IpV4 address of the created server if applicable |
 | <a name="output_ipv4_address_private"></a> [ipv4\_address\_private](#output\_ipv4\_address\_private) | private IpV4 address of the created server if applicable |
 | <a name="output_this_server_id"></a> [this\_server\_id](#output\_this\_server\_id) | Hetzner ID of the created server |
+| <a name="output_user_data"></a> [user\_data](#output\_user\_data) | n/a |
 <!-- END_TF_DOCS -->

@@ -32,6 +32,15 @@ fun GenericContainer<out GenericContainer<*>>.createJdbi(
     return Jdbi.create("jdbc:postgresql://localhost:$port/${database}?user=${username}&password=${password}")
 }
 
+fun GenericContainer<out GenericContainer<*>>.createJdbiSSL(
+    username: String = RdsPostgresqlMinioBackupIntegrationTest.databaseUser,
+    password: String = RdsPostgresqlMinioBackupIntegrationTest.databasePassword,
+    database: String = RdsPostgresqlMinioBackupIntegrationTest.database
+): Jdbi {
+    val port = this.getMappedPort(5432)
+    return Jdbi.create("jdbc:postgresql://localhost:$port/${database}?user=${username}&password=${password}&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory")
+}
+
 fun GenericContainer<out GenericContainer<*>>.assertBackupFileHeaders(fileHeader: String) {
     val result = this.execInContainer("/test-dump-backup-file-headers.sh")
     Assertions.assertThat(result.stdout.lines()).hasSizeGreaterThan(4)

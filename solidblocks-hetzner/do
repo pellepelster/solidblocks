@@ -48,6 +48,10 @@ function terraform_wrapper {
     fi
 
     export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
+    export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/dns_api_token)}"
+
+    export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
+
     export AWS_DEFAULT_REGION="eu-central-1"
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
     export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
@@ -128,7 +132,7 @@ function test_setup_testbed_s3() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
 
-  test_wait_for_ssh
+  test_wait_for_cloud_init
 }
 
 function test_setup_testbed_local() {
@@ -136,12 +140,19 @@ function test_setup_testbed_local() {
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_local" apply -auto-approve
 
-  test_wait_for_ssh
+  test_wait_for_cloud_init
 }
 
 function test_wait_for_ssh() {
   while ! task_test_ssh whoami; do
     log_echo_warning "waiting for ssh"
+    sleep 10
+  done
+}
+
+function test_wait_for_cloud_init() {
+  while ! task_test_ssh test -f /run/cloud-init/result.json; do
+    log_echo_warning "waiting for cloud init to finish"
     sleep 10
   done
 }
@@ -173,6 +184,10 @@ function psql_wrapper() {
   PGPASSWORD=password1 psql --host "$(test_ip_address)" --user "user1" database1
 }
 
+function psql_wrapper_ssl() {
+  PGPASSWORD=password1 psql --set=sslmode=required --host "$(test_ip_address)" --user "user1" database1
+}
+
 function psql_wrapper_jumphost() {
   task_test_jumphost_ssh PGPASSWORD=password1 psql --host 10.0.1.4 --user "user1" database1
 }
@@ -186,7 +201,7 @@ function task_test_private_network () {
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
 
-  test_wait_for_ssh
+  test_wait_for_cloud_init
 
   while ! task_test_jumphost_ssh whoami; do
     log_echo_warning "waiting for ssh"
@@ -211,10 +226,31 @@ function task_test_arm () {
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_arm" apply -auto-approve
 
-  test_wait_for_ssh
+  test_wait_for_cloud_init
 
   log_divider_header "waiting for sql connectivity"
   while ! echo "SELECT 1;" | psql_wrapper; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+}
+
+function task_test_ssl () {
+  if [[ -n "${SKIP_TESTS:-}" ]]; then
+    exit 0
+  fi
+
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_ssl" apply -auto-approve
+
+  test_wait_for_cloud_init
+
+  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | psql_wrapper_ssl; do
     log_echo_warning "still waiting"
     sleep 5
   done
@@ -336,6 +372,9 @@ function task_test {
 
   echo "starting test: task_test_arm"
   task_test_arm
+
+  echo "starting test: task_test_ssl"
+  task_test_ssl
 }
 
 function test_clean_testbed_s3() {
@@ -388,6 +427,7 @@ case ${arg} in
   test-restore-s3) task_test_restore_from_s3 "$@" ;;
   test-private-network) task_test_private_network "$@" ;;
   test-arm) task_test_arm "$@" ;;
+  test-ssl) task_test_ssl "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
   test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;

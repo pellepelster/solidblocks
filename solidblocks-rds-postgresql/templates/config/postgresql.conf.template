@@ -9,4 +9,12 @@ unix_socket_directories =  '/rds/socket'
 log_destination = 'stderr'
 logging_collector = 'off'
 
+{{ if and (file.Exists "/rds/ssl/server.crt") (file.Exists "/rds/ssl/server.key") }}
+ssl = on
+ssl_cert_file = '/rds/ssl/server.crt'
+ssl_key_file = '/rds/ssl/server.key'
+ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
+ssl_prefer_server_ciphers = on
+{{end}}
+
 {{ env.Getenv "DB_POSTGRES_EXTRA_CONFIG" "" }}

@@ -50,6 +50,20 @@ if ! mount | grep "${DATA_DIR}"; then
     exit 1
 fi
 
+if [[ -n "${SSL_SERVER_KEY:-}" ]] && [[ -n "${SSL_SERVER_CERT:-}" ]]; then
+  mkdir -p /rds/ssl
+  (
+    cd "/rds/ssl"
+    touch server.key
+    chmod 600 server.key
+    echo "${SSL_SERVER_KEY}" | base64 -d > server.key
+
+    touch server.crt
+    chmod 600 server.crt
+    echo "${SSL_SERVER_CERT}" | base64 -d > server.crt
+  )
+fi
+
 log "starting..."
 
 export PG_DATA_DIR="${DATA_DIR}/${DB_INSTANCE_NAME}"

@@ -4,13 +4,7 @@ locals {
   ] : []
 }
 
-resource "hcloud_server" "rds" {
-  name        = var.name
-  image       = "debian-11"
-  server_type = var.server_type
-  ssh_keys    = var.ssh_keys
-  location    = var.location
-
+locals {
   user_data = templatefile("${path.module}/user_data.sh", {
     db_instance_name                 = var.name
     solidblocks_base_url             = var.solidblocks_base_url
@@ -29,10 +23,26 @@ resource "hcloud_server" "rds" {
 
     databases = var.databases
 
+    ssl_enable              = var.ssl_enable
+    ssl_email               = var.ssl_email
+    ssl_domains             = var.ssl_domains
+    ssl_dns_provider        = var.ssl_dns_provider
+    ssl_dns_provider_config = var.ssl_dns_provider_config
+
     extra_user_data = var.extra_user_data
     pre_script      = var.pre_script
     post_script     = var.post_script
   })
+}
+
+resource "hcloud_server" "rds" {
+  name        = var.name
+  image       = "debian-11"
+  server_type = var.server_type
+  ssh_keys    = var.ssh_keys
+  location    = var.location
+
+  user_data = local.user_data
 
   public_net {
     ipv4_enabled = var.public_net_ipv4_enabled

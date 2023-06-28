@@ -17,6 +17,9 @@ function task_build {
     mkdir -p "${DIR}/build/solidblocks-cloud-init/lib"
     cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-cloud-init/lib/"
 
+    #mkdir -p "${DIR}/build/solidblocks-cloud-init/bin"
+    #cp -rv ${DIR}/bin/* "${DIR}/build/solidblocks-cloud-init/bin/"
+
     cd "${DIR}/build/solidblocks-cloud-init"
 
     echo "creating distribution '${DIR}/build/solidblocks-cloud-init-${VERSION}.zip'"
@@ -49,6 +52,9 @@ function terraform_wrapper {
     terraform init
 
     export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
+    export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/dns_api_token)}"
+    export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
+
     export AWS_DEFAULT_REGION="eu-central-1"
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
     export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
@@ -68,19 +74,29 @@ function task_test {
   clean_cloud_resources
   terraform_wrapper apply -auto-approve -var="solidblocks_version=${VERSION}"
 
-  while ! ssh -F ${DIR}/test/terraform/ssh_config test whoami; do
-    log_echo_error "waiting for test server"
+  while ! ssh -F ${DIR}/test/terraform/ssh_config test-x86 test -f /run/cloud-init/result.json; do
+    log_echo_error "waiting for test-x86 server cloud init run"
     sleep 1
   done
 
-  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test --show-capture=all -s "${DIR}/test"
+  while ! ssh -F ${DIR}/test/terraform/ssh_config test-arm test -f /run/cloud-init/result.json; do
+    log_echo_error "waiting for test-arm server cloud init run"
+    sleep 1
+  done
+
+  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-x86 --show-capture=all -s "${DIR}/test"
+  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-arm --show-capture=all -s "${DIR}/test"
+
   clean_cloud_resources
 }
 
-function task_ssh_test {
+function task_test_ssh {
   (
+    local type=${1}
+    shift || true
+
     cd ${DIR}/test/terraform
-    ssh -F ${DIR}/test/terraform/ssh_config test ${@}
+    ssh -F ${DIR}/test/terraform/ssh_config "test-${type}" ${@}
   )
 }
 
@@ -117,7 +133,8 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
-  ssh-test) task_ssh_test "$@" ;;
+  test-ssh-x86) task_test_ssh "x86" "$@" ;;
+  test-ssh-arm) task_test_ssh "arm" "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac

@@ -9,3 +9,8 @@ __BOOTSTRAP_SOLIDBLOCKS_CLOUD__
 bootstrap_solidblocks
 
 storage_mount "/dev/sdb1" "/data1"
+
+export HETZNER_API_KEY="${hetzner_dns_api_token}"
+export HETZNER_HTTP_TIMEOUT="10"
+
+lego_setup_dns "/data1/ssl" "contact@example.com" "test1.example.com test2.example.com" "hetzner"

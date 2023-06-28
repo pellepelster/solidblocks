@@ -115,6 +115,47 @@ class RdsPostgresqlConfigurationTest {
     }
 
     @Test
+    fun testSSL(testBed: RdsTestBed) {
+
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val sslServerKey =
+            Base64.getEncoder()
+                .encodeToString(
+                    RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/rds.key.pem").readBytes()
+                )
+
+        val sslServerCert =
+            Base64.getEncoder()
+                .encodeToString(
+                    RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/rds.pem").readBytes()
+                )
+
+        val container = testBed.createAndStartPostgresContainer(
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "SSL_SERVER_CERT" to sslServerCert,
+                "SSL_SERVER_KEY" to sslServerKey,
+            ), dataDir
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        with(testBed.logConsumer) {
+            waitForLogLine("database system is ready to accept connections")
+        }
+
+        val username = UUID.randomUUID().toString()
+        container.createJdbiSSL().also {
+            it.waitForReady()
+            it.createUserTable()
+            it.insertUser(username)
+            it.assertHasUserWithName(username)
+        }
+    }
+
+    @Test
     fun testIgnoresUnreadableInitSql(testBed: RdsTestBed) {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()

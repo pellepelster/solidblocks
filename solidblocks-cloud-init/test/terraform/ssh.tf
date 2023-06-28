@@ -12,7 +12,8 @@ resource "local_file" "ssh_public_key" {
 
 resource "local_file" "ssh_public_config" {
   content = templatefile("${path.module}/ssh_config.template", {
-    "hostname"      = hcloud_server.test.ipv4_address
+    "hostname-x86"      = hcloud_server.test-x86.ipv4_address
+    "hostname-arm"      = hcloud_server.test-arm.ipv4_address
     "identity_file" = abspath(local_file.ssh_private_key.filename)
     }
   )

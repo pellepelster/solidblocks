@@ -17,12 +17,11 @@ repo1-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
 
 {{ if (file.Exists "/rds/certificates/ca.pem") }}
 repo1-storage-ca-file=/rds/certificates/ca.pem
+{{end}}
 
 {{ if ne (getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE") "" }}
 repo1-cipher-pass="{{ getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE" }}"
 repo1-cipher-type=aes-256-cbc
-{{end}}
-
 {{end}}
 
 repo1-retention-full-type={{ getenv "DB_BACKUP_S3_RETENTION_FULL_TYPE" "count" }}
