@@ -103,6 +103,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
                 ) + environment
             )
             customizer.invoke(it)
+            logger.info { "starting postgres container" }
             it.start()
         }
     }

@@ -8,7 +8,7 @@ resource "hcloud_volume" "data" {
 
 module "rds-postgresql-1" {
   source = "../../../modules/rds-postgresql"
-  name   = "rds-postgresql-ssl-${var.test_id}"
+  name   = "rds-postgresql-${var.test_id}"
 
   location = var.location
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
