@@ -12,7 +12,7 @@ avoid data loss it is not possible to run the database without one of the backup
 
 ## Design Goals
 
-Acknowledging that there are a lot of available solutions to run PostgreSQL in the cloud it is important to emphasize the design goals of this solution to be able to make an informed decision on if an dhow to use it
+Acknowledging that there are a lot of available solutions to run PostgreSQL in the cloud it is important to emphasize the design goals of this solution to be able to make an informed decision on if and how to use it
 
 * First and foremost goal is to preserve the data stored in the PostgreSQL instance. This is ensured by an extensive set of [full integration tests](https://github.com/pellepelster/solidblocks/tree/main/solidblocks-rds-postgresql/test) replicating the intended usage scenarios
 * Reduced complexity through single node operations. Running a PostgreSQL server with replication or in multi master comes with its own set of diverse failure scenarios and edge-cases. This solution aims at workloads that can easily handled by a single node and if in doubt favours [MTTR](https://de.wikipedia.org/wiki/Mean_Time_To_Recover) over [MTBF](https://de.wikipedia.org/wiki/Mean_Time_Between_Failures)
@@ -68,14 +68,14 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 | <a name="input_public_net_ipv6_enabled"></a> [public\_net\_ipv6\_enabled](#input\_public\_net\_ipv6\_enabled) | enable/disable public ip addresses, see also https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#public_net | `bool` | `true` | no |
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | hetzner cloud server type, supports x86 and ARM architectures | `string` | `"cx11"` | no |
 | <a name="input_solidblocks_base_url"></a> [solidblocks\_base\_url](#input\_solidblocks\_base\_url) | override base url for testing purposes | `string` | `"https://github.com"` | no |
-| <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.1.16"` | no |
-| <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | used for integration tests to inject test versions | `string` | `"v0.1.16"` | no |
+| <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.1.17"` | no |
+| <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | used for integration tests to inject test versions | `string` | `"v0.1.17"` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys for instance access | `list(number)` | n/a | yes |
-| <a name="input_ssl_dns_provider"></a> [ssl\_dns\_provider](#input\_ssl\_dns\_provider) | provider type to use for letsencrypt DNS challenge, see https://go-acme.github.io/lego/dns/ for available options | `string` | `""` | no |
-| <a name="input_ssl_dns_provider_config"></a> [ssl\_dns\_provider\_config](#input\_ssl\_dns\_provider\_config) | environment config variable to use for DNS provider selected via `ssl_dns_provider`, see documentation for selected provider for required configuration | `map(string)` | `{}` | no |
-| <a name="input_ssl_domains"></a> [ssl\_domains](#input\_ssl\_domains) | domains to use for generated certificate | `list(string)` | `[]` | no |
-| <a name="input_ssl_email"></a> [ssl\_email](#input\_ssl\_email) | email to use for letsencrypt account | `string` | `""` | no |
-| <a name="input_ssl_enable"></a> [ssl\_enable](#input\_ssl\_enable) | enable automatic ssl certificate creation using letsencrypt | `bool` | `false` | no |
+| <a name="input_ssl_dns_provider"></a> [ssl\_dns\_provider](#input\_ssl\_dns\_provider) | provider type to use for LetsEncrypt DNS challenge, see https://go-acme.github.io/lego/dns/ for available options | `string` | `""` | no |
+| <a name="input_ssl_dns_provider_config"></a> [ssl\_dns\_provider\_config](#input\_ssl\_dns\_provider\_config) | environment configuration variable(s) to use for DNS provider selected via `ssl_dns_provider`, see documentation of selected provider for required configuration variables | `map(string)` | `{}` | no |
+| <a name="input_ssl_domains"></a> [ssl\_domains](#input\_ssl\_domains) | domains to use for generated certificates | `list(string)` | `[]` | no |
+| <a name="input_ssl_email"></a> [ssl\_email](#input\_ssl\_email) | email address to use for LetsEncrypt account creation | `string` | `""` | no |
+| <a name="input_ssl_enable"></a> [ssl\_enable](#input\_ssl\_enable) | enable automatic ssl certificate creation using LetsEncrypt | `bool` | `false` | no |
 
 ## Outputs
 

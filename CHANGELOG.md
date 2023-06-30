@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.17
+
+**IMPROVEMENTS**
+
+* [LetsEncrypt module](https://pellepelster.github.io/solidblocks/cloud-init/lego/) for cloud-init script library 
+* LetsEncrypt support for Hetzner RDS Postgres module to support [automatic SSL provisioning](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#input\_ssl\_enable) for PostgreSQL databases
+
 ## v0.1.16
 
 **IMPROVEMENTS**
