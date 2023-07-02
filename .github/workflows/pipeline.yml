@@ -162,6 +162,7 @@ jobs:
       max-parallel: 4
       fail-fast: false
       matrix:
+        #test_name: [test-restore-local, test-restore-s3, test-arm, test-ssl]
         test_name: [test-restore-local, test-restore-s3, test-private-network, test-arm, test-ssl]
     env:
       HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}

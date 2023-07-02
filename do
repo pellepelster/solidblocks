@@ -24,6 +24,8 @@ function task_build {
         VERSION=${VERSION} "./do" build
       )
     done
+
+    task_build_documentation
 }
 
 function task_clean_aws {

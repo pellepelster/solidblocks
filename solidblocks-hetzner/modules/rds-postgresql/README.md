@@ -24,7 +24,6 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 | [hcloud_server.rds](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server) | resource |
 | [hcloud_volume_attachment.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume_attachment) | resource |
 | [hcloud_volume_attachment.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume_attachment) | resource |
-| [hcloud_network.network](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/network) | data source |
 | [hcloud_volume.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
 | [hcloud_volume.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
 | [http_http.cloud_init_bootstrap_solidblocks](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
@@ -45,7 +44,7 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 | <a name="input_labels"></a> [labels](#input\_labels) | A list of labels to be attached to the server instance. | `map(any)` | `{}` | no |
 | <a name="input_location"></a> [location](#input\_location) | hetzner location | `string` | n/a | yes |
 | <a name="input_name"></a> [name](#input\_name) | unique name for the postgres rds instance | `string` | n/a | yes |
-| <a name="input_network_id"></a> [network\_id](#input\_network\_id) | network the created sever should be attached to, network\_ip also needs to bet set in that case | `number` | `0` | no |
+| <a name="input_network_id"></a> [network\_id](#input\_network\_id) | network the created sever should be attached to, network\_ip also needs to bet set in that case | `number` | `null` | no |
 | <a name="input_network_ip"></a> [network\_ip](#input\_network\_ip) | ip address in the attached network | `string` | `null` | no |
 | <a name="input_post_script"></a> [post\_script](#input\_post\_script) | shell script that will be executed after the server configuration is executed | `string` | `""` | no |
 | <a name="input_pre_script"></a> [pre\_script](#input\_pre\_script) | shell script that will be executed before the server configuration is executed | `string` | `""` | no |

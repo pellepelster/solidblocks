@@ -122,7 +122,7 @@ variable "public_net_ipv6_enabled" {
 variable "network_id" {
   type        = number
   description = "network the created sever should be attached to, network_ip also needs to bet set in that case"
-  default     = 0
+  default     = null
 }
 
 variable "network_ip" {
