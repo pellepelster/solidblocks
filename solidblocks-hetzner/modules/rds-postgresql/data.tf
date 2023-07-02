@@ -10,3 +10,9 @@ data "hcloud_volume" "backup" {
   count = var.backup_volume > 0 ? 1 : 0
   id    = var.backup_volume
 }
+
+
+data "hcloud_network" "network" {
+  count = var.network_id > 0 ? 1 : 0
+  id    = var.network_id
+}

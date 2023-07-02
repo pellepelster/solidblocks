@@ -1,6 +1,6 @@
 locals {
   networks = var.network_id > 0 && var.network_ip != null ? [
-    { network_id : var.network_id, network_ip : var.network_ip }
+    { network_id : data.hcloud_network.network[0].id, network_ip : var.network_ip }
   ] : []
 }
 

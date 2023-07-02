@@ -23,14 +23,14 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_hcloud"></a> [hcloud](#requirement\_hcloud) | >= 1.38.2 |
+| <a name="requirement_hcloud"></a> [hcloud](#requirement\_hcloud) | >= 1.40.0 |
 | <a name="requirement_http"></a> [http](#requirement\_http) | >= 3.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | >= 1.38.2 |
+| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | >= 1.40.0 |
 | <a name="provider_http"></a> [http](#provider\_http) | >= 3.3.0 |
 
 ## Resources
