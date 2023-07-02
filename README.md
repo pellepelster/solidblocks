@@ -133,7 +133,7 @@ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    pellepelster/solidblocks-rds-postgresql:v0.1.15
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:v0.1.15
 ```
 
 ### [Solidblocks Hetzner RDS PostgreSQL](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/)

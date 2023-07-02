@@ -24,6 +24,12 @@ permissions:
   packages: write
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Terraform
+        run: terraform -version
+
   solidblocks-shell:
     runs-on: ubuntu-latest
     env:
@@ -156,8 +162,7 @@ jobs:
       max-parallel: 4
       fail-fast: false
       matrix:
-        #test_name: [test-restore-local, test-restore-s3, test-private-network, test-arm, test-ssl]
-        test_name: [test-restore-local, test-restore-s3, test-arm, test-ssl]
+        test_name: [test-restore-local, test-restore-s3, test-private-network, test-arm, test-ssl]
     env:
       HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
@@ -180,18 +185,22 @@ jobs:
     name: solidblocks-minio
     runs-on: ubuntu-latest
     steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
       - name: Build
         run: solidblocks-minio/do build
       - name: Test
         run: solidblocks-minio/do test
-      - name: Archive Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: solidblocks-minio
-          path: |
-            solidblocks-minio/build/solidblocks-minio-*.tar
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v3
@@ -204,6 +213,12 @@ jobs:
     name: solidblocks-debug-container
     runs-on: ubuntu-latest
     steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -211,16 +226,14 @@ jobs:
           distribution: 'adopt'
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
       - name: Build
         run: solidblocks-debug-container/do build
       - name: Test
         run: solidblocks-debug-container/do test
-      - name: Archive Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: solidblocks-debug-container
-          path: |
-            solidblocks-debug-container/build/solidblocks-debug-container-*.tar
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v3
@@ -264,13 +277,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Download Minio Docker Image
-        uses: actions/download-artifact@v3
-        with:
-          name: solidblocks-minio
-          path: /tmp
-      - name: Import Minio Docker Image
-        run: docker load < /tmp/solidblocks-minio-*.tar
       - name: Test
         run: solidblocks-rds-postgresql/do test
       - name: Archive Test Artifacts
@@ -306,10 +312,6 @@ jobs:
         uses: actions/checkout@v3
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
-      - name: Import Minio Docker Image
-        run: docker load < solidblocks-minio/solidblocks-minio-*.tar
-      - name: Import Debug Container Docker Image
-        run: docker load < solidblocks-debug-container/solidblocks-debug-container-*.tar
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:

@@ -53,7 +53,8 @@ function task_build {
 }
 
 function task_release_docker {
-  docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
+  docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
+  #docker buildx imagetools create --tag "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
 }
 
 function task_clean {

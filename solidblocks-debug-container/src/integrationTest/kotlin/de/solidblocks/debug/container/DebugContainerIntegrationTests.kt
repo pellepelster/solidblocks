@@ -18,7 +18,7 @@ class KGenericContainer(imageName: String) : GenericContainer<KGenericContainer>
 class DebugContainerIntegrationTests {
 
     @Container
-    private val debugContainer = KGenericContainer("solidblocks-debug-container:latest")
+    private val debugContainer = KGenericContainer("ghcr.io/pellepelster/solidblocks-debug-container:${System.getenv("VERSION") ?: "snapshot"}-rc")
             .withExposedPorts(8080)
 
     @Test

@@ -1,10 +1,4 @@
 locals {
-  networks = var.network_id > 0 && var.network_ip != null ? [
-    { network_id : data.hcloud_network.network[0].id, network_ip : var.network_ip }
-  ] : []
-}
-
-locals {
   user_data = templatefile("${path.module}/user_data.sh", {
     db_instance_name                 = var.name
     solidblocks_base_url             = var.solidblocks_base_url
@@ -35,7 +29,23 @@ locals {
   })
 }
 
-resource "hcloud_server" "rds" {
+/*
+currently the hcloud provider produces inconsistent plan for this dynamic block
+
+  dynamic "network" {
+    for_each = var.network_id > 0 && var.network_ip != null ? [
+      { network_id : var.network_id, network_ip : var.network_ip }
+    ] : []
+    content {
+      network_id = network.value.network_id
+      ip         = network.value.network_ip
+    }
+  }
+*/
+
+resource "hcloud_server" "rds_public" {
+  count = var.network_id > 0 && var.network_ip != null ? 0 : 1
+
   name        = var.name
   image       = "debian-11"
   server_type = var.server_type
@@ -49,24 +59,40 @@ resource "hcloud_server" "rds" {
     ipv6_enabled = var.public_net_ipv6_enabled
   }
 
-  dynamic "network" {
-    for_each = local.networks
-    content {
-      network_id = network.value.network_id
-      ip         = network.value.network_ip
-    }
+  labels = var.labels
+}
+
+resource "hcloud_server" "rds_private" {
+  count = var.network_id > 0 && var.network_ip != null ? 1 : 0
+
+  name        = var.name
+  image       = "debian-11"
+  server_type = var.server_type
+  ssh_keys    = var.ssh_keys
+  location    = var.location
+
+  user_data = local.user_data
+
+  public_net {
+    ipv4_enabled = var.public_net_ipv4_enabled
+    ipv6_enabled = var.public_net_ipv6_enabled
+  }
+
+  network {
+    network_id = var.network_id
+    ip         = var.network_ip
   }
 
   labels = var.labels
 }
 
 resource "hcloud_volume_attachment" "data" {
-  server_id = hcloud_server.rds.id
+  server_id = coalescelist(hcloud_server.rds_private, hcloud_server.rds_public)[0].id
   volume_id = var.data_volume
 }
 
 resource "hcloud_volume_attachment" "backup" {
   count     = var.backup_volume > 0 ? 1 : 0
-  server_id = hcloud_server.rds.id
+  server_id = coalescelist(hcloud_server.rds_private, hcloud_server.rds_public)[0].id
   volume_id = var.backup_volume
 }

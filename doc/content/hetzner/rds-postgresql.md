@@ -23,14 +23,14 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_hcloud"></a> [hcloud](#requirement\_hcloud) | >= 1.40.0 |
+| <a name="requirement_hcloud"></a> [hcloud](#requirement\_hcloud) | >= 1.38.2 |
 | <a name="requirement_http"></a> [http](#requirement\_http) | >= 3.3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | >= 1.40.0 |
+| <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | >= 1.38.2 |
 | <a name="provider_http"></a> [http](#provider\_http) | >= 3.3.0 |
 
 ## Resources
@@ -40,6 +40,7 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 | [hcloud_server.rds](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server) | resource |
 | [hcloud_volume_attachment.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume_attachment) | resource |
 | [hcloud_volume_attachment.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume_attachment) | resource |
+| [hcloud_network.network](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/network) | data source |
 | [hcloud_volume.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
 | [hcloud_volume.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
 | [http_http.cloud_init_bootstrap_solidblocks](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |

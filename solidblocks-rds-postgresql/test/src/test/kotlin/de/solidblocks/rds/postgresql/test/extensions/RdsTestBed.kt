@@ -27,16 +27,8 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
     val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-    private fun imageVersion(image: String): String {
-        if (System.getenv("VERSION") != null) {
-            return "${image}:${System.getenv("VERSION")}"
-        }
-
-        return image
-    }
-
     private fun createContainer(dockerImageName: String): GenericContainer<out GenericContainer<*>> {
-        val container = GenericContainer(imageVersion(dockerImageName))
+        val container = GenericContainer(dockerImageName)
         containers.add(container)
         return container
     }
@@ -47,7 +39,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         val storageDir = initWorldReadableTempDir().absolutePath
 
         logger.info { "starting minio instance with storage dir '${storageDir}'" }
-        val container = createContainer(imageVersion("solidblocks-minio")).also {
+        val container = createContainer("ghcr.io/pellepelster/solidblocks-minio:${System.getenv("VERSION") ?: "snapshot"}-rc").also {
             it.withLogConsumer(logConsumer)
             it.withNetworkAliases(RdsPostgresqlMinioBackupIntegrationTest.backupHost)
             it.withNetwork(network)

@@ -1,15 +1,15 @@
 output "ipv4_address" {
-  value       = hcloud_server.rds.ipv4_address
+  value       = coalescelist(hcloud_server.rds_private, hcloud_server.rds_public)[0].ipv4_address
   description = "IpV4 address of the created server if applicable"
 }
 
 output "ipv4_address_private" {
-  value       = try(one(hcloud_server.rds.network).ip, null)
+  value       = try(one(hcloud_server.rds_private[0].network).ip, null)
   description = "private IpV4 address of the created server if applicable"
 }
 
 output "this_server_id" {
-  value       = hcloud_server.rds.id
+  value       = coalescelist(hcloud_server.rds_private, hcloud_server.rds_public)[0].id
   description = "Hetzner ID of the created server"
 }
 

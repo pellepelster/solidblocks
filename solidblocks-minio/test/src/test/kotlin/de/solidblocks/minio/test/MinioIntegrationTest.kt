@@ -31,8 +31,10 @@ class MinioIntegrationTest {
         const val accessKey = "user1"
         const val secretKey = "ccbaa67e-cf26-432f-a11f-0c9e72abccf8"
 
-        val minioCertificatePrivateBase64 = Base64.getEncoder().encodeToString(MinioIntegrationTest::class.java.getResource("/minio.key.pem")?.readBytes())
-        val minioCertificatePublicBase64 = Base64.getEncoder().encodeToString(MinioIntegrationTest::class.java.getResource("/minio.pem")?.readBytes())
+        val minioCertificatePrivateBase64 = Base64.getEncoder()
+            .encodeToString(MinioIntegrationTest::class.java.getResource("/minio.key.pem")?.readBytes())
+        val minioCertificatePublicBase64 =
+            Base64.getEncoder().encodeToString(MinioIntegrationTest::class.java.getResource("/minio.pem")?.readBytes())
 
         private val caPublic = MinioIntegrationTest::class.java.getResource("/ca.pem")?.openStream()
 
@@ -41,7 +43,7 @@ class MinioIntegrationTest {
         private val sslFactory = SSLFactory.builder().withTrustMaterial(caCert).build()
 
         val httpClient =
-                OkHttpClient.Builder().sslSocketFactory(sslFactory.sslSocketFactory, sslFactory.trustManager.get()).build()
+            OkHttpClient.Builder().sslSocketFactory(sslFactory.sslSocketFactory, sslFactory.trustManager.get()).build()
 
         var container: GenericContainer<out GenericContainer<*>>? = null
     }
@@ -58,15 +60,15 @@ class MinioIntegrationTest {
     fun doesNotStartIfNoStorageIsMounted() {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
-        container = GenericContainer(imageVersion("solidblocks-minio")).apply {
+        container = GenericContainer(imageName("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
             withEnv(
-                    mapOf(
-                            "MINIO_ADMIN_USER" to "admin12345",
-                            "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
-                    )
+                mapOf(
+                    "MINIO_ADMIN_USER" to "admin12345",
+                    "MINIO_ADMIN_PASSWORD" to "admin12345",
+                    "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                    "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
+                )
             )
         }
 
@@ -77,12 +79,8 @@ class MinioIntegrationTest {
         logConsumer.waitForLogLine("[solidblocks-minio] storage dir '/storage/data' not mounted")
     }
 
-    fun imageVersion(image: String): String {
-        if (System.getenv("VERSION") != null) {
-            return "${image}:${System.getenv("VERSION")}"
-        }
-
-        return image
+    fun imageName(image: String): String {
+        return "ghcr.io/pellepelster/${image}:${System.getenv("VERSION") ?: "snapshot"}-rc"
     }
 
     @Test
@@ -90,16 +88,16 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("startsWithStorageMount")
 
-        container = GenericContainer(imageVersion("solidblocks-minio")).apply {
+        container = GenericContainer(imageName("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withEnv(
-                    mapOf(
-                            "MINIO_ADMIN_USER" to "admin12345",
-                            "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
-                    )
+                mapOf(
+                    "MINIO_ADMIN_USER" to "admin12345",
+                    "MINIO_ADMIN_PASSWORD" to "admin12345",
+                    "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                    "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
+                )
             )
         }
         container!!.start()
@@ -111,25 +109,25 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        container = GenericContainer(imageVersion("solidblocks-minio")).apply {
+        container = GenericContainer(imageName("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(443)
             withEnv(
-                    mapOf(
-                            "MINIO_ADMIN_USER" to "admin12345",
-                            "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
-                            "BUCKET_SPECS" to "${bucket}:${accessKey}:${secretKey}"
-                    )
+                mapOf(
+                    "MINIO_ADMIN_USER" to "admin12345",
+                    "MINIO_ADMIN_PASSWORD" to "admin12345",
+                    "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                    "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
+                    "BUCKET_SPECS" to "${bucket}:${accessKey}:${secretKey}"
+                )
             )
         }
         container!!.start()
 
         val adminMinioClient =
-                MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(443)}").httpClient(httpClient)
-                        .credentials("admin12345", "admin12345").build()
+            MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(443)}").httpClient(httpClient)
+                .credentials("admin12345", "admin12345").build()
 
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         assertThat(adminMinioClient.bucketExists(BucketExistsArgs.builder().bucket("${bucket}-new").build())).isFalse
@@ -143,26 +141,27 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        container = GenericContainer(imageVersion("solidblocks-minio")).apply {
+        container = GenericContainer(imageName("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(8443)
             withEnv(
-                    mapOf(
-                            "MINIO_HTTPS_PORT" to "8443",
-                            "MINIO_ADMIN_USER" to "admin12345",
-                            "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
-                            "BUCKET_SPECS" to "${bucket}:${accessKey}:${secretKey}"
-                    )
+                mapOf(
+                    "MINIO_HTTPS_PORT" to "8443",
+                    "MINIO_ADMIN_USER" to "admin12345",
+                    "MINIO_ADMIN_PASSWORD" to "admin12345",
+                    "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                    "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
+                    "BUCKET_SPECS" to "${bucket}:${accessKey}:${secretKey}"
+                )
             )
         }
         container!!.start()
 
         val adminMinioClient =
-                MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(8443)}").httpClient(httpClient)
-                        .credentials("admin12345", "admin12345").build()
+            MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(8443)}")
+                .httpClient(httpClient)
+                .credentials("admin12345", "admin12345").build()
 
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         assertThat(adminMinioClient.bucketExists(BucketExistsArgs.builder().bucket("${bucket}-new").build())).isFalse
@@ -176,25 +175,25 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        container = GenericContainer(imageVersion("solidblocks-minio")).apply {
+        container = GenericContainer(imageName("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(443)
             withEnv(
-                    mapOf(
-                            "MINIO_ADMIN_USER" to "admin12345",
-                            "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
-                            "BUCKET_SPECS" to "bucket1:aa#bucket2::#bucket3"
-                    )
+                mapOf(
+                    "MINIO_ADMIN_USER" to "admin12345",
+                    "MINIO_ADMIN_PASSWORD" to "admin12345",
+                    "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                    "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64,
+                    "BUCKET_SPECS" to "bucket1:aa#bucket2::#bucket3"
+                )
             )
         }
         container!!.start()
 
         val minioClient =
-                MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(443)}").httpClient(httpClient)
-                        .credentials("admin12345", "admin12345").build()
+            MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(443)}").httpClient(httpClient)
+                .credentials("admin12345", "admin12345").build()
 
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         assertThat(minioClient.bucketExists(BucketExistsArgs.builder().bucket("bucket1").build())).isFalse
@@ -207,25 +206,25 @@ class MinioIntegrationTest {
         val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
         val tempDir = initWorldReadableTempDir("testMinioStartWithBucketSpec")
 
-        container = GenericContainer(imageVersion("solidblocks-minio")).apply {
+        container = GenericContainer(imageName("solidblocks-minio")).apply {
             withLogConsumer(logConsumer)
             withFileSystemBind(tempDir.absolutePath, "/storage/data")
             withExposedPorts(443)
             withEnv(
-                    mapOf(
-                            "MINIO_ADMIN_USER" to "admin12345",
-                            "MINIO_ADMIN_PASSWORD" to "admin12345",
-                            "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
-                            "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64
-                    )
+                mapOf(
+                    "MINIO_ADMIN_USER" to "admin12345",
+                    "MINIO_ADMIN_PASSWORD" to "admin12345",
+                    "MINIO_TLS_PRIVATE_KEY" to minioCertificatePrivateBase64,
+                    "MINIO_TLS_PUBLIC_KEY" to minioCertificatePublicBase64
+                )
             )
         }
         container!!.start()
 
 
         val minioClient =
-                MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(443)}").httpClient(httpClient)
-                        .credentials("admin12345", "admin12345").build()
+            MinioClient.builder().endpoint("https://localhost:${container!!.getMappedPort(443)}").httpClient(httpClient)
+                .credentials("admin12345", "admin12345").build()
 
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         assertThat(minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())).isFalse

@@ -57,12 +57,16 @@ function task_build {
     cd "${DIR}"
     ./gradlew assembleDist
     echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}'"
-    docker buildx build --push --platform linux/amd64,linux/arm64 -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" .
+    docker buildx build \
+      --push \
+      --platform linux/amd64,linux/arm64 \
+      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
+      .
   )
 }
 
 function task_release_docker {
-  echo "<not implemented>"
+  docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
 }
 
 function task_clean {

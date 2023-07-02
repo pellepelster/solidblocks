@@ -39,18 +39,18 @@ function task_test {
 function task_build {
   (
     cd "${DIR}"
-    docker build ${DOCKER_OPTIONS} -t "${DOCKER_IMAGE_NAME}" -t "${DOCKER_IMAGE_NAME}:${VERSION}" .
-    mkdir -p "${DIR}/build"
-    docker save "${DOCKER_IMAGE_NAME}:${VERSION}" > "${DIR}/build/${DOCKER_IMAGE_NAME}-${VERSION}.tar"
+
+    echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}'"
+    docker buildx build \
+      --platform linux/amd64 \
+      --push \
+      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
+      .
   )
 }
 
 function task_release_docker {
-  docker tag "${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
-  docker push  "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
-
-  docker tag "${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
-  docker push "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}"
+  docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
 }
 
 function task_clean {
