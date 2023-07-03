@@ -30,7 +30,7 @@ function task_build {
 
 function task_clean_aws {
   docker run \
-    --rm -it \
+    --rm \
     -v $(pwd)/contrib/aws-nuke.yaml:/home/aws-nuke/config.yml \
     quay.io/rebuy/aws-nuke:v2.22.1 \
     --access-key-id "$(pass solidblocks/aws/admin/access_key)" \
@@ -42,11 +42,13 @@ function task_clean_aws {
 }
 
 function task_clean_hetzner {
+  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
+
   docker run \
     --rm \
-    -e HCLOUD_TOKEN="$(pass solidblocks/hetzner/hcloud_api_token)" \
+    -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" \
     --pull always \
-    ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.15 nuke
+    ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.16 nuke
 }
 
 function task_clean {
@@ -204,6 +206,7 @@ case ${ARG} in
   clean) task_clean "$@" ;;
   clean-aws) task_clean_aws "$@" ;;
   clean-hetzner) task_clean_hetzner "$@" ;;
+  clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   build-documentation) task_build_documentation "$@" ;;

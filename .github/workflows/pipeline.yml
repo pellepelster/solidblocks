@@ -288,6 +288,32 @@ jobs:
           path: |
             solidblocks-rds-postgresql/test/build/reports/tests
 
+  clean-cloud-resources:
+    runs-on: ubuntu-latest
+    env:
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
+    if: ${{ always() }}
+    needs:
+      - solidblocks-shell
+      - solidblocks-cloud-init
+      - solidblocks-minio
+      - solidblocks-rds-postgresql
+      - solidblocks-rds-postgresql-test
+      - solidblocks-hetzner
+      - solidblocks-hetzner-test
+      - solidblocks-debug-container
+      - solidblocks-hetzner-nuke
+      - solidblocks-terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Clean Cloud Resources
+        run: ./do clean-hetzner
+
   release:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')

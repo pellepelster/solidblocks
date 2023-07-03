@@ -20,6 +20,7 @@ function test_clean_testbed() {
 
 function test_clean_testbed_s3() {
   terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  test_clean_testbed
 }
 
 function test_clean_testbed_local() {
