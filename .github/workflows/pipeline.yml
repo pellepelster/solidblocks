@@ -24,12 +24,6 @@ permissions:
   packages: write
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Terraform
-        run: terraform -version
-
   solidblocks-shell:
     runs-on: ubuntu-latest
     env:
