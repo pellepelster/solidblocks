@@ -22,7 +22,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
     fun testDatabaseKeepsDataBetweenRestarts(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
 
         val dataDir = initWorldReadableTempDir()
-        val container = rdsTestBed.createAndStartPostgresContainer(
+        val container = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), dataDir
         )
 
@@ -67,7 +67,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
 
     @Test
     fun testRestoreDatabaseFromFullBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -93,12 +93,12 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -122,7 +122,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
     @Test
     fun testRestoreDatabaseFromIncrementalBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
 
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -147,7 +147,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         val username2 = UUID.randomUUID().toString()
         postgresContainer1.createJdbi().also {
@@ -155,11 +155,11 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
             it.assertHasUserWithName(username2)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-incr.sh")
+        postgresContainer1.execInContainer("backup-incr.sh")
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -185,7 +185,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
     @Test
     fun testRestoreDatabaseFromDifferentialBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
 
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -209,7 +209,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         val username2 = UUID.randomUUID().toString()
         postgresContainer1.createJdbi().also {
@@ -218,12 +218,12 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-diff.sh")
+        postgresContainer1.execInContainer("backup-diff.sh")
 
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 

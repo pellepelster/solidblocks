@@ -1,16 +1,22 @@
 variable "name" {
   type        = string
-  description = "unique name for the postgres rds instance"
+  description = "Unique name for the PostgreSQL instance"
 }
 
 variable "location" {
   type        = string
-  description = "hetzner location"
+  description = "hetzner location to use for provisioned resources"
 }
 
 variable "ssh_keys" {
   type        = list(number)
-  description = "ssh keys for instance access"
+  description = "ssh keys to privision for instance access"
+}
+
+variable "server_type" {
+  type        = string
+  description = "hetzner cloud server type, supports x86 and ARM architectures"
+  default     = "cx11"
 }
 
 variable "data_volume" {
@@ -24,10 +30,15 @@ variable "backup_volume" {
   default     = 0
 }
 
-variable "solidblocks_base_url" {
+variable "mode" {
   type        = string
-  default     = "https://github.com"
-  description = "override base url for testing purposes"
+  description = "startup mode for the database, can be empty to start the database or 'maintenance' to enable the maintenance mode of the underlying docker container to debug issues see also https://pellepelster.github.io/solidblocks//rds/#maintenance"
+  default     = null
+
+  validation {
+    condition     = var.mode != null || var.mode != "maintenance"
+    error_message = "currently only 'maintenance' or default is supported"
+  }
 }
 
 variable "backup_s3_bucket" {
@@ -60,15 +71,20 @@ variable "backup_incr_calendar" {
   default     = "*-*-* *:00:55"
 }
 
-variable "server_type" {
-  type        = string
-  description = "hetzner cloud server type, supports x86 and ARM architectures"
-  default     = "cx11"
-}
-
 variable "databases" {
   type        = list(object({ id : string, user : string, password : string }))
   description = "A list of databases to create when the instance is initialized, for example: `{ id : \"database1\", user : \"user1\", password : \"password1\" }`. Changing `user` and `password` is supported at any time, the provided config is translated into an config for the Solidblocks RDS PostgreSQL module (https://pellepelster.github.io/solidblocks/rds/index.html), please see https://pellepelster.github.io/solidblocks/rds/index.html#databases for more details of the database configuration."
+}
+
+variable "postgres_major_version" {
+  type        = number
+  description = "PostgreSQL major version to use. Upgrading the version will trigger auto migration based on the underlying RDS PostgreSQL docker image, see also https://pellepelster.github.io/solidblocks/rds/index.html#versions. Please be aware that depending on the amount of data to migrate the migration may Terraforms timeouts, see https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/index.html#operations for debugging options."
+  default     = 14
+
+  validation {
+    condition     = var.postgres_major_version != 14 || var.postgres_major_version != 15
+    error_message = "currently only version 14 or 15 is supported"
+  }
 }
 
 variable "extra_user_data" {
@@ -87,18 +103,6 @@ variable "pre_script" {
   type        = string
   description = "shell script that will be executed before the server configuration is executed"
   default     = ""
-}
-
-variable "solidblocks_cloud_init_version" {
-  type        = string
-  description = "used for integration tests to inject test versions"
-  default     = "v0.1.17"
-}
-
-variable "solidblocks_rds_version" {
-  type        = string
-  description = "used for integration tests to inject test versions"
-  default     = "v0.1.17"
 }
 
 variable "labels" {
@@ -162,4 +166,27 @@ variable "ssl_dns_provider_config" {
   default     = {}
 }
 
+variable "backup_encryption_passphrase" {
+  type        = string
+  description = "If set the backups will be encrypted using this passphrase"
+  default     = null
+}
+
+variable "solidblocks_base_url" {
+  type        = string
+  default     = "https://github.com"
+  description = "override base url for testing purposes"
+}
+
+variable "solidblocks_cloud_init_version" {
+  type        = string
+  description = "used for integration tests to inject test versions"
+  default     = "v0.1.17"
+}
+
+variable "solidblocks_rds_version" {
+  type        = string
+  description = "used for integration tests to inject test versions"
+  default     = "v0.1.17"
+}
 

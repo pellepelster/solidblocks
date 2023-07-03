@@ -74,7 +74,7 @@ class RdsPostgresqlConfigurationTest {
         initSqlFile.writeText("CREATE TABLE \"table1\" (id VARCHAR PRIMARY KEY, \"name\" VARCHAR)")
         Files.setPosixFilePermissions(initSqlFile, PosixFilePermissions.fromString("rwxrwxrwx"))
 
-        val container = testBed.createAndStartPostgresContainer(
+        val container = testBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_INIT_SQL_$database" to "/init_sql.sql",
@@ -132,7 +132,7 @@ class RdsPostgresqlConfigurationTest {
                     RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/rds.pem").readBytes()
                 )
 
-        val container = testBed.createAndStartPostgresContainer(
+        val container = testBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "SSL_SERVER_CERT" to sslServerCert,
@@ -163,7 +163,7 @@ class RdsPostgresqlConfigurationTest {
         val initSqlFile = Files.createTempFile("init_sql", "sql")
         initSqlFile.writeText("CREATE TABLE \"table1\" (id VARCHAR PRIMARY KEY, \"name\" VARCHAR)")
 
-        testBed.createAndStartPostgresContainer(
+        testBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_INIT_SQL_$database" to "/init_sql.sql",
@@ -179,11 +179,31 @@ class RdsPostgresqlConfigurationTest {
     }
 
     @Test
+    fun testMaintenanceMode(testBed: RdsTestBed) {
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        testBed.createAndStartPostgresContainer(14,
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), dataDir
+        ) {
+            it.withExposedPorts(*arrayOf<Int>())
+            it.withCommand("maintenance")
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        with(testBed.logConsumer) {
+            waitForLogLine("maintenance mode is active, no database is started")
+        }
+    }
+
+    @Test
     fun testChangesUsernameAndPasswordAfterRestart(rdsTestBed: RdsTestBed) {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()
 
-        val container = rdsTestBed.createAndStartPostgresContainer(
+        val container = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), dataDir
@@ -241,7 +261,7 @@ class RdsPostgresqlConfigurationTest {
     fun testChangesUsernameAndPasswordAfterRestore(rdsTestBed: RdsTestBed) {
 
         val localBackupDir = initWorldReadableTempDir()
-        val container1 = rdsTestBed.createAndStartPostgresContainer(
+        val container1 = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), initWorldReadableTempDir()
@@ -268,11 +288,11 @@ class RdsPostgresqlConfigurationTest {
             it.assertHasUserWithName(username)
         }
 
-        container1.execInContainer("/rds/bin/backup-full.sh")
+        container1.execInContainer("backup-full.sh")
         container1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val container2 = rdsTestBed.createAndStartPostgresContainer(
+        val container2 = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_USERNAME_$database" to "new-user",
@@ -305,7 +325,7 @@ class RdsPostgresqlConfigurationTest {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()
 
-        val container = rdsTestBed.createAndStartPostgresContainer(
+        val container = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = 301",
@@ -355,7 +375,7 @@ class RdsPostgresqlConfigurationTest {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()
 
-        val container = testBed.createAndStartPostgresContainer(
+        val container = testBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1"
             ), dataDir
@@ -377,7 +397,7 @@ class RdsPostgresqlConfigurationTest {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()
 
-        val container1 = rdsTestBed.createAndStartPostgresContainer(
+        val container1 = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_ADMIN_PASSWORD" to "my-database-password",
                 "DB_BACKUP_LOCAL" to "1"
@@ -397,7 +417,7 @@ class RdsPostgresqlConfigurationTest {
         container1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val container2 = rdsTestBed.createAndStartPostgresContainer(
+        val container2 = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_ADMIN_PASSWORD" to "new-database-password",
                 "DB_BACKUP_LOCAL" to "1"
@@ -420,7 +440,7 @@ class RdsPostgresqlConfigurationTest {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()
 
-        val container = rdsTestBed.createAndStartPostgresContainer(
+        val container = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_DATABASE_extra_database_1" to "extra-database-1",

@@ -1,5 +1,7 @@
 FROM alpine:3.18.2
 
+ARG POSTGRES_VERSION=""
+
 ENV DB_BACKUP_S3=0
 ENV DB_BACKUP_LOCAL=0
 
@@ -26,13 +28,18 @@ RUN apk upgrade --available
 RUN apk add \
     postgresql14 \
     postgresql14-contrib \
+    postgresql15 \
+    postgresql15-contrib \
     jq \
     bash \
     openssh-client \
     curl \
     pgbackrest \
     util-linux \
-    musl-locales
+    musl-locales \
+    ripgrep
+
+RUN pg_versions set-default ${POSTGRES_VERSION}
 
 RUN chown -R ${USER}:${USER} ${USER}
 
@@ -53,4 +60,6 @@ RUN mkdir log
 RUN mkdir socket
 RUN mkdir -p pgbackrest/spool
 
-CMD [ "/rds/bin/run.sh" ]
+ENV PATH=/rds/bin:$PATH
+
+ENTRYPOINT [ "/rds/bin/run.sh" ]

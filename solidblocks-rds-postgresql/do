@@ -11,6 +11,8 @@ DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
+POSTGRES_VERSIONS="14 15"
+
 source "${DIR}/../solidblocks-shell/lib/software.sh"
 
 function task_usage {
@@ -44,17 +46,21 @@ function task_build {
     cd "${DIR}"
     mkdir -p "${DIR}/build"
 
-    docker buildx build \
-      --platform linux/arm,linux/amd64,linux/arm64 \
-      --push \
-      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
-      .
+    for postgres_version in ${POSTGRES_VERSIONS}; do
+      docker buildx build \
+        --platform linux/arm,linux/amd64,linux/arm64 \
+        --push \
+        --build-arg POSTGRES_VERSION=${postgres_version} \
+        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-rc" \
+        .
+    done
   )
 }
 
 function task_release_docker {
-  docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
-  #docker buildx imagetools create --tag "${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
+  for postgres_version in ${POSTGRES_VERSIONS}; do
+    docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-rc"
+  done
 }
 
 function task_clean {

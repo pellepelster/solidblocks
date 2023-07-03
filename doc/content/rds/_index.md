@@ -4,15 +4,61 @@ weight: 30
 description: A containerized PostgreSQL database with an all batteries included backup solution powered by pgBackRest
 ---
 
-A containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution
-powered
-by [pgBackRest](https://pgbackrest.org/)
-
-## Configuration
+A containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution powered by [pgBackRest](https://pgbackrest.org/)
 
 RDS PostgreSQL aims at being easy to use while keeping data a safe as possible. Based on the conventions of
 the [official PostgreSQL docker image](https://hub.docker.com/_/postgres) it can be configured by tuning different
 environment variables.
+
+## Architecture
+
+Configuration and backup operations are encoded in the startup script `run.sh` that implements the following flow
+
+```mermaid
+graph TD
+    startup[container startup] --> |get postgres major version| set_data_dir["set data dir to\n/${major_version}"]
+    
+    set_data_dir --> |get previous postgres major version| has_old_data{"has old data in\n/${previous_version}"}
+    
+    has_old_data --> |no| data_dir_empty{"data dir '/${major_version}'\nis empty?"}
+    has_old_data --> |yes| migrate_data["migrate data from /${previous_version}\n to /${major_version}"]
+    backup_exists --> |no| init_db
+    
+    data_dir_empty --> |no| init_db
+    data_dir_empty --> |yes| backup_exists{backup exists?}
+    
+    backup_exists --> |yes| restore[restore from backup]
+    migrate_data --> init_users
+    restore --> init_users[initialize/update schemas and users]
+    init_db[initialize database] --> initial_backup 
+    initial_backup[initial backup] --> init_users 
+    init_users --> start_database[start database]
+```
+
+## Versions
+
+The PostgreSQL version can be selected via specific docker image tags
+
+* `ghcr.io/pellepelster/solidblocks-rds-postgresql:14-__SOLIDBLOCKS_VERSION__`
+* `ghcr.io/pellepelster/solidblocks-rds-postgresql:15-__SOLIDBLOCKS_VERSION__`
+
+Each docker image includes at least the previous PostgreSQL version for version migration purposes. The current version can be shown with `pg_versions` and the versions are stored at `/usr/libexec/postgresql/${postgresql_major_version}` 
+
+### Upgrade
+
+Based on the startup logic explained above and the fact that the database data is stored in a version specific directory `/storage/data/${db_instance_name}/${postgresql_major_version}` a version upgrade looks like this:
+
+* execute a full backup (`backup-full.sh`)
+* stop container with currently running version
+* start new container with the same configuration but a new PostgreSQL version
+  * the new version will look for any data from a previous version and start a migration using [pg_upgrade](https://www.postgresql.org/docs/current/pgupgrade.html)
+
+{{% notice style="note" %}}
+Please keep in mind that the old data is kept and will not be deleted. This means that after an upgrade from `14` to `15` `/storage/data/${db_instance_name}/14` is still present with the old data and `/storage/data/${db_instance_name}/15` will contain the migrated version of the data from `/storage/data/${db_instance_name}/14` 
+{{% /notice %}}
+
+
+## Configuration
 
 ### Global
 
@@ -67,10 +113,15 @@ unique `${database_id}`s
 | `DB_USERNAME_${database_id}` | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}` |
 | `DB_PASSWORD_${database_id}` | environment | password for the database user                                                   |
 
-> `DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on start to allow
-> for easy password rotation or username change. Changing `DB_DATABASE_${database_id}` is currently not supported yet 
+{{% notice tip %}}
+`DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on start to allow
+for easy password rotation or username change. Changing `DB_DATABASE_${database_id}` is currently not supported yet
+{{% /notice %}}
 
-If any of those settings are missing or invalid, the container will complain with a log message and exit with an error
+
+## Usage
+
+If any of the required settings are missing or invalid, the container will complain with a log message and exit with an error
 code:
 
 ```shell
@@ -79,13 +130,12 @@ docker run \
     -e DB_DATABASE_db1=database1 \
     -e DB_USERNAME_db1=user1 \
     -e DB_PASSWORD_db1=password1 \
-    ghcr.io/pellepelster//solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__ 
+    ghcr.io/pellepelster//solidblocks-rds-postgresql:14-__SOLIDBLOCKS_VERSION__ 
 
 [solidblocks-rds-postgresql] either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated
 ```
 
-analogous if you try to start the container with the right configuration but with missing mounts it will result in
-similar messages:
+analogous if you try to start the container with the right configuration but with missing mounts it will result in similar messages:
 
 ```shell
 docker run \
@@ -95,7 +145,7 @@ docker run \
     -e DB_PASSWORD_db1=password1 \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_data:/storage/data" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-__SOLIDBLOCKS_VERSION__
 
 [solidblocks-rds-postgresql] local backup dir '/storage/backup' not mounted
 
@@ -106,19 +156,19 @@ docker run \
     -e DB_PASSWORD_db1=password1 \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-__SOLIDBLOCKS_VERSION__
 
 [solidblocks-rds-postgresql] data dir '/storage/data' not mounted
 ```
 
-Those safety checks are aimed at ensuring that there is always a working backup solution, and data is not accidentally
-stored inside an ephemeral container.
+Those safety checks are aimed at ensuring that there is always a working backup solution, and data is not accidentally stored inside an ephemeral container.
 
-On the first start RDS PostgreSQL will initialize the database according to the provided credentials, and create an
-initial backup to validate the backup repositories are working as expected.
+On the first start RDS PostgreSQL will initialize the database according to the provided credentials, and create an initial backup to validate the backup repositories are working as expected.
 
-> The database inside the container runs with a non-root user with a `uid` and `gid` of 10000 so for the mounts the
-> correct permissions need to be ensured
+{{% notice tip %}}
+The database inside the container runs with a non-root user with a `uid` and `gid` of 10000 so for the mounts the correct permissions need to be ensured.
+{{% /notice %}}
+
 
 ```shell
 mkdir postgres_{data,backup} && sudo chown 10000:10000 postgres_{data,backup}
@@ -132,7 +182,7 @@ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-__SOLIDBLOCKS_VERSION__
 
 [solidblocks-rds-postgresql] data dir is empty
 [solidblocks-rds-postgresql] initializing database instance
@@ -254,8 +304,36 @@ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:__SOLIDBLOCKS_VERSION__
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-__SOLIDBLOCKS_VERSION__
 ``` 
+
+## Operations
+
+The container includes a set of scripts for various maintenance operations and day to day tasks that are available on the `${PATH}`
+
+* `backup-full.sh`
+* `backup-diff.sh`
+* `backup-incr.sh`
+* `backup-info.sh`
+
+### Maintenance
+
+In case of errors or the need for manual intervention a maintenance mode is available. Triggering the maintenance mode will set up the container like it would be set up for database startup, but without actually starting the database. This allows to `exec` into the container to debug issues.
+
+```
+docker run \
+    --name instance1 \
+    -e DB_INSTANCE_NAME=instance1 \
+    -e DB_DATABASE_db1=database1 \
+    -e DB_USERNAME_db1=user1 \
+    -e DB_PASSWORD_db1=password1 \
+    -e DB_BACKUP_LOCAL=1 \
+    -v "$(pwd)/postgres_backup:/storage/backup" \
+    -v "$(pwd)/postgres_data:/storage/data" \
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-__SOLIDBLOCKS_VERSION__ \
+    maintenance
+```
+
 
 ## Extensions
 

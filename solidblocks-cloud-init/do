@@ -102,7 +102,7 @@ function task_test_ssh {
 
 function clean_cloud_resources() {
   (
-    cd ${DIR}/test/terraform
+    cd "${DIR}/test/terraform"
     terraform_wrapper destroy -auto-approve -var="solidblocks_version=${VERSION}"
   )
 }

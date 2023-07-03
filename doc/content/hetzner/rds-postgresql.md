@@ -18,6 +18,43 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 * Reduced complexity through single node operations. Running a PostgreSQL server with replication or in multi master comes with its own set of diverse failure scenarios and edge-cases. This solution aims at workloads that can easily handled by a single node and if in doubt favours [MTTR](https://de.wikipedia.org/wiki/Mean_Time_To_Recover) over [MTBF](https://de.wikipedia.org/wiki/Mean_Time_Between_Failures)
 * Reduced complexity through less moving parts. Features like autoscaling, automatic recovery after zone outages, user interfaces, etc. like they are provided by the [Zalando PostgreSQL Operator](https://github.com/zalando/postgres-operator) provide a lot of value but also add multiple layers between the VM and the actual PostgreSQL instance. This solutions explicitly tries to avoid these features trying to keep the stack as simple as running a docker container on a VM.
 
+## Operations
+
+To access the created instance use one of SSH keys that was provided via `ssh_keys`. All linux system resources include the provided `name` to make them distinguishable.
+
+### Show Logs
+
+```shell
+journalctl -u rds@rds-postgresql-${name}.service
+```
+
+### Start/Stop Databaase
+
+```shell
+systemctl [start|stop] rds@rds-postgresql-${name}.service 
+```
+
+### Maintenance
+
+In case of errors or the need for manual intervention a maintenance mode is available. Triggering the maintenance mode will set up the VM like it would be set up for database startup, but without actually starting the database. This allows to `exec` into the container to debug issues.
+
+**main.tf**
+```terraform
+module "rds-postgresql" {
+  source  = "pellepelster/solidblocks-rds-postgresql/hcloud"
+  # [...]
+  mode = "maintenance"
+  # [...]
+}
+```
+
+```shell
+docker exec -ti rds-postgresql-${name}_postgresql /bin/bash
+```
+
+
+# Terraform Module
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -48,6 +85,7 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_backup_encryption_passphrase"></a> [backup\_encryption\_passphrase](#input\_backup\_encryption\_passphrase) | If set the backups will be encrypted using this passphrase | `string` | `null` | no |
 | <a name="input_backup_full_calendar"></a> [backup\_full\_calendar](#input\_backup\_full\_calendar) | systemd timer spec for full backups | `string` | `"*-*-* 20:00:00"` | no |
 | <a name="input_backup_incr_calendar"></a> [backup\_incr\_calendar](#input\_backup\_incr\_calendar) | systemd timer spec for incremental backups | `string` | `"*-*-* *:00:55"` | no |
 | <a name="input_backup_s3_access_key"></a> [backup\_s3\_access\_key](#input\_backup\_s3\_access\_key) | AWS access key for S3 backups. To enable S3 backups `backup_s3_bucket`, `backup_s3_access_key` and `backup_s3_secret_key` have to be provided. | `string` | `null` | no |
@@ -58,11 +96,12 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 | <a name="input_databases"></a> [databases](#input\_databases) | A list of databases to create when the instance is initialized, for example: `{ id : "database1", user : "user1", password : "password1" }`. Changing `user` and `password` is supported at any time, the provided config is translated into an config for the Solidblocks RDS PostgreSQL module (https://pellepelster.github.io/solidblocks/rds/index.html), please see https://pellepelster.github.io/solidblocks/rds/index.html#databases for more details of the database configuration. | `list(object({ id : string, user : string, password : string }))` | n/a | yes |
 | <a name="input_extra_user_data"></a> [extra\_user\_data](#input\_extra\_user\_data) | deprecated, please use pre\_script/post\_script | `string` | `""` | no |
 | <a name="input_labels"></a> [labels](#input\_labels) | A list of labels to be attached to the server instance. | `map(any)` | `{}` | no |
-| <a name="input_location"></a> [location](#input\_location) | hetzner location | `string` | n/a | yes |
-| <a name="input_name"></a> [name](#input\_name) | unique name for the postgres rds instance | `string` | n/a | yes |
+| <a name="input_location"></a> [location](#input\_location) | hetzner location to use for provisioned resources | `string` | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | Unique name for the PostgreSQL instance | `string` | n/a | yes |
 | <a name="input_network_id"></a> [network\_id](#input\_network\_id) | network the created sever should be attached to, network\_ip also needs to bet set in that case | `number` | `null` | no |
 | <a name="input_network_ip"></a> [network\_ip](#input\_network\_ip) | ip address in the attached network | `string` | `null` | no |
 | <a name="input_post_script"></a> [post\_script](#input\_post\_script) | shell script that will be executed after the server configuration is executed | `string` | `""` | no |
+| <a name="input_postgres_major_version"></a> [postgres\_major\_version](#input\_postgres\_major\_version) | PostgreSQL major version to use. Upgrading the version will trigger auto migration based on the underlying RDS PostgreSQL docker image, see also https://pellepelster.github.io/solidblocks/rds/index.html#versions. Please be aware that depending on the amount of data to migrate the migration may Terraforms timeouts, see https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/index.html#operations for debugging options. | `number` | `14` | no |
 | <a name="input_pre_script"></a> [pre\_script](#input\_pre\_script) | shell script that will be executed before the server configuration is executed | `string` | `""` | no |
 | <a name="input_public_net_ipv4_enabled"></a> [public\_net\_ipv4\_enabled](#input\_public\_net\_ipv4\_enabled) | enable/disable public ip addresses, see also https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#public_net | `bool` | `true` | no |
 | <a name="input_public_net_ipv6_enabled"></a> [public\_net\_ipv6\_enabled](#input\_public\_net\_ipv6\_enabled) | enable/disable public ip addresses, see also https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#public_net | `bool` | `true` | no |
@@ -70,7 +109,7 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 | <a name="input_solidblocks_base_url"></a> [solidblocks\_base\_url](#input\_solidblocks\_base\_url) | override base url for testing purposes | `string` | `"https://github.com"` | no |
 | <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.1.17"` | no |
 | <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | used for integration tests to inject test versions | `string` | `"v0.1.17"` | no |
-| <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys for instance access | `list(number)` | n/a | yes |
+| <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys to privision for instance access | `list(number)` | n/a | yes |
 | <a name="input_ssl_dns_provider"></a> [ssl\_dns\_provider](#input\_ssl\_dns\_provider) | provider type to use for LetsEncrypt DNS challenge, see https://go-acme.github.io/lego/dns/ for available options | `string` | `""` | no |
 | <a name="input_ssl_dns_provider_config"></a> [ssl\_dns\_provider\_config](#input\_ssl\_dns\_provider\_config) | environment configuration variable(s) to use for DNS provider selected via `ssl_dns_provider`, see documentation of selected provider for required configuration variables | `map(string)` | `{}` | no |
 | <a name="input_ssl_domains"></a> [ssl\_domains](#input\_ssl\_domains) | domains to use for generated certificates | `list(string)` | `[]` | no |

@@ -6,6 +6,10 @@ account-blocklist:
   - 938746843251
 
 resource-types:
+  targets:
+    - S3Object
+    - S3Bucket
+    - DynamoDBTable
   excludes:
     - IAMUser
 

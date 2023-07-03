@@ -39,27 +39,28 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         val storageDir = initWorldReadableTempDir().absolutePath
 
         logger.info { "starting minio instance with storage dir '${storageDir}'" }
-        val container = createContainer("ghcr.io/pellepelster/solidblocks-minio:${System.getenv("VERSION") ?: "snapshot"}-rc").also {
-            it.withLogConsumer(logConsumer)
-            it.withNetworkAliases(RdsPostgresqlMinioBackupIntegrationTest.backupHost)
-            it.withNetwork(network)
-            it.withExposedPorts(443)
-            it.withFileSystemBind(
-                RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/test-dump-backup-file-headers.sh").file,
-                "/test-dump-backup-file-headers.sh",
-                BindMode.READ_ONLY
-            )
-            it.withFileSystemBind(storageDir, "/storage/data")
-            it.withEnv(
-                mapOf(
-                    "MINIO_ADMIN_USER" to "admin12345",
-                    "MINIO_ADMIN_PASSWORD" to "admin12345",
-                    "MINIO_TLS_PRIVATE_KEY" to RdsPostgresqlMinioBackupIntegrationTest.minioCertificatePrivateBase64,
-                    "MINIO_TLS_PUBLIC_KEY" to RdsPostgresqlMinioBackupIntegrationTest.minioCertificatePublicBase64,
-                    "BUCKET_SPECS" to "${RdsPostgresqlMinioBackupIntegrationTest.bucket}:${RdsPostgresqlMinioBackupIntegrationTest.accessKey}:${RdsPostgresqlMinioBackupIntegrationTest.secretKey}"
+        val container =
+            createContainer("ghcr.io/pellepelster/solidblocks-minio:${System.getenv("VERSION") ?: "snapshot"}-rc").also {
+                it.withLogConsumer(logConsumer)
+                it.withNetworkAliases(RdsPostgresqlMinioBackupIntegrationTest.backupHost)
+                it.withNetwork(network)
+                it.withExposedPorts(443)
+                it.withFileSystemBind(
+                    RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/test-dump-backup-file-headers.sh").file,
+                    "/test-dump-backup-file-headers.sh",
+                    BindMode.READ_ONLY
                 )
-            )
-        }
+                it.withFileSystemBind(storageDir, "/storage/data")
+                it.withEnv(
+                    mapOf(
+                        "MINIO_ADMIN_USER" to "admin12345",
+                        "MINIO_ADMIN_PASSWORD" to "admin12345",
+                        "MINIO_TLS_PRIVATE_KEY" to RdsPostgresqlMinioBackupIntegrationTest.minioCertificatePrivateBase64,
+                        "MINIO_TLS_PUBLIC_KEY" to RdsPostgresqlMinioBackupIntegrationTest.minioCertificatePublicBase64,
+                        "BUCKET_SPECS" to "${RdsPostgresqlMinioBackupIntegrationTest.bucket}:${RdsPostgresqlMinioBackupIntegrationTest.accessKey}:${RdsPostgresqlMinioBackupIntegrationTest.secretKey}"
+                    )
+                )
+            }
 
         container.start()
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
@@ -68,13 +69,26 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
     }
 
     fun createAndStartPostgresContainer(
+        postgresVersion: Int,
+        environment: Map<String, String>,
+        storageDir: File,
+        password: String = databasePassword,
+        customizer: (input: GenericContainer<out GenericContainer<*>>) -> Unit = {}
+    ) = createAndStartPostgresContainer(
+        "ghcr.io/pellepelster/solidblocks-rds-postgresql:${postgresVersion}-${
+            System.getenv("VERSION") ?: "snapshot"
+        }-rc", environment, storageDir, password, customizer
+    )
+
+    fun createAndStartPostgresContainer(
+        imageName: String,
         environment: Map<String, String>,
         storageDir: File,
         password: String = databasePassword,
         customizer: (input: GenericContainer<out GenericContainer<*>>) -> Unit = {}
     ): GenericContainer<out GenericContainer<*>> {
 
-        return GenericContainer("ghcr.io/pellepelster/solidblocks-rds-postgresql:${System.getenv("VERSION") ?: "snapshot"}-rc").also {
+        return GenericContainer(imageName).also {
             it.withLogConsumer(logConsumer)
             it.withImagePullPolicy(PullPolicy.alwaysPull())
             it.withNetwork(network)

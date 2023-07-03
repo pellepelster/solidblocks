@@ -76,7 +76,7 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
     @Test
     fun doesNotStartIfNoBackupMethodSelected(rdsTestBed: RdsTestBed) {
         assertThrows(ContainerLaunchException::class.java) {
-            rdsTestBed.createAndStartPostgresContainer(
+            rdsTestBed.createAndStartPostgresContainer(14,
                 mapOf(
                 ), initWorldReadableTempDir()
             )
@@ -91,7 +91,7 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
     fun doesNotStartIfNoBackupDirMounted(rdsTestBed: RdsTestBed) {
 
         assertThrows(ContainerLaunchException::class.java) {
-            rdsTestBed.createAndStartPostgresContainer(
+            rdsTestBed.createAndStartPostgresContainer(14,
                 mapOf(
                     "DB_BACKUP_LOCAL" to "1"
                 ), initWorldReadableTempDir()

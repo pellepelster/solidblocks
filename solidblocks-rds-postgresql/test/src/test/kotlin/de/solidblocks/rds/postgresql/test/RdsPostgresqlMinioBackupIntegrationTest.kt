@@ -59,7 +59,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         rdsTestBed.createAndStartMinioContainer()
 
         val dataDir = initWorldReadableTempDir()
-        val container = rdsTestBed.createAndStartPostgresContainer(
+        val container = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv, dataDir
         )
 
@@ -106,7 +106,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
     fun testRestoreDatabaseFromFullBackup(rdsTestBed: RdsTestBed) {
 
         val minioContainer = rdsTestBed.createAndStartMinioContainer()
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv, initWorldReadableTempDir()
         )
 
@@ -129,7 +129,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
             it.assertHasUserWithName(username)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         val minioClient = createMinioClient(minioContainer)
 
@@ -149,7 +149,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv, initWorldReadableTempDir()
         )
 
@@ -171,7 +171,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
     @Test
     fun testRestoreDatabaseFromEncryptedBackup(rdsTestBed: RdsTestBed) {
         val minioContainer = rdsTestBed.createAndStartMinioContainer()
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_ENCRYPTION_PASSPHRASE" to "yolo123"), initWorldReadableTempDir()
         )
 
@@ -193,7 +193,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         val minioClient = createMinioClient(minioContainer)
 
@@ -213,7 +213,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv + mapOf("DB_BACKUP_ENCRYPTION_PASSPHRASE" to "yolo123"), initWorldReadableTempDir()
         )
 
@@ -255,7 +255,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
 
         rdsTestBed.createAndStartMinioContainer()
 
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv, initWorldReadableTempDir()
         )
 
@@ -278,7 +278,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         val username2 = UUID.randomUUID().toString()
         postgresContainer1.createJdbi().also {
@@ -286,12 +286,12 @@ class RdsPostgresqlMinioBackupIntegrationTest {
             it.assertHasUserWithName(username2)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-incr.sh")
+        postgresContainer1.execInContainer("backup-incr.sh")
 
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv, initWorldReadableTempDir()
         )
 
@@ -316,7 +316,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
 
         rdsTestBed.createAndStartMinioContainer()
 
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv, initWorldReadableTempDir()
         )
 
@@ -341,7 +341,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         val username2 = UUID.randomUUID().toString()
         postgresContainer1.createJdbi().also {
@@ -350,12 +350,12 @@ class RdsPostgresqlMinioBackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-diff.sh")
+        postgresContainer1.execInContainer("backup-diff.sh")
 
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
             s3BackupEnv, initWorldReadableTempDir()
         )
 

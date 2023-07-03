@@ -22,6 +22,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
 
         val localBackupDir = initWorldReadableTempDir()
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_BACKUP_ENCRYPTION_PASSPHRASE" to "yolo123",
@@ -44,13 +45,14 @@ class RdsPostgresqlLocalBackupIntegrationTest {
             it.assertHasUserWithName(username)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
         postgresContainer1.assertBackupFileHeaders(ENCRYPTED_FILE_HEADER)
 
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_BACKUP_ENCRYPTION_PASSPHRASE" to "yolo123",
@@ -76,6 +78,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         val localBackupDir = initWorldReadableTempDir()
 
         val container = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), dataDir
@@ -124,10 +127,76 @@ class RdsPostgresqlLocalBackupIntegrationTest {
     }
 
     @Test
+    fun testMigratesOldDirectoryLayout(rdsTestBed: RdsTestBed) {
+
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val oldContainer = rdsTestBed.createAndStartPostgresContainer(
+            "ghcr.io/pellepelster/solidblocks-rds-postgresql:v0.1.17",
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), dataDir
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        with(rdsTestBed.logConsumer) {
+            // on first start instance should be initialized and an initial backup should be executed
+            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+            assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+            assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+            waitForLogLine("database system is ready to accept connections")
+        }
+
+        val username = UUID.randomUUID().toString()
+
+        oldContainer.createJdbi().also {
+            it.waitForReady()
+            it.createUserTable()
+            it.insertUser(username)
+            it.assertHasUserWithName(username)
+        }
+
+
+        oldContainer.stop()
+        rdsTestBed.logConsumer.clear()
+
+        val newContainer14 = rdsTestBed.createAndStartPostgresContainer(
+            14,
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ), dataDir
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+        newContainer14.start()
+
+        with(rdsTestBed.logConsumer) {
+            // on second start with persistent storage no initializing ord backup should be executed
+            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+            assertHasLogLine("[solidblocks-rds-postgresql] old directory layout detected, migrating data files from '/storage/data/database1' to '/storage/data/database1/14'")
+            assertHasLogLine("[solidblocks-rds-postgresql] data dir is not empty")
+            assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
+            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+            assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
+            waitForLogLine("database system is ready to accept connections")
+        }
+
+        newContainer14.createJdbi().also {
+            it.waitForReady()
+            it.assertHasUserWithName(username)
+        }
+    }
+
+    @Test
     fun testRestoreDatabaseFromFullBackup(rdsTestBed: RdsTestBed) {
 
         val localBackupDir = initWorldReadableTempDir()
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), initWorldReadableTempDir()
@@ -156,13 +225,14 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         }
 
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
         postgresContainer1.assertBackupFileHeaders(COMPRESSED_FILE_HEADER)
 
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), initWorldReadableTempDir()
@@ -193,6 +263,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         val checkpointTimeout = 30L
 
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = ${checkpointTimeout}",
@@ -223,7 +294,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
             it.assertHasUserWithName(username1)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-incr.sh")
+        postgresContainer1.execInContainer("backup-incr.sh")
 
         postgresContainer1.createJdbi().also {
             it.insertUser(username2)
@@ -233,19 +304,20 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         Thread.sleep((checkpointTimeout + 10) * 1000)
         val user2Timestamp = Instant.now()
 
-        postgresContainer1.execInContainer("/rds/bin/backup-incr.sh")
+        postgresContainer1.execInContainer("backup-incr.sh")
         postgresContainer1.createJdbi().also {
             it.insertUser(username3)
             it.assertHasUserWithName(username3)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-incr.sh")
+        postgresContainer1.execInContainer("backup-incr.sh")
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
         val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC)
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_RESTORE_PITR" to formatter.format(user2Timestamp),
@@ -281,6 +353,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
 
         val localBackupDir = initWorldReadableTempDir()
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), initWorldReadableTempDir()
@@ -307,7 +380,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
             it.assertHasUserWithName(username1)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-full.sh")
+        postgresContainer1.execInContainer("backup-full.sh")
 
         val username2 = UUID.randomUUID().toString()
         postgresContainer1.createJdbi().also {
@@ -315,12 +388,13 @@ class RdsPostgresqlLocalBackupIntegrationTest {
             it.assertHasUserWithName(username2)
         }
 
-        postgresContainer1.execInContainer("/rds/bin/backup-diff.sh")
+        postgresContainer1.execInContainer("backup-diff.sh")
 
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), initWorldReadableTempDir()

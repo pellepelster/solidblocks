@@ -19,7 +19,7 @@ class RdsPostgresqlContribTest {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()
 
-        val container = rdsTestBed.createAndStartPostgresContainer(
+        val container = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), dataDir
@@ -37,8 +37,8 @@ class RdsPostgresqlContribTest {
             waitForLogLine("database system is ready to accept connections")
         }
 
-        println(container.execInContainer("/rds/bin/backup-info.sh"))
-        val backupInfoJsonRaw = container.execInContainer("/rds/bin/backup-info.sh", "--output=json").stdout
+        println(container.execInContainer("backup-info.sh"))
+        val backupInfoJsonRaw = container.execInContainer("backup-info.sh", "--output=json").stdout
 
         val backupInfoJson = Json.createReader(StringReader(backupInfoJsonRaw)).readArray()
         assertThat(backupInfoJson[0]).isNotNull

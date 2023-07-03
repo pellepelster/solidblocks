@@ -12,9 +12,11 @@ locals {
     backup_full_calendar = var.backup_full_calendar
     backup_incr_calendar = var.backup_incr_calendar
 
-    db_backup_s3_bucket     = var.backup_s3_bucket == null ? "" : var.backup_s3_bucket
-    db_backup_s3_access_key = var.backup_s3_access_key == null ? "" : var.backup_s3_access_key
-    db_backup_s3_secret_key = var.backup_s3_secret_key == null ? "" : var.backup_s3_secret_key
+    db_backup_s3_bucket          = var.backup_s3_bucket == null ? "" : var.backup_s3_bucket
+    db_backup_s3_access_key      = var.backup_s3_access_key == null ? "" : var.backup_s3_access_key
+    db_backup_s3_secret_key      = var.backup_s3_secret_key == null ? "" : var.backup_s3_secret_key
+    backup_encryption_passphrase = var.backup_encryption_passphrase == null ? "" : var.backup_encryption_passphrase
+    mode                         = var.mode == null ? "" : var.mode
 
     databases = var.databases
 
@@ -23,6 +25,7 @@ locals {
     ssl_domains             = var.ssl_domains
     ssl_dns_provider        = var.ssl_dns_provider
     ssl_dns_provider_config = var.ssl_dns_provider_config
+    postgres_major_version  = var.postgres_major_version
 
     extra_user_data = var.extra_user_data
     pre_script      = var.pre_script
