@@ -18,7 +18,7 @@ module "rds-postgresql-1" {
 
   ssl_enable              = true
   ssl_email               = "pelle@pelle.io"
-  ssl_domains             = ["test.blcks.de"]
+  ssl_domains             = ["test3.blcks.de"]
   ssl_dns_provider        = "hetzner"
   ssl_dns_provider_config = {
     HETZNER_API_KEY = var.hetzner_dns_api_token

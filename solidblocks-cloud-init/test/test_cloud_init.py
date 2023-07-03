@@ -1,8 +1,8 @@
+import os
+import re
 from os import environ
-from pprint import pprint
 
 import pytest
-import re
 
 
 @pytest.mark.parametrize("dir", ["lib", "templates", ""])
@@ -27,7 +27,7 @@ def dump_(host):
 def test_bootstrap(host):
     assert host.file(f"/solidblocks/lib/storage.sh").is_file
     assert host.file(f"/solidblocks/lib/lego.sh").is_file
-    #assert host.file(f"/solidblocks/bin/lego-update-certificate-permissions.sh").is_file
+    # assert host.file(f"/solidblocks/bin/lego-update-certificate-permissions.sh").is_file
 
 
 def test_storge_mount(host):
@@ -37,15 +37,15 @@ def test_storge_mount(host):
 
 def test_lego(host):
     assert host.file(f"/usr/bin/lego").is_file
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.crt").is_file
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.crt").user == "root"
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.crt").group == "root"
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.crt").mode == 0o600
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.crt").is_file
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.crt").user == "root"
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.crt").group == "root"
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.crt").mode == 0o600
 
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.key").is_file
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.key").user == "root"
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.key").group == "root"
-    assert host.file(f"/data1/ssl/certificates/test1.blcks.de.key").mode == 0o600
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.key").is_file
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.key").user == "root"
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.key").group == "root"
+    assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.key").mode == 0o600
 
     assert host.file(f"/solidblocks/secrets/lego.env").is_file
     lego_env = host.file(f"/solidblocks/secrets/lego.env").content_string

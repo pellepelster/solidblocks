@@ -84,8 +84,8 @@ function task_test {
     sleep 1
   done
 
-  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-x86 --show-capture=all -s "${DIR}/test"
-  "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-arm --show-capture=all -s "${DIR}/test"
+  SSL_DOMAIN="test1.blcks.de" "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-x86 --show-capture=all -s "${DIR}/test"
+  SSL_DOMAIN="test2.blcks.de" "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-arm --show-capture=all -s "${DIR}/test"
 
   clean_cloud_resources
 }

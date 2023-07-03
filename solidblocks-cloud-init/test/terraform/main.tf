@@ -50,6 +50,7 @@ resource "hcloud_server" "test-x86" {
     cloud_minimal_skeleton = file("${path.module}/../../build/snippets/cloud_init_minimal_skeleton")
     storage_device         = hcloud_volume.test-x86.linux_device
     hetzner_dns_api_token  = var.hetzner_dns_api_token
+    ssl_domain             = "test1.blcks.de"
   })
 }
 
@@ -64,6 +65,7 @@ resource "hcloud_server" "test-arm" {
     cloud_minimal_skeleton = file("${path.module}/../../build/snippets/cloud_init_minimal_skeleton")
     storage_device         = hcloud_volume.test-arm.linux_device
     hetzner_dns_api_token  = var.hetzner_dns_api_token
+    ssl_domain             = "test2.blcks.de"
   })
 }
 
