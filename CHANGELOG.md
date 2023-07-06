@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.18
+
+**IMPROVEMENTS**
+
+* Support [encrypted backups](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#input\_backup\_encryption\_passphrase) for Hetzner RDS PostgreSQL module 
+* Enable seamless version upgrades in RDS PostgreSQL modules (standalone docker and Hetzner module)
+  * [RDS PostgreSQL backup encryption](https://pellepelster.github.io/solidblocks/rds/#global) 
+  * [Hetzner RDS PostgreSQL backup encryption](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#input\_postgres\_major\_version)
+* Add maintenance mode in RDS PostgreSQL modules (standalone docker and Hetzner module)
+  * [RDS PostgreSQL maintenance mode](https://pellepelster.github.io/solidblocks/rds/#maintenance)
+  * [Hetzner RDS PostgreSQL maintenance mode](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#maintenance)
+* clean up and [document](https://pellepelster.github.io/solidblocks/rds/#architecture) RDS PostgreSQL module startup behavior 
+
 ## v0.1.17
 
 **IMPROVEMENTS**

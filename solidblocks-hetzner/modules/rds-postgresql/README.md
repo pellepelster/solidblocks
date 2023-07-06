@@ -44,6 +44,7 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postg
 | <a name="input_extra_user_data"></a> [extra\_user\_data](#input\_extra\_user\_data) | deprecated, please use pre\_script/post\_script | `string` | `""` | no |
 | <a name="input_labels"></a> [labels](#input\_labels) | A list of labels to be attached to the server instance. | `map(any)` | `{}` | no |
 | <a name="input_location"></a> [location](#input\_location) | hetzner location to use for provisioned resources | `string` | n/a | yes |
+| <a name="input_mode"></a> [mode](#input\_mode) | startup mode for the database, can be empty to start the database or 'maintenance' to enable the maintenance mode of the underlying docker container to debug issues see also https://pellepelster.github.io/solidblocks//rds/#maintenance | `string` | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | Unique name for the PostgreSQL instance | `string` | n/a | yes |
 | <a name="input_network_id"></a> [network\_id](#input\_network\_id) | network the created sever should be attached to, network\_ip also needs to bet set in that case | `number` | `null` | no |
 | <a name="input_network_ip"></a> [network\_ip](#input\_network\_ip) | ip address in the attached network | `string` | `null` | no |

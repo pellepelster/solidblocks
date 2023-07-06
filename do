@@ -147,17 +147,10 @@ function task_bootstrap() {
   software_ensure_semver
 }
 
-function task_release {
-
-  # ensure terraform-docs is available
-  terraform-docs --version
-
+function task_release_check() {
   local previous_tag="$(git describe --abbrev=0 --tags)"
   local previous_version="${previous_tag#v}"
-
-  if [[ ! -f ".semver.yaml" ]]; then
-    semver init --release v0.0.1
-  fi
+  local version="$(semver get release)"
 
   task_build
   task_build_documentation
@@ -167,18 +160,30 @@ function task_release {
     exit 1
   fi
 
-  local version="$(semver get release)"
 
   if ! grep "${version}" "${DIR}/CHANGELOG.md"; then
     echo "version '${version}' not found in changelog"
     exit 1
   fi
 
-  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md | grep -v README.md; then
+  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md | grep -v do | grep -v README.md; then
     echo "previous version '${previous_version}' found in repository"
     exit 1
   fi
+}
 
+function task_release {
+
+  # ensure terraform-docs is available
+  terraform-docs --version
+
+  if [[ ! -f ".semver.yaml" ]]; then
+    semver init --release v0.0.1
+  fi
+
+  task_release_check
+
+  local version="$(semver get release)"
   git tag -a "${version}" -m "${version}"
   git push --tags
 
@@ -213,6 +218,7 @@ case ${ARG} in
   serve-documentation) task_serve_documentation "$@" ;;
   release) task_release "$@" ;;
   release-docker) task_release_docker "$@" ;;
+  release-check) task_release_check "$@" ;;
   bootstrap) task_bootstrap "$@" ;;
   *) task_usage ;;
 esac
