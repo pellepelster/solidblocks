@@ -148,26 +148,28 @@ function task_bootstrap() {
 }
 
 function task_release_check() {
-  local previous_tag="$(git describe --abbrev=0 --tags)"
+  local previous_tag="$(git --no-pager tag | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -1)"
   local previous_version="${previous_tag#v}"
   local version="$(semver get release)"
 
   task_build
   task_build_documentation
 
-  if [[ $(git diff --stat) != '' ]]; then
-    echo "repository '${DIR}' is dirty"
+  echo "checking for previous version '${previous_version}'"
+
+  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md | grep -v README.md; then
+    echo "previous version '${previous_version}' found in repository"
     exit 1
   fi
 
-
+  echo "checking changelog for current version '${version}'"
   if ! grep "${version}" "${DIR}/CHANGELOG.md"; then
     echo "version '${version}' not found in changelog"
     exit 1
   fi
 
-  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md | grep -v README.md; then
-    echo "previous version '${previous_version}' found in repository"
+  if [[ $(git diff --stat) != '' ]]; then
+    echo "repository '${DIR}' is dirty"
     exit 1
   fi
 }
