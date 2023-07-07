@@ -24,7 +24,7 @@ Hetzner-nuke is available as a docker image and only needs a Hetzner Cloud API t
 
 `simulate` will output all resources that will be deleted in `nuke`mode.
 
-```
+```shell
 docker run -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" ghcr.io/pellepelster/solidblocks-hetzner-nuke:__SOLIDBLOCKS_VERSION__ simulate
 ```
 
@@ -35,6 +35,6 @@ docker run -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" ghcr.io/pellepelster/solidblocks-he
 {{% /notice %}}
 
 
-```
+```shell
 docker run -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" ghcr.io/pellepelster/solidblocks-hetzner-nuke:__SOLIDBLOCKS_VERSION__ nuke
 ```

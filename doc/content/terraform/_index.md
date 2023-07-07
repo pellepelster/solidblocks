@@ -29,7 +29,7 @@ docker run \
 
 final output will be a Terraform state backend config using the created resources
 
-```
+```shell
 creating bucket 'my-terraform-state-bucket-123'
 setting public access block config for bucket 'my-terraform-state-bucket-123'
 enabling versioning for bucket 'my-terraform-state-bucket-123'

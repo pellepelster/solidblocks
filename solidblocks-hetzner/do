@@ -189,7 +189,7 @@ function psql_wrapper_jumphost() {
 }
 
 function task_test_private_network () {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -217,7 +217,7 @@ function task_test_private_network () {
 }
 
 function task_test_arm () {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -240,7 +240,7 @@ function task_test_arm () {
 }
 
 function task_test_ssl () {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -268,7 +268,7 @@ function task_test_ssl () {
 
 function task_test_restore_from_local() {
 
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -314,7 +314,7 @@ function task_test_restore_from_local() {
 
 function task_test_migration() {
 
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -360,7 +360,7 @@ function task_test_migration() {
 
 function task_test_encryption() {
 
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -406,12 +406,13 @@ function task_test_encryption() {
 }
 
 function task_test_restore_from_s3() {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
   terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
+
   test_wait_for_cloud_init
 
   python_ensure_venv "${DIR}"
@@ -479,7 +480,7 @@ function test_wait_for_sql() {
 }
 
 function task_test {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -520,7 +521,10 @@ function task_clean {
 }
 
 function task_format {
-  echo "<not implemented>"
+  (
+    cd "${DIR}"
+    terraform fmt -recursive
+  )
 }
 
 function task_usage {

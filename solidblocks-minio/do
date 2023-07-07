@@ -19,7 +19,7 @@ function task_usage {
 }
 
 function task_test {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -33,6 +33,7 @@ function task_test {
   (
     cd "${DIR}"
     ./gradlew check
+    terraform fmt -recursive
   )
 }
 

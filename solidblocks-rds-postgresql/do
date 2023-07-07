@@ -21,7 +21,7 @@ function task_usage {
 }
 
 function task_test {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -73,8 +73,9 @@ function task_clean {
 
 function task_format {
   (
-    cd "${DIR}"
+    cd "${DIR}/test"
     ./gradlew spotlessApply
+    terraform fmt -recursive
   )
 }
 

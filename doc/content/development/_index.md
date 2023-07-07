@@ -6,15 +6,13 @@ description: Guide for development of Solidblocks
 
 ## Repository Structure
 
-Solidblocks uses a mono-repository approach where each component resides in a separate folder. Each component has a `do`
-file that allows each component to be built and tested locally as well as in the CI. The `do` file in the repository
-root orchestrates the overall build process and includes component-agnostic tasks like generation of the documentation
+Solidblocks uses a mono-repository approach where each component resides in a separate folder. Each component has a `do` file that allows each component to be built and tested locally as well as in the CI. The `do` file in the repository root orchestrates the overall build process and includes component-agnostic tasks like generation of the documentation
 etc.
 
 ```shell
-do
-solidblocks-shell/do
-solidblocks-rds-postgresql/do
+/do build
+/solidblocks-shell/do test
+/solidblocks-rds-postgresql/do clean
 [...]
 ```
 
@@ -26,8 +24,7 @@ Common for all `do` files are the following tasks:
 
 ## Documentation
 
-The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the
-documentation should do so by adding the snippets to the components `build/snippets` folder, so after
+The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after
 running `./do build-documentation` they can be included like this:
 
 ```shell
@@ -46,25 +43,22 @@ VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 ### Docker Artifacts
 
-To pass docker artifacts between build steps without accidentally releasing an untested docker image, freshly built images are tagged with a `-rc` postfix in the tag, e.g. `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}-rc` and retagged during the release process after all tests are run to `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}`
+To pass docker artifacts between build steps without accidentally releasing an untested docker image, freshly built and not yet tested images are tagged with a `-rc` postfix in the tag, e.g. `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}-rc` and re-tagged during the release process after all tests are run to `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}`
 
 
 ## Tests
 
-Especially the infrastructure heavy components of Solidblocks rely on downloading released code from Github releases. To
-be able to mimic this behaviour during integration tests all code using released code from Github should provide the
-ability to override the release server to allow for injecting code during integration tests:
+Especially the infrastructure heavy components of Solidblocks rely on downloading released code from Github releases. To be able to mimic this behaviour during integration tests, all code using released code from Github should provide the ability to override the release server to allow for injecting of development code during integration tests:
 
 ```shell
 curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/[...]"
 ```
 
-For code where it is not feasible to inject a local webserver (e.g. code running on a cloud provider in cloud-init) AWS
-S3 is used as a webserver because it is easily scriptable.
+For code where it is not feasible to inject a local webserver (e.g. code running on a cloud provider in cloud-init) AWS S3 is used as a webserver because it is easily scriptable.
 
 ## Secrets
 
-For cloud provider specific integration tests credentials are needed, that are either used from environment variables, or if not set pulled from a
+For cloud provider specific integration tests credentials are needed, that are either taken from environment variables, or if not set pulled from a
 local [pass](https://www.passwordstore.org/)-based password store.
 
 ### AWS
