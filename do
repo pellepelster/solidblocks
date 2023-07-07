@@ -68,7 +68,7 @@ function task_clean {
 }
 
 function task_test {
-    if [[ -n "${SKIP_TESTS:-}" ]]; then
+    if [[ "${SKIP_TESTS:-}" == "true" ]]; then
       exit 0
     fi
 
@@ -98,6 +98,14 @@ function task_release_docker {
     done
 }
 
+function prepare_documentation_env {
+  local versions="$(grep  'VERSION=\".*\"' "${DIR}/solidblocks-shell/lib/software.sh")"
+  for version in ${versions}; do
+    eval "export ${version}"
+  done
+  export SOLIDBLOCKS_VERSION="${VERSION}"
+}
+
 function task_build_documentation {
     ensure_environment
 
@@ -115,20 +123,8 @@ function task_build_documentation {
     mkdir -p "${DIR}/build/documentation"
     (
       cd "${DIR}/build/documentation"
-
       cp -r ${DIR}/doc/* ./
-
-      source "${DIR}/solidblocks-shell/lib/software.sh"
-      sed -i "s/__TERRAFORM_VERSION__/${TERRAFORM_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/__CONSUL_VERSION__/${CONSUL_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/__HUGO_VERSION__/${HUGO_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/__SHELLCHECK_VERSION__/${SHELLCHECK_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/__SEMVER_VERSION__/${SEMVER_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/__TERRAGRUNT_VERSION__/${TERRAGRUNT_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/__RESTIC_VERSION__/${RESTIC_VERSION}/g" content/shell/software/_index.md
-      sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/rds/_index.md
-      sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/hetzner/nuke.md
-      sed -i "s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" content/terraform/_index.md
+      prepare_documentation_env
       hugo
     )
 }
@@ -137,6 +133,8 @@ function task_serve_documentation {
     ensure_environment
     (
       cd "${DIR}/doc"
+
+      prepare_documentation_env
       hugo serve --baseURL "/"
     )
 }

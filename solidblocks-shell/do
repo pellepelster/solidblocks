@@ -82,7 +82,7 @@ function task_test_integration {
 }
 
 function task_test {
-  if [[ -n "${SKIP_TESTS:-}" ]]; then
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -95,7 +95,7 @@ function task_release_docker {
 }
 
 function task_format {
-  echo "<not implemented>"
+  terraform fmt -recursive
 }
 
 function task_clean {

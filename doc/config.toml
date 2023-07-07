@@ -5,3 +5,7 @@ theme = "relearn"
 
 [params]
     themeVariant = "green"
+
+[security]
+[security.funcs]
+getenv = ['.*_VERSION$', '.*_CHECKSUM$']
