@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.19
+
+**BUGFIXES**
+
+* fix broken v0.1.17 release
+
 ## v0.1.18
 
 **IMPROVEMENTS**

@@ -166,7 +166,7 @@ function task_release_check() {
     exit 1
   fi
 
-  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md | grep -v do | grep -v README.md; then
+  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md | grep -v README.md; then
     echo "previous version '${previous_version}' found in repository"
     exit 1
   fi

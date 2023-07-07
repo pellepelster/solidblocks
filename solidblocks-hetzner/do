@@ -73,7 +73,9 @@ function task_test_snippets_psql_wrapper() {
 
 function task_test_snippets_ssh {
   local module="${1:-}"
-  ssh -F "${DIR}/${module}/ssh_config" $(terraform_wrapper "${module}" output -raw ipv4_address) ${@}
+  #ssh -F "${DIR}/${module}/ssh_config" $(terraform_wrapper "${module}" output -raw ipv4_address) ${@}
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address
+  ssh -F "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/ssh_config" $(terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address) ${@}
 }
 
 function task_test_snippets_local () {

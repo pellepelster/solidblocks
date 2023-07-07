@@ -124,7 +124,7 @@ cat <<-EOF
 version: "3"
 services:
   ${db_instance_name}:
-    image: ghcr.io/pellepelster/solidblocks-rds-postgresql:${postgres_major_version}-${solidblocks_rds_version}
+    image: ghcr.io/pellepelster/solidblocks-rds-postgresql:${postgres_major_version}-v${solidblocks_rds_version}
     container_name: ${db_instance_name}_postgresql
     %{~ if mode != "" ~}
     command: ${mode}
