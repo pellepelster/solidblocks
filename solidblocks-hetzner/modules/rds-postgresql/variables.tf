@@ -5,17 +5,17 @@ variable "name" {
 
 variable "location" {
   type        = string
-  description = "hetzner location to use for provisioned resources"
+  description = "Hetzner location to use for provisioned resources"
 }
 
 variable "ssh_keys" {
   type        = list(number)
-  description = "ssh keys to privision for instance access"
+  description = "ssh keys to provision for instance access"
 }
 
 variable "server_type" {
   type        = string
-  description = "hetzner cloud server type, supports x86 and ARM architectures"
+  description = "Hetzner cloud server type, supports x86 and ARM architectures"
   default     = "cx11"
 }
 

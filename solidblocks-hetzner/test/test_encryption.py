@@ -1,4 +1,4 @@
-def test_storge_mounts(host):
+def test_storage_mounts(host):
     lines = host.check_output(
         "find /storage/**/archive/* -name '*.gz' -exec od -A none --format x1 --read-bytes 8 {} \;").splitlines()
 

@@ -50,7 +50,7 @@ tasks.test {
     systemProperties["junit.jupiter.execution.parallel.config.strategy"] = "fixed"
 
     if (System.getenv("CI") != null) {
-        systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 4
+        systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 2
     } else {
         systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 10
     }

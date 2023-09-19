@@ -30,7 +30,7 @@ graph TD
 
     backup_exists -->|yes| restore[restore from backup]
     migrate_data --> init_users
-    restore --> init_users[initialize/update schemas and users]
+    restore --> init_users[initialize / update schemas and users]
     init_db[initialize database] --> initial_backup
     initial_backup[initial backup] --> init_users
     init_users --> start_database[start database]
@@ -114,11 +114,11 @@ and `DB_BACKUP_S3_HOST`can be used to configure non-AWS servers.
 Multiple databases can automatically be provisioned by providing configurations for multiple distinct
 unique `${database_id}`s
 
-| per database configuration   | type        | description                                                                      |
-|------------------------------|-------------|----------------------------------------------------------------------------------|
-| `DB_DATABASE_${database_id}` | environment | name of the database that will be crated when the PostgreSQL is initialized      | 
-| `DB_USERNAME_${database_id}` | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}` |
-| `DB_PASSWORD_${database_id}` | environment | password for the database user                                                   |
+| per database configuration   | type        | description                                                                                                                                                                   |
+|------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_DATABASE_${database_id}` | environment | name of the database that will be crated when the PostgreSQL is initialized. The databaase id must adhere to the limitations of shell environment variable naming ([a-zA-Z_]) | 
+| `DB_USERNAME_${database_id}` | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}`                                                                                              |
+| `DB_PASSWORD_${database_id}` | environment | password for the database user                                                                                                                                                |
 
 {{% notice tip %}}
 `DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on
