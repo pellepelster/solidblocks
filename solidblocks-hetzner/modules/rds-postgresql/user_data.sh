@@ -145,6 +145,9 @@ services:
       %{~ if storage_device_backup != "" ~}
       - "DB_BACKUP_LOCAL=1"
       %{~ endif ~}
+      %{~ if postgres_extra_config != "" ~}
+      - "DB_POSTGRES_EXTRA_CONFIG=${postgres_extra_config}"
+      %{~ endif ~}
       %{~ if backup_encryption_passphrase != "" ~}
       - "DB_BACKUP_ENCRYPTION_PASSPHRASE=${backup_encryption_passphrase}"
       %{~ endif ~}

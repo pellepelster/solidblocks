@@ -87,6 +87,12 @@ variable "postgres_major_version" {
   }
 }
 
+variable "postgres_extra_config" {
+  type        = string
+  description = "Extra postgres configurations options for the postgresql.conf, see also https://pellepelster.github.io/solidblocks/rds/index.html#global -> DB_POSTGRES_EXTRA_CONFIG"
+  default     = null
+}
+
 variable "extra_user_data" {
   type        = string
   description = "deprecated, please use pre_script/post_script"
@@ -181,12 +187,12 @@ variable "solidblocks_base_url" {
 variable "solidblocks_cloud_init_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.1.19"
+  default     = "v0.1.20"
 }
 
 variable "solidblocks_rds_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.1.19"
+  default     = "v0.1.20"
 }
 

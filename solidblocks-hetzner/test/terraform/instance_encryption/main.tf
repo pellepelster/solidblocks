@@ -24,4 +24,6 @@ module "rds-postgresql-1" {
   databases = [
     { id : "database1", user : "user1", password : "password1" }
   ]
+
+  postgres_extra_config = "checkpoint_timeout = 399"
 }

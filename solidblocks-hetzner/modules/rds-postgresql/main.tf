@@ -1,11 +1,11 @@
 locals {
 
   user_data = templatefile("${path.module}/user_data.sh", {
-    db_instance_name        = var.name
-    solidblocks_base_url    = var.solidblocks_base_url
-    solidblocks_rds_version = var.solidblocks_rds_version
-    storage_device_data     = data.hcloud_volume.data.linux_device
-    storage_device_backup   = try(data.hcloud_volume.backup[0].linux_device, "")
+    db_instance_name                 = var.name
+    solidblocks_base_url             = var.solidblocks_base_url
+    solidblocks_rds_version          = var.solidblocks_rds_version
+    storage_device_data              = data.hcloud_volume.data.linux_device
+    storage_device_backup            = try(data.hcloud_volume.backup[0].linux_device, "")
     // TODO fallback for test until https://github.com/hashicorp/terraform-provider-http/issues/264 is fixed
     cloud_init_bootstrap_solidblocks = fileexists("${path.module}/cloud_init_bootstrap_solidblocks") ? file("${path.module}/cloud_init_bootstrap_solidblocks") : data.http.cloud_init_bootstrap_solidblocks.response_body
 
@@ -26,6 +26,7 @@ locals {
     ssl_dns_provider        = var.ssl_dns_provider
     ssl_dns_provider_config = var.ssl_dns_provider_config
     postgres_major_version  = var.postgres_major_version
+    postgres_extra_config   = var.postgres_extra_config == null ? "" : var.postgres_extra_config
 
     extra_user_data = var.extra_user_data
     pre_script      = var.pre_script

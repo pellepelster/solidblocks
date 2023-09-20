@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.20
+
+**IMPROVEMENTS**
+
+* add 
+
+**BUGFIXES**
+
+* ensure all configured backup repositories are used when starting backups (fill/incremental/differential)
+
+
+
 ## v0.1.19
 
 **BUGFIXES**

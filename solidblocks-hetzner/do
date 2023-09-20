@@ -399,6 +399,7 @@ function task_test_encryption() {
   test_wait_for_sql
 
   echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
+  echo 'SELECT * FROM "pg_settings" ORDER BY "name";' | psql_wrapper | grep ".*checkpoint_timeout.*399.*"
 
   terraform_wrapper "test/terraform/instance_encryption" destroy -auto-approve
   terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
