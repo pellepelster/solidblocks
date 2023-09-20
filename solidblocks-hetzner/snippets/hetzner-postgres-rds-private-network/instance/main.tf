@@ -30,7 +30,7 @@ resource "hcloud_network_subnet" "subnet" {
 
 module "rds-postgresql" {
   source  = "pellepelster/solidblocks-rds-postgresql/hcloud"
-  version = "0.1.20"
+  version = "0.1.21"
 
   name     = "rds-postgresql"
   location = var.hetzner_location

@@ -27,7 +27,7 @@ function task_build {
 
   if which terraform-docs; then
     terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
-    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds-postgresql.md"
+    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
   fi
 }
 

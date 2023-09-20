@@ -1,10 +1,10 @@
 # Changelog
 
-## v0.1.20
+## v0.1.21
 
 **IMPROVEMENTS**
 
-* add 
+* add module parameter to add config options to generated [postgres.conf](https://pellepelster.github.io/solidblocks/hetzner/rds/#input%5c_postgres%5c_extra%5c_config)
 
 **BUGFIXES**
 
@@ -25,10 +25,10 @@
 * Support [encrypted backups](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#input\_backup\_encryption\_passphrase) for Hetzner RDS PostgreSQL module 
 * Enable seamless version upgrades in RDS PostgreSQL modules (standalone docker and Hetzner module)
   * [RDS PostgreSQL backup encryption](https://pellepelster.github.io/solidblocks/rds/#global) 
-  * [Hetzner RDS PostgreSQL backup encryption](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#input\_postgres\_major\_version)
+  * [Hetzner RDS PostgreSQL backup encryption](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_postgres\_major\_version)
 * Add maintenance mode in RDS PostgreSQL modules (standalone docker and Hetzner module)
   * [RDS PostgreSQL maintenance mode](https://pellepelster.github.io/solidblocks/rds/#maintenance)
-  * [Hetzner RDS PostgreSQL maintenance mode](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#maintenance)
+  * [Hetzner RDS PostgreSQL maintenance mode](https://pellepelster.github.io/solidblocks/hetzner/rds/#maintenance)
 * clean up and [document](https://pellepelster.github.io/solidblocks/rds/#architecture) RDS PostgreSQL module startup behavior 
 
 ## v0.1.17
@@ -36,7 +36,7 @@
 **IMPROVEMENTS**
 
 * [LetsEncrypt module](https://pellepelster.github.io/solidblocks/cloud-init/lego/) for cloud-init script library 
-* LetsEncrypt support for Hetzner RDS Postgres module to support [automatic SSL provisioning](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/#input\_ssl\_enable) for PostgreSQL databases
+* LetsEncrypt support for Hetzner RDS Postgres module to support [automatic SSL provisioning](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_ssl\_enable) for PostgreSQL databases
 
 ## v0.1.16
 
