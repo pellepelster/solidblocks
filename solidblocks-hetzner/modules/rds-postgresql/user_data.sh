@@ -136,6 +136,9 @@ services:
       - "DB_USERNAME_${database.id}=${database.user}"
       - "DB_PASSWORD_${database.id}=${database.password}"
       %{~ endfor ~}
+      %{~ if db_admin_password != "" ~}
+      - "DB_ADMIN_PASSWORD=${db_admin_password}"
+      %{~ endif ~}
       %{~ for key, value in environment_variables ~}
       - "${key}=${value}"
       %{~ endfor ~}

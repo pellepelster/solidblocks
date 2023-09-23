@@ -73,6 +73,7 @@ variable "backup_incr_calendar" {
 
 variable "databases" {
   type        = list(object({ id : string, user : string, password : string }))
+  sensitive   = true
   description = "A list of databases to create when the instance is initialized, for example: `{ id : \"database1\", user : \"user1\", password : \"password1\" }`. Changing `user` and `password` is supported at any time, the provided config is translated into an config for the Solidblocks RDS PostgreSQL module (https://pellepelster.github.io/solidblocks/rds/index.html), please see https://pellepelster.github.io/solidblocks/rds/index.html#databases for more details of the database configuration."
 }
 
@@ -80,6 +81,14 @@ variable "environment_variables" {
   type        = map(string)
   description = "A list environment variables to pass to the PostgreSQL  docker container"
   default     = {}
+}
+
+
+variable "db_admin_password" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "The database admin password. Username is always rds"
 }
 
 variable "postgres_major_version" {
