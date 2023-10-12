@@ -24,4 +24,9 @@ module "rds-postgresql-1" {
   ]
 
   extra_user_data = file("${path.module}/extra_user_data.sh")
+
+  environment_variables = {
+    ENV1 = "KEY1"
+  }
+
 }

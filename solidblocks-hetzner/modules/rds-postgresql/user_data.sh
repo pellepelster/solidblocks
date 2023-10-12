@@ -136,6 +136,9 @@ services:
       - "DB_USERNAME_${database.id}=${database.user}"
       - "DB_PASSWORD_${database.id}=${database.password}"
       %{~ endfor ~}
+      %{~ for key, value in environment_variables ~}
+      - "${key}=${value}"
+      %{~ endfor ~}
       %{~ if db_backup_s3_bucket != "" && db_backup_s3_access_key != "" && db_backup_s3_secret_key != "" ~}
       - "DB_BACKUP_S3=1"
       - "DB_BACKUP_S3_BUCKET=${db_backup_s3_bucket}"
