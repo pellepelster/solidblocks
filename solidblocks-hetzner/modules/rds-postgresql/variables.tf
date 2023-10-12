@@ -99,6 +99,12 @@ variable "postgres_extra_config" {
   default     = null
 }
 
+variable "postgres_stop_timeout" {
+  type        = number
+  description = "shutdown timeout for the postgres database in seconds, see also https://www.postgresql.org/docs/current/app-pg-ctl.html"
+  default     = 60
+}
+
 variable "extra_user_data" {
   type        = string
   description = "deprecated, please use pre_script/post_script"

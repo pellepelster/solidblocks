@@ -20,6 +20,7 @@ locals {
 
     databases             = var.databases
     environment_variables = var.environment_variables
+    postgres_stop_timeout = var.postgres_stop_timeout
 
     ssl_enable              = var.ssl_enable
     ssl_email               = var.ssl_email

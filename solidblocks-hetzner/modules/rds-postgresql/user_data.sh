@@ -148,6 +148,9 @@ services:
       %{~ if storage_device_backup != "" ~}
       - "DB_BACKUP_LOCAL=1"
       %{~ endif ~}
+      %{~ if postgres_stop_timeout != "" ~}
+      - "POSTGRES_STOP_TIMEOUT=${postgres_stop_timeout}"
+      %{~ endif ~}
       %{~ if postgres_extra_config != "" ~}
       - "DB_POSTGRES_EXTRA_CONFIG=${postgres_extra_config}"
       %{~ endif ~}

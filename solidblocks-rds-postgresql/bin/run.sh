@@ -4,6 +4,7 @@ set -eu -o pipefail
 
 export DB_ADMIN_USERNAME="${USER}"
 export DB_ADMIN_PASSWORD="${DB_ADMIN_PASSWORD:-$(uuidgen)}"
+export POSTGRES_STOP_TIMEOUT="${POSTGRES_STOP_TIMEOUT:-60}"
 
 function log() {
   echo "[solidblocks-rds-postgresql] $*"
@@ -236,7 +237,7 @@ function migrate_old_data_if_needed() {
     cp -v /rds/config/postgresql.conf "${PREVIOUS_PG_DATA_DIR}/postgresql.conf"
     cp -v /rds/config/pg_hba.conf "${PREVIOUS_PG_DATA_DIR}/pg_hba.conf"
     ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off"
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
 
     log "upgrading postgres data in '${PREVIOUS_PG_DATA_DIR}' to '${PG_DATA_DIR}'"
     pg_upgrade \
@@ -247,7 +248,7 @@ function migrate_old_data_if_needed() {
 
     ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses=''"
     pgbackrest $(pgbackrest_default_arguments) --db-path=${PG_DATA_DIR} --no-online stanza-upgrade
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
   fi
 }
 
@@ -271,7 +272,7 @@ function initiaize_db_and_config() {
   log "executing initial backup"
   pgbackrest $(pgbackrest_default_arguments) --log-level-console=info --type=full backup
 
-  ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
+  ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
 }
 
 function pgbackrest_status_code() {
@@ -326,7 +327,7 @@ function start_db() {
 
       ensure_databases
 
-      ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
+      ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
     else
       initiaize_db_and_config
     fi
@@ -347,7 +348,7 @@ function start_db() {
     log "setting password for '${DB_ADMIN_USERNAME}'"
     psql_execute "postgres" "ALTER USER \"${DB_ADMIN_USERNAME}\" WITH ENCRYPTED PASSWORD '${DB_ADMIN_PASSWORD}'"
 
-    ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop
+    ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
   fi
 
   cp -v /rds/config/postgresql.conf "${PG_DATA_DIR}/postgresql.conf"

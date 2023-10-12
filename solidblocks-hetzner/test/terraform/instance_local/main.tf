@@ -29,4 +29,6 @@ module "rds-postgresql-1" {
     ENV1 = "KEY1"
   }
 
+  postgres_stop_timeout = 61
+
 }
