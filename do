@@ -140,6 +140,7 @@ function task_serve_documentation {
 }
 
 function task_bootstrap() {
+  git submodule update --init --recursive
   software_ensure_shellcheck
   software_ensure_hugo
   software_ensure_semver

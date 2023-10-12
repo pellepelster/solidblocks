@@ -267,18 +267,27 @@ function task_test_ssl () {
 }
 
 function task_test_restore_from_local() {
-
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
+  task_test_restore_from_local_deploy
+  task_test_restore_from_local_run
+  task_test_restore_from_local_destroy
+}
+
+function task_test_restore_from_local_deploy() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_local" apply -auto-approve
+}
+
+function task_test_restore_from_local_run() {
   test_wait_for_cloud_init
 
   python_ensure_venv "${DIR}"
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
+
   test_wait_for_docker
   test_wait_for_sql
 
@@ -306,7 +315,9 @@ function task_test_restore_from_local() {
   test_wait_for_sql
 
   echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
+}
 
+function task_test_restore_from_local_destroy() {
   terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
   terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
   terraform_wrapper "test/terraform/base" destroy -auto-approve || true
@@ -541,7 +552,12 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
+
   test-restore-local) task_test_restore_from_local "$@" ;;
+  test-restore-local-deploy) task_test_restore_from_local_deploy "$@" ;;
+  test-restore-local-run) task_test_restore_from_local_run "$@" ;;
+  test-restore-local-destroy) task_test_restore_from_local_destroy "$@" ;;
+
   test-restore-s3) task_test_restore_from_s3 "$@" ;;
   test-private-network) task_test_private_network "$@" ;;
   test-migration) task_test_migration "$@" ;;

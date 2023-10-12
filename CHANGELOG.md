@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.0
+
+**IMPROVEMENTS**
+
+* allow overriding of PostgreSQL [shutdown timeout](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_postgres\_stop\_timeout)
+* allow passing of [arbitrary environment](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_environment\_variables) variables to PostgreSQL
+
 ## v0.1.21
 
 **IMPROVEMENTS**
@@ -9,7 +16,6 @@
 **BUGFIXES**
 
 * ensure all configured backup repositories are used when starting backups (fill/incremental/differential)
-
 
 
 ## v0.1.19
