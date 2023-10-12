@@ -121,7 +121,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
         containers.forEach {
             logger.info { "killing container '${it.containerId}'" }
-            client.killContainerCmd(it.containerId).exec()
+            client.killContainerCmd(it.containerId).withSignal("9").exec()
 
             logger.info { "removing container '${it.containerId}'" }
             client.removeContainerCmd(it.containerId).withForce(true).withRemoveVolumes(true).exec()
