@@ -66,7 +66,7 @@ local backup_type="$${1:-}"
 local backup_calendar="$${2:-}"
 cat <<-EOF
 [Unit]
-Description=full backup for %i
+Description=$${backup_type} backup for %i
 
 [Timer]
 OnCalendar=$${backup_calendar}
@@ -212,7 +212,9 @@ systemctl enable rds@${db_instance_name}
 systemctl start rds@${db_instance_name}
 
 systemctl enable rds-backup-full@${db_instance_name}.timer
+systemctl start rds-backup-full@${db_instance_name}.timer
 systemctl enable rds-backup-incr@${db_instance_name}.timer
+systemctl start rds-backup-incr@${db_instance_name}.timer
 
 # enable automatic system updates
 systemctl start unattended-upgrades
