@@ -193,6 +193,13 @@ variable "ssl_dns_provider_config" {
   default     = {}
 }
 
+variable "ssl_acme_server" {
+  type = string
+  description = "The URL of the ACME Server to use. Defaults to Let's Encrypt production environment."
+  # LetsEncrypt Staging: https://acme-staging-v02.api.letsencrypt.org/directory
+  default = "https://acme-v02.api.letsencrypt.org/directory"
+}
+
 variable "backup_encryption_passphrase" {
   type        = string
   description = "If set the backups will be encrypted using this passphrase"
