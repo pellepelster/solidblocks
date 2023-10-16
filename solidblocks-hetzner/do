@@ -7,8 +7,6 @@ DIR="$( cd "$(dirname "$0")"
 )"
 
 export VERSION="${GITHUB_REF_NAME:-snapshot}"
-export TEST_ID="$(echo $RANDOM | md5sum | head -c 8; echo;)"
-#export TEST_ID="${USER}"
 
 source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
@@ -58,10 +56,8 @@ function terraform_wrapper {
 
     export TF_VAR_backup_s3_access_key="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
     export TF_VAR_backup_s3_secret_key="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
-    export TF_VAR_test_id="${TEST_ID}"
     export TF_VAR_solidblocks_version=${VERSION}
 
-    #terraform workspace new "${TEST_ID}" || terraform workspace select "${TEST_ID}"
     terraform ${@}
   )
 }
@@ -194,6 +190,9 @@ function task_test_private_network () {
   fi
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
 
@@ -222,6 +221,9 @@ function task_test_arm () {
   fi
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_arm" apply -auto-approve
 
@@ -247,6 +249,9 @@ function task_test_ssl () {
   python_ensure_venv "${DIR}"
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_ssl" apply -auto-approve
 
@@ -278,30 +283,21 @@ function task_test_restore_from_local() {
 
 function task_test_restore_from_local_deploy() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_local" apply -auto-approve
 }
 
 function task_test_restore_from_local_run() {
-  test_wait_for_cloud_init
-
   python_ensure_venv "${DIR}"
+
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
+  test_wait_for_ssh
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
-
-  test_wait_for_docker
-  test_wait_for_sql
-
-  log_divider_header "create test table"
-  create_table | psql_wrapper
-  log_divider_footer
-
-  log_divider_header "add test data"
-  insert_dog | psql_wrapper
-  log_divider_footer
-
-  log_divider_header "trigger full backup"
-  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
-  log_divider_footer
 
   log_divider_header "destroy instance"
   terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
@@ -311,13 +307,14 @@ function task_test_restore_from_local_run() {
   terraform_wrapper "test/terraform/instance_local" apply -auto-approve
   log_divider_footer
 
-  test_wait_for_docker
-  test_wait_for_sql
-
-  echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
+  test_wait_for_ssh
+  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
 }
 
 function task_test_restore_from_local_destroy() {
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
   terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
   terraform_wrapper "test/terraform/base" destroy -auto-approve || true
@@ -330,6 +327,9 @@ function task_test_migration() {
   fi
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
 
   log_divider_header "create instance with postgresql version 14"
@@ -376,6 +376,9 @@ function task_test_encryption() {
   fi
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_encryption" apply -auto-approve
 
@@ -423,6 +426,9 @@ function task_test_restore_from_s3() {
   fi
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+
   terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
 
   test_wait_for_cloud_init

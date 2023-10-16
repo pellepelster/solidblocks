@@ -1,5 +1,11 @@
+resource "random_string" "random" {
+  length  = 5
+  special = false
+  upper   = false
+}
+
 resource "aws_s3_bucket" "bootstrap" {
-  bucket        = "test-${var.test_id}"
+  bucket        = "test-${random_string.random.id}"
   force_destroy = true
 }
 
@@ -24,8 +30,8 @@ data "aws_iam_policy_document" "bootstrap" {
       type        = "*"
     }
     resources = [
-      "arn:aws:s3:::test-${var.test_id}",
-      "arn:aws:s3:::test-${var.test_id}/*"
+      "arn:aws:s3:::test-${random_string.random.id}",
+      "arn:aws:s3:::test-${random_string.random.id}/*"
     ]
   }
 }
@@ -43,7 +49,6 @@ resource "aws_s3_bucket_ownership_controls" "bootstrap" {
   rule {
     object_ownership = "BucketOwnerPreferred"
   }
-
 }
 
 resource "aws_s3_bucket_acl" "bootstrap" {

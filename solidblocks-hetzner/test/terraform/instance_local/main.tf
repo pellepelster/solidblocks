@@ -30,5 +30,5 @@ module "rds-postgresql-1" {
   }
 
   postgres_stop_timeout = 61
-
+  db_admin_password     = "5aee570e-b669-4df6-b05c-1b581e88325f"
 }

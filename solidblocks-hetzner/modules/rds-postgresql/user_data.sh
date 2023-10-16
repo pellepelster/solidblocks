@@ -40,7 +40,8 @@ function install_prerequisites {
     docker-compose \
     ufw \
     uuid \
-    unattended-upgrades
+    unattended-upgrades \
+    postgresql-client
 }
 
 function configure_ufw {
