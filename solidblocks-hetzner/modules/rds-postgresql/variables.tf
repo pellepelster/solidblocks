@@ -85,13 +85,13 @@ variable "backup_s3_retention_full_type" {
 variable "backup_s3_retention_full" {
   type        = number
   description = "AWS S3 backups full backup retention count/time."
-  default     = null
+  default     = 7
 }
 
 variable "backup_s3_retention_diff" {
   type        = number
   description = "AWS S3 backup number of differential backups to retain."
-  default     = null
+  default     = 4
 }
 
 variable "backup_full_calendar" {
