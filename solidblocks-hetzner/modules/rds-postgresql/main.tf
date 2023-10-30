@@ -12,11 +12,16 @@ locals {
     backup_full_calendar = var.backup_full_calendar
     backup_incr_calendar = var.backup_incr_calendar
 
-    db_backup_s3_bucket          = var.backup_s3_bucket == null ? "" : var.backup_s3_bucket
-    db_backup_s3_access_key      = var.backup_s3_access_key == null ? "" : var.backup_s3_access_key
-    db_backup_s3_secret_key      = var.backup_s3_secret_key == null ? "" : var.backup_s3_secret_key
-    backup_encryption_passphrase = var.backup_encryption_passphrase == null ? "" : var.backup_encryption_passphrase
-    mode                         = var.mode == null ? "" : var.mode
+    db_backup_s3_bucket              = var.backup_s3_bucket == null ? "" : var.backup_s3_bucket
+    db_backup_s3_access_key          = var.backup_s3_access_key == null ? "" : var.backup_s3_access_key
+    db_backup_s3_secret_key          = var.backup_s3_secret_key == null ? "" : var.backup_s3_secret_key
+    db_backup_s3_region              = var.backup_s3_region == null ? "" : var.backup_s3_region
+    db_backup_s3_host                = var.backup_s3_host == null ? "" : var.backup_s3_host
+    db_backup_s3_retention_full_type = var.backup_s3_retention_full_type == null ? "count" : var.backup_s3_retention_full_type
+    db_backup_s3_retention_full      = var.backup_s3_retention_full == null ? "7" : var.backup_s3_retention_full
+    db_backup_s3_retention_diff      = var.backup_s3_retention_diff == null ? "4" : var.backup_s3_retention_diff
+    backup_encryption_passphrase     = var.backup_encryption_passphrase == null ? "" : var.backup_encryption_passphrase
+    mode                             = var.mode == null ? "" : var.mode
 
     databases             = var.databases
     environment_variables = var.environment_variables

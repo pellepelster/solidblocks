@@ -59,6 +59,41 @@ variable "backup_s3_secret_key" {
   default     = null
 }
 
+variable "backup_s3_region" {
+  type        = string
+  description = "AWS region for S3 backups."
+  default     = "eu-central-1"
+}
+
+variable "backup_s3_host" {
+  type        = string
+  description = "AWS host S3 backups."
+  default     = "s3.eu-central-1.amazonaws.com"
+}
+
+variable "backup_s3_retention_full_type" {
+  type        = string
+  description = "AWS S3 backups retention policy type [count, time]."
+  default     = "count"
+
+  validation {
+    condition     = var.backup_s3_retention_full_type != "count" || var.backup_s3_retention_full_type != "time"
+    error_message = "only 'count' or 'time' is supported"
+  }
+}
+
+variable "backup_s3_retention_full" {
+  type        = number
+  description = "AWS S3 backups full backup retention count/time."
+  default     = null
+}
+
+variable "backup_s3_retention_diff" {
+  type        = number
+  description = "AWS S3 backup number of differential backups to retain."
+  default     = null
+}
+
 variable "backup_full_calendar" {
   type        = string
   description = "systemd timer spec for full backups"
