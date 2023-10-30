@@ -149,6 +149,11 @@ services:
       - "DB_BACKUP_S3_BUCKET=${db_backup_s3_bucket}"
       - "DB_BACKUP_S3_ACCESS_KEY=${db_backup_s3_access_key}"
       - "DB_BACKUP_S3_SECRET_KEY=${db_backup_s3_secret_key}"
+      - "DB_BACKUP_S3_REGION=${db_backup_s3_region}"
+      - "DB_BACKUP_S3_HOST=${db_backup_s3_host}"
+      - "DB_BACKUP_S3_RETENTION_FULL_TYPE=${db_backup_s3_retention_full_type}"
+      - "DB_BACKUP_S3_RETENTION_FULL=${db_backup_s3_retention_full}"
+      - "DB_BACKUP_S3_RETENTION_DIFF=${db_backup_s3_retention_diff}"
       %{~ endif ~}
       %{~ if storage_device_backup != "" ~}
       - "DB_BACKUP_LOCAL=1"
