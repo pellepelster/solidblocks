@@ -154,12 +154,12 @@ services:
       - "DB_BACKUP_S3_RETENTION_FULL_TYPE=${db_backup_s3_retention_full_type}"
       - "DB_BACKUP_S3_RETENTION_FULL=${db_backup_s3_retention_full}"
       - "DB_BACKUP_S3_RETENTION_DIFF=${db_backup_s3_retention_diff}"
-      - "DB_BACKUP_LOCAL_RETENTION_FULL_TYPE=${db_backup_local_retention_full_type}"
-      - "DB_BACKUP_LOCAL_RETENTION_FULL=${db_backup_local_retention_full}"
-      - "DB_BACKUP_LOCAL_RETENTION_DIFF=${db_backup_local_retention_diff}"
       %{~ endif ~}
       %{~ if storage_device_backup != "" ~}
       - "DB_BACKUP_LOCAL=1"
+      - "DB_BACKUP_LOCAL_RETENTION_FULL_TYPE=${db_backup_local_retention_full_type}"
+      - "DB_BACKUP_LOCAL_RETENTION_FULL=${db_backup_local_retention_full}"
+      - "DB_BACKUP_LOCAL_RETENTION_DIFF=${db_backup_local_retention_diff}"
       %{~ endif ~}
       %{~ if postgres_stop_timeout != "" ~}
       - "POSTGRES_STOP_TIMEOUT=${postgres_stop_timeout}"
