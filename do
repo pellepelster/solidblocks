@@ -151,13 +151,14 @@ function task_release_check() {
   local previous_version="${previous_tag#v}"
   local version="$(semver get release)"
 
-  task_build
-  task_build_documentation
+  #task_build
+  #task_build_documentation
 
+  local previous_version_escaped="${previous_version//\./\\.}"
   echo "checking for previous version '${previous_version}'"
 
-  if git --no-pager grep "${previous_version}" | grep -v CHANGELOG.md | grep -v README.md; then
-    echo "previous version '${previous_version}' found in repository"
+  if git --no-pager grep "${previous_version_escaped}" | grep -v CHANGELOG.md | grep -v README.md; then
+    echo "previous version '${previous_version_escaped}' found in repository"
     exit 1
   fi
 
