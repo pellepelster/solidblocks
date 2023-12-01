@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+**BUGFIXES**
+
+* fix retention configuration for local backups in Hetzner RDS PostgreSQL
+
 ## v0.2.2
 
 * fix broken v0.2.1 release
