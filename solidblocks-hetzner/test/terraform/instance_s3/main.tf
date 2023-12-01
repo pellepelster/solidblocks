@@ -22,6 +22,10 @@ module "rds-postgresql-1" {
   solidblocks_cloud_init_version = var.solidblocks_version
   solidblocks_rds_version        = "${var.solidblocks_version}-rc"
 
+  backup_s3_retention_full_type = "count"
+  backup_s3_retention_full      = 6
+  backup_s3_retention_diff      = 2
+
   databases = [
     { id : "database1", user : "user1", password : "password1" }
   ]

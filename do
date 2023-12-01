@@ -42,7 +42,7 @@ function task_clean_aws {
 }
 
 function task_clean_hetzner {
-  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
+  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
 
   docker run \
     --rm \

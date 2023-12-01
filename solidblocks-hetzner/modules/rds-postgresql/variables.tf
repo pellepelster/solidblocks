@@ -73,7 +73,7 @@ variable "backup_s3_host" {
 
 variable "backup_s3_retention_full_type" {
   type        = string
-  description = "AWS S3 backups retention policy type [count, time]."
+  description = "AWS S3 backups retention policy type [count, time]. See https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full"
   default     = "count"
 
   validation {
@@ -84,13 +84,36 @@ variable "backup_s3_retention_full_type" {
 
 variable "backup_s3_retention_full" {
   type        = number
-  description = "AWS S3 backups full backup retention count/time."
+  description = "AWS S3 backups full backup retention count/time. See https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full"
   default     = 7
 }
 
 variable "backup_s3_retention_diff" {
   type        = number
-  description = "AWS S3 backup number of differential backups to retain."
+  description = "AWS S3 backup number of differential backups to retain. See https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff"
+  default     = 4
+}
+
+variable "backup_local_retention_full_type" {
+  type        = string
+  description = "Local backups retention policy type [count, time]. See https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full"
+  default     = "count"
+
+  validation {
+    condition     = var.backup_local_retention_full_type != "count" || var.backup_local_retention_full_type != "time"
+    error_message = "only 'count' or 'time' is supported"
+  }
+}
+
+variable "backup_local_retention_full" {
+  type        = number
+  description = "Local backups full backup retention count/time. See https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full"
+  default     = 7
+}
+
+variable "backup_local_retention_diff" {
+  type        = number
+  description = "Local backup number of differential backups to retain. See https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff"
   default     = 4
 }
 

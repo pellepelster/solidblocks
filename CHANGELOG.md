@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.2.1
+
+**IMPROVEMENTS**
+
+* allow setting db admin password via [db_admin_password](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_db\_admin\_password) in Hetzner RDS PostgreSQL
+* allow overriding of backup retention times for full and diff backups via [backup_[s3|local]\_retention_*](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_backup\_s3\_retention\_diff) in Hetzner RDS PostgreSQL
+* allow overriding of ACME server url via [ssl_acme_server](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_ssl\_acme\_server) in Hetzner RDS PostgreSQL
+* make ipv6 address available as output for Hetzner RDS PostgreSQL
+
+**BUGFIXES**
+
+* backup jobs not properly started and only ran after reboot for Hetzner RDS PostgreSQL
+
 ## v0.2.0
 
 **IMPROVEMENTS**
