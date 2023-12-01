@@ -120,8 +120,8 @@ docker exec -ti rds-postgresql-${name}_postgresql /bin/bash
 | <a name="input_public_net_ipv6_enabled"></a> [public\_net\_ipv6\_enabled](#input\_public\_net\_ipv6\_enabled) | enable/disable public ip addresses, see also https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#public_net | `bool` | `true` | no |
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | Hetzner cloud server type, supports x86 and ARM architectures | `string` | `"cx11"` | no |
 | <a name="input_solidblocks_base_url"></a> [solidblocks\_base\_url](#input\_solidblocks\_base\_url) | override base url for testing purposes | `string` | `"https://github.com"` | no |
-| <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.2.1"` | no |
-| <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | used for integration tests to inject test versions | `string` | `"v0.2.1"` | no |
+| <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | used for integration tests to inject test versions | `string` | `"v0.2.2"` | no |
+| <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | used for integration tests to inject test versions | `string` | `"v0.2.2"` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys to provision for instance access | `list(number)` | n/a | yes |
 | <a name="input_ssl_acme_server"></a> [ssl\_acme\_server](#input\_ssl\_acme\_server) | The URL of the ACME Server to use. Defaults to Let's Encrypt production environment. | `string` | `"https://acme-v02.api.letsencrypt.org/directory"` | no |
 | <a name="input_ssl_dns_provider"></a> [ssl\_dns\_provider](#input\_ssl\_dns\_provider) | provider type to use for LetsEncrypt DNS challenge, see https://go-acme.github.io/lego/dns/ for available options | `string` | `""` | no |
