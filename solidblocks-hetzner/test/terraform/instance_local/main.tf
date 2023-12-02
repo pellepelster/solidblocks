@@ -23,6 +23,8 @@ module "rds-postgresql-1" {
   backup_local_retention_full      = 6
   backup_local_retention_diff      = 2
 
+  backup_full_calendar = "*-*-* *:*:00"
+
   databases = [
     { id : "database1", user : "user1", password : "password1" }
   ]

@@ -299,6 +299,15 @@ function task_test_restore_from_local_run() {
   test_wait_for_ssh
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
 
+  # wait for timer backup backup run
+  while ! task_test_ssh journalctl -u rds-backup-full@rds-postgresql-${TEST_ID}.service | grep "rds-backup-full@rds-postgresql-${TEST_ID}.service: Succeeded" && [[ ${counter} -lt 21 ]];  do
+    log_echo_warning "waiting for timer backup backup run"
+    counter=$((counter+1))
+    sleep 10
+  done
+
+  test_wait_for_ssh
+
   log_divider_header "destroy instance"
   terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
   log_divider_footer
