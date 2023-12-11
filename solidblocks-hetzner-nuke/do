@@ -30,7 +30,7 @@ function task_test {
   mkdir -p "${TEMP_DIR}"
 
   trap clean_temp_dir HUP INT QUIT TERM EXIT
-  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/hcloud_api_token)}"
+  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
 
   (
     cd "${DIR}/test"

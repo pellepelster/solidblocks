@@ -1,7 +1,8 @@
 resource "hcloud_volume" "hcloud_volume1" {
-  name     = "hcloud-volume"
-  size     = 32
-  location = "nbg1"
+  name              = "hcloud-volume"
+  size              = 32
+  location          = "nbg1"
+  delete_protection = true
 }
 
 resource "tls_private_key" "ssh_key1" {

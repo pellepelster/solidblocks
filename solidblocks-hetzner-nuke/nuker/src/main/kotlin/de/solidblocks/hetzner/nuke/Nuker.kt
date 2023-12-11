@@ -2,6 +2,7 @@ package de.solidblocks.hetzner.nuke
 
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
 import me.tomsdevsn.hetznercloud.objects.general.Action
+import me.tomsdevsn.hetznercloud.objects.request.ChangeProtectionRequest
 import mu.KotlinLogging
 
 private fun Action.successful(): Boolean = this.finished != null && this.status == "success"
@@ -60,6 +61,16 @@ class Nuker(apiToken: String) {
                 hetznerCloudAPI.volumes.volumes,
                 { resource -> resource.id to resource.name },
                 {
+
+                    if (it.protection.delete) {
+                        waitForAction(
+                            hetznerCloudAPI.changeVolumeProtection(
+                                it.id,
+                                ChangeProtectionRequest.builder().delete(false).build()
+                            ).action
+                        )
+                    }
+
                     if (it.server != null) {
                         waitForAction(hetznerCloudAPI.detachVolume(it.id).action)
                     }
