@@ -5,6 +5,7 @@ set -eu -o pipefail
 export DB_ADMIN_USERNAME="${USER}"
 export DB_ADMIN_PASSWORD="${DB_ADMIN_PASSWORD:-$(uuidgen)}"
 export POSTGRES_STOP_TIMEOUT="${POSTGRES_STOP_TIMEOUT:-60}"
+export DB_MODE="${DB_MODE:-}"
 
 function log() {
   echo "[solidblocks-rds-postgresql] $*"
@@ -290,6 +291,12 @@ function pgbackrest_default_restore_arguments() {
   echo $(pgbackrest_default_arguments) --db-path=${PG_DATA_DIR} restore --recovery-option="recovery_end_command=/rds/bin/recovery_complete.sh"
 }
 
+function start_db_restore_only() {
+  export DB_MODE="restore-only"
+  log "starting db in restore-only mode"
+  start_db
+}
+
 function start_db() {
   migrate_old_data_if_needed
 
@@ -370,5 +377,6 @@ shift || true
 
 case "${ARG}" in
   maintenance) maintenance;;
+  restore-only) start_db_restore_only;;
   *) start_db ;;
 esac

@@ -1,9 +1,18 @@
 package de.solidblocks.rds.postgresql.test
 
-import de.solidblocks.rds.postgresql.test.extensions.*
+import de.solidblocks.rds.postgresql.test.extensions.AwsTestBed
+import de.solidblocks.rds.postgresql.test.extensions.AwsTestBedExtension
+import de.solidblocks.rds.postgresql.test.extensions.RdsTestBed
+import de.solidblocks.rds.postgresql.test.extensions.RdsTestBedExtension
+import de.solidblocks.rds.postgresql.test.extensions.assertHasUserWithName
+import de.solidblocks.rds.postgresql.test.extensions.createJdbi
+import de.solidblocks.rds.postgresql.test.extensions.createUserTable
+import de.solidblocks.rds.postgresql.test.extensions.initWorldReadableTempDir
+import de.solidblocks.rds.postgresql.test.extensions.insertUser
+import de.solidblocks.rds.postgresql.test.extensions.waitForReady
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.util.*
+import java.util.UUID
 
 @ExtendWith(RdsTestBedExtension::class)
 @ExtendWith(AwsTestBedExtension::class)
@@ -22,7 +31,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
     fun testDatabaseKeepsDataBetweenRestarts(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
 
         val dataDir = initWorldReadableTempDir()
-        val container = rdsTestBed.createAndStartPostgresContainer(14,
+        val container = rdsTestBed.createAndStartPostgresContainer(
+            14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), dataDir
         )
 
@@ -67,7 +77,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
 
     @Test
     fun testRestoreDatabaseFromFullBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -98,7 +109,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -119,10 +131,72 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         }
     }
 
+
+    @Test
+    fun testRestoreOnlyFromFullBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
+            s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
+        )
+
+        with(rdsTestBed.logConsumer) {
+            // on first start instance should be initialized and an initial backup should be executed
+            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+            assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+            assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+            waitForLogLine("database system is ready to accept connections")
+        }
+
+
+        val username = UUID.randomUUID().toString()
+
+        postgresContainer1.createJdbi().also {
+
+            it.waitForReady()
+            it.createUserTable()
+            it.insertUser(username)
+            it.assertHasUserWithName(username)
+        }
+
+
+        postgresContainer1.execInContainer("backup-full.sh")
+
+        postgresContainer1.stop()
+        rdsTestBed.logConsumer.clear()
+
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
+            s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket),
+            initWorldReadableTempDir()
+
+        ){
+            it.withCommand("restore-only")
+        }
+
+        with(rdsTestBed.logConsumer) {
+            // on second start without persistent storage restore should be executed
+            waitForLogLine("[solidblocks-rds-postgresql] starting db in restore-only mode")
+            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+            assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
+            assertHasLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+            assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
+            waitForLogLine("database system is ready to accept connections")
+        }
+
+        postgresContainer2.createJdbi().also {
+            it.waitForReady()
+            it.assertHasUserWithName(username)
+        }
+    }
+
     @Test
     fun testRestoreDatabaseFromIncrementalBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
 
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -159,7 +233,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -185,7 +260,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
     @Test
     fun testRestoreDatabaseFromDifferentialBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
 
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(14,
+        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 
@@ -223,7 +299,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         postgresContainer1.stop()
         rdsTestBed.logConsumer.clear()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(14,
+        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+            14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
         )
 

@@ -1,5 +1,7 @@
+{{ if ne (getenv "DB_MODE") "restore-only" }}
 archive_command = 'pgbackrest --config /rds/config/pgbackrest.conf --log-level-console=info --log-path=/rds/log --stanza={{ .Env.DB_INSTANCE_NAME }} archive-push  %p'
 archive_mode = on
+{{end}}
 
 max_wal_senders = 3
 wal_level = replica
