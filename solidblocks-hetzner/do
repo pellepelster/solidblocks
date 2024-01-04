@@ -300,6 +300,7 @@ function task_test_restore_from_local_run() {
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
 
   # wait for timer backup backup run
+  local counter=0
   while ! task_test_ssh journalctl -u rds-backup-full@rds-postgresql-${TEST_ID}.service | grep "rds-backup-full@rds-postgresql-${TEST_ID}.service: Succeeded" && [[ ${counter} -lt 21 ]];  do
     log_echo_warning "waiting for timer backup backup run"
     counter=$((counter+1))
@@ -511,14 +512,14 @@ function task_test {
     exit 0
   fi
 
+  echo "starting test: task_test_private_network"
+  task_test_private_network
+
   echo "starting test: test_restore_from_local"
   task_test_restore_from_local
 
   echo "starting test: task_test_restore_from_s3"
   task_test_restore_from_s3
-
-  #echo "starting test: task_test_private_network"
-  #task_test_private_network
 
   echo "starting test: task_test_arm"
   task_test_arm

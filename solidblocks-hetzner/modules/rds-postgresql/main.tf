@@ -35,7 +35,9 @@ locals {
 
     db_admin_password = var.db_admin_password
 
+    network_ip              = var.network_ip == null ? "" : var.network_ip
     ssl_enable              = var.ssl_enable
+    ufw_disable             = var.firewall_disable
     ssl_email               = var.ssl_email
     ssl_domains             = var.ssl_domains
     ssl_dns_provider        = var.ssl_dns_provider

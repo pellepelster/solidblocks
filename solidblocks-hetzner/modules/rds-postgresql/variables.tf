@@ -216,13 +216,19 @@ variable "network_id" {
 
 variable "network_ip" {
   type        = string
-  description = "ip address in the attached network"
+  description = "ip address in the attached network. when an ip address is provided the database server will automatically be bound to this ip and will not be exposed on any other network interfaces"
   default     = null
 }
 
 variable "ssl_enable" {
   type        = bool
   description = "enable automatic ssl certificate creation using LetsEncrypt"
+  default     = false
+}
+
+variable "firewall_disable" {
+  type        = bool
+  description = "disable automatic firewall configuration"
   default     = false
 }
 
@@ -252,10 +258,10 @@ variable "ssl_dns_provider_config" {
 }
 
 variable "ssl_acme_server" {
-  type = string
+  type        = string
   description = "The URL of the ACME Server to use. Defaults to Let's Encrypt production environment."
   # LetsEncrypt Staging: https://acme-staging-v02.api.letsencrypt.org/directory
-  default = "https://acme-v02.api.letsencrypt.org/directory"
+  default     = "https://acme-v02.api.letsencrypt.org/directory"
 }
 
 variable "backup_encryption_passphrase" {

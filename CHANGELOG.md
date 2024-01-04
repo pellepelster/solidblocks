@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.4
+
+**IMPROVEMENTS**
+
+* providing a private network ip via [network_ip](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_network\_ip) in Hetzner RDS PostgreSQL will automatically bind the database to this ip only
+
 ## v0.2.3
 
 **BUGFIXES**
