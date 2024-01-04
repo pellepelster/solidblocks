@@ -12,6 +12,8 @@ module "rds-postgresql-1" {
   location = var.location
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
 
+  firewall_disable = true
+
   data_volume   = hcloud_volume.data.id
   backup_volume = data.hcloud_volume.backup.id
 

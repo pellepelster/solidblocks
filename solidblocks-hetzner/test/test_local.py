@@ -44,6 +44,9 @@ def test_db_admin_password(host):
     rc, _, _ = psql_command(host, "rds", "5aee570e-b669-4df6-b05c-1b581e88325f", "database1", "SELECT 1;")
     assert rc == 0
 
+def test_ufw_disabled(host):
+    cmd = host.run(f"ufw status")
+    assert "Status: inactive" in cmd.stdout
 
 def test_create_table(host):
     ddl = """

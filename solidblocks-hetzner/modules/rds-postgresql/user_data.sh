@@ -197,7 +197,7 @@ storage_mount "$${STORAGE_DEVICE_BACKUP}" "/storage/backup"
 chown -R rds:rds "/storage"
 
 install_prerequisites
-if [[ "$${UFW_DISABLE}" == "true" ]]; then
+if [[ "$${UFW_DISABLE}" != "true" ]]; then
 configure_ufw
 fi
 
