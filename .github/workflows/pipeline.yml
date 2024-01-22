@@ -11,7 +11,7 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 env:
-  SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#documentation-update') }}
+  SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#ci') }}
 
 concurrency:
   group: solidblocks
@@ -46,7 +46,7 @@ jobs:
       - name: Test
         run: solidblocks-shell/do test
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: solidblocks-shell
           path: |
@@ -69,7 +69,7 @@ jobs:
       - name: Test
         run: solidblocks-cloud-init/do test
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: solidblocks-cloud-init
           path: |
@@ -141,7 +141,7 @@ jobs:
       - name: Build
         run: solidblocks-hetzner/do build
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: solidblocks-hetzner
           path: |
@@ -198,7 +198,7 @@ jobs:
         run: solidblocks-minio/do test
       - name: Archive Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: solidblocks-minio-test
           path: |
@@ -231,7 +231,7 @@ jobs:
         run: solidblocks-debug-container/do test
       - name: Archive Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: solidblocks-debug-container-test
           path: |
@@ -276,7 +276,7 @@ jobs:
         run: solidblocks-rds-postgresql/do test
       - name: Archive Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: solidblocks-rds-postgresql-test
           path: |
@@ -373,7 +373,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v1
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: './build/documentation/public'
       - name: Deploy to GitHub Pages
