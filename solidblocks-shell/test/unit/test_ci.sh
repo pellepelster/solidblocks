@@ -17,6 +17,8 @@ else
 fi
 
 unset GITHUB_ACTIONS
+unset CI
+
 test_assert_matches "ci_detected_false" "false" "$(ci_detected)"
 
 export CI_NAME="codeship"
