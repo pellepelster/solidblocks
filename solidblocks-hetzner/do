@@ -23,8 +23,10 @@ function task_build {
     zip -r "${DIR}/build/snippets/hetzner-postgres-rds-private-network.zip" hetzner-postgres-rds-private-network/**/*.tf
   )
 
-  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
-  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
+  if which terraform-docs; then
+    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
+    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
+  fi
 }
 
 function task_lint {
