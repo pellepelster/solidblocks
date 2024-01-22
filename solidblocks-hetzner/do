@@ -508,17 +508,19 @@ function task_test_restore_from_s3() {
   task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
   log_divider_footer
 
-  #insert_dog "$(uuidgen)" | psql_wrapper
+  log_divider_header "insert another random dog"
+  insert_dog "$(uuidgen)" | psql_wrapper
+  log_divider_footer
 
-  #echo "waiting for checkpoint (${checkpoint_wait}s)"
-  #sleep ${checkpoint_wait}
+  echo "waiting for checkpoint (${checkpoint_wait}s)"
+  sleep ${checkpoint_wait}
 
-  #task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
 
 
-  #log_divider_header "show backup-info"
-  #task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
-  #log_divider_footer
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
 
   log_divider_header "destroy instance (again)"
   terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
