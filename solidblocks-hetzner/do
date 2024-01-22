@@ -257,7 +257,7 @@ function task_test_ssl () {
   terraform_wrapper "test/terraform/instance_ssl" apply -auto-approve
 
   test_wait_for_cloud_init
-
+  test_wait_for_sql
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
 
   log_divider_header "waiting for sql connectivity"
@@ -298,6 +298,7 @@ function task_test_restore_from_local_run() {
   export TF_VAR_test_id="${TEST_ID}"
 
   test_wait_for_ssh
+  test_wait_for_sql
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
 
   # wait for timer backup backup run
@@ -319,6 +320,7 @@ function task_test_restore_from_local_run() {
   log_divider_footer
 
   test_wait_for_ssh
+  test_wait_for_sql
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
 }
 
@@ -444,6 +446,7 @@ function task_test_restore_from_s3() {
   test_wait_for_cloud_init
 
   python_ensure_venv "${DIR}"
+  test_wait_for_sql
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
   test_wait_for_docker
   test_wait_for_sql
@@ -508,17 +511,19 @@ function task_test_restore_from_s3() {
   task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
   log_divider_footer
 
-  #insert_dog "$(uuidgen)" | psql_wrapper
+  log_divider_header "insert another random dog"
+  insert_dog "$(uuidgen)" | psql_wrapper
+  log_divider_footer
 
-  #echo "waiting for checkpoint (${checkpoint_wait}s)"
-  #sleep ${checkpoint_wait}
+  echo "waiting for checkpoint (${checkpoint_wait}s)"
+  sleep ${checkpoint_wait}
 
-  #task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
 
 
-  #log_divider_header "show backup-info"
-  #task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
-  #log_divider_footer
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
 
   log_divider_header "destroy instance (again)"
   terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
