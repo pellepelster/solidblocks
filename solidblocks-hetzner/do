@@ -23,10 +23,8 @@ function task_build {
     zip -r "${DIR}/build/snippets/hetzner-postgres-rds-private-network.zip" hetzner-postgres-rds-private-network/**/*.tf
   )
 
-  if which terraform-docs; then
-    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
-    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
-  fi
+  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
+  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
 }
 
 function task_lint {
@@ -159,8 +157,9 @@ EOF
 }
 
 function insert_dog {
+  local dog="${1:-}"
   cat <<-EOF
-INSERT into dogs (name) VALUES ('rudi');
+INSERT into dogs (name) VALUES ('${dog}');
 EOF
 }
 
@@ -359,7 +358,7 @@ function task_test_migration() {
   log_divider_footer
 
   log_divider_header "add test data"
-  insert_dog | psql_wrapper
+  insert_dog "rudi" | psql_wrapper
   log_divider_footer
 
   log_divider_header "re-create instance with postgresql version 15"
@@ -401,7 +400,7 @@ function task_test_encryption() {
   log_divider_footer
 
   log_divider_header "add test data"
-  insert_dog | psql_wrapper
+  insert_dog "rudi" | psql_wrapper
   log_divider_footer
 
   log_divider_header "trigger full backup"
@@ -440,7 +439,6 @@ function task_test_restore_from_s3() {
   export TF_VAR_test_id="${TEST_ID}"
 
   terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
-
   test_wait_for_cloud_init
 
   python_ensure_venv "${DIR}"
@@ -452,12 +450,17 @@ function task_test_restore_from_s3() {
   create_table | psql_wrapper
   log_divider_footer
 
-  log_divider_header "add test data"
-  insert_dog | psql_wrapper
+  local dog="$(uuidgen)"
+  log_divider_header "add initial dog '${dog}'"
+  insert_dog "${dog}" | psql_wrapper
   log_divider_footer
 
   log_divider_header "trigger full backup"
   task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
+  log_divider_footer
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
   log_divider_footer
 
   log_divider_header "destroy instance"
@@ -469,9 +472,68 @@ function task_test_restore_from_s3() {
   log_divider_footer
 
   test_wait_for_docker
+  test_wait_for_docker_logline "restoring database from backup (latest)"
   test_wait_for_sql
 
-  echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
+  log_divider_header "checking for old dog '${dog}'"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${dog}"
+  log_divider_footer
+
+  local new_dog="$(uuidgen)"
+  log_divider_header "inserting new dog '${new_dog}'"
+  insert_dog "${new_dog}" | psql_wrapper
+  log_divider_footer
+
+  #sleep 5
+  #echo "SELECT * FROM dogs;" | psql_wrapper
+
+  log_divider_header "checking for new dog '${new_dog}'"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${new_dog}"
+  log_divider_footer
+
+  local restore_pitr="$(date +"%Y-%m-%d %H:%M:%S%z")"
+
+
+  local checkpoint_wait=45
+  echo "waiting for checkpoint (${checkpoint_wait}s)"
+  sleep ${checkpoint_wait}
+
+  log_divider_header "trigger incr backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+  log_divider_footer
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  #insert_dog "$(uuidgen)" | psql_wrapper
+
+  #echo "waiting for checkpoint (${checkpoint_wait}s)"
+  #sleep ${checkpoint_wait}
+
+  #task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+
+
+  #log_divider_header "show backup-info"
+  #task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  #log_divider_footer
+
+  log_divider_header "destroy instance (again)"
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  log_divider_footer
+
+  export TF_VAR_restore_pitr="${restore_pitr}"
+
+  log_divider_header "re-create instance (again)"
+  terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  #test_wait_for_docker_logline "restoring database from backup (latest)"
+  test_wait_for_sql
+
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${dog}"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep -v "${dog}"
 
   terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
   terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve
@@ -484,6 +546,19 @@ function test_wait_for_docker() {
 
   while ! task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" whoami && [[ ${counter} -lt 21 ]]; do
     log_echo_warning "still waiting for docker"
+    counter=$((counter+1))
+    sleep 5
+  done
+  log_divider_footer
+}
+
+function test_wait_for_docker_logline() {
+  local logline="${1:-}"
+  log_divider_header "waiting for '${logline}'"
+  local counter=0
+
+  while ! task_test_ssh docker logs "rds-postgresql-${TEST_ID}_postgresql" | grep "${logline}" && [[ ${counter} -lt 21 ]]; do
+    log_echo_warning "still waiting for '${logline}'"
     counter=$((counter+1))
     sleep 5
   done

@@ -5,6 +5,7 @@
 **IMPROVEMENTS**
 
 * providing a private network ip via [network_ip](https://pellepelster.github.io/solidblocks/hetzner/rds/#input\_network\_ip) in Hetzner RDS PostgreSQL will automatically bind the database to this ip only
+* allow PITR recovery for Hetzner RDS module, see [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds/#restore).
 
 ## v0.2.3
 

@@ -47,6 +47,12 @@ variable "backup_s3_bucket" {
   default     = null
 }
 
+variable "restore_pitr" {
+  type        = string
+  description = "Point in time to recover to, using the recovery type `time` as defined in https://pgbackrest.org/command.html#command-restore. Format should be `YYYY-MM-dd HH:mm:ssz` Please be aware that the server hosting the database might be in a different timezone, so always include the timezone when specifying PITR times `date +\"%Y-%m-%d %H:%M:%S%z\"`"
+  default     = null
+}
+
 variable "backup_s3_access_key" {
   type        = string
   description = "AWS access key for S3 backups. To enable S3 backups `backup_s3_bucket`, `backup_s3_access_key` and `backup_s3_secret_key` have to be provided."

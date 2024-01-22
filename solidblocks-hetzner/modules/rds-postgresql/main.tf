@@ -12,6 +12,8 @@ locals {
     backup_full_calendar = var.backup_full_calendar
     backup_incr_calendar = var.backup_incr_calendar
 
+    db_restore_pitr = var.restore_pitr == null ? "" : var.restore_pitr
+
     db_backup_s3_bucket     = var.backup_s3_bucket == null ? "" : var.backup_s3_bucket
     db_backup_s3_access_key = var.backup_s3_access_key == null ? "" : var.backup_s3_access_key
     db_backup_s3_secret_key = var.backup_s3_secret_key == null ? "" : var.backup_s3_secret_key

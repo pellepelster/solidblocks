@@ -16,3 +16,8 @@ variable "backup_s3_access_key" {
 variable "backup_s3_secret_key" {
   type = string
 }
+
+variable "restore_pitr" {
+  type    = string
+  default = null
+}

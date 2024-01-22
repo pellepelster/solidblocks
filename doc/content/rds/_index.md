@@ -18,16 +18,12 @@ Configuration and backup operations are encoded in the startup script `run.sh` t
 ```mermaid
 graph TD
     startup[container startup] -->|get postgres major version| set_data_dir["set data dir to\n/${major_version}"]
-
     set_data_dir -->|get previous postgres major version| has_old_data{"has old data in\n/${previous_version}"}
-
     has_old_data -->|no| data_dir_empty{"data dir '/${major_version}'\nis empty?"}
     has_old_data -->|yes| migrate_data["migrate data from /${previous_version}\n to /${major_version}"]
     backup_exists -->|no| init_db
-
     data_dir_empty -->|no| init_db
     data_dir_empty -->|yes| backup_exists{backup exists?}
-
     backup_exists -->|yes| restore[restore from backup]
     migrate_data --> init_users
     restore --> init_users[initialize / update schemas and users]
@@ -108,6 +104,16 @@ and `DB_BACKUP_S3_HOST`can be used to configure non-AWS servers.
 | `DB_BACKUP_S3_RETENTION_FULL_TYPE` | environment | count                         | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type)                |
 | `DB_BACKUP_S3_RETENTION_FULL`      | environment | 7                             | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)                          |
 | `DB_BACKUP_S3_RETENTION_DIFF`      | environment | 4                             | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)                          |                                                                                                                                                                                  |
+
+### Restore
+
+**P**oint-**I**n-**T**ime-**R**ecovery (PITR) is supported by providing a specific time to restore.
+See [pgBackRest restore documentation](https://pgbackrest.org/command.html#command-restore) for more details on the
+configuration options.
+
+| configuration  | type        | default      | description                                           |
+|----------------|-------------|--------------|-------------------------------------------------------|
+| `RESTORE_PITR` | environment | &lt;none&gt; | Point in time to recover to, in the format `YYYY-MM-dd HH:mm:ssz`. Please be aware that the server hosting the database might be in a different timezone, so always include the timezone when specifying PITR times |
 
 ### Databases
 
