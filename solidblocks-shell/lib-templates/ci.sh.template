@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+
+# see https://pellepelster.github.io/solidblocks/shell/ci/#ci_detected
+function ci_detected {
+
+    # https://github.com/watson/ci-info/blob/master/index.js
+    local variables="BUILD_ID BUILD_NUMBER CI CI_APP_ID CI_BUILD_ID CI_BUILD_NUMBER CI_NAME CONTINUOUS_INTEGRATION RUN_ID"
+    for var in ${variables}; do
+    if [[ -n "${!var:-}" ]]; then
+      echo "true"
+      return
+    fi
+    done
+
+    # generated from https://raw.githubusercontent.com/watson/ci-info/master/vendors.json
+    {{ range datasource "vendors" }}
+    {{- if isKind "string" .env }}
+    if [[ -n "{{ printf "${%s:-}" .env }}" ]]; then
+      echo "true"
+      return
+    fi
+    {{ end }}
+    {{- if isKind "map" .env }}
+    {{ if (has .env "any") }}
+    if {{ range $index, $env := .env.any -}}{{- if gt $index 0 }} || {{ end }}[[ -n "{{ printf "${%s:-}" $env }}" ]]{{- end -}}; then
+      echo "true"
+      return
+    fi
+    {{ else if and (has .env "env") (has .env "includes") }}
+    if [[ "{{ printf "${%s:-}" .env.env }}" == *"{{ .env.includes }}"* ]]; then
+      echo "true"
+      return
+    fi
+    {{ else }}
+    {{ $first := true }}
+    if {{ range $key, $value := .env -}}{{- if not $first }} || {{ end }}[[ "{{ printf "${%s:-}" $key }}" == "{{ $value }}" ]]{{- end -}}; then
+      echo "true"
+      return
+      {{ $first = false }}
+    fi
+    {{ end }}
+    {{ end }}
+    {{- if isKind "slice" .env }}
+    if {{ range $index, $env := .env -}}{{- if gt $index 0 }} && {{ end }}[[ -n "{{ printf "${%s:-}" $env }}" ]]{{- end -}}; then
+      echo "true"
+      return
+    fi
+    {{ end }}
+    {{ end }}
+
+    echo "false"
+}
+

@@ -16,6 +16,8 @@ source "${DIR}/lib/log.sh"
 
 function task_build {
   (
+    docker run  -v ${DIR}:/src hairyhenderson/gomplate:stable -d "vendors=https://raw.githubusercontent.com/watson/ci-info/master/vendors.json?type=application/array+json" -f /src/lib-templates/ci.sh.template > "${DIR}/lib/ci.sh"
+
     mkdir -p "${DIR}/build/solidblocks-shell"
     cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-shell/"
     cd "${DIR}/build"
