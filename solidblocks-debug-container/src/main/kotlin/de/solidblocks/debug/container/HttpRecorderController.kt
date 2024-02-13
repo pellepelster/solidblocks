@@ -6,14 +6,23 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.RequestMapping
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import javax.servlet.http.HttpServletRequest
-import kotlin.collections.ArrayList
 
 @Controller
 class HttpRecorderController {
 
-    data class Request(var id: UUID, var timestamp: Instant, var uri: String, var method: String, var headers: Map<String, String>, var remoteHost: String, var remotePort: Int, var scheme: String)
+    data class Request(
+        var id: UUID,
+        var timestamp: Instant,
+        var uri: String,
+        var method: String,
+        var headers: Map<String, String>,
+        var remoteHost: String,
+        var remotePort: Int,
+        var scheme: String,
+        var body: String?
+    )
 
     val requests = ArrayList<Request>()
 
@@ -35,8 +44,20 @@ class HttpRecorderController {
             request.getHeaders(it).toList().joinToString(", ")
         }
 
-        requests.add(Request(UUID.randomUUID(), Instant.now(), request.requestURI, request.method, headers, request.remoteHost, request.remotePort, request.scheme))
-        return ResponseEntity.of(Optional.empty())
+        requests.add(
+            Request(
+                UUID.randomUUID(),
+                Instant.now(),
+                request.requestURI,
+                request.method,
+                headers,
+                request.remoteHost,
+                request.remotePort,
+                request.scheme,
+                request.reader.readText()
+            )
+        )
+        return ResponseEntity.ok().build()
     }
 
 }
