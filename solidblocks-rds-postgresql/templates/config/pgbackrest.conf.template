@@ -50,6 +50,7 @@ repo{{ $repoIndex }}-cipher-type=aes-256-cbc
 {{end}}
 
 {{ if eq (getenv "DB_BACKUP_GCS") "1" }}
+{{ $repoIndex = math.Add $repoIndex 1 }}
 repo{{ $repoIndex }}-type=gcs
 repo{{ $repoIndex }}-path=/pgbackrest
 

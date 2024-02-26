@@ -6,10 +6,18 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 echo "[solidblocks-rds-postgresql] executing differential backup"
 
+{{ $repoIndex := 1 }}
+
 {{ if eq (getenv "DB_BACKUP_S3") "1" }}
-"${DIR}/pgbackrest.sh" backup --type=diff --repo 1
+"${DIR}/pgbackrest.sh" backup --type=diff --repo {{ $repoIndex }}
 {{end}}
 
 {{ if eq (getenv "DB_BACKUP_LOCAL") "1" }}
-"${DIR}/pgbackrest.sh" backup --type=diff --repo 2
+{{ $repoIndex = math.Add $repoIndex 1 }}
+"${DIR}/pgbackrest.sh" backup --type=diff --repo {{ $repoIndex }}
+{{end}}
+
+{{ if eq (getenv "DB_BACKUP_GCS") "1" }}
+{{ $repoIndex = math.Add $repoIndex 1 }}
+"${DIR}/pgbackrest.sh" backup --type=diff --repo {{ $repoIndex }}
 {{end}}
