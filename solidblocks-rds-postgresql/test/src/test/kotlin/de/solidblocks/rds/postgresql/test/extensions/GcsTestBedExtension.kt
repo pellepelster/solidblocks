@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.*
 
 
 class GcsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCallback, AfterAllCallback,
-    BeforeAllCallback {
+        BeforeAllCallback {
 
     private val logger = KotlinLogging.logger {}
 
@@ -19,16 +19,16 @@ class GcsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCall
     val storageClient = StorageOptions.newBuilder().setProjectId("solidblocks-test").build().service
 
     override fun supportsParameter(
-        parameterContext: ParameterContext,
-        extensionContext: ExtensionContext
+            parameterContext: ParameterContext,
+            extensionContext: ExtensionContext
     ): Boolean {
         return parameterContext.parameter.type == GcsTestBed::class.java
     }
 
     @Throws(ParameterResolutionException::class)
     override fun resolveParameter(
-        parameterContext: ParameterContext,
-        context: ExtensionContext
+            parameterContext: ParameterContext,
+            context: ExtensionContext
     ): Any {
         return createTestBed(context)
     }
@@ -59,12 +59,21 @@ class GcsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCall
         storageClient.list(Storage.BucketListOption.prefix("test-")).streamAll().forEach { bucket ->
             logger.info { "deleting all objects for bucket '${bucket.name}'" }
             runBlocking {
-                storageClient.get(bucket.name).list().iterateAll().map { blob ->
-                    async {
-                        logger.info { "deleting blob '${blob.name}' for bucket '${bucket.name}'" }
-                        blob.delete()
+
+                while (true) {
+                    val blobs = storageClient.get(bucket.name).list().values.toList()
+
+                    if (blobs.isEmpty()) {
+                        break
                     }
-                }.awaitAll()
+
+                    blobs.map { blob ->
+                        async {
+                            logger.info { "deleting blob '${blob.name}' for bucket '${bucket.name}'" }
+                            blob.delete()
+                        }
+                    }.awaitAll()
+                }
             }
 
             logger.info { "deleting bucket '${bucket.name}'" }
