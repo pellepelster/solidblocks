@@ -14,6 +14,9 @@ locals {
 
     db_restore_pitr = var.restore_pitr == null ? "" : var.restore_pitr
 
+    db_backup_gcs_bucket             = var.db_backup_gcs_bucket == null ? "" : var.db_backup_gcs_bucket
+    db_backup_gcs_service_key_base64 = var.db_backup_gcs_service_key == null ? "" : base64encode(var.db_backup_gcs_service_key)
+
     db_backup_s3_bucket     = var.backup_s3_bucket == null ? "" : var.backup_s3_bucket
     db_backup_s3_access_key = var.backup_s3_access_key == null ? "" : var.backup_s3_access_key
     db_backup_s3_secret_key = var.backup_s3_secret_key == null ? "" : var.backup_s3_secret_key

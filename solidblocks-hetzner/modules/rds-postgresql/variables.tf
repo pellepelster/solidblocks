@@ -41,6 +41,18 @@ variable "mode" {
   }
 }
 
+variable "db_backup_gcs_bucket" {
+  type        = string
+  description = "TODO"
+  default     = null
+}
+
+variable "db_backup_gcs_service_key" {
+  type        = string
+  description = "TODO"
+  default     = null
+}
+
 variable "backup_s3_bucket" {
   type        = string
   description = "AWS bucket name for S3 backups. To enable S3 backups `backup_s3_bucket`, `backup_s3_access_key` and `backup_s3_secret_key` have to be provided."

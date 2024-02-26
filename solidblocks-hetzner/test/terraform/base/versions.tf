@@ -8,6 +8,10 @@ terraform {
       source  = "hetznercloud/hcloud"
       version = "1.38.2"
     }
+    google = {
+      source  = "hashicorp/google"
+      version = "5.17.0"
+    }
   }
 }
 
@@ -16,3 +20,5 @@ provider "aws" {
 }
 
 provider "hcloud" {}
+
+provider "google" {}

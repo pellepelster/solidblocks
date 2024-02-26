@@ -157,6 +157,11 @@ services:
       - "DB_BACKUP_S3_RETENTION_DIFF=${db_backup_s3_retention_diff}"
       - "DB_RESTORE_PITR=${db_restore_pitr}"
       %{~ endif ~}
+      %{~ if db_backup_gcs_bucket != "" && db_backup_gcs_service_key_base64 != "" ~}
+      - "DB_BACKUP_GCS=1"
+      - "DB_BACKUP_GCS_BUCKET=${db_backup_gcs_bucket}"
+      - "DB_BACKUP_GCS_SERVICE_KEY_BASE64=${db_backup_gcs_service_key_base64}"
+      %{~ endif ~}
       %{~ if storage_device_backup != "" ~}
       - "DB_BACKUP_LOCAL=1"
       - "DB_BACKUP_LOCAL_RETENTION_FULL_TYPE=${db_backup_local_retention_full_type}"
