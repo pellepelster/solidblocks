@@ -7,7 +7,6 @@ account-blocklist:
 
 resource-types:
   targets:
-    - S3Object
     - S3Bucket
     - DynamoDBTable
   excludes:
