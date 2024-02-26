@@ -108,7 +108,6 @@ mkdir -p "${PG_DATA_DIR}"
 gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
 gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'
 
-
 function psql_execute() {
   local database=${1:-}
   local query=${2:-}

@@ -2,46 +2,50 @@
 
 spool-path=/rds/pgbackrest/spool
 
+{{ $repoIndex := 1 }}
+
 {{ if eq (getenv "DB_BACKUP_S3") "1" }}
-repo1-type=s3
-repo1-path=/pgbackrest
+repo{{ $repoIndex }}-type=s3
+repo{{ $repoIndex }}-path=/pgbackrest
 
-repo1-s3-region={{ getenv "DB_BACKUP_S3_REGION" "eu-central-1" }}
-repo1-s3-endpoint={{ getenv "DB_BACKUP_S3_HOST" "s3.eu-central-1.amazonaws.com" }}
+repo{{ $repoIndex }}-s3-region={{ getenv "DB_BACKUP_S3_REGION" "eu-central-1" }}
+repo{{ $repoIndex }}-s3-endpoint={{ getenv "DB_BACKUP_S3_HOST" "s3.eu-central-1.amazonaws.com" }}
 
-repo1-s3-bucket={{ .Env.DB_BACKUP_S3_BUCKET }}
-repo1-s3-uri-style={{ getenv "DB_BACKUP_S3_URI_STYLE" "host" }}
+repo{{ $repoIndex }}-s3-bucket={{ .Env.DB_BACKUP_S3_BUCKET }}
+repo{{ $repoIndex }}-s3-uri-style={{ getenv "DB_BACKUP_S3_URI_STYLE" "host" }}
 
-repo1-s3-key={{ .Env.DB_BACKUP_S3_ACCESS_KEY }}
-repo1-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
+repo{{ $repoIndex }}-s3-key={{ .Env.DB_BACKUP_S3_ACCESS_KEY }}
+repo{{ $repoIndex }}-s3-key-secret={{ .Env.DB_BACKUP_S3_SECRET_KEY }}
 
 {{ if (file.Exists "/rds/certificates/ca.pem") }}
-repo1-storage-ca-file=/rds/certificates/ca.pem
+repo{{ $repoIndex }}-storage-ca-file=/rds/certificates/ca.pem
 {{end}}
 
 {{ if ne (getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE") "" }}
-repo1-cipher-pass="{{ getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE" }}"
-repo1-cipher-type=aes-256-cbc
+repo{{ $repoIndex }}-cipher-pass="{{ getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE" }}"
+repo{{ $repoIndex }}-cipher-type=aes-256-cbc
 {{end}}
 
-repo1-retention-full-type={{ getenv "DB_BACKUP_S3_RETENTION_FULL_TYPE" "count" }}
-repo1-retention-full={{ getenv "DB_BACKUP_S3_RETENTION_FULL" "7" }}
+repo{{ $repoIndex }}-retention-full-type={{ getenv "DB_BACKUP_S3_RETENTION_FULL_TYPE" "count" }}
+repo{{ $repoIndex }}-retention-full={{ getenv "DB_BACKUP_S3_RETENTION_FULL" "7" }}
 
-repo1-retention-diff={{ getenv "DB_BACKUP_S3_RETENTION_DIFF" "4" }}
+repo{{ $repoIndex }}-retention-diff={{ getenv "DB_BACKUP_S3_RETENTION_DIFF" "4" }}
 {{end}}
 
 {{ if eq (getenv "DB_BACKUP_LOCAL") "1" }}
-repo2-type=posix
-repo2-path={{ .Env.DB_BACKUP_LOCAL_DIR }}
+{{ $repoIndex = math.Add $repoIndex 1 }}
 
-repo2-retention-full-type={{ getenv "DB_BACKUP_LOCAL_RETENTION_FULL_TYPE" "count" }}
-repo2-retention-full={{ getenv "DB_BACKUP_LOCAL_RETENTION_FULL" "7" }}
+repo{{ $repoIndex }}-type=posix
+repo{{ $repoIndex }}-path={{ .Env.DB_BACKUP_LOCAL_DIR }}
 
-repo2-retention-diff={{ getenv "DB_BACKUP_LOCAL_RETENTION_DIFF" "7" }}
+repo{{ $repoIndex }}-retention-full-type={{ getenv "DB_BACKUP_LOCAL_RETENTION_FULL_TYPE" "count" }}
+repo{{ $repoIndex }}-retention-full={{ getenv "DB_BACKUP_LOCAL_RETENTION_FULL" "7" }}
+
+repo{{ $repoIndex }}-retention-diff={{ getenv "DB_BACKUP_LOCAL_RETENTION_DIFF" "7" }}
 
 {{ if ne (getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE") "" }}
-repo2-cipher-pass="{{ getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE" }}"
-repo2-cipher-type=aes-256-cbc
+repo{{ $repoIndex }}-cipher-pass="{{ getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE" }}"
+repo{{ $repoIndex }}-cipher-type=aes-256-cbc
 {{end}}
 
 {{end}}
