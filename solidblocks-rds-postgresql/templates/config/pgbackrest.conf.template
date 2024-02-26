@@ -28,7 +28,6 @@ repo{{ $repoIndex }}-cipher-type=aes-256-cbc
 
 repo{{ $repoIndex }}-retention-full-type={{ getenv "DB_BACKUP_S3_RETENTION_FULL_TYPE" "count" }}
 repo{{ $repoIndex }}-retention-full={{ getenv "DB_BACKUP_S3_RETENTION_FULL" "7" }}
-
 repo{{ $repoIndex }}-retention-diff={{ getenv "DB_BACKUP_S3_RETENTION_DIFF" "4" }}
 {{end}}
 
@@ -48,6 +47,23 @@ repo{{ $repoIndex }}-cipher-pass="{{ getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE" }}
 repo{{ $repoIndex }}-cipher-type=aes-256-cbc
 {{end}}
 
+{{end}}
+
+{{ if eq (getenv "DB_BACKUP_GCS") "1" }}
+repo{{ $repoIndex }}-type=gcs
+repo{{ $repoIndex }}-path=/pgbackrest
+
+repo{{ $repoIndex }}-gcs-bucket={{ .Env.DB_BACKUP_GCS_BUCKET }}
+repo{{ $repoIndex }}-gcs-key={{ .Env.DB_BACKUP_GCS_SERVICE_KEY_FILE }}
+
+{{ if ne (getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE") "" }}
+repo{{ $repoIndex }}-cipher-pass="{{ getenv "DB_BACKUP_ENCRYPTION_PASSPHRASE" }}"
+repo{{ $repoIndex }}-cipher-type=aes-256-cbc
+{{end}}
+
+repo{{ $repoIndex }}-retention-full-type={{ getenv "DB_BACKUP_GCS_RETENTION_FULL_TYPE" "count" }}
+repo{{ $repoIndex }}-retention-full={{ getenv "DB_BACKUP_GCS_RETENTION_FULL" "7" }}
+repo{{ $repoIndex }}-retention-diff={{ getenv "DB_BACKUP_GCS_RETENTION_DIFF" "4" }}
 {{end}}
 
 log-level-console=info

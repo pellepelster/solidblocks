@@ -13,6 +13,14 @@ DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
 POSTGRES_VERSIONS="14 15"
 
+TEMP_DIR="${DIR}/.test_$$"
+
+function clean_temp_dir {
+  rm -rf "${TEMP_DIR}"
+}
+
+trap clean_temp_dir EXIT
+
 source "${DIR}/../solidblocks-shell/lib/software.sh"
 
 function task_usage {
@@ -25,6 +33,8 @@ function task_test {
     exit 0
   fi
 
+  mkdir -p "${TEMP_DIR}"
+
   software_ensure_terraform
   software_set_export_path
   (
@@ -35,6 +45,11 @@ function task_test {
   (
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
     export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}"
+
+    export GCP_SERVICE_ACCOUNT_KEY="${GCP_SERVICE_ACCOUNT_KEY:-$(pass pass solidblocks/gcp/test/service_account_key)}"
+    echo "${GCP_SERVICE_ACCOUNT_KEY}" > "${TEMP_DIR}/service-key.json"
+    export GOOGLE_APPLICATION_CREDENTIALS="${TEMP_DIR}/service-key.json"
+    export DB_BACKUP_GCS_SERVICE_KEY_BASE64="$(cat "${TEMP_DIR}/service-key.json" | base64 -w0)"
 
     cd "${DIR}/test"
     ./gradlew test $@

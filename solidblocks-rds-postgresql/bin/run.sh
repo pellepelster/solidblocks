@@ -29,8 +29,8 @@ function ensure_environment_variables() {
 ########################################################
 ensure_environment_variables DB_INSTANCE_NAME
 
-if [[ $((DB_BACKUP_S3 + DB_BACKUP_LOCAL)) == 0 ]]; then
-  log "either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated"
+if [[ $((DB_BACKUP_S3 + DB_BACKUP_LOCAL + DB_BACKUP_GCS)) == 0 ]]; then
+  log "either 'DB_BACKUP_S3', 'DB_BACKUP_GCS' or 'DB_BACKUP_LOCAL' has to be activated"
   exit 1
 fi
 
@@ -41,6 +41,13 @@ if [[ ${DB_BACKUP_S3:-0} == 1 ]]; then
     mkdir -p /rds/certificates
     echo -n "${DB_BACKUP_S3_CA_PUBLIC_KEY}" | base64 -d > /rds/certificates/ca.pem
   fi
+fi
+
+if [[ ${DB_BACKUP_GCS:-0} == 1 ]]; then
+  ensure_environment_variables DB_BACKUP_GCS_BUCKET DB_BACKUP_GCS_SERVICE_KEY_BASE64
+  mkdir -p "/rds/gcs"
+  echo "${DB_BACKUP_GCS_SERVICE_KEY_BASE64}" | base64 -d > "/rds/gcs/service-key.json"
+  export DB_BACKUP_GCS_SERVICE_KEY_FILE="/rds/gcs/service-key.json"
 fi
 
 export DB_BACKUP_LOCAL_DIR="${DB_BACKUP_LOCAL_DIR:-/storage/backup}"

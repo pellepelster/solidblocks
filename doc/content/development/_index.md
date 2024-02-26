@@ -133,3 +133,15 @@ Read-Write access to a dedicated Hetzner cloud project via `HCLOUD_TOKEN` (`pass
 {{% notice warning %}}
 All resources included in the project will be cleaned to ensure a consistent test environment
 {{% /notice %}}
+
+#### Google Cloud
+
+A service role with a service account key stored at `GCP_SERVICE_ACCOUNT_KEY` (`pass pass solidblocks/gcp/test/service_account_key`).
+
+Needed Roles:
+
+* Storage Admin with IAM condition `resource.name.startsWith("projects/_/buckets/test-")`
+
+{{% notice warning %}}
+All resources included in the project will be cleaned to ensure a consistent test environment
+{{% /notice %}}

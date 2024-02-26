@@ -15,6 +15,7 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
     testImplementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
 
@@ -39,7 +40,8 @@ dependencies {
     testImplementation("org.postgresql:postgresql:42.4.1")
     testImplementation("org.jdbi:jdbi3-core:3.32.0")
 
-    testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.449")
+    testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.455")
+    testImplementation("com.google.cloud:google-cloud-storage:2.34.0")
 }
 
 tasks.test {
