@@ -46,7 +46,7 @@ function task_test {
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
     export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}"
 
-    export GCP_SERVICE_ACCOUNT_KEY="${GCP_SERVICE_ACCOUNT_KEY:-$(pass pass solidblocks/gcp/test/service_account_key)}"
+    export GCP_SERVICE_ACCOUNT_KEY="${GCP_SERVICE_ACCOUNT_KEY:-$(pass solidblocks/gcp/test/service_account_key)}"
     echo "${GCP_SERVICE_ACCOUNT_KEY}" > "${TEMP_DIR}/service-key.json"
     export GOOGLE_APPLICATION_CREDENTIALS="${TEMP_DIR}/service-key.json"
     export DB_BACKUP_GCS_SERVICE_KEY_BASE64="$(cat "${TEMP_DIR}/service-key.json" | base64 -w0)"

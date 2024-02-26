@@ -61,7 +61,18 @@ For code where it is not feasible to inject a local webserver (e.g. code running
 For cloud provider specific integration tests credentials are needed, that are either taken from environment variables, or if not set pulled from a
 local [pass](https://www.passwordstore.org/)-based password store.
 
-### AWS
+### Cloud Accounts
+
+Components that work on cloud resources come with full integration tests using a real cloud backend. 
+It is highly advised to create separate cloud accounts for test executions. 
+
+```shell
+./do test-init-accounts
+```
+
+will init the cloud accounts (if implemented)
+
+#### AWS
 
 Access to a dedicated AWS account  via `AWS_ACCESS_KEY_ID` (`pass solidblocks/aws/test/secret_access_key`) and `AWS_SECRET_ACCESS_KEY` (`pass solidblocks/aws/test/access_key`) is needed with the following permissions:  
 
@@ -92,7 +103,7 @@ Access to a dedicated AWS account  via `AWS_ACCESS_KEY_ID` (`pass solidblocks/aw
 }
 ```
 
-#### DynamoDB
+##### DynamoDB
 ```json
 {
     "Version": "2012-10-17",
@@ -126,7 +137,7 @@ Access to a dedicated AWS account  via `AWS_ACCESS_KEY_ID` (`pass solidblocks/aw
 All resources included in the account will be cleaned to ensure a consistent test environment
 {{% /notice %}}
 
-#### Hetzner
+##### Hetzner
 
 Read-Write access to a dedicated Hetzner cloud project via `HCLOUD_TOKEN` (`pass solidblocks/hetzner/hcloud_api_token`).
 
@@ -134,13 +145,15 @@ Read-Write access to a dedicated Hetzner cloud project via `HCLOUD_TOKEN` (`pass
 All resources included in the project will be cleaned to ensure a consistent test environment
 {{% /notice %}}
 
-#### Google Cloud
+##### Google Cloud
 
-A service role with a service account key stored at `GCP_SERVICE_ACCOUNT_KEY` (`pass pass solidblocks/gcp/test/service_account_key`).
+A dedicated testing service role with minimal access is created via
 
-Needed Roles:
+```shell
+./do test-init-accounts
+```
 
-* Storage Admin with IAM condition `resource.name.startsWith("projects/_/buckets/test-")`
+In the console on that role create a service account key and make it available under `GCP_SERVICE_ACCOUNT_KEY` ( or in pass at `solidblocks/gcp/test/service_account_key`).
 
 {{% notice warning %}}
 All resources included in the project will be cleaned to ensure a consistent test environment

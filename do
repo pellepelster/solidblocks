@@ -67,6 +67,14 @@ function task_clean {
     done
 }
 
+function task_test_init_accounts {
+  (
+    cd "${DIR}/cloud-testbeds/gcs"
+    terraform init -upgrade
+    terraform apply -auto-approve
+  )
+}
+
 function task_test {
     if [[ "${SKIP_TESTS:-}" == "true" ]]; then
       exit 0
@@ -214,6 +222,7 @@ case ${ARG} in
   clean-aws) task_clean_aws "$@" ;;
   clean-hetzner) task_clean_hetzner "$@" ;;
   clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
+  test-init-accounts) task_test_init_accounts "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   build-documentation) task_build_documentation "$@" ;;
