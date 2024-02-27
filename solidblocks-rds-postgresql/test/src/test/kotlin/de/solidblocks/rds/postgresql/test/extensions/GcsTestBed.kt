@@ -3,6 +3,9 @@ package de.solidblocks.rds.postgresql.test.extensions
 import com.google.cloud.storage.BucketInfo
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageClass
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.util.UUID
 
@@ -25,6 +28,32 @@ class GcsTestBed(val storageClient: Storage) {
             logger.info { "created bucket '${bucket.asBucketInfo().name}'" }
         } else {
             logger.info { "bucket '${bucket}' already exists" }
+        }
+    }
+
+    fun destroyTestBed() {
+        storageClient.get(bucket)?.also { bucket ->
+            logger.info { "deleting all objects for bucket '${bucket.name}'" }
+            runBlocking {
+
+                while (true) {
+                    val blobs = storageClient.get(bucket.name).list().values.toList()
+
+                    if (blobs.isEmpty()) {
+                        break
+                    }
+
+                    blobs.map { blob ->
+                        async {
+                            logger.info { "deleting blob '${blob.name}' for bucket '${bucket.name}'" }
+                            blob.delete()
+                        }
+                    }.awaitAll()
+                }
+            }
+
+            logger.info { "deleting bucket '${bucket.name}'" }
+            storageClient.get(bucket.name).delete()
         }
     }
 

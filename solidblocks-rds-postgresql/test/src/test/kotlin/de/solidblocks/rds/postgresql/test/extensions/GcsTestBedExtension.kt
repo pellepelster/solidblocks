@@ -9,7 +9,7 @@ import mu.KotlinLogging
 import org.junit.jupiter.api.extension.*
 
 
-class GcsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCallback, AfterAllCallback,
+class GcsTestBedExtension : ParameterResolver, AfterEachCallback,
         BeforeAllCallback {
 
     private val logger = KotlinLogging.logger {}
@@ -34,11 +34,7 @@ class GcsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCall
     }
 
     override fun afterEach(context: ExtensionContext) {
-        //testBeds[context.uniqueId]?.destroyTestBed()
-    }
-
-    override fun beforeEach(context: ExtensionContext) {
-        createTestBed(context)
+        testBeds[context.uniqueId]?.destroyTestBed()
     }
 
     private fun createTestBed(context: ExtensionContext): GcsTestBed {
@@ -47,11 +43,7 @@ class GcsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCall
         }.also { it.initTestbed() }
     }
 
-    override fun afterAll(context: ExtensionContext?) {
-        removeAllTestBuckets()
-    }
-
-    override fun beforeAll(p0: ExtensionContext?) {
+    override fun beforeAll(context: ExtensionContext?) {
         removeAllTestBuckets()
     }
 

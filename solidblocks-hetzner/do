@@ -577,6 +577,10 @@ function task_test_restore_from_gcp() {
   test_wait_for_docker
   test_wait_for_sql
 
+  sleep 10
+
+  test_wait_for_sql
+
   log_divider_header "create test table"
   create_table | psql_wrapper
   log_divider_footer
