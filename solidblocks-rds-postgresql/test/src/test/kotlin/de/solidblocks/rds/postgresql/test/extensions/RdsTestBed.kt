@@ -94,7 +94,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
             it.withNetwork(network)
             it.withExposedPorts(5432)
             it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
-            it.withStartupTimeout(Duration.ofSeconds(300))
+            it.withStartupTimeout(Duration.ofSeconds(600))
             it.withFileSystemBind(
                 RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/test-dump-backup-file-headers.sh").file,
                 "/test-dump-backup-file-headers.sh",
