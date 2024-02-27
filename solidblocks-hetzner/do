@@ -193,11 +193,21 @@ function psql_wrapper_jumphost() {
   task_test_jumphost_ssh PGPASSWORD=password1 psql --host 10.0.1.4 --user "user1" database1
 }
 
+
+function ensure_gcp_env() {
+  mkdir -p "${TEMP_DIR}"
+  export GCP_SERVICE_ACCOUNT_KEY="${GCP_SERVICE_ACCOUNT_KEY:-$(pass solidblocks/gcp/test/service_account_key)}"
+  echo "${GCP_SERVICE_ACCOUNT_KEY}" > "${TEMP_DIR}/service-key.json"
+  export GOOGLE_APPLICATION_CREDENTIALS="${TEMP_DIR}/service-key.json"
+  export TF_VAR_db_backup_gcs_service_key="$(cat ${TEMP_DIR}/service-key.json)"
+}
+
 function task_test_private_network () {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
+  ensure_gcp_env
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
@@ -229,6 +239,7 @@ function task_test_arm () {
     exit 0
   fi
 
+  ensure_gcp_env
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
@@ -255,6 +266,7 @@ function task_test_ssl () {
     exit 0
   fi
 
+  ensure_gcp_env
   python_ensure_venv "${DIR}"
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
@@ -285,6 +297,7 @@ function task_test_restore_from_local() {
     exit 0
   fi
 
+  ensure_gcp_env
   task_test_restore_from_local_deploy
   task_test_restore_from_local_run
   task_test_restore_from_local_destroy
@@ -347,6 +360,7 @@ function task_test_migration() {
     exit 0
   fi
 
+  ensure_gcp_env
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
@@ -396,6 +410,7 @@ function task_test_encryption() {
     exit 0
   fi
 
+  ensure_gcp_env
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
@@ -446,6 +461,7 @@ function task_test_restore_from_s3() {
     exit 0
   fi
 
+  ensure_gcp_env
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
@@ -560,11 +576,7 @@ function task_test_restore_from_gcp() {
     exit 0
   fi
 
-  mkdir -p "${TEMP_DIR}"
-  export GCP_SERVICE_ACCOUNT_KEY="${GCP_SERVICE_ACCOUNT_KEY:-$(pass solidblocks/gcp/test/service_account_key)}"
-  echo "${GCP_SERVICE_ACCOUNT_KEY}" > "${TEMP_DIR}/service-key.json"
-  export GOOGLE_APPLICATION_CREDENTIALS="${TEMP_DIR}/service-key.json"
-  export TF_VAR_db_backup_gcs_service_key="$(cat ${TEMP_DIR}/service-key.json)"
+  ensure_gcp_env
 
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
@@ -666,6 +678,7 @@ function task_test {
     exit 0
   fi
 
+  ensure_gcp_env
   echo "starting test: task_test_private_network"
   task_test_private_network
 

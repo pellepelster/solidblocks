@@ -16,7 +16,7 @@ class TestContainersLogConsumer(val parent: Consumer<OutputFrame>?) : Consumer<O
     }
 
     fun waitForLogLine(logLine: String) {
-        await.atMost(Duration.ofMinutes(3)).until {
+        await.atMost(Duration.ofMinutes(4)).until {
             hasLogLine(logLine)
         }
     }

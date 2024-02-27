@@ -9,8 +9,7 @@ import mu.KotlinLogging
 import org.junit.jupiter.api.extension.*
 
 
-class GcsTestBedExtension : ParameterResolver, AfterEachCallback,
-        BeforeAllCallback {
+class GcsTestBedExtension : ParameterResolver, AfterEachCallback {
 
     private val logger = KotlinLogging.logger {}
 
@@ -19,32 +18,28 @@ class GcsTestBedExtension : ParameterResolver, AfterEachCallback,
     val storageClient = StorageOptions.newBuilder().setProjectId("solidblocks-test").build().service
 
     override fun supportsParameter(
-            parameterContext: ParameterContext,
-            extensionContext: ExtensionContext
+        parameterContext: ParameterContext,
+        extensionContext: ExtensionContext
     ): Boolean {
         return parameterContext.parameter.type == GcsTestBed::class.java
     }
 
     @Throws(ParameterResolutionException::class)
     override fun resolveParameter(
-            parameterContext: ParameterContext,
-            context: ExtensionContext
+        parameterContext: ParameterContext,
+        context: ExtensionContext
     ): Any {
         return createTestBed(context)
     }
 
     override fun afterEach(context: ExtensionContext) {
-        testBeds[context.uniqueId]?.destroyTestBed()
+        //testBeds[context.uniqueId]?.destroyTestBed()
     }
 
     private fun createTestBed(context: ExtensionContext): GcsTestBed {
         return testBeds.getOrPut(context.uniqueId) {
             GcsTestBed(storageClient)
         }.also { it.initTestbed() }
-    }
-
-    override fun beforeAll(context: ExtensionContext?) {
-        removeAllTestBuckets()
     }
 
     private fun removeAllTestBuckets() {
