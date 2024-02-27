@@ -73,11 +73,11 @@ from `/storage/data/${db_instance_name}/14`
 | /some/data/dir:/storage/data      | mount       | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions               |
 | /some/backup/dir:/storage/backup  | mount       | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions |
 
-### Local Backup
+Based on the functionality of [pgBackRest](https://pgbackrest.org/) three types of backup repositories are supported.
+Local filesystem (`local`), n S3 compatible object storage (`s3`) or Google cloud storage based (`gcs`). Those can be
+configured individually, but at least one type has to be configured.
 
-Based on the functionality of [pgBackRest](https://pgbackrest.org/) two types of backup repositories are supported.
-Local filesystem (`local`), or an S3 compatible object storage (`s3`). Those can be configured individually, but at
-least one type has to be configured.
+### Local Backup
 
 | configuration                         | type        | default | description                                                                                                                                                       |
 |---------------------------------------|-------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -86,24 +86,16 @@ least one type has to be configured.
 | `DB_BACKUP_LOCAL_RETENTION_FULL`      | environment | 7       | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)           |
 | `DB_BACKUP_LOCAL_RETENTION_DIFF`      | environment | 4       | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)           |                                                                                                                                                                   |
 
-### S3 Backup
+### Google storage bucket backup
 
-S3 backup needs an S3 compatible backend. For non-AWS backends (like Minio) `DB_BACKUP_S3_URI_STYLE`
-and `DB_BACKUP_S3_HOST`can be used to configure non-AWS servers.
-
-| configuration                      | type        | default                       | description                                                                                                                                                                      |
-|------------------------------------|-------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_BACKUP_S3`                     | environment | 0                             | Flag to enable S3 object storage as backup repository                                                                                                                            |
-| `DB_BACKUP_S3_HOST`                | environment | s3.eu-central-1.amazonaws.com | Hostname of the S3 object storage service                                                                                                                                        |
-| `DB_BACKUP_S3_REGION`              | environment | eu-central-1                  | AWS region                                                                                                                                                                       |
-| `DB_BACKUP_S3_BUCKET`              | environment | &lt;none&gt;                  | Bucket for the backup repository                                                                                                                                                 |
-| `DB_BACKUP_S3_ACCESS_KEY`          | environment | &lt;none&gt;                  | Access key for the backup bucket                                                                                                                                                 |
-| `DB_BACKUP_S3_SECRET_KEY`          | environment | &lt;none&gt;                  | Secret key for the backup bucket                                                                                                                                                 |
-| `DB_BACKUP_S3_CA_PUBLIC_KEY`       | environment | &lt;none&gt;                  | Public key for the CA that issued the certificates for the `DB_BACKUP_S3_HOST`. Useful when a non SaaS solution like [minIO](https://min.io/) is used.                           |
-| `DB_BACKUP_S3_URI_STYLE`           | environment | host                          | See [S3 uri style](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-uri-style) Useful when a non SaaS solution like [minIO](https://min.io/) is used. |
-| `DB_BACKUP_S3_RETENTION_FULL_TYPE` | environment | count                         | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type)                |
-| `DB_BACKUP_S3_RETENTION_FULL`      | environment | 7                             | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)                          |
-| `DB_BACKUP_S3_RETENTION_DIFF`      | environment | 4                             | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)                          |                                                                                                                                                                                  |
+| configuration                       | type        | default      | description                                                                                                                                                       |
+|-------------------------------------|-------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_BACKUP_GCS`                     | environment | 0            | Flag to enable Google Cloud storage as backup repository                                                                                                          |
+| `DB_BACKUP_GCS_BUCKET`              | environment | &lt;none&gt; | Name of the Google Cloud storage bucket                                                                                                                           |
+| `DB_BACKUP_GCS_SERVICE_KEY_BASE64`  | environment | &lt;none&gt; | Base64 encoded service key file with appropriate permissions to write to the `DB_BACKUP_GCS_BUCKET` bucket                                                        |
+| `DB_BACKUP_GCS_RETENTION_FULL_TYPE` | environment | count        | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type) |
+| `DB_BACKUP_GCS_RETENTION_FULL`      | environment | 7            | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)           |
+| `DB_BACKUP_GCS_RETENTION_DIFF`      | environment | 4            | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)           |                                                                                                                                                                                  |
 
 ### Restore
 
@@ -111,8 +103,8 @@ and `DB_BACKUP_S3_HOST`can be used to configure non-AWS servers.
 See [pgBackRest restore documentation](https://pgbackrest.org/command.html#command-restore) for more details on the
 configuration options.
 
-| configuration  | type        | default      | description                                           |
-|----------------|-------------|--------------|-------------------------------------------------------|
+| configuration  | type        | default      | description                                                                                                                                                                                                         |
+|----------------|-------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `RESTORE_PITR` | environment | &lt;none&gt; | Point in time to recover to, in the format `YYYY-MM-dd HH:mm:ssz`. Please be aware that the server hosting the database might be in a different timezone, so always include the timezone when specifying PITR times |
 
 ### Databases

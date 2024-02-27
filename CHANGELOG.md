@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.5
+
+**IMPROVEMENTS**
+
+* add support for Google storage bucket based backups in Hetzner RDS module, see [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds/#restore).   
+
 ## v0.2.4
 
 **IMPROVEMENTS**

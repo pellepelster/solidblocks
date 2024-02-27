@@ -43,13 +43,13 @@ variable "mode" {
 
 variable "db_backup_gcs_bucket" {
   type        = string
-  description = "TODO"
+  description = "Name of the Google Cloud storage bucket"
   default     = null
 }
 
 variable "db_backup_gcs_service_key" {
   type        = string
-  description = "TODO"
+  description = "content of the service key json file with appropriate permissions to write to the `db_backup_gcs_bucket` bucket."
   default     = null
 }
 
@@ -297,12 +297,11 @@ variable "solidblocks_base_url" {
 variable "solidblocks_cloud_init_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.2.4"
+  default     = "v0.2.5"
 }
 
 variable "solidblocks_rds_version" {
   type        = string
   description = "used for integration tests to inject test versions"
-  default     = "v0.2.4"
+  default     = "v0.2.5"
 }
-
