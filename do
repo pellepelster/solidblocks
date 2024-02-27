@@ -51,6 +51,17 @@ function task_clean_hetzner {
     ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.16 nuke
 }
 
+function task_clean_gcloud {
+  for bucket in $(gcloud storage ls); do
+    if [[ ${bucket} = gs://test-* ]]; then
+      echo "deleting bucket '${bucket}'"
+      gcloud storage rm --recursive "${bucket}"
+    else
+      echo "not deleting bucket '${bucket}'"
+    fi
+  done
+}
+
 function task_clean {
     task_clean_aws
     task_clean_hetzner
@@ -221,6 +232,7 @@ case ${ARG} in
   clean) task_clean "$@" ;;
   clean-aws) task_clean_aws "$@" ;;
   clean-hetzner) task_clean_hetzner "$@" ;;
+  clean-gcloud) task_clean_gcloud "$@" ;;
   clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
   test-init-accounts) task_test_init_accounts "$@" ;;
   test) task_test "$@" ;;
