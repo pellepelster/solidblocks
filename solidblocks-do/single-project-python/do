@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# exit early if any command fails instead of running the rest of the script
+set -o errexit
+
+# fail the script when accessing an unset variable
+set -o nounset
+
+# also ensure early fail fore piped commands
+set -o pipefail
+
+# enable setting trace mode via the TRACE environment variable
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+# get the directory containing the do file
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+VENV_DIR="${DIR}/venv"
+
+function task_bootstrap {
+  python3 -m venv "${VENV_DIR}"
+  "${VENV_DIR}/bin/pip" install -r "${DIR}/requirements.txt"
+}
+
+function task_run {
+  "${VENV_DIR}/bin/python" "${DIR}/do.py" $@
+}
+
+function task_usage {
+  echo "Usage: $0
+
+  bootstrap         initialize the local development environment
+  "
+  exit 1
+}
+
+ARG=${1:-}
+case ${ARG} in
+  bootstrap) task_bootstrap;;
+  *) task_run "$@" ;;
+esac
