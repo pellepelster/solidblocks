@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+
+# exit early if any command fails instead of running the rest of the script
+set -o errexit
+
+# fail the script when accessing an unset variable
+set -o nounset
+
+# also ensure early fail fore piped commands
+set -o pipefail
+
+# enable setting trace mode via the TRACE environment variable
+if [[ "${TRACE-0}" == "1" ]]; then
+    set -o xtrace
+fi
+
+# get the directory containing the do file
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+# variables that may get updated should go to the top of the file as
+# constants to make them easy to discover and adapt
+HUGO_VERSION="0.123.6"
+HUGO_SHA256="be3a20ea1f585e2dc71bc9def2e505521ac2f5296a72eff3044dbff82bd0075e"
+
+# create temp dir in current directory to avoid littering the
+# system or accidentally leave data in /tmp
+TEMP_DIR="${DIR}/.temp"
+mkdir -p "${TEMP_DIR}"
+
+# make sure temp data is cleaned up when the script is done
+function clean_temp_dir {
+  rm -rf "${TEMP_DIR}"
+}
+trap clean_temp_dir EXIT
+
+# for downloaded software we also want to avoid littering the system
+# and keep the changes local to our repository
+BIN_DIR="${DIR}/.bin"
+
+function task_build {
+  local build_type=${1:-}
+
+  # always verify input and fail fast if mandatory information is missing
+  if [[ -z "${build_type}" ]]; then
+    echo "no build type provided"
+    exit 1
+  fi
+  echo "building the project with build type '${build_type}'"
+
+  # always make sure that files containing sensitive information
+  # have the minimal set of permissions to avoid accidental leakage
+  local secrets_file="${TEMP_DIR}/secrets.txt"
+  install -m 600 /dev/null "${secrets_file}"
+  echo "a confidential string" > "${secrets_file}"
+
+  # if needed we can use the environment variable `CI` to
+  # detect the execution environment
+  if [[ -n "${CI:-}" ]]; then
+    echo "we are running in CI, setting build typ to 'production'"
+    export BUILD_TYPE="production"
+  fi
+}
+
+function task_test {
+  local parallel=${1:-2}
+  echo "running the integration tests (${parallel})"
+}
+
+function task_deploy() {
+
+  # structured json data can be parsed and filtered/mapped with jq
+  local ip_addr="$(curl --silent ifconfig.me/all.json | jq -r '.ip_addr')"
+  echo "starting deployment, local ip address is '${ip_addr}'"
+
+  # if directory changes are needed do them in a subshell to
+  # preserve the callers shell state
+  (
+    # use secret provided via environment variable SOME_SECRET,
+    # or if not found try to read from password store
+    local some_secret="${SOME_SECRET:-$(pass some_secret)}"
+    export TF_VAR_some_secret="${some_secret}"
+
+    cd "${DIR}/infrastructure"
+    terraform apply
+  )
+}
+
+function ensure_hugo() {
+  mkdir -p "${BIN_DIR}"
+
+  # always verify checksum of externally loaded software
+  local hugo_distribution="${BIN_DIR}/hugo_${HUGO_VERSION}_linux-amd64.tar.gz"
+  if [[ ! -f "${hugo_distribution}" ]] || ! echo "${HUGO_SHA256}"  "${hugo_distribution}" | sha256sum -c; then
+    curl -L "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_linux-amd64.tar.gz" -o "${hugo_distribution}"
+  fi
+  echo "${HUGO_SHA256}"  "${hugo_distribution}" | sha256sum -c
+
+  # processes that get aborted should be able to cope with a corrupted
+  # intermediate state and resume to reach a consistent state
+  if [[ ! -f "${BIN_DIR}/.hugo_extracted" ]]; then
+    tar -xvf "${hugo_distribution}" -C "${BIN_DIR}"
+    touch "${BIN_DIR}/.hugo_extracted"
+  fi
+}
+
+function task_build_documentation() {
+  ensure_hugo
+
+  # use downloaded software from local bin dir
+  "${BIN_DIR}/hugo" version
+}
+
+function task_clean() {
+  clean_temp_dir
+  rm -rf "${BIN_DIR}"
+
+  # `jc` can be used to make external commands parsable with `jq`
+  local use_percent="$(df / | jc --df | jq '.[0].use_percent')"
+  echo "cleaned up repository, '/' has now ${use_percent}% free"
+}
+
+function task_version() {
+  # always use absolute paths when accessing
+  # files from the repository
+  local version="$(cat ${DIR}/version.txt)"
+  echo "current version is '${version}'"
+}
+
+# make sure the environment needed to run all the tasks is present, and
+# if not fail early and provide help on how to fix it
+function ensure_environment() {
+
+  if ! which tgswitch; then
+    echo "tgswitch not found, please install it from https://github.com/warrensbox/tgswitch"
+    exit 1
+  fi
+
+  # we don't want to change the users system without asking, so if a
+  # certain command is missing provide some help on how to install it
+  if ! which jq; then
+    echo "jq not found, please install it via 'apt-get install jq'"
+    exit 1
+  fi
+
+  if ! which jc; then
+    echo "jq not found, please install it via 'apt-get install jc'"
+    exit 1
+  fi
+}
+
+# provide a meaningful help on how your do file is supposed to be used,
+# and what parameters are expected
+function task_usage {
+  echo "Usage: $0
+
+  build [debug|production]   build the project
+  test  (parallel)           run integration tests
+  clean                      remove all ephemeral files
+  "
+  exit 1
+}
+
+ARG=${1:-}
+shift || true
+
+ensure_environment
+
+case ${ARG} in
+  build) task_build $@ ;;
+  build-documentation) task_build_documentation $@ ;;
+  test) task_test $@ ;;
+  deploy) task_deploy $@ ;;
+  clean) task_clean $@ ;;
+  version) task_version $@ ;;
+  *) task_usage;;
+esac
