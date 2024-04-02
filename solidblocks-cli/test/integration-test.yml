@@ -1,0 +1,12 @@
+environment:
+  - name: BLCKS_GLOBAL1
+    value: "blcks_global1"
+  - name: BLCKS_INHERITED1
+
+tasks:
+  - taskCommand:
+      shell:
+        command: "whoami"
+  - taskScript:
+      shell:
+        script: "test/dump-env.sh"

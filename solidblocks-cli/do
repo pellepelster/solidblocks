@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+
+function task_run {
+    go run "${DIR}/cmd" $@
+}
+
+function task_build {
+
+  rm -rf "${DIR}/build"
+  mkdir -p "${DIR}/build"
+
+  declare -A targets=(["linux"]="amd64,386,arm64", ["darwin"]="arm64,amd64", ["windows"]="arm64,amd64,386", ["freebsd"]="amd64")
+
+  for platform in "${!targets[@]}"
+  do
+    local archs=${targets[$platform]}
+    for arch in ${archs//,/ }; do
+      export GOOS="${platform}"
+      export GOARCH="${arch}"
+      go build -o "${DIR}/build/blcks_${GOOS}_${GOARCH}" "${DIR}/cmd"
+    done
+  done
+}
+
+function task_test {
+    go test -v "${DIR}/..."
+    export BLCKS_INHERITED1="blcks_inherited1"
+
+    rm -rf "${DIR}/test-output/"
+    mkdir -p "${DIR}/test-output/"
+    go run "${DIR}/cmd" --help
+    go run "${DIR}/cmd" workflow --help
+    go run "${DIR}/cmd" workflow plan "${DIR}/test/integration-test.yml"
+    go run "${DIR}/cmd" workflow runners
+    go run "${DIR}/cmd" workflow runners shell
+    go run "${DIR}/cmd" workflow run "${DIR}/test/integration-test.yml"
+
+    grep 'BLCKS_GLOBAL1=blcks_global1' "${DIR}/test-output/dump.txt"
+    grep 'BLCKS_INHERITED1=blcks_inherited1' "${DIR}/test-output/dump.txt"
+}
+
+function test_return_code {
+
+    set +e
+    local expected_return_code="${1:-}"
+    shift || true
+
+    ${DIR}/build/snex_linux_amd64 $@
+
+    local return_code=$?
+    if [ ${return_code} -ne ${expected_return_code} ]; then
+        echo "expected return code ${expected_return_code} but got return code ${return_code} for command line '$@'"
+        exit 1
+    fi
+    set -e
+}
+
+function task_usage {
+  echo "Usage: $0 build | test"
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  test) task_test $@ ;;
+  build) task_build $@ ;;
+  run) task_run $@ ;;
+  *) task_usage ;;
+esac
