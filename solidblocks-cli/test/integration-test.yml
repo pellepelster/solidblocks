@@ -4,9 +4,9 @@ environment:
   - name: BLCKS_INHERITED1
 
 tasks:
-  - taskCommand:
+  - taskCommandWhoami:
       shell:
         command: "whoami"
-  - taskScript:
+  - taskScriptDumpEnv:
       shell:
         script: "test/dump-env.sh"

@@ -18,15 +18,15 @@ type ShellTaskRunner struct {
 	Script  string
 }
 
-func (g ShellTaskRunnerRegistration) Id() string {
+func (_ ShellTaskRunnerRegistration) Id() string {
 	return "shell"
 }
 
-func (g ShellTaskRunnerRegistration) Help() string {
+func (_ ShellTaskRunnerRegistration) Help() string {
 	return RenderHelp(shellTaskRunnerHelp, "shell_task_runner_help.md")
 }
 
-func (g ShellTaskRunnerRegistration) Parse(data map[string]interface{}) (TaskRunner, error) {
+func (_ ShellTaskRunnerRegistration) Parse(data map[string]interface{}) (TaskRunner, error) {
 	script, err := GetStringKey("script", data)
 	if err == nil {
 		return ShellTaskRunner{Script: script}, nil
@@ -40,15 +40,15 @@ func (g ShellTaskRunnerRegistration) Parse(data map[string]interface{}) (TaskRun
 	return nil, errors.New("either a command or a script has to be provided")
 }
 
-func (g ShellTaskRunner) Run(environment map[string]string) *TaskRunnerResult {
+func (runner ShellTaskRunner) Run(environment map[string]string) *TaskRunnerResult {
 
 	var cmd *exec.Cmd
-	if g.Command != nil {
-		cmd = exec.Command(g.Command[0], g.Command[1:]...)
+	if runner.Command != nil {
+		cmd = exec.Command(runner.Command[0], runner.Command[1:]...)
 	}
 
-	if len(g.Script) > 0 {
-		cmd = exec.Command("/bin/sh", g.Script)
+	if len(runner.Script) > 0 {
+		cmd = exec.Command("/bin/sh", runner.Script)
 	}
 
 	env := make([]string, 0)

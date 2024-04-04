@@ -3,7 +3,6 @@ package pkg
 import (
 	"errors"
 	"fmt"
-	"github.com/charmbracelet/log"
 	"github.com/dominikbraun/graph"
 	"github.com/urfave/cli/v2"
 	"time"
@@ -45,13 +44,14 @@ func RunWorkflow(workflow Workflow) error {
 	for _, taskName := range sorted {
 		taskName := taskName
 		go func() {
-			log.Infof("running task '%s'", taskName)
-			resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: workflow.getTask(taskName).Runner.Run(GetEnvironment(workflow))}
+			Outputf("running task '%s'", taskName)
+			task := workflow.getTask(taskName)
+			resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: task.Runner.Run(workflow.GetEnvVarsForTask(task))}
 		}()
 	}
 
 	for !hasError && len(results) != len(workflow.Tasks) {
-		time.Sleep(2 * time.Second)
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	for _, result := range results {
@@ -75,7 +75,7 @@ var WorkflowRunCommand = cli.Command{
 		}
 
 		for _, workflow := range workflows {
-			log.Infof("executing workflow '%s'", workflow.Name)
+			Outputf("executing workflow '%s'", workflow.Name)
 			err := RunWorkflow(*workflow)
 			if err != nil {
 				return cli.Exit(err.Error(), 1)

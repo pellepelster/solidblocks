@@ -2,14 +2,13 @@ package pkg
 
 import (
 	"fmt"
-	"github.com/charmbracelet/log"
 	"github.com/urfave/cli/v2"
 )
 
 func PlanWorkflow(workflow Workflow) error {
-	log.Infof("global environment variables")
+	Outputf("global environment variables")
 	for _, variable := range workflow.Environment {
-		log.Infof(fmt.Sprintf("  %s", variable.LogPlanText()))
+		Outputf(fmt.Sprintf("  %s", variable.LogPlanText()))
 	}
 	return nil
 }
@@ -26,7 +25,7 @@ var WorkflowPlanCommand = cli.Command{
 		}
 
 		for _, workflow := range workflows {
-			log.Infof("simulating workflow '%s'", workflow.Name)
+			Outputf("simulating workflow '%s'", workflow.Name)
 			err := PlanWorkflow(*workflow)
 			if err != nil {
 				return cli.Exit(err.Error(), 1)

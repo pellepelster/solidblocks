@@ -4,7 +4,6 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"github.com/charmbracelet/log"
 	"github.com/goccy/go-yaml"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -22,7 +21,7 @@ type Workflow struct {
 	Environment []EnvironmentVariable
 }
 
-func ParseWorkflow(name string, data []byte) (*Workflow, error) {
+func WorkflowParse(name string, data []byte) (*Workflow, error) {
 
 	workflowRaw := make(map[string]interface{})
 	workflow := Workflow{Name: name}
@@ -32,23 +31,47 @@ func ParseWorkflow(name string, data []byte) (*Workflow, error) {
 	tasks, err := GetSliceKey("tasks", workflowRaw)
 	if tasks != nil && err == nil {
 		err := parseTasks(tasks, &workflow)
+
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	environment, err := GetSliceKey("environment", workflowRaw)
-	if environment != nil && err == nil {
-		err := parseEnvironment(environment, &workflow)
-		if err != nil {
-			return nil, err
-		}
+	envVars, err := ParseEnvironment(workflowRaw)
+	if err != nil {
+		return nil, err
 	}
+	workflow.Environment = envVars
 
 	return &workflow, nil
 }
 
-func (workflow *Workflow) hasTask(taskName string) bool {
+func WorkflowValidate(workflow *Workflow) []error {
+
+	validationErrors := make([]error, 0)
+
+	for _, envVarName := range workflow.GetEnvVarNames("") {
+		if workflow.CountEnvVars(envVarName) > 1 {
+			validationErrors = append(validationErrors, errors.New(fmt.Sprintf("environment variable '%s' defined more than once", envVarName)))
+		}
+	}
+
+	for _, task := range workflow.Tasks {
+		for _, envVar := range task.Environment {
+			if envVar.ValueFrom != nil {
+				if len(envVar.ValueFrom.Task) > 0 {
+					if !workflow.HasTask(envVar.ValueFrom.Task) {
+						validationErrors = append(validationErrors, errors.New(fmt.Sprintf("environment variable '%s' references task '%s' which does not exist", envVar.Name, envVar.ValueFrom.Task)))
+					}
+				}
+			}
+		}
+	}
+
+	return validationErrors
+}
+
+func (workflow *Workflow) HasTask(taskName string) bool {
 	return workflow.getTask(taskName) != nil
 }
 
@@ -67,12 +90,12 @@ func parseTasks(data []interface{}, workflow *Workflow) error {
 	for _, taskRaw := range data {
 		key, object, err := GetKeyAndData(taskRaw)
 		if err != nil {
-			return err
+			return errors.New(fmt.Sprintf("%s: %s", key, err.Error()))
 		}
 
-		task, err := parseTask(key, object)
+		task, err := ParseTask(key, object)
 		if err != nil {
-			return err
+			return errors.New(fmt.Sprintf("%s: %s", key, err.Error()))
 		}
 
 		workflow.Tasks = append(workflow.Tasks, *task)
@@ -81,32 +104,20 @@ func parseTasks(data []interface{}, workflow *Workflow) error {
 	return nil
 }
 
-func parseEnvironment(data []interface{}, workflow *Workflow) error {
-
-	for _, environmentRaw := range data {
-
-		name, err := GetStringKey("name", environmentRaw)
-		if err != nil {
-			return err
-		}
-
-		value, _ := GetStringKey("value", environmentRaw)
-
-		if len(name) > 0 {
-			workflow.Environment = append(workflow.Environment, EnvironmentVariable{Name: name, Value: value})
-		}
-	}
-
-	return nil
-}
-
-func parseTask(key string, data map[string]interface{}) (*Task, error) {
-	runner, err := parseTaskRunner(data)
+func ParseTask(key string, data map[string]interface{}) (*Task, error) {
+	runner, err := ParseTaskRunner(data)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("%s: %s", key, err))
+		return nil, err
 	}
 
-	return &Task{key, []EnvironmentVariable{}, runner}, nil
+	envVars := make([]EnvironmentVariable, 0)
+
+	envVars, err = ParseEnvironment(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Task{key, envVars, runner}, nil
 }
 
 func ParseWorkflows(context *cli.Context) ([]*Workflow, error) {
@@ -128,14 +139,14 @@ func ParseWorkflows(context *cli.Context) ([]*Workflow, error) {
 			return nil, err
 		}
 
-		log.Infof("loading workflow '%s'", arg)
+		Outputf("loading workflow '%s'", arg)
 		workflowData, err := os.ReadFile(arg)
 		if err != nil {
 			return nil, err
 		}
 
-		log.Infof("parsing workflow '%s'", arg)
-		workflow, err := ParseWorkflow(arg, workflowData)
+		Outputf("parsing workflow '%s'", arg)
+		workflow, err := WorkflowParse(arg, workflowData)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("failed to parse workflow '%s', %s", arg, err.Error()))
 		}

@@ -15,7 +15,7 @@ tasks:
       shell:
         command: ["id", "-u"]
 `
-	workflow, err := ParseWorkflow("workflow1", []byte(workflowYaml))
+	workflow, err := WorkflowParse("workflow1", []byte(workflowYaml))
 	assert.Zero(t, err)
 	assert.Equal(t, 2, len(workflow.Tasks))
 	assert.Equal(t, "task1", workflow.Tasks[0].Name)
@@ -32,7 +32,7 @@ tasks:
       shell:
         command: invalid_command
 `
-	workflow, err := ParseWorkflow("workflow1", []byte(workflowYaml))
+	workflow, err := WorkflowParse("workflow1", []byte(workflowYaml))
 	assert.Zero(t, err)
 
 	err = RunWorkflow(*workflow)

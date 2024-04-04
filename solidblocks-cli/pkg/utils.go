@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/divideandconquer/go-merge/merge"
 	"github.com/google/uuid"
+	"os/exec"
 	"reflect"
 )
 
@@ -18,28 +19,48 @@ func RandomUUID() string {
 }
 
 func GetStringKey(key string, data interface{}) (string, error) {
+	value := GetOptionalStringKey(key, data)
+
+	if len(value) == 0 {
+		return "", errors.New(fmt.Sprintf("no value found for key '%s'", key))
+	}
+
+	return value, nil
+}
+
+func GetOptionalStringKey(key string, data interface{}) string {
 	if !IsMap(data) {
-		return "", errors.New("is not a map")
+		return ""
 	}
 
 	value := data.(map[string]interface{})[key]
-
-	if value == nil {
-		return "", errors.New(fmt.Sprintf("key '%s' not found", key))
-	}
-
 	reflectValue := reflect.ValueOf(value)
 
 	if reflectValue.Kind() == reflect.String {
-		return reflectValue.String(), nil
+		return reflectValue.String()
 	}
 
-	return "", errors.New(fmt.Sprintf("value for key '%s' is not a string", key))
+	return ""
+}
+
+func GetOptionalObjectKey(key string, data interface{}) map[string]interface{} {
+	if !IsMap(data) {
+		return nil
+	}
+
+	value := data.(map[string]interface{})[key]
+	reflectValue := reflect.ValueOf(value)
+
+	if reflectValue.Kind() == reflect.Map {
+		return value.(map[string]interface{})
+	}
+
+	return nil
 }
 
 func GetSliceKey(key string, data interface{}) ([]interface{}, error) {
 	if !IsMap(data) {
-		return nil, errors.New("is not a map")
+		return nil, errors.New("invalid format, not an object")
 	}
 
 	value := data.(map[string]interface{})[key]
@@ -65,7 +86,7 @@ func IsMap(data interface{}) bool {
 
 func GetAsStringList(key string, data interface{}) ([]string, error) {
 	if !IsMap(data) {
-		return nil, errors.New("is not a map")
+		return nil, errors.New("invalid format, not an object")
 	}
 
 	value := data.(map[string]interface{})[key]
@@ -96,7 +117,7 @@ func GetAsStringList(key string, data interface{}) ([]string, error) {
 
 func GetKeyAndData(data interface{}) (string, map[string]interface{}, error) {
 	if !IsMap(data) {
-		return "", nil, errors.New("is not a map")
+		return "", nil, errors.New("invalid format, not an object")
 	}
 
 	mapRange := reflect.ValueOf(data).MapRange()
@@ -113,15 +134,33 @@ func GetKeyAndData(data interface{}) (string, map[string]interface{}, error) {
 	}
 
 	if key.Kind() != reflect.String || value.Elem().Kind() == reflect.String || value.Elem().Kind() == reflect.Bool || value.Elem().Kind() == reflect.Uint64 {
-		return "", nil, errors.New("map is not nested")
+		return key.String(), nil, errors.New("invalid format, not an object")
 	}
 
 	return key.String(), value.Elem().Interface().(map[string]interface{}), nil
 }
 
+func GetDataForKey(key string, data interface{}) (map[string]interface{}, error) {
+	if !IsMap(data) {
+		return nil, errors.New("invalid format, not an object")
+	}
+
+	for mapKey, mapValue := range data.(map[string]interface{}) {
+		if mapKey == key {
+			if reflect.ValueOf(mapValue).Kind() == reflect.Map {
+				return mapValue.(map[string]interface{}), nil
+			} else {
+				return make(map[string]interface{}), nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
 func MergeDataByKey(keys []string, data interface{}) (map[string]interface{}, error) {
 	if !IsMap(data) {
-		return nil, errors.New("is not a map")
+		return nil, errors.New("invalid format, not an object")
 	}
 
 	return nil, nil
@@ -138,7 +177,7 @@ func CollectDataByKeyAndName(rootKey, key, name string, data interface{}) (map[s
 func collectDataByKeyAndName(rootKey, key, name string, data interface{}) (map[string]interface{}, error) {
 
 	if !IsMap(data) {
-		return nil, errors.New("is not a map")
+		return nil, errors.New("invalid format, not an object")
 	}
 
 	mapData := data.(map[string]interface{})
@@ -168,4 +207,32 @@ func collectDataByKeyAndName(rootKey, key, name string, data interface{}) (map[s
 
 func MergeMaps(base, override map[string]interface{}) map[string]interface{} {
 	return merge.Merge(base, override).(map[string]interface{})
+}
+
+func CommandExists(command string) bool {
+	_, err := exec.Command("which", command).CombinedOutput()
+	return err == nil
+}
+
+func Unique(s []string) []string {
+	unique := make(map[string]bool, len(s))
+	us := make([]string, len(unique))
+	for _, elem := range s {
+		if len(elem) != 0 {
+			if !unique[elem] {
+				us = append(us, elem)
+				unique[elem] = true
+			}
+		}
+	}
+
+	return us
+}
+
+func Output(s string) {
+	println(s)
+}
+
+func Outputf(s string, a ...any) {
+	Output(fmt.Sprintf(s, a...))
 }

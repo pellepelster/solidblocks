@@ -27,15 +27,18 @@ type TaskRunnerResult struct {
 	Output  string
 }
 
-func parseTaskRunner(data map[string]interface{}) (TaskRunner, error) {
-	key, data, err := GetKeyAndData(data)
-	if err != nil {
-		return nil, err
-	}
-
+func ParseTaskRunner(data map[string]interface{}) (TaskRunner, error) {
 	for _, taskRunner := range taskRunners {
-		if key == taskRunner.Id() {
-			runner, err := taskRunner.Parse(data)
+		taskRunnerData, err := GetDataForKey(taskRunner.Id(), data)
+		if err != nil {
+			return nil, err
+		}
+		if taskRunnerData == nil {
+			continue
+		}
+
+		if IsMap(taskRunnerData) {
+			runner, err := taskRunner.Parse(taskRunnerData)
 			if err != nil {
 				return nil, err
 			}
@@ -44,7 +47,7 @@ func parseTaskRunner(data map[string]interface{}) (TaskRunner, error) {
 		}
 	}
 
-	return nil, errors.New(fmt.Sprintf("runner '%s' not found", key))
+	return nil, errors.New(fmt.Sprintf("no runner found"))
 }
 
 func HasTaskRunner(runnerId string) bool {
@@ -61,25 +64,34 @@ func GetTaskRunner(runnerId string) TaskRunnerRegistration {
 	return nil
 }
 
+func TaskRunnerIds() []string {
+	ids := make([]string, 0)
+	for _, taskRunner := range taskRunners {
+		ids = append(ids, taskRunner.Id())
+	}
+
+	return ids
+}
+
 var WorkflowListTaskRunnersCommand = cli.Command{
 	Name:  "runners",
 	Usage: "show a list of all available task runners",
 	Action: func(context *cli.Context) error {
 
 		if context.Args().Len() == 1 && HasTaskRunner(context.Args().Get(0)) {
-			println(GetTaskRunner(context.Args().Get(0)).Help())
+			Outputf(GetTaskRunner(context.Args().Get(0)).Help())
 			return cli.Exit("", 0)
 		}
 
-		println("the following runners are available")
-		println("")
-		for _, taskRunner := range taskRunners {
-			println(fmt.Sprintf("  * %s", taskRunner.Id()))
+		Outputf("the following runners are available")
+		Outputf("")
+		for _, taskRunnerId := range TaskRunnerIds() {
+			Outputf(fmt.Sprintf("  * %s", taskRunnerId))
 		}
-		println("")
-		println("to show help for a runner run")
-		println("")
-		println("blcks workflow runners <runner>")
+		Outputf("")
+		Outputf("to show help for a runner run")
+		Outputf("")
+		Outputf("blcks workflow runners <runner>")
 
 		return cli.Exit("", 0)
 	},
