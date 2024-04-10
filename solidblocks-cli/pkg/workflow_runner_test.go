@@ -12,6 +12,10 @@ tasks:
       shell:
         command: whoami
   - task2:
+      environment:
+        - name: BLCKS_WHOAMI
+          valueFrom:
+            task: task1
       shell:
         command: ["id", "-u"]
 `
@@ -25,7 +29,7 @@ tasks:
 	assert.NoError(t, err)
 }
 
-func TestRunWorkflowError(t *testing.T) {
+func TestRunWorkflowErrorInvalidCommand(t *testing.T) {
 	workflowYaml := `
 tasks:
   - task1:
@@ -37,4 +41,36 @@ tasks:
 
 	err = RunWorkflow(*workflow)
 	assert.Error(t, err)
+}
+
+func disabled_TestRunWorkflowErrorInvalidSyntax(t *testing.T) {
+	workflowYaml := `
+tasks:
+ : - &§ -4321
+`
+	workflow, err := WorkflowParse("workflow1", []byte(workflowYaml))
+	assert.Zero(t, err)
+
+	err = RunWorkflow(*workflow)
+	assert.Error(t, err)
+}
+
+func TestRunWorkflowErrorInvalidValueFromTask(t *testing.T) {
+	workflowYaml := `
+tasks:
+  - task1:
+      environment:
+        - name: VAR1
+          valueFrom:
+            task: task99
+      shell:
+        command: ["id", "-u"]
+`
+	workflow, err := WorkflowParse("workflow1", []byte(workflowYaml))
+	assert.NotZero(t, workflow)
+	assert.NoError(t, err)
+
+	errors := WorkflowValidate(workflow)
+	assert.Equal(t, 1, len(errors))
+	assert.EqualError(t, errors[0], "environment variable 'VAR1' references task 'task99' which does not exist")
 }

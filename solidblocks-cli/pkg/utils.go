@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"github.com/divideandconquer/go-merge/merge"
 	"github.com/google/uuid"
+	"golang.org/x/term"
 	"os/exec"
 	"reflect"
+	"strings"
 )
 
 func RandomUUID() string {
@@ -209,6 +211,10 @@ func MergeMaps(base, override map[string]interface{}) map[string]interface{} {
 	return merge.Merge(base, override).(map[string]interface{})
 }
 
+func MergeStringMaps(base, override map[string]string) map[string]string {
+	return merge.Merge(base, override).(map[string]string)
+}
+
 func CommandExists(command string) bool {
 	_, err := exec.Command("which", command).CombinedOutput()
 	return err == nil
@@ -235,4 +241,29 @@ func Output(s string) {
 
 func Outputf(s string, a ...any) {
 	Output(fmt.Sprintf(s, a...))
+}
+
+func OutputTaskf(task, s string, a ...any) {
+	Output(task + ": " + fmt.Sprintf(s, a...))
+}
+
+func OutputDivider(taskName string) {
+	OutputTaskf(taskName, strings.Repeat("-", TermWidth()))
+}
+
+func Reverse[S ~[]E, E any](s S) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+}
+
+func TermWidth() int {
+	if !term.IsTerminal(0) {
+		return 80
+	}
+	width, _, err := term.GetSize(0)
+	if err != nil {
+		return 80
+	}
+	return width
 }

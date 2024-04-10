@@ -8,7 +8,7 @@ import (
 )
 
 func TestShellTaskRunnerCommand(t *testing.T) {
-	result := ShellTaskRunner{Command: []string{"whoami"}}.Run(make(map[string]string))
+	result := ShellTaskRunner{Command: []string{"whoami"}}.Run("task1", make(map[string]string))
 	currentUser, err := user.Current()
 
 	assert.NoError(t, err)
@@ -17,7 +17,7 @@ func TestShellTaskRunnerCommand(t *testing.T) {
 }
 
 func TestShellTaskRunnerCommandArguments(t *testing.T) {
-	result := ShellTaskRunner{Command: []string{"id", "-u"}}.Run(make(map[string]string))
+	result := ShellTaskRunner{Command: []string{"id", "-u"}}.Run("task1", make(map[string]string))
 	currentUser, err := user.Current()
 
 	assert.NoError(t, err)
@@ -26,16 +26,16 @@ func TestShellTaskRunnerCommandArguments(t *testing.T) {
 }
 
 func TestShellTaskRunnerCommandFailure(t *testing.T) {
-	result := ShellTaskRunner{Command: []string{"invalid_command"}}.Run(make(map[string]string))
+	result := ShellTaskRunner{Command: []string{"invalid_command"}}.Run("task1", make(map[string]string))
 	assert.False(t, result.Success)
 }
 
 func TestShellTaskRunnerScript(t *testing.T) {
-	result := ShellTaskRunner{Script: "test.sh"}.Run(make(map[string]string))
+	result := ShellTaskRunner{Script: "test.sh"}.Run("task1", make(map[string]string))
 	assert.True(t, result.Success)
 }
 
 func TestShellTaskRunnerScriptFailure(t *testing.T) {
-	result := ShellTaskRunner{Script: "invalid_script"}.Run(make(map[string]string))
+	result := ShellTaskRunner{Script: "invalid_script"}.Run("task1", make(map[string]string))
 	assert.False(t, result.Success)
 }

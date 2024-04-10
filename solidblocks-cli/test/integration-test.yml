@@ -8,5 +8,9 @@ tasks:
       shell:
         command: "whoami"
   - taskScriptDumpEnv:
+      environment:
+        - name: BLCKS_WHOAMI
+          valueFrom:
+            task: taskCommandWhoami
       shell:
         script: "test/dump-env.sh"

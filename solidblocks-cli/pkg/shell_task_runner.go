@@ -40,7 +40,7 @@ func (_ ShellTaskRunnerRegistration) Parse(data map[string]interface{}) (TaskRun
 	return nil, errors.New("either a command or a script has to be provided")
 }
 
-func (runner ShellTaskRunner) Run(environment map[string]string) *TaskRunnerResult {
+func (runner ShellTaskRunner) Run(taskName string, environment map[string]string) *TaskRunnerResult {
 
 	var cmd *exec.Cmd
 	if runner.Command != nil {
@@ -61,8 +61,11 @@ func (runner ShellTaskRunner) Run(environment map[string]string) *TaskRunnerResu
 	stdout := bytes.NewBufferString("")
 	stderr := bytes.NewBufferString("")
 
-	cmd.Stdout = io.MultiWriter(os.Stdout, stdout)
-	cmd.Stderr = io.MultiWriter(os.Stderr, stderr)
+	w1 := &TaskWriter{taskName, os.Stdout}
+	w2 := &TaskWriter{taskName, os.Stderr}
+
+	cmd.Stdout = io.MultiWriter(w1, stdout)
+	cmd.Stderr = io.MultiWriter(w2, stderr)
 
 	err := cmd.Start()
 	if err != nil {

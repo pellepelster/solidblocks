@@ -19,7 +19,7 @@ func RegisterTaskRunner(taskRunner TaskRunnerRegistration) {
 }
 
 type TaskRunner interface {
-	Run(environment map[string]string) *TaskRunnerResult
+	Run(taskName string, environment map[string]string) *TaskRunnerResult
 }
 
 type TaskRunnerResult struct {

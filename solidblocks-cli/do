@@ -41,6 +41,7 @@ function task_test {
 
     grep 'BLCKS_GLOBAL1=blcks_global1' "${DIR}/test-output/dump.txt"
     grep 'BLCKS_INHERITED1=blcks_inherited1' "${DIR}/test-output/dump.txt"
+    grep 'BLCKS_WHOAMI=pelle' "${DIR}/test-output/dump.txt"
 }
 
 function test_return_code {

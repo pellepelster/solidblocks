@@ -27,6 +27,9 @@ func WorkflowParse(name string, data []byte) (*Workflow, error) {
 	workflow := Workflow{Name: name}
 
 	err := yaml.Unmarshal(data, &workflowRaw)
+	if err != nil {
+		return nil, err
+	}
 
 	tasks, err := GetSliceKey("tasks", workflowRaw)
 	if tasks != nil && err == nil {

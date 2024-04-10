@@ -13,6 +13,15 @@ type WorkflowTaskRunnerResult struct {
 	RunnerResult *TaskRunnerResult
 }
 
+func ResultForTask(results []*WorkflowTaskRunnerResult, taskName string) (*TaskRunnerResult, error) {
+	for _, result := range results {
+		if result.TaskName == taskName {
+			return result.RunnerResult, nil
+		}
+	}
+	return nil, errors.New(fmt.Sprintf("could not get output for task '%s', task not found", taskName))
+}
+
 func RunWorkflow(workflow Workflow) error {
 	g := graph.New(graph.StringHash, graph.Directed(), graph.PreventCycles())
 
@@ -23,7 +32,20 @@ func RunWorkflow(workflow Workflow) error {
 		}
 	}
 
+	for _, task := range workflow.Tasks {
+		for _, envVar := range task.Environment {
+			if envVar.ValueFrom != nil && len(envVar.ValueFrom.Task) > 0 {
+				err := g.AddEdge(task.Name, envVar.ValueFrom.Task)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	sorted, err := graph.TopologicalSort(g)
+	Reverse(sorted)
+
 	if err != nil {
 		return err
 	}
@@ -44,9 +66,40 @@ func RunWorkflow(workflow Workflow) error {
 	for _, taskName := range sorted {
 		taskName := taskName
 		go func() {
-			Outputf("running task '%s'", taskName)
 			task := workflow.getTask(taskName)
-			resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: task.Runner.Run(workflow.GetEnvVarsForTask(task))}
+
+			for _, envVar := range task.Environment {
+				if envVar.ValueFrom != nil && len(envVar.ValueFrom.Task) > 0 {
+					OutputTaskf(taskName, "waiting for output from '%s'", envVar.ValueFrom.Task)
+					for true {
+						_, err := ResultForTask(results, envVar.ValueFrom.Task)
+						if err == nil {
+							break
+						}
+						time.Sleep(100 * time.Millisecond)
+					}
+
+				}
+			}
+
+			valueFromEnv := make(map[string]string)
+
+			for _, envVar := range task.Environment {
+				if envVar.ValueFrom != nil && len(envVar.ValueFrom.Task) > 0 {
+					result, err := ResultForTask(results, envVar.ValueFrom.Task)
+
+					if err != nil {
+						resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: &TaskRunnerResult{false, ""}}
+					}
+
+					valueFromEnv[envVar.Name] = result.Output
+				}
+			}
+
+			OutputTaskf(taskName, "running task")
+			OutputDivider(taskName)
+			resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: task.Runner.Run(taskName, MergeStringMaps(valueFromEnv, workflow.GetEnvVarsForTask(task)))}
+			OutputDivider(taskName)
 		}()
 	}
 
