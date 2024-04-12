@@ -25,7 +25,7 @@ func WorkflowParse(name string, data []byte) (*Workflow, error) {
 		return nil, err
 	}
 
-	tasks, err := GetSliceKey("tasks", workflowRaw)
+	tasks, err := GetSliceByKey("tasks", workflowRaw)
 	if tasks != nil && err == nil {
 		err := parseTasks(tasks, &workflow)
 
@@ -34,7 +34,7 @@ func WorkflowParse(name string, data []byte) (*Workflow, error) {
 		}
 	}
 
-	envVars, err := ParseEnvironment(workflowRaw)
+	envVars, err := EnvironmentParse(workflowRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -158,10 +158,10 @@ var WorkflowCommand = cli.Command{
 	Usage:       "execute tasks using the Solidblocks workflow manifest  (experimental)",
 	Description: RenderHelp(workflowHelp, "workflow_help.md"),
 	Subcommands: []*cli.Command{
-		&WorkflowPlanCommand,
+		&WorkflowShowCommand,
 		&WorkflowRunCommand,
 		&WorkflowListTasks,
 		&WorkflowListTaskRunnersCommand,
 	},
-	Action: ListTasksAction,
+	Action: WorkflowShowAction,
 }

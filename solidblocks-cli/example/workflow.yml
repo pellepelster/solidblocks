@@ -1,7 +1,18 @@
-#environment:
-#  - name: BLCKS_GLOBAL1
-#    value: "blcks_global1"
-#  - name: BLCKS_INHERITED1
+environment:
+  - name: GRADLE_OPTS
+    description: "default gradle options"
+    value: "-Xmx1024m"
+  - name: BUILD_HOST
+    valueFrom:
+      command: hostname
+  - name: BUILD_USER
+    valueFrom:
+      command: whoami
+  - name: VERSION
+    description: "version to use for all build artifacts"
+    default:
+      valueFrom:
+        command: [ "git", "rev-parse", "HEAD" ]
 
 tasks:
   - build:

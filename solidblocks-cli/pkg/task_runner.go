@@ -82,19 +82,19 @@ var WorkflowListTaskRunnersCommand = cli.Command{
 	Action: func(context *cli.Context) error {
 
 		if context.Args().Len() == 1 && HasTaskRunner(context.Args().Get(0)) {
-			Outputf(GetTaskRunner(context.Args().Get(0)).Help())
+			Outputfln(GetTaskRunner(context.Args().Get(0)).Help())
 			return cli.Exit("", 0)
 		}
 
-		Outputf("the following runners are available")
-		Outputf("")
+		Outputfln("the following runners are available")
+		Outputfln("")
 		for _, taskRunnerId := range TaskRunnerIds() {
-			Outputf(fmt.Sprintf("  * %s", taskRunnerId))
+			Outputfln(fmt.Sprintf("  * %s", taskRunnerId))
 		}
-		Outputf("")
-		Outputf("to show help for a runner run")
-		Outputf("")
-		Outputf("blcks workflow runners <runner>")
+		Outputfln("")
+		Outputfln("to show help for a runner run")
+		Outputfln("")
+		Outputfln("blcks workflow runners <runner>")
 
 		return cli.Exit("", 0)
 	},

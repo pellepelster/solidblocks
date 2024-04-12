@@ -214,7 +214,7 @@ func TestGetStringKey(t *testing.T) {
 key1: string1
 `
 
-	data, err := GetStringKey("key1", PrepareTestData(t, yml))
+	data, err := GetStringByKey("key1", PrepareTestData(t, yml))
 	assert.NoError(t, err)
 	assert.Equal(t, "string1", data)
 }
@@ -224,7 +224,7 @@ func TestGetStringKeyInvalid(t *testing.T) {
 key1: string1
 `
 
-	data, err := GetStringKey("key2", PrepareTestData(t, yml))
+	data, err := GetStringByKey("key2", PrepareTestData(t, yml))
 	assert.Error(t, err)
 	assert.Zero(t, data)
 }
@@ -234,7 +234,7 @@ func TestGetOptionalStringKeyInvalid(t *testing.T) {
 key1: string1
 `
 
-	data := GetOptionalStringKey("key2", PrepareTestData(t, yml))
+	data := GetOptionalStringByKey("key2", PrepareTestData(t, yml))
 	assert.Zero(t, data)
 }
 
@@ -243,7 +243,7 @@ func TestGetOptionalStringKey(t *testing.T) {
 key1: string1
 `
 
-	data := GetOptionalStringKey("key1", PrepareTestData(t, yml))
+	data := GetOptionalStringByKey("key1", PrepareTestData(t, yml))
 	assert.Equal(t, "string1", data)
 }
 

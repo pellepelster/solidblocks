@@ -22,8 +22,8 @@ func RandomUUID() string {
 	return newUUID.String()
 }
 
-func GetStringKey(key string, data interface{}) (string, error) {
-	value := GetOptionalStringKey(key, data)
+func GetStringByKey(key string, data interface{}) (string, error) {
+	value := GetOptionalStringByKey(key, data)
 
 	if len(value) == 0 {
 		return "", errors.New(fmt.Sprintf("no value found for key '%s'", key))
@@ -32,7 +32,7 @@ func GetStringKey(key string, data interface{}) (string, error) {
 	return value, nil
 }
 
-func GetOptionalStringKey(key string, data interface{}) string {
+func GetOptionalStringByKey(key string, data interface{}) string {
 	if !IsMap(data) {
 		return ""
 	}
@@ -62,7 +62,7 @@ func GetOptionalObjectKey(key string, data interface{}) map[string]interface{} {
 	return nil
 }
 
-func GetSliceKey(key string, data interface{}) ([]interface{}, error) {
+func GetSliceByKey(key string, data interface{}) ([]interface{}, error) {
 	if !IsMap(data) {
 		return nil, errors.New("invalid format, not an object")
 	}
@@ -126,7 +126,7 @@ func GetAsString(key string, data interface{}) (string, error) {
 
 	value := data.(map[string]interface{})[key]
 	if value == nil {
-		return "", errors.New("key '%s' not found")
+		return "", errors.New(fmt.Sprintf("key '%s' not found", key))
 	}
 
 	reflectValue := reflect.ValueOf(value)
@@ -256,30 +256,31 @@ func Unique(s []string) []string {
 	return us
 }
 
-func Output(s string) {
+func Outputln(s string) {
 	println(s)
 }
 
-func Outputf(s string, a ...any) {
-	Output(fmt.Sprintf(s, a...))
+func Output(s string) {
+	print(s)
+}
+
+func Outputfln(s string, a ...any) {
+	Outputln(fmt.Sprintf(s, a...))
+}
+
+func OutputHeader(header string) {
+	Outputfln(TextBoldBlack(header))
+	Outputfln(TextBoldBlack(strings.Repeat("─", len(header))))
 }
 
 func OutputDebugf(context *cli.Context, s string, a ...any) {
 	if context.Bool("debug") {
-		Output(fmt.Sprintf(s, a...))
+		Outputln(fmt.Sprintf(s, a...))
 	}
 }
 
-func OutputTaskf(prefix, s string, a ...any) {
-	Output(prefix + ": " + fmt.Sprintf(s, a...))
-}
-
-func OutputDividerTask(prefix, divider string) {
-	OutputTaskf(prefix, strings.Repeat(divider, TermWidth()-len(prefix)-2))
-}
-
-func OutputDivider(divider string) {
-	Output(strings.Repeat(divider, TermWidth()))
+func OutputDivider() {
+	Outputfln(strings.Repeat("─", TermWidth()))
 }
 
 func Reverse[S ~[]E, E any](s S) {

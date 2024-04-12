@@ -30,10 +30,7 @@ func (_ ShellTaskRunnerRegistration) Help() string {
 
 func (_ ShellTaskRunnerRegistration) Parse(data map[string]interface{}) (TaskRunner, error) {
 
-	workdir, err := GetAsString("workdir", data)
-	if err != nil {
-		return nil, err
-	}
+	workdir := GetOptionalStringByKey("workdir", data)
 
 	script, err := GetAsStringList("script", data)
 	if err == nil {
@@ -59,13 +56,18 @@ func (runner ShellTaskRunner) LogPlanText() string {
 func (runner ShellTaskRunner) Run(environment map[string]string, logger TaskOutputLogger) *TaskRunnerResult {
 
 	var cmd *exec.Cmd
+
+	command := make([]string, 0)
+
 	if runner.Command != nil {
-		cmd = exec.Command(runner.Command[0], runner.Command[1:]...)
+		command = runner.Command
 	}
 
 	if len(runner.Script) > 0 {
-		cmd = exec.Command("/bin/sh", runner.Script[0:]...)
+		command = append([]string{"/bin/sh"}, runner.Script...)
 	}
+
+	cmd = exec.Command(command[0], command[1:]...)
 
 	env := make([]string, 0)
 	for envKey, envValue := range environment {
