@@ -18,8 +18,11 @@ func RegisterTaskRunner(taskRunner TaskRunnerRegistration) {
 	taskRunners = append(taskRunners, taskRunner)
 }
 
+type TaskOutputLogger func(string)
+
 type TaskRunner interface {
-	Run(taskName string, environment map[string]string) *TaskRunnerResult
+	Run(environment map[string]string, logger TaskOutputLogger) *TaskRunnerResult
+	LogPlanText() string
 }
 
 type TaskRunnerResult struct {

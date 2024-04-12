@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/json"
 	"github.com/PaesslerAG/jsonpath"
+	"strings"
 )
 
 func TransformJson(input, path string) (string, error) {
@@ -24,5 +25,5 @@ func TransformJson(input, path string) (string, error) {
 		return "", err
 	}
 
-	return string(output), nil
+	return strings.Trim(string(output), "\""), nil
 }

@@ -30,6 +30,7 @@ require (
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20191123064959-2c17d62f5098 // indirect
 	github.com/hexops/gotextdiff v1.0.3 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.5.8 // indirect
 	github.com/kyokomi/emoji/v2 v2.2.8 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

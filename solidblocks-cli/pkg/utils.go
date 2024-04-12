@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/divideandconquer/go-merge/merge"
+	"github.com/fatih/color"
 	"github.com/google/uuid"
+	"github.com/urfave/cli/v2"
 	"golang.org/x/term"
 	"os/exec"
 	"reflect"
@@ -115,6 +117,25 @@ func GetAsStringList(key string, data interface{}) ([]string, error) {
 	}
 
 	return []string{}, nil
+}
+
+func GetAsString(key string, data interface{}) (string, error) {
+	if !IsMap(data) {
+		return "", errors.New("invalid format, not an object")
+	}
+
+	value := data.(map[string]interface{})[key]
+	if value == nil {
+		return "", errors.New("key '%s' not found")
+	}
+
+	reflectValue := reflect.ValueOf(value)
+
+	if reflectValue.Kind() == reflect.String {
+		return reflectValue.String(), nil
+	}
+
+	return "", nil
 }
 
 func GetKeyAndData(data interface{}) (string, map[string]interface{}, error) {
@@ -243,12 +264,22 @@ func Outputf(s string, a ...any) {
 	Output(fmt.Sprintf(s, a...))
 }
 
-func OutputTaskf(task, s string, a ...any) {
-	Output(task + ": " + fmt.Sprintf(s, a...))
+func OutputDebugf(context *cli.Context, s string, a ...any) {
+	if context.Bool("debug") {
+		Output(fmt.Sprintf(s, a...))
+	}
 }
 
-func OutputDivider(taskName string) {
-	OutputTaskf(taskName, strings.Repeat("-", TermWidth()))
+func OutputTaskf(prefix, s string, a ...any) {
+	Output(prefix + ": " + fmt.Sprintf(s, a...))
+}
+
+func OutputDividerTask(prefix, divider string) {
+	OutputTaskf(prefix, strings.Repeat(divider, TermWidth()-len(prefix)-2))
+}
+
+func OutputDivider(divider string) {
+	Output(strings.Repeat(divider, TermWidth()))
 }
 
 func Reverse[S ~[]E, E any](s S) {
@@ -267,3 +298,9 @@ func TermWidth() int {
 	}
 	return width
 }
+
+var TextBoldBlack = color.New(color.FgHiBlack, color.Bold).SprintFunc()
+var TextPrimary = color.New(color.FgCyan, color.Bold).SprintFunc()
+var TextSecondary = color.New(color.FgYellow).SprintFunc()
+var TextAlert = color.New(color.BgHiRed, color.FgBlack, color.Bold).SprintFunc()
+var TextSuccess = color.New(color.FgGreen).SprintFunc()

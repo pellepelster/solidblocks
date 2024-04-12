@@ -29,6 +29,33 @@ tasks:
 	assert.NoError(t, err)
 }
 
+func TestRunWorkflowDuplicateValueFrom(t *testing.T) {
+	workflowYaml := `
+tasks:
+  - task1:
+      shell:
+        command: whoami
+  - task2:
+      environment:
+        - name: VAR1
+          valueFrom:
+            task: task1
+        - name: VAR2
+          valueFrom:
+            task: task1
+      shell:
+        command: ["id", "-u"]
+`
+	workflow, err := WorkflowParse("workflow1", []byte(workflowYaml))
+	assert.Zero(t, err)
+	assert.Equal(t, 2, len(workflow.Tasks))
+	assert.Equal(t, "task1", workflow.Tasks[0].Name)
+	assert.NotZero(t, workflow.Tasks[0].Runner)
+
+	err = RunWorkflow(*workflow)
+	assert.NoError(t, err)
+}
+
 func TestRunWorkflowErrorInvalidCommand(t *testing.T) {
 	workflowYaml := `
 tasks:

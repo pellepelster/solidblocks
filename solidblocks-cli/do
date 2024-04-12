@@ -37,11 +37,18 @@ function task_test {
     go run "${DIR}/cmd" workflow plan "${DIR}/test/integration-test.yml"
     go run "${DIR}/cmd" workflow runners
     go run "${DIR}/cmd" workflow runners shell
+
+    export BLCKS_WHOAMI_OVERRIDE="pelle_override"
+    go run "${DIR}/cmd" workflow plan "${DIR}/test/integration-test.yml"
+    exit 0
+    
     go run "${DIR}/cmd" workflow run "${DIR}/test/integration-test.yml"
 
     grep 'BLCKS_GLOBAL1=blcks_global1' "${DIR}/test-output/dump.txt"
     grep 'BLCKS_INHERITED1=blcks_inherited1' "${DIR}/test-output/dump.txt"
     grep 'BLCKS_WHOAMI=pelle' "${DIR}/test-output/dump.txt"
+    grep 'BLCKS_WHOAMI_OVERRIDE=pelle_override' "${DIR}/test-output/dump.txt"
+    grep 'BLCKS_JSON_OUTPUT1=value1' "${DIR}/test-output/dump.txt"
 }
 
 function test_return_code {

@@ -1,22 +1,33 @@
 package pkg
 
 import (
-	"fmt"
 	"github.com/urfave/cli/v2"
 )
 
 func PlanWorkflow(workflow Workflow) error {
-	Outputf("global environment variables")
+	Outputf(TextBoldBlack("global environment variables"))
+	Outputf(TextBoldBlack("----------------------------"))
 	for _, variable := range workflow.Environment {
-		Outputf(fmt.Sprintf("  %s", variable.LogPlanText()))
+		Outputf(variable.LogPlanText())
 	}
+	if len(workflow.Environment) == 0 {
+		Outputf(TextPrimary("<none>"))
+	}
+
+	Outputf("")
+	Outputf(TextBoldBlack("tasks"))
+	Outputf(TextBoldBlack("-----"))
+	for _, task := range workflow.Tasks {
+		Outputf(task.LogPlanText())
+	}
+
 	return nil
 }
 
 var WorkflowPlanCommand = cli.Command{
 	Name:      "plan",
 	Usage:     "explain how the workflow file will be executed",
-	ArgsUsage: "manifest",
+	ArgsUsage: ParseWorkflowsArgHelp,
 	Action: func(context *cli.Context) error {
 
 		workflows, err := ParseWorkflows(context)
@@ -25,7 +36,6 @@ var WorkflowPlanCommand = cli.Command{
 		}
 
 		for _, workflow := range workflows {
-			Outputf("simulating workflow '%s'", workflow.Name)
 			err := PlanWorkflow(*workflow)
 			if err != nil {
 				return cli.Exit(err.Error(), 1)

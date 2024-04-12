@@ -5,11 +5,11 @@ import (
 )
 
 type TaskWriter struct {
-	taskName string
-	writer   io.Writer
+	logger TaskOutputLogger
+	writer io.Writer
 }
 
 func (e TaskWriter) Write(p []byte) (int, error) {
-	Outputf("%s: %s", e.taskName, string(p))
+	e.logger(string(p))
 	return len(p), nil
 }

@@ -9,12 +9,6 @@ import (
 	"os"
 )
 
-type Task struct {
-	Name        string
-	Environment []EnvironmentVariable
-	Runner      TaskRunner
-}
-
 type Workflow struct {
 	Name        string
 	Tasks       []Task
@@ -107,51 +101,47 @@ func parseTasks(data []interface{}, workflow *Workflow) error {
 	return nil
 }
 
-func ParseTask(key string, data map[string]interface{}) (*Task, error) {
-	runner, err := ParseTaskRunner(data)
-	if err != nil {
-		return nil, err
-	}
-
-	envVars := make([]EnvironmentVariable, 0)
-
-	envVars, err = ParseEnvironment(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Task{key, envVars, runner}, nil
-}
+var ParseWorkflowsArgHelp = "[workflow manifest(s)] (defaults to workflow.yml)"
 
 func ParseWorkflows(context *cli.Context) ([]*Workflow, error) {
 
-	workflows := make([]*Workflow, 0)
+	workflowFiles := make([]string, 0)
 
 	if context.Args().Len() == 0 {
-		return nil, errors.New("no workflow provided")
+		file, _ := os.Stat("workflow.yml")
+		if file != nil {
+			workflowFiles = append(workflowFiles, file.Name())
+		} else {
+			return nil, errors.New("no workflow provided")
+		}
+	} else {
+		for _, arg := range context.Args().Slice() {
+			workflowFiles = append(workflowFiles, arg)
+		}
 	}
 
-	for _, arg := range context.Args().Slice() {
-		_, err := os.Stat(arg)
+	workflows := make([]*Workflow, 0)
+	for _, workflowFile := range workflowFiles {
+		_, err := os.Stat(workflowFile)
 
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				return nil, errors.New(fmt.Sprintf("workflow '%s' not found", arg))
+				return nil, errors.New(fmt.Sprintf("workflow '%s' not found", workflowFile))
 			}
 
 			return nil, err
 		}
 
-		Outputf("loading workflow '%s'", arg)
-		workflowData, err := os.ReadFile(arg)
+		OutputDebugf(context, "loading workflow '%s'", workflowFile)
+		workflowData, err := os.ReadFile(workflowFile)
 		if err != nil {
 			return nil, err
 		}
 
-		Outputf("parsing workflow '%s'", arg)
-		workflow, err := WorkflowParse(arg, workflowData)
+		OutputDebugf(context, "parsing workflow '%s'", workflowFile)
+		workflow, err := WorkflowParse(workflowFile, workflowData)
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("failed to parse workflow '%s', %s", arg, err.Error()))
+			return nil, errors.New(fmt.Sprintf("failed to parse workflow '%s', %s", workflowFile, err.Error()))
 		}
 
 		workflows = append(workflows, workflow)
@@ -167,12 +157,11 @@ var WorkflowCommand = cli.Command{
 	Name:        "workflow",
 	Usage:       "execute tasks using the Solidblocks workflow manifest  (experimental)",
 	Description: RenderHelp(workflowHelp, "workflow_help.md"),
-	Action: func(cCtx *cli.Context) error {
-		return cli.Exit("", 0)
-	},
 	Subcommands: []*cli.Command{
 		&WorkflowPlanCommand,
 		&WorkflowRunCommand,
+		&WorkflowListTasks,
 		&WorkflowListTaskRunnersCommand,
 	},
+	Action: ListTasksAction,
 }

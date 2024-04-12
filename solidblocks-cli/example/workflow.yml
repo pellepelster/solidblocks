@@ -1,0 +1,16 @@
+#environment:
+#  - name: BLCKS_GLOBAL1
+#    value: "blcks_global1"
+#  - name: BLCKS_INHERITED1
+
+tasks:
+  - build:
+      description: "build the project"
+      shell:
+        workdir: "backend"
+        command: [ "./gradlew", "assemble" ]
+  - test:
+      description: "run project unit tests"
+      shell:
+        workdir: "backend"
+        command: [ "./gradlew", "check" ]

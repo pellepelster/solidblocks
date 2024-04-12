@@ -12,7 +12,7 @@ func TestTransformJsonString(t *testing.T) {
 		}`, "$.string")
 
 	assert.NoError(t, err)
-	assert.Equal(t, "\"string1\"", output)
+	assert.Equal(t, "string1", output)
 }
 
 func TestTransformJsonInt(t *testing.T) {
@@ -46,5 +46,5 @@ func TestTransformJsonObjectString(t *testing.T) {
 		}`, "$.object.string")
 
 	assert.NoError(t, err)
-	assert.Equal(t, "\"string2\"", output)
+	assert.Equal(t, "string2", output)
 }

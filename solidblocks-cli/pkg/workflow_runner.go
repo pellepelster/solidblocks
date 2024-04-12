@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dominikbraun/graph"
 	"github.com/urfave/cli/v2"
+	"strings"
 	"time"
 )
 
@@ -25,7 +26,12 @@ func ResultForTask(results []*WorkflowTaskRunnerResult, taskName string) (*TaskR
 func RunWorkflow(workflow Workflow) error {
 	g := graph.New(graph.StringHash, graph.Directed(), graph.PreventCycles())
 
+	maxTaskNameLength := 0
 	for _, task := range workflow.Tasks {
+		if len(task.Name) > maxTaskNameLength {
+			maxTaskNameLength = len(task.Name)
+		}
+
 		err := g.AddVertex(task.Name)
 		if err != nil {
 			return err
@@ -35,20 +41,23 @@ func RunWorkflow(workflow Workflow) error {
 	for _, task := range workflow.Tasks {
 		for _, envVar := range task.Environment {
 			if envVar.ValueFrom != nil && len(envVar.ValueFrom.Task) > 0 {
-				err := g.AddEdge(task.Name, envVar.ValueFrom.Task)
-				if err != nil {
-					return err
+
+				_, err := g.Edge(task.Name, envVar.ValueFrom.Task)
+				if errors.Is(err, graph.ErrEdgeNotFound) {
+					err := g.AddEdge(task.Name, envVar.ValueFrom.Task)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
 	}
 
 	sorted, err := graph.TopologicalSort(g)
-	Reverse(sorted)
-
 	if err != nil {
 		return err
 	}
+	Reverse(sorted)
 
 	resultsChannel := make(chan *WorkflowTaskRunnerResult)
 	results := make([]*WorkflowTaskRunnerResult, 0)
@@ -70,7 +79,7 @@ func RunWorkflow(workflow Workflow) error {
 
 			for _, envVar := range task.Environment {
 				if envVar.ValueFrom != nil && len(envVar.ValueFrom.Task) > 0 {
-					OutputTaskf(taskName, "waiting for output from '%s'", envVar.ValueFrom.Task)
+					OutputTaskf(JustifyTaskName(taskName, maxTaskNameLength), "waiting for output from %s", TextPrimary(envVar.ValueFrom.Task))
 					for true {
 						_, err := ResultForTask(results, envVar.ValueFrom.Task)
 						if err == nil {
@@ -92,14 +101,34 @@ func RunWorkflow(workflow Workflow) error {
 						resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: &TaskRunnerResult{false, ""}}
 					}
 
-					valueFromEnv[envVar.Name] = result.Output
+					if envVar.Transform != nil && len(envVar.Transform.Json) > 0 {
+						transformResult, err := TransformJson(result.Output, envVar.Transform.Json)
+						if err != nil {
+							resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: &TaskRunnerResult{false, ""}}
+						}
+						valueFromEnv[envVar.Name] = transformResult
+					} else {
+						valueFromEnv[envVar.Name] = result.Output
+
+					}
 				}
 			}
 
-			OutputTaskf(taskName, "running task")
-			OutputDivider(taskName)
-			resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: task.Runner.Run(taskName, MergeStringMaps(valueFromEnv, workflow.GetEnvVarsForTask(task)))}
-			OutputDivider(taskName)
+			OutputTaskf(JustifyTaskName(taskName, maxTaskNameLength), "starting task %s", TextPrimary(taskName))
+			OutputDividerTask(JustifyTaskName(taskName, maxTaskNameLength), "=")
+			var logger = func(s string) {
+				OutputTaskf(JustifyTaskName(taskName, maxTaskNameLength), s)
+			}
+
+			result := task.Runner.Run(MergeStringMaps(valueFromEnv, workflow.GetEnvVarsForTask(task)), logger)
+			resultsChannel <- &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: result}
+			OutputDividerTask(JustifyTaskName(taskName, maxTaskNameLength), "=")
+
+			if result.Success {
+				OutputTaskf(JustifyTaskName(taskName, maxTaskNameLength), "task %s %s", TextSuccess(taskName), TextSuccess("failed"))
+			} else {
+				OutputTaskf(JustifyTaskName(taskName, maxTaskNameLength), "task %s %s", TextPrimary(taskName), TextAlert("failed"))
+			}
 		}()
 	}
 
@@ -109,7 +138,7 @@ func RunWorkflow(workflow Workflow) error {
 
 	for _, result := range results {
 		if !result.RunnerResult.Success {
-			return errors.New(fmt.Sprintf("task '%s' failed", result.TaskName))
+			return errors.New(fmt.Sprintf("%s", TextAlert("workflow failed")))
 		}
 	}
 
@@ -119,7 +148,7 @@ func RunWorkflow(workflow Workflow) error {
 var WorkflowRunCommand = cli.Command{
 	Name:      "run",
 	Usage:     "execute a workflow file",
-	ArgsUsage: "manifest",
+	ArgsUsage: ParseWorkflowsArgHelp,
 	Action: func(context *cli.Context) error {
 
 		workflows, err := ParseWorkflows(context)
@@ -128,7 +157,6 @@ var WorkflowRunCommand = cli.Command{
 		}
 
 		for _, workflow := range workflows {
-			Outputf("executing workflow '%s'", workflow.Name)
 			err := RunWorkflow(*workflow)
 			if err != nil {
 				return cli.Exit(err.Error(), 1)
@@ -137,4 +165,8 @@ var WorkflowRunCommand = cli.Command{
 
 		return cli.Exit("", 0)
 	},
+}
+
+func JustifyTaskName(taskName string, maxTaskNameLength int) string {
+	return strings.Repeat(" ", maxTaskNameLength-len(taskName)) + taskName
 }

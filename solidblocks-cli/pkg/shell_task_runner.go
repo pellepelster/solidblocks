@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type ShellTaskRunnerRegistration struct {
@@ -15,7 +16,8 @@ type ShellTaskRunnerRegistration struct {
 
 type ShellTaskRunner struct {
 	Command []string
-	Script  string
+	Script  []string
+	Workdir string
 }
 
 func (_ ShellTaskRunnerRegistration) Id() string {
@@ -27,20 +29,34 @@ func (_ ShellTaskRunnerRegistration) Help() string {
 }
 
 func (_ ShellTaskRunnerRegistration) Parse(data map[string]interface{}) (TaskRunner, error) {
-	script, err := GetStringKey("script", data)
+
+	workdir, err := GetAsString("workdir", data)
+	if err != nil {
+		return nil, err
+	}
+
+	script, err := GetAsStringList("script", data)
 	if err == nil {
-		return ShellTaskRunner{Script: script}, nil
+		return ShellTaskRunner{Script: script, Workdir: workdir}, nil
 	}
 
 	command, err := GetAsStringList("command", data)
 	if err == nil {
-		return ShellTaskRunner{Command: command}, nil
+		return ShellTaskRunner{Command: command, Workdir: workdir}, nil
 	}
 
 	return nil, errors.New("either a command or a script has to be provided")
 }
 
-func (runner ShellTaskRunner) Run(taskName string, environment map[string]string) *TaskRunnerResult {
+func (runner ShellTaskRunner) LogPlanText() string {
+	if runner.Command != nil {
+		return fmt.Sprintf("execute command '%s' in workding dir '%s'", TextSecondary(strings.Join(runner.Command, " ")), TextSecondary(runner.Workdir))
+	} else {
+		return fmt.Sprintf("execute script '%s' in workding dir '%s'", TextSecondary(strings.Join(runner.Script, " ")), TextSecondary(runner.Workdir))
+	}
+}
+
+func (runner ShellTaskRunner) Run(environment map[string]string, logger TaskOutputLogger) *TaskRunnerResult {
 
 	var cmd *exec.Cmd
 	if runner.Command != nil {
@@ -48,41 +64,38 @@ func (runner ShellTaskRunner) Run(taskName string, environment map[string]string
 	}
 
 	if len(runner.Script) > 0 {
-		cmd = exec.Command("/bin/sh", runner.Script)
+		cmd = exec.Command("/bin/sh", runner.Script[0:]...)
 	}
 
 	env := make([]string, 0)
 	for envKey, envValue := range environment {
 		env = append(env, fmt.Sprintf("%s=%s", envKey, envValue))
 	}
-
 	cmd.Env = env
+	cmd.Dir = runner.Workdir
 
 	stdout := bytes.NewBufferString("")
 	stderr := bytes.NewBufferString("")
 
-	w1 := &TaskWriter{taskName, os.Stdout}
-	w2 := &TaskWriter{taskName, os.Stderr}
+	w1 := &TaskWriter{logger, os.Stdout}
+	w2 := &TaskWriter{logger, os.Stderr}
 
 	cmd.Stdout = io.MultiWriter(w1, stdout)
 	cmd.Stderr = io.MultiWriter(w2, stderr)
 
 	err := cmd.Start()
 	if err != nil {
-		if err != nil {
-			return &TaskRunnerResult{
-				Success: false,
-				Output:  err.Error(),
-			}
+		logger(err.Error())
+		return &TaskRunnerResult{
+			Success: false,
 		}
 	}
 
 	err = cmd.Wait()
-
 	if err != nil {
+		logger(err.Error())
 		return &TaskRunnerResult{
 			Success: false,
-			Output:  err.Error(),
 		}
 	}
 

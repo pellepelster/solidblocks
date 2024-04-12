@@ -26,12 +26,12 @@ tasks:
 
 Global environment variables can be defined under the `environment` key in the following formats:
 
-***Global variable***
+***Static variable***
 
 set a global environment variable for all tasks with a static value
 
 ```
-- name: <name>;
+- name: <name>
   value: "<value>"
 ```
 
@@ -40,7 +40,17 @@ set a global environment variable for all tasks with a static value
 set a global environment variable for all tasks with a value inherited from the calling environment
 
 ```
-- name: <name>;
+- name: <name>
+```
+
+***Variable from task output***
+
+Use the output of another task as variable conent
+
+```
+- name: <name>
+  valueFrom:
+    task: <name>
 ```
 
 **Tasks**

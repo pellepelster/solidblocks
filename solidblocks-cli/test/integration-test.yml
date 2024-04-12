@@ -7,10 +7,21 @@ tasks:
   - taskCommandWhoami:
       shell:
         command: "whoami"
+  - taskJsonOutput:
+      shell:
+        script: "test/json-output.sh"
   - taskScriptDumpEnv:
       environment:
         - name: BLCKS_WHOAMI
           valueFrom:
             task: taskCommandWhoami
+        - name: BLCKS_WHOAMI_OVERRIDE
+          valueFrom:
+            task: taskCommandWhoami
+        - name: BLCKS_JSON_OUTPUT1
+          transform:
+            json: "$.attribute1"
+          valueFrom:
+            task: taskJsonOutput
       shell:
         script: "test/dump-env.sh"

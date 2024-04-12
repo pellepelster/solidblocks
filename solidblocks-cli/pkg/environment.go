@@ -10,17 +10,23 @@ type ValueFrom struct {
 	Task string
 }
 
+type Transform struct {
+	Json string
+}
+
 type EnvironmentVariable struct {
 	Name      string
 	Value     string
 	ValueFrom *ValueFrom
+	Transform *Transform
 }
 
 func (variable EnvironmentVariable) LogPlanText() string {
+
 	if len(variable.Value) > 0 {
-		return fmt.Sprintf("variable '%s' will be set to '%s'", variable.Name, variable.Value)
+		return fmt.Sprintf("variable '%s' will be set to '%s'", TextBoldBlack(variable.Name), TextBoldBlack(variable.Value))
 	} else {
-		return fmt.Sprintf("value for variable '%s' will inherited from the calling environment", variable.Name)
+		return fmt.Sprintf("value for variable '%s' will inherited from the calling environment", TextBoldBlack(variable.Name))
 	}
 }
 
@@ -97,22 +103,28 @@ func ParseEnvironment(data interface{}) ([]EnvironmentVariable, error) {
 				return nil, err
 			}
 
-			valueFrom := GetOptionalObjectKey("valueFrom", environmentRaw)
-			if valueFrom != nil {
-				if valueFrom["task"] != nil {
+			var transform *Transform = nil
+			transformObject := GetOptionalObjectKey("transform", environmentRaw)
+			if transformObject != nil && transformObject["json"] != nil {
+				transformJson := reflect.ValueOf(transformObject["json"])
+				if transformJson.Kind() == reflect.String {
+					transform = &Transform{Json: transformJson.String()}
+				}
+			}
 
-					taskValueOf := reflect.ValueOf(valueFrom["task"])
-					if taskValueOf.Kind() == reflect.String {
-						enVars = append(enVars, EnvironmentVariable{Name: name, ValueFrom: &ValueFrom{Task: taskValueOf.String()}})
-						continue
-					}
+			valueFromObject := GetOptionalObjectKey("valueFrom", environmentRaw)
+			if valueFromObject != nil && valueFromObject["task"] != nil {
+				taskValueOf := reflect.ValueOf(valueFromObject["task"])
+				if taskValueOf.Kind() == reflect.String {
+					enVars = append(enVars, EnvironmentVariable{Name: name, Transform: transform, ValueFrom: &ValueFrom{Task: taskValueOf.String()}})
+					continue
 				}
 			}
 
 			value := GetOptionalStringKey("value", environmentRaw)
 
 			if len(name) > 0 {
-				enVars = append(enVars, EnvironmentVariable{Name: name, Value: value})
+				enVars = append(enVars, EnvironmentVariable{Name: name, Transform: transform, Value: value})
 				continue
 			}
 		}
