@@ -9,7 +9,7 @@ A Solidblocks workflow can be used to orchestrate the execution of commands in a
 ```
 providers:
   - pass:
-      description: "default pass secret provide"
+      description: "default pass secret provider"
       path: ${HOME}/.secret_store
 
 environment:

@@ -1,6 +1,6 @@
 environment:
   - name: GRADLE_OPTS
-    description: "default gradle options"
+    description: "default java options"
     value: "-Xmx1024m"
   - name: BUILD_HOST
     valueFrom:
@@ -15,13 +15,28 @@ environment:
         command: [ "git", "rev-parse", "HEAD" ]
 
 tasks:
-  - build:
-      description: "build the project"
-      shell:
-        workdir: "backend"
-        command: [ "./gradlew", "assemble" ]
-  - test:
-      description: "run project unit tests"
-      shell:
-        workdir: "backend"
-        command: [ "./gradlew", "check" ]
+  - gradle-build:
+    description: "build the project"
+    shell:
+      workdir: "java"
+      command: [ "./gradlew", "assemble" ]
+  - gradle-test:
+    description: "run project unit tests"
+    shell:
+      workdir: "java"
+      command: [ "./gradlew", "check" ]
+  - docker-build:
+    description: "build docker container"
+    dependsOn:
+      - build
+    docker:
+  - terraform-deploy:
+    description: "deploy the docker container locally"
+    terraform:
+      workdir: "terraform"
+      command: "apply"
+  - python-test:
+    description: "run python integration tests"
+    python-venv:
+      workdir: "python"
+      command: [ "pytest" ]
