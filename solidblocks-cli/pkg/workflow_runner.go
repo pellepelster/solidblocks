@@ -70,16 +70,19 @@ func RunWorkflow(workflow Workflow) error {
 		Outputln("")
 		Outputfln("starting task %s", TextPrimary(taskName))
 		OutputDivider()
-		result := task.Runner.Run(MergeStringMaps(valueFromEnv, workflow.GetEnvVarsForTask(task)), logger)
-		results = append(results, &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: result})
-		Outputln("")
-		OutputDivider()
+		result, err := task.Runner.Run(MergeStringMaps(valueFromEnv, workflow.GetEnvVarsForTask(task)), logger)
 
-		if result.Success {
+		if result != nil {
+			results = append(results, &WorkflowTaskRunnerResult{TaskName: taskName, RunnerResult: result})
+			Outputln("")
+			OutputDivider()
+		}
+
+		if err == nil {
 			Outputfln("task %s %s", TextPrimary(taskName), TextSuccess("finished"))
 		} else {
 			Outputfln("task %s %s", TextPrimary(taskName), TextAlert("failed"))
-			return errors.New(fmt.Sprintf("task failed"))
+			return err
 		}
 	}
 

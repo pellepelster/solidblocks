@@ -21,13 +21,12 @@ func RegisterTaskRunner(taskRunner TaskRunnerRegistration) {
 type TaskOutputLogger func(string)
 
 type TaskRunner interface {
-	Run(environment map[string]string, logger TaskOutputLogger) *TaskRunnerResult
+	Run(environment map[string]string, logger TaskOutputLogger) (*TaskRunnerResult, error)
 	LogPlanText() string
 }
 
 type TaskRunnerResult struct {
-	Success bool
-	Output  string
+	Output string
 }
 
 func ParseTaskRunner(data map[string]interface{}) (TaskRunner, error) {

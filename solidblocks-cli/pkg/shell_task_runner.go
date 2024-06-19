@@ -53,7 +53,7 @@ func (runner ShellTaskRunner) LogPlanText() string {
 	}
 }
 
-func (runner ShellTaskRunner) Run(environment map[string]string, logger TaskOutputLogger) *TaskRunnerResult {
+func (runner ShellTaskRunner) Run(environment map[string]string, logger TaskOutputLogger) (*TaskRunnerResult, error) {
 
 	var cmd *exec.Cmd
 
@@ -87,24 +87,17 @@ func (runner ShellTaskRunner) Run(environment map[string]string, logger TaskOutp
 
 	err := cmd.Start()
 	if err != nil {
-		logger(err.Error())
-		return &TaskRunnerResult{
-			Success: false,
-		}
+		return nil, err
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		logger(err.Error())
-		return &TaskRunnerResult{
-			Success: false,
-		}
+		return nil, err
 	}
 
 	return &TaskRunnerResult{
-		Success: true,
-		Output:  stdout.String(),
-	}
+		Output: stdout.String(),
+	}, nil
 }
 
 func init() {

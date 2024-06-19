@@ -1,23 +1,26 @@
 package pkg
 
-import "os"
+import (
+	"errors"
+	"fmt"
+	"os"
+)
 
 type TerraformTaskRunner struct {
 	Workdir string
 }
 
-func (runner TerraformTaskRunner) Run(environment map[string]string, logger TaskOutputLogger) *TaskRunnerResult {
-
+func (runner TerraformTaskRunner) Run(environment map[string]string, logger TaskOutputLogger) (*TaskRunnerResult, error) {
 	_, err := os.Stat(runner.Workdir)
 
 	if err != nil {
-		return &TaskRunnerResult{Success: false}
+		return nil, err
 	}
 
 	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
+		return nil, errors.New(fmt.Sprint("working directory does not exist: ", runner.Workdir))
 
-	return nil
+	}
+
+	return &TaskRunnerResult{}, nil
 }
