@@ -2,9 +2,7 @@
 
 set -eu
 
-DIR="$( cd "$(dirname "$0")"
-  pwd -P
-)"
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
@@ -712,7 +710,6 @@ function task_clean {
   find "${DIR}/test" -name ".terraform" -exec rm -rf {} \; || true
   find "${DIR}/test" -name ".terraform.lock.hcl" -exec rm -rf {} \; || true
   find "${DIR}/test" -name "terraform.tfstate*" -exec rm -rf {} \; || true
-  docker run -e HCLOUD_TOKEN="$(pass solidblocks/hetzner/hcloud_api_token)" ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.15 nuke
 }
 
 function task_format {

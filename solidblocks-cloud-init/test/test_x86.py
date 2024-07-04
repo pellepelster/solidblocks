@@ -15,7 +15,7 @@ def test_solidblocks_dirs(host, dir):
 
 
 @pytest.fixture(autouse=True)
-def dump_(host):
+def dump_cloud_init(host):
     yield
 
     if environ.get('CI') is None:
@@ -30,7 +30,7 @@ def test_bootstrap(host):
     # assert host.file(f"/solidblocks/bin/lego-update-certificate-permissions.sh").is_file
 
 
-def test_storge_mount(host):
+def test_storage_mount(host):
     assert host.mount_point(f"/data1").exists
     assert host.mount_point(f"/data1").filesystem == "ext4"
 

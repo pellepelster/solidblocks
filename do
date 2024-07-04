@@ -8,6 +8,7 @@ source "${DIR}/solidblocks-shell/lib/download.sh"
 source "${DIR}/solidblocks-shell/lib/software.sh"
 source "${DIR}/solidblocks-shell/lib/file.sh"
 source "${DIR}/solidblocks-shell/lib/log.sh"
+source "${DIR}/lib/terraform.sh"
 
 VERSION="${GITHUB_REF_NAME:-snapshot}"
 
@@ -78,12 +79,14 @@ function task_clean {
     done
 }
 
-function task_test_init_accounts {
-  (
-    cd "${DIR}/cloud-testbeds/gcs"
-    terraform init -upgrade
-    terraform apply -auto-approve
-  )
+function task_test_init {
+  #(
+  #  cd "${DIR}/testbeds/gcs"
+  #  terraform init -upgrade
+  #  terraform apply -auto-approve
+  #)
+  echo ""
+  #terraform_wrapper "${DIR}/testbeds/hetzner/bootstrap" apply -auto-approve
 }
 
 function task_test {
@@ -234,7 +237,7 @@ case ${ARG} in
   clean-hetzner) task_clean_hetzner "$@" ;;
   clean-gcloud) task_clean_gcloud "$@" ;;
   clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
-  test-init-accounts) task_test_init_accounts "$@" ;;
+  test-init) task_test_init "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   build-documentation) task_build_documentation "$@" ;;

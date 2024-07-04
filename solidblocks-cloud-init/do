@@ -2,15 +2,13 @@
 
 set -eu
 
-DIR="$(
-  cd "$(dirname "$0")"
-  pwd -P
-)"
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
+source "${DIR}/../lib/terraform.sh"
 
 function task_build {
   (
@@ -46,24 +44,6 @@ function task_lint {
   find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
 }
 
-function terraform_wrapper {
-  (
-    cd ${DIR}/test/terraform
-    terraform init
-
-    export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-    export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/test/dns_api_token)}"
-    export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
-
-    export AWS_DEFAULT_REGION="eu-central-1"
-    export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
-    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key)}" #
-
-    terraform ${@}
-  )
-}
-
-
 function task_test {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
@@ -71,8 +51,11 @@ function task_test {
 
   python_ensure_venv "${DIR}"
 
+  terraform_export_credentials
+  export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
+
   clean_cloud_resources
-  terraform_wrapper apply -auto-approve -var="solidblocks_version=${VERSION}"
+  terraform_wrapper "${DIR}/test/terraform" apply -auto-approve -var="solidblocks_version=${VERSION}"
 
   while ! ssh -F ${DIR}/test/terraform/ssh_config test-x86 test -f /run/cloud-init/result.json; do
     log_echo_error "waiting for test-x86 server cloud init run"
@@ -101,10 +84,7 @@ function task_test_ssh {
 }
 
 function clean_cloud_resources() {
-  (
-    cd "${DIR}/test/terraform"
-    terraform_wrapper destroy -auto-approve -var="solidblocks_version=${VERSION}"
-  )
+  terraform_wrapper "${DIR}/test/terraform" destroy -auto-approve -var="solidblocks_version=${VERSION}"
 }
 
 function task_clean {
