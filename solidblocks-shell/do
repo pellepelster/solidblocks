@@ -45,8 +45,9 @@ function task_lint {
 }
 
 function task_test_unit {
+  local test_include="${1:-test_*.sh}"
 
-  for test in ${DIR}/test/unit/test_*.sh; do
+  for test in ${DIR}/test/unit/${test_include}; do
       log_divider_header ${test}
       VERSION=${VERSION} ${test}
       log_divider_footer
@@ -54,7 +55,7 @@ function task_test_unit {
 }
 
 
-function task_test_integration_prepare {
+function task_test_prepare {
 
     for image in ${TESTCONTAINER_IMAGES}
     do
@@ -67,17 +68,29 @@ function task_test_integration_prepare {
 }
 
 function task_test_integration {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
 
   for test in ${DIR}/test/integration/test_*.sh; do
       log_divider_header ${test}
       VERSION=${VERSION} ${test}
       log_divider_footer
   done
+}
 
-  for image in ${TESTCONTAINER_IMAGES}
+function task_test_unit_docker {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  local images="${1:-$TESTCONTAINER_IMAGES}"
+  local test_include="${2:-test_*.sh}"
+
+  for image in ${images}
   do
       log_divider_header "running tests on '${image}'"
-      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v "${DIR}":/test "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" /test/do test-unit
+      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v "${DIR}":/test "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" /test/do test-unit "${test_include}"
       log_divider_footer
   done
 
@@ -89,6 +102,7 @@ function task_test {
   fi
 
   task_test_unit
+  task_test_unit_docker
   task_test_integration
 }
 
@@ -115,11 +129,12 @@ case ${arg} in
   lint) task_lint "$@" ;;
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
-  test) task_test "$@" ;;
   format) task_format "$@" ;;
+  test) task_test "$@" ;;
+  test-prepare) task_test_prepare "$@" ;;
   test-unit) task_test_unit "$@" ;;
+  test-unit-docker) task_test_unit_docker "$@" ;;
   test-integration) task_test_integration "$@" ;;
-  test-integration-prepare) task_test_integration_prepare "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac
