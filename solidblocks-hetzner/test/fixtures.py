@@ -44,7 +44,10 @@ def psql_command(host, user, password, database, sql):
 
 def run_docker_command(host, test_id, command):
     cmd = host.run(f"docker exec rds-postgresql-{test_id}_postgresql {command}")
-    # pprint(cmd.stderr.strip())
+
+    if cmd.rc > 0:
+        pprint(cmd.stderr)
+
     return cmd.rc == 0
 
 

@@ -283,6 +283,20 @@ jobs:
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     needs:
       - solidblocks-minio
+    strategy:
+      max-parallel: 4
+      fail-fast: false
+      matrix:
+        test: [
+          RdsPostgresqlAwsS3BackupIntegrationTest,
+          RdsPostgresqlConfigurationTest,
+          RdsPostgresqlContribTest,
+          RdsPostgresqlGcsBackupIntegrationTest,
+          RdsPostgresqlInvalidConfigIntegrationTest,
+          RdsPostgresqlLocalBackupIntegrationTest,
+          RdsPostgresqlMinioBackupIntegrationTest,
+          #RdsPostgresqMigrationIntegrationTest,
+        ]
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -293,14 +307,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Test
-        run: solidblocks-rds-postgresql/do test
-      - name: Archive Test Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: solidblocks-rds-postgresql-test
-          path: |
-            solidblocks-rds-postgresql/test/build/reports/tests
+        run: solidblocks-rds-postgresql/do test --tests ${{ matrix.test }}
+      #- name: Archive Test Artifacts
+      #  if: always()
+      #  uses: actions/upload-artifact@v4
+      #  with:
+      #    name: solidblocks-rds-postgresql-test
+      #    path: |
+      #      solidblocks-rds-postgresql/test/build/reports/tests
 
   clean-cloud-resources:
     runs-on: ubuntu-latest
