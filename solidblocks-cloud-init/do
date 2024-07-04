@@ -10,6 +10,11 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 source "${DIR}/../lib/terraform.sh"
 
+TESTS="x86 arm"
+
+terraform_export_credentials
+export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
+
 function task_build {
   (
     mkdir -p "${DIR}/build/solidblocks-cloud-init/lib"
@@ -49,46 +54,49 @@ function task_test {
     exit 0
   fi
 
-  python_ensure_venv "${DIR}"
-
-  terraform_export_credentials
-  export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
-
-  clean_cloud_resources
-  terraform_wrapper "${DIR}/test/terraform" apply -auto-approve -var="solidblocks_version=${VERSION}"
-
-  while ! ssh -F ${DIR}/test/terraform/ssh_config test-x86 test -f /run/cloud-init/result.json; do
-    log_echo_error "waiting for test-x86 server cloud init run"
-    sleep 1
+  for test in ${TESTS}; do
+    run_test "${test}"
   done
-
-  while ! ssh -F ${DIR}/test/terraform/ssh_config test-arm test -f /run/cloud-init/result.json; do
-    log_echo_error "waiting for test-arm server cloud init run"
-    sleep 1
-  done
-
-  SSL_DOMAIN="test1.blcks.de" "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-x86 --show-capture=all -s "${DIR}/test"
-  SSL_DOMAIN="test2.blcks.de" "${DIR}/venv/bin/pytest" --ssh-config=${DIR}/test/terraform/ssh_config --hosts=test-arm --show-capture=all -s "${DIR}/test"
-
-  clean_cloud_resources
 }
 
-function task_test_ssh {
-  (
-    local type=${1}
-    shift || true
+function run_test {
+  local test="${1:-}"
 
-    cd ${DIR}/test/terraform
-    ssh -F ${DIR}/test/terraform/ssh_config "test-${type}" ${@}
-  )
+  python_ensure_venv "${DIR}"
+
+  terraform_wrapper "${DIR}/test/${test}" apply -auto-approve -var="solidblocks_version=${VERSION}"
+
+  local ssh_config="$(terraform_output "${DIR}/test/${test}" "ssh_config")"
+
+  while ! ssh -F ${ssh_config} "test" test -f /run/cloud-init/result.json; do
+    log_echo_error "waiting for '${test}' server cloud init run"
+    sleep 1
+  done
+
+  SSL_DOMAIN="${test}.blcks.de" "${DIR}/venv/bin/pytest" --ssh-config=${ssh_config} --hosts=test --show-capture=all -s "${DIR}/test/test_${test}.py"
+
+  clean_cloud_resources "${test}"
+}
+
+
+function task_test_ssh {
+    local test=${1}
+    shift || true
+    local ssh_config="$(terraform_output "${DIR}/test/${test}" "ssh_config")"
+    ssh -F ${ssh_config} "test" ${@}
 }
 
 function clean_cloud_resources() {
-  terraform_wrapper "${DIR}/test/terraform" destroy -auto-approve -var="solidblocks_version=${VERSION}"
+  local test=${1}
+  shift || true
+  terraform_wrapper "${DIR}/test/${test}" destroy -auto-approve -var="solidblocks_version=${VERSION}"
 }
 
 function task_clean {
-  #clean_cloud_resources || true
+  for test in ${TESTS}; do
+    clean_cloud_resources "${test}"
+  done
+
   rm -rf "${DIR}/build"
 }
 
@@ -113,8 +121,7 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
-  test-ssh-x86) task_test_ssh "x86" "$@" ;;
-  test-ssh-arm) task_test_ssh "arm" "$@" ;;
+  test-ssh) task_test_ssh "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac

@@ -27,14 +27,14 @@ resource "hcloud_volume_attachment" "test" {
 
 module "test" {
   source      = "../../../testbeds/hetzner/test-server"
-  name        = "test-x86-${random_string.test.id}"
-  server_type = "cx11"
+  name        = "test-arm-${random_string.test.id}"
+  server_type = "cax11"
   user_data   = templatefile("${path.module}/cloud_init.sh", {
     solidblocks_base_url   = "https://${module.bootstrap_bucket.bucket_domain_name}"
     cloud_minimal_skeleton = file("${path.module}/../../build/snippets/cloud_init_minimal_skeleton")
     storage_device         = hcloud_volume.test.linux_device
     hetzner_dns_api_token  = var.hetzner_dns_api_token
-    ssl_domain             = "x86.blcks.de"
+    ssl_domain             = "arm.blcks.de"
   })
 }
 

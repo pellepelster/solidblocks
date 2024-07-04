@@ -1,0 +1,7 @@
+Host test
+    HostName 188.245.69.136
+    User root
+    IdentityFile /home/pelle/git/solidblocks/testbeds/hetzner/test-server/test-arm_id_rsa
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+

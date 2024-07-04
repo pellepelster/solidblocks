@@ -15,10 +15,18 @@ function terraform_wrapper() {
 
     cd "${dir}"
 
-    #if [[ ! -d ".terraform" ]]; then
+    if [[ ! -d ".terraform" ]]; then
       terraform init -upgrade
-    #fi
+    fi
 
     terraform $@
   )
+}
+
+function terraform_output() {
+  local dir="${1:-}"
+  local name="${2:-}"
+  shift || true
+  shift || true
+  terraform_wrapper "${dir}" output -raw "${name}"
 }
