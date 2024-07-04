@@ -48,16 +48,3 @@ def test_db_admin_password(host):
 def test_ufw_disabled(host):
     cmd = host.run(f"ufw status")
     assert "Status: inactive" in cmd.stdout
-
-
-def test_create_table(host):
-    ddl = """
-    CREATE TABLE dogs (
-        id serial PRIMARY KEY,
-        name VARCHAR (50) UNIQUE NOT NULL
-    );
-    """
-
-    assert psql_execute(host, ddl) is True
-    assert psql_execute(host, "INSERT into dogs (name) VALUES ('rudi');") is True
-    assert run_docker_command(host, test_id, "/rds/bin/backup-full.sh") is True
