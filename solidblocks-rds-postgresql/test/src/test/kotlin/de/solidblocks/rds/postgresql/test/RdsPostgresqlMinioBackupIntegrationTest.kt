@@ -100,6 +100,8 @@ class RdsPostgresqlMinioBackupIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        container.stop()
     }
 
     @Test
@@ -166,6 +168,9 @@ class RdsPostgresqlMinioBackupIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        postgresContainer2.stop()
+        minioContainer.stop()
     }
 
     @Test
@@ -230,6 +235,9 @@ class RdsPostgresqlMinioBackupIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        postgresContainer2.stop()
+        minioContainer.stop()
     }
 
     private fun createMinioClient(minioContainer: GenericContainer<out GenericContainer<*>>): MinioClient {
@@ -309,6 +317,8 @@ class RdsPostgresqlMinioBackupIntegrationTest {
             it.assertHasUserWithName(username1)
             it.assertHasUserWithName(username2)
         }
+
+        postgresContainer2.stop()
     }
 
     @Test
@@ -373,5 +383,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
             it.assertHasUserWithName(username1)
             it.assertHasUserWithName(username2)
         }
+
+        postgresContainer2.stop()
     }
 }

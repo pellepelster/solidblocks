@@ -1,15 +1,6 @@
 package de.solidblocks.rds.postgresql.test
 
-import de.solidblocks.rds.postgresql.test.extensions.AwsTestBed
-import de.solidblocks.rds.postgresql.test.extensions.AwsTestBedExtension
-import de.solidblocks.rds.postgresql.test.extensions.RdsTestBed
-import de.solidblocks.rds.postgresql.test.extensions.RdsTestBedExtension
-import de.solidblocks.rds.postgresql.test.extensions.assertHasUserWithName
-import de.solidblocks.rds.postgresql.test.extensions.createJdbi
-import de.solidblocks.rds.postgresql.test.extensions.createUserTable
-import de.solidblocks.rds.postgresql.test.extensions.initWorldReadableTempDir
-import de.solidblocks.rds.postgresql.test.extensions.insertUser
-import de.solidblocks.rds.postgresql.test.extensions.waitForReady
+import de.solidblocks.rds.postgresql.test.extensions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.UUID
@@ -29,8 +20,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
 
     @Test
     fun testDatabaseKeepsDataBetweenRestarts(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
-
         val dataDir = initWorldReadableTempDir()
+
         val container = rdsTestBed.createAndStartPostgresContainer(
             14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), dataDir
@@ -73,6 +64,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        container.stop()
     }
 
     @Test
@@ -129,6 +122,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        postgresContainer2.stop()
     }
 
 
@@ -190,6 +185,8 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        postgresContainer2.stop()
     }
 
     @Test
@@ -255,11 +252,12 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
             it.assertHasUserWithName(username1)
             it.assertHasUserWithName(username2)
         }
+
+        postgresContainer2.stop()
     }
 
     @Test
     fun testRestoreDatabaseFromDifferentialBackup(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
-
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
             14,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), initWorldReadableTempDir()
@@ -284,7 +282,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
             it.assertHasUserWithName(username1)
         }
 
-
+        logger.info { "[test] triggering full backup" }
         postgresContainer1.execInContainer("backup-full.sh")
 
         val username2 = UUID.randomUUID().toString()
@@ -294,6 +292,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         }
 
 
+        logger.info { "[test] triggering diff backup" }
         postgresContainer1.execInContainer("backup-diff.sh")
 
         postgresContainer1.stop()
@@ -319,5 +318,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
             it.assertHasUserWithName(username1)
             it.assertHasUserWithName(username2)
         }
+
+        postgresContainer2.stop()
     }
 }

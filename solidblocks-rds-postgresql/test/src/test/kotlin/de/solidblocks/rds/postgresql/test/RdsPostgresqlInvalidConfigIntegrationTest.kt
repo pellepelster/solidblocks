@@ -71,6 +71,8 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
         }
 
         logConsumer.waitForLogLine("[solidblocks-rds-postgresql] storage dir '/storage/data' not mounted")
+
+        container.stop()
     }
 
     @Test

@@ -112,6 +112,8 @@ class RdsPostgresqlConfigurationTest {
                 }.hasSize(1)
             }
         }
+
+        container.stop()
     }
 
     @Test
@@ -153,6 +155,8 @@ class RdsPostgresqlConfigurationTest {
             it.insertUser(username)
             it.assertHasUserWithName(username)
         }
+
+        container.stop()
     }
 
     @Test
@@ -163,7 +167,7 @@ class RdsPostgresqlConfigurationTest {
         val initSqlFile = Files.createTempFile("init_sql", "sql")
         initSqlFile.writeText("CREATE TABLE \"table1\" (id VARCHAR PRIMARY KEY, \"name\" VARCHAR)")
 
-        testBed.createAndStartPostgresContainer(14,
+        val container = testBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_INIT_SQL_$database" to "/init_sql.sql",
@@ -176,6 +180,8 @@ class RdsPostgresqlConfigurationTest {
         with(testBed.logConsumer) {
             waitForLogLine("database system is ready to accept connections")
         }
+
+        container.stop()
     }
 
     @Test
@@ -183,7 +189,7 @@ class RdsPostgresqlConfigurationTest {
         val dataDir = initWorldReadableTempDir()
         val localBackupDir = initWorldReadableTempDir()
 
-        testBed.createAndStartPostgresContainer(14,
+        val container = testBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), dataDir
@@ -196,6 +202,8 @@ class RdsPostgresqlConfigurationTest {
         with(testBed.logConsumer) {
             waitForLogLine("maintenance mode is active, no database is started")
         }
+
+        container.stop()
     }
 
     @Test
@@ -255,6 +263,8 @@ class RdsPostgresqlConfigurationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        container.stop()
     }
 
     @Test
@@ -314,10 +324,11 @@ class RdsPostgresqlConfigurationTest {
         }
 
         container2.createJdbi("new-user", "new-password").also {
-
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        container2.stop()
     }
 
     @Test
@@ -368,6 +379,7 @@ class RdsPostgresqlConfigurationTest {
         }
 
         assertThat(settings.first { it["name"] == "checkpoint_timeout" }["setting"]).isEqualTo("301")
+        container.stop()
     }
 
     @Test
@@ -390,6 +402,8 @@ class RdsPostgresqlConfigurationTest {
         container.createJdbi().useHandle<Exception> {
             it.execute("CREATE SCHEMA myschema;")
         }
+
+        container.stop()
     }
 
     @Test
@@ -433,6 +447,9 @@ class RdsPostgresqlConfigurationTest {
         container2.createJdbi("rds", "new-database-password").useHandle<Exception> {
             it.execute("SELECT version()")
         }
+
+        container2.stop()
+
     }
 
     @Test
@@ -464,5 +481,7 @@ class RdsPostgresqlConfigurationTest {
         container.createJdbi("extra-user-1", "extra-password-1", "extra-database-1").also {
             it.waitForReady()
         }
+
+        container.stop()
     }
 }

@@ -6,7 +6,7 @@ import org.testcontainers.containers.output.OutputFrame
 import java.time.Duration
 import java.util.function.Consumer
 
-class TestContainersLogConsumer(val parent: Consumer<OutputFrame>?) : Consumer<OutputFrame> {
+class TestContainersLogConsumer(private val parent: Consumer<OutputFrame>?) : Consumer<OutputFrame> {
 
     private val frames = mutableListOf<OutputFrame>()
 
@@ -16,6 +16,7 @@ class TestContainersLogConsumer(val parent: Consumer<OutputFrame>?) : Consumer<O
     }
 
     fun waitForLogLine(logLine: String) {
+        logger.info { "[test] waiting for logline '${logLine}'" }
         await.atMost(Duration.ofMinutes(4)).until {
             hasLogLine(logLine)
         }
@@ -28,10 +29,13 @@ class TestContainersLogConsumer(val parent: Consumer<OutputFrame>?) : Consumer<O
     }
 
     fun assertHasLogLine(logLine: String) {
+        logger.info { "[test] asserting logline '${logLine}'" }
         assertThat(hasLogLine(logLine)).isTrue
     }
 
     fun assertHasNoLogLine(logLine: String) {
+        logger.info { "[test] asserting no logline '${logLine}'" }
+
         assertThat(hasLogLine(logLine)).isFalse
     }
 

@@ -74,6 +74,8 @@ class RdsPostgresqlGcsBackupIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        container.stop()
     }
 
 }

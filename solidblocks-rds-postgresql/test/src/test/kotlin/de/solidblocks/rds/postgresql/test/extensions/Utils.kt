@@ -10,9 +10,10 @@ import org.testcontainers.containers.GenericContainer
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
+import java.time.Duration
 import java.util.*
 
-private val logger = KotlinLogging.logger {}
+val logger = KotlinLogging.logger {}
 
 fun initWorldReadableTempDir(): File {
     val tempDir = "/tmp/temp-${UUID.randomUUID()}"
@@ -80,7 +81,9 @@ fun Jdbi.assertHasUserWithName(name: String) {
 
 
 fun Jdbi.waitForReady() {
-    await.until {
+    logger.info { "[test] waiting for postgres ready status" }
+
+    await.atMost(Duration.ofMinutes(4)).until {
         try {
             this.useHandle<RuntimeException> {
                 it.execute("select 1") == 1

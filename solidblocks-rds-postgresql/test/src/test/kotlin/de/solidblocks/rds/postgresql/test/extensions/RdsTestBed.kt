@@ -62,9 +62,9 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
                 )
             }
 
+        containers.add(container)
         container.start()
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
-
         return container
     }
 
@@ -94,7 +94,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
             it.withNetwork(network)
             it.withExposedPorts(5432)
             it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
-            it.withStartupTimeout(Duration.ofSeconds(600))
+            it.withStartupTimeout(Duration.ofSeconds(120))
             it.withFileSystemBind(
                 RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/test-dump-backup-file-headers.sh").file,
                 "/test-dump-backup-file-headers.sh",
@@ -109,14 +109,14 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
                 ) + environment
             )
             customizer.invoke(it)
-            logger.info { "starting postgres container" }
+            logger.info { "[test] starting postgres container" }
+            containers.add(it)
             it.start()
         }
     }
 
 
     override fun afterEach(context: ExtensionContext?) {
-
         val client = DockerClientFactory.instance().client()
 
         containers.forEach {

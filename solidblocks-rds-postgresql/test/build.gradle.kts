@@ -36,8 +36,8 @@ dependencies {
     testImplementation("org.awaitility:awaitility:4.2.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
-    testImplementation("ch.qos.logback:logback-classic:1.2.10")
-    testImplementation("org.postgresql:postgresql:42.4.1")
+    testImplementation("ch.qos.logback:logback-classic:1.4.12")
+    testImplementation("org.postgresql:postgresql:42.7.2")
     testImplementation("org.jdbi:jdbi3-core:3.32.0")
 
     testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.455")
@@ -47,13 +47,10 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 
-    systemProperties["junit.jupiter.execution.parallel.enabled"] = "true"
-    systemProperties["junit.jupiter.execution.parallel.mode.default"] = "concurrent"
-    systemProperties["junit.jupiter.execution.parallel.config.strategy"] = "fixed"
-
-    if (System.getenv("CI") != null) {
-        systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 1
-    } else {
+    if (System.getenv("CI") == null) {
+        systemProperties["junit.jupiter.execution.parallel.enabled"] = "true"
+        systemProperties["junit.jupiter.execution.parallel.mode.default"] = "concurrent"
+        systemProperties["junit.jupiter.execution.parallel.config.strategy"] = "fixed"
         systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 10
     }
 

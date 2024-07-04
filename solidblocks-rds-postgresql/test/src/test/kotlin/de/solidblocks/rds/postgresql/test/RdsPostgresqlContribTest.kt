@@ -42,6 +42,7 @@ class RdsPostgresqlContribTest {
 
         val backupInfoJson = Json.createReader(StringReader(backupInfoJsonRaw)).readArray()
         assertThat(backupInfoJson[0]).isNotNull
+        container.stop()
     }
 
 }

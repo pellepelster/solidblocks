@@ -97,5 +97,7 @@ class RdsPostgresqMigrationIntegrationTest {
             it.waitForReady()
             it.assertHasUserWithName(username)
         }
+
+        newContainer15.stop()
     }
 }
