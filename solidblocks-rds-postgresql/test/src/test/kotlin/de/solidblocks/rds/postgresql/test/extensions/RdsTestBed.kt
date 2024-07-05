@@ -4,10 +4,6 @@ import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTes
 import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.database
 import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.databasePassword
 import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.databaseUser
-import mu.KotlinLogging
-import org.junit.jupiter.api.extension.AfterAllCallback
-import org.junit.jupiter.api.extension.AfterEachCallback
-import org.junit.jupiter.api.extension.ExtensionContext
 import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
@@ -17,7 +13,7 @@ import org.testcontainers.images.PullPolicy
 import java.io.File
 import java.time.Duration
 
-class RdsTestBed : AfterEachCallback, AfterAllCallback {
+class RdsTestBed {
 
     private val network = Network.newNetwork()
 
@@ -112,8 +108,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         }
     }
 
-
-    override fun afterEach(context: ExtensionContext?) {
+    fun clean() {
         val client = DockerClientFactory.instance().client()
 
         containers.forEach {
@@ -123,15 +118,9 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
             logger.info { "[test] removing container '${it.containerId}'" }
             client.removeContainerCmd(it.containerId).withForce(true).withRemoveVolumes(true).exec()
         }
-    }
-
-    override fun afterAll(context: ExtensionContext) {
-
-        val client = DockerClientFactory.instance().client()
 
         logger.info { "[test] removing network '${network.id}'" }
         network.close()
         client.removeNetworkCmd(network.id).exec()
     }
-
 }

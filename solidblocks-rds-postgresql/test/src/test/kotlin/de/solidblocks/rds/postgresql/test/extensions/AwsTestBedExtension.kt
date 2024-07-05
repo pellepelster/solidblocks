@@ -17,23 +17,22 @@ class AwsTestBedExtension : ParameterResolver, AfterEachCallback, AfterAllCallba
     @Throws(ParameterResolutionException::class)
     override fun resolveParameter(
         parameterContext: ParameterContext,
-        context: ExtensionContext
+        extensionContext: ExtensionContext
     ): Any {
-        logger.info { "[test] creating testbed" }
-
-        return testBeds.getOrPut(context.uniqueId) {
-            AwsTestBed()
-        }.also { it.initTestbed() }
+        logger.info { "[test] creating AWS testbed" }
+        return testBeds.getOrPut(extensionContext.uniqueId) {
+            AwsTestBed().also { it.initTestbed() }
+        }
     }
 
     override fun afterEach(context: ExtensionContext) {
-        logger.info { "[test] cleaning testbed '${context.uniqueId}'" }
-        testBeds[context.uniqueId]?.destroyTestBed()
+        logger.info { "[test] cleaning AWS testbed '${context.uniqueId}'" }
+        testBeds[context.uniqueId]?.clean()
     }
 
-    override fun afterAll(p0: ExtensionContext?) {
-        logger.info { "[test] cleaning all testbeds" }
-        testBeds.values.forEach { it.destroyTestBed() }
+    override fun afterAll(context: ExtensionContext) {
+        logger.info { "[test] cleaning all AWS testbeds" }
+        testBeds.values.forEach { it.clean() }
     }
 
 }

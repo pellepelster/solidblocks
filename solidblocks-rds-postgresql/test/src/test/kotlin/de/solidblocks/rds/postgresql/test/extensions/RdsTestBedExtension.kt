@@ -1,12 +1,11 @@
 package de.solidblocks.rds.postgresql.test.extensions
 
-import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.api.extension.ParameterContext
-import org.junit.jupiter.api.extension.ParameterResolutionException
-import org.junit.jupiter.api.extension.ParameterResolver
+import org.junit.jupiter.api.extension.*
 
 
-class RdsTestBedExtension : ParameterResolver {
+class RdsTestBedExtension : ParameterResolver, AfterEachCallback, AfterAllCallback {
+
+    private val testBeds = mutableMapOf<String, RdsTestBed>()
 
     override fun supportsParameter(
         parameterContext: ParameterContext,
@@ -20,6 +19,20 @@ class RdsTestBedExtension : ParameterResolver {
         parameterContext: ParameterContext,
         extensionContext: ExtensionContext
     ): Any {
-        return RdsTestBed()
+        logger.info { "[test] creating RDS testbed" }
+        return testBeds.getOrPut(extensionContext.uniqueId) {
+            RdsTestBed()
+        }
     }
+
+    override fun afterEach(context: ExtensionContext) {
+        logger.info { "[test] cleaning RDS testbed '${context.uniqueId}'" }
+        testBeds[context.uniqueId]?.clean()
+    }
+
+    override fun afterAll(context: ExtensionContext) {
+        logger.info { "[test] cleaning all RDS testbeds" }
+        testBeds.values.forEach { it.clean() }
+    }
+
 }

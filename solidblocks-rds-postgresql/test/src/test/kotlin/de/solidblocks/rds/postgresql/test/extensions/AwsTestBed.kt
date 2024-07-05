@@ -11,7 +11,7 @@ class AwsTestBed {
 
     private val s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_CENTRAL_1).build()
 
-    fun destroyTestBed() {
+    fun clean() {
         logger.info { "[test] deleting bucket '${bucket}'" }
 
         if (s3.doesBucketExistV2(bucket)) {
