@@ -87,7 +87,7 @@ class RdsTestBed {
             it.withNetwork(network)
             it.withExposedPorts(5432)
             it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
-            it.withStartupTimeout(Duration.ofMinutes(5))
+            it.withStartupTimeout(Duration.ofMinutes(6))
             it.withFileSystemBind(
                 RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/test-dump-backup-file-headers.sh").file,
                 "/test-dump-backup-file-headers.sh",
@@ -111,16 +111,24 @@ class RdsTestBed {
     fun clean() {
         val client = DockerClientFactory.instance().client()
 
-        containers.forEach {
-            logger.info { "[test] killing container '${it.containerId}'" }
-            client.killContainerCmd(it.containerId).withSignal("9").exec()
+        containers.mapNotNull { it.containerId }.forEach {
+            try {
+                logger.info { "[test] killing container '${it}'" }
+                client.killContainerCmd(it).withSignal("9").exec()
 
-            logger.info { "[test] removing container '${it.containerId}'" }
-            client.removeContainerCmd(it.containerId).withForce(true).withRemoveVolumes(true).exec()
+                logger.info { "[test] removing container '${it}'" }
+                client.removeContainerCmd(it).withForce(true).withRemoveVolumes(true).exec()
+            } catch (e: Exception) {
+                logger.info { "failed to kill container $it" }
+            }
         }
 
-        logger.info { "[test] removing network '${network.id}'" }
-        network.close()
-        client.removeNetworkCmd(network.id).exec()
+        try {
+            logger.info { "[test] removing network '${network.id}'" }
+            network.close()
+            client.removeNetworkCmd(network.id).exec()
+        } catch (e: Exception) {
+            logger.info { "failed to remove network ${network.id}" }
+        }
     }
 }

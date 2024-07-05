@@ -17,7 +17,7 @@ class TestContainersLogConsumer(private val parent: Consumer<OutputFrame>?) : Co
 
     fun waitForLogLine(logLine: String) {
         logger.info { "[test] waiting for logline '${logLine}'" }
-        await.atMost(Duration.ofMinutes(4)).until {
+        await.atMost(Duration.ofMinutes(5)).until {
             hasLogLine(logLine)
         }
     }

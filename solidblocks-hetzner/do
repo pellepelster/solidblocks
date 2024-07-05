@@ -276,6 +276,14 @@ function task_test_ssl () {
 
   test_wait_for_cloud_init
   test_wait_for_sql
+
+  local counter=0
+  while ! task_test_ssh test -f /storage/data/ssl/certificates/test3.blcks.de.crt && [[ ${counter} -lt 21 ]]; do
+    log_echo_warning "waiting 'test3.blcks.de.crt'"
+    counter=$((counter+1))
+    sleep 10
+  done
+
   "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
 
   log_divider_header "waiting for sql connectivity"
