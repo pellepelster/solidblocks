@@ -85,6 +85,7 @@ fi
 
 log "starting..."
 log "postgres major version is $(current_major_version)"
+log "s3 backup bucket: ${DB_BACKUP_S3_BUCKET:-<none>}"
 
 export PG_DATA_BASE_DIR="${DATA_DIR}/${DB_INSTANCE_NAME}"
 
@@ -107,7 +108,6 @@ fi
 export PG_DATA_DIR="${PG_DATA_BASE_DIR}/$(current_major_version)"
 export POSTGRES_BASE_DIR="/usr/libexec/postgresql$(current_major_version)"
 export POSTGRES_BIN_DIR="${POSTGRES_BASE_DIR}"
-
 
 log "setting PG_DATA_DIR to '${PG_DATA_DIR}'"
 mkdir -p "${PG_DATA_DIR}"
@@ -161,7 +161,7 @@ function ensure_databases() {
         continue
       fi
 
-      echo "ensuring database '${database}' with user '${username}'"
+      log "ensuring database '${database}' with user '${username}'"
       ensure_database "${database}"
       ensure_db_user "${database}" "${username}" "${password}"
 
@@ -267,7 +267,7 @@ function init_db() {
   cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
 }
 
-function initiaize_db_and_config() {
+function initialize_db_and_config() {
   init_db
 
   # make sure we only listen public when DB is ready to go
@@ -279,6 +279,7 @@ function initiaize_db_and_config() {
   log "executing initial backup"
   pgbackrest $(pgbackrest_default_arguments) --log-level-console=info --type=full backup
 
+  log "stopping postgres"
   ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
 }
 
@@ -340,9 +341,10 @@ function start_db() {
 
       ensure_databases
 
+      log "stopping postgres"
       ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
     else
-      initiaize_db_and_config
+      initialize_db_and_config
     fi
   else
     log "data dir is not empty"

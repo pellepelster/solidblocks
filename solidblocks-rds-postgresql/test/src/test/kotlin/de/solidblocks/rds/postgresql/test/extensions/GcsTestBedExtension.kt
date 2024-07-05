@@ -11,8 +11,6 @@ import org.junit.jupiter.api.extension.*
 
 class GcsTestBedExtension : ParameterResolver, AfterEachCallback {
 
-    private val logger = KotlinLogging.logger {}
-
     val testBeds = mutableMapOf<String, GcsTestBed>()
 
     val storageClient = StorageOptions.newBuilder().setProjectId("solidblocks-test").build().service
@@ -44,7 +42,7 @@ class GcsTestBedExtension : ParameterResolver, AfterEachCallback {
 
     private fun removeAllTestBuckets() {
         storageClient.list(Storage.BucketListOption.prefix("test-")).streamAll().forEach { bucket ->
-            logger.info { "deleting all objects for bucket '${bucket.name}'" }
+            logger.info { "[test] deleting all objects for bucket '${bucket.name}'" }
             runBlocking {
 
                 while (true) {
@@ -56,14 +54,14 @@ class GcsTestBedExtension : ParameterResolver, AfterEachCallback {
 
                     blobs.map { blob ->
                         async {
-                            logger.info { "deleting blob '${blob.name}' for bucket '${bucket.name}'" }
+                            logger.info { "[test] deleting blob '${blob.name}' for bucket '${bucket.name}'" }
                             blob.delete()
                         }
                     }.awaitAll()
                 }
             }
 
-            logger.info { "deleting bucket '${bucket.name}'" }
+            logger.info { "[test] deleting bucket '${bucket.name}'" }
             storageClient.get(bucket.name).delete()
         }
     }

@@ -15,7 +15,7 @@ env:
 
 concurrency:
   group: solidblocks
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   pages: write
@@ -308,13 +308,13 @@ jobs:
         uses: actions/checkout@v4
       - name: Test
         run: solidblocks-rds-postgresql/do test --tests ${{ matrix.test }}
-      #- name: Archive Test Artifacts
-      #  if: always()
-      #  uses: actions/upload-artifact@v4
-      #  with:
-      #    name: solidblocks-rds-postgresql-test
-      #    path: |
-      #      solidblocks-rds-postgresql/test/build/reports/tests
+      - name: Archive Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solidblocks-rds-postgresql-test-${{ matrix.test }}
+          path: |
+            solidblocks-rds-postgresql/test/build/reports/tests
 
   clean-cloud-resources:
     runs-on: ubuntu-latest

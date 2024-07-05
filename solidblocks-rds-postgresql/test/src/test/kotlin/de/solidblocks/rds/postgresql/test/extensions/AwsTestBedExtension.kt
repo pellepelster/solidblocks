@@ -3,9 +3,9 @@ package de.solidblocks.rds.postgresql.test.extensions
 import org.junit.jupiter.api.extension.*
 
 
-class AwsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCallback {
+class AwsTestBedExtension : ParameterResolver, AfterEachCallback, AfterAllCallback {
 
-    val testBeds = mutableMapOf<String, AwsTestBed>()
+    private val testBeds = mutableMapOf<String, AwsTestBed>()
 
     override fun supportsParameter(
         parameterContext: ParameterContext,
@@ -19,20 +19,21 @@ class AwsTestBedExtension : ParameterResolver, AfterEachCallback, BeforeEachCall
         parameterContext: ParameterContext,
         context: ExtensionContext
     ): Any {
-        return createTestBed(context)
-    }
+        logger.info { "[test] creating testbed" }
 
-    override fun afterEach(context: ExtensionContext) {
-        //testBeds[context.uniqueId]?.destroyTestBed()
-    }
-
-    override fun beforeEach(context: ExtensionContext) {
-        createTestBed(context)
-    }
-
-    private fun createTestBed(context: ExtensionContext): AwsTestBed {
         return testBeds.getOrPut(context.uniqueId) {
             AwsTestBed()
         }.also { it.initTestbed() }
     }
+
+    override fun afterEach(context: ExtensionContext) {
+        logger.info { "[test] cleaning testbed '${context.uniqueId}'" }
+        testBeds[context.uniqueId]?.destroyTestBed()
+    }
+
+    override fun afterAll(p0: ExtensionContext?) {
+        logger.info { "[test] cleaning all testbeds" }
+        testBeds.values.forEach { it.destroyTestBed() }
+    }
+
 }

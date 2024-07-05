@@ -30,10 +30,16 @@ function task_build {
 }
 
 function task_clean_aws {
+
+  #export AWS_REGION="eu-central-1"
+  #export AWS_ACCESS_KEY_ID="$(pass solidblocks/aws/admin/access_key)"
+  #export AWS_SECRET_ACCESS_KEY="$(pass solidblocks/aws/admin/secret_access_key)"
+  #aws s3 ls | cut -d" " -f 3 | xargs -I{} aws s3 rb s3://{} --force
+
   docker run \
     --rm \
     -v $(pwd)/contrib/aws-nuke.yaml:/home/aws-nuke/config.yml \
-    quay.io/rebuy/aws-nuke:v2.22.1 \
+    quay.io/rebuy/aws-nuke:v2.25.0 \
     --access-key-id "$(pass solidblocks/aws/admin/access_key)" \
     --secret-access-key "$(pass solidblocks/aws/admin/secret_access_key)" \
     --config /home/aws-nuke/config.yml \

@@ -4,6 +4,7 @@ import de.solidblocks.rds.postgresql.test.extensions.RdsTestBed
 import de.solidblocks.rds.postgresql.test.extensions.RdsTestBedExtension
 import de.solidblocks.rds.postgresql.test.extensions.TestContainersLogConsumer
 import de.solidblocks.rds.postgresql.test.extensions.initWorldReadableTempDir
+import de.solidblocks.rds.postgresql.test.extensions.logger
 import mu.KotlinLogging
 import org.junit.Assert.assertThrows
 import org.junit.jupiter.api.Assertions
@@ -20,8 +21,6 @@ import java.util.*
 @ExtendWith(RdsTestBedExtension::class)
 @Disabled
 class RdsPostgresqlInvalidConfigIntegrationTest {
-
-    private val logger = KotlinLogging.logger {}
 
     companion object {
         val backupHost = "minio"

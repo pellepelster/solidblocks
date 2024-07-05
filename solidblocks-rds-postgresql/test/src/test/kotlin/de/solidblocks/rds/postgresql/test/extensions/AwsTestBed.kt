@@ -3,19 +3,16 @@ package de.solidblocks.rds.postgresql.test.extensions
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import mu.KotlinLogging
-import java.util.*
+import java.util.UUID
 
 class AwsTestBed {
 
     val bucket = "test-${UUID.randomUUID()}"
 
-    private val logger = KotlinLogging.logger {}
-
-    val s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_CENTRAL_1).build()
+    private val s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.EU_CENTRAL_1).build()
 
     fun destroyTestBed() {
-        logger.info { "deleting bucket '${bucket}'" }
+        logger.info { "[test] deleting bucket '${bucket}'" }
 
         if (s3.doesBucketExistV2(bucket)) {
             emptyBucket()
@@ -48,14 +45,13 @@ class AwsTestBed {
 
     fun initTestbed() {
         if (!s3.doesBucketExistV2(bucket)) {
-            logger.info { "creating bucket '${bucket}'" }
+            logger.info { "[test] creating bucket '${bucket}'" }
             s3.createBucket(bucket)
         }
 
         while (!s3.doesBucketExistV2(bucket)) {
-            logger.info { "waiting for '${bucket}'" }
+            logger.info { "[test] waiting for '${bucket}'" }
             Thread.sleep(1000)
         }
     }
-
 }

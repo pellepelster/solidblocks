@@ -19,8 +19,6 @@ import java.time.Duration
 
 class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
-    private val logger = KotlinLogging.logger {}
-
     private val network = Network.newNetwork()
 
     private val containers = mutableListOf<GenericContainer<out GenericContainer<*>>>()
@@ -38,7 +36,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
         val storageDir = initWorldReadableTempDir().absolutePath
 
-        logger.info { "starting minio instance with storage dir '${storageDir}'" }
+        logger.info { "[test] starting minio instance with storage dir '${storageDir}'" }
         val container =
             createContainer("ghcr.io/pellepelster/solidblocks-minio:${System.getenv("VERSION") ?: "snapshot"}-rc").also {
                 it.withLogConsumer(logConsumer)
@@ -62,7 +60,6 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
                 )
             }
 
-        containers.add(container)
         container.start()
         logConsumer.waitForLogLine("[solidblocks-minio] provisioning completed")
         return container
@@ -94,7 +91,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
             it.withNetwork(network)
             it.withExposedPorts(5432)
             it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
-            it.withStartupTimeout(Duration.ofSeconds(120))
+            it.withStartupTimeout(Duration.ofMinutes(5))
             it.withFileSystemBind(
                 RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/test-dump-backup-file-headers.sh").file,
                 "/test-dump-backup-file-headers.sh",
@@ -120,10 +117,10 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
         val client = DockerClientFactory.instance().client()
 
         containers.forEach {
-            logger.info { "killing container '${it.containerId}'" }
+            logger.info { "[test] killing container '${it.containerId}'" }
             client.killContainerCmd(it.containerId).withSignal("9").exec()
 
-            logger.info { "removing container '${it.containerId}'" }
+            logger.info { "[test] removing container '${it.containerId}'" }
             client.removeContainerCmd(it.containerId).withForce(true).withRemoveVolumes(true).exec()
         }
     }
@@ -132,7 +129,7 @@ class RdsTestBed : AfterEachCallback, AfterAllCallback {
 
         val client = DockerClientFactory.instance().client()
 
-        logger.info { "removing network '${network.id}'" }
+        logger.info { "[test] removing network '${network.id}'" }
         network.close()
         client.removeNetworkCmd(network.id).exec()
     }

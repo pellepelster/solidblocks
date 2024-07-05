@@ -14,8 +14,6 @@ class GcsTestBed(val storageClient: Storage) {
 
     val bucket = "test-${UUID.randomUUID()}"
 
-    private val logger = KotlinLogging.logger {}
-
     fun initTestbed() {
         if (storageClient.get(bucket) == null) {
             val bucket = storageClient.create(
@@ -25,15 +23,15 @@ class GcsTestBed(val storageClient: Storage) {
                     .build()
             )
 
-            logger.info { "created bucket '${bucket.asBucketInfo().name}'" }
+            logger.info { "[test] created bucket '${bucket.asBucketInfo().name}'" }
         } else {
-            logger.info { "bucket '${bucket}' already exists" }
+            logger.info { "[test] bucket '${bucket}' already exists" }
         }
     }
 
     fun destroyTestBed() {
         storageClient.get(bucket)?.also { bucket ->
-            logger.info { "deleting all objects for bucket '${bucket.name}'" }
+            logger.info { "[test] deleting all objects for bucket '${bucket.name}'" }
             runBlocking {
 
                 while (true) {
@@ -45,7 +43,7 @@ class GcsTestBed(val storageClient: Storage) {
 
                     blobs.map { blob ->
                         async {
-                            logger.info { "deleting blob '${blob.name}' for bucket '${bucket.name}'" }
+                            logger.info { "[test] deleting blob '${blob.name}' for bucket '${bucket.name}'" }
                             blob.delete()
                         }
                     }.awaitAll()
