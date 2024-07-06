@@ -87,7 +87,7 @@ class RdsTestBed {
             it.withNetwork(network)
             it.withExposedPorts(5432)
             it.withFileSystemBind(storageDir.absolutePath, "/storage/data")
-            it.withStartupTimeout(Duration.ofMinutes(6))
+            it.withStartupTimeout(Duration.ofMinutes(8))
             it.withFileSystemBind(
                 RdsPostgresqlMinioBackupIntegrationTest::class.java.getResource("/test-dump-backup-file-headers.sh").file,
                 "/test-dump-backup-file-headers.sh",
