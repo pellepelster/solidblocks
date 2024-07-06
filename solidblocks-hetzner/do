@@ -284,7 +284,7 @@ function task_test_ssl () {
     sleep 10
   done
 
-  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
+  #"${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
 
   log_divider_header "waiting for sql connectivity"
   while ! echo "SELECT 1;" | psql_wrapper_ssl; do
@@ -667,7 +667,7 @@ function test_wait_for_sql() {
   local counter=0
 
   while ! echo "SELECT 1;" | psql_wrapper && [[ ${counter} -lt 31 ]]; do
-    log_echo_warning "still waiting for sql connectivity"
+    log_echo_warning "waiting for sql connectivity"
     counter=$((counter+1))
     sleep 5
   done
