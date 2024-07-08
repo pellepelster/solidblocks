@@ -23,6 +23,7 @@ module "rds-postgresql-1" {
   ssl_dns_provider_config = {
     HETZNER_API_KEY = var.hetzner_dns_api_token
   }
+  ssl_acme_server = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
   solidblocks_base_url           = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
   solidblocks_cloud_init_version = var.solidblocks_version
