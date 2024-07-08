@@ -2,19 +2,21 @@ locals {
   location = "nbg1"
 }
 
-module "bootstrap_bucket" {
-  source = "../../../testbeds/hetzner/bootstrap-bucket"
-}
-
-resource "random_string" "test" {
+resource "random_string" "test_id" {
   length  = 16
   special = false
   lower   = true
   upper   = false
 }
 
+module "bootstrap_bucket" {
+  source              = "../bootstrap-bucket"
+  solidblocks_version = var.solidblocks_version
+  test_id             = random_string.test_id.id
+}
+
 resource "hcloud_volume" "test" {
-  name     = "test-x86-${random_string.test.id}"
+  name     = "test-x86-${random_string.test_id.id}"
   size     = 16
   format   = "ext4"
   location = local.location
@@ -27,7 +29,7 @@ resource "hcloud_volume_attachment" "test" {
 
 module "test" {
   source      = "../../../testbeds/hetzner/test-server"
-  name        = "test-x86-${random_string.test.id}"
+  name        = "test-x86-${random_string.test_id.id}"
   server_type = "cx11"
   user_data   = templatefile("${path.module}/cloud_init.sh", {
     solidblocks_base_url   = "https://${module.bootstrap_bucket.bucket_domain_name}"
@@ -36,11 +38,4 @@ module "test" {
     hetzner_dns_api_token  = var.hetzner_dns_api_token
     ssl_domain             = "x86.blcks.de"
   })
-}
-
-resource "aws_s3_object" "bootstrap" {
-  bucket = module.bootstrap_bucket.bucket_id
-  key    = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/solidblocks-cloud-init-${var.solidblocks_version}.zip"
-  source = "${path.module}/../../build/solidblocks-cloud-init-${var.solidblocks_version}.zip"
-  etag   = filemd5("${path.module}/../../build/solidblocks-cloud-init-${var.solidblocks_version}.zip")
 }

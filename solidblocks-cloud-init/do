@@ -54,7 +54,9 @@ function task_test {
     exit 0
   fi
 
-  for test in ${TESTS}; do
+  local tests="${1:-$TESTS}"
+
+  for test in ${tests}; do
     run_test "${test}"
   done
 }
@@ -63,17 +65,14 @@ function run_test {
   local test="${1:-}"
 
   python_ensure_venv "${DIR}"
-
   terraform_wrapper "${DIR}/test/${test}" apply -auto-approve -var="solidblocks_version=${VERSION}"
 
-  local ssh_config="$(terraform_output "${DIR}/test/${test}" "ssh_config")"
-
-  while ! ssh -F ${ssh_config} "test" test -f /run/cloud-init/result.json; do
+  while ! ssh -F "${DIR}/test/${test}/ssh_config" "test" test -f /run/cloud-init/result.json; do
     log_echo_error "waiting for '${test}' server cloud init run"
     sleep 1
   done
 
-  SSL_DOMAIN="${test}.blcks.de" "${DIR}/venv/bin/pytest" --ssh-config=${ssh_config} --hosts=test --show-capture=all -s "${DIR}/test/test_${test}.py"
+  SSL_DOMAIN="${test}.blcks.de" "${DIR}/venv/bin/pytest" --ssh-config="${DIR}/test/${test}/ssh_config" --hosts=test --show-capture=all -s "${DIR}/test/test_${test}.py"
 
   clean_cloud_resources "${test}"
 }

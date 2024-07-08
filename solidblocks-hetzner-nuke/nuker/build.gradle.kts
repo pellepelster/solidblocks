@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.8.21"
+    id("org.jetbrains.kotlin.jvm") version "1.9.20"
     id("com.diffplug.spotless") version "6.19.0"
     application
 }
@@ -20,7 +20,7 @@ dependencies {
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
-            useKotlinTest("1.7.10")
+            useKotlinTest("1.9.20")
 
             dependencies {
                 implementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")

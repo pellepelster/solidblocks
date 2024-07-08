@@ -26,3 +26,4 @@ solidblocks-hetzner/modules/rds-postgresql/cloud_init_bootstrap_solidblocks
 /solidblocks-*/**/ssh_config
 /solidblocks-*/**/test_id_rsa
 /solidblocks-*/**/test_id_rsa.pub
+.test_*/

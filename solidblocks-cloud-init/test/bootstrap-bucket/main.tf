@@ -1,11 +1,5 @@
-resource "random_string" "random" {
-  length  = 5
-  special = false
-  upper   = false
-}
-
 locals {
-  bootstrap_bucket_name = "test-bootstrap-${random_string.random.id}"
+  bootstrap_bucket_name = "test-bootstrap-${var.test_id}"
 }
 
 resource "aws_s3_bucket" "bootstrap" {
@@ -64,3 +58,21 @@ resource "aws_s3_bucket_acl" "bootstrap" {
   bucket = aws_s3_bucket.bootstrap.id
   acl    = "public-read"
 }
+
+
+resource "aws_s3_object" "bootstrap" {
+  bucket = aws_s3_bucket.bootstrap.id
+  key    = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/solidblocks-cloud-init-${var.solidblocks_version}.zip"
+  source = "${path.module}/../../build/solidblocks-cloud-init-${var.solidblocks_version}.zip"
+  etag   = filemd5("${path.module}/../../build/solidblocks-cloud-init-${var.solidblocks_version}.zip")
+}
+
+/*
+resource "aws_s3_object" "bootstrap_snippet" {
+  bucket     = aws_s3_bucket.bootstrap.id
+  key        = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/cloud_init_bootstrap_solidblocks"
+  source     = "${local.base_path}/${local.bootstrap_snippet}"
+  etag       = filemd5("${local.base_path}/${local.bootstrap_snippet}")
+  depends_on = [aws_s3_bucket_acl.bootstrap]
+}
+ */
