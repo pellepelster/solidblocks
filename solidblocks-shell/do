@@ -28,13 +28,13 @@ function task_build {
     local checksum="$(sha256sum "${DIR}/build/solidblocks-shell-${VERSION}.zip" | cut -f 1 -d " ")"
     sed \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g" < "${DIR}/templates/snippets/shell_bootstrap_solidblocks.template" > "${DIR}/build/snippets/shell_bootstrap_solidblocks"
+      --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g" < "${DIR}/templates/snippets/shell-bootstrap-solidblocks.template" > "${DIR}/build/snippets/shell-bootstrap-solidblocks"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell_bootstrap_solidblocks" "${DIR}/templates/snippets/shell_minimal_skeleton_do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell_minimal_skeleton_do"
-    chmod +x "${DIR}/build/snippets/shell_minimal_skeleton_do"
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell-bootstrap-solidblocks" "${DIR}/templates/snippets/shell-minimal-skeleton-do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell-minimal-skeleton-do"
+    chmod +x "${DIR}/build/snippets/shell-minimal-skeleton-do"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell_bootstrap_solidblocks" "${DIR}/templates/snippets/shell_kitchen_sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell_kitchen_sink.sh"
-    chmod +x "${DIR}/build/snippets/shell_kitchen_sink.sh"
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell-bootstrap-solidblocks" "${DIR}/templates/snippets/shell-kitchen-sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell-kitchen-sink.sh"
+    chmod +x "${DIR}/build/snippets/shell-kitchen-sink.sh"
   )
 }
 
@@ -52,7 +52,6 @@ function task_test_unit {
       log_divider_footer
   done
 }
-
 
 function task_test_prepare {
 

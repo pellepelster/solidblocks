@@ -93,7 +93,7 @@ jobs:
           name: solidblocks-cloud-init
           path: |
             solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
-            solidblocks-cloud-init/build/snippets/*
+            solidblocks-cloud-init/build/solidblocks-*.sh
 
   solidblocks-hetzner-nuke:
     runs-on: ubuntu-latest

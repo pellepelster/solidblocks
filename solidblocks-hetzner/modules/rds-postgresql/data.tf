@@ -1,5 +1,5 @@
 data "http" "cloud_init_bootstrap_solidblocks" {
-  url = "${var.solidblocks_base_url}/pellepelster/solidblocks/releases/download/${var.solidblocks_cloud_init_version}/cloud_init_bootstrap_solidblocks"
+  url = "${var.solidblocks_base_url}/pellepelster/solidblocks/releases/download/${var.solidblocks_cloud_init_version}/solidblocks-cloud-init-bootstrap.sh"
 }
 
 data "hcloud_volume" "data" {

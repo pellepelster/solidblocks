@@ -21,5 +21,5 @@ All functions are tested on the following distributions
 ## Kitchen Sink Usage Example
 
 ```shell
-{{% include "/snippets/shell_kitchen_sink.sh" %}}
+{{% include "/snippets/shell-kitchen-sink.sh" %}}
 ```

@@ -24,17 +24,6 @@ def dump_cloud_init(host):
         print("====================================================")
 
 
-def test_bootstrap(host):
-    assert host.file(f"/solidblocks/lib/storage.sh").is_file
-    assert host.file(f"/solidblocks/lib/lego.sh").is_file
-    # assert host.file(f"/solidblocks/bin/lego-update-certificate-permissions.sh").is_file
-
-
-def test_storage_mount(host):
-    assert host.mount_point(f"/data1").exists
-    assert host.mount_point(f"/data1").filesystem == "ext4"
-
-
 def test_lego(host):
     assert host.file(f"/usr/bin/lego").is_file
     assert host.file(f"/data1/ssl/certificates/{os.environ['SSL_DOMAIN']}.crt").is_file

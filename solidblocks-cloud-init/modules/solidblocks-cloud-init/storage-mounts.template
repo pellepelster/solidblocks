@@ -1,0 +1,3 @@
+%{ for s in storage }
+storage_mount "${s.linux_device}" "${s.mount_path}"
+%{ endfor ~}

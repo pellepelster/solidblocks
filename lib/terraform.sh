@@ -15,9 +15,7 @@ function terraform_wrapper() {
 
     cd "${dir}"
 
-    if [[ ! -d ".terraform" ]]; then
-      terraform init -upgrade
-    fi
+    terraform init -upgrade
 
     terraform $@
   )

@@ -7,7 +7,7 @@ locals {
     storage_device_data              = data.hcloud_volume.data.linux_device
     storage_device_backup            = try(data.hcloud_volume.backup[0].linux_device, "")
     // TODO fallback for test until https://github.com/hashicorp/terraform-provider-http/issues/264 is fixed
-    cloud_init_bootstrap_solidblocks = fileexists("${path.module}/cloud_init_bootstrap_solidblocks") ? file("${path.module}/cloud_init_bootstrap_solidblocks") : data.http.cloud_init_bootstrap_solidblocks.response_body
+    solidblocks_cloud_init_bootstrap = fileexists("${path.module}/solidblocks-cloud-init-bootstrap.sh") ? file("${path.module}/solidblocks-cloud-init-bootstrap.sh") : data.http.cloud_init_bootstrap_solidblocks.response_body
 
     backup_full_calendar = var.backup_full_calendar
     backup_incr_calendar = var.backup_incr_calendar

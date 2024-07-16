@@ -18,8 +18,12 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_build {
-  shopt -s globstar
-  cp ${DIR}/../solidblocks-cloud-init/**/cloud_init_bootstrap_solidblocks "${DIR}/modules/rds-postgresql/cloud_init_bootstrap_solidblocks" ||  { log_die "dependency artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+  if [[ -n "${CI:-}" ]]; then
+    cp ${DIR}/../solidblocks-cloud-init/solidblocks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/solidblocks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+  else
+    cp ${DIR}/../solidblocks-cloud-init/build/solidblocks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/solidblocks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+  fi
+
 
   mkdir -p "${DIR}/build/snippets"
   (

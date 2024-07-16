@@ -30,9 +30,7 @@ export ${key}="${value}"
 STORAGE_DEVICE_BACKUP="${storage_device_backup}"
 %{~ endif ~}
 
-${cloud_init_bootstrap_solidblocks}
-
-bootstrap_solidblocks
+${solidblocks_cloud_init_bootstrap}
 
 function install_prerequisites {
   apt-get install --no-install-recommends -qq -y \

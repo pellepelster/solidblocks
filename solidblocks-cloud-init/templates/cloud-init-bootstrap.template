@@ -1,0 +1,38 @@
+export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
+export SOLIDBLOCKS_VERSION="__SOLIDBLOCKS_VERSION__"
+export SOLIDBLOCKS_CLOUD_INIT_CHECKSUM="__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__"
+export SOLIDBLOCKS_BASE_URL="${SOLIDBLOCKS_BASE_URL:-https://github.com}"
+
+function solidblocks_bootstrap_cloud_init() {
+  package_update_repositories
+  package_ensure_package "unzip"
+
+  groupadd solidblocks
+  useradd solidblocks -g solidblocks
+
+  # shellcheck disable=SC2086
+  mkdir -p ${SOLIDBLOCKS_DIR}/{templates,lib,secrets}
+
+  chmod 770 ${SOLIDBLOCKS_DIR}
+  chown solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
+
+  chmod -R 770 ${SOLIDBLOCKS_DIR}
+  chown -R solidblocks:solidblocks ${SOLIDBLOCKS_DIR}
+
+  chmod -R 700 ${SOLIDBLOCKS_DIR}/secrets
+
+  local temp_file="$(mktemp)"
+  curl_wrapper "${SOLIDBLOCKS_BASE_URL}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.zip" > "${temp_file}"
+  echo "${SOLIDBLOCKS_CLOUD_INIT_CHECKSUM}  ${temp_file}" | sha256sum -c
+
+  (
+    cd "${SOLIDBLOCKS_DIR}" || exit 1
+    unzip "${temp_file}"
+    rm -rf "${temp_file}"
+  )
+
+  source "${SOLIDBLOCKS_DIR}/lib/storage.sh"
+  source "${SOLIDBLOCKS_DIR}/lib/lego.sh"
+}
+
+solidblocks_bootstrap_cloud_init

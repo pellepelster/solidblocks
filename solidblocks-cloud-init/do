@@ -10,18 +10,27 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 source "${DIR}/../lib/terraform.sh"
 
-TESTS="x86 arm"
+TESTS="plain storage-mounts"
 
 terraform_export_credentials
 export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
+
+function echo_include() {
+  local file=${1:-}
+  echo ""
+  echo "################################################################################"
+  echo "# included '${file}'"
+  echo "################################################################################"
+  cat "${DIR}/../${file}"
+  echo ""
+  echo "################################################################################"
+  echo ""
+}
 
 function task_build {
   (
     mkdir -p "${DIR}/build/solidblocks-cloud-init/lib"
     cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-cloud-init/lib/"
-
-    #mkdir -p "${DIR}/build/solidblocks-cloud-init/bin"
-    #cp -rv ${DIR}/bin/* "${DIR}/build/solidblocks-cloud-init/bin/"
 
     cd "${DIR}/build/solidblocks-cloud-init"
 
@@ -32,15 +41,22 @@ function task_build {
 
     local checksum="$(sha256sum "${DIR}/build/solidblocks-cloud-init-${VERSION}.zip" | cut -f 1 -d " ")"
 
+    cat "${DIR}/templates/cloud-init-header.template" > "${DIR}/modules/solidblocks-cloud-init/cloud-init-header.sh"
+
+    echo_include "solidblocks-shell/lib/utils-include.sh" > "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/log-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/curl-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/apt.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/package-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    cat "${DIR}/templates/cloud-init-bootstrap.template" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+
     sed \
+      -i \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_CLOUD_CHECKSUM__/${checksum}/g"  < "${DIR}/templates/snippets/cloud_init_bootstrap_solidblocks.template" > "${DIR}/build/snippets/cloud_init_bootstrap_solidblocks"
+      --expression="s/__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__/${checksum}/g" "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/snippets/cloud_init_bootstrap_solidblocks" "${DIR}/templates/snippets/cloud_init_minimal_skeleton.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/snippets/cloud_init_minimal_skeleton"
-    chmod +x "${DIR}/build/snippets/cloud_init_minimal_skeleton"
+    cp "${DIR}/build/solidblocks-cloud-init-bootstrap.sh" "${DIR}/modules/solidblocks-cloud-init/solidblocks-cloud-init-bootstrap.sh"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_CLOUD__/e cat ${DIR}/build/snippets/cloud_init_bootstrap_solidblocks" "${DIR}/templates/snippets/cloud_init_kitchen_sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_CLOUD__" > "${DIR}/build/snippets/cloud_init_kitchen_sink.sh"
-    chmod +x "${DIR}/build/snippets/cloud_init_kitchen_sink.sh"
   )
 }
 
@@ -81,8 +97,7 @@ function run_test {
 function task_test_ssh {
     local test=${1}
     shift || true
-    local ssh_config="$(terraform_output "${DIR}/test/${test}" "ssh_config")"
-    ssh -F ${ssh_config} "test" ${@}
+    ssh -F "${DIR}/test/${test}/ssh_config" "test" ${@}
 }
 
 function clean_cloud_resources() {
