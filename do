@@ -12,6 +12,7 @@ source "${DIR}/lib/terraform.sh"
 
 export VERSION="${GITHUB_REF_NAME:-snapshot}"
 export VERSION_PRE_RELEASE="${VERSION_PRE_RELEASE:-}"
+TEMP_DIR="${DIR}/.temp$$"
 
 COMPONENTS="solidblocks-terraform solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
@@ -224,6 +225,25 @@ function task_release {
   git push
 }
 
+
+function clean_temp_dir {
+  rm -rf "${TEMP_DIR}"
+}
+
+function task_release_tf_modules {
+  local version="${1:-}"
+
+  clean_temp_dir
+  mkdir -p "${TEMP_DIR}"
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${version}/terraform-hcloud-solidblocks-rds-postgresql-v${version}.zip" -o "${TEMP_DIR}/terraform-hcloud-solidblocks-rds-postgresql.zip"
+  (
+    cd "${TEMP_DIR}"
+    unzip terraform-hcloud-solidblocks-rds-postgresql.zip
+    rm -rf terraform-hcloud-solidblocks-rds-postgresql.zip
+  )
+  #trap clean_temp_dir EXIT
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -252,6 +272,7 @@ case ${ARG} in
   release) task_release "$@" ;;
   release-docker) task_release_docker "$@" ;;
   release-check) task_release_check "$@" ;;
+  release-tf-modules) task_release_tf_modules "$@" ;;
   bootstrap) task_bootstrap "$@" ;;
   *) task_usage ;;
 esac

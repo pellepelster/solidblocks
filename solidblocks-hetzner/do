@@ -37,6 +37,12 @@ function task_build {
     terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
     terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
   fi
+
+  (
+    cd "${DIR}/modules/rds-postgresql"
+    zip -r "${DIR}/build/terraform-hcloud-solidblocks-rds-postgresql-${VERSION}.zip" *
+  )
+
 }
 
 function task_lint {
