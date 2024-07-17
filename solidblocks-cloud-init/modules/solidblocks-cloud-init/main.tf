@@ -1,5 +1,5 @@
 locals {
-  variables = {
+  variables = var.solidblocks_base_url == null ? {} : {
     SOLIDBLOCKS_BASE_URL : var.solidblocks_base_url
   }
 
@@ -16,7 +16,9 @@ ${templatefile("${path.module}/storage-mounts.template", {
     storage : var.storage
   })}
 
+${templatefile("${path.module}/acme-ssl.template", {
+    acme_ssl : var.acme_ssl
+  })}
+
 EOT
 }
-
-#lego_setup_dns "${SSL_PATH}" "${SSL_EMAIL}" "${SSL_DOMAINS}" "${SSL_DNS_PROVIDER}" "/bin/true" "https://acme-staging-v02.api.letsencrypt.org/directory"

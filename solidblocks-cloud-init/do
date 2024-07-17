@@ -10,7 +10,7 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 source "${DIR}/../lib/terraform.sh"
 
-TESTS="plain storage-mounts"
+TESTS="plain storage-mounts acme-ssl-x86 acme-ssl-arm"
 
 terraform_export_credentials
 export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"

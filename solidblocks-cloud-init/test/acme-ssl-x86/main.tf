@@ -27,15 +27,26 @@ resource "hcloud_volume_attachment" "test" {
   volume_id = hcloud_volume.test.id
 }
 
+module "cloud_init" {
+  source               = "../../modules/solidblocks-cloud-init"
+  solidblocks_base_url = "https://${module.bootstrap_bucket.bucket_domain_name}"
+  acme_ssl = {
+    path         = "/tmp/ssl"
+    email        = "contact@blcks.de"
+    domains      = ["acme-ssl-x86.blcks.de"]
+    acme_server  = "https://acme-staging-v02.api.letsencrypt.org/directory"
+    dns_provider = "hetzner"
+    variables = {
+      HETZNER_API_KEY : var.hetzner_dns_api_token
+      HETZNER_HTTP_TIMEOUT : "30"
+      HETZNER_PROPAGATION_TIMEOUT : "300"
+    }
+  }
+}
+
 module "test" {
   source      = "../../../testbeds/hetzner/test-server"
   name        = "test-x86-${random_string.test_id.id}"
   server_type = "cx11"
-  user_data   = templatefile("${path.module}/cloud_init.sh", {
-    solidblocks_base_url   = "https://${module.bootstrap_bucket.bucket_domain_name}"
-    cloud_minimal_skeleton = file("${path.module}/../../build/snippets/cloud_init_minimal_skeleton")
-    storage_device         = hcloud_volume.test.linux_device
-    hetzner_dns_api_token  = var.hetzner_dns_api_token
-    ssl_domain             = "x86.blcks.de"
-  })
+  user_data   = module.cloud_init.user_data
 }
