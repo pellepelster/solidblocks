@@ -8,7 +8,7 @@ Releases are viable via [https://github.com/pellepelster/solidblocks/releases](h
 
 
 ```shell
-{{% include "/snippets/shell-bootstrap-solidblocks" %}}
+{{% include "/snippets/shell-bootstrap-solidblocks.sh" %}}
 ```
 
 A full example that you can use as a skeleton for your own scripts

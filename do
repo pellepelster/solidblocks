@@ -10,7 +10,8 @@ source "${DIR}/solidblocks-shell/lib/file.sh"
 source "${DIR}/solidblocks-shell/lib/log.sh"
 source "${DIR}/lib/terraform.sh"
 
-VERSION="${GITHUB_REF_NAME:-snapshot}"
+export VERSION="${GITHUB_REF_NAME:-snapshot}"
+export VERSION_PRE_RELEASE="${VERSION_PRE_RELEASE:-}"
 
 COMPONENTS="solidblocks-terraform solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
@@ -70,9 +71,6 @@ function task_clean_gcloud {
 }
 
 function task_clean {
-    task_clean_aws
-    task_clean_hetzner
-
     rm -rf "${DIR}/build"
     rm -rf "${DIR}/doc/generated"
     rm -rf "${DIR}/doc/snippets"
@@ -83,6 +81,9 @@ function task_clean {
           "./do" clean
         )
     done
+
+    task_clean_aws
+    task_clean_hetzner
 }
 
 function task_test_init {
@@ -147,7 +148,6 @@ function task_build_documentation {
       rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${DIR}/doc/snippets"
     fi
 
-    export VERSION="$(semver get release)"
     mkdir -p "${DIR}/build/documentation"
     (
       cd "${DIR}/build/documentation"
@@ -177,7 +177,8 @@ function task_bootstrap() {
 function task_release_check() {
   local previous_tag="$(git --no-pager tag | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -1)"
   local previous_version="${previous_tag#v}"
-  local version="$(semver get release)"
+  local version="$(semver get release)${VERSION_PRE_RELEASE}"
+  echo "next version '${version}'"
 
   task_build
   task_build_documentation
@@ -213,7 +214,7 @@ function task_release {
 
   task_release_check
 
-  local version="$(semver get release)"
+  local version="$(semver get release)${VERSION_PRE_RELEASE}"
   git tag -a "${version}" -m "${version}"
   git push --tags
 

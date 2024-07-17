@@ -12,7 +12,7 @@ resource "hcloud_volume_attachment" "example" {
 
 module "example" {
   source  = "pellepelster/solidblocks-cloud-init/null"
-  version = "0.0.1"
+  version = "0.2.6-pre"
 
   storage = [
     { linux_device = hcloud_volume.example.linux_device, mount_path = "/data1" },

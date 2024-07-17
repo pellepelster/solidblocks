@@ -28,7 +28,7 @@ The documentation is based on [hugo](https://gohugo.io/). Each component contrib
 running `./do build-documentation` they can be included like this:
 
 ```shell
-{{%/* include "/snippets/shell-bootstrap-solidblocks" */%}}
+{{%/* include "/snippets/shell-bootstrap-solidblocks.sh" */%}}
 ```
 
 Snippets should always be tested if feasible to ensure the documentation is correct and runnable.

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.6-pre
+
+**IMPROVEMENTS**
+
+* Add cloud init terraform module [documentation](https://pellepelster.github.io/solidblocks/cloud-init/).   
+
 ## v0.2.5
 
 **IMPROVEMENTS**
