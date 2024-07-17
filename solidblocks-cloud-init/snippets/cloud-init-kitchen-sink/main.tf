@@ -37,6 +37,7 @@ resource "hcloud_server" "example" {
   image       = "debian-11"
   server_type = "cx11"
   location    = var.location
+  ssh_keys    = [hcloud_ssh_key.ssh_key.id]
   user_data   = <<EOT
 ${module.example.user_data}
 

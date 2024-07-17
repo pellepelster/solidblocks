@@ -11,6 +11,7 @@ source "${DIR}/../solidblocks-shell/lib/python.sh"
 source "${DIR}/../lib/terraform.sh"
 
 TESTS="plain storage-mounts acme-ssl-x86 acme-ssl-arm"
+SNIPPETS="cloud-init-kitchen-sink"
 
 terraform_export_credentials
 export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
@@ -43,7 +44,8 @@ function task_build {
 
     cat "${DIR}/templates/cloud-init-header.template" > "${DIR}/modules/solidblocks-cloud-init/cloud-init-header.sh"
 
-    echo_include "solidblocks-shell/lib/utils-include.sh" > "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/text-include.sh" > "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/utils-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
     echo_include "solidblocks-shell/lib/log-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
     echo_include "solidblocks-shell/lib/curl-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
     echo_include "solidblocks-shell/lib/apt.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
@@ -71,7 +73,6 @@ function task_test {
   fi
 
   local tests="${1:-$TESTS}"
-
   for test in ${tests}; do
     run_test "${test}"
   done
@@ -93,6 +94,22 @@ function run_test {
   clean_cloud_resources "${test}"
 }
 
+function task_test_snippets {
+  local snippets="${1:-$SNIPPETS}"
+  for snippet in ${snippets}; do
+    terraform_wrapper "${DIR}/snippets/${snippet}" apply -auto-approve
+
+    while ! ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" test -f /run/cloud-init/result.json; do
+      log_echo_error "waiting for '${snippet}' server cloud init run"
+      sleep 1
+    done
+
+    if [[ "$(ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" cat /run/cloud-init/result.json |  jq -r '.v1.errors | length')" != "0" ]]; then
+      ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" cat /run/cloud-init/result.json
+      exit 1
+    fi
+  done
+}
 
 function task_test_ssh {
     local test=${1}
@@ -136,6 +153,7 @@ case ${arg} in
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
+  test-snippets) task_test_snippets "$@" ;;
   release-docker) task_release_docker "$@" ;;
   *) task_usage ;;
 esac

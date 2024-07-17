@@ -1,5 +1,5 @@
 Host test
-    HostName ${ipv4_address}
+    HostName ${hostname}
     User root
     IdentityFile ${identity_file}
     StrictHostKeyChecking no
