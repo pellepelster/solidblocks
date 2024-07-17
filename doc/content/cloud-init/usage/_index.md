@@ -1,11 +1,7 @@
 ---
 title: Usage
-weight: 99
-description: Usage examples
+weight: 10
+description: How to use Solidblocks cloud-init in various scenarios
 ---
 
-To use Solidblocks Cloud-Init in you user data, include the following snippet
-
-```shell
-{{% include "/snippets/cloud_init_bootstrap_solidblocks" %}}
-```
+{{% children description="true" %}}

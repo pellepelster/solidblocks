@@ -1,10 +1,10 @@
 ---
 title: Lego
-weight: 20
+weight: 30
 description: Utilities for LetsEncrypt certificate creation with lego 
 ---
 
-Utilities for LetsEncrypt certificate creation with lego
+Utilities for LetsEncrypt certificate creation with the [lego ACME client](https://github.com/go-acme/lego)
 
 ## Functions
 

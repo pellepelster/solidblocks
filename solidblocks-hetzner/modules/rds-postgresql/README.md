@@ -1,6 +1,6 @@
 # RDS PostgreSQL
 
-See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds-postgresql/) for more details and usage examples.
+See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds/) for more details and usage examples.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
