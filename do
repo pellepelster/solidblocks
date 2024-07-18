@@ -46,6 +46,23 @@ function task_release_prepare {
   done
 }
 
+function task_release_test {
+  export VERSION="${1:-}"
+
+  if [[ -z "${VERSION}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+
+  for component in ${COMPONENTS}; do
+    (
+      echo "running release-test for '${component}'"
+      cd "${DIR}/${component}"
+      "./do" release-test "${VERSION}"
+    )
+  done
+}
+
 function task_clean_aws {
 
   #export AWS_REGION="eu-central-1"
@@ -201,6 +218,11 @@ function task_release_check() {
     exit 1
   fi
 
+  if [[ $(git diff --stat) != '' ]]; then
+    echo "repository '${DIR}' is dirty"
+    exit 1
+  fi
+
   echo "checking for release version '${VERSION}'"
 
   task_build
@@ -248,7 +270,8 @@ function clean_temp_dir {
 
 function task_release_tf_modules {
   local version="${1:-}"
-  task_release_tf_module "terraform-null-solidblocks-cloud-init" "${version}"
+  #task_release_tf_module "terraform-null-solidblocks-cloud-init" "${version}"
+  task_release_tf_module "terraform-hcloud-solidblocks-rds-postgresql" "${version}"
 }
 
 function task_release_tf_module {
@@ -270,11 +293,8 @@ function task_release_tf_module {
     git commit -m "version ${version}" || true
     git push
 
-    git tag -d "${version}" && git push origin ":refs/tags/${version}" || true
-    git push
+    git tag -a "${version}" -m "${version}"
     git push --tags
-    sleep 10 # give registry.terraform.io some time to catch up
-    git tag -a "${version}" -m "${version}" && git push --tags
   )
   # git tag -d "v${VERSION}" && git push origin ":refs/tags/v${VERSION}" && git tag -a "v${VERSION}" -m "v${VERSION}" && git push --tags
 }
@@ -309,6 +329,7 @@ case ${ARG} in
   release-prepare) task_release_prepare "$@" ;;
   release-check) task_release_check "$@" ;;
   release-tf-modules) task_release_tf_modules "$@" ;;
+  releate-test) task_release_test "$@" ;;
   bootstrap) task_bootstrap "$@" ;;
   *) task_usage ;;
 esac

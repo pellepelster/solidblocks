@@ -12,7 +12,7 @@ resource "local_file" "ssh_public_key" {
 
 resource "local_file" "ssh_public_config" {
   content = templatefile("${path.module}/ssh_config.template", {
-    "ipv4_address"  = module.rds-postgresql.ipv4_address
+    "hostname"  = module.rds-postgresql.ipv4_address
     "identity_file" = abspath(local_file.ssh_private_key.filename)
   }
   )

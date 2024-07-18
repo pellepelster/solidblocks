@@ -126,6 +126,20 @@ function task_test_snippets_s3 () {
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" destroy -auto-approve
 }
 
+function snippets_wait_for_cloud_init () {
+  local snippet="${1:-}"
+
+  while ! ssh -F "${DIR}/snippets/${snippet}/instance/ssh_config" test test -f /run/cloud-init/result.json; do
+    log_echo_error "waiting for '${snippet}' server cloud init run"
+    sleep 1
+  done
+
+  if [[ "$(ssh -F "${DIR}/snippets/${snippet}/instance/ssh_config" test cat /run/cloud-init/result.json |  jq -r '.v1.errors | length')" != "0" ]]; then
+    ssh -F "${DIR}/snippets/${snippet}/instance/ssh_config" test cat /run/cloud-init/result.json
+    exit 1
+  fi
+}
+
 function task_test_snippets_private_network () {
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" init -upgrade
@@ -137,7 +151,7 @@ function task_test_snippets_private_network () {
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
 }
 
-function task_test_snippets () {
+function task_release_test () {
   task_test_snippets_private_network
   task_test_snippets_local
   task_test_snippets_s3
@@ -747,7 +761,7 @@ function terraform_replace_variable_default {
   local version="${3:-}"
 
   mkdir -p "${DIR}/.tmp"
-  rg -e "(^\s*default\s*=\s*\")(\S+)(\"\s*#${marker}\s*$)" --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never "${file}" > "${DIR}/.tmp/tmp.$$"
+  rg -e "(^\s*default\s*=\s*\")(\S+)(\"\s*#${marker}\s*$)" --replace "\${1}v${version}\${3}" --passthru --no-filename  --no-line-number --color never "${file}" > "${DIR}/.tmp/tmp.$$"
   mv "${DIR}/.tmp/tmp.$$" "${file}"
   rm -rf "${DIR}/.tmp"
 }
@@ -807,5 +821,6 @@ case ${arg} in
   test-snippet-ssh) task_test_snippets_ssh "$@" ;;
   release-docker) task_release_docker "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
+  releate-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

@@ -98,7 +98,7 @@ function run_test {
   clean_cloud_resources "${test}"
 }
 
-function task_test_snippets {
+function task_release_test {
   local snippets="${1:-$SNIPPETS}"
   for snippet in ${snippets}; do
     terraform_wrapper "${DIR}/snippets/${snippet}" apply -auto-approve
@@ -171,8 +171,8 @@ case ${arg} in
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
-  test-snippets) task_test_snippets "$@" ;;
   release-docker) task_release_docker "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
+  releate-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac
