@@ -295,7 +295,6 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         val username3 = UUID.randomUUID().toString()
 
         postgresContainer1.createJdbi().also {
-
             it.waitForReady()
             it.createUserTable()
             it.insertUser(username1)

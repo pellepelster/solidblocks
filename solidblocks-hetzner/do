@@ -57,10 +57,6 @@ function terraform_wrapper {
   (
     cd "${DIR}/${module}"
 
-    if [[ ! -d ".terraform" ]]; then
-      terraform init -upgrade
-    fi
-
     export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
     export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/test/dns_api_token)}"
 
@@ -230,11 +226,14 @@ function task_test_private_network () {
   fi
 
   ensure_gcp_env
+  terraform_wrapper "test/terraform/base" init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/backup_storage" init -upgrade
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_private_network" init -upgrade
   terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
 
   test_wait_for_cloud_init
@@ -262,11 +261,14 @@ function task_test_arm () {
   fi
 
   ensure_gcp_env
+  terraform_wrapper "test/terraform/base" apply init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/backup_storage" init -upgrade
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_arm" init -upgrade
   terraform_wrapper "test/terraform/instance_arm" apply -auto-approve
 
   test_wait_for_cloud_init
@@ -291,11 +293,14 @@ function task_test_ssl () {
   ensure_gcp_env
   python_ensure_venv "${DIR}"
 
+  terraform_wrapper "test/terraform/base" init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/backup_storage" init -upgrade
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_ssl" init -upgrade
   terraform_wrapper "test/terraform/instance_ssl" apply -auto-approve
 
   test_wait_for_cloud_init
@@ -334,11 +339,14 @@ function task_test_restore_from_local() {
 }
 
 function task_test_restore_from_local_deploy() {
+  terraform_wrapper "test/terraform/base" init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/backup_storage" init -upgrade
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_local" init -upgrade
   terraform_wrapper "test/terraform/instance_local" apply -auto-approve
 }
 
@@ -391,14 +399,17 @@ function task_test_migration() {
   fi
 
   ensure_gcp_env
+  terraform_wrapper "test/terraform/base" init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/backup_storage" init -upgrade
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
 
   log_divider_header "create instance with postgresql version 14"
   export TF_VAR_postgres_major_version="14"
+  terraform_wrapper "test/terraform/instance_migration" init -upgrade
   terraform_wrapper "test/terraform/instance_migration" apply -auto-approve
   log_divider_footer
 
@@ -441,11 +452,14 @@ function task_test_encryption() {
   fi
 
   ensure_gcp_env
+  terraform_wrapper "test/terraform/base" init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/backup_storage" init -upgrade
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_encryption" init -upgrade
   terraform_wrapper "test/terraform/instance_encryption" apply -auto-approve
 
   test_wait_for_cloud_init
@@ -492,10 +506,12 @@ function task_test_restore_from_s3() {
   fi
 
   ensure_gcp_env
+  terraform_wrapper "test/terraform/base" init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/instance_s3" init -upgrade
   terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
   test_wait_for_cloud_init
 
@@ -608,10 +624,12 @@ function task_test_restore_from_gcp() {
 
   ensure_gcp_env
 
+  terraform_wrapper "test/terraform/base" init -upgrade
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
 
+  terraform_wrapper "test/terraform/instance_gcp" init -upgrade
   terraform_wrapper "test/terraform/instance_gcp" apply -auto-approve
   test_wait_for_cloud_init
 

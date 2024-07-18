@@ -10,6 +10,7 @@ listen_addresses = '*'
 unix_socket_directories =  '/rds/socket'
 log_destination = 'stderr'
 logging_collector = 'off'
+log_line_prefix = '%h %m [%p] %q%u@%d '
 
 {{ if and (file.Exists "/rds/ssl/server.crt") (file.Exists "/rds/ssl/server.key") }}
 ssl = on

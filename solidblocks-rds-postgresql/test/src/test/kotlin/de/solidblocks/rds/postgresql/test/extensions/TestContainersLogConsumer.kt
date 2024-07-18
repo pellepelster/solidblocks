@@ -15,6 +15,20 @@ class TestContainersLogConsumer(private val parent: Consumer<OutputFrame>?) : Co
         frames.add(frame)
     }
 
+    fun waitForLogLine(regex: Regex) {
+        logger.info { "[test] waiting for logline '${regex.toString()}'" }
+        await.atMost(Duration.ofMinutes(5)).until {
+            hasLogLine(regex)
+        }
+    }
+
+    fun waitForAnyLogLine(regexes: List<Regex>) {
+        logger.info { "[test] waiting one of the following loglines ${regexes.joinToString(",") { "'${it}'" }}" }
+        await.atMost(Duration.ofMinutes(5)).until {
+            hasLogLine(regexes)
+        }
+    }
+
     fun waitForLogLine(logLine: String) {
         logger.info { "[test] waiting for logline '${logLine}'" }
         await.atMost(Duration.ofMinutes(5)).until {
@@ -28,14 +42,32 @@ class TestContainersLogConsumer(private val parent: Consumer<OutputFrame>?) : Co
         }
     }
 
+    fun hasLogLine(regex: Regex): Boolean {
+        return frames.any {
+            it.utf8String.contains(regex)
+        }
+    }
+
+    fun hasLogLine(regexes: List<Regex>): Boolean {
+        return frames.any { frame ->
+            regexes.any {
+                frame.utf8String.contains(it)
+            }
+        }
+    }
+
     fun assertHasLogLine(logLine: String) {
         logger.info { "[test] asserting logline '${logLine}'" }
         assertThat(hasLogLine(logLine)).isTrue
     }
 
+    fun assertHasLogLine(regex: Regex) {
+        logger.info { "[test] asserting logline '${regex.toString()}'" }
+        assertThat(hasLogLine(regex)).isTrue
+    }
+
     fun assertHasNoLogLine(logLine: String) {
         logger.info { "[test] asserting no logline '${logLine}'" }
-
         assertThat(hasLogLine(logLine)).isFalse
     }
 

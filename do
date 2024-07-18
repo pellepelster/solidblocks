@@ -110,6 +110,7 @@ function task_clean {
 
     task_clean_aws
     task_clean_hetzner
+    task_clean_gcloud
 }
 
 function task_test_init {
