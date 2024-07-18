@@ -238,7 +238,7 @@ function task_release {
 
   task_release_check ${VERSION}
 
-  git tag -a "${VERSION}" -m "${VERSION}"
+  git tag -a "v${VERSION}" -m "v${VERSION}"
   git push --tags
 }
 

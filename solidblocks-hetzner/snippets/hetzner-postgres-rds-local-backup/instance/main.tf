@@ -18,7 +18,7 @@ data "hcloud_volume" "backup" {
 
 module "rds-postgresql" {
   source  = "pellepelster/solidblocks-rds-postgresql/hcloud"
-  version = "1.2.6-pre3"
+  version = "1.2.6-pre4"
   name     = "rds-postgresql"
   location = var.hetzner_location
   ssh_keys = [hcloud_ssh_key.ssh_key.id]
