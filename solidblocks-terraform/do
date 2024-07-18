@@ -44,6 +44,16 @@ function task_release_docker {
   docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
 }
 
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+  echo "setting version: ${version}"
+}
+
 function task_clean {
   echo "<not implemented>"
 }
@@ -64,5 +74,6 @@ case ${arg} in
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-docker) task_release_docker "$@" ;;
+  release-prepare) task_release_prepare "$@" ;;
   *) task_usage ;;
 esac

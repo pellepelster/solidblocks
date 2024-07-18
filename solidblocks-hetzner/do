@@ -715,6 +715,16 @@ function task_release_docker {
   echo "not implemented"
 }
 
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+  echo "setting version: ${version}"
+}
+
 function task_test_ssh {
   ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
 }
@@ -768,5 +778,6 @@ case ${arg} in
   test-snippets) task_test_snippets "$@" ;;
   test-snippet-ssh) task_test_snippets_ssh "$@" ;;
   release-docker) task_release_docker "$@" ;;
+  release-prepare) task_release_prepare "$@" ;;
   *) task_usage ;;
 esac

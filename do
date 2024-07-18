@@ -10,11 +10,9 @@ source "${DIR}/solidblocks-shell/lib/file.sh"
 source "${DIR}/solidblocks-shell/lib/log.sh"
 source "${DIR}/lib/terraform.sh"
 
-export VERSION="${GITHUB_REF_NAME:-snapshot}"
-export VERSION_PRE_RELEASE="${VERSION_PRE_RELEASE:-}"
 TEMP_DIR="${DIR}/.temp"
-
 COMPONENTS="solidblocks-terraform solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
+export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 function ensure_environment {
   software_set_export_path
@@ -29,6 +27,23 @@ function task_build {
     done
 
     task_build_documentation
+}
+
+function task_release_prepare {
+  export VERSION="${1:-}"
+
+  if [[ -z "${VERSION}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+
+  for component in ${COMPONENTS}; do
+    (
+      echo "running release-prepare for '${component}'"
+      cd "${DIR}/${component}"
+      "./do" release-prepare "${VERSION}"
+    )
+  done
 }
 
 function task_clean_aws {
@@ -178,8 +193,15 @@ function task_bootstrap() {
 function task_release_check() {
   local previous_tag="$(git --no-pager tag | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -1)"
   local previous_version="${previous_tag#v}"
-  local version="$(semver get release)${VERSION_PRE_RELEASE}"
-  echo "next version '${version}'"
+
+  export VERSION="${1:-}"
+
+  if [[ -z "${VERSION}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+
+  echo "checking for release version '${VERSION}'"
 
   task_build
   task_build_documentation
@@ -192,9 +214,9 @@ function task_release_check() {
     exit 1
   fi
 
-  echo "checking changelog for current version '${version}'"
-  if ! grep "${version}" "${DIR}/CHANGELOG.md"; then
-    echo "version '${version}' not found in changelog"
+  echo "checking changelog for current version '${VERSION}'"
+  if ! grep "${VERSION}" "${DIR}/CHANGELOG.md"; then
+    echo "version '${VERSION}' not found in changelog"
     exit 1
   fi
 
@@ -205,26 +227,14 @@ function task_release_check() {
 }
 
 function task_release {
-
   # ensure terraform-docs is available
   terraform-docs --version
 
-  if [[ ! -f ".semver.yaml" ]]; then
-    semver init --release v0.0.1
-  fi
-
   task_release_check
 
-  local version="$(semver get release)${VERSION_PRE_RELEASE}"
-  git tag -a "${version}" -m "${version}"
+  git tag -a "${VERSION}" -m "${VERSION}"
   git push --tags
-
-  semver up release
-  git add .semver.yaml
-  git commit -m "bump version to $(semver get release)"
-  git push
 }
-
 
 function clean_temp_dir {
   rm -rf "${TEMP_DIR}"
@@ -290,6 +300,7 @@ case ${ARG} in
   serve-documentation) task_serve_documentation "$@" ;;
   release) task_release "$@" ;;
   release-docker) task_release_docker "$@" ;;
+  release-prepare) task_release_prepare "$@" ;;
   release-check) task_release_check "$@" ;;
   release-tf-modules) task_release_tf_modules "$@" ;;
   bootstrap) task_bootstrap "$@" ;;

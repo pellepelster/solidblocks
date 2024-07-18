@@ -143,6 +143,20 @@ function task_format {
   echo "<not implemented>"
 }
 
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+
+  echo "setting version: ${version}"
+  mkdir -p "${DIR}/.tmp"
+  rg -e '(^\s*source\s*=\s*"\S+?ref=)(\S+)("\s*$)' "${DIR}/snippets/cloud-init-kitchen-sink/main.tf" --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/.tmp/main.tf"
+  mv "${DIR}/.tmp/main.tf" "${DIR}/snippets/cloud-init-kitchen-sink/main.tf"
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -159,5 +173,6 @@ case ${arg} in
   test-ssh) task_test_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
   release-docker) task_release_docker "$@" ;;
+  release-prepare) task_release_prepare "$@" ;;
   *) task_usage ;;
 esac

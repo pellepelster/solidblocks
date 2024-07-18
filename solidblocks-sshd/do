@@ -43,6 +43,16 @@ function task_release_docker {
   echo "<not implemented>"
 }
 
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+  echo "setting version: ${version}"
+}
+
 function task_format {
   echo "<not implemented>"
 }
@@ -60,5 +70,6 @@ case ${arg} in
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-docker) task_release_docker "$@" ;;
+  release-prepare) task_release_prepare "$@" ;;
   *) task_usage ;;
 esac
