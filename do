@@ -12,7 +12,7 @@ source "${DIR}/lib/terraform.sh"
 
 export VERSION="${GITHUB_REF_NAME:-snapshot}"
 export VERSION_PRE_RELEASE="${VERSION_PRE_RELEASE:-}"
-TEMP_DIR="${DIR}/.temp$$"
+TEMP_DIR="${DIR}/.temp"
 
 COMPONENTS="solidblocks-terraform solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
@@ -232,18 +232,7 @@ function clean_temp_dir {
 
 function task_release_tf_modules {
   local version="${1:-}"
-
-  task_release_tf_module "terraform-hcloud-solidblocks-rds-postgresql" "${version}"
-
-  clean_temp_dir
-  mkdir -p "${TEMP_DIR}"
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${version}/-v${version}.zip" -o "${TEMP_DIR}/terraform-hcloud-solidblocks-rds-postgresql.zip"
-  (
-    cd "${TEMP_DIR}"
-    unzip terraform-hcloud-solidblocks-rds-postgresql.zip
-    rm -rf terraform-hcloud-solidblocks-rds-postgresql.zip
-  )
-  #trap clean_temp_dir EXIT
+  task_release_tf_module "terraform-null-solidblocks-cloud-init" "${version}"
 }
 
 function task_release_tf_module {
@@ -251,15 +240,27 @@ function task_release_tf_module {
   local version="${2:-}"
 
   clean_temp_dir
-  mkdir -p "${TEMP_DIR}"
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${version}/terraform-hcloud-solidblocks-rds-postgresql-v${version}.zip" -o "${TEMP_DIR}/terraform-hcloud-solidblocks-rds-postgresql.zip"
-  (
-    cd "${TEMP_DIR}"
-    unzip terraform-hcloud-solidblocks-rds-postgresql.zip
-    rm -rf terraform-hcloud-solidblocks-rds-postgresql.zip
-  )
 
-    # git tag -d "v${VERSION}" && git push origin ":refs/tags/v${VERSION}" && git tag -a "v${VERSION}" -m "v${VERSION}" && git push --tags
+  mkdir -p "${TEMP_DIR}/${module}/git"
+  git clone "git@github.com:pellepelster/${module}.git" "${TEMP_DIR}/${module}/git"
+
+  mkdir -p "${TEMP_DIR}/${module}/sources"
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${version}/${module}-v${version}.zip" -o "${TEMP_DIR}/${module}/${module}.zip"
+  unzip "${TEMP_DIR}/${module}/${module}.zip" -d "${TEMP_DIR}/${module}/sources"
+  cp -rv ${TEMP_DIR}/${module}/sources/* "${TEMP_DIR}/${module}/git"
+  (
+    cd "${TEMP_DIR}/${module}/git"
+    git add -A
+    git commit -m "version ${version}" || true
+    git push
+
+    git tag -d "${version}" && git push origin ":refs/tags/${version}" || true
+    git push
+    git push --tags
+    sleep 10 # give registry.terraform.io some time to catch up
+    git tag -a "${version}" -m "${version}" && git push --tags
+  )
+  # git tag -d "v${VERSION}" && git push origin ":refs/tags/v${VERSION}" && git tag -a "v${VERSION}" -m "v${VERSION}" && git push --tags
 }
 
 function task_usage {
