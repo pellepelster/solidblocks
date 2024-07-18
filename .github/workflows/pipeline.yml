@@ -8,10 +8,10 @@ on:
       - 'pelle'
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-pre'
+      - 'v[0-9]+.[0-9]+.[0-9]+-pre[0-9]*'
 
 env:
-  SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#skip-tests') || endsWith(github.event.ref, '-pre') }}
+  SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#skip-tests') || contains(github.event.ref, '-pre') }}
 
 concurrency:
   group: solidblocks
