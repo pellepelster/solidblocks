@@ -233,6 +233,23 @@ function clean_temp_dir {
 function task_release_tf_modules {
   local version="${1:-}"
 
+  task_release_tf_module "terraform-hcloud-solidblocks-rds-postgresql" "${version}"
+
+  clean_temp_dir
+  mkdir -p "${TEMP_DIR}"
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${version}/-v${version}.zip" -o "${TEMP_DIR}/terraform-hcloud-solidblocks-rds-postgresql.zip"
+  (
+    cd "${TEMP_DIR}"
+    unzip terraform-hcloud-solidblocks-rds-postgresql.zip
+    rm -rf terraform-hcloud-solidblocks-rds-postgresql.zip
+  )
+  #trap clean_temp_dir EXIT
+}
+
+function task_release_tf_module {
+  local module="${1:-}"
+  local version="${2:-}"
+
   clean_temp_dir
   mkdir -p "${TEMP_DIR}"
   curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${version}/terraform-hcloud-solidblocks-rds-postgresql-v${version}.zip" -o "${TEMP_DIR}/terraform-hcloud-solidblocks-rds-postgresql.zip"
@@ -241,7 +258,8 @@ function task_release_tf_modules {
     unzip terraform-hcloud-solidblocks-rds-postgresql.zip
     rm -rf terraform-hcloud-solidblocks-rds-postgresql.zip
   )
-  #trap clean_temp_dir EXIT
+
+    # git tag -d "v${VERSION}" && git push origin ":refs/tags/v${VERSION}" && git tag -a "v${VERSION}" -m "v${VERSION}" && git push --tags
 }
 
 function task_usage {
