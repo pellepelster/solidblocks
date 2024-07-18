@@ -21,11 +21,14 @@ Common for all `do` files are the following tasks:
 * `./do build` Build the component
 * `./do test` Run all tests for the component
 * `./do clean` Clean up ephemeral resources like local files and cloud resources
+* `./do format` Apply formatters and linters to all sourcecode of the component
+* `./do release-prepare` prepare a release, commonly used to insert correct version numbers into documentation and code snippets  
+* `./do release-test` run tests against released artifacts, commonly used to verify that the code snippets work  
+* `./do release-docker` release tested docker images as releases without the `-rc` version postfix
 
 ## Documentation
 
-The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after
-running `./do build-documentation` they can be included like this:
+The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after running `./do build-documentation` they can be included like this:
 
 ```shell
 {{%/* include "/snippets/shell-bootstrap-solidblocks.sh" */%}}
@@ -45,7 +48,6 @@ VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 To pass docker artifacts between build steps without accidentally releasing an untested docker image, freshly built and not yet tested images are tagged with a `-rc` postfix in the tag, e.g. `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}-rc` and re-tagged during the release process after all tests are run to `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}`
 
-
 ## Tests
 
 Especially the infrastructure heavy components of Solidblocks rely on downloading released code from Github releases. To be able to mimic this behaviour during integration tests, all code using released code from Github should provide the ability to override the release server to allow for injecting of development code during integration tests:
@@ -55,6 +57,8 @@ curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/[...]"
 ```
 
 For code where it is not feasible to inject a local webserver (e.g. code running on a cloud provider in cloud-init) AWS S3 is used as a webserver because it is easily scriptable.
+Tests that make uses of cloud VM instances are expected to create a temporary `ssh_config` for a host named `test` that can be used to log into the created machine of the currently running test via `ssh -F <path>/ssh_config test`, see for example `testbeds/hetzner/ssh-config/ssh_config.template`
+
 
 ## Secrets
 
@@ -63,14 +67,8 @@ local [pass](https://www.passwordstore.org/)-based password store.
 
 ### Cloud Accounts
 
-Components that work on cloud resources come with full integration tests using a real cloud backend. 
+Components that work on cloud resources come with full integration tests using a real cloud backend.
 It is highly advised to create separate cloud accounts for test executions. 
-
-```shell
-./do test-init-accounts
-```
-
-will init the cloud accounts (if implemented)
 
 #### AWS
 
@@ -147,13 +145,7 @@ All resources included in the project will be cleaned to ensure a consistent tes
 
 ##### Google Cloud
 
-A dedicated testing service role with minimal access is created via
-
-```shell
-./do test-init-accounts
-```
-
-In the console on that role create a service account key and make it available under `GCP_SERVICE_ACCOUNT_KEY` ( or in pass at `solidblocks/gcp/test/service_account_key`).
+A dedicated testing service role with minimal access with a service account key available under `GCP_SERVICE_ACCOUNT_KEY` ( or in pass at `solidblocks/gcp/test/service_account_key`).
 
 {{% notice warning %}}
 All resources included in the project will be cleaned to ensure a consistent test environment

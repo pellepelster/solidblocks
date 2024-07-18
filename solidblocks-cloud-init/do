@@ -135,14 +135,6 @@ function task_clean {
   rm -rf "${DIR}/build"
 }
 
-function task_release_docker {
-  echo "<not implemented>"
-}
-
-function task_format {
-  echo "<not implemented>"
-}
-
 function task_release_prepare {
   local version="${1:-}"
 
@@ -169,10 +161,10 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
-  format) task_format "$@" ;;
+  format) ;;
+  release-docker) ;;
   test-ssh) task_test_ssh "$@" ;;
-  release-docker) task_release_docker "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
-  releate-test) task_release_test "$@" ;;
+  release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

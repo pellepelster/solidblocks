@@ -39,10 +39,6 @@ function task_clean {
   fi
 }
 
-function task_release_docker {
-  echo "<not implemented>"
-}
-
 function task_release_prepare {
   local version="${1:-}"
 
@@ -69,7 +65,8 @@ case ${arg} in
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
-  release-docker) task_release_docker "$@" ;;
+  release-docker) ;;
   release-prepare) task_release_prepare "$@" ;;
+  release-test);;
   *) task_usage ;;
 esac

@@ -100,5 +100,6 @@ case ${arg} in
   clean) task_clean "$@" ;;
   release-docker) task_release_docker "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
+  release-test);;
   *) task_usage ;;
 esac

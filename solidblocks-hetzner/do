@@ -725,10 +725,6 @@ function task_test {
   task_test_ssl
 }
 
-function task_release_docker {
-  echo "not implemented"
-}
-
 function task_release_prepare {
   local version="${1:-}"
 
@@ -819,8 +815,8 @@ case ${arg} in
   test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
   test-snippet-ssh) task_test_snippets_ssh "$@" ;;
-  release-docker) task_release_docker "$@" ;;
+  release-docker) ;;
   release-prepare) task_release_prepare "$@" ;;
-  releate-test) task_release_test "$@" ;;
+  release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

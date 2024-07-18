@@ -3,7 +3,7 @@ title: Terraform
 weight: 30
 description: Use cloud-init function Terraform deployments
 ---
-   
+
 If you are in an environment where resources are provisioned using Terraform, you can use the provisioned Terraform module to generate a Solidblocks cloud-init based user data script.
 
 **main.tf**

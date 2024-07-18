@@ -47,18 +47,11 @@ function task_release_prepare {
 }
 
 function task_release_test {
-  export VERSION="${1:-}"
-
-  if [[ -z "${VERSION}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
-
   for component in ${COMPONENTS}; do
     (
       echo "running release-test for '${component}'"
       cd "${DIR}/${component}"
-      "./do" release-test "${VERSION}"
+      "./do" release-test
     )
   done
 }
@@ -265,7 +258,7 @@ function clean_temp_dir {
 
 function task_release_tf_modules {
   local version="${1:-}"
-  #task_release_tf_module "terraform-null-solidblocks-cloud-init" "${version}"
+  task_release_tf_module "terraform-null-solidblocks-cloud-init" "${version}"
   task_release_tf_module "terraform-hcloud-solidblocks-rds-postgresql" "${version}"
 }
 
@@ -324,7 +317,7 @@ case ${ARG} in
   release-prepare) task_release_prepare "$@" ;;
   release-check) task_release_check "$@" ;;
   release-tf-modules) task_release_tf_modules "$@" ;;
-  releate-test) task_release_test "$@" ;;
+  release-test) task_release_test "$@" ;;
   bootstrap) task_bootstrap "$@" ;;
   *) task_usage ;;
 esac

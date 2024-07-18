@@ -72,5 +72,6 @@ case ${arg} in
   build) task_build $@ ;;
   run) task_run $@ ;;
   release-prepare) task_release_prepare "$@" ;;
+  release-test);;
   *) task_usage ;;
 esac

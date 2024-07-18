@@ -104,10 +104,6 @@ function task_test {
   task_test_integration
 }
 
-function task_release_docker {
-  echo "<not implemented>"
-}
-
 function task_release_prepare {
   local version="${1:-}"
 
@@ -143,7 +139,8 @@ case ${arg} in
   test-unit) task_test_unit "$@" ;;
   test-unit-docker) task_test_unit_docker "$@" ;;
   test-integration) task_test_integration "$@" ;;
-  release-docker) task_release_docker "$@" ;;
+  release-docker) ;;
   release-prepare) task_release_prepare "$@" ;;
+  release-test);;
   *) task_usage ;;
 esac
