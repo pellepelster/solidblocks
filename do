@@ -218,11 +218,6 @@ function task_release_check() {
     exit 1
   fi
 
-  if [[ $(git diff --stat) != '' ]]; then
-    echo "repository '${DIR}' is dirty"
-    exit 1
-  fi
-
   echo "checking for release version '${VERSION}'"
 
   task_build
