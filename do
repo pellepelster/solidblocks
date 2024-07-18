@@ -263,6 +263,17 @@ function task_release_tf_modules {
   task_release_tf_module "terraform-hcloud-solidblocks-rds-postgresql" "${version}"
 }
 
+function task_renovate {
+  docker run --rm \
+    -e RENOVATE_PLATFORM=github \
+    -e RENOVATE_TOKEN="$(pass github/pelle/pat)" \
+    -e RENOVATE_AUTODISCOVER=false \
+    -e RENOVATE_BASE_DIR=/tmp/renovate \
+    -e RENOVATE_CONFIG_FILE=/renovate.json \
+    -v $(pwd)/renovate.json:/renovate.json \
+    renovate/renovate:35.14.4
+}
+
 function task_release_tf_module {
   local module="${1:-}"
   local version="${2:-}"
@@ -320,5 +331,6 @@ case ${ARG} in
   release-tf-modules) task_release_tf_modules "$@" ;;
   release-test) task_release_test "$@" ;;
   bootstrap) task_bootstrap "$@" ;;
+  renovate) task_renovate "$@" ;;
   *) task_usage ;;
 esac

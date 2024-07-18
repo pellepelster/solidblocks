@@ -4,6 +4,7 @@
     "pellepelster/solidblocks"
   ],
   "enabledManagers": [
+    "gradle",
     "gradle-wrapper"
   ]
 }
