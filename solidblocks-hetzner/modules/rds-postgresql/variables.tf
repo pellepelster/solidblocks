@@ -296,12 +296,12 @@ variable "solidblocks_base_url" {
 
 variable "solidblocks_cloud_init_version" {
   type        = string
-  description = "used for integration tests to inject test versions"
-  default     = "v0.2.6-pre"
+  description = "Solidblocks cloud-init version to use"
+  default     = "1.2.6-pre2" #solidblocks_cloud_init_version
 }
 
 variable "solidblocks_rds_version" {
   type        = string
-  description = "used for integration tests to inject test versions"
-  default     = "v0.2.6-pre"
+  description = "Solidblocks rds-postgresql version to use"
+  default     = "1.2.6-pre2" #solidblocks_rds_version
 }

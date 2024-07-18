@@ -214,10 +214,14 @@ function task_release_check() {
     exit 1
   fi
 
-  echo "checking changelog for current version '${VERSION}'"
-  if ! grep "${VERSION}" "${DIR}/CHANGELOG.md"; then
-    echo "version '${VERSION}' not found in changelog"
-    exit 1
+  if [[ "${VERSION}" == *"pre"* ]]; then
+    echo "skipping changelog check for pre-version '${VERSION}'"
+  else
+    echo "checking changelog for current version '${VERSION}'"
+    if ! grep "${VERSION}" "${DIR}/CHANGELOG.md"; then
+      echo "version '${VERSION}' not found in changelog"
+      exit 1
+    fi
   fi
 
   if [[ $(git diff --stat) != '' ]]; then
@@ -227,10 +231,12 @@ function task_release_check() {
 }
 
 function task_release {
+  export VERSION="${1:-}"
+
   # ensure terraform-docs is available
   terraform-docs --version
 
-  task_release_check
+  task_release_check ${VERSION}
 
   git tag -a "${VERSION}" -m "${VERSION}"
   git push --tags
