@@ -1,0 +1,2 @@
+variable "solidblocks_version" {
+}
