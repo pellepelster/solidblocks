@@ -1,6 +1,6 @@
 package de.solidblocks.infra.test
 
-import localCommand
+import local
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -60,6 +60,6 @@ ${steps.joinToString("\n") { it }}
 """.trimIndent()
 
         val scriptFile = it.createFile("script.sh").executable().content(script).create()
-        val result = localCommand(scriptFile.file).run()
+        val result = local().command(scriptFile.file).run()
     }
 }

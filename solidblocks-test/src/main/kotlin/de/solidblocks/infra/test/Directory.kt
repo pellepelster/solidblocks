@@ -29,6 +29,21 @@ class DirectoryBuilder(val path: Path) : Closeable {
             }
     }
 
+    fun createFromResource(resource: String): FileBuilder {
+        val r = this.javaClass.classLoader.getResource(resource)
+            ?: throw RuntimeException("resource file '$resource' not found")
+
+        return createFile(Path(r.path).fileName.name).content(r.readBytes())
+    }
+
+    fun createFromPath(path: Path): FileBuilder {
+        if (!path.exists()) {
+            throw RuntimeException("path '$path' does not exist")
+        }
+
+        return createFile(path.fileName.name).content(path.readBytes())
+    }
+
     fun remove() {
         logger.info { "deleting directory '$path'" }
         path.deleteRecursively()
@@ -43,6 +58,7 @@ class DirectoryBuilder(val path: Path) : Closeable {
     override fun close() {
         remove()
     }
+
 }
 
 fun tempDir() = DirectoryBuilder(createTempDirectory("test"))

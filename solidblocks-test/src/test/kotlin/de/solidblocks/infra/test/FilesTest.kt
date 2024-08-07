@@ -1,13 +1,34 @@
 import de.solidblocks.infra.test.createFile
-import de.solidblocks.infra.test.tempDir
 import de.solidblocks.infra.test.createZipFile
+import de.solidblocks.infra.test.tempDir
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.paths.shouldHaveNameWithoutExtension
 import io.kotest.matchers.paths.shouldNotExist
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
 
 public class FilesTest {
+
+    @Test
+    fun testCreateFromResource() {
+        val tempDir = tempDir()
+
+        tempDir.files() shouldHaveSize 0
+        tempDir.createFromResource("command-failure.sh").create()
+        tempDir.files() shouldHaveSize 1
+        tempDir.files()[0] shouldHaveNameWithoutExtension "command-failure"
+    }
+
+    @Test
+    fun testCreateFromPath() {
+        val tempDir = tempDir()
+
+        tempDir.files() shouldHaveSize 0
+        tempDir.createFromPath(Path(this.javaClass.classLoader.getResource("command-failure.sh")!!.path)).create()
+        tempDir.files() shouldHaveSize 1
+        tempDir.files()[0] shouldHaveNameWithoutExtension "command-failure"
+    }
 
     @Test
     fun testFiles() {
