@@ -78,7 +78,9 @@ fun runCommand(
             }
         }
 
-        process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)
+        if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
+            log(start, "timeout for command exceeded (${timeout})")
+        }
         val end = TimeSource.Monotonic.markNow()
 
         killProcessAndWait(process)

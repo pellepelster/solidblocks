@@ -3,11 +3,12 @@ package de.solidblocks.infra.test.docker
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.api.async.ResultCallback
 import com.github.dockerjava.api.command.PullImageResultCallback
+import com.github.dockerjava.api.exception.NotModifiedException
 import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
 import de.solidblocks.infra.test.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.io.Closeable
 import java.lang.Thread.sleep
 import java.nio.file.Path
@@ -15,14 +16,15 @@ import java.util.*
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 import kotlin.io.path.name
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
 
 class DockerCommandBuilder(executable: String) : CommandBuilder(executable) {
 
     override fun runInternal() = runBlocking {
-        val start = TimeSource.Monotonic.markNow()
+        var start = TimeSource.Monotonic.markNow()
+        var end = TimeSource.Monotonic.markNow()
+
         val output: Queue<OutputLine> = LinkedList()
 
         val config: DefaultDockerClientConfig.Builder =
@@ -65,62 +67,81 @@ class DockerCommandBuilder(executable: String) : CommandBuilder(executable) {
             .withAttachStdin(true)
             .withTty(false).exec()
 
-        dockerClient.execStartCmd(exec.id).exec(object : ResultCallback<Frame> {
-            override fun close() {
-                log(start, "close")
-            }
+        val unmatchedWaitForMatchers = try {
+            withTimeout(timeout) {
+                dockerClient.execStartCmd(exec.id).exec(object : ResultCallback<Frame> {
+                    override fun close() {
+                        log(start, "close")
+                    }
 
-            override fun onStart(closeable: Closeable?) {
-                log(start, "onStart")
-            }
+                    override fun onStart(closeable: Closeable?) {
+                        start = TimeSource.Monotonic.markNow()
+                        log(start, "onStart")
+                    }
 
-            override fun onError(throwable: Throwable?) {
-                log(start, "onError")
-                throwable?.printStackTrace()
-            }
+                    override fun onError(throwable: Throwable?) {
+                        log(start, "onError")
+                        throwable?.printStackTrace()
+                    }
 
-            override fun onComplete() {
-                log(start, "onComplete")
-            }
+                    override fun onComplete() {
+                        end = TimeSource.Monotonic.markNow()
+                    }
 
-            override fun onNext(frame: Frame) {
-                val payload = frame.payload.decodeToString()
+                    override fun onNext(frame: Frame) {
+                        val payload = frame.payload.decodeToString()
 
-                payload.lines().dropLastWhile { it.isEmpty() }.forEach {
-                    output.add(
-                        OutputLine(
-                            TimeSource.Monotonic.markNow() - start,
-                            it,
-                            when (frame.streamType) {
-                                StreamType.STDOUT -> OutputType.stdout
-                                StreamType.STDERR -> OutputType.stderr
-                                else -> {
-                                    throw RuntimeException("unsupported docker log stream type: ${frame.streamType}")
-                                }
-                            }
-                        )
-                    )
+                        payload.lines().dropLastWhile { it.isEmpty() }.forEach {
+                            output.add(
+                                OutputLine(
+                                    TimeSource.Monotonic.markNow() - start,
+                                    it,
+                                    when (frame.streamType) {
+                                        StreamType.STDOUT -> OutputType.stdout
+                                        StreamType.STDERR -> OutputType.stderr
+                                        else -> {
+                                            throw RuntimeException("unsupported docker log stream type: ${frame.streamType}")
+                                        }
+                                    }
+                                )
+                            )
+                        }
+                    }
+                })
+
+                val z = async {
+                    waitForOutput1(start, waitForOutput, output)
                 }
+
+                while (dockerClient.inspectExecCmd(exec.id).exec().exitCodeLong == null) {
+                    yield()
+                    sleep(50)
+                }
+
+                z.await()
             }
-        })
 
-        val unmatchedWaitForOutput = waitForOutput1(start, waitForOutput, output)
-
-
-        while (dockerClient.inspectExecCmd(exec.id).exec().exitCodeLong == null) {
-            sleep(250)
+        } catch (e: TimeoutCancellationException) {
+            dockerClient.killContainerCmd(createContainer.id).exec()
+            emptyList<WaitForOutput>()
         }
+
         val response = dockerClient.inspectExecCmd(exec.id).exec()
 
         log(start, "stopContainerCmd")
-        dockerClient.stopContainerCmd(createContainer.id).withTimeout(0).exec()
+
+        try {
+            log(start, "timeout for command exceeded (${timeout})")
+            dockerClient.stopContainerCmd(createContainer.id).withTimeout(0).exec()
+        } catch (e: NotModifiedException) {
+        }
         log(start, "removeContainerCmd")
         dockerClient.removeContainerCmd(createContainer.id)
         log(start, "done")
 
         CommandRunResult(
-            unmatchedWaitForOutput,
-            CommandResult(response.exitCodeLong.toInt(), 1.seconds, output.toList())
+            unmatchedWaitForMatchers,
+            CommandResult(response.exitCodeLong.toInt(), end - start, output.toList())
         )
     }
 }

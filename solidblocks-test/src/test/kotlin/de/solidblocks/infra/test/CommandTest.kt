@@ -3,7 +3,6 @@ import de.solidblocks.infra.test.docker.docker
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.comparables.shouldBeLessThan
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.FieldSource
 import kotlin.io.path.Path
@@ -66,7 +65,7 @@ public class CommandTest {
 
     @ParameterizedTest
     @FieldSource("contexts")
-    fun testAssertMixedLogOutput(context: TestContext) {
+    fun testOutput(context: TestContext) {
         assertSoftly(
             context.command(getCommandPath("command-output.sh")).run()
         ) {
@@ -92,17 +91,16 @@ public class CommandTest {
         }
     }
 
-    @Test
-    fun testTimeoutExceeded() {
+    @ParameterizedTest
+    @FieldSource("contexts")
+    fun testTimeoutExceeded(context: TestContext) {
         measureTime {
-            assertSoftly(local().command(getCommandPath("command-timeout.sh")).timeout(2.seconds).run()) {
+            assertSoftly(context.command(getCommandPath("command-timeout.sh")).timeout(2.seconds).run()) {
                 it shouldHaveExitCode 137
                 it runtimeShouldBeLessThan 3.seconds
                 it runtimeShouldBeGreaterThan 1.seconds
             }
-        } shouldBeLessThan 3.seconds
-
-
+        } shouldBeLessThan 4.seconds
     }
 
     @ParameterizedTest
