@@ -1,16 +1,18 @@
 package de.solidblocks.infra.test
 
+import de.solidblocks.infra.test.output.OutputMatcher
 import local
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.readBytes
+import kotlin.time.Duration.Companion.seconds
 
 class ScriptBuilder() {
 
     internal val sources: MutableList<Path> = mutableListOf()
 
-    internal val steps: MutableList<String> = mutableListOf()
+    internal val steps: MutableList<ScriptStepBuilder> = mutableListOf()
 
     fun sources(vararg sources: String) = apply {
         this.sources.addAll(sources.map { Path.of(it) })
@@ -20,20 +22,29 @@ class ScriptBuilder() {
         this.sources.addAll(sources)
     }
 
-    fun step(test: String, step: (StepBuilder) -> Unit) = apply {
-        this.steps.add(test)
+    fun step(step: String, callback: (ScriptStepBuilder) -> Unit) = apply {
+        val b = ScriptStepBuilder(step)
+        callback.invoke(b)
+        this.steps.add(b)
     }
 
 }
 
-class StepBuilder() {
+class ScriptStepBuilder(val step: String) {
+
+    val outputMatchers = mutableListOf<OutputMatcher>()
+
+    fun waitForOutput(regex: String) = apply {
+        outputMatchers.add(OutputMatcher(regex.toRegex(), 5.seconds, null))
+        this
+    }
 }
 
 fun script() = ScriptBuilder()
 
-fun ScriptBuilder.runLocal() {
-    tempDir().use {
+fun ScriptBuilder.runLocal(): CommandRunResult {
 
+    tempDir().use {
         val sourceMappings = this.sources.map { source ->
             source to it.path.resolve(
                 source.absolutePathString()
@@ -55,11 +66,11 @@ set -eu -o pipefail
 
 ${sourceMappings.joinToString("\n") { "source ${it.second.absolutePathString()}" }}
 
-${steps.joinToString("\n") { it }}
+${steps.joinToString("\n") { it.step }}
 
 """.trimIndent()
 
         val scriptFile = it.createFile("script.sh").executable().content(script).create()
-        val result = local().command(scriptFile.file).runResult()
+        return local().command(scriptFile.file).waitForOutputs(steps.flatMap { it.outputMatchers }).runResult()
     }
 }

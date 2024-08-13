@@ -1,8 +1,13 @@
-import de.solidblocks.infra.test.*
+import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.docker.docker
+import de.solidblocks.infra.test.output.*
+import de.solidblocks.infra.test.runtimeShouldBeGreaterThan
+import de.solidblocks.infra.test.runtimeShouldBeLessThan
+import de.solidblocks.infra.test.shouldHaveExitCode
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.comparables.shouldBeLessThan
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.FieldSource
 import kotlin.io.path.Path
@@ -29,26 +34,22 @@ public class CommandTest {
     @ParameterizedTest
     @FieldSource("contexts")
     fun testRunResult(context: TestContext) {
-        assertSoftly(context.command(getCommandPath("command-failure.sh")).runResult()) {
-            it shouldHaveExitCode 1
+        assertSoftly(context.command(getCommandPath("command-success.sh")).runResult()) {
+            it shouldHaveExitCode 0
         }
     }
 
-    /*
     @ParameterizedTest
     @FieldSource("contexts")
     fun testRunAndResult(context: TestContext) {
         runBlocking {
-            val run = context.command(getCommandPath("command-failure.sh")).run()
-
-            run.waitForOutput(".*marker 1.*")
+            val run = context.command(getCommandPath("command-success.sh")).run()
 
             assertSoftly(run.result()) {
-                it shouldHaveExitCode 1
+                it shouldHaveExitCode 0
             }
         }
     }
-    */
 
     @ParameterizedTest
     @FieldSource("contexts")
@@ -130,7 +131,7 @@ public class CommandTest {
 
     @ParameterizedTest
     @FieldSource("contexts")
-    fun testWaitForLogLineMatched(context: TestContext) {
+    fun testWaitForOutputRunResult(context: TestContext) {
         assertSoftly(
             context.command(getCommandPath("command-waitfor.sh"))
                 .waitForOutput(".*marker 1.*")
@@ -139,8 +140,24 @@ public class CommandTest {
         ) {
             it.shouldNotHaveUnmatchedWaitForOutput()
         }
-
     }
+
+    @ParameterizedTest
+    @FieldSource("contexts")
+    fun testWaitForOutputRunAndResult(context: TestContext) {
+        runBlocking {
+            val run = context.command(getCommandPath("command-waitfor.sh")).run()
+
+            run.waitForOutput(".*marker 1.*").shouldMatch()
+            run.waitForOutput(".*marker 2.*").shouldMatch()
+            run.waitForOutput(".*marker 3.*").shouldMatch()
+
+            assertSoftly(run.result()) {
+                it shouldHaveExitCode 0
+            }
+        }
+    }
+
 
     @ParameterizedTest
     @FieldSource("contexts")
@@ -153,18 +170,31 @@ public class CommandTest {
         ) {
             it.shouldNotHaveUnmatchedWaitForOutput()
         }
-
     }
 
     @ParameterizedTest
     @FieldSource("contexts")
-    fun testWaitForLogLineNotMatched(context: TestContext) {
+    fun testWaitForOutputNotMatchedRunResult(context: TestContext) {
         assertSoftly(
             context.command(getCommandPath("command-waitfor.sh"))
-                .waitForOutput("yolo").runResult()
+                .waitForOutput(".*invalid.*").runResult()
         ) {
             it shouldHaveExitCode 0
             it shouldHaveUnmatchedWaitForOutput 1
+        }
+    }
+
+    @ParameterizedTest
+    @FieldSource("contexts")
+    fun testWaitForOutputNotMatchedRunAndResult(context: TestContext) {
+        runBlocking {
+            val run = context.command(getCommandPath("command-waitfor.sh")).run()
+
+            run.waitForOutput(".*invalid.*").shouldNotMatch()
+
+            assertSoftly(run.result()) {
+                it shouldHaveExitCode 0
+            }
         }
     }
 

@@ -1,8 +1,11 @@
 package de.solidblocks.infra.test
 
+import de.solidblocks.infra.test.output.OutputMatcher
+import de.solidblocks.infra.test.output.OutputMatcherResult
+import de.solidblocks.infra.test.output.waitForOutputMatcher
+import de.solidblocks.infra.test.output.waitForOutputMatchers
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.SendChannel
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -30,7 +33,7 @@ data class CommandResult(
 
 data class CommandRunResult(
     val result: CommandResult,
-    val unmatchedWaitForMatchers: List<WaitForOutput>,
+    val unmatchedOutputMatchers: List<OutputMatcherResult>,
 )
 
 data class ProcessResult(
@@ -38,32 +41,39 @@ data class ProcessResult(
     val runtime: Duration,
 )
 
-/*
 class CommandRun(
-    private val result: Deferred<CommandResult>,
+    private val result: Deferred<ProcessResult>,
+    private val unmatchedOutputMatchers: Deferred<List<OutputMatcherResult>>,
+    private val output: Queue<OutputLine>,
+    private val start: TimeSource.Monotonic.ValueTimeMark,
+    private val stdin: Channel<String>,
 ) {
     fun result() = runBlocking {
-        CommandRunResult(result.await(), unmatchedWaitForMatchers)
+        CommandRunResult(
+            CommandResult(result.await().exitCode, result.await().runtime, output.toList()),
+            unmatchedOutputMatchers.await()
+        )
     }
 
-    fun waitForOutput(waitForOutput: String) {
-
+    fun waitForOutput(regex: String) = runBlocking {
+        waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), 5.seconds, null), output, stdin)
     }
 }
-*/
-
-data class WaitForOutput(val regex: Regex, val timeout: Duration, val stdin: (() -> String)?)
 
 abstract class CommandBuilder(protected var executable: String) {
 
     protected var timeout: Duration = Int.MAX_VALUE.seconds
 
-    protected val waitForOutput: Queue<WaitForOutput> = LinkedList()
+    protected val outputMatchers: Queue<OutputMatcher> = LinkedList()
 
     fun timeout(timeout: Duration) = apply { this.timeout = timeout }
 
     fun waitForOutput(regex: String, timeout: Duration = 5.seconds, stdin: (() -> String)? = null) = apply {
-        this.waitForOutput.add(WaitForOutput(regex.toRegex(), timeout, stdin))
+        this.outputMatchers.add(OutputMatcher(regex.toRegex(), timeout, stdin))
+    }
+
+    fun waitForOutputs(outputMatchers: List<OutputMatcher>) = apply {
+        this.outputMatchers.addAll(outputMatchers)
     }
 
     fun runResult() = runBlocking {
@@ -73,12 +83,11 @@ abstract class CommandBuilder(protected var executable: String) {
         val start = TimeSource.Monotonic.markNow()
 
         val unmatchedWaitForMatchers = async {
-            waitForOutput(start, waitForOutput, output, stdin)
+            waitForOutputMatchers(start, outputMatchers, output, stdin)
         }
 
         val result = runInternal(start, stdin) {
             output.add(it)
-
             log(
                 start, it.line, when (it.type) {
                     OutputType.stdout -> LogType.stdout
@@ -93,52 +102,28 @@ abstract class CommandBuilder(protected var executable: String) {
         )
     }
 
-    //suspend fun run() = runInternal()
+    suspend fun run() = withContext(Dispatchers.IO) {
+        val output: Queue<OutputLine> = LinkedList()
+        val output1: Queue<OutputLine> = LinkedList()
+        val stdin = Channel<String>()
+        val start = TimeSource.Monotonic.markNow()
 
-    protected suspend fun waitForOutput(
-        start: TimeSource.Monotonic.ValueTimeMark,
-        waitForOutput: Queue<WaitForOutput>,
-        output: Queue<OutputLine>,
-        stdin: SendChannel<String>
-    ): List<WaitForOutput> {
-
-        val unmatchedWaitForOutputs = mutableListOf<WaitForOutput>()
-
-        while (waitForOutput.isNotEmpty()) {
-            val waitFor = waitForOutput.remove()
-
-            log(
-                TimeSource.Monotonic.markNow() - start,
-                "waiting for log line '${waitFor.regex}' with a timeout of ${waitFor.timeout}"
-            )
-
-            try {
-                withTimeout(waitFor.timeout) {
-                    var matched = false
-
-                    while (!matched) {
-                        if (!output.isEmpty()) {
-                            val entry = output.remove()
-                            matched = entry.line.matches(waitFor.regex)
-                            if (matched) {
-                                waitFor.stdin?.invoke()?.let {
-                                    stdin.send(it)
-                                }
-                            }
-                        }
-                        yield()
-                    }
-                }
-            } catch (e: TimeoutCancellationException) {
-                log(
-                    TimeSource.Monotonic.markNow() - start,
-                    "timeout of ${waitFor.timeout} exceeded waiting for log line '${waitFor.regex}'"
-                )
-                unmatchedWaitForOutputs.add(waitFor)
-            }
+        val unmatchedOutputMatchers = async {
+            waitForOutputMatchers(start, outputMatchers, output, stdin)
         }
 
-        return unmatchedWaitForOutputs
+        val result = runInternal(start, stdin) {
+            output.add(it)
+            output1.add(it)
+            log(
+                start, it.line, when (it.type) {
+                    OutputType.stdout -> LogType.stdout
+                    OutputType.stderr -> LogType.stderr
+                }
+            )
+        }
+
+        CommandRun(result, unmatchedOutputMatchers, output1, start, stdin)
     }
 
     abstract suspend fun runInternal(
