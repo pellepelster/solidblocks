@@ -14,17 +14,23 @@ class ScriptBuilder() {
 
     internal val steps: MutableList<ScriptStepBuilder> = mutableListOf()
 
-    fun sources(vararg sources: String) = apply {
+    internal var sourceDir: Path? = null
+
+    fun includes(vararg sources: String) = apply {
         this.sources.addAll(sources.map { Path.of(it) })
     }
 
-    fun sources(vararg sources: Path) = apply {
+    fun includes(vararg sources: Path) = apply {
         this.sources.addAll(sources)
     }
 
-    fun step(step: String, callback: (ScriptStepBuilder) -> Unit) = apply {
+    fun sources(sourceDir: Path) = apply {
+        this.sourceDir = sourceDir
+    }
+
+    fun step(step: String, callback: ((ScriptStepBuilder) -> Unit)? = null) = apply {
         val b = ScriptStepBuilder(step)
-        callback.invoke(b)
+        callback?.invoke(b)
         this.steps.add(b)
     }
 
@@ -45,6 +51,10 @@ fun script() = ScriptBuilder()
 fun ScriptBuilder.runLocal(): CommandRunResult {
 
     tempDir().use {
+        if (this.sourceDir != null) {
+            it.copyFromDir(this.sourceDir!!)
+        }
+
         val sourceMappings = this.sources.map { source ->
             source to it.path.resolve(
                 source.absolutePathString()

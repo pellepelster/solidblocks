@@ -33,7 +33,7 @@ public class CommandTest {
 
     @ParameterizedTest
     @FieldSource("contexts")
-    fun testRunResult(context: TestContext) {
+    fun testSucessRunResult(context: TestContext) {
         assertSoftly(context.command(getCommandPath("command-success.sh")).runResult()) {
             it shouldHaveExitCode 0
         }
@@ -41,7 +41,7 @@ public class CommandTest {
 
     @ParameterizedTest
     @FieldSource("contexts")
-    fun testRunAndResult(context: TestContext) {
+    fun testSucessRunAndResult(context: TestContext) {
         runBlocking {
             val run = context.command(getCommandPath("command-success.sh")).run()
 
@@ -139,6 +139,7 @@ public class CommandTest {
                 .waitForOutput(".*marker 3.*").runResult()
         ) {
             it.shouldNotHaveUnmatchedWaitForOutput()
+            it outputShouldMatch ".*marker 2.*"
         }
     }
 

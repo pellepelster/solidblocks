@@ -78,16 +78,19 @@ abstract class CommandBuilder(protected var executable: String) {
 
     fun runResult() = runBlocking {
 
-        val output: Queue<OutputLine> = LinkedList()
         val stdin = Channel<String>()
+        val stdout: Queue<OutputLine> = LinkedList()
+        val stdoutResult = mutableListOf<OutputLine>()
         val start = TimeSource.Monotonic.markNow()
 
         val unmatchedWaitForMatchers = async {
-            waitForOutputMatchers(start, outputMatchers, output, stdin)
+            waitForOutputMatchers(start, outputMatchers, stdout, stdin)
         }
 
         val result = runInternal(start, stdin) {
-            output.add(it)
+            stdout.add(it)
+            stdoutResult.add(it)
+
             log(
                 start, it.line, when (it.type) {
                     OutputType.stdout -> LogType.stdout
@@ -97,7 +100,7 @@ abstract class CommandBuilder(protected var executable: String) {
         }.await()
 
         CommandRunResult(
-            CommandResult(result.exitCode, result.runtime, output.toList()),
+            CommandResult(result.exitCode, result.runtime, stdoutResult),
             unmatchedWaitForMatchers.await()
         )
     }
