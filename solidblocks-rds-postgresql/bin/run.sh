@@ -193,6 +193,7 @@ function ensure_database() {
 function ensure_permissions() {
   log "setting permissions for '${username}'"
   psql_execute "${database}" "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" TO \"${username}\""
+  psql_execute "${database}" "GRANT ALL PRIVILEGES ON SCHEMA public TO \"${username}\""
   psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${username}\""
   psql_execute "${database}" "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"${username}\""
 }

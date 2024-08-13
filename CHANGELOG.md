@@ -1,10 +1,14 @@
 # Changelog
 
-## v0.2.6-pre
+## v0.2.6
 
 **IMPROVEMENTS**
 
 * Add cloud init terraform module [documentation](https://pellepelster.github.io/solidblocks/cloud-init/).   
+
+* **BUGFIXES**
+
+* ensure schema permissions are set correctly for PostgreSQL version 15.x
 
 ## v0.2.5
 

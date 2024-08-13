@@ -1,13 +1,26 @@
 package de.solidblocks.rds.postgresql.test
 
-import de.solidblocks.rds.postgresql.test.extensions.*
+import de.solidblocks.rds.postgresql.test.extensions.COMPRESSED_FILE_HEADER
+import de.solidblocks.rds.postgresql.test.extensions.ENCRYPTED_FILE_HEADER
+import de.solidblocks.rds.postgresql.test.extensions.RdsTestBed
+import de.solidblocks.rds.postgresql.test.extensions.RdsTestBedExtension
+import de.solidblocks.rds.postgresql.test.extensions.assertBackupFileHeaders
+import de.solidblocks.rds.postgresql.test.extensions.assertHasUserWithName
+import de.solidblocks.rds.postgresql.test.extensions.createJdbi
+import de.solidblocks.rds.postgresql.test.extensions.createUserTable
+import de.solidblocks.rds.postgresql.test.extensions.initWorldReadableTempDir
+import de.solidblocks.rds.postgresql.test.extensions.insertUser
+import de.solidblocks.rds.postgresql.test.extensions.selectAllUsers
+import de.solidblocks.rds.postgresql.test.extensions.waitForReady
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.UUID
 
 
 @ExtendWith(RdsTestBedExtension::class)
@@ -197,12 +210,13 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         newContainer14.stop()
     }
 
-    @Test
-    fun testRestoreDatabaseFromFullBackup(rdsTestBed: RdsTestBed) {
+    @ParameterizedTest
+    @ValueSource(ints = [14, 15])
+    fun testRestoreDatabaseFromFullBackup(version: Int, rdsTestBed: RdsTestBed) {
 
         val localBackupDir = initWorldReadableTempDir()
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
-            14,
+            version,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), initWorldReadableTempDir()
@@ -238,7 +252,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         rdsTestBed.logConsumer.clear()
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
-            14,
+            version,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
             ), initWorldReadableTempDir()
@@ -264,14 +278,15 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         postgresContainer2.stop()
     }
 
-    @Test
-    fun testRestoreDatabasePitr(rdsTestBed: RdsTestBed) {
+    @ParameterizedTest
+    @ValueSource(ints = [14, 15])
+    fun testRestoreDatabasePitr(version: Int, rdsTestBed: RdsTestBed) {
 
         val localBackupDir = initWorldReadableTempDir()
         val checkpointTimeout = 30L
 
         val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
-            14,
+            version,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = ${checkpointTimeout}",
@@ -324,7 +339,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC)
 
         val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
-            14,
+            version,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_RESTORE_PITR" to formatter.format(user2Timestamp),

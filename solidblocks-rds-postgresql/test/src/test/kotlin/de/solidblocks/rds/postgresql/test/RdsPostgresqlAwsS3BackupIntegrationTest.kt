@@ -3,6 +3,8 @@ package de.solidblocks.rds.postgresql.test
 import de.solidblocks.rds.postgresql.test.extensions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.UUID
 
 @ExtendWith(RdsTestBedExtension::class)
@@ -18,12 +20,13 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
         )
     }
 
-    @Test
-    fun testDatabaseKeepsDataBetweenRestarts(rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
+    @ParameterizedTest
+    @ValueSource(ints = [14, 15])
+    fun testDatabaseKeepsDataBetweenRestarts(version: Int, rdsTestBed: RdsTestBed, awsTestBed: AwsTestBed) {
         val dataDir = initWorldReadableTempDir()
 
         val container = rdsTestBed.createAndStartPostgresContainer(
-            14,
+            version,
             s3BackupEnv + mapOf("DB_BACKUP_S3_BUCKET" to awsTestBed.bucket), dataDir
         )
 
