@@ -339,7 +339,7 @@ class RdsPostgresqlConfigurationTest {
         val container = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-                "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = 301",
+                "DB_POSTGRES_EXTRA_CONFIG" to listOf("checkpoint_timeout = 301", "archive_timeout = 123").joinToString("\n")
             ), dataDir
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
@@ -361,6 +361,8 @@ class RdsPostgresqlConfigurationTest {
                 .mapToMap()
                 .list()
         }
+        assertThat(settings.first { it["name"] == "checkpoint_timeout" }["setting"]).isEqualTo("301")
+        assertThat(settings.first { it["name"] == "archive_timeout" }["setting"]).isEqualTo("123")
 
         val extensions = container.createJdbi().withHandle<List<Map<String, Any>>, RuntimeException> {
             it.createQuery("SELECT * FROM \"pg_available_extensions\" ORDER BY \"name\"")
@@ -368,6 +370,7 @@ class RdsPostgresqlConfigurationTest {
                 .list()
 
         }
+
 
         println("=========== installed extensions =========== ")
         extensions.forEach {
@@ -378,7 +381,37 @@ class RdsPostgresqlConfigurationTest {
             assertThat(extensions.any { it["name"] == expectedExtension })
         }
 
+        container.stop()
+    }
+
+    @Test
+    fun testSetCustomPostgresConfigWithEscapedNewlines(rdsTestBed: RdsTestBed) {
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val container = rdsTestBed.createAndStartPostgresContainer(14,
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = 301\narchive_timeout = 123",
+            ), dataDir
+        ) {
+            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+        }
+
+        with(rdsTestBed.logConsumer) {
+            waitForLogLine("database system is ready to accept connections")
+        }
+
+
+        val settings = container.createJdbi().withHandle<List<Map<String, Any>>, RuntimeException> {
+            it.createQuery("SELECT * FROM \"pg_settings\" ORDER BY \"name\"")
+                .mapToMap()
+                .list()
+        }
+
         assertThat(settings.first { it["name"] == "checkpoint_timeout" }["setting"]).isEqualTo("301")
+        assertThat(settings.first { it["name"] == "archive_timeout" }["setting"]).isEqualTo("123")
+
         container.stop()
     }
 

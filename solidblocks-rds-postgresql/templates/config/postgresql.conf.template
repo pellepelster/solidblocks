@@ -20,4 +20,4 @@ ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL' # allowed SSL ciphers
 ssl_prefer_server_ciphers = on
 {{end}}
 
-{{ env.Getenv "DB_POSTGRES_EXTRA_CONFIG" "" }}
+{{ env.Getenv "DB_POSTGRES_EXTRA_CONFIG" "" | strings.ReplaceAll "\\\\n" "\\n" }}
