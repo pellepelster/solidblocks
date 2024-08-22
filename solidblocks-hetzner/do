@@ -4,7 +4,9 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-export VERSION="${GITHUB_REF_NAME:-snapshot}"
+source "${DIR}/../lib/utils.sh"
+
+export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.test_$$"
 

@@ -9,10 +9,12 @@ source "${DIR}/solidblocks-shell/lib/software.sh"
 source "${DIR}/solidblocks-shell/lib/file.sh"
 source "${DIR}/solidblocks-shell/lib/log.sh"
 source "${DIR}/lib/terraform.sh"
+source "${DIR}/lib/utils.sh"
+
+export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.temp"
 COMPONENTS="solidblocks-terraform solidblocks-hetzner-nuke solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
-export VERSION="${GITHUB_REF_NAME:-snapshot}"
 
 function ensure_environment {
   software_set_export_path

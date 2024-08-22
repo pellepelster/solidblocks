@@ -4,11 +4,12 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-export VERSION="${GITHUB_REF_NAME:-snapshot}"
-
 source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 source "${DIR}/../lib/terraform.sh"
+source "${DIR}/../lib/utils.sh"
+
+export VERSION="$(version)"
 
 TESTS="plain storage-mounts acme-ssl-x86 acme-ssl-arm"
 SNIPPETS="cloud-init-kitchen-sink"
