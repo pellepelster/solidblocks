@@ -9,7 +9,7 @@ source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
 
-TESTCONTAINER_IMAGES="debian-10 debian-11 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04"
+TESTCONTAINER_IMAGES="debian-11 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
@@ -48,25 +48,16 @@ function task_lint {
 function task_test_unit {
   local test_include="${1:-test_*.sh}"
 
-  gradlew :solidblocks-shell:test
+  (
+    cd "${DIR}"
+    gradlew :solidblocks-shell:test
+  )
 
   for test in ${DIR}/test/unit/${test_include}; do
       log_divider_header ${test}
       VERSION=${VERSION} ${test}
       log_divider_footer
   done
-}
-
-function task_test_prepare {
-
-    for image in ${TESTCONTAINER_IMAGES}
-    do
-    (
-      cd "${DIR}/test/docker/${image}"
-      docker build ${DOCKER_OPTIONS} -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
-      docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}"
-    )
-    done
 }
 
 function task_test_integration {
@@ -154,7 +145,6 @@ case ${arg} in
   format) task_format "$@" ;;
   demo) task_demo"$@" ;;
   test) task_test "$@" ;;
-  test-prepare) task_test_prepare "$@" ;;
   test-unit) task_test_unit "$@" ;;
   test-unit-docker) task_test_unit_docker "$@" ;;
   test-integration) task_test_integration "$@" ;;

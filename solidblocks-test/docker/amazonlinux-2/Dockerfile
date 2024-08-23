@@ -11,5 +11,6 @@ RUN yum install -y \
     tar \
     util-linux \
     python \
+    java-17-amazon-corretto-devel \
     bzip2
 RUN amazon-linux-extras install docker -y

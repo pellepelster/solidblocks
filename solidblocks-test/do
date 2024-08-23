@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/../lib/utils.sh"
+
+export VERSION="$(version)"
+
+TESTCONTAINER_IMAGES="debian-11 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04"
+
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
+
+function task_build {
+  gradlew :solidblocks-test:assemble
+}
+
+function task_test_prepare {
+    for image in ${TESTCONTAINER_IMAGES}
+    do
+    (
+      cd "${DIR}/docker/${image}"
+      docker build ${DOCKER_OPTIONS} -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
+      docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}"
+    )
+    done
+}
+
+function task_test {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  gradlew :solidblocks-test:test
+}
+
+function task_clean {
+  gradlew :solidblocks-test:clean
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  clean) task_clean "$@" ;;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  test-prepare) task_test_prepare "$@" ;;
+  *) task_usage ;;
+esac

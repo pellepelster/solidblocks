@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM debian:11
 
 ENV DEBIAN_FRONTEND="noninteractive"
 
@@ -22,4 +22,5 @@ RUN apt-get install --no-install-recommends -qq -y \
     python3 \
     python3-venv \
     uuid-runtime \
+    default-jdk \
     bzip2
