@@ -22,5 +22,4 @@ RUN apt-get install --no-install-recommends -qq -y \
     python3 \
     python3-venv \
     uuid-runtime \
-    openjdk-17-jdk \
     bzip2

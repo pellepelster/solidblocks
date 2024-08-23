@@ -1,6 +1,7 @@
 import de.solidblocks.infra.test.runLocal
 import de.solidblocks.infra.test.script
 import de.solidblocks.infra.test.shouldHaveExitCode
+import de.solidblocks.infra.test.workingDir
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
@@ -12,13 +13,9 @@ public class TextTest {
 
     @Test
     fun testTextFormats() {
-
-        val source = Paths.get("").toAbsolutePath().resolve("lib")
-        val path = Paths.get("").toAbsolutePath().resolve("lib").resolve("text.sh")
-
         val result = script()
-            .sources(source)
-            .includes(path)
+            .sources(workingDir().resolve("lib"))
+            .includes(workingDir().resolve("lib").resolve("text.sh"))
             .step("echo \"\${FORMAT_DIM}Dim\${FORMAT_RESET}\"")
             .step("echo \"\${FORMAT_UNDERLINE}Underline\${FORMAT_RESET}\"")
             .step("echo \"\${FORMAT_BOLD}Bold\${FORMAT_RESET}\"")
