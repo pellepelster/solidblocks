@@ -9,7 +9,7 @@ source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
 
-TESTCONTAINER_IMAGES="debian-11 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04"
+TESTCONTAINER_IMAGES="debian-11 debian-12 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
