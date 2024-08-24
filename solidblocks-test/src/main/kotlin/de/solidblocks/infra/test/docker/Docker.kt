@@ -5,47 +5,21 @@ import com.github.dockerjava.api.async.ResultCallback
 import com.github.dockerjava.api.command.InspectExecResponse
 import com.github.dockerjava.api.command.PullImageResultCallback
 import com.github.dockerjava.api.exception.NotModifiedException
-import com.github.dockerjava.api.model.Frame
-import com.github.dockerjava.api.model.HostConfig
-import com.github.dockerjava.api.model.Mount
-import com.github.dockerjava.api.model.MountType
-import com.github.dockerjava.api.model.PullResponseItem
-import com.github.dockerjava.api.model.StreamType
+import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
-import de.solidblocks.infra.test.CommandBuilder
-import de.solidblocks.infra.test.LogType
-import de.solidblocks.infra.test.OutputLine
-import de.solidblocks.infra.test.OutputType
-import de.solidblocks.infra.test.ProcessResult
-import de.solidblocks.infra.test.TestContext
-import de.solidblocks.infra.test.log
-import de.solidblocks.infra.test.tempDir
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
+import de.solidblocks.infra.test.*
+import de.solidblocks.infra.test.Constants.dockerTestimageLabels
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
-import java.io.BufferedWriter
-import java.io.Closeable
-import java.io.OutputStreamWriter
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
+import java.io.*
 import java.lang.Thread.sleep
 import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
-import kotlin.io.path.name
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeSource
@@ -55,8 +29,14 @@ class DockerCommandBuilder(executable: String) : CommandBuilder(executable) {
 
     private var dockerPullTimout = 5.minutes
 
+    private var sourceDir: Path? = null
+
     fun dockerPullTimout(timeout: Duration) = apply {
         this.dockerPullTimout = timeout
+    }
+
+    fun sourceDir(sourceDir: Path) = apply {
+        this.sourceDir = sourceDir
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -67,14 +47,23 @@ class DockerCommandBuilder(executable: String) : CommandBuilder(executable) {
     ): Deferred<ProcessResult> =
         withContext(Dispatchers.IO) {
             val dockerClient = createDockerClient()
-            val tempDir = tempDir()
+
             var end = TimeSource.Monotonic.markNow()
 
             pullDockerImage(start, dockerClient)
 
-            val executablePath = Path.of(executable)
-            if (executablePath.exists()) {
-                tempDir.createFromPath(executablePath).executable().create()
+            val mountDir = if (sourceDir == null) {
+                val executablePath = Path.of(executable)
+                val tempDir = tempDir()
+
+                if (executablePath.exists()) {
+                    tempDir.createFromPath(executablePath).executable().create()
+                    executable = tempDir.path.resolve(executablePath.fileName).absolutePathString()
+                }
+
+                tempDir.path
+            } else {
+                sourceDir!!
             }
 
             val createContainer =
@@ -82,15 +71,16 @@ class DockerCommandBuilder(executable: String) : CommandBuilder(executable) {
                     .withHostConfig(
                         HostConfig.newHostConfig().withMounts(
                             listOf(
-                                Mount().withType(MountType.BIND).withSource(tempDir.path.absolutePathString())
-                                    .withTarget("/test")
+                                Mount().withType(MountType.BIND).withSource(mountDir.absolutePathString())
+                                    .withTarget(mountDir.absolutePathString())
                             )
                         )
-                    ).withCmd("sleep", "infinity").exec()
+                    ).withLabels(dockerTestimageLabels)
+                    .withCmd("sleep", "infinity").exec()
             dockerClient.startContainerCmd(createContainer.id).exec()
 
             val exec = dockerClient.execCreateCmd(createContainer.id)
-                .withCmd(executablePath.fileName?.name?.let { "/test/${it}" } ?: executable).withAttachStderr(true)
+                .withCmd(executable).withAttachStderr(true)
                 .withAttachStdout(true).withAttachStdin(true).withTty(false).exec()
 
             val stdinStream = PipedInputStream()
@@ -210,19 +200,9 @@ class DockerCommandBuilder(executable: String) : CommandBuilder(executable) {
         return dockerClient.inspectExecCmd(execId).exec()
     }
 
-    private fun createDockerClient(): DockerClient {
-        val config: DefaultDockerClientConfig.Builder = DefaultDockerClientConfig.createDefaultConfigBuilder()
-
-        val httpClient = ZerodepDockerHttpClient.Builder()
-        httpClient.dockerHost(URI.create("unix:///var/run/docker.sock"))
-
-        val dockerClient: DockerClient =
-            DockerClientBuilder.getInstance(config.build()).withDockerHttpClient(httpClient.build()).build()
-        return dockerClient
-    }
 }
 
-class DockerTestContext : TestContext {
+class DockerTestContext : TestContext<DockerCommandBuilder> {
 
     override fun command(executable: Path) = DockerCommandBuilder(executable.absolutePathString())
 
@@ -231,4 +211,15 @@ class DockerTestContext : TestContext {
     }
 }
 
-fun docker(): TestContext = DockerTestContext()
+fun docker() = DockerTestContext()
+
+fun createDockerClient(): DockerClient {
+    val config: DefaultDockerClientConfig.Builder = DefaultDockerClientConfig.createDefaultConfigBuilder()
+
+    val httpClient = ZerodepDockerHttpClient.Builder()
+    httpClient.dockerHost(URI.create("unix:///var/run/docker.sock"))
+
+    val dockerClient: DockerClient =
+        DockerClientBuilder.getInstance(config.build()).withDockerHttpClient(httpClient.build()).build()
+    return dockerClient
+}

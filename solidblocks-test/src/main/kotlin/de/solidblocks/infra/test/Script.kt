@@ -1,62 +1,86 @@
 package de.solidblocks.infra.test
 
-import de.solidblocks.infra.test.output.OutputMatcher
+import de.solidblocks.infra.test.docker.docker
+import kotlinx.coroutines.runBlocking
 import local
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.readBytes
-import kotlin.time.Duration.Companion.seconds
 
 class ScriptBuilder() {
 
-    internal val sources: MutableList<Path> = mutableListOf()
+    private val includes: MutableList<Path> = mutableListOf()
 
-    internal val steps: MutableList<ScriptStepBuilder> = mutableListOf()
+    private val steps: MutableList<ScriptStep> = mutableListOf()
 
-    internal var sourceDir: Path? = null
+    private var sources: Path? = null
 
-    fun includes(vararg sources: String) = apply {
-        this.sources.addAll(sources.map { Path.of(it) })
+    private var assertSteps = true
+
+    fun assertSteps(assertSteps: Boolean) = apply {
+        this.assertSteps = assertSteps
     }
 
-    fun includes(vararg sources: Path) = apply {
-        this.sources.addAll(sources)
+    fun includes(vararg includes: String) = apply {
+        this.includes.addAll(includes.map { Path.of(it) })
     }
 
-    fun sources(sourceDir: Path) = apply {
-        this.sourceDir = sourceDir
+    fun includes(vararg includes: Path) = apply {
+        this.includes.addAll(includes)
     }
 
-    fun step(step: String, callback: ((ScriptStepBuilder) -> Unit)? = null) = apply {
-        val b = ScriptStepBuilder(step)
-        callback?.invoke(b)
-        this.steps.add(b)
+    fun sources(source: Path) = apply {
+        this.sources = source
     }
 
-}
-
-class ScriptStepBuilder(val step: String) {
-
-    val outputMatchers = mutableListOf<OutputMatcher>()
-
-    fun waitForOutput(regex: String) = apply {
-        outputMatchers.add(OutputMatcher(regex.toRegex(), 5.seconds, null))
-        this
+    fun step(step: String, assertion: ((CommandRunAssertion) -> Unit)? = null) = apply {
+        this.steps.add(ScriptStep(step, assertion))
     }
-}
 
-fun script() = ScriptBuilder()
+    fun runLocal(): CommandRunResult = runBlocking {
+        val buildScript = buildScript()
+        val command = local().command(buildScript.second)
 
-fun ScriptBuilder.runLocal(): CommandRunResult {
-
-    tempDir().use {
-        if (this.sourceDir != null) {
-            it.copyFromDir(this.sourceDir!!)
+        if (assertSteps) {
+            steps.forEachIndexed() { index, step ->
+                command.assert {
+                    it.waitForOutput(".*finished step ${index}.*") {
+                        "continue"
+                    }
+                }
+            }
         }
 
-        val sourceMappings = this.sources.map { source ->
-            source to it.path.resolve(
+        command.runResult()
+    }
+
+    fun runDocker(): CommandRunResult {
+        val buildScript = buildScript()
+        val command = docker().command(buildScript.second).sourceDir(buildScript.first)
+
+        if (assertSteps) {
+            steps.forEachIndexed() { index, step ->
+                command.assert {
+                    it.waitForOutput(".*finished step ${index}.*") {
+                        "continue"
+                    }
+                }
+            }
+        }
+
+        return command.runResult()
+    }
+
+    private fun buildScript(): Pair<Path, Path> {
+        val tempDir = tempDir()
+
+        if (this.sources != null) {
+            tempDir.copyFromDir(this.sources!!)
+        }
+
+        val sourceMappings = this.includes.map { source ->
+            source to tempDir.path.resolve(
                 source.absolutePathString()
                     .removePrefix(File.separator)
                     .replace(File.separator, "_")
@@ -64,23 +88,35 @@ fun ScriptBuilder.runLocal(): CommandRunResult {
         }
 
         sourceMappings.forEach { sourceMapping ->
-            it.createFile(sourceMapping.second.absolutePathString())
+            tempDir.createFile(sourceMapping.second.absolutePathString())
                 .content(sourceMapping.first.readBytes())
                 .create()
         }
 
-        val script = """
-#!/usr/bin/env bash
+        val script = StringBuilder()
 
-set -eu -o pipefail
+        script.appendLine("#!/usr/bin/env bash")
+        script.appendLine("set -eu -o pipefail")
 
-${sourceMappings.joinToString("\n") { "source ${it.second.absolutePathString()}" }}
+        sourceMappings.forEach {
+            script.appendLine("source ${it.second.absolutePathString()}")
+        }
 
-${steps.joinToString("\n") { it.step }}
+        steps.forEachIndexed { index, step ->
+            script.appendLine("echo \"starting step ${index}\"")
+            script.appendLine(step.step)
+            script.appendLine("echo \"finished step ${index}\"")
+            script.appendLine("read")
+        }
 
-""".trimIndent()
+        val scriptFile = tempDir.createFile("script.sh").executable().content(script.toString()).create()
 
-        val scriptFile = it.createFile("script.sh").executable().content(script).create()
-        return local().command(scriptFile.file).waitForOutputs(steps.flatMap { it.outputMatchers }).runResult()
+        return tempDir.path to scriptFile.file
     }
+
 }
+
+class ScriptStep(val step: String, assertion: ((CommandRunAssertion) -> Unit)?) {
+}
+
+fun script() = ScriptBuilder()

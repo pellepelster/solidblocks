@@ -1,11 +1,11 @@
 package de.solidblocks.infra.test
 
+import de.solidblocks.infra.test.CommandBuilder.Companion.waitForOutputDefaultTimeout
 import de.solidblocks.infra.test.output.OutputMatcher
-import de.solidblocks.infra.test.output.OutputMatcherResult
 import de.solidblocks.infra.test.output.waitForOutputMatcher
-import de.solidblocks.infra.test.output.waitForOutputMatchers
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import java.nio.file.Path
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -33,7 +33,6 @@ data class CommandResult(
 
 data class CommandRunResult(
     val result: CommandResult,
-    val unmatchedOutputMatchers: List<OutputMatcherResult>,
 )
 
 data class ProcessResult(
@@ -41,83 +40,70 @@ data class ProcessResult(
     val runtime: Duration,
 )
 
-class CommandRun(
-    private val result: Deferred<ProcessResult>,
-    private val unmatchedOutputMatchers: Deferred<List<OutputMatcherResult>>,
-    private val output: Queue<OutputLine>,
+class CommandRunAssertion(
     private val start: TimeSource.Monotonic.ValueTimeMark,
     private val stdin: Channel<String>,
+    private val output: List<OutputLine>,
+) {
+    fun waitForOutput(regex: String, timeout: Duration = waitForOutputDefaultTimeout, answer: (() -> String)? = null) = runBlocking {
+        waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
+    }
+}
+
+
+class CommandRun(
+    private val start: TimeSource.Monotonic.ValueTimeMark,
+    private val stdin: Channel<String>,
+    private val result: Deferred<ProcessResult>,
+    private val output: List<OutputLine>,
+    private val assertionsResult: Deferred<List<Unit>>,
 ) {
     fun result() = runBlocking {
+        assertionsResult.await()
+
         CommandRunResult(
-            CommandResult(result.await().exitCode, result.await().runtime, output.toList()),
-            unmatchedOutputMatchers.await()
+            CommandResult(result.await().exitCode, result.await().runtime, output),
         )
     }
 
-    fun waitForOutput(regex: String) = runBlocking {
-        waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), 5.seconds, null), output, stdin)
+    fun waitForOutput(regex: String, timeout: Duration = waitForOutputDefaultTimeout, answer: (() -> String)? = null) = runBlocking {
+        waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
     }
+
 }
 
 abstract class CommandBuilder(protected var executable: String) {
 
-    protected var timeout: Duration = Int.MAX_VALUE.seconds
+    protected var timeout: Duration = 60.seconds
 
-    protected val outputMatchers: Queue<OutputMatcher> = LinkedList()
+    companion object {
+        val waitForOutputDefaultTimeout: Duration = 60.seconds
+    }
+
+    protected var workingDir: Path? = null
+
+    protected val assertions: Queue<(CommandRunAssertion) -> Unit> = LinkedList()
+
+    fun workingDir(workingDir: Path) = apply { this.workingDir = workingDir }
 
     fun timeout(timeout: Duration) = apply { this.timeout = timeout }
 
-    fun waitForOutput(regex: String, timeout: Duration = 5.seconds, stdin: (() -> String)? = null) = apply {
-        this.outputMatchers.add(OutputMatcher(regex.toRegex(), timeout, stdin))
-    }
-
-    fun waitForOutputs(outputMatchers: List<OutputMatcher>) = apply {
-        this.outputMatchers.addAll(outputMatchers)
-    }
-
     fun runResult() = runBlocking {
-
-        val stdin = Channel<String>()
-        val stdout: Queue<OutputLine> = LinkedList()
-        val stdoutResult = mutableListOf<OutputLine>()
-        val start = TimeSource.Monotonic.markNow()
-
-        val unmatchedWaitForMatchers = async {
-            waitForOutputMatchers(start, outputMatchers, stdout, stdin)
-        }
-
-        val result = runInternal(start, stdin) {
-            stdout.add(it)
-            stdoutResult.add(it)
-
-            log(
-                start, it.line, when (it.type) {
-                    OutputType.stdout -> LogType.stdout
-                    OutputType.stderr -> LogType.stderr
-                }
-            )
-        }.await()
-
-        CommandRunResult(
-            CommandResult(result.exitCode, result.runtime, stdoutResult),
-            unmatchedWaitForMatchers.await()
-        )
+        run().result()
     }
 
     suspend fun run() = withContext(Dispatchers.IO) {
-        val output: Queue<OutputLine> = LinkedList()
-        val output1: Queue<OutputLine> = LinkedList()
+        val output = mutableListOf<OutputLine>()
         val stdin = Channel<String>()
         val start = TimeSource.Monotonic.markNow()
 
-        val unmatchedOutputMatchers = async {
-            waitForOutputMatchers(start, outputMatchers, output, stdin)
+        val assertionsResult = async {
+            assertions.map { it.invoke(CommandRunAssertion(start, stdin, output)) }
         }
 
         val result = runInternal(start, stdin) {
             output.add(it)
-            output1.add(it)
+
             log(
                 start, it.line, when (it.type) {
                     OutputType.stdout -> LogType.stdout
@@ -126,7 +112,7 @@ abstract class CommandBuilder(protected var executable: String) {
             )
         }
 
-        CommandRun(result, unmatchedOutputMatchers, output1, start, stdin)
+        CommandRun(start, stdin, result, output, assertionsResult)
     }
 
     abstract suspend fun runInternal(
@@ -134,5 +120,9 @@ abstract class CommandBuilder(protected var executable: String) {
         stdin: Channel<String>,
         output: (entry: OutputLine) -> Unit
     ): Deferred<ProcessResult>
+
+    fun assert(assertion: (CommandRunAssertion) -> Unit) = apply {
+        this.assertions.add(assertion)
+    }
 
 }

@@ -1,10 +1,8 @@
-import de.solidblocks.infra.test.runLocal
 import de.solidblocks.infra.test.script
 import de.solidblocks.infra.test.shouldHaveExitCode
 import de.solidblocks.infra.test.workingDir
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
-import java.nio.file.Paths
 import kotlin.io.path.Path
 
 public class TextTest {

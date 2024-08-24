@@ -28,6 +28,7 @@ class LocalCommandBuilder(executable: String) : CommandBuilder(executable) {
 
                 launch {
                     while (process.isAlive && !stdin.isClosedForReceive) {
+                        yield()
                         val result = stdin.tryReceive()
                         if (result.isSuccess) {
                             result.getOrNull()?.let {
@@ -66,9 +67,13 @@ class LocalCommandBuilder(executable: String) : CommandBuilder(executable) {
                         log(start, "timeout for command exceeded (${timeout})")
                     }
 
-                    stdin.cancel()
-                    val end = TimeSource.Monotonic.markNow()
+                    /*
+                    if (!stdin.isClosedForSend) {
+                        stdin.cancel()
+                    }
+                    */
 
+                    val end = TimeSource.Monotonic.markNow()
                     killProcessAndWait(process)
 
                     ProcessResult(
@@ -83,14 +88,18 @@ class LocalCommandBuilder(executable: String) : CommandBuilder(executable) {
         }
 
     private fun killProcessAndWait(process: Process) {
+        sleep(100)
+
+        Runtime.getRuntime().exec("kill -SIGINT ${process.pid()}");
         process.descendants().forEach { it.destroyForcibly() }
+
         while (process.isAlive) {
             sleep(10)
         }
     }
 }
 
-class LocalTestContext : TestContext {
+class LocalTestContext : TestContext<LocalCommandBuilder> {
     override fun command(executable: Path) = LocalCommandBuilder(executable.absolutePathString())
 
     override fun toString(): String {
@@ -99,7 +108,7 @@ class LocalTestContext : TestContext {
 }
 
 
-fun local(): TestContext = LocalTestContext()
+fun local() = LocalTestContext()
 
 
 /*
