@@ -46,33 +46,3 @@ infix fun CommandRunResult.stderrShouldMatch(regex: String): CommandRunResult {
     return this
 }
 
-/*
-TODO
-fun unmatchedWaitForOutputEqual(size: Int) = Matcher<CommandRunResult> { value ->
-    MatcherResult(
-        value.unmatchedOutputMatchers.size == size,
-        {
-            "all wait for output conditions should have matched, but the following expressions were not matched ${
-                value.unmatchedOutputMatchers.joinToString(", ") { "'${it.regex}'" }
-            }"
-        },
-        { "all wait for output expressions have matched, but at least $size expressions should not have matched" },
-    )
-}
-*/
-
-/*
-TODO
-fun CommandRunResult.shouldNotHaveUnmatchedWaitForOutput(): CommandRunResult {
-    this should unmatchedWaitForOutputEqual(0)
-    return this
-}
-*/
-
-/*
-TODO
-infix fun CommandRunResult.shouldHaveUnmatchedWaitForOutput(expected: Int): CommandRunResult {
-    this should unmatchedWaitForOutputEqual(expected)
-    return this
-}
-*/

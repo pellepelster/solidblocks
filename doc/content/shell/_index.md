@@ -14,9 +14,10 @@ All functions are tested on the following distributions
 * Amazon Linux 2
 * Debian 10
 * Debian 11
+* Debian 12
 * Ubuntu 20.04 
 * Ubuntu 22.04
-
+* Ubuntu 24.04
 
 ## Kitchen Sink Usage Example
 

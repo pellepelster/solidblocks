@@ -4,7 +4,7 @@ import de.solidblocks.infra.test.files.DirectoryBuilder
 import de.solidblocks.infra.test.command.CommandRunAssertion
 import de.solidblocks.infra.test.command.CommandRunResult
 import de.solidblocks.infra.test.docker.DockerTestImage
-import de.solidblocks.infra.test.files.createFile
+import de.solidblocks.infra.test.files.file
 import de.solidblocks.infra.test.docker.docker
 import de.solidblocks.infra.test.files.tempDir
 import kotlinx.coroutines.runBlocking
@@ -119,7 +119,7 @@ class ScriptBuilder {
         }
 
         sourceMappings.forEach { sourceMapping ->
-            tempDir.createFile(sourceMapping.second.absolutePathString())
+            tempDir.file(sourceMapping.second.absolutePathString())
                 .content(sourceMapping.first.readBytes())
                 .create()
         }
@@ -140,7 +140,7 @@ class ScriptBuilder {
             script.appendLine("read")
         }
 
-        val scriptFile = tempDir.createFile("script.sh").executable().content(script.toString()).create()
+        val scriptFile = tempDir.file("script.sh").executable().content(script.toString()).create()
 
         return tempDir.path to listOf(scriptFile.file.absolutePathString())
     }

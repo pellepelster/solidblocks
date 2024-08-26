@@ -91,7 +91,7 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
             val tempDir = tempDir()
 
             if (executablePath.exists()) {
-                tempDir.createFromPath(executablePath).executable().create()
+                tempDir.fileFromPath(executablePath).executable().create()
                 command[0] = tempDir.path.resolve(executablePath.fileName).absolutePathString()
             }
 

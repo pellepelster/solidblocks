@@ -1,6 +1,5 @@
-package de.solidblocks.infra.test
+package de.solidblocks.infra.test.command
 
-import de.solidblocks.infra.test.command.CommandRunResult
 import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
 import io.kotest.matchers.comparables.gt

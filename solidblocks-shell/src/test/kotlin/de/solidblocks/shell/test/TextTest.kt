@@ -1,7 +1,7 @@
 package de.solidblocks.shell.test
 
 import de.solidblocks.infra.test.script.script
-import de.solidblocks.infra.test.shouldHaveExitCode
+import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test

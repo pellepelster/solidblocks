@@ -1,7 +1,7 @@
 package de.solidblocks.shell.test
 
 import de.solidblocks.infra.test.script.script
-import de.solidblocks.infra.test.shouldHaveExitCode
+import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.files.workingDir
 import de.solidblocks.infra.test.files.zipFile

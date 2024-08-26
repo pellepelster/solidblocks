@@ -5,17 +5,7 @@ import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.Path
-import kotlin.io.path.copyToRecursively
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.exists
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.name
-import kotlin.io.path.readBytes
+import kotlin.io.path.*
 import kotlin.time.TimeSource
 
 @OptIn(ExperimentalPathApi::class)
@@ -29,6 +19,13 @@ class DirectoryBuilder(
     }
 
     fun files() = Files.walk(path).filter { it.isRegularFile() }.toList()
+
+    fun files(regex: String): List<Path> {
+        val r = regex.toRegex()
+        return files().filter {
+            r.matches(it.absolutePathString())
+        }
+    }
 
     fun directories() = Files.walk(path).filter { it.isDirectory() }.toList()
 
@@ -55,19 +52,19 @@ class DirectoryBuilder(
             }
     }
 
-    fun createFromResource(resource: String): FileBuilder {
+    fun fileFromResource(resource: String): FileBuilder {
         val r = this.javaClass.classLoader.getResource(resource)
             ?: throw RuntimeException("resource file '$resource' not found")
 
-        return createFile(Path(r.path).fileName.name).content(r.readBytes())
+        return file(Path(r.path).fileName.name).content(r.readBytes())
     }
 
-    fun createFromPath(path: Path): FileBuilder {
+    fun fileFromPath(path: Path): FileBuilder {
         if (!path.exists()) {
             throw RuntimeException("path '$path' does not exist")
         }
 
-        return createFile(path.fileName.name).content(path.readBytes())
+        return file(path.fileName.name).content(path.readBytes())
     }
 
     fun remove() {

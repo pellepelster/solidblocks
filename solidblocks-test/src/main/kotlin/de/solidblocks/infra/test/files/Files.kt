@@ -88,8 +88,6 @@ class ZipFileBuilder(
 
 }
 
-fun DirectoryBuilder.createFile() = apply { }
-
 fun DirectoryBuilder.zipFile(name: String) = ZipFileBuilder(this.path, name)
 
-fun DirectoryBuilder.createFile(name: String) = FileBuilder(this.path, name)
+fun DirectoryBuilder.file(name: String) = FileBuilder(this.path, name)

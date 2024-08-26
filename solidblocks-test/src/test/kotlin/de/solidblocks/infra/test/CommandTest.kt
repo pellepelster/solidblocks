@@ -1,6 +1,9 @@
 package de.solidblocks.infra.test
 
 import de.solidblocks.infra.test.command.CommandBuilder
+import de.solidblocks.infra.test.command.runtimeShouldBeGreaterThan
+import de.solidblocks.infra.test.command.runtimeShouldBeLessThan
+import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.docker
 import de.solidblocks.infra.test.output.outputShouldBe
@@ -23,7 +26,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.FieldSource
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 

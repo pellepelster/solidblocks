@@ -1,9 +1,9 @@
 package de.solidblocks.shell.test
 
-import de.solidblocks.infra.test.files.createFile
+import de.solidblocks.infra.test.files.file
 import de.solidblocks.infra.test.output.stdoutShouldMatch
 import de.solidblocks.infra.test.script.script
-import de.solidblocks.infra.test.shouldHaveExitCode
+import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
@@ -15,7 +15,7 @@ public class PythonTest {
     fun testEnsureVenv() {
 
         val tempDir = tempDir()
-        tempDir.createFile("requirements.txt").content("PyJWT==2.6.0").create()
+        tempDir.file("requirements.txt").content("PyJWT==2.6.0").create()
 
         val result = script()
             .sources(tempDir)

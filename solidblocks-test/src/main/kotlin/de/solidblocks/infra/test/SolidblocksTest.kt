@@ -1,12 +1,30 @@
 package de.solidblocks.infra.test
 
-import java.lang.annotation.Inherited
+import org.junit.jupiter.api.extension.AfterEachCallback
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.api.extension.ParameterContext
+import org.junit.jupiter.api.extension.ParameterResolver
 
-@Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
-/*
-@ExtendWith(
-    SolidblocksTestExtension::class
-)*/
-@Inherited
-annotation class SolidblocksTest1
+public class SolidblocksTest : ParameterResolver, AfterEachCallback {
+
+    private val contexts = mutableMapOf<String, SolidblocksTestContext>()
+
+    override fun supportsParameter(
+        parameterContext: ParameterContext,
+        extensionContext: ExtensionContext
+    ) = parameterContext.parameter.type == SolidblocksTestContext::class.java
+
+    override fun resolveParameter(
+        parameterContext: ParameterContext,
+        extensionContext: ExtensionContext
+    ) = contexts.getOrPut(extensionContext.uniqueId) {
+        SolidblocksTestContext()
+    }
+
+    override fun afterEach(context: ExtensionContext) {
+        contexts.forEach {
+            it.value.close()
+        }
+    }
+
+}

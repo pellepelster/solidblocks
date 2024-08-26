@@ -3,7 +3,7 @@ plugins {
 }
 
 object Versions {
-    const val junitJupiterVersion = "5.11.0-RC1"
+    const val junitJupiterVersion = "5.11.0"
     const val testContainersVersion = "1.17.1"
 }
 
