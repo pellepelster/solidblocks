@@ -6,10 +6,11 @@ set -eu -o pipefail
 
 source "${DIR}/../../lib/docker.sh"
 
+TEST_ID="bootstrap_$(uuidgen)"
+TEMP_DIR="${DIR}/.tmp_$(uuidgen)"
+
 mkdir -p "${TEMP_DIR}/pellepelster/solidblocks/releases/download/${VERSION}/"
 cp "${DIR}/../../build/solidblocks-shell-${VERSION}.zip" "${TEMP_DIR}/pellepelster/solidblocks/releases/download/${VERSION}/"
-
-TEST_ID="bootstrap_$(uuidgen)"
 
 docker run -it -d --rm --name "${TEST_ID}" -p 80 -v "${TEMP_DIR}:/usr/share/nginx/html" nginx
 
@@ -29,7 +30,7 @@ cp "${DIR}/../../build/snippets/shell-minimal-skeleton-do" "${TEMP_DIR}"
 "${TEMP_DIR}/shell-minimal-skeleton-do" bootstrap
 
 function clean() {
-  clean_temp_dir
+  rm -rf "${TEMP_DIR}"
   docker rm -f "${TEST_ID}"
 }
 
