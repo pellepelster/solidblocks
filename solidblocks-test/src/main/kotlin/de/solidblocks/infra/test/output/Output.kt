@@ -1,14 +1,16 @@
 package de.solidblocks.infra.test.output
 
-import de.solidblocks.infra.test.OutputLine
 import de.solidblocks.infra.test.log
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
-import java.util.*
 import kotlin.time.Duration
 import kotlin.time.TimeSource
+
+enum class OutputType { stdout, stderr }
+
+data class OutputLine(val timestamp: Duration, val line: String, val type: OutputType)
 
 data class OutputMatcher(val regex: Regex, val timeout: Duration, val answer: (() -> String)?)
 

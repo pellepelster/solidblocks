@@ -1,19 +1,22 @@
 package de.solidblocks.infra.test
 
-import de.solidblocks.infra.test.CommandBuilder.Companion.waitForOutputDefaultTimeout
-import de.solidblocks.infra.test.output.OutputMatcher
-import de.solidblocks.infra.test.output.waitForOutputMatcher
-import kotlinx.coroutines.*
+import de.solidblocks.infra.test.command.CommandRun
+import de.solidblocks.infra.test.command.CommandRunAssertion
+import de.solidblocks.infra.test.command.CommandRunner
+import de.solidblocks.infra.test.output.OutputLine
+import de.solidblocks.infra.test.output.OutputType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.nio.file.Path
-import java.util.*
+import java.util.LinkedList
+import java.util.Queue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
-enum class OutputType { stdout, stderr }
-
-data class OutputLine(val timestamp: Duration, val line: String, val type: OutputType)
 
 data class CommandResult(
     val exitCode: Int,
@@ -31,58 +34,36 @@ data class CommandResult(
 
 }
 
-data class CommandRunResult(
-    val result: CommandResult,
-)
 
 data class ProcessResult(
     val exitCode: Int,
     val runtime: Duration,
 )
 
-class CommandRunAssertion(
-    private val start: TimeSource.Monotonic.ValueTimeMark,
-    private val stdin: Channel<String>,
-    private val output: List<OutputLine>,
-) {
-    fun waitForOutput(regex: String, timeout: Duration = waitForOutputDefaultTimeout, answer: (() -> String)? = null) = runBlocking {
-        waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
-    }
-}
 
-
-class CommandRun(
-    private val start: TimeSource.Monotonic.ValueTimeMark,
-    private val stdin: Channel<String>,
-    private val result: Deferred<ProcessResult>,
-    private val output: List<OutputLine>,
-    private val assertionsResult: Deferred<List<Unit>>,
-) {
-    fun result() = runBlocking {
-        assertionsResult.await()
-
-        CommandRunResult(
-            CommandResult(result.await().exitCode, result.await().runtime, output),
-        )
-    }
-
-    fun waitForOutput(regex: String, timeout: Duration = waitForOutputDefaultTimeout, answer: (() -> String)? = null) = runBlocking {
-        waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
-    }
-
-}
-
-abstract class CommandBuilder(protected var executable: String) {
+abstract class CommandBuilder(var command: Array<String>) {
 
     protected var timeout: Duration = 60.seconds
-
-    companion object {
-        val waitForOutputDefaultTimeout: Duration = 60.seconds
-    }
 
     protected var workingDir: Path? = null
 
     protected val assertions: Queue<(CommandRunAssertion) -> Unit> = LinkedList()
+
+    private var defaultWaitForOutput: Duration = 60.seconds
+
+    private var envs = mutableMapOf<String, String>()
+
+    fun env(env: Pair<String, String>) = apply {
+        this.envs[env.first] = env.second
+    }
+
+    fun env(envs: Map<String, String>) = apply {
+        this.envs.putAll(envs)
+    }
+
+    fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
+        this.defaultWaitForOutput = defaultWaitForOutput
+    }
 
     fun workingDir(workingDir: Path) = apply { this.workingDir = workingDir }
 
@@ -97,13 +78,15 @@ abstract class CommandBuilder(protected var executable: String) {
         val stdin = Channel<String>()
         val start = TimeSource.Monotonic.markNow()
 
+        val commandRunner = createCommandRunner(start)
+
         val assertionsResult = async {
-            assertions.map { it.invoke(CommandRunAssertion(start, stdin, output)) }
+            assertions.map { it.invoke(CommandRunAssertion(start, commandRunner, stdin, output, defaultWaitForOutput)) }
         }
 
-        val result = runInternal(start, stdin) {
-            output.add(it)
 
+        val result = commandRunner.runCommand(command, envs, stdin) {
+            output.add(it)
             log(
                 start, it.line, when (it.type) {
                     OutputType.stdout -> LogType.stdout
@@ -112,17 +95,16 @@ abstract class CommandBuilder(protected var executable: String) {
             )
         }
 
-        CommandRun(start, stdin, result, output, assertionsResult)
+        CommandRun(start, commandRunner, stdin, result, output, assertionsResult, defaultWaitForOutput)
     }
 
-    abstract suspend fun runInternal(
+    abstract suspend fun createCommandRunner(
         start: TimeSource.Monotonic.ValueTimeMark,
-        stdin: Channel<String>,
-        output: (entry: OutputLine) -> Unit
-    ): Deferred<ProcessResult>
+    ): CommandRunner
 
     fun assert(assertion: (CommandRunAssertion) -> Unit) = apply {
         this.assertions.add(assertion)
     }
+
 
 }

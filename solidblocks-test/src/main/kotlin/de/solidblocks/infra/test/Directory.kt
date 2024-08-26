@@ -4,13 +4,27 @@ import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
+import kotlin.io.path.copyToRecursively
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
+import kotlin.io.path.readBytes
+import kotlin.time.TimeSource
 
 @OptIn(ExperimentalPathApi::class)
-class DirectoryBuilder(val path: Path) : Closeable {
+class DirectoryBuilder(
+    val path: Path,
+    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+) : Closeable {
 
     init {
-        logger.info { "created directory '$path'" }
+        log(start, "created directory '$path'")
     }
 
     fun files() = Files.walk(path).filter { it.isRegularFile() }.toList()
@@ -31,11 +45,11 @@ class DirectoryBuilder(val path: Path) : Closeable {
      * Deletes the content of the directory  including all regular files and subdirectories.
      */
     fun clean() {
-        logger.info { "deleting content of directory '$path'" }
+        log(start, "deleting content of directory '$path'")
         Files.walk(path)
             .filter { it.toAbsolutePath() != path.toAbsolutePath() && (it.isRegularFile() || it.isDirectory()) }
             .forEach {
-                logger.info { "deleting  '$it'" }
+                log(start, "deleting  '$it'")
                 it.deleteRecursively()
             }
     }
@@ -56,7 +70,7 @@ class DirectoryBuilder(val path: Path) : Closeable {
     }
 
     fun remove() {
-        logger.info { "deleting directory '$path'" }
+        log(start, "deleting directory '$path'")
         path.deleteRecursively()
     }
 

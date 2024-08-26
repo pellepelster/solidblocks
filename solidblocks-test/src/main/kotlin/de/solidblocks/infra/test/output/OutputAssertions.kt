@@ -1,7 +1,9 @@
 package de.solidblocks.infra.test.output
 
-import de.solidblocks.infra.test.CommandRunResult
-import io.kotest.matchers.*
+import de.solidblocks.infra.test.command.CommandRunResult
+import io.kotest.matchers.be
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.match
 
 fun OutputMatcherResult.shouldMatch(): OutputMatcherResult {

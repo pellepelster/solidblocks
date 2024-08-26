@@ -1,5 +1,5 @@
 import de.solidblocks.infra.test.createFile
-import de.solidblocks.infra.test.createZipFile
+import de.solidblocks.infra.test.zipFile
 import de.solidblocks.infra.test.tempDir
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.paths.shouldExist
@@ -37,9 +37,9 @@ public class FilesTest {
 
         tempDir.files() shouldHaveSize 0
 
-        tempDir.createZipFile("test.zip")
-            .addFile("file1.txt", "some content")
-            .addFile("file2.txt", "some more content").create()
+        tempDir.zipFile("test.zip")
+            .entry("file1.txt", "some content")
+            .entry("file2.txt", "some more content").create()
 
         tempDir.files() shouldHaveSize 1
         tempDir.files()[0] shouldHaveNameWithoutExtension "test"

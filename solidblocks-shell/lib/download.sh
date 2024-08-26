@@ -3,6 +3,7 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${_DIR}/curl.sh"
+source "${_DIR}/utils.sh"
 
 # see https://pellepelster.github.io/solidblocks/shell/download/#download_and_verify_checksum
 function download_and_verify_checksum {

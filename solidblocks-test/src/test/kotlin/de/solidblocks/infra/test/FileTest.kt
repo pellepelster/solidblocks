@@ -1,5 +1,5 @@
 import de.solidblocks.infra.test.tempDir
-import de.solidblocks.infra.test.createZipFile
+import de.solidblocks.infra.test.zipFile
 import org.junit.jupiter.api.Test
 
 public class FileTest {
@@ -8,9 +8,9 @@ public class FileTest {
     fun testExtractToDirectory() {
         val tempDir = tempDir()
 
-        val zipFile = tempDir.createZipFile("test.zip")
-            .addFile("file1.txt", "some content")
-            .addFile("file2.txt", "some more content").create()
+        val zipFile = tempDir.zipFile("test.zip")
+            .entry("file1.txt", "some content")
+            .entry("file2.txt", "some more content").create()
 
         /*
         # extract file to folder

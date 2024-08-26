@@ -1,91 +1,24 @@
-import de.solidblocks.infra.test.*
-import kotlinx.coroutines.*
+import de.solidblocks.infra.test.CommandBuilder
+import de.solidblocks.infra.test.ProcessResult
+import de.solidblocks.infra.test.TestContext
+import de.solidblocks.infra.test.command.CommandRunner
+import de.solidblocks.infra.test.log
+import de.solidblocks.infra.test.output.OutputLine
+import de.solidblocks.infra.test.output.OutputType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import java.lang.Thread.sleep
 import java.nio.charset.Charset
-import java.nio.file.Path
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.absolutePathString
 import kotlin.time.TimeSource
 
-class LocalCommandBuilder(executable: String) : CommandBuilder(executable) {
-
-    @OptIn(DelicateCoroutinesApi::class)
-    override suspend fun runInternal(
-        start: TimeSource.Monotonic.ValueTimeMark,
-        stdin: Channel<String>,
-        output: (entry: OutputLine) -> Unit
-    ): Deferred<ProcessResult> =
-        withContext(Dispatchers.IO) {
-            async {
-                val cmdArgs = listOf(executable)
-                val process = ProcessBuilder(cmdArgs).start()
-                val stdinWriter = process.outputWriter()
-
-                log(start - start, "started command '${executable}'")
-
-                launch {
-                    while (process.isAlive && !stdin.isClosedForReceive) {
-                        yield()
-                        val result = stdin.tryReceive()
-                        if (result.isSuccess) {
-                            result.getOrNull()?.let {
-                                stdinWriter.write(it)
-                                stdinWriter.newLine()
-                                stdinWriter.flush()
-                            }
-                        }
-                    }
-                }
-
-                try {
-                    launch {
-                        process.inputStream.bufferedReader(Charset.defaultCharset()).lineSequence().asFlow().flowOn(
-                            Dispatchers.IO
-                        )
-                            .collect {
-                                val timestamp = TimeSource.Monotonic.markNow() - start
-                                val entry = OutputLine(timestamp, it, OutputType.stdout)
-                                output.invoke(entry)
-                            }
-                    }
-
-                    launch {
-                        process.errorStream.bufferedReader(Charset.defaultCharset()).lineSequence().asFlow().flowOn(
-                            Dispatchers.IO
-                        )
-                            .collect {
-                                val timestamp = TimeSource.Monotonic.markNow() - start
-                                val entry = OutputLine(timestamp, it, OutputType.stderr)
-                                output.invoke(entry)
-                            }
-                    }
-
-                    if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
-                        log(start, "timeout for command exceeded (${timeout})")
-                    }
-
-                    /*
-                    if (!stdin.isClosedForSend) {
-                        stdin.cancel()
-                    }
-                    */
-
-                    val end = TimeSource.Monotonic.markNow()
-                    killProcessAndWait(process)
-
-                    ProcessResult(
-                        exitCode = process.exitValue(),
-                        runtime = end.minus(start)
-                    )
-                } finally {
-                    killProcessAndWait(process)
-                }
-            }
-
-        }
+class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
 
     private fun killProcessAndWait(process: Process) {
         sleep(100)
@@ -97,10 +30,95 @@ class LocalCommandBuilder(executable: String) : CommandBuilder(executable) {
             sleep(10)
         }
     }
+
+    override suspend fun createCommandRunner(start: TimeSource.Monotonic.ValueTimeMark) =
+        object : CommandRunner {
+            override suspend fun runCommand(
+                command: Array<String>,
+                envs: Map<String, String>,
+                stdin: Channel<String>,
+                output: (entry: OutputLine) -> Unit
+            ) = withContext(Dispatchers.IO) {
+                async {
+                    val processBuilder = ProcessBuilder(command.toList())
+                    processBuilder.environment().putAll(envs)
+                    workingDir?.toFile().let {
+                        processBuilder.directory(it)
+                    }
+
+                    val process = processBuilder.start()
+                    val stdinWriter = process.outputWriter()
+
+                    log(start - start, "starting command '${command.joinToString(" ")}'")
+
+                    launch {
+                        while (process.isAlive && !stdin.isClosedForReceive) {
+                            yield()
+                            val result = stdin.tryReceive()
+                            if (result.isSuccess) {
+                                result.getOrNull()?.let {
+                                    stdinWriter.write(it)
+                                    stdinWriter.newLine()
+                                    stdinWriter.flush()
+                                }
+                            }
+                        }
+                    }
+
+                    try {
+                        launch {
+                            process.inputStream.bufferedReader(Charset.defaultCharset()).lineSequence().asFlow().flowOn(
+                                Dispatchers.IO
+                            )
+                                .collect {
+                                    val timestamp = TimeSource.Monotonic.markNow() - start
+                                    val entry = OutputLine(timestamp, it, OutputType.stdout)
+                                    output.invoke(entry)
+                                }
+                        }
+
+                        launch {
+                            process.errorStream.bufferedReader(Charset.defaultCharset()).lineSequence().asFlow().flowOn(
+                                Dispatchers.IO
+                            )
+                                .collect {
+                                    val timestamp = TimeSource.Monotonic.markNow() - start
+                                    val entry = OutputLine(timestamp, it, OutputType.stderr)
+                                    output.invoke(entry)
+                                }
+                        }
+
+                        if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
+                            log(start, "timeout for command exceeded (${timeout})")
+                        }
+
+                        /*
+                        if (!stdin.isClosedForSend) {
+                            stdin.cancel()
+                        }
+                        */
+
+                        val end = TimeSource.Monotonic.markNow()
+                        killProcessAndWait(process)
+
+                        ProcessResult(
+                            exitCode = process.exitValue(),
+                            runtime = end.minus(start)
+                        )
+                    } finally {
+                        killProcessAndWait(process)
+                    }
+                }
+            }
+
+            override fun cleanup() {
+            }
+
+        }
 }
 
 class LocalTestContext : TestContext<LocalCommandBuilder> {
-    override fun command(executable: Path) = LocalCommandBuilder(executable.absolutePathString())
+    override fun command(vararg command: String) = LocalCommandBuilder(command.toList().toTypedArray())
 
     override fun toString(): String {
         return "LocalTestContext()"

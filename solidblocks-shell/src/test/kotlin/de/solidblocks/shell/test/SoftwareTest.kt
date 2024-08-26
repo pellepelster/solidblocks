@@ -1,14 +1,14 @@
+package de.solidblocks.shell.test
+
 import de.solidblocks.infra.test.output.stdoutShouldMatch
 import de.solidblocks.infra.test.script
 import de.solidblocks.infra.test.shouldHaveExitCode
 import de.solidblocks.infra.test.workingDir
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
-import kotlin.io.path.Path
+import java.util.UUID
 
 public class SoftwareTest {
-
-    private fun getCommandPath(path: String) = Path(this.javaClass.classLoader.getResource(path)!!.path)
 
     @Test
     fun testEnsureRestic() {
@@ -41,6 +41,47 @@ public class SoftwareTest {
         assertSoftly(result) {
             it shouldHaveExitCode 0
             it stdoutShouldMatch ".*Consul v1.12.3.*"
+        }
+    }
+
+    @Test
+    fun testEnsureConsulDifferentDirs() {
+
+        val binDir = "/tmp/${UUID.randomUUID()}"
+        val cacheDir = "/tmp/${UUID.randomUUID()}"
+
+        val result = script()
+            .sources(workingDir().resolve("lib"))
+            .includes(workingDir().resolve("lib").resolve("software.sh"))
+            .env("BIN_DIR" to binDir)
+            .env("CACHE_DIR" to cacheDir)
+            .step("software_ensure_consul")
+            .step("software_set_export_path")
+            .step("consul version") {
+                it.fileExists("${binDir}/shellcheck-v0.8.0/shellcheck")
+                it.fileExists("${cacheDir}/shellcheck-v0.8.0.linux.x86_64.tar.xz")
+            }
+            .runLocal()
+
+        assertSoftly(result) {
+            it shouldHaveExitCode 0
+            it stdoutShouldMatch ".*Consul v1.12.3.*"
+        }
+    }
+
+    @Test
+    fun testEnsureConsulDifferentVersions() {
+        val result = script()
+            .sources(workingDir().resolve("lib"))
+            .includes(workingDir().resolve("lib").resolve("software.sh"))
+            .step("software_ensure_consul 1.8.4 0d74525ee101254f1cca436356e8aee51247d460b56fc2b4f7faef8a6853141f")
+            .step("software_set_export_path")
+            .step("consul version")
+            .runLocal()
+
+        assertSoftly(result) {
+            it shouldHaveExitCode 0
+            it stdoutShouldMatch ".*Consul v1.8.4.*"
         }
     }
 

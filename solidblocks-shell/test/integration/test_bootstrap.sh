@@ -4,7 +4,6 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 set -eu -o pipefail
 
-source "${DIR}/../unit/utils.sh"
 source "${DIR}/../../lib/docker.sh"
 
 mkdir -p "${TEMP_DIR}/pellepelster/solidblocks/releases/download/${VERSION}/"

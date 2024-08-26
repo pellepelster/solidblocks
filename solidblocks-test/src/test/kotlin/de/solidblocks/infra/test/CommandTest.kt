@@ -1,7 +1,17 @@
-import de.solidblocks.infra.test.*
+import de.solidblocks.infra.test.CommandBuilder
+import de.solidblocks.infra.test.Constants
+import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.docker.createDockerClient
 import de.solidblocks.infra.test.docker.docker
-import de.solidblocks.infra.test.output.*
+import de.solidblocks.infra.test.output.outputShouldBe
+import de.solidblocks.infra.test.output.outputShouldMatch
+import de.solidblocks.infra.test.output.stderrShouldBe
+import de.solidblocks.infra.test.output.stderrShouldMatch
+import de.solidblocks.infra.test.output.stdoutShouldBe
+import de.solidblocks.infra.test.output.stdoutShouldMatch
+import de.solidblocks.infra.test.runtimeShouldBeGreaterThan
+import de.solidblocks.infra.test.runtimeShouldBeLessThan
+import de.solidblocks.infra.test.shouldHaveExitCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
@@ -14,6 +24,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.FieldSource
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
@@ -23,7 +34,8 @@ public class CommandTest {
 
     val logger = KotlinLogging.logger {}
 
-    private fun getCommandPath(path: String) = Path(this.javaClass.classLoader.getResource(path)!!.path)
+    private fun getCommandPath(path: String) =
+        Path(this.javaClass.classLoader.getResource(path)!!.path).absolutePathString()
 
     private val docker = createDockerClient()
 
@@ -42,7 +54,10 @@ public class CommandTest {
             logger.info {
                 "cleaning up container '${it.id}'"
             }
-            docker.killContainerCmd(it.id)
+            try {
+                docker.killContainerCmd(it.id).exec()
+            } catch (e: Exception) {
+            }
         }
     }
 
@@ -56,7 +71,23 @@ public class CommandTest {
 
     @ParameterizedTest
     @FieldSource("contexts")
-    fun testSucessRunResult(context: TestContext<CommandBuilder>) {
+    fun testFailureBuiltinCommand(context: TestContext<CommandBuilder>) {
+        assertSoftly(context.command("test", "-f", "invalid file").runResult()) {
+            it shouldHaveExitCode 1
+        }
+    }
+
+    @ParameterizedTest
+    @FieldSource("contexts")
+    fun testSuccessBuiltinCommand(context: TestContext<CommandBuilder>) {
+        assertSoftly(context.command("test", "-f", "/etc/passwd").runResult()) {
+            it shouldHaveExitCode 0
+        }
+    }
+
+    @ParameterizedTest
+    @FieldSource("contexts")
+    fun testSuccessRunResult(context: TestContext<CommandBuilder>) {
         assertSoftly(context.command(getCommandPath("command-success.sh")).runResult()) {
             it shouldHaveExitCode 0
         }
@@ -219,6 +250,19 @@ public class CommandTest {
 
             assertSoftly(run.result()) {
                 it shouldHaveExitCode 0
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @FieldSource("contexts")
+    fun testEnvironmentVariables(context: TestContext<CommandBuilder>) {
+        runBlocking {
+            val run = context.command("env").env("ABC" to "DEF").run()
+
+            assertSoftly(run.result()) {
+                it shouldHaveExitCode 0
+                it stdoutShouldMatch ".*ABC=DEF.*"
             }
         }
     }

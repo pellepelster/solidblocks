@@ -3,4 +3,5 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${_DIR}/log.sh"
+source "${_DIR}/utils.sh"
 source "${_DIR}/curl-include.sh"

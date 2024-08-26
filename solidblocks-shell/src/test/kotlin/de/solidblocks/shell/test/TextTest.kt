@@ -1,3 +1,5 @@
+package de.solidblocks.shell.test
+
 import de.solidblocks.infra.test.script
 import de.solidblocks.infra.test.shouldHaveExitCode
 import de.solidblocks.infra.test.workingDir

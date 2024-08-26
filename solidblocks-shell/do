@@ -45,16 +45,6 @@ function task_lint {
   find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
 }
 
-function task_test_unit {
-  local test_include="${1:-test_*.sh}"
-
-  for test in ${DIR}/test/unit/${test_include}; do
-      log_divider_header ${test}
-      VERSION=${VERSION} ${test}
-      log_divider_footer
-  done
-}
-
 function task_test_integration {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
@@ -65,23 +55,6 @@ function task_test_integration {
       VERSION=${VERSION} ${test}
       log_divider_footer
   done
-}
-
-function task_test_unit_docker {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
-    exit 0
-  fi
-
-  local images="${1:-$TESTCONTAINER_IMAGES}"
-  local test_include="${2:-test_*.sh}"
-
-  for image in ${images}
-  do
-      log_divider_header "running tests on '${image}'"
-      docker run --network host -v /var/run/docker.sock:/var/run/docker.sock -v "${DIR}/../":/test "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" /test/solidblocks-shell/do test-unit "${test_include}"
-      log_divider_footer
-  done
-
 }
 
 function task_test {
@@ -141,8 +114,6 @@ case ${arg} in
   format) task_format "$@" ;;
   demo) task_demo"$@" ;;
   test) task_test "$@" ;;
-  test-unit) task_test_unit "$@" ;;
-  test-unit-docker) task_test_unit_docker "$@" ;;
   test-integration) task_test_integration "$@" ;;
   release-docker) ;;
   release-prepare) task_release_prepare "$@" ;;

@@ -7,11 +7,16 @@ import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.time.TimeSource
 
 
 data class File(val file: Path)
 
-class FileBuilder(private val path: Path, private val name: String) {
+class FileBuilder(
+    private val path: Path,
+    private val name: String,
+    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+) {
 
     private var content = byteArrayOf()
 
@@ -26,9 +31,8 @@ class FileBuilder(private val path: Path, private val name: String) {
     fun create(): de.solidblocks.infra.test.File {
         val file = this.path.resolve(name)
         File(file.toFile().absolutePath).writeBytes(content)
-        logger.info {
-            "created file '${file.toFile().absolutePath}' with size ${content.size}"
-        }
+
+        log(start, "created file '${file.toFile().absolutePath}' with size ${content.size}")
 
         val permissions = Files.getPosixFilePermissions(file)
         permissions.add(PosixFilePermission.OWNER_EXECUTE)
@@ -44,20 +48,24 @@ class FileBuilder(private val path: Path, private val name: String) {
 
 data class ZipFile(val file: Path)
 
-class ZipFileBuilder(private val path: Path, private val name: String) {
+class ZipFileBuilder(
+    private val path: Path,
+    private val name: String,
+    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+) {
 
-    private val files = mutableMapOf<String, ByteArray>()
+    private val entries = mutableMapOf<String, ByteArray>()
 
-    fun addFile(file: String, content: String) = addFile(file, content.toByteArray())
+    fun entry(file: String, content: String) = entry(file, content.toByteArray())
 
-    fun addFile(file: String, content: ByteArray) = apply {
-        files.put(file, content)
+    fun entry(file: String, content: ByteArray) = apply {
+        entries[file] = content
     }
 
     fun create(): ZipFile {
         val zipFile = this.path.resolve(name)
         ZipOutputStream(FileOutputStream(zipFile.toFile())).use { zipOut ->
-            files.forEach { file ->
+            entries.forEach { file ->
                 val zipEntry = ZipEntry(file.key)
                 zipOut.putNextEntry(zipEntry)
                 zipOut.write(file.value)
@@ -67,11 +75,12 @@ class ZipFileBuilder(private val path: Path, private val name: String) {
             zipOut.close()
         }
 
-        logger.info {
-            "created '${zipFile.toFile().absolutePath}' with ${files.size} entries (${
-                files.map { it.key }.joinToString(", ")
+        log(
+            start,
+            "created '${zipFile.toFile().absolutePath}' with ${entries.size} entries (${
+                entries.map { it.key }.joinToString(", ")
             })"
-        }
+        )
 
         return ZipFile(zipFile)
     }
@@ -80,6 +89,6 @@ class ZipFileBuilder(private val path: Path, private val name: String) {
 
 fun DirectoryBuilder.createFile() = apply { }
 
-fun DirectoryBuilder.createZipFile(name: String) = ZipFileBuilder(this.path, name)
+fun DirectoryBuilder.zipFile(name: String) = ZipFileBuilder(this.path, name)
 
 fun DirectoryBuilder.createFile(name: String) = FileBuilder(this.path, name)
