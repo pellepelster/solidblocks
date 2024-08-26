@@ -1,10 +1,11 @@
+package de.solidblocks.infra.test
+
+import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.output.stdoutShouldMatch
-import de.solidblocks.infra.test.script
+import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.shouldHaveExitCode
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.matchers.paths.shouldExist
-import io.kotest.matchers.paths.shouldNotExist
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -70,7 +71,7 @@ public class ScriptTest {
             .step("echo \"content\" > /tmp/${file}") {
                 it.fileExists("/tmp/${file}") shouldBe true
                 it.fileExists("/tmp/${file}_1") shouldBe false
-            }.runDocker()
+            }.runDocker(DockerTestImage.DEBIAN_10)
 
         assertSoftly(result) {
             it shouldHaveExitCode 0

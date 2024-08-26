@@ -1,8 +1,7 @@
-package de.solidblocks.infra.test
+package de.solidblocks.infra.test.command
 
-import de.solidblocks.infra.test.command.CommandRun
-import de.solidblocks.infra.test.command.CommandRunAssertion
-import de.solidblocks.infra.test.command.CommandRunner
+import de.solidblocks.infra.test.LogType
+import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
 import kotlinx.coroutines.Dispatchers

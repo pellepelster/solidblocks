@@ -1,5 +1,6 @@
-package de.solidblocks.infra.test
+package de.solidblocks.infra.test.files
 
+import de.solidblocks.infra.test.log
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -28,7 +29,7 @@ class FileBuilder(
         this.content = content
     }
 
-    fun create(): de.solidblocks.infra.test.File {
+    fun create(): de.solidblocks.infra.test.files.File {
         val file = this.path.resolve(name)
         File(file.toFile().absolutePath).writeBytes(content)
 

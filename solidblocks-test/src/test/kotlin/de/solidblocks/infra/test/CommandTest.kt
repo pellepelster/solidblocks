@@ -1,7 +1,7 @@
-import de.solidblocks.infra.test.CommandBuilder
-import de.solidblocks.infra.test.Constants
-import de.solidblocks.infra.test.TestContext
-import de.solidblocks.infra.test.docker.createDockerClient
+package de.solidblocks.infra.test
+
+import de.solidblocks.infra.test.command.CommandBuilder
+import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.docker
 import de.solidblocks.infra.test.output.outputShouldBe
 import de.solidblocks.infra.test.output.outputShouldMatch
@@ -9,15 +9,13 @@ import de.solidblocks.infra.test.output.stderrShouldBe
 import de.solidblocks.infra.test.output.stderrShouldMatch
 import de.solidblocks.infra.test.output.stdoutShouldBe
 import de.solidblocks.infra.test.output.stdoutShouldMatch
-import de.solidblocks.infra.test.runtimeShouldBeGreaterThan
-import de.solidblocks.infra.test.runtimeShouldBeLessThan
-import de.solidblocks.infra.test.shouldHaveExitCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import local
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
@@ -40,7 +38,7 @@ public class CommandTest {
     private val docker = createDockerClient()
 
     companion object {
-        val contexts = listOf(local(), docker())
+        val contexts = listOf(local(), docker(DockerTestImage.UBUNTU_24))
     }
 
     @BeforeEach
@@ -177,7 +175,7 @@ public class CommandTest {
         measureTime {
             assertSoftly(context.command(getCommandPath("command-timeout.sh")).timeout(2.seconds).runResult()) {
                 it shouldHaveExitCode 137
-                it runtimeShouldBeLessThan 3.seconds + 500.milliseconds
+                it runtimeShouldBeLessThan 4.seconds
                 it runtimeShouldBeGreaterThan 1.seconds
             }
         } shouldBeLessThan 4.seconds

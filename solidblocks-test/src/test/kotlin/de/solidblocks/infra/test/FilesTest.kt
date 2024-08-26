@@ -1,6 +1,8 @@
-import de.solidblocks.infra.test.createFile
-import de.solidblocks.infra.test.zipFile
-import de.solidblocks.infra.test.tempDir
+package de.solidblocks.infra.test
+
+import de.solidblocks.infra.test.files.createFile
+import de.solidblocks.infra.test.files.zipFile
+import de.solidblocks.infra.test.files.tempDir
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.paths.shouldHaveNameWithoutExtension

@@ -1,4 +1,6 @@
-import de.solidblocks.infra.test.tempDir
+package de.solidblocks.infra.test
+
+import de.solidblocks.infra.test.files.tempDir
 import io.kotest.matchers.paths.shouldBeEmptyDirectory
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.paths.shouldNotBeEmptyDirectory

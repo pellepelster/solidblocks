@@ -1,7 +1,5 @@
 package de.solidblocks.infra.test.command
 
-import de.solidblocks.infra.test.CommandResult
-import de.solidblocks.infra.test.ProcessResult
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputMatcher
 import de.solidblocks.infra.test.output.waitForOutputMatcher

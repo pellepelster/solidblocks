@@ -1,5 +1,7 @@
-import de.solidblocks.infra.test.tempDir
-import de.solidblocks.infra.test.zipFile
+package de.solidblocks.infra.test
+
+import de.solidblocks.infra.test.files.tempDir
+import de.solidblocks.infra.test.files.zipFile
 import org.junit.jupiter.api.Test
 
 public class FileTest {

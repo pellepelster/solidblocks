@@ -1,12 +1,12 @@
 package de.solidblocks.shell.test
 
-import de.solidblocks.infra.test.script
+import de.solidblocks.infra.test.docker.DockerTestImage
+import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.shouldHaveExitCode
-import de.solidblocks.infra.test.workingDir
+import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import kotlin.io.path.Path
 
 public class PackageTest {
 
@@ -26,7 +26,7 @@ public class PackageTest {
             .step("package_ensure_package wget") {
                 it.fileExists("/usr/bin/wget") shouldBe true
             }
-            .runDocker()
+            .runDocker(DockerTestImage.DEBIAN_10)
 
         assertSoftly(result) {
             it shouldHaveExitCode 0

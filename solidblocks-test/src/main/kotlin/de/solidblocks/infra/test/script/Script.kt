@@ -1,8 +1,12 @@
-package de.solidblocks.infra.test
+package de.solidblocks.infra.test.script
 
+import de.solidblocks.infra.test.files.DirectoryBuilder
 import de.solidblocks.infra.test.command.CommandRunAssertion
 import de.solidblocks.infra.test.command.CommandRunResult
+import de.solidblocks.infra.test.docker.DockerTestImage
+import de.solidblocks.infra.test.files.createFile
 import de.solidblocks.infra.test.docker.docker
+import de.solidblocks.infra.test.files.tempDir
 import kotlinx.coroutines.runBlocking
 import local
 import java.io.File
@@ -76,9 +80,9 @@ class ScriptBuilder {
         command.runResult()
     }
 
-    fun runDocker(): CommandRunResult {
+    fun runDocker(image: DockerTestImage): CommandRunResult {
         val buildScript = buildScript()
-        val command = docker().command(*buildScript.second.toTypedArray())
+        val command = docker(image).command(*buildScript.second.toTypedArray())
             .sourceDir(buildScript.first)
             .workingDir(buildScript.first)
             .env(envs)

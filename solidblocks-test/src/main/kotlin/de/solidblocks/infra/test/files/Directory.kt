@@ -1,5 +1,6 @@
-package de.solidblocks.infra.test
+package de.solidblocks.infra.test.files
 
+import de.solidblocks.infra.test.log
 import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path

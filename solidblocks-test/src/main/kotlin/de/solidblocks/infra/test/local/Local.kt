@@ -1,5 +1,5 @@
-import de.solidblocks.infra.test.CommandBuilder
-import de.solidblocks.infra.test.ProcessResult
+import de.solidblocks.infra.test.command.CommandBuilder
+import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.log

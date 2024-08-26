@@ -8,17 +8,15 @@ import com.github.dockerjava.api.model.HostConfig
 import com.github.dockerjava.api.model.Mount
 import com.github.dockerjava.api.model.MountType
 import com.github.dockerjava.api.model.PullResponseItem
-import com.github.dockerjava.core.DefaultDockerClientConfig
-import com.github.dockerjava.core.DockerClientBuilder
-import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
-import de.solidblocks.infra.test.CommandBuilder
 import de.solidblocks.infra.test.Constants.dockerTestimageLabels
-import de.solidblocks.infra.test.ProcessResult
 import de.solidblocks.infra.test.TestContext
+import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
+import de.solidblocks.infra.test.command.ProcessResult
+import de.solidblocks.infra.test.createDockerClient
+import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputLine
-import de.solidblocks.infra.test.tempDir
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +33,6 @@ import java.io.OutputStreamWriter
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.lang.Thread.sleep
-import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
@@ -44,8 +41,28 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeSource
 
+enum class DockerTestImage {
+    DEBIAN_10 {
+        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-debian-10:latest"
+    },
+    DEBIAN_11 {
+        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-debian-11:latest"
+    },
+    DEBIAN_12 {
+        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-debian-12:latest"
+    },
+    UBUNTU_20 {
+        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-ubuntu-20.04:latest"
+    },
+    UBUNTU_22 {
+        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-ubuntu-22.04:latest"
+    },
+    UBUNTU_24 {
+        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-ubuntu-24.04:latest"
+    },
+}
 
-class DockerCommandBuilder(command: Array<String>) : CommandBuilder(command) {
+class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) : CommandBuilder(command) {
 
     private var dockerPullTimout = 5.minutes
 
@@ -84,7 +101,7 @@ class DockerCommandBuilder(command: Array<String>) : CommandBuilder(command) {
         }
 
         val createContainer =
-            dockerClient.createContainerCmd("ghcr.io/pellepelster/solidblocks-test-ubuntu-22.04:latest")
+            dockerClient.createContainerCmd(image.toString())
                 .withHostConfig(
                     HostConfig.newHostConfig().withMounts(
                         listOf(
@@ -171,9 +188,8 @@ class DockerCommandBuilder(command: Array<String>) : CommandBuilder(command) {
     }
 
     private fun pullDockerImage(start: TimeSource.Monotonic.ValueTimeMark, dockerClient: DockerClient) {
-        val image = "ghcr.io/pellepelster/solidblocks-test-ubuntu-22.04:latest"
         log(start, "pulling docker image '${image}")
-        dockerClient.pullImageCmd(image)
+        dockerClient.pullImageCmd(image.toString())
             .exec(object : PullImageResultCallback() {
                 override fun onNext(item: PullResponseItem?) {
                     print("*")
@@ -195,24 +211,14 @@ class DockerCommandBuilder(command: Array<String>) : CommandBuilder(command) {
 
 }
 
-class DockerTestContext : TestContext<DockerCommandBuilder> {
+class DockerTestContext(val image: DockerTestImage) : TestContext<DockerCommandBuilder> {
 
-    override fun command(vararg command: String) = DockerCommandBuilder(command.toList().toTypedArray())
+    override fun command(vararg command: String) = DockerCommandBuilder(image, command.toList().toTypedArray())
 
     override fun toString(): String {
         return "DockerTestContext()"
     }
 }
 
-fun docker() = DockerTestContext()
+fun docker(image: DockerTestImage) = DockerTestContext(image)
 
-fun createDockerClient(): DockerClient {
-    val config: DefaultDockerClientConfig.Builder = DefaultDockerClientConfig.createDefaultConfigBuilder()
-
-    val httpClient = ZerodepDockerHttpClient.Builder()
-    httpClient.dockerHost(URI.create("unix:///var/run/docker.sock"))
-
-    val dockerClient: DockerClient =
-        DockerClientBuilder.getInstance(config.build()).withDockerHttpClient(httpClient.build()).build()
-    return dockerClient
-}

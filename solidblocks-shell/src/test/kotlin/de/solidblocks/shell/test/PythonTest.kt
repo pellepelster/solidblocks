@@ -1,11 +1,11 @@
 package de.solidblocks.shell.test
 
-import de.solidblocks.infra.test.createFile
+import de.solidblocks.infra.test.files.createFile
 import de.solidblocks.infra.test.output.stdoutShouldMatch
-import de.solidblocks.infra.test.script
+import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.shouldHaveExitCode
-import de.solidblocks.infra.test.tempDir
-import de.solidblocks.infra.test.workingDir
+import de.solidblocks.infra.test.files.tempDir
+import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
 
