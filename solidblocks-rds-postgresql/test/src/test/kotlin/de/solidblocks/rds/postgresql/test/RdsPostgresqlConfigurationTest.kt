@@ -392,7 +392,7 @@ class RdsPostgresqlConfigurationTest {
         val container = rdsTestBed.createAndStartPostgresContainer(14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-                "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = 301\narchive_timeout = 123",
+                "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = 301\\narchive_timeout = 123",
             ), dataDir
         ) {
             it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
