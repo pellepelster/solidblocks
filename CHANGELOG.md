@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.7-pre
+
+**BUGFIXES**
+
+* Unescape newlines for database extra config in PostgreSQL RDs module   
+
 ## v0.2.6
 
 **IMPROVEMENTS**

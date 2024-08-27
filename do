@@ -200,7 +200,6 @@ function task_bootstrap() {
   git submodule update --init --recursive
   software_ensure_shellcheck
   software_ensure_hugo
-  software_ensure_semver
 }
 
 function task_release_check() {

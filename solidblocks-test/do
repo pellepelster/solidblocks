@@ -53,5 +53,7 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   test-prepare) task_test_prepare "$@" ;;
+  release-prepare) ;;
+  release-docker) ;;
   *) task_usage ;;
 esac
