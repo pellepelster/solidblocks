@@ -64,6 +64,30 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Test
         run: solidblocks-shell/do test
+      - name: Archive Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solidblocks-shell-test
+          path: |
+            **/build/reports/tests
+
+  solidblocks-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+      - name: Test
+        run: solidblocks-test/do test
+      - name: Archive Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solidblocks-test
+          path: |
+            **/build/reports/tests
 
   solidblocks-cloud-init:
     runs-on: ubuntu-latest
@@ -216,7 +240,7 @@ jobs:
         with:
           name: solidblocks-minio-test
           path: |
-            solidblocks-minio/test/build/reports/tests
+            **/test/build/reports/tests
 
   solidblocks-debug-container:
     name: solidblocks-debug-container
@@ -249,7 +273,7 @@ jobs:
         with:
           name: solidblocks-debug-container-test
           path: |
-            solidblocks-debug-container/build/reports/tests
+            **/build/reports/tests
 
   solidblocks-rds-postgresql:
     runs-on: ubuntu-latest
@@ -295,7 +319,7 @@ jobs:
         with:
           name: solidblocks-rds-postgresql-test
           path: |
-            solidblocks-rds-postgresql/test/build/reports/tests
+            **/test/build/reports/tests
 
   clean-cloud-resources:
     runs-on: ubuntu-latest
@@ -307,7 +331,7 @@ jobs:
       HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     if: ${{ always() }}
     needs:
-      - solidblocks-shell
+      - solidblocks-shell-test
       - solidblocks-cloud-init
       - solidblocks-minio
       - solidblocks-rds-postgresql
@@ -317,6 +341,7 @@ jobs:
       - solidblocks-debug-container
       - solidblocks-hetzner-nuke
       - solidblocks-terraform
+      - solidblocks-test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -337,6 +362,7 @@ jobs:
       - solidblocks-hetzner-test
       - solidblocks-debug-container
       - solidblocks-hetzner-nuke
+      - solidblocks-shell-test
       - solidblocks-terraform
     steps:
       - name: Login to GitHub Container Registry
