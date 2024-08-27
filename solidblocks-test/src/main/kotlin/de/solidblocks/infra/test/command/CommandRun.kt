@@ -50,6 +50,7 @@ interface CommandRunner : Closeable {
     suspend fun runCommand(
         command: Array<String>,
         envs: Map<String, String> = emptyMap(),
+        inheritEnv: Boolean = true,
         stdin: Channel<String> = Channel(),
         output: (entry: OutputLine) -> Unit,
     ): Deferred<ProcessResult>

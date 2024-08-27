@@ -12,6 +12,7 @@ class LocalScriptBuilder : ScriptBuilder() {
         val command = testLocal().command(*buildScript.second.toTypedArray())
             .workingDir(buildScript.first)
             .env(envs)
+            .inheritEnv(inheritEnv)
             .defaultWaitForOutput(defaultWaitForOutput)
 
         if (assertSteps) {

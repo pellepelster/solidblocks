@@ -62,7 +62,7 @@ enum class DockerTestImage {
     },
 }
 
-class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) : CommandBuilder(command) {
+class DockerCommandBuilder(private val image: DockerTestImage, command: Array<String>) : CommandBuilder(command) {
 
     private var dockerPullTimout = 5.minutes
 
@@ -121,6 +121,7 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
             override suspend fun runCommand(
                 command: Array<String>,
                 envs: Map<String, String>,
+                inheritEnv: Boolean,
                 stdin: Channel<String>,
                 output: (entry: OutputLine) -> Unit,
             ) = withContext(Dispatchers.IO) {

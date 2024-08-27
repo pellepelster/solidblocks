@@ -53,8 +53,14 @@ abstract class CommandBuilder(var command: Array<String>) : Closeable {
 
     private var envs = mutableMapOf<String, String>()
 
+    private var inheritEnv = true
+
     fun env(env: Pair<String, String>) = apply {
         this.envs[env.first] = env.second
+    }
+
+    fun inheritEnv(inheritEnv: Boolean) = apply {
+        this.inheritEnv = inheritEnv
     }
 
     fun env(envs: Map<String, String>) = apply {
@@ -85,7 +91,7 @@ abstract class CommandBuilder(var command: Array<String>) : Closeable {
         }
 
 
-        val result = commandRunner.runCommand(command, envs, stdin) {
+        val result = commandRunner.runCommand(command, envs, inheritEnv, stdin) {
             output.add(it)
             log(
                 start, it.line, when (it.type) {

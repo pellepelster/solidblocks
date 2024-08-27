@@ -6,7 +6,6 @@ import de.solidblocks.infra.test.local.LocalScriptBuilder
 import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
-import de.solidblocks.infra.test.script.ScriptBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -41,12 +40,18 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
             override suspend fun runCommand(
                 command: Array<String>,
                 envs: Map<String, String>,
+                inheritEnv: Boolean,
                 stdin: Channel<String>,
                 output: (entry: OutputLine) -> Unit
             ) = withContext(Dispatchers.IO) {
                 async {
                     val processBuilder = ProcessBuilder(command.toList())
+
+                    if (!inheritEnv) {
+                        processBuilder.environment().clear()
+                    }
                     processBuilder.environment().putAll(envs)
+
                     workingDir?.toFile().let {
                         processBuilder.directory(it)
                     }

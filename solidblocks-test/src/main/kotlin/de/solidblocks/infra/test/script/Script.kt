@@ -31,6 +31,8 @@ abstract class ScriptBuilder : Closeable {
 
     internal val resources = mutableListOf<Closeable>()
 
+    internal var inheritEnv = true
+
     fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
         this.defaultWaitForOutput = defaultWaitForOutput
     }
@@ -45,6 +47,10 @@ abstract class ScriptBuilder : Closeable {
 
     fun includes(vararg includes: Path) = apply {
         this.includes.addAll(includes)
+    }
+
+    fun inheritEnv(inheritEnv: Boolean) = apply {
+        this.inheritEnv = inheritEnv
     }
 
     fun sources(sources: DirectoryBuilder) = this.sources(sources.path)
