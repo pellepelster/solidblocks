@@ -38,7 +38,9 @@ fun haveName(name: String) = object : Matcher<Path> {
 
 infix fun DirectoryBuilder.singleFile(file: String) = path.resolve(file)
 
-infix fun DirectoryBuilder.matchSingleFile(regex: String) = files(regex).singleOrNull() ?: path
+infix fun DirectoryBuilder.matchSingleFile(regex: String) =
+    files(regex).singleOrNull()
+        ?: throw RuntimeException("expected regex '${regex}' to match exactly one file, but it matched")
 
 infix fun Path.shouldHaveContent(content: String) = this should haveContent(content)
 

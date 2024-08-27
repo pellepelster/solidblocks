@@ -1,5 +1,7 @@
 package de.solidblocks.infra.test.snippets
 
+import de.solidblocks.infra.test.SolidblocksTest
+import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.files.file
 import de.solidblocks.infra.test.files.matchSingleFile
 import de.solidblocks.infra.test.files.shouldContainNFiles
@@ -11,13 +13,15 @@ import de.solidblocks.infra.test.files.workingDir
 import de.solidblocks.infra.test.files.zipFile
 import io.kotest.matchers.paths.shouldNotExist
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Path
 import java.util.UUID
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-public class Snippets  {
+@ExtendWith(SolidblocksTest::class)
+public class Snippets {
 
     private fun reverseFile1Content(path: Path) {
         println("reverseFile1Content was called")
@@ -77,4 +81,10 @@ public class Snippets  {
         tempDir.close()
     }
 
+    @Test
+    fun autoCleanResources(testContext: SolidblocksTestContext) {
+        val tempDir = testContext.createTempDir()
+
+        tempDir.file("some-file.txt").content("some-content").create()
+    }
 }

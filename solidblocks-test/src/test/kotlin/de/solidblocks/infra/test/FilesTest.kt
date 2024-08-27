@@ -1,18 +1,12 @@
 package de.solidblocks.infra.test
 
-import de.solidblocks.infra.test.files.file
-import de.solidblocks.infra.test.files.matchSingleFile
-import de.solidblocks.infra.test.files.shouldContainNFiles
-import de.solidblocks.infra.test.files.shouldHaveChecksum
-import de.solidblocks.infra.test.files.shouldHaveContent
-import de.solidblocks.infra.test.files.shouldHaveName
-import de.solidblocks.infra.test.files.singleFile
-import de.solidblocks.infra.test.files.tempDir
-import de.solidblocks.infra.test.files.zipFile
+import de.solidblocks.infra.test.files.*
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.paths.shouldNotExist
-import io.kotest.matchers.shouldBe
+import io.kotest.matchers.should
+import io.kotest.matchers.string.startWith
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
@@ -57,7 +51,12 @@ public class FilesTest {
         tempDir.matchSingleFile(".*anotherfile.txt.*") shouldHaveChecksum "d922d8fba18c13a1f24d53aa6e37e37d6c4e15d9d1661a9b9dca6697fd65c0dd"
 
         tempDir.singleFile("anotherfile.txt") shouldHaveChecksum "d922d8fba18c13a1f24d53aa6e37e37d6c4e15d9d1661a9b9dca6697fd65c0dd"
-        tempDir.matchSingleFile(".*file.*") shouldBe null
+
+        val exception = shouldThrow<RuntimeException> {
+            tempDir.matchSingleFile(".*file.*")
+        }
+        exception.message should startWith("expected regex '.*file.*' to match exactly one file, but it matched")
+
     }
 
     @Test
