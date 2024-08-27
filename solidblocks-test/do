@@ -15,7 +15,7 @@ DOCKER_REPOSITORY="pellepelster"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
 function task_build {
-  gradlew :solidblocks-test:assemble
+  ${DIR}/../gradlew :solidblocks-test:assemble
 }
 
 function task_test_prepare {
@@ -34,7 +34,7 @@ function task_test {
     exit 0
   fi
 
-  gradlew :solidblocks-test:test
+  ${DIR}/../gradlew :solidblocks-test:test
 }
 
 function task_release_test {
@@ -42,11 +42,11 @@ function task_release_test {
   export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="$(pass solidblocks/signing_key_password)"
   export ORG_GRADLE_PROJECT_mavenCentralUsername="$(pass maven/central-portal/user-token/username)"
   export ORG_GRADLE_PROJECT_mavenCentralPassword="$(pass maven/central-portal/user-token/password)"
-  ./gradlew solidblocks-test:publishAllPublicationsToMavenCentralRepository
+  ${DIR}/../gradlew :solidblocks-test:publishAllPublicationsToMavenCentralRepository
 }
 
 function task_clean {
-  gradlew :solidblocks-test:clean
+  ${DIR}/../gradlew :solidblocks-test:clean
 }
 
 function task_usage {

@@ -62,10 +62,7 @@ function task_test {
     exit 0
   fi
 
-  (
-    cd "${DIR}"
-    gradlew :solidblocks-shell:test
-  )
+  ${DIR}/../gradlew :solidblocks-shell:test
 }
 
 function task_release_prepare {

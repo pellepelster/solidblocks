@@ -1,0 +1,28 @@
+version: '3.5'
+services:
+  change-vol-ownership:
+    image: ubuntu
+    user: "root"
+    volumes:
+      - data:/storage/data
+      - backup:/storage/backup
+    command: chown -R 10000:10000 /storage
+
+  postgresql:
+    image: ghcr.io/pellepelster/solidblocks-rds-postgresql:15-snapshot-rc
+    environment:
+      DB_INSTANCE_NAME: instance1
+      DB_BACKUP_LOCAL: 1
+      DB_POSTGRES_EXTRA_CONFIG: "max_connections = 200\nshared_buffers = 2GB\neffective_cache_size = 6GB\nmaintenance_work_mem = 512MB\ncheckpoint_completion_target = 0.9\nwal_buffers = 16MB\n"
+    volumes:
+      - data:/storage/data
+      - backup:/storage/backup
+    ports:
+      - "5432"
+    depends_on:
+      change-vol-ownership:
+        condition: service_completed_successfully
+
+volumes:
+  data:
+  backup:

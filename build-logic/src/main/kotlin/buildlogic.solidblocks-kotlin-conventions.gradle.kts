@@ -13,6 +13,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.junitJupiterVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.junitJupiterVersion}")
 
@@ -22,6 +24,13 @@ tasks.test {
     useJUnitPlatform()
     testLogging {
         this.showStandardStreams = true
+        events = setOf(
+            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
+        )
     }
 }
 

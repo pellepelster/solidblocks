@@ -40,7 +40,7 @@ function task_test {
   software_ensure_terraform
   software_set_export_path
   (
-    cd "${DIR}/test/terraform"
+    cd "${DIR}/terraform"
     terraform init
     terraform apply --auto-approve
   )
@@ -53,8 +53,7 @@ function task_test {
     export GOOGLE_APPLICATION_CREDENTIALS="${TEMP_DIR}/service-key.json"
     export DB_BACKUP_GCS_SERVICE_KEY_BASE64="$(cat "${TEMP_DIR}/service-key.json" | base64 -w0)"
 
-    cd "${DIR}/test"
-    ./gradlew test $@
+    ${DIR}/../gradlew :solidblocks-rds-postgresql:test $@
   )
 }
 
@@ -101,7 +100,6 @@ function task_clean {
 function task_format {
   (
     cd "${DIR}/test"
-    ./gradlew spotlessApply
     terraform fmt -recursive
   )
 }
