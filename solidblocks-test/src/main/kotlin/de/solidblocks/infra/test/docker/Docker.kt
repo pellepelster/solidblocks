@@ -174,7 +174,8 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                             override fun onComplete() {
                               end = TimeSource.Monotonic.markNow()
                             }
-                          })
+                          },
+                      )
 
                   ProcessResult(
                       waitForExitCode(dockerClient, exec.id).exitCodeLong.toInt(),
@@ -211,7 +212,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
 
   private fun pullDockerImage(
       start: TimeSource.Monotonic.ValueTimeMark,
-      dockerClient: DockerClient
+      dockerClient: DockerClient,
   ) {
     log(start, "pulling docker image '$image")
     dockerClient
@@ -221,7 +222,8 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
               override fun onNext(item: PullResponseItem?) {
                 // print("*")
               }
-            })
+            },
+        )
         .awaitCompletion(dockerPullTimout.inWholeSeconds, TimeUnit.SECONDS)
   }
 

@@ -10,7 +10,7 @@ import kotlinx.coroutines.yield
 
 enum class OutputType {
   STDOUT,
-  STDERR
+  STDERR,
 }
 
 data class OutputLine(val timestamp: Duration, val line: String, val type: OutputType)

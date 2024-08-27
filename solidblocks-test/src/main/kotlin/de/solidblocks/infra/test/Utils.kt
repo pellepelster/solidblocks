@@ -18,7 +18,7 @@ object Constants {
 enum class LogType {
   STDOUT,
   STDERR,
-  TEST
+  TEST,
 }
 
 val logTypeMaxLength = LogType.entries.maxOf { it.name.length }

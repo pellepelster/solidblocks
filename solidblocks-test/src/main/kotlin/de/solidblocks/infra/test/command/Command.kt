@@ -80,7 +80,8 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
         val assertionsResult = async {
           assertions.map {
             it.invoke(
-                CommandRunAssertion(start, commandRunner, stdin, output, defaultWaitForOutput))
+                CommandRunAssertion(start, commandRunner, stdin, output, defaultWaitForOutput),
+            )
           }
         }
 
@@ -98,7 +99,14 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
             }
 
         CommandRun(
-            start, commandRunner, stdin, result, output, assertionsResult, defaultWaitForOutput)
+            start,
+            commandRunner,
+            stdin,
+            result,
+            output,
+            assertionsResult,
+            defaultWaitForOutput,
+        )
       }
 
   abstract suspend fun createCommandRunner(

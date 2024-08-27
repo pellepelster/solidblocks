@@ -6,12 +6,7 @@ import de.solidblocks.infra.test.command.runtimeShouldBeLessThan
 import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.testDocker
-import de.solidblocks.infra.test.output.outputShouldBe
-import de.solidblocks.infra.test.output.outputShouldMatch
-import de.solidblocks.infra.test.output.stderrShouldBe
-import de.solidblocks.infra.test.output.stderrShouldMatch
-import de.solidblocks.infra.test.output.stdoutShouldBe
-import de.solidblocks.infra.test.output.stdoutShouldMatch
+import de.solidblocks.infra.test.output.*
 import de.solidblocks.infra.test.script.ScriptBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.assertions.assertSoftly
@@ -25,6 +20,7 @@ import kotlin.time.measureTime
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.FieldSource
@@ -175,11 +171,12 @@ public class CommandTest {
   fun testTimeoutExceeded(context: TestContext<CommandBuilder, ScriptBuilder>) {
     measureTime {
       assertSoftly(
-          context.command(getCommandPath("command-timeout.sh")).timeout(2.seconds).runResult()) {
-            it shouldHaveExitCode 137
-            it runtimeShouldBeLessThan 4.seconds
-            it runtimeShouldBeGreaterThan 1.seconds
-          }
+          context.command(getCommandPath("command-timeout.sh")).timeout(2.seconds).runResult(),
+      ) {
+        it shouldHaveExitCode 137
+        it runtimeShouldBeLessThan 4.seconds
+        it runtimeShouldBeGreaterThan 1.seconds
+      }
     } shouldBeLessThan 4.seconds
   }
 
@@ -257,6 +254,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
+  @Disabled("could leak CI info via env")
   fun testEnvironmentVariables(context: TestContext<CommandBuilder, ScriptBuilder>) {
     runBlocking {
       val run = context.command("env").env("ABC" to "DEF").run()

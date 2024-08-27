@@ -46,7 +46,8 @@ abstract class BaseDockerResultCallback(
                     StreamType.STDERR -> OutputType.STDERR
                     else -> {
                       throw RuntimeException(
-                          "unsupported docker log stream type: ${frame.streamType}")
+                          "unsupported docker log stream type: ${frame.streamType}",
+                      )
                     }
                   },
               ),

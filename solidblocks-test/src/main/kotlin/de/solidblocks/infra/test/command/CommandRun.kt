@@ -24,7 +24,7 @@ class CommandRunAssertion(
   fun waitForOutput(
       regex: String,
       timeout: Duration = defaultWaitForOutput,
-      answer: (() -> String)? = null
+      answer: (() -> String)? = null,
   ) = runBlocking {
     waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
   }
@@ -79,7 +79,7 @@ class CommandRun(
   fun waitForOutput(
       regex: String,
       timeout: Duration = defaultWaitForOutput,
-      answer: (() -> String)? = null
+      answer: (() -> String)? = null,
   ) = runBlocking {
     waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
   }
