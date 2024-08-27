@@ -1,5 +1,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm")
+    id("com.diffplug.spotless")
 }
 
 object Versions {
@@ -27,5 +28,12 @@ tasks.test {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+spotless {
+    kotlin {
+        ktlint()
+        ktfmt()
     }
 }

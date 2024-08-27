@@ -22,73 +22,73 @@ import kotlin.time.TimeSource
 @OptIn(ExperimentalPathApi::class)
 class DirectoryBuilder(
     val path: Path,
-    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow(),
 ) : Closeable {
 
-    init {
-        log(start, "created directory '$path'")
+  init {
+    log(start, "created directory '$path'")
+  }
+
+  fun files() = Files.walk(path).filter { it.isRegularFile() }.toList()
+
+  fun files(regex: String): List<Path> {
+    val r = regex.toRegex()
+    return files().filter { r.matches(it.absolutePathString()) }
+  }
+
+  fun directories() = Files.walk(path).filter { it.isDirectory() }.toList()
+
+  fun copyFromDir(dir: Path) {
+    if (!dir.exists() || !dir.isDirectory()) {
+      throw RuntimeException("path '$path' does not exist or is not a directory")
     }
 
-    fun files() = Files.walk(path).filter { it.isRegularFile() }.toList()
+    dir.copyToRecursively(
+        path,
+        followLinks = false,
+    )
+  }
 
-    fun files(regex: String): List<Path> {
-        val r = regex.toRegex()
-        return files().filter {
-            r.matches(it.absolutePathString())
+  /** Deletes the content of the directory including all regular files and subdirectories. */
+  fun clean() {
+    log(start, "deleting content of directory '$path'")
+    Files.walk(path)
+        .filter {
+          it.toAbsolutePath() != path.toAbsolutePath() && (it.isRegularFile() || it.isDirectory())
         }
-    }
-
-    fun directories() = Files.walk(path).filter { it.isDirectory() }.toList()
-
-    fun copyFromDir(dir: Path) {
-        if (!dir.exists() || !dir.isDirectory()) {
-            throw RuntimeException("path '$path' does not exist or is not a directory")
+        .forEach {
+          log(start, "deleting  '$it'")
+          it.deleteRecursively()
         }
+  }
 
-        dir.copyToRecursively(
-            path, followLinks = false
-        )
-    }
-
-    /**
-     * Deletes the content of the directory  including all regular files and subdirectories.
-     */
-    fun clean() {
-        log(start, "deleting content of directory '$path'")
-        Files.walk(path)
-            .filter { it.toAbsolutePath() != path.toAbsolutePath() && (it.isRegularFile() || it.isDirectory()) }
-            .forEach {
-                log(start, "deleting  '$it'")
-                it.deleteRecursively()
-            }
-    }
-
-    fun fileFromResource(resource: String): FileBuilder {
-        val r = this.javaClass.classLoader.getResource(resource)
+  fun fileFromResource(resource: String): FileBuilder {
+    val r =
+        this.javaClass.classLoader.getResource(resource)
             ?: throw RuntimeException("resource file '$resource' not found")
 
-        return file(Path(r.path).fileName.name).content(r.readBytes())
+    return file(Path(r.path).fileName.name).content(r.readBytes())
+  }
+
+  fun fileFromPath(path: Path): FileBuilder {
+    if (!path.exists()) {
+      throw RuntimeException("path '$path' does not exist")
     }
 
-    fun fileFromPath(path: Path): FileBuilder {
+    return file(path.fileName.name).content(path.readBytes())
+  }
+
+  fun createDir(directory: String) =
+      DirectoryBuilder(path.resolve(directory)).apply {
         if (!path.exists()) {
-            throw RuntimeException("path '$path' does not exist")
+          path.createDirectories()
         }
+      }
 
-        return file(path.fileName.name).content(path.readBytes())
-    }
-
-    fun createDir(directory: String) = DirectoryBuilder(path.resolve(directory)).apply {
-        if (!path.exists()) {
-            path.createDirectories()
-        }
-    }
-
-    override fun close() {
-        log(start, "deleting directory '$path'")
-        path.deleteRecursively()
-    }
-
+  override fun close() {
+    log(start, "deleting directory '$path'")
+    path.deleteRecursively()
+  }
 }
 
 fun tempDir() = DirectoryBuilder(createTempDirectory("test"))

@@ -7,29 +7,24 @@ import testLocal
 
 class LocalScriptBuilder : ScriptBuilder() {
 
-    override fun run(): CommandRunResult = runBlocking {
-        val buildScript = buildScript()
-        val command = testLocal().command(*buildScript.second.toTypedArray())
+  override fun run(): CommandRunResult = runBlocking {
+    val buildScript = buildScript()
+    val command =
+        testLocal()
+            .command(*buildScript.second.toTypedArray())
             .workingDir(buildScript.first)
             .env(envs)
             .inheritEnv(inheritEnv)
             .defaultWaitForOutput(defaultWaitForOutput)
 
-        if (assertSteps) {
-            steps.forEachIndexed { index, step ->
-                command.assert {
-                    it.waitForOutput(".*finished step ${index}.*") {
-                        "continue"
-                    }
-                }
+    if (assertSteps) {
+      steps.forEachIndexed { index, step ->
+        command.assert { it.waitForOutput(".*finished step $index.*") { "continue" } }
 
-                command.assert {
-                    step.assertion?.invoke(it)
-                }
-            }
-        }
-
-        command.runResult()
+        command.assert { step.assertion?.invoke(it) }
+      }
     }
 
+    command.runResult()
+  }
 }

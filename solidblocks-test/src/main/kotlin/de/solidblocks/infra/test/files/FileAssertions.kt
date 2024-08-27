@@ -11,50 +11,51 @@ import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 
 infix fun DirectoryBuilder.shouldContainNFiles(fileCount: Int): DirectoryBuilder {
-    this.files() shouldHaveSize fileCount
-    return this
+  this.files() shouldHaveSize fileCount
+  return this
 }
 
 infix fun Path.shouldHaveChecksum(checksum: String) {
-    val bytes = this.readBytes()
-    val digest = MessageDigest.getInstance("SHA-256").digest(bytes).fold("", { str, it -> str + "%02x".format(it) })
+  val bytes = this.readBytes()
+  val digest =
+      MessageDigest.getInstance("SHA-256")
+          .digest(bytes)
+          .fold("", { str, it -> str + "%02x".format(it) })
 
-    digest shouldBeEqual checksum
+  digest shouldBeEqual checksum
 }
 
 infix fun Path.shouldHaveName(name: String) = this should haveName(name)
 
-fun haveName(name: String) = object : Matcher<Path> {
-    override fun test(value: Path): MatcherResult {
+fun haveName(name: String) =
+    object : Matcher<Path> {
+      override fun test(value: Path): MatcherResult {
         val actual = value.fileName.toString()
         return MatcherResult(
             actual == name,
             { "Path $value should have name $name but was $actual" },
-            {
-                "Path $value should not have name of $name"
-            })
+            { "Path $value should not have name of $name" },
+        )
+      }
     }
-}
 
 infix fun DirectoryBuilder.singleFile(file: String) = path.resolve(file)
 
 infix fun DirectoryBuilder.matchSingleFile(regex: String) =
     files(regex).singleOrNull()
-        ?: throw RuntimeException("expected regex '${regex}' to match exactly one file, but it matched")
+        ?: throw RuntimeException(
+            "expected regex '$regex' to match exactly one file, but it matched")
 
 infix fun Path.shouldHaveContent(content: String) = this should haveContent(content)
 
-fun haveContent(content: String) = object : Matcher<Path> {
-    override fun test(value: Path): MatcherResult {
+fun haveContent(content: String) =
+    object : Matcher<Path> {
+      override fun test(value: Path): MatcherResult {
         val actual = value.readText()
         return MatcherResult(
             actual == content,
             { "Path $value should have content '$content' but was '$actual'" },
-            {
-                "Path $value should not have content '$content'"
-            })
+            { "Path $value should not have content '$content'" },
+        )
+      }
     }
-}
-
-
-

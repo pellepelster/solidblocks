@@ -6,33 +6,31 @@ import de.solidblocks.infra.test.files.workingDir
 import de.solidblocks.infra.test.files.zipFile
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
+import java.util.UUID
 import org.junit.jupiter.api.Test
 import testLocal
-import java.util.UUID
 
 public class FileTest {
+  @Test
+  fun testExtractToDirectory() {
+    val tempDir = tempDir()
+    tempDir.zipFile("file.zip").entry("file1", "content1").entry("file2", "content2").create()
 
-    @Test
-    fun testExtractToDirectory() {
+    val extractTempDir = "/tmp/${UUID.randomUUID()}"
 
-        val tempDir = tempDir()
-        tempDir.zipFile("file.zip").entry("file1", "content1").entry("file2", "content2").create()
-
-        val extractTempDir="/tmp/${UUID.randomUUID()}"
-
-        val result = testLocal().script()
+    val result =
+        testLocal()
+            .script()
             .sources(tempDir)
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("file.sh"))
-            .step("file_extract_to_directory file.zip ${extractTempDir}") {
-                it.fileExists("${extractTempDir}/file1") shouldBe true
-                it.fileExists("${extractTempDir}/file2") shouldBe true
-                it.fileExists("${extractTempDir}/.file.zip.extracted") shouldBe true
+            .step("file_extract_to_directory file.zip $extractTempDir") {
+              it.fileExists("$extractTempDir/file1") shouldBe true
+              it.fileExists("$extractTempDir/file2") shouldBe true
+              it.fileExists("$extractTempDir/.file.zip.extracted") shouldBe true
             }
             .run()
 
-        assertSoftly(result) {
-            it shouldHaveExitCode 0
-        }
-    }
+    assertSoftly(result) { it shouldHaveExitCode 0 }
+  }
 }

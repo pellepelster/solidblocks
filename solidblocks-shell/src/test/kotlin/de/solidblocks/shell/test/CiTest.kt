@@ -8,25 +8,28 @@ import org.junit.jupiter.api.Test
 import testLocal
 
 public class CiTest {
-
-    @Test
-    fun testCiDetectedFalse() {
-        val result = testLocal().script()
+  @Test
+  fun testCiDetectedFalse() {
+    val result =
+        testLocal()
+            .script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("ci.sh"))
             .inheritEnv(false)
             .step("echo ci_detected=\$(ci_detected)")
             .run()
 
-        assertSoftly(result) {
-            it shouldHaveExitCode 0
-            it stdoutShouldMatch ".*ci_detected=false.*"
-        }
+    assertSoftly(result) {
+      it shouldHaveExitCode 0
+      it stdoutShouldMatch ".*ci_detected=false.*"
     }
+  }
 
-    @Test
-    fun testCiDetectedCi() {
-        val result = testLocal().script()
+  @Test
+  fun testCiDetectedCi() {
+    val result =
+        testLocal()
+            .script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("ci.sh"))
             .inheritEnv(false)
@@ -34,15 +37,17 @@ public class CiTest {
             .step("echo ci_detected=\$(ci_detected)")
             .run()
 
-        assertSoftly(result) {
-            it shouldHaveExitCode 0
-            it stdoutShouldMatch ".*ci_detected=true.*"
-        }
+    assertSoftly(result) {
+      it shouldHaveExitCode 0
+      it stdoutShouldMatch ".*ci_detected=true.*"
     }
+  }
 
-    @Test
-    fun testCiDetectedBuildId() {
-        val result = testLocal().script()
+  @Test
+  fun testCiDetectedBuildId() {
+    val result =
+        testLocal()
+            .script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("ci.sh"))
             .inheritEnv(false)
@@ -50,10 +55,9 @@ public class CiTest {
             .step("echo ci_detected=\$(ci_detected)")
             .run()
 
-        assertSoftly(result) {
-            it shouldHaveExitCode 0
-            it stdoutShouldMatch ".*ci_detected=true.*"
-        }
+    assertSoftly(result) {
+      it shouldHaveExitCode 0
+      it stdoutShouldMatch ".*ci_detected=true.*"
     }
-
+  }
 }

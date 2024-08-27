@@ -7,11 +7,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(SolidblocksTest::class)
 class SolidblocksExtensionTest {
 
-    @Test
-    fun testFilesCleanup(testContext: SolidblocksTestContext) {
-        val tempDir = testContext.createTempDir()
-        tempDir.file("some_file").create()
-    }
+  @Test
+  fun testFilesCleanup(testContext: SolidblocksTestContext) {
+    val tempDir = testContext.createTempDir()
+    tempDir.file("some_file").create()
+  }
 }
-
-

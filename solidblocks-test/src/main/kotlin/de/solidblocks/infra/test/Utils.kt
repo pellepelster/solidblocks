@@ -11,29 +11,36 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 object Constants {
-    val dockerTestimageLabels = mapOf("managed-by" to "solidblocks-test")
-    val durationFormat = DecimalFormat("000.000")
+  val dockerTestimageLabels = mapOf("managed-by" to "solidblocks-test")
+  val durationFormat = DecimalFormat("000.000")
 }
 
-enum class LogType { stdout, stderr, test }
+enum class LogType {
+  STDOUT,
+  STDERR,
+  TEST
+}
 
 val logTypeMaxLength = LogType.entries.maxOf { it.name.length }
 
-fun log(start: TimeSource.Monotonic.ValueTimeMark, message: String, type: LogType = LogType.test) =
+fun log(start: TimeSource.Monotonic.ValueTimeMark, message: String, type: LogType = LogType.TEST) =
     log(TimeSource.Monotonic.markNow() - start, message, type)
 
-fun log(duration: Duration, message: String, type: LogType = LogType.test) {
-    val logType = type.name.padStart(logTypeMaxLength)
-    println("${durationFormat.format(duration.inWholeMilliseconds / 1000f)}s [${logType}] ${message}")
+fun log(duration: Duration, message: String, type: LogType = LogType.TEST) {
+  val logType = type.name.padStart(logTypeMaxLength)
+  println("${durationFormat.format(duration.inWholeMilliseconds / 1000f)}s [$logType] $message")
 }
 
 fun createDockerClient(): DockerClient {
-    val config: DefaultDockerClientConfig.Builder = DefaultDockerClientConfig.createDefaultConfigBuilder()
+  val config: DefaultDockerClientConfig.Builder =
+      DefaultDockerClientConfig.createDefaultConfigBuilder()
 
-    val httpClient = ZerodepDockerHttpClient.Builder()
-    httpClient.dockerHost(URI.create("unix:///var/run/docker.sock"))
+  val httpClient = ZerodepDockerHttpClient.Builder()
+  httpClient.dockerHost(URI.create("unix:///var/run/docker.sock"))
 
-    val dockerClient: DockerClient =
-        DockerClientBuilder.getInstance(config.build()).withDockerHttpClient(httpClient.build()).build()
-    return dockerClient
+  val dockerClient: DockerClient =
+      DockerClientBuilder.getInstance(config.build())
+          .withDockerHttpClient(httpClient.build())
+          .build()
+  return dockerClient
 }

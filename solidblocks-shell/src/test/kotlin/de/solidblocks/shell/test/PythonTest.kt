@@ -10,23 +10,23 @@ import org.junit.jupiter.api.Test
 import testLocal
 
 public class PythonTest {
+  @Test
+  fun testEnsureVenv() {
+    val tempDir = tempDir()
+    tempDir.file("requirements.txt").content("PyJWT==2.6.0").create()
 
-    @Test
-    fun testEnsureVenv() {
-
-        val tempDir = tempDir()
-        tempDir.file("requirements.txt").content("PyJWT==2.6.0").create()
-
-        val result = testLocal().script()
+    val result =
+        testLocal()
+            .script()
             .sources(tempDir)
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("python.sh"))
             .step("python_ensure_venv")
             .run()
 
-        assertSoftly(result) {
-            it shouldHaveExitCode 0
-            it stdoutShouldMatch ".*Successfully installed PyJWT-2.6.0.*"
-        }
+    assertSoftly(result) {
+      it shouldHaveExitCode 0
+      it stdoutShouldMatch ".*Successfully installed PyJWT-2.6.0.*"
     }
+  }
 }

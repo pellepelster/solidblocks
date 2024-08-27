@@ -17,104 +17,92 @@ class ScriptStep(val step: String, val assertion: ((CommandRunAssertion) -> Unit
 
 abstract class ScriptBuilder : Closeable {
 
-    internal val includes: MutableList<Path> = mutableListOf()
+  internal val includes: MutableList<Path> = mutableListOf()
 
-    protected val steps: MutableList<ScriptStep> = mutableListOf()
+  protected val steps: MutableList<ScriptStep> = mutableListOf()
 
-    internal var sources = mutableListOf<Path>()
+  internal var sources = mutableListOf<Path>()
 
-    internal var assertSteps = true
+  internal var assertSteps = true
 
-    internal var defaultWaitForOutput: Duration = 60.seconds
+  internal var defaultWaitForOutput: Duration = 60.seconds
 
-    internal val envs = mutableMapOf<String, String>()
+  internal val envs = mutableMapOf<String, String>()
 
-    internal val resources = mutableListOf<Closeable>()
+  internal val resources = mutableListOf<Closeable>()
 
-    internal var inheritEnv = true
+  internal var inheritEnv = true
 
-    fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
-        this.defaultWaitForOutput = defaultWaitForOutput
-    }
+  fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
+    this.defaultWaitForOutput = defaultWaitForOutput
+  }
 
-    fun assertSteps(assertSteps: Boolean) = apply {
-        this.assertSteps = assertSteps
-    }
+  fun assertSteps(assertSteps: Boolean) = apply { this.assertSteps = assertSteps }
 
-    fun includes(vararg includes: String) = apply {
-        this.includes.addAll(includes.map { Path.of(it) })
-    }
+  fun includes(vararg includes: String) = apply {
+    this.includes.addAll(includes.map { Path.of(it) })
+  }
 
-    fun includes(vararg includes: Path) = apply {
-        this.includes.addAll(includes)
-    }
+  fun includes(vararg includes: Path) = apply { this.includes.addAll(includes) }
 
-    fun inheritEnv(inheritEnv: Boolean) = apply {
-        this.inheritEnv = inheritEnv
-    }
+  fun inheritEnv(inheritEnv: Boolean) = apply { this.inheritEnv = inheritEnv }
 
-    fun sources(sources: DirectoryBuilder) = this.sources(sources.path)
+  fun sources(sources: DirectoryBuilder) = this.sources(sources.path)
 
-    fun sources(sources: Path) = apply {
-        this.sources.add(sources)
-    }
+  fun sources(sources: Path) = apply { this.sources.add(sources) }
 
-    fun step(step: String, assertion: ((CommandRunAssertion) -> Unit)? = null) = apply {
-        this.steps.add(ScriptStep(step, assertion))
-    }
+  fun step(step: String, assertion: ((CommandRunAssertion) -> Unit)? = null) = apply {
+    this.steps.add(ScriptStep(step, assertion))
+  }
 
-    protected fun buildScript(): Pair<Path, List<String>> {
-        val tempDir = tempDir()
-        resources.add(tempDir)
+  protected fun buildScript(): Pair<Path, List<String>> {
+    val tempDir = tempDir()
+    resources.add(tempDir)
 
-        this.sources.forEach {
-            tempDir.copyFromDir(it)
+    this.sources.forEach { tempDir.copyFromDir(it) }
+
+    val sourceMappings =
+        this.includes.map { source ->
+          source to
+              tempDir.path.resolve(
+                  source
+                      .absolutePathString()
+                      .removePrefix(File.separator)
+                      .replace(File.separator, "_"),
+              )
         }
 
-        val sourceMappings = this.includes.map { source ->
-            source to tempDir.path.resolve(
-                source.absolutePathString()
-                    .removePrefix(File.separator)
-                    .replace(File.separator, "_")
-            )
-        }
-
-        sourceMappings.forEach { sourceMapping ->
-            tempDir.file(sourceMapping.second.absolutePathString())
-                .content(sourceMapping.first.readBytes())
-                .create()
-        }
-
-        val script = StringBuilder()
-
-        script.appendLine("#!/usr/bin/env bash")
-        script.appendLine("set -eu -o pipefail")
-
-        sourceMappings.forEach {
-            script.appendLine("source ${it.second.absolutePathString()}")
-        }
-
-        steps.forEachIndexed { index, step ->
-            script.appendLine("echo \"starting step ${index}\"")
-            script.appendLine(step.step)
-            script.appendLine("echo \"finished step ${index}\"")
-            script.appendLine("read")
-        }
-
-        val scriptFile = tempDir.file("script.sh").executable().content(script.toString()).create()
-
-        return tempDir.path to listOf(scriptFile.absolutePathString())
+    sourceMappings.forEach { sourceMapping ->
+      tempDir
+          .file(sourceMapping.second.absolutePathString())
+          .content(sourceMapping.first.readBytes())
+          .create()
     }
 
-    fun env(env: Pair<String, String>) = apply {
-        this.envs[env.first] = env.second
+    val script = StringBuilder()
+
+    script.appendLine("#!/usr/bin/env bash")
+    script.appendLine("set -eu -o pipefail")
+
+    sourceMappings.forEach { script.appendLine("source ${it.second.absolutePathString()}") }
+
+    steps.forEachIndexed { index, step ->
+      script.appendLine("echo \"starting step ${index}\"")
+      script.appendLine(step.step)
+      script.appendLine("echo \"finished step ${index}\"")
+      script.appendLine("read")
     }
 
-    override fun close() {
-        resources.forEach { it.close() }
-    }
+    val scriptFile = tempDir.file("script.sh").executable().content(script.toString()).create()
 
-    abstract fun run(): CommandRunResult
+    return tempDir.path to listOf(scriptFile.absolutePathString())
+  }
 
+  fun env(env: Pair<String, String>) = apply { this.envs[env.first] = env.second }
+
+  override fun close() {
+    resources.forEach { it.close() }
+  }
+
+  abstract fun run(): CommandRunResult
 }
-

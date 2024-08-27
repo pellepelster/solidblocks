@@ -12,39 +12,45 @@ import kotlin.time.TimeSource
 
 abstract class BaseDockerResultCallback(
     private val start: TimeSource.Monotonic.ValueTimeMark,
-    private val output: (entry: OutputLine) -> Unit
+    private val output: (entry: OutputLine) -> Unit,
 ) : ResultCallback<Frame> {
 
-    override fun close() {}
+  override fun close() {}
 
-    override fun onStart(closeable: Closeable) {}
+  override fun onStart(closeable: Closeable) {}
 
-    override fun onNext(frame: Frame) {
-        val payload = frame.payload.decodeToString()
-        log(
-            start, payload, when (frame.streamType) {
-                StreamType.STDOUT -> LogType.stdout
-                StreamType.STDERR -> LogType.stderr
-                else -> {
-                    throw RuntimeException("unsupported docker log stream type: ${frame.streamType}")
-                }
-            }
-        )
+  override fun onNext(frame: Frame) {
+    val payload = frame.payload.decodeToString()
+    log(
+        start,
+        payload,
+        when (frame.streamType) {
+          StreamType.STDOUT -> LogType.STDOUT
+          StreamType.STDERR -> LogType.STDERR
+          else -> {
+            throw RuntimeException("unsupported docker log stream type: ${frame.streamType}")
+          }
+        },
+    )
 
-        payload.lines().dropLastWhile { it.isEmpty() }.forEach {
-            output.invoke(
-                OutputLine(
-                    TimeSource.Monotonic.markNow() - start,
-                    it,
-                    when (frame.streamType) {
-                        StreamType.STDOUT -> OutputType.stdout
-                        StreamType.STDERR -> OutputType.stderr
-                        else -> {
-                            throw RuntimeException("unsupported docker log stream type: ${frame.streamType}")
-                        }
+    payload
+        .lines()
+        .dropLastWhile { it.isEmpty() }
+        .forEach {
+          output.invoke(
+              OutputLine(
+                  TimeSource.Monotonic.markNow() - start,
+                  it,
+                  when (frame.streamType) {
+                    StreamType.STDOUT -> OutputType.STDOUT
+                    StreamType.STDERR -> OutputType.STDERR
+                    else -> {
+                      throw RuntimeException(
+                          "unsupported docker log stream type: ${frame.streamType}")
                     }
-                )
-            )
+                  },
+              ),
+          )
         }
-    }
+  }
 }

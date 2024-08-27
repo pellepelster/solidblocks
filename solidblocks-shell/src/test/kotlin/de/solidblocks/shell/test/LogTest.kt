@@ -8,10 +8,11 @@ import org.junit.jupiter.api.Test
 import testLocal
 
 public class LogTest {
-
-    @Test
-    fun testLogMessages() {
-        val result = testLocal().script()
+  @Test
+  fun testLogMessages() {
+    val result =
+        testLocal()
+            .script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("log.sh"))
             .step("log_info 'some info'")
@@ -21,27 +22,29 @@ public class LogTest {
             .step("log_debug 'some debug'")
             .run()
 
-        assertSoftly(result) {
-            it stderrShouldMatch ".*2024-.* UTC \\[  success\\] some success.*"
-            it stderrShouldMatch ".*2024-.* UTC \\[  warning\\] some warning.*"
-            it stderrShouldMatch ".*2024-.* UTC \\[    debug\\] some debug.*"
-            it stderrShouldMatch ".*2024-.* UTC \\[    error\\] some error.*"
-            it stderrShouldMatch ".*2024-.* UTC \\[     info\\] some info.*"
-        }
+    assertSoftly(result) {
+      it stderrShouldMatch ".*2024-.* UTC \\[  success\\] some success.*"
+      it stderrShouldMatch ".*2024-.* UTC \\[  warning\\] some warning.*"
+      it stderrShouldMatch ".*2024-.* UTC \\[    debug\\] some debug.*"
+      it stderrShouldMatch ".*2024-.* UTC \\[    error\\] some error.*"
+      it stderrShouldMatch ".*2024-.* UTC \\[     info\\] some info.*"
     }
+  }
 
-    @Test
-    fun testLogDie() {
-        val result = testLocal().script()
+  @Test
+  fun testLogDie() {
+    val result =
+        testLocal()
+            .script()
             .assertSteps(false)
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("log.sh"))
             .step("log_die 'fatal message'")
             .run()
 
-        assertSoftly(result) {
-            it shouldHaveExitCode 4
-            it stderrShouldMatch ".*2024-.* UTC \\[emergency\\] fatal message.*"
-        }
+    assertSoftly(result) {
+      it shouldHaveExitCode 4
+      it stderrShouldMatch ".*2024-.* UTC \\[emergency\\] fatal message.*"
     }
+  }
 }

@@ -3,17 +3,21 @@ package de.solidblocks.shell.test
 import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
+import kotlin.io.path.Path
 import org.junit.jupiter.api.Test
 import testLocal
-import kotlin.io.path.Path
 
 public class TextTest {
+  private fun getCommandPath(path: String) =
+      Path(
+          this.javaClass.classLoader.getResource(path)!!.path,
+      )
 
-    private fun getCommandPath(path: String) = Path(this.javaClass.classLoader.getResource(path)!!.path)
-
-    @Test
-    fun testTextFormats() {
-        val result = testLocal().script()
+  @Test
+  fun testTextFormats() {
+    val result =
+        testLocal()
+            .script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("text.sh"))
             .step("echo \"\${FORMAT_DIM}Dim\${FORMAT_RESET}\"")
@@ -29,9 +33,6 @@ public class TextTest {
             .step("echo \"\${COLOR_WHITE}white\${FORMAT_RESET}\"")
             .run()
 
-        assertSoftly(result) {
-            it shouldHaveExitCode 0
-        }
-    }
-
+    assertSoftly(result) { it shouldHaveExitCode 0 }
+  }
 }
