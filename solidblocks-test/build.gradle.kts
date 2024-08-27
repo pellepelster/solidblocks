@@ -1,5 +1,30 @@
+import java.net.URI
+
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
+    id("maven-publish")
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = URI.create("https://maven.pkg.github.com/pellepelster/solidblocks")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "de.solidblocks"
+            artifactId = "infra-test"
+            version = System.getenv("VERSION") ?: "snapshot"
+            from(components["java"])
+        }
+    }
 }
 
 object Versions {

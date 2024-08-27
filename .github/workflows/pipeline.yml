@@ -382,6 +382,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Release Docker
         run: ./do release-docker
+      - name: Publish package
+        run: ./gradlew solidblocks-test:publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
         with:
