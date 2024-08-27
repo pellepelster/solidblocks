@@ -6,6 +6,7 @@ import de.solidblocks.infra.test.output.waitForOutputMatcher
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
+import java.io.Closeable
 import kotlin.time.Duration
 import kotlin.time.TimeSource
 
@@ -45,15 +46,13 @@ class CommandRunAssertion(
     }
 }
 
-interface CommandRunner {
+interface CommandRunner : Closeable {
     suspend fun runCommand(
         command: Array<String>,
         envs: Map<String, String> = emptyMap(),
         stdin: Channel<String> = Channel(),
         output: (entry: OutputLine) -> Unit,
     ): Deferred<ProcessResult>
-
-    fun cleanup()
 }
 
 class CommandRun(
@@ -69,7 +68,7 @@ class CommandRun(
         assertionsResult.await()
 
         val processResult = result.await()
-        commandRunner.cleanup()
+        commandRunner.close()
 
         CommandRunResult(
             CommandResult(processResult.exitCode, processResult.runtime, output),

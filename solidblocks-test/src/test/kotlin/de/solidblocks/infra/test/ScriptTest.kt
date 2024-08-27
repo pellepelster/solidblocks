@@ -1,13 +1,14 @@
 package de.solidblocks.infra.test
 
-import de.solidblocks.infra.test.docker.DockerTestImage
-import de.solidblocks.infra.test.output.stdoutShouldMatch
-import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.command.shouldHaveExitCode
+import de.solidblocks.infra.test.docker.DockerTestImage
+import de.solidblocks.infra.test.docker.testDocker
+import de.solidblocks.infra.test.output.stdoutShouldMatch
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import testLocal
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
@@ -18,12 +19,12 @@ public class ScriptTest {
 
         val include1 = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
 
-        script().includes(include1)
+        testLocal().script().includes(include1)
             .step("hello_world") {
                 it
             }.step("hello_universe") {
                 it
-            }.runLocal()
+            }.run()
     }
 
     @Test
@@ -31,12 +32,12 @@ public class ScriptTest {
 
         val include1 = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
 
-        val result = script().includes(include1)
+        val result = testLocal().script().includes(include1)
             .step("hello_world") {
                 it.waitForOutput(".*hello world.*")
             }.step("hello_universe") {
                 it.waitForOutput(".*hello universe.*")
-            }.runLocal()
+            }.run()
 
         assertSoftly(result) {
             it stdoutShouldMatch ".*hello world.*"
@@ -50,11 +51,11 @@ public class ScriptTest {
         val include1 = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
         val file = UUID.randomUUID()
 
-        val result = script().defaultWaitForOutput(5.seconds).includes(include1)
+        val result = testLocal().script().defaultWaitForOutput(5.seconds).includes(include1)
             .step("echo \"content\" > /tmp/${file}") {
                 it.fileExists("/tmp/${file}") shouldBe true
                 it.fileExists("/tmp/${file}_1") shouldBe false
-            }.runLocal()
+            }.run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -67,11 +68,11 @@ public class ScriptTest {
         val include1 = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
         val file = UUID.randomUUID()
 
-        val result = script().includes(include1)
+        val result = testDocker(DockerTestImage.DEBIAN_10).script().includes(include1)
             .step("echo \"content\" > /tmp/${file}") {
                 it.fileExists("/tmp/${file}") shouldBe true
                 it.fileExists("/tmp/${file}_1") shouldBe false
-            }.runDocker(DockerTestImage.DEBIAN_10)
+            }.run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -84,10 +85,10 @@ public class ScriptTest {
         val include = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
 
         val exception = shouldThrow<RuntimeException> {
-            script()
+            testLocal().script()
                 .defaultWaitForOutput(5.seconds)
                 .includes(include)
-                .step("echo \${invalid}").runLocal()
+                .step("echo \${invalid}").run()
 
         }
         exception.message shouldBe ("timeout of 5s exceeded waiting for log line '.*finished step 0.*'")
@@ -97,10 +98,10 @@ public class ScriptTest {
     fun testScriptErrorUnboundVariableNoAsserts() {
         val include = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
 
-        script()
+        testLocal().script()
             .assertSteps(false)
             .includes(include)
-            .step("echo \${invalid}").runLocal()
+            .step("echo \${invalid}").run()
 
     }
 }

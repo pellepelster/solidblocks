@@ -1,16 +1,23 @@
 package de.solidblocks.infra.test.snippets
 
-import de.solidblocks.infra.test.files.*
+import de.solidblocks.infra.test.files.file
+import de.solidblocks.infra.test.files.matchSingleFile
+import de.solidblocks.infra.test.files.shouldContainNFiles
+import de.solidblocks.infra.test.files.shouldHaveChecksum
+import de.solidblocks.infra.test.files.shouldHaveContent
+import de.solidblocks.infra.test.files.singleFile
+import de.solidblocks.infra.test.files.tempDir
+import de.solidblocks.infra.test.files.workingDir
+import de.solidblocks.infra.test.files.zipFile
 import io.kotest.matchers.paths.shouldNotExist
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Path
-import java.util.*
+import java.util.UUID
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-public class FilesSnippets  {
+public class Snippets  {
 
     private fun reverseFile1Content(path: Path) {
         println("reverseFile1Content was called")
@@ -30,7 +37,7 @@ public class FilesSnippets  {
     }
 
     @Test
-    fun snippet1() {
+    fun filesAndDirectories() {
         val tempDir = tempDir()
 
         // set up testbed by creating files from various sources
@@ -67,7 +74,7 @@ public class FilesSnippets  {
         tempDir matchSingleFile (".*unpredictable_.*") shouldHaveContent "unpredictable file content"
 
         // remove temporary directory
-        tempDir.remove()
+        tempDir.close()
     }
 
 }

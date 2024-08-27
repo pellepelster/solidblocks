@@ -1,10 +1,10 @@
 package de.solidblocks.shell.test
 
-import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
+import testLocal
 import kotlin.io.path.Path
 
 public class TextTest {
@@ -13,7 +13,7 @@ public class TextTest {
 
     @Test
     fun testTextFormats() {
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("text.sh"))
             .step("echo \"\${FORMAT_DIM}Dim\${FORMAT_RESET}\"")
@@ -27,7 +27,7 @@ public class TextTest {
             .step("echo \"\${COLOR_MAGENTA}magenta\${FORMAT_RESET}\"")
             .step("echo \"\${COLOR_CYAN}cyan\${FORMAT_RESET}\"")
             .step("echo \"\${COLOR_WHITE}white\${FORMAT_RESET}\"")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0

@@ -1,11 +1,11 @@
 package de.solidblocks.shell.test
 
-import de.solidblocks.infra.test.output.stdoutShouldMatch
-import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.workingDir
+import de.solidblocks.infra.test.output.stdoutShouldMatch
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
+import testLocal
 import java.util.UUID
 
 public class SoftwareTest {
@@ -13,13 +13,13 @@ public class SoftwareTest {
     @Test
     fun testEnsureRestic() {
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .step("software_ensure_restic")
             .step("software_set_export_path")
             .step("restic version")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -30,13 +30,13 @@ public class SoftwareTest {
     @Test
     fun testEnsureConsul() {
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .step("software_ensure_consul")
             .step("software_set_export_path")
             .step("consul version")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -50,7 +50,7 @@ public class SoftwareTest {
         val binDir = "/tmp/${UUID.randomUUID()}"
         val cacheDir = "/tmp/${UUID.randomUUID()}"
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .env("BIN_DIR" to binDir)
@@ -61,7 +61,7 @@ public class SoftwareTest {
                 it.fileExists("${binDir}/shellcheck-v0.8.0/shellcheck")
                 it.fileExists("${cacheDir}/shellcheck-v0.8.0.linux.x86_64.tar.xz")
             }
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -71,13 +71,13 @@ public class SoftwareTest {
 
     @Test
     fun testEnsureConsulDifferentVersions() {
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .step("software_ensure_consul 1.8.4 0d74525ee101254f1cca436356e8aee51247d460b56fc2b4f7faef8a6853141f")
             .step("software_set_export_path")
             .step("consul version")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -88,13 +88,13 @@ public class SoftwareTest {
     @Test
     fun testEnsureShellcheck() {
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .step("software_ensure_shellcheck")
             .step("software_set_export_path")
             .step("shellcheck --version")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -105,13 +105,13 @@ public class SoftwareTest {
     @Test
     fun testEnsureHugo() {
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .step("software_ensure_hugo")
             .step("software_set_export_path")
             .step("hugo version")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -122,13 +122,13 @@ public class SoftwareTest {
     @Test
     fun testEnsureTerragrunt() {
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .step("software_ensure_terragrunt")
             .step("software_set_export_path")
             .step("terragrunt --version")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
@@ -139,13 +139,13 @@ public class SoftwareTest {
     @Test
     fun testEnsureTerraform() {
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("software.sh"))
             .step("software_ensure_terraform")
             .step("software_set_export_path")
             .step("terraform version")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0

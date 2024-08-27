@@ -1,14 +1,11 @@
 package de.solidblocks.infra.test.script
 
-import de.solidblocks.infra.test.files.DirectoryBuilder
 import de.solidblocks.infra.test.command.CommandRunAssertion
 import de.solidblocks.infra.test.command.CommandRunResult
-import de.solidblocks.infra.test.docker.DockerTestImage
+import de.solidblocks.infra.test.files.DirectoryBuilder
 import de.solidblocks.infra.test.files.file
-import de.solidblocks.infra.test.docker.docker
 import de.solidblocks.infra.test.files.tempDir
-import kotlinx.coroutines.runBlocking
-import local
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -16,19 +13,23 @@ import kotlin.io.path.readBytes
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class ScriptBuilder {
+class ScriptStep(val step: String, val assertion: ((CommandRunAssertion) -> Unit)?)
 
-    private val includes: MutableList<Path> = mutableListOf()
+abstract class ScriptBuilder : Closeable {
 
-    private val steps: MutableList<ScriptStep> = mutableListOf()
+    internal val includes: MutableList<Path> = mutableListOf()
 
-    private var sources = mutableListOf<Path>()
+    internal val steps: MutableList<ScriptStep> = mutableListOf()
 
-    private var assertSteps = true
+    internal var sources = mutableListOf<Path>()
 
-    private var defaultWaitForOutput: Duration = 60.seconds
+    internal var assertSteps = true
 
-    private val envs = mutableMapOf<String, String>()
+    internal var defaultWaitForOutput: Duration = 60.seconds
+
+    internal val envs = mutableMapOf<String, String>()
+
+    internal val resources = mutableListOf<Closeable>()
 
     fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
         this.defaultWaitForOutput = defaultWaitForOutput
@@ -56,55 +57,9 @@ class ScriptBuilder {
         this.steps.add(ScriptStep(step, assertion))
     }
 
-    fun runLocal(): CommandRunResult = runBlocking {
-        val buildScript = buildScript()
-        val command = local().command(*buildScript.second.toTypedArray())
-            .workingDir(buildScript.first)
-            .env(envs)
-            .defaultWaitForOutput(defaultWaitForOutput)
-
-        if (assertSteps) {
-            steps.forEachIndexed { index, step ->
-                command.assert {
-                    it.waitForOutput(".*finished step ${index}.*") {
-                        "continue"
-                    }
-                }
-
-                command.assert {
-                    step.assertion?.invoke(it)
-                }
-            }
-        }
-
-        command.runResult()
-    }
-
-    fun runDocker(image: DockerTestImage): CommandRunResult {
-        val buildScript = buildScript()
-        val command = docker(image).command(*buildScript.second.toTypedArray())
-            .sourceDir(buildScript.first)
-            .workingDir(buildScript.first)
-            .env(envs)
-
-        if (assertSteps) {
-            steps.forEachIndexed() { index, step ->
-                command.assert {
-                    it.waitForOutput(".*finished step ${index}.*") {
-                        "continue"
-                    }
-                }
-                command.assert {
-                    step.assertion?.invoke(it)
-                }
-            }
-        }
-
-        return command.runResult()
-    }
-
-    private fun buildScript(): Pair<Path, List<String>> {
+    protected fun buildScript(): Pair<Path, List<String>> {
         val tempDir = tempDir()
+        resources.add(tempDir)
 
         this.sources.forEach {
             tempDir.copyFromDir(it)
@@ -149,8 +104,11 @@ class ScriptBuilder {
         this.envs[env.first] = env.second
     }
 
+    override fun close() {
+        resources.forEach { it.close() }
+    }
+
+    abstract fun run(): CommandRunResult
+
 }
 
-class ScriptStep(val step: String, val assertion: ((CommandRunAssertion) -> Unit)?)
-
-fun script() = ScriptBuilder()

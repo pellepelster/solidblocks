@@ -25,7 +25,7 @@ public class DirectoryTest {
         tempDir.path.shouldExist()
         tempDir.path.shouldBeEmptyDirectory()
 
-        tempDir.remove()
+        tempDir.close()
         tempDir.path.shouldNotExist()
     }
 
@@ -64,7 +64,7 @@ public class DirectoryTest {
         tempDir.path.shouldExist()
         tempDir.path.shouldBeEmptyDirectory()
 
-        tempDir.remove()
+        tempDir.close()
         tempDir.path.shouldNotExist()
     }
 }

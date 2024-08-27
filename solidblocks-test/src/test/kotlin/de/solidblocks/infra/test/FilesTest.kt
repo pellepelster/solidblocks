@@ -108,7 +108,7 @@ public class FilesTest {
         tempDir shouldContainNFiles 0
         tempDir.path.shouldExist()
 
-        tempDir.remove()
+        tempDir.close()
         tempDir.path.shouldNotExist()
     }
 }

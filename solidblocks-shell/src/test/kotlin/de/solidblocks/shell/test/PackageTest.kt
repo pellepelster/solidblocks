@@ -1,8 +1,8 @@
 package de.solidblocks.shell.test
 
-import de.solidblocks.infra.test.docker.DockerTestImage
-import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.command.shouldHaveExitCode
+import de.solidblocks.infra.test.docker.DockerTestImage
+import de.solidblocks.infra.test.docker.testDocker
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
@@ -13,7 +13,7 @@ public class PackageTest {
     @Test
     fun testEnsurePackage() {
 
-        val result = script()
+        val result = testDocker(DockerTestImage.DEBIAN_10).script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("package.sh"))
             .step("package_update_repositories")
@@ -26,7 +26,7 @@ public class PackageTest {
             .step("package_ensure_package wget") {
                 it.fileExists("/usr/bin/wget") shouldBe true
             }
-            .runDocker(DockerTestImage.DEBIAN_10)
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0

@@ -17,7 +17,6 @@ import de.solidblocks.infra.test.createDockerClient
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputLine
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
@@ -29,6 +28,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import java.io.BufferedWriter
+import java.io.Closeable
 import java.io.OutputStreamWriter
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -68,6 +68,8 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
 
     private var sourceDir: Path? = null
 
+    private var tempDirs = mutableListOf<Closeable>()
+
     fun dockerPullTimout(timeout: Duration) = apply {
         this.dockerPullTimout = timeout
     }
@@ -89,6 +91,7 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
         val mountDir = if (sourceDir == null) {
             val executablePath = Path.of(command.first())
             val tempDir = tempDir()
+            tempDirs.add(tempDir)
 
             if (executablePath.exists()) {
                 tempDir.fileFromPath(executablePath).executable().create()
@@ -114,6 +117,7 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
         dockerClient.startContainerCmd(createContainer.id).exec()
 
         return object : CommandRunner {
+
             override suspend fun runCommand(
                 command: Array<String>,
                 envs: Map<String, String>,
@@ -176,7 +180,7 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
                 }
             }
 
-            override fun cleanup() {
+            override fun close() {
                 try {
                     dockerClient.stopContainerCmd(createContainer.id).withTimeout(0).exec()
                 } catch (e: NotModifiedException) {
@@ -187,17 +191,21 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
         }
     }
 
+    override fun close() {
+        tempDirs.forEach { it.close() }
+    }
+
     private fun pullDockerImage(start: TimeSource.Monotonic.ValueTimeMark, dockerClient: DockerClient) {
         log(start, "pulling docker image '${image}")
         dockerClient.pullImageCmd(image.toString())
             .exec(object : PullImageResultCallback() {
                 override fun onNext(item: PullResponseItem?) {
-                    print("*")
+                    //print("*")
                 }
             }).awaitCompletion(dockerPullTimout.inWholeSeconds, TimeUnit.SECONDS)
     }
 
-    private suspend fun CoroutineScope.waitForExitCode(
+    private suspend fun waitForExitCode(
         dockerClient: DockerClient, execId: String
     ): InspectExecResponse {
 
@@ -211,14 +219,22 @@ class DockerCommandBuilder(val image: DockerTestImage, command: Array<String>) :
 
 }
 
-class DockerTestContext(val image: DockerTestImage) : TestContext<DockerCommandBuilder> {
+class DockerTestContext(private val image: DockerTestImage) : TestContext<DockerCommandBuilder, DockerScriptBuilder> {
 
-    override fun command(vararg command: String) = DockerCommandBuilder(image, command.toList().toTypedArray())
+    private val resources = mutableListOf<Closeable>()
+
+    override fun command(vararg command: String) =
+        DockerCommandBuilder(image, command.toList().toTypedArray()).apply { resources.add(this) }
+
+    override fun script() = DockerScriptBuilder(image).apply { resources.add(this) }
 
     override fun toString(): String {
         return "DockerTestContext()"
     }
+
+    override fun close() {
+        resources.forEach { it.close() }
+    }
 }
 
-fun docker(image: DockerTestImage) = DockerTestContext(image)
-
+fun testDocker(image: DockerTestImage) = DockerTestContext(image)

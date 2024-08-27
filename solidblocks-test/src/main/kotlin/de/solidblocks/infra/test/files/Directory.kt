@@ -5,7 +5,18 @@ import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.copyToRecursively
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
+import kotlin.io.path.readBytes
 import kotlin.time.TimeSource
 
 @OptIn(ExperimentalPathApi::class)
@@ -67,11 +78,6 @@ class DirectoryBuilder(
         return file(path.fileName.name).content(path.readBytes())
     }
 
-    fun remove() {
-        log(start, "deleting directory '$path'")
-        path.deleteRecursively()
-    }
-
     fun createDir(directory: String) = DirectoryBuilder(path.resolve(directory)).apply {
         if (!path.exists()) {
             path.createDirectories()
@@ -79,7 +85,8 @@ class DirectoryBuilder(
     }
 
     override fun close() {
-        remove()
+        log(start, "deleting directory '$path'")
+        path.deleteRecursively()
     }
 
 }

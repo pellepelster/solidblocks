@@ -6,12 +6,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
 import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
-import de.solidblocks.infra.test.output.stdoutShouldMatch
-import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.workingDir
+import de.solidblocks.infra.test.output.stdoutShouldMatch
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
+import testLocal
 import java.util.UUID
 
 @WireMockTest
@@ -45,11 +45,11 @@ public class CurlTest {
                 .willReturn(aResponse().withBody("${reponse}\n").withStatus(200))
         )
 
-        val result = script()
+        val result = testLocal().script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("curl.sh"))
             .step("echo response=$(curl_wrapper \"http://localhost:${wmRuntimeInfo.httpPort}/download-test\")")
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0

@@ -1,17 +1,28 @@
 package de.solidblocks.infra.test
 
-import de.solidblocks.infra.test.files.DirectoryBuilder
+import de.solidblocks.infra.test.docker.DockerTestImage
+import de.solidblocks.infra.test.docker.testDocker
 import de.solidblocks.infra.test.files.tempDir
+import testLocal
+import java.io.Closeable
 
 class SolidblocksTestContext {
 
-    private val tempDirs = mutableListOf<DirectoryBuilder>()
+    private val tempDirs = mutableListOf<Closeable>()
 
     fun createTempDir() = tempDir().apply {
         tempDirs.add(this)
     }
 
+    fun local() = testLocal().apply {
+        tempDirs.add(this)
+    }
+
+    fun docker(image: DockerTestImage) = testDocker(image).apply {
+        tempDirs.add(this)
+    }
+
     fun close() {
-        tempDirs.forEach { it.remove() }
+        tempDirs.forEach { it.close() }
     }
 }

@@ -1,10 +1,12 @@
-import de.solidblocks.infra.test.command.CommandBuilder
-import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.TestContext
+import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
+import de.solidblocks.infra.test.command.ProcessResult
+import de.solidblocks.infra.test.local.LocalScriptBuilder
 import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
+import de.solidblocks.infra.test.script.ScriptBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -13,12 +15,15 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import java.io.Closeable
 import java.lang.Thread.sleep
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 import kotlin.time.TimeSource
 
 class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
+
+    private val runners = mutableListOf<CommandRunner>()
 
     private fun killProcessAndWait(process: Process) {
         sleep(100)
@@ -111,22 +116,39 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                 }
             }
 
-            override fun cleanup() {
+            override fun close() {
             }
 
         }
+
+    override fun close() {
+        runners.forEach { it.close() }
+    }
 }
 
-class LocalTestContext : TestContext<LocalCommandBuilder> {
-    override fun command(vararg command: String) = LocalCommandBuilder(command.toList().toTypedArray())
+class LocalTestContext : TestContext<LocalCommandBuilder, LocalScriptBuilder> {
+
+    private val resources = mutableListOf<Closeable>()
+
+    override fun command(vararg command: String) = LocalCommandBuilder(command.toList().toTypedArray()).apply {
+        resources.add(this)
+    }
+
+    override fun script() = LocalScriptBuilder().apply {
+        resources.add(this)
+    }
 
     override fun toString(): String {
         return "LocalTestContext()"
     }
+
+    override fun close() {
+        resources.forEach { it.close() }
+    }
 }
 
 
-fun local() = LocalTestContext()
+fun testLocal() = LocalTestContext()
 
 
 /*

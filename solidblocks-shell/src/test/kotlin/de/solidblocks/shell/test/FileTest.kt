@@ -1,6 +1,5 @@
 package de.solidblocks.shell.test
 
-import de.solidblocks.infra.test.script.script
 import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.files.workingDir
@@ -8,6 +7,7 @@ import de.solidblocks.infra.test.files.zipFile
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import testLocal
 import java.util.UUID
 
 public class FileTest {
@@ -20,7 +20,7 @@ public class FileTest {
 
         val extractTempDir="/tmp/${UUID.randomUUID()}"
 
-        val result = script()
+        val result = testLocal().script()
             .sources(tempDir)
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("file.sh"))
@@ -29,7 +29,7 @@ public class FileTest {
                 it.fileExists("${extractTempDir}/file2") shouldBe true
                 it.fileExists("${extractTempDir}/.file.zip.extracted") shouldBe true
             }
-            .runLocal()
+            .run()
 
         assertSoftly(result) {
             it shouldHaveExitCode 0

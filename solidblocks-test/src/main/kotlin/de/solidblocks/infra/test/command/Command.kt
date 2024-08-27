@@ -9,6 +9,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.Closeable
 import java.nio.file.Path
 import java.util.LinkedList
 import java.util.Queue
@@ -40,7 +41,7 @@ data class ProcessResult(
 )
 
 
-abstract class CommandBuilder(var command: Array<String>) {
+abstract class CommandBuilder(var command: Array<String>) : Closeable {
 
     protected var timeout: Duration = 60.seconds
 
