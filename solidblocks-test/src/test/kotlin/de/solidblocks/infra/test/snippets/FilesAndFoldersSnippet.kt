@@ -21,7 +21,7 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 @ExtendWith(SolidblocksTest::class)
-public class Snippets {
+public class FilesAndFoldersSnippet {
 
     private fun reverseFile1Content(path: Path) {
         println("reverseFile1Content was called")
@@ -41,7 +41,7 @@ public class Snippets {
     }
 
     @Test
-    fun filesAndDirectories() {
+    fun snippet() {
         val tempDir = tempDir()
 
         // set up testbed by creating files from various sources
@@ -79,12 +79,5 @@ public class Snippets {
 
         // remove temporary directory
         tempDir.close()
-    }
-
-    @Test
-    fun autoCleanResources(testContext: SolidblocksTestContext) {
-        val tempDir = testContext.createTempDir()
-
-        tempDir.file("some-file.txt").content("some-content").create()
     }
 }

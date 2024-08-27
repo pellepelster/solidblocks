@@ -41,7 +41,7 @@ data class ProcessResult(
 )
 
 
-abstract class CommandBuilder(var command: Array<String>) : Closeable {
+abstract class CommandBuilder(protected var command: Array<String>) : Closeable {
 
     protected var timeout: Duration = 60.seconds
 

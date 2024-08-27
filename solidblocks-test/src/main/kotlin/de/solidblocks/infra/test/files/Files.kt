@@ -11,8 +11,6 @@ import java.util.zip.ZipOutputStream
 import kotlin.time.TimeSource
 
 
-data class File(val file: Path)
-
 class FileBuilder(
     private val path: Path,
     private val name: String,
@@ -29,7 +27,7 @@ class FileBuilder(
         this.content = content
     }
 
-    fun create(): de.solidblocks.infra.test.files.File {
+    fun create(): Path {
         val file = this.path.resolve(name)
         File(file.toFile().absolutePath).writeBytes(content)
 
@@ -39,7 +37,7 @@ class FileBuilder(
         permissions.add(PosixFilePermission.OWNER_EXECUTE)
         Files.setPosixFilePermissions(file, permissions)
 
-        return File(file)
+        return file
     }
 
     fun executable() = apply {

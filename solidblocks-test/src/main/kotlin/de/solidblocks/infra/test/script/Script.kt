@@ -19,7 +19,7 @@ abstract class ScriptBuilder : Closeable {
 
     internal val includes: MutableList<Path> = mutableListOf()
 
-    internal val steps: MutableList<ScriptStep> = mutableListOf()
+    protected val steps: MutableList<ScriptStep> = mutableListOf()
 
     internal var sources = mutableListOf<Path>()
 
@@ -103,7 +103,7 @@ abstract class ScriptBuilder : Closeable {
 
         val scriptFile = tempDir.file("script.sh").executable().content(script.toString()).create()
 
-        return tempDir.path to listOf(scriptFile.file.absolutePathString())
+        return tempDir.path to listOf(scriptFile.absolutePathString())
     }
 
     fun env(env: Pair<String, String>) = apply {

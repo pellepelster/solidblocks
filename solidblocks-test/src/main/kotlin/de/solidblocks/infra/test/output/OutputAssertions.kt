@@ -36,6 +36,16 @@ infix fun CommandRunResult.stderrShouldBe(expected: String): CommandRunResult {
     return this
 }
 
+fun CommandRunResult.stderrShouldBeEmpty(): CommandRunResult {
+    this.result.stderr should be("")
+    return this
+}
+
+fun CommandRunResult.stdoutShouldBeEmpty(): CommandRunResult {
+    this.result.stdout should be("")
+    return this
+}
+
 infix fun CommandRunResult.outputShouldBe(expected: String): CommandRunResult {
     this.result.output should be(expected)
     return this

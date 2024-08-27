@@ -227,6 +227,10 @@ class DockerTestContext(private val image: DockerTestImage) : TestContext<Docker
     override fun command(vararg command: String) =
         DockerCommandBuilder(image, command.toList().toTypedArray()).apply { resources.add(this) }
 
+    override fun command(command: Path): DockerCommandBuilder =
+        DockerCommandBuilder(image, listOf(command.absolutePathString()).toTypedArray()).apply { resources.add(this) }
+
+
     override fun script() = DockerScriptBuilder(image).apply { resources.add(this) }
 
     override fun toString(): String {

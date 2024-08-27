@@ -17,7 +17,9 @@ import kotlinx.coroutines.yield
 import java.io.Closeable
 import java.lang.Thread.sleep
 import java.nio.charset.Charset
+import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.absolutePathString
 import kotlin.time.TimeSource
 
 class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
@@ -138,6 +140,11 @@ class LocalTestContext : TestContext<LocalCommandBuilder, LocalScriptBuilder> {
     override fun command(vararg command: String) = LocalCommandBuilder(command.toList().toTypedArray()).apply {
         resources.add(this)
     }
+
+    override fun command(command: Path) =
+        LocalCommandBuilder(listOf(command.absolutePathString()).toTypedArray()).apply {
+            resources.add(this)
+        }
 
     override fun script() = LocalScriptBuilder().apply {
         resources.add(this)

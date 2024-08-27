@@ -15,15 +15,27 @@ import kotlin.time.Duration.Companion.seconds
 public class ScriptTest {
 
     @Test
-    fun testScriptRunDocker() {
-
+    fun testScriptLocal() {
         val include1 = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
 
         testLocal().script().includes(include1)
             .step("hello_world") {
-                it
+                it.waitForOutput(".*hello world.*")
             }.step("hello_universe") {
-                it
+                it.waitForOutput(".*hello universe.*")
+            }.run()
+    }
+
+    @Test
+    fun testScriptDocker() {
+        val include1 = this.javaClass.classLoader.getResource("script-include1.sh")!!.path
+
+        testDocker(DockerTestImage.UBUNTU_22).script()
+            .includes(include1)
+            .step("hello_world") {
+                it.waitForOutput(".*hello world.*")
+            }.step("hello_universe") {
+                it.waitForOutput(".*hello universe.*")
             }.run()
     }
 
