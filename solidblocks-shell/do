@@ -112,7 +112,7 @@ case ${arg} in
   demo) task_demo"$@" ;;
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;
-  release-docker) ;;
+  release-artifacts) ;;
   release-prepare) task_release_prepare "$@" ;;
   release-test);;
   *) task_usage ;;

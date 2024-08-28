@@ -62,7 +62,6 @@ case ${arg} in
   test) task_test "$@" ;;
   test-prepare) task_test_prepare "$@" ;;
   release-prepare) ;;
-  release-docker) ;;
   release-artifacts) task_release_artifacts;;
   release-test) ;;
   *) task_usage ;;

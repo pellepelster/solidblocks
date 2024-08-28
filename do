@@ -147,11 +147,11 @@ function task_format {
     done
 }
 
-function task_release_docker {
+function task_release_artifacts {
     for component in ${COMPONENTS}; do
       (
         cd "${DIR}/${component}"
-        VERSION=${VERSION} "./do" release-docker
+        VERSION=${VERSION} "./do" release-artifacts
       )
     done
 }
@@ -326,7 +326,7 @@ case ${ARG} in
   build-documentation) task_build_documentation "$@" ;;
   serve-documentation) task_serve_documentation "$@" ;;
   release) task_release "$@" ;;
-  release-docker) task_release_docker "$@" ;;
+  release-artifacts) task_release_artifacts "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-check) task_release_check "$@" ;;
   release-tf-modules) task_release_tf_modules "$@" ;;

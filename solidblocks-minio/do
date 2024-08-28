@@ -84,7 +84,7 @@ case ${arg} in
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
-  release-docker) task_release_docker "$@" ;;
+  release-artifacts) task_release_docker "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-test);;
   *) task_usage ;;

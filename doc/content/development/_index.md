@@ -24,7 +24,7 @@ Common for all `do` files are the following tasks:
 * `./do format` Apply formatters and linters to all sourcecode of the component
 * `./do release-prepare` prepare a release, commonly used to insert correct version numbers into documentation and code snippets  
 * `./do release-test` run tests against released artifacts, commonly used to verify that the code snippets work  
-* `./do release-docker` release tested docker images as releases without the `-rc` version postfix
+* `./do release-artifacts` releases additional artifacts, e.g. a tested docker image without the `-rc` version postfix
 
 ## Documentation
 

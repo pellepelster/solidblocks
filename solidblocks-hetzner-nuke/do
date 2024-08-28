@@ -34,11 +34,11 @@ function task_test {
   echo "==================================================================================="
   echo "running simulate"
   echo "==================================================================================="
-  docker run -ti -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" simulate
+  docker run -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" simulate
   echo "==================================================================================="
   echo "running nuke"
   echo "==================================================================================="
-  docker run -ti -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" nuke
+  docker run -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" nuke
   echo "==================================================================================="
 }
 
@@ -55,7 +55,7 @@ function task_build {
   )
 }
 
-function task_release_docker {
+function task_release_artifacts {
   docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
 }
 
@@ -88,7 +88,7 @@ case ${arg} in
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
-  release-docker) task_release_docker "$@" ;;
+  release-artifacts) task_release_artifacts "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-test);;
   *) task_usage ;;

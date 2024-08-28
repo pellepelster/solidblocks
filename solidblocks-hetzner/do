@@ -817,7 +817,7 @@ case ${arg} in
   test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
   test-snippet-ssh) task_test_snippets_ssh "$@" ;;
-  release-docker) ;;
+  release-artifacts) ;;
   release-prepare) task_release_prepare "$@" ;;
   release-test) task_release_test "$@" ;;
   *) task_usage ;;

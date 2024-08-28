@@ -6,6 +6,11 @@
 
 * Unescape newlines for database extra config in PostgreSQL RDs module   
 
+**IMPROVEMENTS**
+
+* Add infrastructure testing library to improve infrastructure integration tests, see als [this post](https://pelle.io/posts/solidblocks-test/) 
+
+
 ## v0.2.6
 
 **IMPROVEMENTS**

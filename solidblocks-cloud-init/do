@@ -163,7 +163,7 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) ;;
-  release-docker) ;;
+  release-artifacts) ;;
   test-ssh) task_test_ssh "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-test) task_release_test "$@" ;;
