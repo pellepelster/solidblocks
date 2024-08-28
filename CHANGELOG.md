@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.7-pre
+## v0.2.7
 
 **BUGFIXES**
 
