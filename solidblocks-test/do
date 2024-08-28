@@ -37,7 +37,7 @@ function task_test {
   ${DIR}/../gradlew :solidblocks-test:test
 }
 
-function task_release_test {
+function task_release_snapshot {
   export ORG_GRADLE_PROJECT_signingInMemoryKey="$(pass solidblocks/signing_key)"
   export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="$(pass solidblocks/signing_key_password)"
   export ORG_GRADLE_PROJECT_mavenCentralUsername="$(pass maven/central-portal/user-token/username)"
@@ -63,6 +63,7 @@ case ${arg} in
   test-prepare) task_test_prepare "$@" ;;
   release-prepare) ;;
   release-docker) ;;
-  release-test) task_release_test;;
+  release-snapshot) task_release_snapshot;;
+  release-test) ;;
   *) task_usage ;;
 esac

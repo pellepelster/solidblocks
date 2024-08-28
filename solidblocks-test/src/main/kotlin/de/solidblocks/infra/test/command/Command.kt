@@ -6,6 +6,7 @@ import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
 import java.io.Closeable
 import java.nio.file.Path
+import java.util.Collections
 import java.util.LinkedList
 import java.util.Queue
 import kotlin.time.Duration
@@ -71,7 +72,7 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
 
   suspend fun run() =
       withContext(Dispatchers.IO) {
-        val output = mutableListOf<OutputLine>()
+        val output = Collections.synchronizedList(mutableListOf<OutputLine>())
         val stdin = Channel<String>()
         val start = TimeSource.Monotonic.markNow()
 

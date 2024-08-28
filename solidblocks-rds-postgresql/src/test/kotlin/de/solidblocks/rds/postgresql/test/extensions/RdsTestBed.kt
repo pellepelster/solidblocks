@@ -35,7 +35,8 @@ class RdsTestBed {
     logger.info { "[test] starting minio instance with storage dir '$storageDir'" }
     val container =
         createContainer(
-                "ghcr.io/pellepelster/solidblocks-minio:${System.getenv("VERSION") ?: "snapshot"}-rc")
+                "ghcr.io/pellepelster/solidblocks-minio:${System.getenv("VERSION") ?: "snapshot"}-rc",
+            )
             .also {
               it.withLogConsumer(logConsumer)
               it.withNetworkAliases(RdsPostgresqlMinioBackupIntegrationTest.BACKUP_HOST)
@@ -78,8 +79,8 @@ class RdsTestBed {
   ) =
       createAndStartPostgresContainer(
           "ghcr.io/pellepelster/solidblocks-rds-postgresql:$postgresVersion-${
-            System.getenv("VERSION") ?: "snapshot"
-        }-rc",
+                System.getenv("VERSION") ?: "snapshot"
+            }-rc",
           environment,
           storageDir,
           password,

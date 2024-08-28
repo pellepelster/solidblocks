@@ -198,7 +198,8 @@ class RdsPostgresqlLocalBackupIntegrationTest {
       // on second start with persistent storage no initializing ord backup should be executed
       waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
       assertHasLogLine(
-          "[solidblocks-rds-postgresql] old directory layout detected, migrating data files from '/storage/data/database1' to '/storage/data/database1/14'")
+          "[solidblocks-rds-postgresql] old directory layout detected, migrating data files from '/storage/data/database1' to '/storage/data/database1/14'",
+      )
       assertHasLogLine("[solidblocks-rds-postgresql] data dir is not empty")
       assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
       assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")

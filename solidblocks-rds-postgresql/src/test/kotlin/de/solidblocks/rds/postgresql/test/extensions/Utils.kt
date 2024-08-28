@@ -20,7 +20,9 @@ fun initWorldReadableTempDir(): File {
 
   File(tempDir).mkdirs()
   Files.setPosixFilePermissions(
-      File(tempDir).toPath(), PosixFilePermissions.fromString("rwxrwxrwx"))
+      File(tempDir).toPath(),
+      PosixFilePermissions.fromString("rwxrwxrwx"),
+  )
 
   return File(tempDir)
 }
@@ -32,7 +34,8 @@ fun GenericContainer<out GenericContainer<*>>.createJdbi(
 ): Jdbi {
   val port = this.getMappedPort(5432)
   return Jdbi.create(
-      "jdbc:postgresql://localhost:$port/$database?user=$username&password=$password")
+      "jdbc:postgresql://localhost:$port/$database?user=$username&password=$password",
+  )
 }
 
 fun GenericContainer<out GenericContainer<*>>.createJdbiSSL(
@@ -42,7 +45,8 @@ fun GenericContainer<out GenericContainer<*>>.createJdbiSSL(
 ): Jdbi {
   val port = this.getMappedPort(5432)
   return Jdbi.create(
-      "jdbc:postgresql://localhost:$port/$database?user=$username&password=$password&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory")
+      "jdbc:postgresql://localhost:$port/$database?user=$username&password=$password&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory",
+  )
 }
 
 fun GenericContainer<out GenericContainer<*>>.assertBackupFileHeaders(fileHeader: String) {

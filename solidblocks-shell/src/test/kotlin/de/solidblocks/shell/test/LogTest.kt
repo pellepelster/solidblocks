@@ -1,17 +1,23 @@
 package de.solidblocks.shell.test
 
+import de.solidblocks.infra.test.SolidblocksTest
+import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.files.workingDir
 import de.solidblocks.infra.test.output.stderrShouldMatch
 import io.kotest.assertions.assertSoftly
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
-import testLocal
+import org.junit.jupiter.api.extension.ExtendWith
 
+@ExtendWith(SolidblocksTest::class)
 public class LogTest {
-  @Test
-  fun testLogMessages() {
+
+  @RepeatedTest(value = 10, failureThreshold = 1)
+  fun testLogMessages(testContext: SolidblocksTestContext) {
     val result =
-        testLocal()
+        testContext
+            .local()
             .script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("log.sh"))
@@ -32,9 +38,10 @@ public class LogTest {
   }
 
   @Test
-  fun testLogDie() {
+  fun testLogDie(testContext: SolidblocksTestContext) {
     val result =
-        testLocal()
+        testContext
+            .local()
             .script()
             .assertSteps(false)
             .sources(workingDir().resolve("lib"))

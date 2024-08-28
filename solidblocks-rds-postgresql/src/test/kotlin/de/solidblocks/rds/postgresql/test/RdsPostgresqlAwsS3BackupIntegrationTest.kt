@@ -26,7 +26,7 @@ class RdsPostgresqlAwsS3BackupIntegrationTest {
   fun testDatabaseKeepsDataBetweenRestarts(
       version: Int,
       rdsTestBed: RdsTestBed,
-      awsTestBed: AwsTestBed
+      awsTestBed: AwsTestBed,
   ) {
     val dataDir = initWorldReadableTempDir()
 

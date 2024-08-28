@@ -47,7 +47,8 @@ class RdsPostgresqlMinioBackupIntegrationTest {
                 RdsPostgresqlMinioBackupIntegrationTest::class
                     .java
                     .getResource("/ca.pem")
-                    .readBytes())
+                    .readBytes(),
+            )
 
     val s3BackupEnv =
         mapOf(
@@ -266,7 +267,7 @@ class RdsPostgresqlMinioBackupIntegrationTest {
   }
 
   private fun createMinioClient(
-      minioContainer: GenericContainer<out GenericContainer<*>>
+      minioContainer: GenericContainer<out GenericContainer<*>>,
   ): MinioClient {
     val certificates = PemUtils.parseCertificate(String(Base64.getDecoder().decode(caPublicBase64)))
 
@@ -276,7 +277,9 @@ class RdsPostgresqlMinioBackupIntegrationTest {
     val client: OkHttpClient =
         OkHttpClient.Builder()
             .sslSocketFactory(
-                clientCertificates.sslSocketFactory(), clientCertificates.trustManager)
+                clientCertificates.sslSocketFactory(),
+                clientCertificates.trustManager,
+            )
             .build()
 
     return MinioClient.builder()

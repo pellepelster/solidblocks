@@ -18,7 +18,8 @@ class DebugContainerIntegrationTests {
   @Container
   private val debugContainer =
       KGenericContainer(
-              "ghcr.io/pellepelster/solidblocks-debug-container:${System.getenv("VERSION") ?: "snapshot"}-rc")
+              "ghcr.io/pellepelster/solidblocks-debug-container:${System.getenv("VERSION") ?: "snapshot"}-rc",
+          )
           .withExposedPorts(8080)
 
   @Test

@@ -45,7 +45,8 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
 
     val container =
         GenericContainer(
-                "ghcr.io/pellepelster/solidblocks-rds-postgresql:${System.getenv("VERSION") ?: "snapshot"}-rc")
+                "ghcr.io/pellepelster/solidblocks-rds-postgresql:${System.getenv("VERSION") ?: "snapshot"}-rc",
+            )
             .apply {
               withImagePullPolicy(PullPolicy.alwaysPull())
               withLogConsumer(logConsumer)
@@ -70,7 +71,8 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
     Assertions.assertThrows(ContainerLaunchException::class.java) { container.start() }
 
     logConsumer.waitForLogLine(
-        "[solidblocks-rds-postgresql] storage dir '/storage/data' not mounted")
+        "[solidblocks-rds-postgresql] storage dir '/storage/data' not mounted",
+    )
 
     container.stop()
   }
@@ -87,7 +89,8 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
 
     with(rdsTestBed.logConsumer) {
       waitForLogLine(
-          "[solidblocks-rds-postgresql] either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated")
+          "[solidblocks-rds-postgresql] either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated",
+      )
     }
   }
 
