@@ -17,7 +17,7 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.junitJupiterVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.junitJupiterVersion}")
-
+    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
 }
 
 tasks.test {

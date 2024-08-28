@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping
 
 @Controller
 class IndexController {
-    @GetMapping("")
-    fun index(model: Model): String {
-        model.addAttribute("name", "pelle")
-        return "index"
-    }
+  @GetMapping("")
+  fun index(model: Model): String {
+    model.addAttribute("name", "pelle")
+    return "index"
+  }
 }

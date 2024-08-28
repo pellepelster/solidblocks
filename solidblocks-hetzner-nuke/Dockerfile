@@ -24,7 +24,7 @@ ENV LANG en_US.utf8
 USER ${USER}
 WORKDIR ${USER}
 
-ADD nuker/build/distributions/nuker.zip nuker.zip
+ADD build/distributions/nuker.zip nuker.zip
 RUN unzip nuker.zip && \
     rm -rf nuker.zip
 

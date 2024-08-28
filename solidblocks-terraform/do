@@ -32,7 +32,7 @@ function task_test {
 function task_build {
   (
     cd "${DIR}"
-    ./gradlew assembleDist
+    ${DIR}/../gradlew :solidblocks-terraform:assembleDist
     echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}'"
     docker buildx build \
       --push \
@@ -57,13 +57,13 @@ function task_release_prepare {
 }
 
 function task_clean {
-  echo "<not implemented>"
+  ${DIR}/../gradlew :solidblocks-terraform:clean
 }
 
 function task_format {
   (
     cd "${DIR}"
-    ./gradlew spotlessApply
+    ${DIR}/../gradlew :solidblocks-terraform:spotlessApply
     terraform fmt -recursive
   )
 }

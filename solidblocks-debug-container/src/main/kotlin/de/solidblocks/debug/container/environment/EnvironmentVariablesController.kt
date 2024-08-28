@@ -8,15 +8,13 @@ import org.springframework.web.bind.annotation.GetMapping
 @Controller
 class EnvironmentVariablesController {
 
-    @GetMapping("/environment-variables", produces = [MediaType.TEXT_HTML_VALUE])
-    fun environmentHtml(model: Model): String {
-        model.addAttribute("environmentVariables", System.getenv())
-        return "environment-variables"
-    }
+  @GetMapping("/environment-variables", produces = [MediaType.TEXT_HTML_VALUE])
+  fun environmentHtml(model: Model): String {
+    model.addAttribute("environmentVariables", System.getenv())
+    return "environment-variables"
+  }
 
-    @GetMapping("/environment-variables", produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun environmentJson(): EnvironmentVariablesResponse {
-        return EnvironmentVariablesResponse(System.getenv())
-    }
-
+  @GetMapping("/environment-variables", produces = [MediaType.APPLICATION_JSON_VALUE])
+  fun environmentJson(): EnvironmentVariablesResponse =
+      EnvironmentVariablesResponse(System.getenv())
 }

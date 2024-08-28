@@ -25,16 +25,13 @@ function task_test {
     exit 0
   fi
 
-  (
-    cd "${DIR}"
-    ./gradlew integrationTest
-  )
+  ${DIR}/../gradlew :solidblocks-debug-container:integrationTest
 }
 
 function task_build {
   (
     cd "${DIR}"
-    ./gradlew assemble
+    ${DIR}/../gradlew :solidblocks-debug-container:assemble
 
     echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}'"
     docker buildx build \
@@ -61,14 +58,11 @@ function task_release_prepare {
 }
 
 function task_clean {
-  "${DIR}/gradlew" clean
+  ${DIR}/../gradlew :solidblocks-debug-container:clean
 }
 
 function task_format {
-  (
-    cd "${DIR}"
-    ./gradlew spotlessApply
-  )
+  ${DIR}/../gradlew :solidblocks-debug-container:spotlessApply
 }
 
 arg=${1:-}

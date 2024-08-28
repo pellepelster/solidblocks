@@ -1,6 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.20"
-    id("com.diffplug.spotless") version "6.19.0"
+    id("buildlogic.solidblocks-kotlin-conventions")
     application
 }
 
@@ -15,18 +14,6 @@ dependencies {
     implementation("aws.sdk.kotlin:s3-jvm:0.26.0-beta")
     implementation("aws.sdk.kotlin:s3:0.26.0-beta")
     implementation("aws.sdk.kotlin:dynamodb:0.26.0-beta")
-}
-
-testing {
-    suites {
-        val test by getting(JvmTestSuite::class) {
-            useKotlinTest("1.9.20")
-
-            dependencies {
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
-            }
-        }
-    }
 }
 
 application {

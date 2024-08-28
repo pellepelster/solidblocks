@@ -13,4 +13,4 @@ plugins {
 
 rootProject.name = "solidblocks"
 
-include("solidblocks-test", "solidblocks-shell", "solidblocks-rds-postgresql")
+include("solidblocks-test", "solidblocks-shell", "solidblocks-rds-postgresql", "solidblocks-hetzner-nuke", "solidblocks-terraform", "solidblocks-debug-container")

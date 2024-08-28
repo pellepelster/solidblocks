@@ -12,436 +12,443 @@ import de.solidblocks.rds.postgresql.test.extensions.initWorldReadableTempDir
 import de.solidblocks.rds.postgresql.test.extensions.insertUser
 import de.solidblocks.rds.postgresql.test.extensions.selectAllUsers
 import de.solidblocks.rds.postgresql.test.extensions.waitForReady
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.UUID
-
 
 @ExtendWith(RdsTestBedExtension::class)
 class RdsPostgresqlLocalBackupIntegrationTest {
 
-    companion object {
-        val database = "database1"
-    }
+  companion object {
+    val database = "database1"
+  }
 
-    @Test
-    fun testDatabaseBackupEncryption(rdsTestBed: RdsTestBed) {
-
-        val localBackupDir = initWorldReadableTempDir()
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+  @Test
+  fun testDatabaseBackupEncryption(rdsTestBed: RdsTestBed) {
+    val localBackupDir = initWorldReadableTempDir()
+    val postgresContainer1 =
+        rdsTestBed.createAndStartPostgresContainer(
             14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_BACKUP_ENCRYPTION_PASSPHRASE" to "yolo123",
-            ), initWorldReadableTempDir()
+            ),
+            initWorldReadableTempDir(),
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            waitForLogLine("database system is ready to accept connections")
-        }
+    with(rdsTestBed.logConsumer) {
+      waitForLogLine("database system is ready to accept connections")
+    }
 
-        val username = UUID.randomUUID().toString()
+    val username = UUID.randomUUID().toString()
 
-        postgresContainer1.createJdbi().also {
+    postgresContainer1.createJdbi().also {
+      it.waitForReady()
+      it.createUserTable()
+      it.insertUser(username)
+      it.assertHasUserWithName(username)
+    }
 
-            it.waitForReady()
-            it.createUserTable()
-            it.insertUser(username)
-            it.assertHasUserWithName(username)
-        }
+    postgresContainer1.execInContainer("backup-full.sh")
+    postgresContainer1.assertBackupFileHeaders(ENCRYPTED_FILE_HEADER)
 
-        postgresContainer1.execInContainer("backup-full.sh")
-        postgresContainer1.assertBackupFileHeaders(ENCRYPTED_FILE_HEADER)
+    postgresContainer1.stop()
+    rdsTestBed.logConsumer.clear()
 
-        postgresContainer1.stop()
-        rdsTestBed.logConsumer.clear()
-
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+    val postgresContainer2 =
+        rdsTestBed.createAndStartPostgresContainer(
             14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_BACKUP_ENCRYPTION_PASSPHRASE" to "yolo123",
-            ), initWorldReadableTempDir()
+            ),
+            initWorldReadableTempDir(),
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        postgresContainer2.createJdbi().also {
-            it.waitForReady()
-            it.assertHasUserWithName(username)
-        }
-
-        postgresContainer2.stop()
+    with(rdsTestBed.logConsumer) {
+      waitForLogLine("database system is ready to accept connections")
     }
 
-    @Test
-    fun testDatabaseKeepsDataBetweenRestarts(rdsTestBed: RdsTestBed) {
+    postgresContainer2.createJdbi().also {
+      it.waitForReady()
+      it.assertHasUserWithName(username)
+    }
 
-        val dataDir = initWorldReadableTempDir()
-        val localBackupDir = initWorldReadableTempDir()
+    postgresContainer2.stop()
+  }
 
-        val container = rdsTestBed.createAndStartPostgresContainer(
+  @Test
+  fun testDatabaseKeepsDataBetweenRestarts(rdsTestBed: RdsTestBed) {
+    val dataDir = initWorldReadableTempDir()
+    val localBackupDir = initWorldReadableTempDir()
+
+    val container =
+        rdsTestBed.createAndStartPostgresContainer(
             14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-            ), dataDir
+            ),
+            dataDir,
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            // on first start instance should be initialized and an initial backup should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        val username = UUID.randomUUID().toString()
-
-        container.createJdbi().also {
-            it.waitForReady()
-            it.createUserTable()
-            it.insertUser(username)
-            it.assertHasUserWithName(username)
-        }
-
-
-        container.stop()
-        rdsTestBed.logConsumer.clear()
-        container.start()
-
-        with(rdsTestBed.logConsumer) {
-            // on second start with persistent storage no initializing ord backup should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is not empty")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        container.createJdbi().also {
-            it.waitForReady()
-            it.assertHasUserWithName(username)
-        }
-
-        container.stop()
+    with(rdsTestBed.logConsumer) {
+      // on first start instance should be initialized and an initial backup should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      waitForLogLine("database system is ready to accept connections")
     }
 
-    @Test
-    fun testMigratesOldDirectoryLayout(rdsTestBed: RdsTestBed) {
+    val username = UUID.randomUUID().toString()
 
-        val dataDir = initWorldReadableTempDir()
-        val localBackupDir = initWorldReadableTempDir()
+    container.createJdbi().also {
+      it.waitForReady()
+      it.createUserTable()
+      it.insertUser(username)
+      it.assertHasUserWithName(username)
+    }
 
-        val oldContainer = rdsTestBed.createAndStartPostgresContainer(
+    container.stop()
+    rdsTestBed.logConsumer.clear()
+    container.start()
+
+    with(rdsTestBed.logConsumer) {
+      // on second start with persistent storage no initializing ord backup should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is not empty")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      waitForLogLine("database system is ready to accept connections")
+    }
+
+    container.createJdbi().also {
+      it.waitForReady()
+      it.assertHasUserWithName(username)
+    }
+
+    container.stop()
+  }
+
+  @Test
+  fun testMigratesOldDirectoryLayout(rdsTestBed: RdsTestBed) {
+    val dataDir = initWorldReadableTempDir()
+    val localBackupDir = initWorldReadableTempDir()
+
+    val oldContainer =
+        rdsTestBed.createAndStartPostgresContainer(
             "ghcr.io/pellepelster/solidblocks-rds-postgresql:v0.1.17",
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-            ), dataDir
+            ),
+            dataDir,
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            // on first start instance should be initialized and an initial backup should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
+    with(rdsTestBed.logConsumer) {
+      // on first start instance should be initialized and an initial backup should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      waitForLogLine("database system is ready to accept connections")
+    }
 
-        val username = UUID.randomUUID().toString()
+    val username = UUID.randomUUID().toString()
 
-        oldContainer.createJdbi().also {
-            it.waitForReady()
-            it.createUserTable()
-            it.insertUser(username)
-            it.assertHasUserWithName(username)
-        }
+    oldContainer.createJdbi().also {
+      it.waitForReady()
+      it.createUserTable()
+      it.insertUser(username)
+      it.assertHasUserWithName(username)
+    }
 
+    oldContainer.stop()
+    rdsTestBed.logConsumer.clear()
 
-        oldContainer.stop()
-        rdsTestBed.logConsumer.clear()
-
-        val newContainer14 = rdsTestBed.createAndStartPostgresContainer(
+    val newContainer14 =
+        rdsTestBed.createAndStartPostgresContainer(
             14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-            ), dataDir
+            ),
+            dataDir,
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
-        newContainer14.start()
+    newContainer14.start()
 
-        with(rdsTestBed.logConsumer) {
-            // on second start with persistent storage no initializing ord backup should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] old directory layout detected, migrating data files from '/storage/data/database1' to '/storage/data/database1/14'")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is not empty")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        newContainer14.createJdbi().also {
-            it.waitForReady()
-            it.assertHasUserWithName(username)
-        }
-
-        newContainer14.stop()
+    with(rdsTestBed.logConsumer) {
+      // on second start with persistent storage no initializing ord backup should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine(
+          "[solidblocks-rds-postgresql] old directory layout detected, migrating data files from '/storage/data/database1' to '/storage/data/database1/14'")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is not empty")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      waitForLogLine("database system is ready to accept connections")
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = [14, 15])
-    fun testRestoreDatabaseFromFullBackup(version: Int, rdsTestBed: RdsTestBed) {
-
-        val localBackupDir = initWorldReadableTempDir()
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
-            version,
-            mapOf(
-                "DB_BACKUP_LOCAL" to "1",
-            ), initWorldReadableTempDir()
-        ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
-        }
-
-
-        with(rdsTestBed.logConsumer) {
-            // on first start instance should be initialized and an initial backup should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        val username = UUID.randomUUID().toString()
-
-        postgresContainer1.createJdbi().also {
-            it.waitForReady()
-            it.createUserTable()
-            it.insertUser(username)
-            it.assertHasUserWithName(username)
-        }
-
-
-        postgresContainer1.execInContainer("backup-full.sh")
-        postgresContainer1.assertBackupFileHeaders(COMPRESSED_FILE_HEADER)
-
-        postgresContainer1.stop()
-        rdsTestBed.logConsumer.clear()
-
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
-            version,
-            mapOf(
-                "DB_BACKUP_LOCAL" to "1",
-            ), initWorldReadableTempDir()
-        ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
-        }
-
-        with(rdsTestBed.logConsumer) {
-            // on second start without persistent storage restore should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        postgresContainer2.createJdbi().also {
-            it.waitForReady()
-            it.assertHasUserWithName(username)
-        }
-
-        postgresContainer2.stop()
+    newContainer14.createJdbi().also {
+      it.waitForReady()
+      it.assertHasUserWithName(username)
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = [14, 15])
-    fun testRestoreDatabasePitr(version: Int, rdsTestBed: RdsTestBed) {
+    newContainer14.stop()
+  }
 
-        val localBackupDir = initWorldReadableTempDir()
-        val checkpointTimeout = 30L
-
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+  @ParameterizedTest
+  @ValueSource(ints = [14, 15])
+  fun testRestoreDatabaseFromFullBackup(version: Int, rdsTestBed: RdsTestBed) {
+    val localBackupDir = initWorldReadableTempDir()
+    val postgresContainer1 =
+        rdsTestBed.createAndStartPostgresContainer(
             version,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-                "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = ${checkpointTimeout}",
-            ), initWorldReadableTempDir()
+            ),
+            initWorldReadableTempDir(),
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            // on first start instance should be initialized and an initial backup should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            waitForLogLine("database system is ready to accept connections")
+    with(rdsTestBed.logConsumer) {
+      // on first start instance should be initialized and an initial backup should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      waitForLogLine("database system is ready to accept connections")
+    }
+
+    val username = UUID.randomUUID().toString()
+
+    postgresContainer1.createJdbi().also {
+      it.waitForReady()
+      it.createUserTable()
+      it.insertUser(username)
+      it.assertHasUserWithName(username)
+    }
+
+    postgresContainer1.execInContainer("backup-full.sh")
+    postgresContainer1.assertBackupFileHeaders(COMPRESSED_FILE_HEADER)
+
+    postgresContainer1.stop()
+    rdsTestBed.logConsumer.clear()
+
+    val postgresContainer2 =
+        rdsTestBed.createAndStartPostgresContainer(
+            version,
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+            ),
+            initWorldReadableTempDir(),
+        ) {
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        val username1 = UUID.randomUUID().toString()
-        val username2 = UUID.randomUUID().toString()
-        val username3 = UUID.randomUUID().toString()
+    with(rdsTestBed.logConsumer) {
+      // on second start without persistent storage restore should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      waitForLogLine("database system is ready to accept connections")
+    }
 
-        postgresContainer1.createJdbi().also {
-            it.waitForReady()
-            it.createUserTable()
-            it.insertUser(username1)
-            it.assertHasUserWithName(username1)
+    postgresContainer2.createJdbi().also {
+      it.waitForReady()
+      it.assertHasUserWithName(username)
+    }
+
+    postgresContainer2.stop()
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = [14, 15])
+  fun testRestoreDatabasePitr(version: Int, rdsTestBed: RdsTestBed) {
+    val localBackupDir = initWorldReadableTempDir()
+    val checkpointTimeout = 30L
+
+    val postgresContainer1 =
+        rdsTestBed.createAndStartPostgresContainer(
+            version,
+            mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_POSTGRES_EXTRA_CONFIG" to "checkpoint_timeout = $checkpointTimeout",
+            ),
+            initWorldReadableTempDir(),
+        ) {
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        postgresContainer1.execInContainer("backup-incr.sh")
+    with(rdsTestBed.logConsumer) {
+      // on first start instance should be initialized and an initial backup should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      waitForLogLine("database system is ready to accept connections")
+    }
 
-        postgresContainer1.createJdbi().also {
-            it.insertUser(username2)
-            it.assertHasUserWithName(username2)
-        }
+    val username1 = UUID.randomUUID().toString()
+    val username2 = UUID.randomUUID().toString()
+    val username3 = UUID.randomUUID().toString()
 
-        Thread.sleep((checkpointTimeout + 10) * 1000)
-        val user2Timestamp = Instant.now()
+    postgresContainer1.createJdbi().also {
+      it.waitForReady()
+      it.createUserTable()
+      it.insertUser(username1)
+      it.assertHasUserWithName(username1)
+    }
 
-        postgresContainer1.execInContainer("backup-incr.sh")
-        postgresContainer1.createJdbi().also {
-            it.insertUser(username3)
-            it.assertHasUserWithName(username3)
-        }
+    postgresContainer1.execInContainer("backup-incr.sh")
 
-        postgresContainer1.execInContainer("backup-incr.sh")
-        postgresContainer1.stop()
-        rdsTestBed.logConsumer.clear()
+    postgresContainer1.createJdbi().also {
+      it.insertUser(username2)
+      it.assertHasUserWithName(username2)
+    }
 
-        val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC)
+    Thread.sleep((checkpointTimeout + 10) * 1000)
+    val user2Timestamp = Instant.now()
 
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+    postgresContainer1.execInContainer("backup-incr.sh")
+    postgresContainer1.createJdbi().also {
+      it.insertUser(username3)
+      it.assertHasUserWithName(username3)
+    }
+
+    postgresContainer1.execInContainer("backup-incr.sh")
+    postgresContainer1.stop()
+    rdsTestBed.logConsumer.clear()
+
+    val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC)
+
+    val postgresContainer2 =
+        rdsTestBed.createAndStartPostgresContainer(
             version,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_RESTORE_PITR" to formatter.format(user2Timestamp),
-            ), initWorldReadableTempDir()
+            ),
+            initWorldReadableTempDir(),
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            // on second start without persistent storage restore should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        postgresContainer2.createJdbi().also {
-
-            it.waitForReady()
-            it.assertHasUserWithName(username1)
-            it.assertHasUserWithName(username2)
-
-            assertThat(it.selectAllUsers()).filteredOn {
-                it["name"] == username3
-            }.hasSize(0)
-        }
-
-        postgresContainer2.stop()
+    with(rdsTestBed.logConsumer) {
+      // on second start without persistent storage restore should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      waitForLogLine("database system is ready to accept connections")
     }
 
-    @Test
-    fun testRestoreDatabaseFromDifferentialBackup(rdsTestBed: RdsTestBed) {
+    postgresContainer2.createJdbi().also {
+      it.waitForReady()
+      it.assertHasUserWithName(username1)
+      it.assertHasUserWithName(username2)
 
-        val localBackupDir = initWorldReadableTempDir()
-        val postgresContainer1 = rdsTestBed.createAndStartPostgresContainer(
+      assertThat(it.selectAllUsers()).filteredOn { it["name"] == username3 }.hasSize(0)
+    }
+
+    postgresContainer2.stop()
+  }
+
+  @Test
+  fun testRestoreDatabaseFromDifferentialBackup(rdsTestBed: RdsTestBed) {
+    val localBackupDir = initWorldReadableTempDir()
+    val postgresContainer1 =
+        rdsTestBed.createAndStartPostgresContainer(
             14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-            ), initWorldReadableTempDir()
+            ),
+            initWorldReadableTempDir(),
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            // on first start instance should be initialized and an initial backup should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
+    with(rdsTestBed.logConsumer) {
+      // on first start instance should be initialized and an initial backup should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      waitForLogLine("database system is ready to accept connections")
+    }
 
-        val username1 = UUID.randomUUID().toString()
-        postgresContainer1.createJdbi().also {
+    val username1 = UUID.randomUUID().toString()
+    postgresContainer1.createJdbi().also {
+      it.waitForReady()
+      it.createUserTable()
+      it.insertUser(username1)
+      it.assertHasUserWithName(username1)
+    }
 
-            it.waitForReady()
-            it.createUserTable()
-            it.insertUser(username1)
-            it.assertHasUserWithName(username1)
-        }
+    postgresContainer1.execInContainer("backup-full.sh")
 
-        postgresContainer1.execInContainer("backup-full.sh")
+    val username2 = UUID.randomUUID().toString()
+    postgresContainer1.createJdbi().also {
+      it.insertUser(username2)
+      it.assertHasUserWithName(username2)
+    }
 
-        val username2 = UUID.randomUUID().toString()
-        postgresContainer1.createJdbi().also {
-            it.insertUser(username2)
-            it.assertHasUserWithName(username2)
-        }
+    postgresContainer1.execInContainer("backup-diff.sh")
 
-        postgresContainer1.execInContainer("backup-diff.sh")
+    postgresContainer1.stop()
+    rdsTestBed.logConsumer.clear()
 
-        postgresContainer1.stop()
-        rdsTestBed.logConsumer.clear()
-
-        val postgresContainer2 = rdsTestBed.createAndStartPostgresContainer(
+    val postgresContainer2 =
+        rdsTestBed.createAndStartPostgresContainer(
             14,
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-            ), initWorldReadableTempDir()
+            ),
+            initWorldReadableTempDir(),
         ) {
-            it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+          it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
         }
 
-        with(rdsTestBed.logConsumer) {
-            // on second start without persistent storage restore should be executed
-            waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
-            assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
-            assertHasLogLine("[solidblocks-rds-postgresql] restoring database from backup")
-            assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
-            waitForLogLine("database system is ready to accept connections")
-        }
-
-        postgresContainer2.createJdbi().also {
-            it.waitForReady()
-            it.assertHasUserWithName(username1)
-            it.assertHasUserWithName(username2)
-        }
-
-        postgresContainer2.stop()
+    with(rdsTestBed.logConsumer) {
+      // on second start without persistent storage restore should be executed
+      waitForLogLine("[solidblocks-rds-postgresql] provisioning completed")
+      assertHasLogLine("[solidblocks-rds-postgresql] data dir is empty")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] initializing database instance")
+      assertHasLogLine("[solidblocks-rds-postgresql] restoring database from backup")
+      assertHasNoLogLine("[solidblocks-rds-postgresql] executing initial backup")
+      waitForLogLine("database system is ready to accept connections")
     }
+
+    postgresContainer2.createJdbi().also {
+      it.waitForReady()
+      it.assertHasUserWithName(username1)
+      it.assertHasUserWithName(username2)
+    }
+
+    postgresContainer2.stop()
+  }
 }

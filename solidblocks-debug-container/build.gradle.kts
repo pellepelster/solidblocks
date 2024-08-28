@@ -1,26 +1,16 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    id("org.springframework.boot") version "2.7.4"
-    id("io.spring.dependency-management") version "1.0.14.RELEASE"
-    kotlin("jvm") version "1.6.21"
-    kotlin("plugin.spring") version "1.6.21"
-    id("com.diffplug.spotless") version "6.19.0"
+    id("buildlogic.solidblocks-kotlin-conventions")
+    id("org.springframework.boot") version "3.3.3"
+    id("io.spring.dependency-management") version "1.1.6"
+    kotlin("jvm") version "2.0.20"
+    kotlin("plugin.spring") version "2.0.20"
 }
 
-group = "de.solidblocks.debug.container"
+group = "de.solidblocks"
 version = System.getenv("VERSION") ?: "SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
-    }
 }
 
 sourceSets {
@@ -60,9 +50,4 @@ dependencies {
     integrationTestImplementation("org.testcontainers:testcontainers:1.17.5")
     integrationTestImplementation("org.testcontainers:junit-jupiter:1.17.5")
     integrationTestImplementation("io.rest-assured:kotlin-extensions:5.2.0")
-    //integrationTestImplementation("io.rest-assured:xml-path:5.2.0")
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }

@@ -1,6 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.20"
-    id("com.diffplug.spotless") version "6.19.0"
+    id("buildlogic.solidblocks-kotlin-conventions")
     application
 }
 
@@ -15,18 +14,6 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-retry:1.7.1")
     implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
     implementation("ch.qos.logback:logback-classic:1.2.6")
-}
-
-testing {
-    suites {
-        val test by getting(JvmTestSuite::class) {
-            useKotlinTest("1.9.20")
-
-            dependencies {
-                implementation("org.junit.jupiter:junit-jupiter-engine:5.9.1")
-            }
-        }
-    }
 }
 
 application {
