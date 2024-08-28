@@ -84,7 +84,7 @@ function task_clean_hetzner {
     --rm \
     -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" \
     --pull always \
-    ghcr.io/pellepelster/solidblocks-hetzner-nuke:v0.1.16 nuke
+    ghcr.io/pellepelster/solidblocks-hetzner-nuke:46b5e5d-rc nuke
 }
 
 function task_clean_gcloud {

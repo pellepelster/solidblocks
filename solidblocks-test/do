@@ -37,11 +37,11 @@ function task_test {
   ${DIR}/../gradlew :solidblocks-test:test
 }
 
-function task_release_snapshot {
-  export ORG_GRADLE_PROJECT_signingInMemoryKey="$(pass solidblocks/signing_key)"
-  export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="$(pass solidblocks/signing_key_password)"
-  export ORG_GRADLE_PROJECT_mavenCentralUsername="$(pass maven/central-portal/user-token/username)"
-  export ORG_GRADLE_PROJECT_mavenCentralPassword="$(pass maven/central-portal/user-token/password)"
+function task_release_artifacts {
+  export ORG_GRADLE_PROJECT_signingInMemoryKey="${ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY:-$(pass solidblocks/signing_key)}"
+  export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="${ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD:-$(pass solidblocks/signing_key_password)}"
+  export ORG_GRADLE_PROJECT_mavenCentralUsername="${ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME:-$(pass maven/central-portal/user-token/username)}"
+  export ORG_GRADLE_PROJECT_mavenCentralPassword="${ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD:-$(pass maven/central-portal/user-token/password)}"
   ${DIR}/../gradlew :solidblocks-test:publishAllPublicationsToMavenCentralRepository
 }
 
@@ -63,7 +63,7 @@ case ${arg} in
   test-prepare) task_test_prepare "$@" ;;
   release-prepare) ;;
   release-docker) ;;
-  release-snapshot) task_release_snapshot;;
+  release-artifacts) task_release_artifacts;;
   release-test) ;;
   *) task_usage ;;
 esac
