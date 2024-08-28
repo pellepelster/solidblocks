@@ -12,11 +12,6 @@ DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-hetzner-nuke"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
-TEMP_DIR="${DIR}/.test_$$"
-
-function clean_temp_dir {
-  rm -rf "${TEMP_DIR}"
-}
 
 function task_usage {
   echo "Usage: $0 ..."
@@ -28,10 +23,6 @@ function task_test {
     exit 0
   fi
 
-  echo "creating temp dir '${TEMP_DIR}'"
-  mkdir -p "${TEMP_DIR}"
-
-  trap clean_temp_dir HUP INT QUIT TERM EXIT
   export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
 
   (
@@ -40,25 +31,22 @@ function task_test {
     terraform apply -auto-approve
   )
 
-  (
-    cd "${TEMP_DIR}"
-    unzip "${DIR}/nuker/build/distributions/nuker.zip"
-    echo "==================================================================================="
-    echo "running simulate"
-    echo "==================================================================================="
-    ./nuker/bin/nuker simulate
-    echo "==================================================================================="
-    echo "running nuke"
-    echo "==================================================================================="
-    ./nuker/bin/nuker nuke
-  )
+  echo "==================================================================================="
+  echo "running simulate"
+  echo "==================================================================================="
+  docker run -ti -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" simulate
+  echo "==================================================================================="
+  echo "running nuke"
+  echo "==================================================================================="
+  docker run -ti -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" nuke
+  echo "==================================================================================="
 }
 
 function task_build {
   (
     cd "${DIR}"
     ${DIR}/../gradlew :solidblocks-hetzner-nuke:assembleDist
-    echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}'"
+    echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc'"
     docker buildx build \
       --push \
       --platform linux/amd64,linux/arm64 \

@@ -1,6 +1,6 @@
-FROM alpine:3.18.2
+FROM alpine:3.20.2
 
-ENV USER=nuker
+ENV USER=solidblocks
 ENV UID=10000
 
 ENV GROUP=${USER}
@@ -8,7 +8,7 @@ ENV GID=10000
 
 RUN  apk update  && \
      apk upgrade && \
-     apk add openjdk17-jre-headless
+     apk add openjdk21-jre-headless
 
 RUN addgroup -g $GID $GROUP \
   && adduser $USER \
@@ -19,13 +19,13 @@ RUN addgroup -g $GID $GROUP \
   -G $GROUP \
   -u $UID
 
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 USER ${USER}
 WORKDIR ${USER}
 
-ADD build/distributions/nuker.zip nuker.zip
-RUN unzip nuker.zip && \
-    rm -rf nuker.zip
+ADD build/distributions/solidblocks-hetzner-nuke.zip solidblocks-hetzner-nuke.zip
+RUN unzip solidblocks-hetzner-nuke.zip && \
+    rm -rf solidblocks-hetzner-nuke.zip
 
-ENTRYPOINT [ "/nuker/nuker/bin/nuker" ]
+ENTRYPOINT [ "/solidblocks/solidblocks-hetzner-nuke/bin/solidblocks-hetzner-nuke" ]

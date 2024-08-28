@@ -14,7 +14,7 @@ ENV GID=10000
 
 ENV DATA_DIR=/storage/data
 
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 ENV MINIO_HTTPS_PORT=443
 

@@ -24,7 +24,7 @@ RUN addgroup -g $GID $GROUP \
   -G $GROUP \
   -u $UID
 
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 RUN apk upgrade --available
 RUN apk add \
