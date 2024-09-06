@@ -116,7 +116,7 @@ resource "hcloud_load_balancer" "hcloud_load_balancer1" {
 
 resource "hcloud_server" "hcloud_server1" {
   name        = "hcloud-server1"
-  server_type = "cx11"
+  server_type = "cx22"
   image       = "debian-11"
   location    = "nbg1"
 }

@@ -20,7 +20,7 @@ resource "hcloud_network_subnet" "subnet1" {
 resource "hcloud_server" "jumphost" {
   name        = "jumphost-${var.test_id}"
   image       = "debian-11"
-  server_type = "cx11"
+  server_type = "cx22"
 
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
 

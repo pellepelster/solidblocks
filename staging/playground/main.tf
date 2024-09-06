@@ -5,7 +5,7 @@ resource "hcloud_ssh_key" "test" {
 
 resource "hcloud_server" "test" {
   name        = "hcloud-server1"
-  server_type = "cx11"
+  server_type = "cx22"
   image       = "debian-11"
   location    = "nbg1"
   ssh_keys    = [hcloud_ssh_key.test.id]
