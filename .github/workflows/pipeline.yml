@@ -24,6 +24,43 @@ permissions:
   packages: write
 
 jobs:
+
+  solidblocks-cli:
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - { runner: macos-latest, target: macosX64, binary-name: blcks_macos_x64 }
+          - { runner: macos-latest, target: macosArm64, binary-name: blcks_macos_arm64 }
+          - { runner: ubuntu-latest, target: linuxX64, binary-name: blcks_linux_x64 }
+          - { runner: ubuntu-latest, target: linuxArm64, binary-name: blcks_linux_arm64 }
+    runs-on: ${{ matrix.job.runner }}
+    env:
+      BUILD_TARGET: ${{ matrix.job.target }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+      - name: Build
+        working-directory: staging/solidblocks-cli/
+        run: ./do build
+      - name: Test
+        working-directory: staging/solidblocks-cli/
+        run: ./do test
+      - name: Test Integration
+        working-directory: staging/solidblocks-cli/
+        run: ./do test-integration
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            blcks_*
+
   solidblocks-shell:
     runs-on: ubuntu-latest
     env:

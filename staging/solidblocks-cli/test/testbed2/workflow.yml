@@ -1,0 +1,10 @@
+requirements:
+  - file: file2
+  - file: folder2
+  - command: pong
+
+tasks:
+  - name: command1
+    help: "runs command1"
+    exec:
+      command: [ whoami ]
