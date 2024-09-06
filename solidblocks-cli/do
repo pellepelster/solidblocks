@@ -2,76 +2,135 @@
 
 set -eu
 
-DIR="$( cd "$(dirname "$0")" ; pwd -P )"
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-function task_run {
-    go run "${DIR}/cmd" $@
-}
+source "${DIR}/../lib/utils.sh"
 
-function task_build {
+export VERSION="$(version)"
 
-  rm -rf "${DIR}/build"
-  mkdir -p "${DIR}/build"
+BUILD_TARGET=${BUILD_TARGET:-linuxX64}
 
-  declare -A targets=(["linux"]="amd64,386,arm64", ["darwin"]="arm64,amd64", ["windows"]="arm64,amd64,386", ["freebsd"]="amd64")
-
-  for platform in "${!targets[@]}"
-  do
-    local archs=${targets[$platform]}
-    for arch in ${archs//,/ }; do
-      export GOOS="${platform}"
-      export GOARCH="${arch}"
-      go build -o "${DIR}/build/blcks_${GOOS}_${GOARCH}" "${DIR}/cmd"
-    done
-  done
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
 }
 
 function task_test {
-    go test -v "${DIR}/..."
-    export BLCKS_INHERITED1="blcks_inherited1"
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
 
-    rm -rf "${DIR}/test-output/"
-    mkdir -p "${DIR}/test-output/"
-    go run "${DIR}/cmd" --help
-    go run "${DIR}/cmd" workflow --help
-    go run "${DIR}/cmd" workflow plan "${DIR}/test/integration-test.yml"
-    go run "${DIR}/cmd" workflow runners
-    go run "${DIR}/cmd" workflow runners shell
-    go run "${DIR}/cmd" workflow run "${DIR}/test/integration-test.yml"
-
-    grep 'BLCKS_GLOBAL1=blcks_global1' "${DIR}/test-output/dump.txt"
-    grep 'BLCKS_INHERITED1=blcks_inherited1' "${DIR}/test-output/dump.txt"
-    grep 'BLCKS_WHOAMI=pelle' "${DIR}/test-output/dump.txt"
+  ${DIR}/gradlew ${BUILD_TARGET}Test
 }
 
-function test_return_code {
+function task_test_hetzner_nuke {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
 
-    set +e
-    local expected_return_code="${1:-}"
-    shift || true
+  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
 
-    ${DIR}/build/snex_linux_amd64 $@
+  (
+    cd "${DIR}/test/hetzner_nuke"
+    terraform init -upgrade
+    terraform apply -auto-approve
+  )
 
-    local return_code=$?
-    if [ ${return_code} -ne ${expected_return_code} ]; then
-        echo "expected return code ${expected_return_code} but got return code ${return_code} for command line '$@'"
-        exit 1
-    fi
-    set -e
+  "${DIR}/blcks_${BUILD_TARGET}" hetzner nuke
+  echo ""
+  "${DIR}/blcks_${BUILD_TARGET}" hetzner nuke --do-nuke
+  echo ""
 }
 
-function task_usage {
-  echo "Usage: $0 build | test"
-  exit 1
+function task_test_workflow {
+  (
+    cd ${DIR}/test/no_workflow_file
+
+    divider_header "no_workflow_file -> check"
+    "${DIR}/blcks_${BUILD_TARGET}" workflow check || true
+    divider_footer
+
+    divider_header "no_workflow_file --> --help"
+    "${DIR}/blcks_${BUILD_TARGET}" workflow --help
+    divider_footer
+  )
+
+  (
+    cd ${DIR}/test/testbed1
+
+    divider_header "testbed1 --> workflow --help"
+    "${DIR}/blcks_${BUILD_TARGET}" workflow --help
+    divider_footer
+
+    divider_header "testbed1 --> workflow example"
+    "${DIR}/blcks_${BUILD_TARGET}" workflow example
+    divider_footer
+
+    divider_header "testbed1 --> workflow check"
+    "${DIR}/blcks_${BUILD_TARGET}" workflow check
+    divider_footer
+  )
+
+  (
+     cd ${DIR}/test/testbed2
+
+    divider_header "testbed2 --> workflow check"
+    "${DIR}/blcks_${BUILD_TARGET}" workflow check || true
+    divider_footer
+  )
+}
+
+function task_test_integration {
+  if [[ "${SKIP_TESTS:-}" == "true" ]] || [[ "${BUILD_TARGET}" == "linuxArm64" ]]; then
+    exit 0
+  fi
+
+  if [[ "${CI:-}" == "true" ]] && [[ "${BUILD_TARGET}" == macos* ]]; then
+     brew tap hashicorp/tap
+     brew install hashicorp/tap/terraform
+  fi
+
+  if [[ "${CI:-}" == "true" ]] && [[ "${BUILD_TARGET}" == mingw* ]]; then
+     choco install terraform
+  fi
+
+  task_test_hetzner_nuke
+}
+
+function divider_header() {
+  echo "==================================================================================="
+  echo $@
+  echo "-----------------------------------------------------------------------------------"
+}
+
+function divider_footer() {
+  echo "==================================================================================="
+  echo ""
+  echo ""
+}
+
+function task_build {
+  if [[ "${CI:-}" == "true" ]] && [[ "${BUILD_TARGET}" == linux* ]]; then
+    sudo apt-get install libcurl4-gnutls-dev
+  fi
+
+  ${DIR}/gradlew "${BUILD_TARGET}Binaries"
+  find "${DIR}/build/bin/${BUILD_TARGET}/releaseExecutable/" -type f -exec cp {} ${DIR}/blcks_${BUILD_TARGET} \;
+  chmod +x ${DIR}/blcks_${BUILD_TARGET}
+}
+
+function task_clean {
+  ${DIR}/gradlew clean
 }
 
 arg=${1:-}
 shift || true
 case ${arg} in
-  test) task_test $@ ;;
-  build) task_build $@ ;;
-  run) task_run $@ ;;
-  release-prepare) task_release_prepare "$@" ;;
-  release-test);;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  test-integration) task_test_integration "$@" ;;
+  test-hetzner-nuke) task_test_hetzner_nuke "$@" ;;
+  format) ;;
+  clean) task_clean "$@" ;;
   *) task_usage ;;
 esac

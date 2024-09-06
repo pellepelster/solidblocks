@@ -27,17 +27,19 @@ jobs:
 
   solidblocks-cli:
     strategy:
+      max-parallel: 1
       fail-fast: false
       matrix:
         job:
-          - { runner: macos-latest, target: macosX64, binary-name: blcks_macos_x64 }
-          - { runner: macos-latest, target: macosArm64, binary-name: blcks_macos_arm64 }
-          - { runner: ubuntu-latest, target: linuxX64, binary-name: blcks_linux_x64 }
-          - { runner: ubuntu-latest, target: linuxArm64, binary-name: blcks_linux_arm64 }
+          - { runner: macos-latest, target: macosX64 }
+          - { runner: macos-latest, target: macosArm64 }
+          - { runner: ubuntu-latest, target: linuxX64 }
+          #- { runner: ubuntu-latest, target: linuxArm64, extra: 'sudo apt-get install libcurl4-gnutls-dev' }
+          - { runner: windows-latest, target: mingwX64 }
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: ${{ matrix.job.target }}
-
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,19 +49,23 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
       - name: Build
-        working-directory: staging/solidblocks-cli/
+        shell: bash
+        working-directory: solidblocks-cli/
         run: ./do build
       - name: Test
-        working-directory: staging/solidblocks-cli/
+        shell: bash
+        working-directory: solidblocks-cli/
         run: ./do test
       - name: Test Integration
-        working-directory: staging/solidblocks-cli/
+        shell: bash
+        working-directory: solidblocks-cli/
         run: ./do test-integration
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
+          name: solidblocks-cli-${{ matrix.job.target }}
           path: |
-            blcks_*
+            solidblocks-cli/blcks_*
 
   solidblocks-shell:
     runs-on: ubuntu-latest
@@ -87,8 +93,8 @@ jobs:
         with:
           name: solidblocks-shell
           path: |
-            solidblocks-shell/build/solidblocks-shell-*.zip
-            solidblocks-shell/build/snippets/*
+           solidblocks-shell/build/solidblocks-shell-*.zip
+           solidblocks-shell/build/snippets/*
 
   solidblocks-shell-test:
     runs-on: ubuntu-latest
@@ -159,42 +165,6 @@ jobs:
             solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/build/terraform-null-solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/build/solidblocks-cloud-init-bootstrap.sh
-
-  solidblocks-hetzner-nuke:
-    runs-on: ubuntu-latest
-    needs:
-      - solidblocks-shell
-      - solidblocks-minio
-      - solidblocks-rds-postgresql
-      - solidblocks-rds-postgresql-test
-      - solidblocks-debug-container
-      - solidblocks-cloud-init
-      - solidblocks-hetzner
-      - solidblocks-hetzner-test
-    env:
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-    steps:
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'corretto'
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build
-        run: solidblocks-hetzner-nuke/do build
-      - name: Test
-        run: solidblocks-hetzner-nuke/do test
 
   solidblocks-terraform:
     runs-on: ubuntu-latest
@@ -399,9 +369,9 @@ jobs:
       - solidblocks-rds-postgresql
       - solidblocks-rds-postgresql-test
       - solidblocks-hetzner
+      - solidblocks-cli
       - solidblocks-hetzner-test
       - solidblocks-debug-container
-      - solidblocks-hetzner-nuke
       - solidblocks-terraform
       - solidblocks-test
     steps:
@@ -419,11 +389,11 @@ jobs:
       - solidblocks-shell-test
       - solidblocks-minio
       - solidblocks-rds-postgresql
+      - solidblocks-cli
       - solidblocks-rds-postgresql-test
       - solidblocks-hetzner
       - solidblocks-hetzner-test
       - solidblocks-debug-container
-      - solidblocks-hetzner-nuke
       - solidblocks-shell-test
       - solidblocks-terraform
     steps:
