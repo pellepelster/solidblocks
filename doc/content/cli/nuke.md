@@ -1,10 +1,12 @@
 ---
 title: Hetzner Nuke
 weight: 60
-description: Hetzner nuke is a tool to delete all resources in a Hetzner account, similar to aws-nuke
+description: Hetzner nuke deletes all resources in a Hetzner account, similar to aws-nuke
+aliases:
+  - /hetzner/nuke
 ---
 
-Hetzner nuke is a tool to delete all resources in a Hetzner account, similar to [aws-nuke](https://github.com/rebuy-de/aws-nuke).
+Hetzner nuke deletes all resources in a Hetzner account, similar to [aws-nuke](https://github.com/rebuy-de/aws-nuke).
 
 **Use Cases**
 
