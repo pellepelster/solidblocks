@@ -13,7 +13,7 @@ resource "hcloud_volume" "hcloud_volume" {
 }
 
 resource "hcloud_volume" "hcloud_volumes" {
-  count             = 20
+  count             = 12
   name              = "hcloud-volume-${random_string.test_id.id}-${count.index}"
   size              = 32
   location          = "nbg1"

@@ -79,12 +79,7 @@ function task_clean_aws {
 
 function task_clean_hetzner {
   export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-
-  docker run \
-    --rm \
-    -e HCLOUD_TOKEN="${HCLOUD_TOKEN}" \
-    --pull always \
-    ghcr.io/pellepelster/solidblocks-hetzner-nuke:46b5e5d-rc nuke
+  ./solidblocks-cli/blcks-linuxX64-${VERSION} hetzner nuke --do-nuke
 }
 
 function task_clean_gcloud {
