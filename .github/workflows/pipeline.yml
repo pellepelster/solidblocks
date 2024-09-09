@@ -382,8 +382,10 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Hetzner Nuke
         run: |
-          chmod +x solidblocks-cli-linuxX64/blcks-linuxX64
-          solidblocks-cli-linuxX64/blcks-linuxX64 hetzner nuke --do-nuke
+          find .
+          find "blcks-linuxX64-*" -type f -exec cp {} blcks \;
+          chmod +x blcks
+          ./blcks hetzner nuke --do-nuke
 
   release:
     runs-on: ubuntu-latest
