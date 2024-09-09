@@ -16,18 +16,18 @@ docker run -it -d --rm --name "${TEST_ID}" -p 80 -v "${TEMP_DIR}:/usr/share/ngin
 
 sleep 2
 
-cp "${DIR}/../../build/snippets/shell-kitchen-sink.sh" "${TEMP_DIR}"
+cp "${DIR}/../../build/snippets/shell-kitchen-sink-${VERSION}.sh" "${TEMP_DIR}"
 
 export SOLIDBLOCKS_BASE_URL="http://localhost:$(docker_mapped_tcp_port "${TEST_ID}" "80")"
 
-"${TEMP_DIR}/shell-kitchen-sink.sh" bootstrap
-"${TEMP_DIR}/shell-kitchen-sink.sh" log
-"${TEMP_DIR}/shell-kitchen-sink.sh" terraform
-"${TEMP_DIR}/shell-kitchen-sink.sh" text
+"${TEMP_DIR}/shell-kitchen-sink-${VERSION}.sh" bootstrap
+"${TEMP_DIR}/shell-kitchen-sink-${VERSION}.sh" log
+"${TEMP_DIR}/shell-kitchen-sink-${VERSION}.sh" terraform
+"${TEMP_DIR}/shell-kitchen-sink-${VERSION}.sh" text
 
-cp "${DIR}/../../build/snippets/shell-minimal-skeleton-do" "${TEMP_DIR}"
+cp "${DIR}/../../build/snippets/shell-minimal-skeleton-${VERSION}.sh" "${TEMP_DIR}"
 
-"${TEMP_DIR}/shell-minimal-skeleton-do" bootstrap
+"${TEMP_DIR}/shell-minimal-skeleton-${VERSION}.sh" bootstrap
 
 function clean() {
   rm -rf "${TEMP_DIR}"

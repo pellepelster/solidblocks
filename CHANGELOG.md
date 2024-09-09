@@ -2,9 +2,15 @@
 
 ## v0.2.7
 
+**IMPROVEMENTS**
+
+* Add [Hetzner nuke tool](https://pellepelster.github.io/solidblocks/cli/nuke/)
+
+## v0.2.7
+
 **BUGFIXES**
 
-* Unescape newlines for database extra config in PostgreSQL RDs module   
+* Unescape newlines for database extra config in PostgreSQL RDS module   
 
 **IMPROVEMENTS**
 

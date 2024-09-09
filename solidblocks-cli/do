@@ -36,10 +36,25 @@ function task_test_hetzner_nuke {
     terraform apply -auto-approve
   )
 
+  divider_header "--help"
+  "${DIR}/blcks-${BUILD_TARGET}" --help
+  divider_footer
+
+  divider_header "hetzner --help"
+  "${DIR}/blcks-${BUILD_TARGET}" hetzner --help
+  divider_footer
+
+  divider_header "hetzner nuke --help"
+  "${DIR}/blcks-${BUILD_TARGET}" hetzner nuke --help
+  divider_footer
+
+  divider_header "hetzner nuke"
   "${DIR}/blcks-${BUILD_TARGET}" hetzner nuke
-  echo ""
+  divider_footer
+
+  divider_header "hetzner nuke --do-nuke"
   "${DIR}/blcks-${BUILD_TARGET}" hetzner nuke --do-nuke
-  echo ""
+  divider_footer
 }
 
 function task_test_workflow {
