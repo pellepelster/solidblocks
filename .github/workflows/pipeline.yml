@@ -26,23 +26,18 @@ permissions:
 
 jobs:
   solidblocks-cli:
-    needs:
-      - solidblocks-cloud-init
-      - solidblocks-hetzner-test
     strategy:
-      max-parallel: 1
+      max-parallel: 4
       fail-fast: false
       matrix:
         job:
           - { runner: macos-latest, target: macosX64 }
           - { runner: macos-latest, target: macosArm64 }
           - { runner: ubuntu-latest, target: linuxX64 }
-          #- { runner: ubuntu-latest, target: linuxArm64, extra: 'sudo apt-get install libcurl4-gnutls-dev' }
           - { runner: windows-latest, target: mingwX64 }
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: ${{ matrix.job.target }}
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,16 +54,47 @@ jobs:
         shell: bash
         working-directory: solidblocks-cli/
         run: ./do test
-      - name: Test Integration
-        shell: bash
-        working-directory: solidblocks-cli/
-        run: ./do test-integration
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: solidblocks-cli-${{ matrix.job.target }}
           path: |
             solidblocks-cli/blcks-*-*
+
+  solidblocks-cli-test:
+    needs:
+      - solidblocks-cli
+      - solidblocks-cloud-init
+      - solidblocks-hetzner-test
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        job:
+          - { runner: macos-latest, target: macosX64 }
+          - { runner: macos-latest, target: macosArm64 }
+          - { runner: ubuntu-latest, target: linuxX64 }
+          - { runner: windows-latest, target: mingwX64 }
+    runs-on: ${{ matrix.job.runner }}
+    env:
+      BUILD_TARGET: ${{ matrix.job.target }}
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+      - name: Rename blcks
+        shell: bash
+        run: |
+          find .
+          find ./solidblocks-cli-${{ matrix.job.target }}/blcks-* -type f -exec cp {} ./solidblocks-cli/ \;
+          chmod +x ./solidblocks-cli/blcks-*
+          find .
+      - name: Test Integration
+        shell: bash
+        working-directory: solidblocks-cli/
+        run: ./do test-integration
 
   solidblocks-shell:
     runs-on: ubuntu-latest
@@ -372,6 +398,7 @@ jobs:
       - solidblocks-rds-postgresql
       - solidblocks-rds-postgresql-test
       - solidblocks-hetzner
+      - solidblocks-cli-test
       - solidblocks-cli
       - solidblocks-hetzner-test
       - solidblocks-debug-container
@@ -384,7 +411,6 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Hetzner Nuke
         run: |
-          find .
           find ./solidblocks-cli-linuxX64/blcks-* -type f -exec cp {} blcks \;
           chmod +x blcks
           ./blcks hetzner nuke --do-nuke
@@ -399,6 +425,7 @@ jobs:
       - solidblocks-minio
       - solidblocks-rds-postgresql
       - solidblocks-cli
+      - solidblocks-cli-test
       - solidblocks-rds-postgresql-test
       - solidblocks-hetzner
       - solidblocks-hetzner-test

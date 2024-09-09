@@ -162,11 +162,6 @@ function prepare_documentation_env {
 function task_build_documentation {
     ensure_environment
 
-    #sed \
-    #  -i \
-    #  --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-    #   "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
-
     rm -rf "${DIR}/doc/snippets"
     mkdir -p "${DIR}/doc/snippets"
 
