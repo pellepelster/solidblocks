@@ -30,9 +30,9 @@ function task_build {
   mkdir -p "${DIR}/build/snippets"
   (
     cd "${DIR}/snippets"
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-s3-backup.zip" hetzner-postgres-rds-s3-backup/**/*.tf
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-local-backup.zip" hetzner-postgres-rds-s3-backup/**/*.tf
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-private-network.zip" hetzner-postgres-rds-private-network/**/*.tf
+    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-s3-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-local-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-private-network-${VERSION}.zip" hetzner-postgres-rds-private-network/**/*.tf
   )
 
   if which terraform-docs; then

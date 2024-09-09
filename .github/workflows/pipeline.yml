@@ -66,7 +66,7 @@ jobs:
         with:
           name: solidblocks-cli-${{ matrix.job.target }}
           path: |
-            solidblocks-cli/blcks_*
+            solidblocks-cli/blcks-*-*
 
   solidblocks-shell:
     runs-on: ubuntu-latest
@@ -382,8 +382,8 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Hetzner Nuke
         run: |
-          chmod +x solidblocks-cli-linuxX64/blcks_linuxX64
-          solidblocks-cli-linuxX64/blcks_linuxX64 hetzner nuke --do-nuke
+          chmod +x solidblocks-cli-linuxX64/blcks-linuxX64
+          solidblocks-cli-linuxX64/blcks-linuxX64 hetzner nuke --do-nuke
 
   release:
     runs-on: ubuntu-latest
@@ -441,7 +441,7 @@ jobs:
             solidblocks-cloud-init/snippets/*
             solidblocks-hetzner/snippets/*.zip
             solidblocks-hetzner/terraform-hcloud-solidblocks-rds-postgresql-*.zip
-            solidblocks-cli*
+            solidblocks-cli-*/blcks-*
 
   documentation:
     if: startsWith(github.ref, 'refs/tags/v')

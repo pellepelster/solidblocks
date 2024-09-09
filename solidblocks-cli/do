@@ -36,9 +36,9 @@ function task_test_hetzner_nuke {
     terraform apply -auto-approve
   )
 
-  "${DIR}/blcks_${BUILD_TARGET}" hetzner nuke
+  "${DIR}/blcks-${BUILD_TARGET}" hetzner nuke
   echo ""
-  "${DIR}/blcks_${BUILD_TARGET}" hetzner nuke --do-nuke
+  "${DIR}/blcks-${BUILD_TARGET}" hetzner nuke --do-nuke
   echo ""
 }
 
@@ -47,11 +47,11 @@ function task_test_workflow {
     cd ${DIR}/test/no_workflow_file
 
     divider_header "no_workflow_file -> check"
-    "${DIR}/blcks_${BUILD_TARGET}" workflow check || true
+    "${DIR}/blcks-${BUILD_TARGET}" workflow check || true
     divider_footer
 
     divider_header "no_workflow_file --> --help"
-    "${DIR}/blcks_${BUILD_TARGET}" workflow --help
+    "${DIR}/blcks-${BUILD_TARGET}" workflow --help
     divider_footer
   )
 
@@ -59,15 +59,15 @@ function task_test_workflow {
     cd ${DIR}/test/testbed1
 
     divider_header "testbed1 --> workflow --help"
-    "${DIR}/blcks_${BUILD_TARGET}" workflow --help
+    "${DIR}/blcks-${BUILD_TARGET}" workflow --help
     divider_footer
 
     divider_header "testbed1 --> workflow example"
-    "${DIR}/blcks_${BUILD_TARGET}" workflow example
+    "${DIR}/blcks-${BUILD_TARGET}" workflow example
     divider_footer
 
     divider_header "testbed1 --> workflow check"
-    "${DIR}/blcks_${BUILD_TARGET}" workflow check
+    "${DIR}/blcks-${BUILD_TARGET}" workflow check
     divider_footer
   )
 
@@ -75,7 +75,7 @@ function task_test_workflow {
      cd ${DIR}/test/testbed2
 
     divider_header "testbed2 --> workflow check"
-    "${DIR}/blcks_${BUILD_TARGET}" workflow check || true
+    "${DIR}/blcks-${BUILD_TARGET}" workflow check || true
     divider_footer
   )
 }
@@ -115,8 +115,9 @@ function task_build {
   fi
 
   ${DIR}/gradlew "${BUILD_TARGET}Binaries"
-  find "${DIR}/build/bin/${BUILD_TARGET}/releaseExecutable/" -type f -exec cp {} ${DIR}/blcks_${BUILD_TARGET} \;
-  chmod +x ${DIR}/blcks_${BUILD_TARGET}
+  find "${DIR}/build/bin/${BUILD_TARGET}/releaseExecutable/" -type f -exec cp {} ${DIR}/blcks-${BUILD_TARGET} \;
+  cp "${DIR}/blcks-${BUILD_TARGET}" "${DIR}/blcks-${BUILD_TARGET}-${VERSION}"
+  chmod +x ${DIR}/blcks-${BUILD_TARGET}
 }
 
 function task_clean {

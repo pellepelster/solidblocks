@@ -4,8 +4,7 @@ plugins {
 }
 
 group = "de.solidblocks.cli"
-version = "0.0.1"
-
+version = System.getenv("VERSION") ?: "SNAPSHOT"
 
 repositories {
     mavenCentral()
