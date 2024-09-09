@@ -383,7 +383,7 @@ jobs:
       - name: Hetzner Nuke
         run: |
           find .
-          find "./solidblocks-cli-linuxX64/blcks-*" -type f -exec cp {} blcks \;
+          find ./solidblocks-cli-linuxX64/blcks-* -type f -exec cp {} blcks \;
           chmod +x blcks
           ./blcks hetzner nuke --do-nuke
 
