@@ -3,7 +3,8 @@ package de.solidblocks.cli.hetzner.resources
 import de.solidblocks.cli.hetzner.HetznerApi
 import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
 import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.NamedHetznerResource
+import de.solidblocks.cli.hetzner.HetznerProtectedResource
+import de.solidblocks.cli.hetzner.HetznerProtectionResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -22,9 +23,10 @@ data class FloatingIPsListWrapper(
 data class FloatingIpResponse(
     override val id: Long,
     override val name: String,
+    override val protection: HetznerProtectionResponse,
     @SerialName("assignee_id") val assigneeId: Int? = null,
     @SerialName("assignee_type") val assigneeType: String? = null
-) : NamedHetznerResource
+) : HetznerProtectedResource
 
 
 class HetznerFloatingIpsApi(private val api: HetznerApi) : HetznerSimpleResourceApi<FloatingIpResponse>,

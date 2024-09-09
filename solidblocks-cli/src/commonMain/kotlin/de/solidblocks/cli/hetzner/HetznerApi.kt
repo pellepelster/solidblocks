@@ -39,7 +39,7 @@ suspend fun <T> retryUtil(
 
 expect fun createHttpClient(url: String, apiToken: String): HttpClient
 
-public class HetznerApi(private val hcloudToken: String, val defaultPageSize: Int = 5) {
+public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 5) {
 
     val volumes = HetznerVolumesApi(this)
     val servers = HetznerServersApi(this)
@@ -67,7 +67,7 @@ public class HetznerApi(private val hcloudToken: String, val defaultPageSize: In
 
     internal suspend inline fun <reified T> complexDelete(path: String): T = client.delete(path).handle()
 
-    internal suspend fun HttpResponse.handleSimpleDelete(): Boolean {
+    private suspend fun HttpResponse.handleSimpleDelete(): Boolean {
         if (this.status.isSuccess()) {
             return true
         }

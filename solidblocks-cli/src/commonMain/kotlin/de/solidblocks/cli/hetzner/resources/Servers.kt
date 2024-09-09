@@ -2,8 +2,9 @@ package de.solidblocks.cli.hetzner.resources
 
 import de.solidblocks.cli.hetzner.HetznerApi
 import de.solidblocks.cli.hetzner.HetznerComplexResourceApi
+import de.solidblocks.cli.hetzner.HetznerProtectedResource
 import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.NamedHetznerResource
+import de.solidblocks.cli.hetzner.HetznerProtectionResponse
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,7 +15,11 @@ data class ServersListWrapper(val servers: List<ServerResponse>, override val me
 }
 
 @Serializable
-data class ServerResponse(override val id: Long, override val name: String) : NamedHetznerResource
+data class ServerResponse(
+    override val id: Long,
+    override val name: String,
+    override val protection: HetznerProtectionResponse,
+) : HetznerProtectedResource
 
 
 class HetznerServersApi(private val api: HetznerApi) : HetznerComplexResourceApi<ServerResponse>,

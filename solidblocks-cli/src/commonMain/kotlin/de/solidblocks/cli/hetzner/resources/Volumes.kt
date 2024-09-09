@@ -1,22 +1,20 @@
 package de.solidblocks.cli.hetzner.resources
 
 import de.solidblocks.cli.hetzner.HetznerApi
+import de.solidblocks.cli.hetzner.HetznerProtectedResource
 import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
+import de.solidblocks.cli.hetzner.HetznerProtectionResponse
 import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.NamedHetznerResource
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class VolumeResponse(
     override val id: Long,
     override val name: String,
-    val protection: VolumeProtectionResponse,
+    override val protection: HetznerProtectionResponse,
     val server: Int?
 ) :
-    NamedHetznerResource
-
-@Serializable
-data class VolumeProtectionResponse(val delete: Boolean)
+    HetznerProtectedResource
 
 @Serializable
 data class ChangeVolumeProtectionRequest(val delete: Boolean, val rebuild: Boolean? = null)

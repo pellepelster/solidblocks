@@ -2,7 +2,7 @@ package de.solidblocks.cli.hetzner.resources
 
 import de.solidblocks.cli.hetzner.HetznerApi
 import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.NamedHetznerResource
+import de.solidblocks.cli.hetzner.HetznerNamedResource
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -15,7 +15,7 @@ data class SSHKeysListWrapper(@SerialName("ssh_keys") val sshKeys: List<SshKeyRe
 }
 
 @Serializable
-data class SshKeyResponse(override val id: Long, override val name: String) : NamedHetznerResource
+data class SshKeyResponse(override val id: Long, override val name: String) : HetznerNamedResource
 
 class HetznerSSHKeysApi(private val api: HetznerApi) : HetznerSimpleResourceApi<SshKeyResponse> {
 

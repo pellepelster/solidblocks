@@ -1,6 +1,6 @@
 package de.solidblocks.cli.utils
 
-import de.solidblocks.cli.hetzner.NamedHetznerResource
+import de.solidblocks.cli.hetzner.HetznerNamedResource
 import kotlin.reflect.KClass
 
 public enum class LogType { blcks, stdout, stderr }
@@ -81,5 +81,5 @@ fun color(text: String, color: COLORS) = "${escapeCode(color.color)}${text}${esc
 
 fun String.pascalCaseToWhiteSpace() = this.replace(Regex("([A-Z])"), " $1").trim()
 
-fun KClass<out NamedHetznerResource>.pascalCaseToWhiteSpace() =
+fun KClass<out HetznerNamedResource>.pascalCaseToWhiteSpace() =
     this.simpleName!!.removeSuffix("Response").pascalCaseToWhiteSpace().lowercase()

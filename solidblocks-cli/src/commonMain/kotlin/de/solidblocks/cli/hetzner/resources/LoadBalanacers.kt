@@ -2,7 +2,7 @@ package de.solidblocks.cli.hetzner.resources
 
 import de.solidblocks.cli.hetzner.HetznerApi
 import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.NamedHetznerResource
+import de.solidblocks.cli.hetzner.HetznerNamedResource
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -18,7 +18,7 @@ data class LoadBalancersListWrapper(
 }
 
 @Serializable
-data class LoadBalancerResponse(override val id: Long, override val name: String) : NamedHetznerResource
+data class LoadBalancerResponse(override val id: Long, override val name: String) : HetznerNamedResource
 
 
 class HetznerLoadBalancersApi(private val api: HetznerApi) : HetznerSimpleResourceApi<LoadBalancerResponse> {

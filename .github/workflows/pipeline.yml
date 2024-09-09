@@ -11,8 +11,8 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+-pre[0-9]*'
 
 env:
-  #SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#skip-tests') || contains(github.event.ref, '-pre') }}
-  SKIP_TESTS: true
+  SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#skip-tests') || contains(github.event.ref, '-pre') }}
+  #SKIP_TESTS: true
 
 concurrency:
   group: solidblocks
@@ -38,6 +38,7 @@ jobs:
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: ${{ matrix.job.target }}
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

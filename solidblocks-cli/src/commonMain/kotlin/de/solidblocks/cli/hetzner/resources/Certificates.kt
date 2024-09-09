@@ -2,7 +2,7 @@ package de.solidblocks.cli.hetzner.resources
 
 import de.solidblocks.cli.hetzner.HetznerApi
 import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.NamedHetznerResource
+import de.solidblocks.cli.hetzner.HetznerNamedResource
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,7 +14,7 @@ data class CertificatesListWrapper(val certificates: List<CertificatesResponse>,
 }
 
 @Serializable
-data class CertificatesResponse(override val id: Long, override val name: String) : NamedHetznerResource
+data class CertificatesResponse(override val id: Long, override val name: String) : HetznerNamedResource
 
 
 class HetznerCertificatesApi(private val api: HetznerApi) : HetznerSimpleResourceApi<CertificatesResponse> {

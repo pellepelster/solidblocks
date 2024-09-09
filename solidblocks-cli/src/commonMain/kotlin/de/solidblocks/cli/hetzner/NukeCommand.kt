@@ -9,7 +9,7 @@ import de.solidblocks.cli.utils.logInfo
 import de.solidblocks.cli.utils.logWarning
 import platform.posix.sleep
 
-class NukeCommand() : CliktCommand(name = "nuke", help = "delete all Hetzner cloud resources from a project") {
+class NukeCommand : CliktCommand(name = "nuke", help = "delete all Hetzner cloud resources from a project") {
     private val hcloudToken by option(
         "--hcloud-token",
         help = "the api token for the project",
@@ -26,9 +26,15 @@ class NukeCommand() : CliktCommand(name = "nuke", help = "delete all Hetzner clo
 
         try {
             if (doNuke) {
-                logError("nuking all resources")
+                logError("nuking all resources, running simulation...")
 
-                nuker.run(false)
+                val result = nuker.simulate()
+                if (result == 0) {
+                    logInfo("no resources found to delete")
+                    return
+                }
+
+                logInfo("will delete ${result} resources")
 
                 var count = 15
                 while (count > 0) {
@@ -37,10 +43,11 @@ class NukeCommand() : CliktCommand(name = "nuke", help = "delete all Hetzner clo
                     count--
                 }
 
-                nuker.run(true)
+                nuker.nuke()
             } else {
-                logInfo("running a simulated delete, add '--do-nuke' to actually delete resources")
-                nuker.run(false)
+                logInfo("running a simulated nuke, add '--do-nuke' to actually delete resources")
+                val result = nuker.simulate()
+                logInfo("found ${result} resources to delete")
             }
         } catch (e: HetznerApiException) {
             logError("nuke failed error: ${e.error}")
