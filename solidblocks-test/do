@@ -49,6 +49,21 @@ function task_clean {
   ${DIR}/../gradlew :solidblocks-test:clean
 }
 
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+
+  echo "setting version: ${version}"
+  mkdir -p "${DIR}/.tmp"
+  rg -e '^(.*implementation\("de\.solidblocks:infra-test:)(.*)("\)).*$' "${DIR}/snippets/solidblocks-test-gradle/build.gradle.kts" --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/.tmp/build.gradle.kts"
+  mv "${DIR}/.tmp/build.gradle.kts" "${DIR}/snippets/solidblocks-test-gradle/build.gradle.kts"
+}
+
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -61,7 +76,7 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   test-prepare) task_test_prepare "$@" ;;
-  release-prepare) ;;
+  release-prepare) task_release_prepare "$@" ;;
   release-artifacts) task_release_artifacts;;
   release-test) ;;
   *) task_usage ;;

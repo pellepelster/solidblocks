@@ -130,6 +130,8 @@ case ${arg} in
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;
   test-hetzner-nuke) task_test_hetzner_nuke "$@" ;;
+  release-prepare) ;;
+  release-artifacts) ;;
   format) ;;
   clean) task_clean "$@" ;;
   *) task_usage ;;
