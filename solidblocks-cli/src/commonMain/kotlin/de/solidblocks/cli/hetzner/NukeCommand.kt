@@ -50,7 +50,7 @@ class NukeCommand : CliktCommand(name = "nuke", help = "delete all Hetzner cloud
                 logInfo("found ${result} resources to delete")
             }
         } catch (e: HetznerApiException) {
-            logError("nuke failed error: ${e.error}")
+            logError("nuke failed error: ${e.error.message} (${e.error.code})")
         }
     }
 }

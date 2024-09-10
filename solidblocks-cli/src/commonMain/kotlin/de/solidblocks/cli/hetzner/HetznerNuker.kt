@@ -62,13 +62,15 @@ class HetznerNuker(hcloudToken: String) {
                     })
                 }
 
-                if (resourceApi is HetznerAssignedResourceApi) {
-                    api.waitFor({
-                        logInfo("unassigning ${it.logText()}")
-                        resourceApi.unassign(it.id)
-                    }, {
-                        resourceApi.action(it)
-                    })
+                if (resourceApi is HetznerAssignedResourceApi && it is HetznerAssignedResource) {
+                    if (it.isAssigned) {
+                        api.waitFor({
+                            logInfo("unassigning ${it.logText()}")
+                            resourceApi.unassign(it.id)
+                        }, {
+                            resourceApi.action(it)
+                        })
+                    }
                 }
 
                 if (resourceApi is HetznerSimpleResourceApi) {

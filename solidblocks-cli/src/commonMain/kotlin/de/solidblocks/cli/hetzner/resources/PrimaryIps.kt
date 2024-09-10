@@ -1,10 +1,6 @@
 package de.solidblocks.cli.hetzner.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.HetznerProtectedResource
-import de.solidblocks.cli.hetzner.HetznerProtectionResponse
+import de.solidblocks.cli.hetzner.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -26,11 +22,15 @@ data class PrimaryIpResponse(
     override val protection: HetznerProtectionResponse,
     @SerialName("assignee_id") val assigneeId: Int? = null,
     @SerialName("assignee_type") val assigneeType: String? = null
-) : HetznerProtectedResource
+) : HetznerProtectedResource, HetznerAssignedResource {
+
+    override val isAssigned: Boolean
+        get() = assigneeId != null
+}
 
 
 class HetznerPrimaryIpsApi(private val api: HetznerApi) : HetznerSimpleResourceApi<PrimaryIpResponse>,
-    HetznerProtectedResourceApi {
+    HetznerProtectedResourceApi, HetznerAssignedResourceApi {
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): PrimaryIpListWrapper =
         api.get("v1/primary_ips?page=${page}&per_page=${perPage}")
@@ -46,7 +46,7 @@ class HetznerPrimaryIpsApi(private val api: HetznerApi) : HetznerSimpleResourceA
 
     override suspend fun action(id: Long): ActionResponseWrapper = api.get("v1/primary_ips/actions/${id}")
 
-    suspend fun unassign(id: Long): ActionResponseWrapper =
+    override suspend fun unassign(id: Long): ActionResponseWrapper =
         api.post("v1/primary_ips/$id/actions/unassign")
 
 }

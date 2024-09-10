@@ -18,6 +18,10 @@ interface HetznerProtectedResource : HetznerNamedResource {
     val protection: HetznerProtectionResponse
 }
 
+interface HetznerAssignedResource : HetznerNamedResource {
+    val isAssigned: Boolean
+}
+
 interface HetznerBaseResourceApi<T : HetznerNamedResource> {
     suspend fun list(): List<T>
 }
