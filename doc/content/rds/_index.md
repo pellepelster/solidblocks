@@ -86,6 +86,22 @@ configured individually, but at least one type has to be configured.
 | `DB_BACKUP_LOCAL_RETENTION_FULL`      | environment | 7       | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)           |
 | `DB_BACKUP_LOCAL_RETENTION_DIFF`      | environment | 4       | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)           |                                                                                                                                                                   |
 
+### S3 Backup
+
+The S3 backup target works with an S3 compatible service, so apart from AWS you can for example also use Hetzner Cloud Storage. In most cases you should only need to point `DB_BACKUP_S3_HOST` to your specific provider.
+
+| configuration                      | type        | description                                                                                                                                                                                  |
+|------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_BACKUP_S3`                     | environment | Flag to enable S3 object storage as backup repository                                                                                                                                        |
+| `DB_BACKUP_S3_HOST`                | environment | Hostname of the S3 object storage service, can be used to use different S3 providers. E.g. to use Hetzer Object storage in `fsn` use `fsn1.your-objectstorage.com`. Defaults to AWS if empty |
+| `DB_BACKUP_S3_BUCKET`              | environment | Bucket for the backup repository                                                                                                                                                             |
+| `DB_BACKUP_S3_ACCESS_KEY`          | environment | Access key for the backup bucket                                                                                                                                                             |
+| `DB_BACKUP_S3_SECRET_KEY`          | environment | Secret key for the backup bucket                                                                                                                                                             |
+| `DB_BACKUP_S3_CA_PUBLIC_KEY`       | environment | Public key for the CA that issued the certificates for the `DB_BACKUP_S3_HOST`. Useful when a non SaaS solution like [minIO](https://min.io/) is used.                                       |
+| `DB_BACKUP_S3_RETENTION_FULL_TYPE` | environment | Retention type for full backups, see [retention type documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full-type)                            |
+| `DB_BACKUP_S3_RETENTION_FULL`      | environment | Retention for full backups, see [retention full documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-full)                                      |
+| `DB_BACKUP_S3_RETENTION_DIFF`      | environment | Retention for diff backups, see [retention diff documentation](https://pgbackrest.org/configuration.html#section-repository/option-repo-retention-diff)                                      |
+
 ### Google storage bucket backup
 
 | configuration                       | type        | default      | description                                                                                                                                                       |

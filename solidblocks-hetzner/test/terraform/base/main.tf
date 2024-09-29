@@ -10,10 +10,15 @@ resource "aws_s3_bucket" "bootstrap" {
 }
 
 resource "google_storage_bucket" "backup" {
-  project       = "solidblocks-test"
   name          = "test-${random_string.random.id}"
+  project       = "solidblocks-test"
   location      = "EU"
   force_destroy = true
+}
+
+resource "minio_s3_bucket" "backup" {
+  bucket = "rds-postgresql-${random_string.random.id}"
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_public_access_block" "bootstrap" {
@@ -89,4 +94,3 @@ resource "aws_s3_object" "bootstrap_snippet" {
   etag       = filemd5("${local.base_path}/${local.bootstrap_snippet}")
   depends_on = [aws_s3_bucket_acl.bootstrap]
 }
-
