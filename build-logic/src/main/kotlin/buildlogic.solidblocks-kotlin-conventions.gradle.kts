@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import java.io.ByteArrayOutputStream
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("com.diffplug.spotless")
@@ -20,18 +23,42 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
 }
 
+fun getPassCredential(passPath: String, envName: String): String {
+    if (System.getenv(envName) != null) {
+        return System.getenv(envName)!!
+    }
+
+    val secret = ByteArrayOutputStream()
+    exec {
+        commandLine("pass", passPath)
+        standardOutput = secret
+    }
+
+    return secret.toString().trim()
+}
+
 tasks.test {
     useJUnitPlatform()
     testLogging {
         this.showStandardStreams = true
         events = setOf(
-            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR
+            TestLogEvent.PASSED,
+            TestLogEvent.SKIPPED,
+            TestLogEvent.FAILED,
+            TestLogEvent.STANDARD_OUT,
+            TestLogEvent.STANDARD_ERROR
         )
     }
+
+    environment(
+        mapOf(
+            "HETZNER_DNS_API_TOKEN" to getPassCredential(
+                "solidblocks/hetzner/test/dns_api_token",
+                "HETZNER_DNS_API_TOKEN"
+            )
+        )
+    )
+
 }
 
 java {
