@@ -15,7 +15,7 @@ To use `solidblocks-dns` just add the dependency to your Gradle build
 
 dependencies {
 // [...]
-    implementation("de.solidblocks:infra-test:{{% env "SOLIDBLOCKS_VERSION" %}}")
+    implementation("de.solidblocks:infra-dns:{{% env "SOLIDBLOCKS_VERSION" %}}")
 }
 ```
 

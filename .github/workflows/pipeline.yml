@@ -512,6 +512,7 @@ jobs:
             solidblocks-cli-*/blcks-*
 
   documentation:
+    if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - solidblocks-shell
       - solidblocks-cloud-init
