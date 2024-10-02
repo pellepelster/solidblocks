@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.9
+
+**IMPROVEMENTS**
+
+* Add [Hetzner DNS library](https://pellepelster.github.io/solidblocks/hetzner/dns/)
+
 ## v0.2.8
 
 **IMPROVEMENTS**

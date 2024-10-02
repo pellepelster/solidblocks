@@ -10,7 +10,7 @@ data class RecordResponse(
     @JsonProperty("zone_id")
     val zoneId: String,
     val name: String,
-    val value: String?,
+    val value: String,
     val ttl: Int,
     val type: RecordType,
     @JsonDeserialize(using = MultiFormatInstantDeserializer::class)
