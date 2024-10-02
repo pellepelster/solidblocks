@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/../lib/utils.sh"
+
+export VERSION="$(version)"
+
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
+DOCKER_IMAGE_NAME="solidblocks-hetzner-nuke"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+function task_test {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
+
+  (
+    cd "${DIR}/test"
+    terraform init -upgrade
+    terraform apply -auto-approve
+  )
+
+  echo "==================================================================================="
+  echo "running simulate"
+  echo "==================================================================================="
+  docker run -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" simulate
+  echo "==================================================================================="
+  echo "running nuke"
+  echo "==================================================================================="
+  docker run -e HCLOUD_TOKEN=${HCLOUD_TOKEN} "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" nuke
+  echo "==================================================================================="
+}
+
+function task_build {
+  (
+    cd "${DIR}"
+    ${DIR}/../gradlew :solidblocks-hetzner-nuke:assembleDist
+    echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc'"
+    docker buildx build \
+      --push \
+      --platform linux/amd64,linux/arm64 \
+      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc" \
+      .
+  )
+}
+
+function task_release_artifacts {
+  docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-rc"
+}
+
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+  echo "setting version: ${version}"
+}
+
+function task_clean {
+  ${DIR}/../gradlew :solidblocks-hetzner-nuke:clean
+}
+
+function task_format {
+  (
+    cd "${DIR}"
+    ${DIR}/../gradlew :solidblocks-hetzner-nuke:spotlessApply
+    terraform fmt -recursive
+  )
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  format) task_format "$@" ;;
+  clean) task_clean "$@" ;;
+  release-artifacts) task_release_artifacts "$@" ;;
+  release-prepare) task_release_prepare "$@" ;;
+  release-test);;
+  *) task_usage ;;
+esac

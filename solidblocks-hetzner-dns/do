@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/../lib/utils.sh"
+
+export VERSION="$(version)"
+
+function task_build {
+  ${DIR}/../gradlew :solidblocks-hetzner-dns:assemble
+}
+
+function task_test {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  ${DIR}/../gradlew :solidblocks-hetzner-dns:test
+}
+
+function task_clean {
+  ${DIR}/../gradlew :solidblocks-hetzner-dns:clean
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  clean) task_clean "$@" ;;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  test-prepare) ;;
+  release-prepare) ;;
+  release-artifacts) ;;
+  release-test) ;;
+  *) task_usage ;;
+esac

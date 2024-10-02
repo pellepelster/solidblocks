@@ -14,7 +14,7 @@ source "${DIR}/lib/utils.sh"
 export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.temp"
-COMPONENTS="solidblocks-cli solidblocks-test solidblocks-terraform solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
+COMPONENTS="solidblocks-cli solidblocks-test solidblocks-hetzner-dns solidblocks-terraform solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-minio solidblocks-rds-postgresql"
 
 function ensure_environment {
   software_set_export_path

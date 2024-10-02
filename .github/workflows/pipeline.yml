@@ -128,6 +128,8 @@ jobs:
 
   solidblocks-shell-test:
     runs-on: ubuntu-latest
+    env:
+      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     needs:
       - solidblocks-shell
     steps:
@@ -152,6 +154,8 @@ jobs:
 
   solidblocks-test:
     runs-on: ubuntu-latest
+    env:
+      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -169,6 +173,30 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: solidblocks-test
+          path: |
+            **/build/reports/tests
+
+  solidblocks-hetzner-dns:
+    runs-on: ubuntu-latest
+    env:
+      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
+    steps:
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+      - name: Test
+        run: solidblocks-hetzner-dns/do test
+      - name: Archive Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solidblocks-hetzner-dns
           path: |
             **/build/reports/tests
 
@@ -200,6 +228,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -259,6 +288,8 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      HETZNER_S3_ACCESS_KEY: ${{ secrets.HETZNER_S3_ACCESS_KEY }}
+      HETZNER_S3_SECRET_KEY: ${{ secrets.HETZNER_S3_SECRET_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -301,6 +332,8 @@ jobs:
 
   solidblocks-debug-container:
     name: solidblocks-debug-container
+    env:
+      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
@@ -357,6 +390,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     needs:
       - solidblocks-minio
     steps:
@@ -433,6 +467,7 @@ jobs:
       - solidblocks-debug-container
       - solidblocks-shell-test
       - solidblocks-terraform
+      - solidblocks-hetzner-dns
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -490,6 +525,7 @@ jobs:
       - solidblocks-debug-container
       - solidblocks-shell-test
       - solidblocks-terraform
+      - solidblocks-hetzner-dns
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

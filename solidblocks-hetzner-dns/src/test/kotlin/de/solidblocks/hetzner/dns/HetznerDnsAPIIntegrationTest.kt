@@ -11,8 +11,6 @@ import org.junit.jupiter.api.fail
 
 class HetznerDnsAPIIntegrationTest {
 
-    val existingZone = "solidblocks.de"
-
     val testZone = "integration-test-solidblocks.de"
 
     @Test

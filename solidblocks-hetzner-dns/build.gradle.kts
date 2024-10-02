@@ -13,7 +13,7 @@ mavenPublishing {
 
     pom {
 
-        name.set("Solidblocks Test")
+        name.set("Solidblocks DNS")
         description.set("Solidblocks is a library of reusable components for infrastructure operation, automation and developer experience")
         inceptionYear.set("2019")
         url.set("https://github.com/pellepelster/solidblocks/")
@@ -52,6 +52,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
+    testImplementation("org.slf4j:slf4j-simple:2.0.13")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     testImplementation("org.wiremock:wiremock:3.9.1")
 }
