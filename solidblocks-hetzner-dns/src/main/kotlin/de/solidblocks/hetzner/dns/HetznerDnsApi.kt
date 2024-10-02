@@ -20,7 +20,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 
 
-class HetznerDnsApi(
+public class HetznerDnsApi(
     val apiKey: String, val baseApiUrl: String = "https://dns.hetzner.com/api/v1"
 ) {
 

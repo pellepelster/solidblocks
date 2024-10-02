@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import de.solidblocks.hetzner.dns.MultiFormatInstantDeserializer
 import java.time.Instant
 
-data class TxtVerification(
+public data class TxtVerification(
     val name: String? = null,
     val token: String? = null
 )
 
-data class ZoneResponse(
+public data class ZoneResponse(
 
     val id: String,
     val name: String,

@@ -2,7 +2,7 @@ package de.solidblocks.hetzner.dns.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class RecordRequest(
+public data class RecordRequest(
     @JsonProperty("zone_id")
     val zoneId: String? = null,
     val type: RecordType? = null,
