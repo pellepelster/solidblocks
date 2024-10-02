@@ -8,7 +8,7 @@ Documentation is pending since the API is still developing, for an introduction 
 
 # Usage
 
-To use solidblocks-test just add the dependency into your Gradle build
+To use `solidblocks-test` just add the dependency to your Gradle build
 
 ```groovy
 {{% include "/snippets/solidblocks-test-gradle/build.gradle.kts" %}}
