@@ -439,6 +439,7 @@ jobs:
       - solidblocks-debug-container
       - solidblocks-terraform
       - solidblocks-test
+      - solidblocks-hetzner-dns
     steps:
       - name: Checkout
         uses: actions/checkout@v4
