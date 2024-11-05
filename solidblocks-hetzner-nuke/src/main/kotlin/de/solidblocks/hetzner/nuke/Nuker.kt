@@ -93,6 +93,16 @@ class Nuker(apiToken: String) {
 
     results.addAll(
         this.deleteResources(
+            "placement group",
+            hetznerCloudAPI.getPlacementGroups().getPlacementGroups(),
+            { resource -> resource.id to resource.name },
+            { hetznerCloudAPI.deletePlacementGroup(it.id) },
+            doNuke,
+        ),
+    )
+
+    results.addAll(
+        this.deleteResources(
             "floating ip",
             hetznerCloudAPI.floatingIPs.floatingIps,
             { resource -> resource.id to resource.name },
