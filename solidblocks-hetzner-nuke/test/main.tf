@@ -115,10 +115,11 @@ resource "hcloud_load_balancer" "hcloud_load_balancer1" {
 }
 
 resource "hcloud_server" "hcloud_server1" {
-  name        = "hcloud-server1"
-  server_type = "cx11"
-  image       = "debian-11"
-  location    = "nbg1"
+  name               = "hcloud-server1"
+  server_type        = "cx11"
+  image              = "debian-11"
+  location           = "nbg1"
+  placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
 }
 
 resource "hcloud_network" "hcloud_network1" {
@@ -141,4 +142,9 @@ resource "hcloud_network_subnet" "hcloud_network_subnet1" {
 resource "hcloud_volume_attachment" "hcloud_volume_attachment1" {
   server_id = hcloud_server.hcloud_server1.id
   volume_id = hcloud_volume.hcloud_volume1.id
+}
+
+resource "hcloud_placement_group" "hcloud_placement_group1" {
+  name = "hcloud-placement-group1"
+  type = "spread"
 }
