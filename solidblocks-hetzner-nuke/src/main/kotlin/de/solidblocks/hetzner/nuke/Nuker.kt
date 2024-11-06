@@ -1,6 +1,7 @@
 package de.solidblocks.hetzner.nuke
 
 import me.tomsdevsn.hetznercloud.HetznerCloudAPI
+import me.tomsdevsn.hetznercloud.objects.enums.ImageType
 import me.tomsdevsn.hetznercloud.objects.general.Action
 import me.tomsdevsn.hetznercloud.objects.request.ChangeProtectionRequest
 import mu.KotlinLogging
@@ -97,6 +98,16 @@ class Nuker(apiToken: String) {
             hetznerCloudAPI.getPlacementGroups().getPlacementGroups(),
             { resource -> resource.id to resource.name },
             { hetznerCloudAPI.deletePlacementGroup(it.id) },
+            doNuke,
+        ),
+    )
+
+    results.addAll(
+        this.deleteResources(
+            "snapshot",
+            hetznerCloudAPI.getImagesByType(ImageType.snapshot).images,
+            { resource -> resource.id to resource.description },
+            { hetznerCloudAPI.deleteImage(it.id) },
             doNuke,
         ),
     )
