@@ -18,6 +18,7 @@ build
 .temp*
 /doc/snippets/
 venv
+.kotlin
 __pycache__
 .terraform.tfstate.lock.info
 /solidblocks-hetzner/test/terraform/ipv4_address
