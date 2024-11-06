@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 interface HetznerNamedResource {
     val id: Long
-    val name: String
+    val name: String?
 }
 
 @Serializable
@@ -47,4 +47,4 @@ interface HetznerComplexResourceApi<T : HetznerNamedResource> : HetznerBaseResou
 }
 
 fun HetznerNamedResource.logText() =
-    "${this::class.pascalCaseToWhiteSpace()} '${name}' (${id})"
+    "${this::class.pascalCaseToWhiteSpace()} '${name ?: "<no name>"}' (${id})"

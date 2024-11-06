@@ -130,10 +130,11 @@ resource "hcloud_load_balancer" "hcloud_load_balancer1" {
 }
 
 resource "hcloud_server" "hcloud_server1" {
-  name        = "hcloud-server-${random_string.test_id.id}"
-  server_type = "cx22"
-  image       = "debian-11"
-  location    = "nbg1"
+  name               = "hcloud-server-${random_string.test_id.id}"
+  server_type        = "cx22"
+  image              = "debian-11"
+  location           = "nbg1"
+  placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
 }
 
 resource "hcloud_network" "hcloud_network1" {
@@ -169,4 +170,13 @@ resource "hcloud_primary_ip" "hcloud_primary_ip" {
   type          = "ipv4"
   assignee_type = "server"
   auto_delete   = true
+}
+
+resource "hcloud_placement_group" "hcloud_placement_group1" {
+  name = "hcloud-placement-group1"
+  type = "spread"
+}
+
+resource "hcloud_snapshot" "hcloud_snapshot1" {
+  server_id = hcloud_server.hcloud_server1.id
 }

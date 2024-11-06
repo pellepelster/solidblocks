@@ -15,12 +15,13 @@ class HetznerNuker(hcloudToken: String) {
             api.volumes,
             api.networks,
             api.sshKeys,
-            api.certificates,
             api.firewalls,
             api.floatingIps,
             api.loadBalancers,
             api.primaryIps,
             api.placementGroups,
+            api.images,
+            api.certificates,
         ).map { resourceApi ->
             resourceApi.list().map {
                 logInfo("would delete ${it.logText()}")
@@ -35,12 +36,13 @@ class HetznerNuker(hcloudToken: String) {
             api.volumes,
             api.networks,
             api.sshKeys,
-            api.certificates,
             api.firewalls,
             api.floatingIps,
             api.loadBalancers,
             api.primaryIps,
             api.placementGroups,
+            api.images,
+            api.certificates,
         ).forEach { resourceApi ->
             resourceApi.list().forEach {
 

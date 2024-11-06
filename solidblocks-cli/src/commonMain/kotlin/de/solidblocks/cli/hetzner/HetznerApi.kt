@@ -51,6 +51,7 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
     val floatingIps = HetznerFloatingIpsApi(this)
     val primaryIps = HetznerPrimaryIpsApi(this)
     val placementGroups = HetznerPlacementGroupsApi(this)
+    val images = HetznerImagesApi(this)
 
     internal val client = createHttpClient("https://api.hetzner.cloud", hcloudToken)
 
