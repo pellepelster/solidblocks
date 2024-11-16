@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.0
+
+**IMPROVEMENTS**
+
+* Integrate snapshot and placement group deletion into CLI, see [PR #46](https://github.com/pellepelster/solidblocks/pull/46)
+
 ## v0.2.9
 
 **IMPROVEMENTS**
