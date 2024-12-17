@@ -66,6 +66,8 @@ if ! mount | grep "${DATA_DIR}"; then
     exit 1
 fi
 
+rm -rf /rds/run/*
+
 ########################################################
 #          persist certificates if provided            #
 ########################################################
@@ -371,6 +373,7 @@ function start_db() {
   cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
 
   log "provisioning completed"
+  touch /rds/run/provisioning_completed
   exec ${POSTGRES_BIN_DIR}/postgres -D "${PG_DATA_DIR}"
 }
 

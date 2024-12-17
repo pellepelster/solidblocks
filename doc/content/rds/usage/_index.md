@@ -191,11 +191,13 @@ docker run \
 
 The container includes a set of scripts for various maintenance operations and day to day tasks that are available on the `${PATH}`
 
-* `backup-full.sh`
-* `backup-diff.sh`
-* `backup-incr.sh`
-* `backup-info.sh`
+* `backup-full.sh` trigger a full backup
+* `backup-diff.sh` trigger a differential backup
+* `backup-incr.sh` trigger an incremental backup
+* `backup-info.sh` show information about backups
+* `rds_provisioning_completed.sh` exits with 0 when provisioning and/or restore has completed
 
+ 
 ### Maintenance
 
 In case of errors or the need for manual intervention a maintenance mode is available. Triggering the maintenance mode will set up the container like it would be set up for database startup, but without actually starting the database. This allows to `exec` into the container to debug issues.

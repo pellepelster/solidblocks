@@ -60,6 +60,7 @@ COPY --chown=$USER:$USER bin/ bin/
 
 RUN mkdir log
 RUN mkdir socket
+RUN mkdir run
 RUN mkdir -p pgbackrest/spool
 
 ENV PATH=/rds/bin:$PATH

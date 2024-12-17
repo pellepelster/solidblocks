@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.1
+
+**IMPROVEMENTS**
+
+* Add command to indicate when provisioning is finished to [RDS PostgreSQL container](https://pellepelster.github.io/solidblocks/rds/usage/#operations)
+
 ## v0.3.0
 
 **IMPROVEMENTS**
