@@ -126,6 +126,7 @@ function divider_footer() {
 
 function task_build {
   if [[ "${CI:-}" == "true" ]] && [[ "${BUILD_TARGET}" == linux* ]]; then
+    sudo apt-get update
     sudo apt-get install libcurl4-gnutls-dev
   fi
 
