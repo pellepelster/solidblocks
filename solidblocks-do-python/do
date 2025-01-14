@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/../lib/utils.sh"
+
+TEMP_DIR="${DIR}/.temp_$$"
+
+function clean_temp_dir {
+  rm -rf "${TEMP_DIR}"
+}
+
+trap clean_temp_dir EXIT
+
+source "${DIR}/../solidblocks-shell/lib/log.sh"
+source "${DIR}/../solidblocks-shell/lib/python.sh"
+
+function task_test() {
+    poetry run pytest -s
+}
+
+function task_build() {
+    poetry build
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  format) task_format "$@" ;;
+
+  *) task_usage ;;
+esac
