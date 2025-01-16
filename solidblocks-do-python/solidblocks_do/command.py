@@ -35,7 +35,6 @@ def command_run_interactive(command, env=None, workdir=None):
                          stderr=slave_fd,
                          env=env,
                          cwd=workdir,
-                         shell=True,
                          universal_newlines=True)
 
     while p.poll() is None:
