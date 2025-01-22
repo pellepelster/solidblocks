@@ -4,7 +4,6 @@
 #    var: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
 
 
-
 - name: setting host
   ansible.builtin.set_fact:
     server_0_private_ip: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
@@ -156,7 +155,7 @@
     name: hcloud-ccm
     chart_ref: hcloud/hcloud-cloud-controller-manager
     release_namespace: kube-system
-    chart_version: 1.22.0
+    chart_version: "{{ hetzner_ccm_version }}"
     kubeconfig: "/etc/rancher/k3s/k3s.yaml"
     set_values:
       - value: networking.enabled=true

@@ -1,6 +1,7 @@
 ---
 k3s_server_extra_args: ""
 cilium_version: "1.16.6"
+hetzner_ccm_version: "1.22.0"
 
 ks_server_init_args: |-
   {% if groups['servers'] | length > 1 %}
@@ -24,6 +25,7 @@ k3s_server_common_args: |-
   --service-cidr="{{ service_cidr_network }}" \
   --flannel-backend=none \
   --disable-network-policy \
+  --disable-kube-proxy \
   --disable-cloud-controller \
   --egress-selector-mode disabled \
   --disable local-storage \

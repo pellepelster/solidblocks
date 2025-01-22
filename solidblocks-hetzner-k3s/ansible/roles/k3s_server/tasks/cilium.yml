@@ -121,6 +121,7 @@
           - value: ipv4NativeRoutingCIDR={{ private_cidr_network }}
           - value: ipam.operator.clusterPoolIPv4PodCIDRList={{ cluster_cidr_network }}
           - value: autoDirectNodeRoutes=true
+          - value: kubeProxyReplacement=true
           - value: directRoutingSkipUnreachable=true
           - value: nodePort.enabled=true # https://docs.cilium.io/en/latest/network/servicemesh/ingress/#prerequisites
           - value: ingressController.enabled=true

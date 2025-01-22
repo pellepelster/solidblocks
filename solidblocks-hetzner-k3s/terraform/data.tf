@@ -6,8 +6,8 @@ resource "local_file" "ssh_client_identity" {
 
 resource "local_file" "ssh_config" {
   filename = "${path.module}/output/${var.environment}_ssh_config"
-  content = templatefile("${path.module}/templates/ssh_config.template", {
-    servers = hcloud_server.server[*]
+  content  = templatefile("${path.module}/templates/ssh_config.template", {
+    servers              = hcloud_server.server[*]
     client_identity_file = abspath("${path.module}/${local_file.ssh_client_identity.filename}")
   }
   )
@@ -15,15 +15,15 @@ resource "local_file" "ssh_config" {
 
 resource "local_file" "inventory" {
   filename = "${path.module}/output/${var.environment}_ansible_inventory.yml"
-  content = templatefile("${path.module}/templates/inventory.template", {
-    servers = hcloud_server.server[*]
+  content  = templatefile("${path.module}/templates/inventory.template", {
+    servers         = hcloud_server.server[*]
     ssh_config_file = abspath("${path.module}/${local_file.ssh_config.filename}")
   })
 }
 
 resource "local_file" "variables" {
   filename = "${path.module}/output/${var.environment}_ansible_variables.yml"
-  content = templatefile("${path.module}/templates/variables.template", {
+  content  = templatefile("${path.module}/templates/variables.template", {
     k3s_name : var.name
     k3s_environment : var.environment
     k3s_token : random_string.k3s_token.id
@@ -34,4 +34,14 @@ resource "local_file" "variables" {
     private_cidr_network : hcloud_network_subnet.subnet.ip_range
     network_id : hcloud_network.network.id
   })
+}
+
+data "hetznerdns_zone" "solidblocks" {
+  name = "solidblocks.de"
+}
+
+resource "random_string" "k3s_token" {
+  length  = 48
+  upper   = false
+  special = false
 }
