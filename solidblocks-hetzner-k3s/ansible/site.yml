@@ -4,7 +4,7 @@
   gather_facts: true
   become: true
   roles:
-    - role: common
+    - role: k3s_common
 
 - name: setup K3S servers
   hosts: servers
@@ -12,8 +12,8 @@
   roles:
     - role: k3s_server
 
-#- name: setup K3S agent
-#  hosts: agents
-#  become: true
-#  roles:
-#    - role: k3s_agent
+- name: setup K3S agents
+  hosts: agents
+  become: true
+  roles:
+    - role: k3s_agent

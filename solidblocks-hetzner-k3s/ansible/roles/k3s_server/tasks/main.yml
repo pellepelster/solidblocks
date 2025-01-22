@@ -1,10 +1,5 @@
 ---
-#- name: Display all variables/facts known for a host
-#  ansible.builtin.debug:
-#    var: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
-
-
-- name: setting host
+- name: setting facts
   ansible.builtin.set_fact:
     server_0_private_ip: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
 
@@ -13,10 +8,6 @@
     cmd: ip addr add 49.13.32.203 dev eth0
     creates: "/storage/data/k3s/server/token"
   when: k3s_apiserver_endpoint not in ansible_all_ipv4_addresses
-
-- name: Display all variables/facts known for a host
-  ansible.builtin.debug:
-    var: "{{ansible_default_ipv4.address}}"
 
 - name: get k3s installed version
   ansible.builtin.command: k3s --version

@@ -1,0 +1,4 @@
+---
+k3s_agent_args: |-
+  --server https://{{ server_0_private_ip }}:6443 \
+  --token {{ k3s_token }}

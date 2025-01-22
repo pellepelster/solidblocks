@@ -10,3 +10,8 @@ Host *
 Host ${server.name}
     Hostname ${server.ipv4_address}
 %{ endfor ~}
+
+%{ for agent in agents ~}
+Host ${agent.name}
+    Hostname ${agent.ipv4_address}
+%{ endfor ~}

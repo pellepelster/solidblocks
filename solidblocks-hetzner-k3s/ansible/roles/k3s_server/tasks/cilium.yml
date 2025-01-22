@@ -116,7 +116,7 @@
         set_values:
           - value: operator.replicas=2
           - value: routingMode=native
-          - value: k8sServiceHost=127.0.0.1
+          - value: k8sServiceHost={{ server_0_private_ip }}
           - value: k8sServicePort=6443
           - value: ipv4NativeRoutingCIDR={{ private_cidr_network }}
           - value: ipam.operator.clusterPoolIPv4PodCIDRList={{ cluster_cidr_network }}

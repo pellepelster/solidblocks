@@ -18,7 +18,7 @@
 #      - dir_stat.stat.exists and dir_stat.stat.isdir and dir_stat.stat.mount
 #    msg: "{{ storage_data_dir }} has to be a mounted volume"
 
-- name: enforce minimum Ansible version
+- name: enforce minimum ansible version
   ansible.builtin.assert:
     that:
       - ansible_version.full is version('2.14', '>=')

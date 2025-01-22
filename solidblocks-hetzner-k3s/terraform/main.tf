@@ -61,3 +61,24 @@ resource "hetznerdns_record" "ingress_default" {
   type    = "A"
   ttl     = 60
 }
+
+resource "hcloud_server" "agent" {
+  count    = var.server_count
+  name     = "${var.environment}-${var.name}-agent-${count.index}"
+  location = var.location
+
+  ssh_keys = [hcloud_ssh_key.root.id]
+
+  network {
+    network_id = hcloud_network.network.id
+    ip         = cidrhost(var.private_subnet_cidr, 20 + count.index+1)
+  }
+
+  image       = "debian-12"
+  server_type = "cx22"
+
+  labels = merge(local.default_labels, {
+    "${local.namespace}/part-of" : "k3s",
+    "${local.namespace}/component" : "agent",
+  })
+}

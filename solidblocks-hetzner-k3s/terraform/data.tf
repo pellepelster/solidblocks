@@ -8,6 +8,7 @@ resource "local_file" "ssh_config" {
   filename = "${path.module}/output/${var.environment}_ssh_config"
   content  = templatefile("${path.module}/templates/ssh_config.template", {
     servers              = hcloud_server.server[*]
+    agents               = hcloud_server.agent[*]
     client_identity_file = abspath("${path.module}/${local_file.ssh_client_identity.filename}")
   }
   )
@@ -17,6 +18,7 @@ resource "local_file" "inventory" {
   filename = "${path.module}/output/${var.environment}_ansible_inventory.yml"
   content  = templatefile("${path.module}/templates/inventory.template", {
     servers         = hcloud_server.server[*]
+    agents          = hcloud_server.agent[*]
     ssh_config_file = abspath("${path.module}/${local_file.ssh_config.filename}")
   })
 }
