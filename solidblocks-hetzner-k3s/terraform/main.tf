@@ -56,6 +56,38 @@ resource "random_string" "k3s_token" {
   special = false
 }
 
+resource "hcloud_load_balancer" "default" {
+  load_balancer_type = "lb11"
+  name               = "${var.environment}-${var.name}-ingress-default"
+  location           = var.location
+}
+
+resource "hcloud_load_balancer_network" "default" {
+  load_balancer_id = hcloud_load_balancer.default.id
+  network_id       = hcloud_network.network.id
+}
+
+resource "hcloud_load_balancer_target" "default" {
+  count            = var.server_count
+  load_balancer_id = hcloud_load_balancer.default.id
+  type             = "server"
+  server_id        = hcloud_server.server[count.index].id
+}
+
+resource "hcloud_load_balancer_service" "default_http" {
+  load_balancer_id = hcloud_load_balancer.default.id
+  protocol         = "tcp"
+  listen_port      = 80
+  destination_port = 8080
+}
+
+resource "hcloud_load_balancer_service" "default_https" {
+  load_balancer_id = hcloud_load_balancer.default.id
+  protocol         = "tcp"
+  listen_port      = 443
+  destination_port = 8080
+}
+
 resource "hcloud_network_subnet" "subnet" {
   network_id   = hcloud_network.network.id
   type         = "cloud"

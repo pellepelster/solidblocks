@@ -1,6 +1,6 @@
 ---
 k3s_server_extra_args: ""
-cilium_version: "1.16.5"
+cilium_version: "1.16.6"
 
 ks_server_init_args: |-
   {% if groups['servers'] | length > 1 %}

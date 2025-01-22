@@ -30,7 +30,7 @@
           }}
       when: cilium_cli_installed.rc == 0
 
-    - name: get latest stable Cilium CLI version file
+    - name: get latest stable cilium CLI version file
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt
         dest: /tmp/k3s/cilium-cli-stable.txt
@@ -60,7 +60,7 @@
             installed_cli_version != cli_ver.stdout)
           }}
 
-    - name: install or update Cilium CLI
+    - name: install or update cilium CLI
       when: cilium_cli_needs_update
       block:
         - name: set architecture variable
@@ -101,91 +101,33 @@
             - /tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz
             - /tmp/k3s/cilium-linux-{{ cli_arch }}.tar.gz.sha256sum
 
-    - name: test for existing cilium install
-      ansible.builtin.command: |
-        k3s kubectl -n kube-system get daemonsets cilium
-      register: cilium_installed
-      failed_when: false
-      changed_when: false
-      ignore_errors: true
+    - name: add cilium chart repo
+      kubernetes.core.helm_repository:
+        name: cilium
+        repo_url: "https://helm.cilium.io/"
 
-    - name: check existing Cilium install
-      when: cilium_installed.rc == 0
-      block:
-        - name: check Cilium version
-          ansible.builtin.command: cilium version
-          register: cilium_version_output
-          failed_when: false
-          changed_when: false
-          ignore_errors: true
-
-        - name: Parse installed Cilium version
-          ansible.builtin.set_fact:
-            installed_cilium_version: >-
-              {{
-                cilium_version_output.stdout_lines
-                | join(' ')
-                | regex_findall('cilium image.+(\d+\.\d+\.\d+)')
-                | first
-                | default('unknown')
-              }}
-
-        - name: Determine if Cilium needs update
-          ansible.builtin.set_fact:
-            cilium_needs_update: >-
-              {{ 'v' + installed_cilium_version != cilium_version }}
-
-        - name: Log result
-          ansible.builtin.debug:
-            msg: >
-              Installed Cilium version: {{ installed_cilium_version }},
-              Target Cilium version: {{ cilium_version }},
-              Update needed: {{ cilium_needs_update }}
-
-    - name: Install Cilium
-      ansible.builtin.command: >-
-        {% if cilium_installed.rc != 0 %}
-        cilium install
-        {% else %}
-        cilium upgrade
-        {% endif %}
-        --version "{{ cilium_version }}"
-        --helm-set operator.replicas="2"
-        --helm-set routingMode="native"
-        --helm-set k8sServiceHost="127.0.0.1"
-        --helm-set k8sServicePort="6443"
-        --helm-set ipv4NativeRoutingCIDR="{{ private_cidr_network }}"
-        --helm-set ipam.operator.clusterPoolIPv4PodCIDRList="{{ cluster_cidr_network }}"
-        --helm-set autoDirectNodeRoutes="true"
-        --helm-set directRoutingSkipUnreachable="true"
-      environment:
-        KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-      register: cilium_install_result
-      changed_when: cilium_install_result.rc == 0
-      when: cilium_installed.rc != 0 or cilium_needs_update
-
-    - name: wait for Cilium resources
-      ansible.builtin.command: >-
-        {% if item.type == 'daemonset' %}
-        k3s kubectl wait pods
-        --namespace=kube-system
-        --selector='k8s-app=cilium'
-        --for=condition=Ready
-        {% else %}
-        k3s kubectl wait {{ item.type }}/{{ item.name }}
-        --namespace=kube-system
-        --for=condition=Available
-        {% endif %}
-        --timeout=30s
-      register: cr_result
-      changed_when: false
-      until: cr_result is succeeded
-      retries: 30
-      delay: 7
-      with_items:
-        - { name: cilium-operator, type: deployment }
-        - { name: cilium, type: daemonset, selector: k8s-app=cilium }
-        #- { name: hubble-relay, type: deployment, check_hubble: true }
-        #- { name: hubble-ui, type: deployment, check_hubble: true }
-      loop_control:
-        label: "{{ item.type }}/{{ item.name }}"
+    - name: deploy cilium chart
+      kubernetes.core.helm:
+        name: cilium
+        chart_ref: cilium/cilium
+        release_namespace: kube-system
+        chart_version: "{{ cilium_version }}"
+        kubeconfig: "/etc/rancher/k3s/k3s.yaml"
+        set_values:
+          - value: operator.replicas=2
+          - value: routingMode=native
+          - value: k8sServiceHost=127.0.0.1
+          - value: k8sServicePort=6443
+          - value: ipv4NativeRoutingCIDR={{ private_cidr_network }}
+          - value: ipam.operator.clusterPoolIPv4PodCIDRList={{ cluster_cidr_network }}
+          - value: autoDirectNodeRoutes=true
+          - value: directRoutingSkipUnreachable=true
+          - value: nodePort.enabled=true # https://docs.cilium.io/en/latest/network/servicemesh/ingress/#prerequisites
+          - value: ingressController.enabled=true
+          - value: ingressController.loadbalancerMode=shared
+          - value: ingressController.hostNetwork.enabled=true # https://docs.cilium.io/en/latest/network/servicemesh/ingress/#gs-ingress-host-network-mode
+          - value: ingressController.externalTrafficPolicy=Local
+          - value: ingressController.hostNetwork.sharedListenerPort=8080
+          - value: ingressController.service.externalTrafficPolicy=null
+          - value: ingressController.service.type=ClusterIP
+          - value: loadBalancer.l7.backend=envoy
