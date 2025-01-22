@@ -1,0 +1,144 @@
+---
+#- name: Display all variables/facts known for a host
+#  ansible.builtin.debug:
+#    var: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
+
+
+
+- name: setting host
+  ansible.builtin.set_fact:
+    server_0_private_ip: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
+
+- name: add floating ip
+  ansible.builtin.command:
+    cmd: ip addr add 49.13.32.203 dev eth0
+    creates: "/storage/data/k3s/server/token"
+  when: k3s_apiserver_endpoint not in ansible_all_ipv4_addresses
+
+- name: Display all variables/facts known for a host
+  ansible.builtin.debug:
+    var: "{{ansible_default_ipv4.address}}"
+
+- name: get k3s installed version
+  ansible.builtin.command: k3s --version
+  register: k3s_installed_version_output
+  changed_when: false
+  ignore_errors: true
+
+- name: set k3s installed version
+  when: k3s_installed_version_output.rc == 0
+  ansible.builtin.set_fact:
+    k3s_installed_version: "{{ k3s_installed_version_output.stdout_lines[0].split(' ')[2] }}"
+
+- name: download k3s artifacts
+  when: k3s_installed_version_output.rc != 0 or k3s_installed_version is version(k3s_version, '<')
+  block:
+    - name: download k3s binary x64
+      ansible.builtin.get_url:
+        url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
+        checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-amd64.txt
+        dest: /usr/local/bin/k3s
+        owner: root
+        group: root
+        mode: "0755"
+      when: ansible_facts.architecture == "x86_64"
+
+    - name: download k3s binary arm64
+      ansible.builtin.get_url:
+        url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s-arm64
+        checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-arm64.txt
+        dest: /usr/local/bin/k3s
+        owner: root
+        group: root
+        mode: "0755"
+      when:
+        - ( ansible_facts.architecture is search("arm") and ansible_facts.userspace_bits == "64" )
+          or ansible_facts.architecture is search("aarch64")
+
+- name: add k3s autocomplete to user bashrc
+  ansible.builtin.lineinfile:
+    path: "~/.bashrc"
+    regexp: '\.\s+<\(k3s completion bash\)'
+    line: ". <(k3s completion bash)  # added by ansible"
+
+- name: "create k3s data dir {{ k3s_data_dir }}"
+  ansible.builtin.file:
+    path: "{{ k3s_data_dir }}"
+    state: directory
+    mode: '0600'
+
+- name: copy k3s service file
+  register: k3s_service
+  ansible.builtin.template:
+    src: k3s.service.j2
+    dest: "{{ systemd_dir }}/k3s.service"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: enable and start k3s service on first node
+  ansible.builtin.systemd:
+    name: k3s
+    daemon_reload: true
+    state: started
+    enabled: true
+  when: inventory_hostname == groups['servers'][0]
+
+- name: wait for k3s port
+  ansible.builtin.wait_for:
+    state: started
+    port: 6443
+  when: inventory_hostname == groups['servers'][0]
+
+- name: enable and start k3s service on all nodes
+  ansible.builtin.systemd:
+    name: k3s
+    daemon_reload: true
+    state: started
+    enabled: true
+  when: inventory_hostname != groups['servers'][0]
+
+- name: wait for node-token
+  ansible.builtin.wait_for:
+    path: "{{ k3s_data_dir }}/server/node-token"
+
+- name: get contents of manifests folder
+  ansible.builtin.find:
+    paths: /var/lib/rancher/k3s/server/manifests
+    file_type: file
+  register: k3s_server_manifests
+
+- name: get sub dirs of manifests folder
+  ansible.builtin.find:
+    paths: /var/lib/rancher/k3s/server/manifests
+    file_type: directory
+  register: k3s_server_manifests_directories
+
+- name: remove manifests and folders that are only needed for bootstrapping cluster so k3s doesn't auto apply on start
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items:
+    - "{{ k3s_server_manifests.files }}"
+    - "{{ k3s_server_manifests_directories.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: set k3s env
+  ansible.builtin.template:
+    src: k3s.sh.j2
+    dest: "/etc/profile.d/k3s.sh"
+    owner: root
+    group: root
+    mode: "0755"
+
+# k3s kubectl -n kube-system create secret generic hcloud --from-literal=token=xxx --from-literal=network=10581800
+# helm install hcloud-ccm hcloud/hcloud-cloud-controller-manager -n kube-system --version '1.22.0' --set 'networking.enabled=true,networking.clusterCIDR=10.224.0.0/16,additionalTolerations[0].key=node.kubernetes.io/not-ready,additionalTolerations[0].effect=NoSchedule'
+
+- name: setup helm
+  ansible.builtin.include_tasks:
+    file: helm.yml
+
+- name: setup cilium
+  ansible.builtin.include_tasks:
+    file: cilium.yml

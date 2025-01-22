@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+${user_data_lib}
+
+storage_mount ${storage_data_device} /storage/data

@@ -1,0 +1,36 @@
+---
+k3s_server_extra_args: ""
+cilium_version: "1.16.5"
+
+ks_server_init_args: |-
+  {% if groups['servers'] | length > 1 %}
+    {% if inventory_hostname == groups['servers'][0] %}
+      --cluster-init \
+    {% else %}
+      --server https://{{ server_0_private_ip }}:6443 \
+    {% endif %}
+  {% endif %}
+
+k3s_server_common_args: |-
+  --token {{ k3s_token }} \
+  --advertise-address={{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(private_cidr_network))[0] }} \
+  --node-ip={{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(private_cidr_network))[0] }} \
+  --node-external-ip={{ ansible_default_ipv4.address }} \
+  --tls-san={{ k3s_apiserver_endpoint }} \
+  --tls-san={{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(private_cidr_network))[0] }} \
+  --tls-san={{ ansible_default_ipv4.address }} \
+  --data-dir {{ k3s_data_dir }} \
+  --cluster-cidr="{{ cluster_cidr_network }}" \
+  --service-cidr="{{ service_cidr_network }}" \
+  --flannel-backend=none \
+  --disable-network-policy \
+  --disable-cloud-controller \
+  --egress-selector-mode disabled \
+  --disable local-storage \
+  --disable metrics-server \
+  --disable servicelb \
+  --disable traefik
+
+k3s_server_args: |-
+  {{ ks_server_init_args }} \
+  {{ k3s_server_common_args }} 

@@ -1,0 +1,8 @@
+---
+k3s_version: v1.30.2+k3s2
+storage_data_dir: "/storage/data"
+k3s_data_dir: "{{ storage_data_dir }}/k3s"
+
+systemd_dir: "/etc/systemd/system"
+
+k3s_node_ip: "{{ ansible_facts['eth0']['ipv4']['address'] }}"

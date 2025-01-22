@@ -1,0 +1,8 @@
+---
+servers:
+    hosts:
+        %{~ for server in servers ~}
+        ${server.name}:
+            ansible_host: ${server.name}
+            ansible_ssh_common_args: "-F ${ssh_config_file}"
+        %{~ endfor ~}
