@@ -13,9 +13,11 @@ resource "random_string" "random" {
 }
 
 output "random" {
-  value = random_string.random.id
+  description = "some random string"
+  value       = random_string.random.id
 }
 
 output "foo" {
-  value = "bar"
+  description = "important foo content"
+  value       = "bar"
 }

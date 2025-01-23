@@ -6,19 +6,19 @@ import sys
 import termios
 import tty
 
-from solidblocks_do.log import log_divider_normal, log_divider_thin, logger
+from solidblocks_do.log import log_divider_thin, log_divider_top, log_divider_bottom, log_ok, log_error
 
 
 def command_exists(command):
     if not subprocess.run(['which', command], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL).returncode == 0:
-        logger.error(f"command '{command}' not found")
+        log_error(f"command '{command}' not found")
         return False
     return True
 
 
 def command_run_interactive(command, env=None, workdir=None):
-    log_divider_normal()
-    print(f"running command '{' '.join(command)}'")
+    log_divider_top()
+    log_ok(f"running command '{' '.join(command)}'")
     log_divider_thin()
     # save original tty setting then set it to raw mode
     old_tty = termios.tcgetattr(sys.stdin)
@@ -49,22 +49,27 @@ def command_run_interactive(command, env=None, workdir=None):
 
     # restore tty settings back
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_tty)
-    log_divider_normal()
+    log_divider_bottom()
 
     return p.returncode == 0
 
 
 def command_run(command, env=None, workdir=None):
-    log_divider_normal()
-    print(f"running command '{' '.join(command)}'")
+    log_divider_top()
+    if workdir:
+        log_ok(f"running command '{' '.join(command)}' in '{workdir}'")
+    else:
+        log_ok(f"running command '{' '.join(command)}'")
     log_divider_thin()
     try:
         proc = subprocess.Popen(command, env=env, cwd=workdir)
         proc.wait()
-        log_divider_normal()
         return proc.returncode == 0
     except FileNotFoundError:
         return False
+    finally:
+        log_divider_bottom()
+        print()
 
 
 def command_exec(command, env=None, workdir=None):

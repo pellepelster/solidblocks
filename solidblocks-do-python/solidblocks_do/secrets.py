@@ -1,7 +1,8 @@
 import os
+import tempfile
 
+from solidblocks_do import log_error, log_hint
 from solidblocks_do.command import command_run_interactive, command_exec, command_exists
-from solidblocks_do.log import logger
 
 
 def pass_env(secret_store):
@@ -9,11 +10,11 @@ def pass_env(secret_store):
         secret_store = f"{os.getcwd()}/secrets"
 
     if not os.path.isdir(secret_store):
-        logger.error(f"pass secret store not found at '{secret_store}'")
+        log_error(f"pass secret store not found at '{secret_store}'")
         return None
 
     if not os.path.isfile(f"{secret_store}/.gpg-id"):
-        logger.error(f"directory '{secret_store}' does not look like a secret store, '.gpg-id' is missing")
+        log_error(f"directory '{secret_store}' does not look like a secret store, '.gpg-id' is missing")
         return None
 
     return {"PASSWORD_STORE_DIR": secret_store}
@@ -55,7 +56,7 @@ def pass_get_secret(path, secret_store=None):
 def pass_get_secret_env(path, secret_store=None):
     env_name = path.replace("/", "_").replace("-", "_").upper()
     if os.getenv(env_name):
-        logger.info(f"found environment variable '{env_name}' for secret with path '{path}'")
+        log_hint(f"found environment variable '{env_name}' for secret with path '{path}'")
         return os.getenv(env_name)
 
     return pass_wrapper([path], secret_store)
@@ -63,6 +64,40 @@ def pass_get_secret_env(path, secret_store=None):
 
 def pass_has_secret(path, secret_store=None):
     return pass_get_secret(path, secret_store) is not None
+
+
+class PassTempFileContext:
+
+    def __init__(self, path, from_env=False, secret_store=None):
+        self.path = path
+        self.secret_store = secret_store
+        self.from_env = from_env
+
+    def __enter__(self):
+        self.temp_file = tempfile.NamedTemporaryFile()
+
+        secret = None
+        if self.from_env:
+            secret = pass_get_secret_env(self.path, self.secret_store)
+        else:
+            secret = pass_get_secret(self.path, self.secret_store)
+
+        self.temp_file.write(str.encode(secret))
+        self.temp_file.flush()
+        log_hint(f"wrote pass secret '{self.path}' to '{self.temp_file.name}'")
+        return self.temp_file.name
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        log_hint(f"cleaning up pass secret file '{self.temp_file.name}'")
+        self.temp_file.close()
+
+
+def pass_temp_file(path, secret_store=None):
+    return PassTempFileContext(path, False, secret_store)
+
+
+def pass_temp_file_env(path, secret_store=None):
+    return PassTempFileContext(path, True, secret_store)
 
 
 def pass_init(secret_store=None):
