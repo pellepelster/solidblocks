@@ -1,6 +1,6 @@
 import os
 
-from solidblocks_do.command import command_run_interactive, command_exec
+from solidblocks_do.command import command_run_interactive, command_exec, command_exists
 from solidblocks_do.log import logger
 
 
@@ -22,7 +22,10 @@ def pass_env(secret_store):
 def pass_wrapper(command=None, secret_store=None):
     env = pass_env(secret_store)
     if env is None:
-        return False
+        return None
+
+    if not command_exists('pass'):
+        return None
 
     exitcode, stdout, _ = command_exec(['pass'] + command, env)
     if exitcode == 0:
@@ -36,11 +39,25 @@ def pass_insert_secret(path, secret_store=None, multiline=False):
 
     if env is None:
         return False
-    command_run_interactive(['pass', 'insert'] + (['--multiline'] if multiline else []) + [path], dict(os.environ) | env)
+
+    if not command_exists('pass'):
+        return None
+
+    command_run_interactive(['pass', 'insert'] + (['--multiline'] if multiline else []) + [path],
+                            dict(os.environ) | env)
     return True
 
 
 def pass_get_secret(path, secret_store=None):
+    return pass_wrapper([path], secret_store)
+
+
+def pass_get_secret_env(path, secret_store=None):
+    env_name = path.replace("/", "_").replace("-", "_").upper()
+    if os.getenv(env_name):
+        logger.info(f"found environment variable '{env_name}' for secret with path '{path}'")
+        return os.getenv(env_name)
+
     return pass_wrapper([path], secret_store)
 
 

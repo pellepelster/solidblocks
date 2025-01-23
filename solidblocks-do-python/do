@@ -18,6 +18,8 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_test() {
+  export TEST_SOME_PASSWORD="override_from_env"
+  export TEST_SOME_SECRET_WITH_DASHES="override_from_env1"
     poetry run pytest -s
 }
 
