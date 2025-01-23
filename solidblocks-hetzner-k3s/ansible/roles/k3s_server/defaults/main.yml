@@ -8,21 +8,21 @@ ks_server_init_args: |-
     {% if inventory_hostname == groups['servers'][0] %}
       --cluster-init \
     {% else %}
-      --server https://{{ server_0_private_ip }}:6443 \
+      --server https://{{ k3s_api_endpoint }}:6443 \
     {% endif %}
   {% endif %}
 
 k3s_server_common_args: |-
   --token {{ k3s_token }} \
-  --advertise-address={{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(private_cidr_network))[0] }} \
-  --node-ip={{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(private_cidr_network))[0] }} \
-  --node-external-ip={{ ansible_default_ipv4.address }} \
-  --tls-san={{ k3s_apiserver_endpoint }} \
-  --tls-san={{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(private_cidr_network))[0] }} \
-  --tls-san={{ ansible_default_ipv4.address }} \
+  --advertise-address {{ k3s_node_private_ip }} \
+  --node-ip {{ k3s_node_private_ip }} \
+  --node-external-ip {{ ansible_default_ipv4.address }} \
+  --tls-san {{ k3s_api_endpoint }} \
+  --tls-san {{ k3s_node_private_ip }} \
+  --tls-san {{ ansible_default_ipv4.address }} \
   --data-dir {{ k3s_data_dir }} \
-  --cluster-cidr="{{ cluster_cidr_network }}" \
-  --service-cidr="{{ service_cidr_network }}" \
+  --cluster-cidr {{ cluster_cidr_network }} \
+  --service-cidr {{ service_cidr_network }} \
   --flannel-backend=none \
   --disable-network-policy \
   --disable-kube-proxy \

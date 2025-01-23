@@ -3,12 +3,6 @@
   ansible.builtin.set_fact:
     server_0_private_ip: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
 
-- name: add floating ip
-  ansible.builtin.command:
-    cmd: ip addr add 49.13.32.203 dev eth0
-    creates: "/storage/data/k3s/server/token"
-  when: k3s_apiserver_endpoint not in ansible_all_ipv4_addresses
-
 - name: get k3s installed version
   ansible.builtin.command: k3s --version
   register: k3s_installed_version_output

@@ -1,8 +1,4 @@
 ---
-- name: setting facts
-  ansible.builtin.set_fact:
-    server_0_private_ip: "{{ (hostvars[groups['servers'][0]]['ansible_all_ipv4_addresses'] | ansible.utils.ipaddr(private_cidr_network))[0] }}"
-
 - name: get k3s installed version
   ansible.builtin.command: k3s --version
   register: k3s_installed_version_output

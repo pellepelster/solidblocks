@@ -25,7 +25,6 @@ variable "network_cidr" {
   default     = "10.0.0.0/8"
 }
 
-
 variable "cluster_cidr_network_bits" {
   description = "Cluster network CIDR bits."
   type        = number
@@ -51,7 +50,7 @@ variable "cluster_cidr_network_offset" {
 }
 
 
-variable "private_subnet_cidr" {
+variable "k3s_nodes_subnet_cidr" {
   description = "CIDR of the private network."
   type        = string
   default     = "10.0.1.0/24"

@@ -3,6 +3,6 @@ argument_specs:
   main:
     short_description: setup k3s servers
     options:
-      k3s_apiserver_endpoint:
-        description: virtual ip-address configured on each master
+      k3s_api_endpoint:
+        description: global load-balanced address for the k3s api endpoint
         required: true

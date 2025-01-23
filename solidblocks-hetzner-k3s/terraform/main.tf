@@ -30,7 +30,7 @@ resource "hcloud_server" "server" {
 
   network {
     network_id = hcloud_network.network.id
-    ip         = cidrhost(var.private_subnet_cidr, count.index+1)
+    ip         = cidrhost(var.k3s_nodes_subnet_cidr, count.index+1)
   }
 
   image       = "debian-12"
@@ -71,7 +71,7 @@ resource "hcloud_server" "agent" {
 
   network {
     network_id = hcloud_network.network.id
-    ip         = cidrhost(var.private_subnet_cidr, 20 + count.index+1)
+    ip         = cidrhost(var.k3s_nodes_subnet_cidr, 20 + count.index+1)
   }
 
   image       = "debian-12"

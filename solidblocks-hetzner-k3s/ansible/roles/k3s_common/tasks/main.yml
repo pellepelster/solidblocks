@@ -18,11 +18,18 @@
 #      - dir_stat.stat.exists and dir_stat.stat.isdir and dir_stat.stat.mount
 #    msg: "{{ storage_data_dir }} has to be a mounted volume"
 
+- name: populate k3s node facts
+  ansible.builtin.set_fact:
+    k3s_node_private_ip: "{{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(private_cidr_network))[0] }}"
+
+- name: populate service facts
+  ansible.builtin.service_facts:
+
 - name: enforce minimum ansible version
   ansible.builtin.assert:
     that:
       - ansible_version.full is version('2.14', '>=')
-    msg: "Minimum ansible-core version required is 2.14"
+    msg: "minimum ansible-core version required is 2.14"
 
 - name: install required packages
   ansible.builtin.apt:
@@ -43,9 +50,6 @@
     state: present
     reload: true
   when: ansible_all_ipv6_addresses
-
-- name: populate service facts
-  ansible.builtin.service_facts:
 
 - name: add UFW exceptions
   when:
