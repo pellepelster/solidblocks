@@ -61,19 +61,26 @@ def command_run(command, env=None, workdir=None):
     else:
         log_ok(f"running command '{' '.join(command)}'")
     log_divider_thin()
+
+    command_env = {**(env or {}), **dict(os.environ)}
+
     try:
-        proc = subprocess.Popen(command, env=env, cwd=workdir)
+        proc = subprocess.Popen(command, env=command_env, cwd=workdir)
         proc.wait()
         return proc.returncode == 0
     except FileNotFoundError:
         return False
     finally:
         log_divider_bottom()
-        print()
 
 
 def command_exec(command, env=None, workdir=None):
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, cwd=workdir)
+    command_env = dict(os.environ)
+
+    if env is not None:
+        command_env.update(env)
+
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=command_env, cwd=workdir)
     stdout = proc.stdout.read()
     stderr = proc.stderr.read()
     proc.wait()

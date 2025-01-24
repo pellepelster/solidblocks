@@ -82,6 +82,10 @@ class PassTempFileContext:
         else:
             secret = pass_get_secret(self.path, self.secret_store)
 
+        if secret is None:
+            log_error(f"no secret found for key '{self.path}' from_env: {self.from_env}")
+            return None
+
         self.temp_file.write(str.encode(secret))
         self.temp_file.flush()
         log_hint(f"wrote pass secret '{self.path}' to '{self.temp_file.name}'")

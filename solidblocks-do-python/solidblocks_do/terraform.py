@@ -9,25 +9,29 @@ from solidblocks_do.log import log_divider_thin, log_divider_bottom, \
 
 
 def terraform_init(path, env=None):
-    terraform_ensure()
+    if not terraform_ensure():
+        return False
 
     return command_run(['terraform', 'init', '-upgrade'], workdir=path, env=env)
 
 
 def terraform_apply(path, env=None):
-    terraform_ensure()
+    if not terraform_ensure():
+        return False
 
     return command_run(['terraform', 'apply', '-auto-approve'], workdir=path, env=env)
 
 
 def terraform_has_output(path, output, env=None):
-    terraform_ensure()
+    if not terraform_ensure():
+        return None
 
     return terraform_get_output(path, output, env) is not None
 
 
 def terraform_get_output(path, output, env=None):
-    terraform_ensure()
+    if not terraform_ensure():
+        return None
 
     exitcode, stdout, stderr = command_exec(['terraform', 'output', '-raw', output], workdir=path, env=env)
     if exitcode != 0:
@@ -37,11 +41,12 @@ def terraform_get_output(path, output, env=None):
 
 
 def terraform_pretty_print_output(path, env=None):
-    terraform_ensure()
+    if not terraform_ensure():
+        return False
 
     exitcode, stdout, stderr = command_exec(['terraform', 'output'], workdir=path, env=env)
     if exitcode != 0:
-        return None
+        return False
 
     log_divider_top()
     log_hint(f"terraform output for '{path}'")
@@ -55,7 +60,7 @@ def terraform_pretty_print_output(path, env=None):
 def terraform_ensure(min_version=None):
     if not command_exists('terraform'):
         log_error(f"terraform not found")
-        exit(1)
+        return False
 
     if min_version is None:
         return True
@@ -64,7 +69,7 @@ def terraform_ensure(min_version=None):
 
     if exit_code != 0:
         log_error(f"failed to detect terraform version (exit code {exit_code})")
-        exit(1)
+        return False
 
     tf_version_data = json.loads(stdout)
     tf_version = semver.Version.parse(tf_version_data['terraform_version'])
@@ -72,6 +77,6 @@ def terraform_ensure(min_version=None):
 
     if tf_version < tf_min_version:
         log_error(f"expected at least terraform version '{min_version}' but found '{tf_version}'")
-        exit(1)
+        return False
 
     return True
