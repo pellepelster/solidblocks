@@ -29,11 +29,11 @@ public class LogTest {
             .run()
 
     assertSoftly(result) {
-      it stderrShouldMatch ".*2024-.* UTC \\[  success\\] some success.*"
-      it stderrShouldMatch ".*2024-.* UTC \\[  warning\\] some warning.*"
-      it stderrShouldMatch ".*2024-.* UTC \\[    debug\\] some debug.*"
-      it stderrShouldMatch ".*2024-.* UTC \\[    error\\] some error.*"
-      it stderrShouldMatch ".*2024-.* UTC \\[     info\\] some info.*"
+      it stderrShouldMatch ".*2025-.* UTC \\[  success\\] some success.*"
+      it stderrShouldMatch ".*2025-.* UTC \\[  warning\\] some warning.*"
+      it stderrShouldMatch ".*2025-.* UTC \\[    debug\\] some debug.*"
+      it stderrShouldMatch ".*2025-.* UTC \\[    error\\] some error.*"
+      it stderrShouldMatch ".*2025-.* UTC \\[     info\\] some info.*"
     }
   }
 
@@ -51,7 +51,7 @@ public class LogTest {
 
     assertSoftly(result) {
       it shouldHaveExitCode 4
-      it stderrShouldMatch ".*2024-.* UTC \\[emergency\\] fatal message.*"
+      it stderrShouldMatch ".*2025-.* UTC \\[emergency\\] fatal message.*"
     }
   }
 }
