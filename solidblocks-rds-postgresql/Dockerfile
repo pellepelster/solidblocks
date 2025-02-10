@@ -1,6 +1,9 @@
-FROM alpine:3.18.2
+ARG ALPINE_VERSION=""
+
+FROM alpine:${ALPINE_VERSION}
 
 ARG POSTGRES_VERSION=""
+ARG POSTGRES_PREVIOUS_VERSION=""
 ENV POSTGRES_STOP_TIMEOUT="60"
 
 ENV DB_BACKUP_S3=0
@@ -28,10 +31,10 @@ ENV LANG=en_US.utf8
 
 RUN apk upgrade --available
 RUN apk add \
-    postgresql14 \
-    postgresql14-contrib \
-    postgresql15 \
-    postgresql15-contrib \
+    postgresql${POSTGRES_PREVIOUS_VERSION} \
+    postgresql${POSTGRES_PREVIOUS_VERSION}-contrib \
+    postgresql${POSTGRES_VERSION} \
+    postgresql${POSTGRES_VERSION}-contrib \
     jq \
     bash \
     openssh-client \

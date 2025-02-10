@@ -13,7 +13,7 @@ DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
-POSTGRES_VERSIONS="14 15"
+POSTGRES_VERSIONS="14 15 16 17"
 
 TEMP_DIR="${DIR}/.test_$$"
 
@@ -63,10 +63,18 @@ function task_build {
     mkdir -p "${DIR}/build"
 
     for postgres_version in ${POSTGRES_VERSIONS}; do
+      local alpine_version="3.21.2"
+
+      if [[ "${postgres_version}" -lt "16" ]]; then
+        alpine_version="3.19.6"
+      fi
+
       docker buildx build \
         --platform linux/arm,linux/amd64,linux/arm64 \
         --push \
         --build-arg POSTGRES_VERSION=${postgres_version} \
+        --build-arg POSTGRES_PREVIOUS_VERSION=$((postgres_version-1)) \
+        --build-arg ALPINE_VERSION=${alpine_version} \
         --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-rc" \
         .
     done
