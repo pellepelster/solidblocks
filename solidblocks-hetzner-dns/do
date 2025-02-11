@@ -5,7 +5,6 @@ set -eu
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 source "${DIR}/../lib/utils.sh"
-
 export VERSION="$(version)"
 
 function task_build {

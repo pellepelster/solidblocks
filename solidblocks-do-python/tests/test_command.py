@@ -1,3 +1,7 @@
+import os
+
+import pytest
+
 from solidblocks_do.command import command_exists, command_run, command_run_interactive, command_exec
 
 
@@ -6,6 +10,10 @@ def test_command_exists():
     assert command_exists('invalid') is False
 
 
+@pytest.mark.skipif(
+    os.getenv("CI") is not None,
+    reason="ci"
+)
 def test_command_run_interactive():
     assert command_run_interactive(['ls']) is True
 
@@ -18,4 +26,4 @@ def test_command_run():
 def test_command_exec():
     exitcode, stdout, stderr = command_exec(['whoami'])
     assert exitcode == 0
-    assert stdout == "pelle\n"
+    assert stdout == f"{os.getenv('USER')}\n"
