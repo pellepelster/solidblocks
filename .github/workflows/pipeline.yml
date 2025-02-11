@@ -293,6 +293,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
       - name: install postgresql-client
         run: sudo apt-get install -y postgresql-client
       - name: Download all workflow run artifacts

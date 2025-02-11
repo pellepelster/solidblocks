@@ -14,33 +14,33 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.verify
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo
 import com.github.tomakehurst.wiremock.junit5.WireMockTest
+import de.solidblocks.hetzner.dns.model.ZoneRequest
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
-import de.solidblocks.hetzner.dns.model.ZoneRequest
-import org.junit.jupiter.api.Test
 import java.time.Instant
+import org.junit.jupiter.api.Test
 
 @WireMockTest
 class HetznerDnsAPITest {
 
-    @Test
-    fun testConnectFailure() {
-        val dnsApi = HetznerDnsApi("api-token", "http://localhost:1234/api/v1")
+  @Test
+  fun testConnectFailure() {
+    val dnsApi = HetznerDnsApi("api-token", "http://localhost:1234/api/v1")
 
-        assertSoftly(dnsApi.zoneById("1234")) {
-            it.isFailure shouldBe true
-            it.exceptionOrNull()?.message shouldStartWith "Failed to connect to localhost"
-        }
+    assertSoftly(dnsApi.zoneById("1234")) {
+      it.isFailure shouldBe true
+      it.exceptionOrNull()?.message shouldStartWith "Failed to connect to localhost"
     }
+  }
 
-    @Test
-    fun testApiTokenIsProvided(wiremock: WireMockRuntimeInfo) {
-        stubFor(
-            get(urlEqualTo("/api/v1/zones/1234"))
-                .willReturn(
-                    okJson(
-                        """{
+  @Test
+  fun testApiTokenIsProvided(wiremock: WireMockRuntimeInfo) {
+    stubFor(
+        get(urlEqualTo("/api/v1/zones/1234"))
+            .willReturn(
+                okJson(
+                    """{
                           "zone": {
                             "id": "1234",
                             "name": "zone1",
@@ -50,31 +50,32 @@ class HetznerDnsAPITest {
                             "created": "2022-09-03 18:38:52.597 +0000 UTC"
                           }
                         }
-                        """.trimIndent()
-                    )
-                )
-        )
+                        """
+                        .trimIndent(),
+                ),
+            ),
+    )
 
-        val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
-        assertSoftly(api.zoneById("1234")) {
-            it.isSuccess shouldBe true
-            it.getOrNull()?.zone?.id shouldBe "1234"
-            it.getOrNull()?.zone?.created shouldBe Instant.parse("2022-09-03T18:38:52.597Z")
-        }
-
-        verify(
-            getRequestedFor(urlMatching("/api/v1/zones/1234"))
-                .withHeader("Auth-API-Token", matching("api-token"))
-        )
+    val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
+    assertSoftly(api.zoneById("1234")) {
+      it.isSuccess shouldBe true
+      it.getOrNull()?.zone?.id shouldBe "1234"
+      it.getOrNull()?.zone?.created shouldBe Instant.parse("2022-09-03T18:38:52.597Z")
     }
 
-    @Test
-    fun testUnknownFieldsAreIgnored(wiremock: WireMockRuntimeInfo) {
-        stubFor(
-            get(urlEqualTo("/api/v1/zones/1234"))
-                .willReturn(
-                    okJson(
-                        """{
+    verify(
+        getRequestedFor(urlMatching("/api/v1/zones/1234"))
+            .withHeader("Auth-API-Token", matching("api-token")),
+    )
+  }
+
+  @Test
+  fun testUnknownFieldsAreIgnored(wiremock: WireMockRuntimeInfo) {
+    stubFor(
+        get(urlEqualTo("/api/v1/zones/1234"))
+            .willReturn(
+                okJson(
+                    """{
                           "zone": {
                             "id": "1234",
                             "name": "zone1",
@@ -85,62 +86,61 @@ class HetznerDnsAPITest {
                             "unknown_field": "foo-bar"
                           }
                         }
-                        """.trimIndent()
-                    )
-                )
-        )
+                        """
+                        .trimIndent(),
+                ),
+            ),
+    )
 
-        val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
-        assertSoftly(api.zoneById("1234")) {
-            it.isSuccess shouldBe true
-            it.getOrNull()?.zone?.id shouldBe "1234"
-            it.getOrNull()?.zone?.created shouldBe Instant.parse("2022-09-03T18:38:52.597Z")
-        }
-
-        verify(
-            getRequestedFor(urlMatching("/api/v1/zones/1234"))
-                .withHeader("Auth-API-Token", matching("api-token"))
-        )
+    val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
+    assertSoftly(api.zoneById("1234")) {
+      it.isSuccess shouldBe true
+      it.getOrNull()?.zone?.id shouldBe "1234"
+      it.getOrNull()?.zone?.created shouldBe Instant.parse("2022-09-03T18:38:52.597Z")
     }
 
-    @Test
-    fun testNotFound(wiremock: WireMockRuntimeInfo) {
-        stubFor(
-            get(urlEqualTo("/api/v1/zones/1234"))
-                .willReturn(notFound())
-        )
+    verify(
+        getRequestedFor(urlMatching("/api/v1/zones/1234"))
+            .withHeader("Auth-API-Token", matching("api-token")),
+    )
+  }
 
-        val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
-        assertSoftly(api.zoneById("1234")) {
-            it.isFailure shouldBe true
-        }
+  @Test
+  fun testNotFound(wiremock: WireMockRuntimeInfo) {
+    stubFor(
+        get(urlEqualTo("/api/v1/zones/1234")).willReturn(notFound()),
+    )
 
-        verify(
-            getRequestedFor(urlMatching("/api/v1/zones/1234"))
-                .withHeader("Auth-API-Token", matching("api-token"))
-        )
-    }
+    val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
+    assertSoftly(api.zoneById("1234")) { it.isFailure shouldBe true }
 
-    @Test
-    fun testNullFieldsAreNotSent(wiremock: WireMockRuntimeInfo) {
-        stubFor(
-            post(urlEqualTo("/api/v1/zones/1234"))
-                .willReturn(
-                    okJson(
-                        """{
+    verify(
+        getRequestedFor(urlMatching("/api/v1/zones/1234"))
+            .withHeader("Auth-API-Token", matching("api-token")),
+    )
+  }
+
+  @Test
+  fun testNullFieldsAreNotSent(wiremock: WireMockRuntimeInfo) {
+    stubFor(
+        post(urlEqualTo("/api/v1/zones/1234"))
+            .willReturn(
+                okJson(
+                    """{
                           "zone": {
                             "id": "1234",
                             "name": "zone1",
                             "created": "2022-09-03 18:38:52.597 +0000 UTC"
                           }
                         }
-                        """.trimIndent()
-                    )
-                )
-        )
+                        """
+                        .trimIndent(),
+                ),
+            ),
+    )
 
-        val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
-        api.createZone(ZoneRequest("xxx", null))
-        verify(postRequestedFor(urlMatching("/api/v1/zones")).withRequestBody(notMatching(".*ttl.*")))
-    }
+    val api = HetznerDnsApi("api-token", "http://localhost:${wiremock.httpPort}/api/v1")
+    api.createZone(ZoneRequest("xxx", null))
+    verify(postRequestedFor(urlMatching("/api/v1/zones")).withRequestBody(notMatching(".*ttl.*")))
+  }
 }

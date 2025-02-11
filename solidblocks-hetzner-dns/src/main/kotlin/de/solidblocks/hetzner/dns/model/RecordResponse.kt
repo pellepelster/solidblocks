@@ -7,15 +7,11 @@ import java.time.Instant
 
 data class RecordResponse(
     val id: String,
-    @JsonProperty("zone_id")
-    val zoneId: String,
+    @JsonProperty("zone_id") val zoneId: String,
     val name: String,
     val value: String,
     val ttl: Int,
     val type: RecordType,
-    @JsonDeserialize(using = MultiFormatInstantDeserializer::class)
-    val created: Instant,
-
-    @JsonDeserialize(using = MultiFormatInstantDeserializer::class)
-    val modified: Instant?,
+    @JsonDeserialize(using = MultiFormatInstantDeserializer::class) val created: Instant,
+    @JsonDeserialize(using = MultiFormatInstantDeserializer::class) val modified: Instant?,
 )
