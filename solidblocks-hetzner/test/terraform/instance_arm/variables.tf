@@ -2,7 +2,8 @@ variable "solidblocks_version" {
 }
 
 variable "location" {
-  default = "fsn1"
+  type    = string
+  default = "hel1"
 }
 
 variable "test_id" {

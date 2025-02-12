@@ -2,9 +2,8 @@ import os
 
 import pytest
 
-from fixtures import docker_is_initialized, run_docker_command, psql_command
+from fixtures import docker_is_initialized, psql_command
 from fixtures import host_is_initialized
-from fixtures import psql_execute
 from fixtures import psql_running
 from fixtures import wait_until
 

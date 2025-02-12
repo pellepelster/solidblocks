@@ -1,6 +1,6 @@
 variable "location" {
   type    = string
-  default = "nbg1"
+  default = "hel1"
 }
 
 variable "name" {

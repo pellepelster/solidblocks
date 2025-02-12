@@ -1,5 +1,5 @@
 locals {
-  location = "nbg1"
+  location = "hel1"
 }
 
 resource "random_string" "test_id" {
@@ -40,9 +40,9 @@ resource "hcloud_volume_attachment" "test2" {
 }
 
 module "cloud_init" {
-  source  = "../../modules/solidblocks-cloud-init"
+  source               = "../../modules/solidblocks-cloud-init"
   solidblocks_base_url = "https://${module.bootstrap_bucket.bucket_domain_name}"
-  storage = [
+  storage              = [
     { linux_device = hcloud_volume.test1.linux_device, mount_path = "/data1" },
     { linux_device = hcloud_volume.test2.linux_device, mount_path = "/data2" }
   ]

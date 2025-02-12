@@ -2,7 +2,8 @@ variable "solidblocks_version" {
 }
 
 variable "location" {
-  default = "nbg1"
+  type    = string
+  default = "hel1"
 }
 
 variable "hetzner_s3_access_key" {

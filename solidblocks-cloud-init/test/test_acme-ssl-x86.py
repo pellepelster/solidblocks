@@ -4,9 +4,12 @@ from os import environ
 
 import pytest
 
+from fixtures import host_is_initialized, wait_until
+
+
 @pytest.fixture(autouse=True)
 def dump_cloud_init(host):
-    yield
+    wait_until(lambda: host_is_initialized(host), 60)
 
     if environ.get('CI') is None:
         print("========== /var/log/cloud-init-output.log ==========")

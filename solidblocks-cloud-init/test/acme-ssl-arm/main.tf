@@ -1,5 +1,5 @@
 locals {
-  location = "nbg1"
+  location = "hel1"
 }
 
 resource "random_string" "test_id" {

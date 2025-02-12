@@ -1,5 +1,6 @@
 variable "hetzner_location" {
-  default = "fsn1"
+  type    = string
+  default = "hel1"
 }
 
 variable "backup_s3_access_key" {
