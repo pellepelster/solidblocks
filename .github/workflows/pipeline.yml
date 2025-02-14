@@ -12,6 +12,17 @@ on:
 
 env:
   SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#skip-tests') || contains(github.event.ref, '-pre') }}
+  HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+  AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  SOLIDBLOCKS_AWS_TEST_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  SOLIDBLOCKS_AWS_TEST_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  SOLIDBLOCKS_HETZNER_TEST_S3_ACCESS_KEY_ID: ${{ secrets.SOLIDBLOCKS_HETZNER_TEST_S3_ACCESS_KEY_ID }}
+  SOLIDBLOCKS_HETZNER_TEST_S3_SECRET_KEY: ${{ secrets.SOLIDBLOCKS_HETZNER_TEST_S3_SECRET_KEY }}
 
 concurrency:
   group: solidblocks
@@ -37,7 +48,6 @@ jobs:
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: ${{ matrix.job.target }}
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -78,7 +88,6 @@ jobs:
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: ${{ matrix.job.target }}
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -98,10 +107,6 @@ jobs:
 
   solidblocks-shell:
     runs-on: ubuntu-24.04
-    env:
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
     steps:
       - name: install bzip2
         run: sudo apt-get install -y bzip2
@@ -226,10 +231,6 @@ jobs:
   solidblocks-cloud-init:
     runs-on: ubuntu-24.04
     env:
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Checkout
@@ -252,7 +253,6 @@ jobs:
   solidblocks-terraform:
     runs-on: ubuntu-24.04
     env:
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
       HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Set up JDK 21
@@ -307,14 +307,8 @@ jobs:
       matrix:
         test_name: [ test-migration, test-restore-local, test-restore-s3, test-restore-gcp, test-private-network, test-arm, test-ssl ]
     env:
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-      HETZNER_S3_ACCESS_KEY: ${{ secrets.HETZNER_S3_ACCESS_KEY }}
-      HETZNER_S3_SECRET_KEY: ${{ secrets.HETZNER_S3_SECRET_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -354,7 +348,7 @@ jobs:
         with:
           name: solidblocks-minio-test
           path: |
-            **/test/build/reports/tests
+            **/build/reports/tests
 
   solidblocks-debug-container:
     name: solidblocks-debug-container
@@ -412,9 +406,6 @@ jobs:
   solidblocks-rds-postgresql-test:
     runs-on: ubuntu-24.04
     env:
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
       HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     needs:
@@ -442,15 +433,11 @@ jobs:
         with:
           name: solidblocks-rds-postgresql-test
           path: |
-            **/test/build/reports/tests
+            **/build/reports/tests
 
   clean-cloud-resources:
     runs-on: ubuntu-24.04
     env:
-      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     if: ${{ always() }}
     needs:

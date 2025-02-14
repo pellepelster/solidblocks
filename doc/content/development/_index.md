@@ -72,7 +72,7 @@ It is highly advised to create separate cloud accounts for test executions.
 
 #### AWS
 
-Access to a dedicated AWS account  via `AWS_ACCESS_KEY_ID` (`pass solidblocks/aws/test/secret_access_key`) and `AWS_SECRET_ACCESS_KEY` (`pass solidblocks/aws/test/access_key`) is needed with the following permissions:  
+Access to a dedicated AWS account  via `AWS_ACCESS_KEY_ID` (`pass solidblocks/aws/test/access_key_id`) and `AWS_SECRET_ACCESS_KEY` (`pass solidblocks/aws/test/secret_access_key`) is needed with the following permissions:  
 
 #### S3
 ```json
