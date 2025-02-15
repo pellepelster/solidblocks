@@ -1,4 +1,5 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
@@ -56,4 +57,29 @@ dependencies {
     testImplementation("org.slf4j:slf4j-simple:2.0.13")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     testImplementation("org.wiremock:wiremock:3.9.1")
+}
+
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+
+    testLogging {
+        events = setOf(
+            TestLogEvent.PASSED,
+            TestLogEvent.SKIPPED,
+            TestLogEvent.FAILED,
+            TestLogEvent.STANDARD_OUT,
+            TestLogEvent.STANDARD_ERROR
+        )
+        showStandardStreams = true
+        showStackTraces = true
+    }
+
+    environment(
+        mapOf(
+            "HETZNER_DNS_API_TOKEN" to providers.of(PassSecretValueSource::class) {
+                this.parameters.passName.set("solidblocks/hetzner/test/dns_api_token")
+            }.get(),
+        )
+    )
 }

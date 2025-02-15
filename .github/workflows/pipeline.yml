@@ -15,6 +15,9 @@ env:
   HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
   AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
+  SOLIDBLOCKS_HETZNER_TEST_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
+  HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
+
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -156,8 +159,6 @@ jobs:
 
   solidblocks-shell-test:
     runs-on: ubuntu-24.04
-    env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     needs:
       - solidblocks-shell
     steps:
@@ -182,8 +183,6 @@ jobs:
 
   solidblocks-test:
     runs-on: ubuntu-24.04
-    env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -206,8 +205,6 @@ jobs:
 
   solidblocks-hetzner-dns:
     runs-on: ubuntu-24.04
-    env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -230,8 +227,6 @@ jobs:
 
   solidblocks-cloud-init:
     runs-on: ubuntu-24.04
-    env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -252,8 +247,6 @@ jobs:
 
   solidblocks-terraform:
     runs-on: ubuntu-24.04
-    env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     steps:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -307,7 +300,6 @@ jobs:
       matrix:
         test_name: [ test-migration, test-restore-local, test-restore-s3, test-restore-gcp, test-private-network, test-arm, test-ssl ]
     env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     steps:
       - name: Checkout
@@ -352,8 +344,6 @@ jobs:
 
   solidblocks-debug-container:
     name: solidblocks-debug-container
-    env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     runs-on: ubuntu-24.04
     steps:
       - name: Login to GitHub Container Registry
@@ -407,7 +397,6 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     needs:
       - solidblocks-minio
       - solidblocks-rds-postgresql
@@ -437,8 +426,6 @@ jobs:
 
   clean-cloud-resources:
     runs-on: ubuntu-24.04
-    env:
-      HETZNER_DNS_API_TOKEN: ${{ secrets.HETZNER_DNS_API_TOKEN }}
     if: ${{ always() }}
     needs:
       - solidblocks-shell-test

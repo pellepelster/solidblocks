@@ -36,6 +36,7 @@ class MultiFormatInstantDeserializer : StdDeserializer<Instant>(Instant::class.j
         arrayOf(
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z z"),
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS Z z"),
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z z"),
         )
   }
 }
