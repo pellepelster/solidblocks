@@ -99,16 +99,6 @@ function task_test_integration {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
-
-  if [[ "${CI:-}" == "true" ]] && [[ "${BUILD_TARGET}" == macos* ]]; then
-     brew tap hashicorp/tap
-     brew install hashicorp/tap/terraform
-  fi
-
-  if [[ "${CI:-}" == "true" ]] && [[ "${BUILD_TARGET}" == mingw* ]]; then
-     choco install terraform
-  fi
-
   task_test_hetzner_nuke
 }
 
