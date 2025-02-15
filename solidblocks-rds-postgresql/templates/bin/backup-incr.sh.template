@@ -4,7 +4,7 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-echo "[solidblocks-rds-postgresql] executing incremental backup"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N %Z") [solidblocks-rds-postgresql] executing incremental backup"
 
 {{ $repoIndex := 1 }}
 

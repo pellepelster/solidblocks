@@ -4,7 +4,7 @@ set -eu
 
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
-echo "[solidblocks-rds-postgresql] executing differential backup"
+echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [solidblocks-rds-postgresql] executing differential backup"
 
 {{ $repoIndex := 1 }}
 

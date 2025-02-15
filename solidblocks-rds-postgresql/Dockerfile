@@ -37,6 +37,7 @@ RUN apk add \
     postgresql${POSTGRES_VERSION}-contrib \
     jq \
     bash \
+    coreutils \
     openssh-client \
     curl \
     pgbackrest \

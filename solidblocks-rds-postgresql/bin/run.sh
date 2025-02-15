@@ -8,7 +8,7 @@ export POSTGRES_STOP_TIMEOUT="${POSTGRES_STOP_TIMEOUT:-60}"
 export DB_MODE="${DB_MODE:-}"
 
 function log() {
-  echo "[solidblocks-rds-postgresql] $*"
+  echo "$(date +"%Y-%m-%d %H:%M:%S.%3N %Z")   [solidblocks-rds-postgresql] $*"
 }
 
 function current_major_version() {
