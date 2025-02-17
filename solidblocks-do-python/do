@@ -22,6 +22,7 @@ function task_test() {
   export FOO="foo_env"
   export TEST_SOME_PASSWORD="test_some_password_env"
   export TEST_SOME_SECRET_WITH_DASHES="test_some_secret_with_dashes_env"
+  export ONLY_FROM_ENV="only_from_env"
   poetry run pytest -s
 }
 

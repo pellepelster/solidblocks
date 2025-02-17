@@ -53,13 +53,38 @@ def pass_get_secret(path, secret_store=None):
     return pass_wrapper([path], secret_store)
 
 
+def pass_ensure_secrets_env(paths, secret_store=None):
+    missing_secret = True
+    for path in paths:
+        env_name = pass_env_name(path)
+        env_secret = os.getenv(env_name)
+        secret = pass_get_secret(path, secret_store)
+        if secret is None and env_secret is None:
+            log_error(
+                f"secret '{path}' could not be read from pass, and is not set via environment variable '{env_name}'")
+            missing_secret = False
+        else:
+            if secret:
+                log_hint(
+                    f"found secret '{path}' in pass secret store")
+            if env_secret:
+                log_hint(
+                    f"found secret '{path}' via environment variable '{env_name}'")
+
+    return missing_secret
+
+
+def pass_env_name(path):
+    return path.replace("/", "_").replace("-", "_").upper()
+
+
 def pass_get_secret_env(path, secret_store=None):
-    env_name = path.replace("/", "_").replace("-", "_").upper()
+    env_name = pass_env_name(path)
     if os.getenv(env_name):
         log_hint(f"found environment variable '{env_name}' for secret with path '{path}'")
         return os.getenv(env_name)
 
-    return pass_wrapper([path], secret_store)
+    return pass_get_secret(path, secret_store)
 
 
 def pass_has_secret(path, secret_store=None):
