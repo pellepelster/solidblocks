@@ -89,6 +89,12 @@ function ci_detected {
     fi
     
     
+    if [[ -n "${CF_PAGES:-}" ]]; then
+      echo "true"
+      return
+    fi
+    
+    
     if [[ -n "${CF_BUILD_ID:-}" ]]; then
       echo "true"
       return

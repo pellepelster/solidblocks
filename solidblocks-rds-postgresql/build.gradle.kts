@@ -61,16 +61,16 @@ tasks.withType<Test> {
     environment(
         mapOf(
             "HETZNER_S3_ACCESS_KEY" to providers.of(PassSecretValueSource::class) {
-                this.parameters.passName.set("solidblocks/hetzner/test/s3_access_key_id")
+                this.parameters.passName = "solidblocks/hetzner/test/s3_access_key_id"
             }.get(),
             "HETZNER_S3_SECRET_KEY" to providers.of(PassSecretValueSource::class) {
-                this.parameters.passName.set("solidblocks/hetzner/test/s3_secret_key")
+                this.parameters.passName = "solidblocks/hetzner/test/s3_secret_key"
             }.get(),
             "AWS_ACCESS_KEY_ID" to providers.of(PassSecretValueSource::class) {
-                this.parameters.passName.set("solidblocks/aws/test/access_key_id")
+                this.parameters.passName = "solidblocks/aws/test/access_key_id"
             }.get(),
             "AWS_SECRET_ACCESS_KEY" to providers.of(PassSecretValueSource::class) {
-                this.parameters.passName.set("solidblocks/aws/test/secret_access_key")
+                this.parameters.passName = "solidblocks/aws/test/secret_access_key"
             }.get(),
         )
     )
