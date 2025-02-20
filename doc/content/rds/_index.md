@@ -38,6 +38,8 @@ The PostgreSQL version can be selected via specific docker image tags
 
 * `ghcr.io/pellepelster/solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}}`
 * `ghcr.io/pellepelster/solidblocks-rds-postgresql:15-{{% env "SOLIDBLOCKS_VERSION" %}}`
+* `ghcr.io/pellepelster/solidblocks-rds-postgresql:16-{{% env "SOLIDBLOCKS_VERSION" %}}`
+* `ghcr.io/pellepelster/solidblocks-rds-postgresql:17-{{% env "SOLIDBLOCKS_VERSION" %}}`
 
 Each docker image includes at least the previous PostgreSQL version for version migration purposes. The current version
 can be shown with `pg_versions` and the versions are stored at `/usr/libexec/postgresql/${postgresql_major_version}`

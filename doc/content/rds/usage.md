@@ -125,7 +125,7 @@ ensuring database 'database1' with user 'user1'
 
 ## Backups
 
-Backups can be triggered via
+Backups can be triggered via calling one if the following commands
 
 ```shell
 docker exec instance1 /rds/bin/backup-[full|incr|diff].sh
@@ -186,6 +186,9 @@ docker run \
     -v "$(pwd)/postgres_data:/storage/data" \
     ghcr.io/pellepelster/solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}}
 ``` 
+{{% notice warning %}}
+Backups need to be triggered from outside the of docker container, because Solidblocks adheres to the convention that each docker container should run a single, isolated process, and thus does not contain a cron scheduler.
+{{% /notice %}}
 
 ## Operations
 
