@@ -297,11 +297,11 @@ variable "solidblocks_base_url" {
 variable "solidblocks_cloud_init_version" {
   type        = string
   description = "Solidblocks cloud-init version to use"
-  default     = "v0.3.1" #solidblocks_cloud_init_version
+  default     = "v0.3.2" #solidblocks_cloud_init_version
 }
 
 variable "solidblocks_rds_version" {
   type        = string
   description = "Solidblocks rds-postgresql version to use"
-  default     = "v0.3.1" #solidblocks_rds_version
+  default     = "v0.3.2" #solidblocks_rds_version
 }

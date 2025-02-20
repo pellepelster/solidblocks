@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.2
+
+**IMPROVEMENTS**
+
+* [RDS PostgreSQL container](https://pellepelster.github.io/solidblocks/rds/usage/#operations)
+  * add PostgreSQL version 16/17
+  * add timestamps to Solidblocks logging
+
 ## v0.3.1
 
 **IMPROVEMENTS**
