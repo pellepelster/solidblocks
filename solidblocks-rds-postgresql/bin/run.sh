@@ -7,6 +7,14 @@ export DB_ADMIN_PASSWORD="${DB_ADMIN_PASSWORD:-$(uuidgen)}"
 export POSTGRES_STOP_TIMEOUT="${POSTGRES_STOP_TIMEOUT:-60}"
 export DB_MODE="${DB_MODE:-}"
 
+FULL_BACKUP_NAME="full backup"
+DIFF_BACKUP_NAME="differential backup"
+INCR_BACKUP_NAME="incremental backup"
+FULL_BACKUP_SCRIPT_NAME="backup-full.sh"
+DIFF_BACKUP_SCRIPT_NAME="backup-diff.sh"
+INCR_BACKUP_SCRIPT_NAME="backup-incr.sh"
+CRON_DATABASE="postgres"
+
 function log() {
   echo "$(date +"%Y-%m-%d %H:%M:%S.%3N %Z")   [solidblocks-rds-postgresql] $*"
 }
@@ -168,6 +176,8 @@ function ensure_databases() {
       ensure_db_user "${database}" "${username}" "${password}"
 
     done
+
+    ensure_backup
 }
 
 function ensure_database() {
@@ -305,6 +315,39 @@ function start_db_restore_only() {
   export DB_MODE="restore-only"
   log "starting db in restore-only mode"
   start_db
+}
+
+function create_db_extension() {
+  ocal DB_EXTENSION_NAME=$1
+  psql_execute ${CRON_DATABASE} "CREATE EXTENSION IF NOT EXISTS ${DB_EXTENSION_NAME}"
+}
+
+function unschedule_backup() {
+  local BACKUP_NAME=$1
+  psql_execute ${CRON_DATABASE} "select cron.unschedule('${BACKUP_NAME}')" > /dev/null || true
+}
+
+function schedule_backup() {
+  local BACKUP_NAME=$1
+  local BACKUP_SCHEDULE=$2
+  local BACKUP_SCRIPT_NAME=$3
+  if [ -n "${BACKUP_SCHEDULE}" ]
+  then
+  	psql_execute ${CRON_DATABASE} "select cron.schedule('${BACKUP_NAME}','${BACKUP_SCHEDULE}', 'select pg_remote_exec_fetch(''/rds/bin/${BACKUP_SCRIPT_NAME}'',''t'')')" > /dev/null
+  	log "scheduled ${BACKUP_NAME} with CRON expression: ${BACKUP_SCHEDULE}"
+  fi
+}
+
+function ensure_backup() {
+  log "ensuring backup is scheduled"
+  create_db_extension "pg_cron"
+  create_db_extension "pg_remote_exec"
+  unschedule_backup "${FULL_BACKUP_NAME}"
+  unschedule_backup "${DIFF_BACKUP_NAME}"
+  unschedule_backup "${INCR_BACKUP_NAME}"
+  schedule_backup "${FULL_BACKUP_NAME}" "${DB_BACKUP_FULL_SCHEDULE}" ${FULL_BACKUP_SCRIPT_NAME}
+  schedule_backup "${DIFF_BACKUP_NAME}" "${DB_BACKUP_DIFF_SCHEDULE}" ${DIFF_BACKUP_SCRIPT_NAME}
+  schedule_backup "${INCR_BACKUP_NAME}" "${DB_BACKUP_INCR_SCHEDULE}" ${INCR_BACKUP_SCRIPT_NAME}
 }
 
 function start_db() {
