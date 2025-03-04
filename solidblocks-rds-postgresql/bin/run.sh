@@ -318,7 +318,7 @@ function start_db_restore_only() {
 }
 
 function create_db_extension() {
-  ocal DB_EXTENSION_NAME=$1
+  local DB_EXTENSION_NAME=$1
   psql_execute ${CRON_DATABASE} "CREATE EXTENSION IF NOT EXISTS ${DB_EXTENSION_NAME}"
 }
 
