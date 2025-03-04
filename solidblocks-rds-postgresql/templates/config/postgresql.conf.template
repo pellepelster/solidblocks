@@ -12,6 +12,9 @@ log_destination = 'stderr'
 logging_collector = 'off'
 log_line_prefix = '%h %m [%p] %q%u@%d '
 
+shared_preload_libraries = pg_cron
+cron.use_background_workers = on
+
 {{ if and (file.Exists "/rds/ssl/server.crt") (file.Exists "/rds/ssl/server.key") }}
 ssl = on
 ssl_cert_file = '/rds/ssl/server.crt'

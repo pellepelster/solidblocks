@@ -66,14 +66,17 @@ from `/storage/data/${db_instance_name}/14`
 
 ### Global
 
-| configuration                     | type        | description                                                                                                                                                                     |
-|-----------------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_INSTANCE_NAME`                | environment | unique name of this database instance                                                                                                                                           |
-| `DB_ADMIN_PASSWORD`               | environment | Password for the db superuser, if not set a random password will be assigned. Username for the superuser is `rds`                                                               |
-| `DB_POSTGRES_EXTRA_CONFIG`        | environment | Extra postgres configurations options for the `postgresql.conf`                                                                                                                 |
-| `DB_BACKUP_ENCRYPTION_PASSPHRASE` | environment | Passphrase to use for backup encryption. If no passphrase is provided backups will be stored unencrypted                                                                        |
-| /some/data/dir:/storage/data      | mount       | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions               |
-| /some/backup/dir:/storage/backup  | mount       | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions |
+| configuration                     | type        | description                                                                                                                                                                         |
+|-----------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_INSTANCE_NAME`                | environment | unique name of this database instance                                                                                                                                               |
+| `DB_ADMIN_PASSWORD`               | environment | Password for the db superuser, if not set a random password will be assigned. Username for the superuser is `rds`                                                                   |
+| `DB_POSTGRES_EXTRA_CONFIG`        | environment | Extra postgres configurations options for the `postgresql.conf`                                                                                                                     |
+| `DB_BACKUP_ENCRYPTION_PASSPHRASE` | environment | Passphrase to use for backup encryption. If no passphrase is provided backups will be stored unencrypted                                                                            |
+| `DB_BACKUP_FULL_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should full backups be executed. If empty, full backups are disabled. Default: empty string.                |
+| `DB_BACKUP_DIFF_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should differential backups be executed. If empty, differential backups are disabled. Default: empty string.|
+| `DB_BACKUP_INCR_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should incremental backups be executed. If empty, incremental backups are disabled. Default: empty string.  |
+| /some/data/dir:/storage/data      | mount       | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions                   |
+| /some/backup/dir:/storage/backup  | mount       | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions     |
 
 Based on the functionality of [pgBackRest](https://pgbackrest.org/) three types of backup repositories are supported.
 Local filesystem (`local`), n S3 compatible object storage (`s3`) or Google cloud storage based (`gcs`). Those can be
