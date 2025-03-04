@@ -56,22 +56,23 @@ function task_test {
 
 function task_build {
   (
+    typeset -A alpine_ver_by_postgres_ver
+    alpine_ver_by_postgres_ver["17"]="3.21.3";
+    alpine_ver_by_postgres_ver["16"]="3.20.6";
+    alpine_ver_by_postgres_ver["15"]="3.18.12";
+    alpine_ver_by_postgres_ver["14"]="3.16.9";
+
     cd "${DIR}"
     mkdir -p "${DIR}/build"
 
     for postgres_version in ${POSTGRES_VERSIONS}; do
-      local alpine_version="3.21.2"
-
-      if [[ "${postgres_version}" -lt "16" ]]; then
-        alpine_version="3.19.6"
-      fi
 
       docker buildx build \
         --platform linux/arm,linux/amd64,linux/arm64 \
         --push \
         --build-arg POSTGRES_VERSION=${postgres_version} \
         --build-arg POSTGRES_PREVIOUS_VERSION=$((postgres_version-1)) \
-        --build-arg ALPINE_VERSION=${alpine_version} \
+        --build-arg ALPINE_VERSION=${alpine_ver_by_postgres_ver["$postgres_version"]} \
         --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-rc" \
         .
     done

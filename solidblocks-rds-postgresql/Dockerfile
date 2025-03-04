@@ -1,18 +1,16 @@
-ARG ALPINE_VERSION=""
+ARG ALPINE_VERSION="3.21.3"
 
 FROM alpine:${ALPINE_VERSION} AS builder
 
-ARG POSTGRES_VERSION=""
-
 RUN apk upgrade --available
 RUN apk add \
-	git \
-	make \
-	postgresql${POSTGRES_VERSION}-dev
+    git \
+    make \
+    gcc \
+    libc-dev \
+    postgresql-dev
 
 RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg_remote_exec && make install
-
-ARG ALPINE_VERSION=""
 
 FROM alpine:${ALPINE_VERSION}
 
