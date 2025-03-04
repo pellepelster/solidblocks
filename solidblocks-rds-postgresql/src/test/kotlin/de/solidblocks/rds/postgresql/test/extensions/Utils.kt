@@ -1,6 +1,6 @@
 package de.solidblocks.rds.postgresql.test.extensions
 
-import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest
+import de.solidblocks.rds.postgresql.test.TestConstants
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -28,9 +28,9 @@ fun initWorldReadableTempDir(): File {
 }
 
 fun GenericContainer<out GenericContainer<*>>.createJdbi(
-    username: String = RdsPostgresqlMinioBackupIntegrationTest.DATABASE_USER,
-    password: String = RdsPostgresqlMinioBackupIntegrationTest.DATABASE_PASSWORD,
-    database: String = RdsPostgresqlMinioBackupIntegrationTest.DATABASE,
+    username: String = TestConstants.DATABASE_USER,
+    password: String = TestConstants.DATABASE_PASSWORD,
+    database: String = TestConstants.DATABASE,
 ): Jdbi {
   val port = this.getMappedPort(5432)
   return Jdbi.create(
@@ -39,9 +39,9 @@ fun GenericContainer<out GenericContainer<*>>.createJdbi(
 }
 
 fun GenericContainer<out GenericContainer<*>>.createJdbiSSL(
-    username: String = RdsPostgresqlMinioBackupIntegrationTest.DATABASE_USER,
-    password: String = RdsPostgresqlMinioBackupIntegrationTest.DATABASE_PASSWORD,
-    database: String = RdsPostgresqlMinioBackupIntegrationTest.DATABASE,
+    username: String = TestConstants.DATABASE_USER,
+    password: String = TestConstants.DATABASE_PASSWORD,
+    database: String = TestConstants.DATABASE,
 ): Jdbi {
   val port = this.getMappedPort(5432)
   return Jdbi.create(

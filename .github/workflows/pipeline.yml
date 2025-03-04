@@ -316,34 +316,6 @@ jobs:
       - name: Test
         run: solidblocks-hetzner/do ${{ matrix.test_name }}
 
-  solidblocks-minio:
-    name: solidblocks-minio
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build
-        run: solidblocks-minio/do build
-      - name: Test
-        run: solidblocks-minio/do test
-      - name: Archive Test Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: solidblocks-minio-test
-          path: |
-            **/build/reports/tests
-
   solidblocks-debug-container:
     name: solidblocks-debug-container
     runs-on: ubuntu-24.04
@@ -400,7 +372,6 @@ jobs:
     env:
       GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     needs:
-      - solidblocks-minio
       - solidblocks-rds-postgresql
     steps:
       - name: Login to GitHub Container Registry
@@ -432,7 +403,6 @@ jobs:
     needs:
       - solidblocks-shell-test
       - solidblocks-cloud-init
-      - solidblocks-minio
       - solidblocks-rds-postgresql
       - solidblocks-rds-postgresql-test
       - solidblocks-hetzner
@@ -461,7 +431,6 @@ jobs:
       - solidblocks-shell
       - solidblocks-cloud-init
       - solidblocks-shell-test
-      - solidblocks-minio
       - solidblocks-rds-postgresql
       - solidblocks-cli
       - solidblocks-do-python
@@ -521,7 +490,6 @@ jobs:
       - solidblocks-shell
       - solidblocks-cloud-init
       - solidblocks-shell-test
-      - solidblocks-minio
       - solidblocks-rds-postgresql
       - solidblocks-cli
       - solidblocks-cli-test

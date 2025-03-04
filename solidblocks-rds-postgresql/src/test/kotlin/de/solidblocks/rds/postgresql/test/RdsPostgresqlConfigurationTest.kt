@@ -1,6 +1,6 @@
 package de.solidblocks.rds.postgresql.test
 
-import de.solidblocks.rds.postgresql.test.RdsPostgresqlMinioBackupIntegrationTest.Companion.DATABASE
+import de.solidblocks.rds.postgresql.test.TestConstants.DATABASE
 import de.solidblocks.rds.postgresql.test.extensions.*
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -117,7 +117,7 @@ class RdsPostgresqlConfigurationTest {
     val sslServerKey =
         Base64.getEncoder()
             .encodeToString(
-                RdsPostgresqlMinioBackupIntegrationTest::class
+                TestConstants::class
                     .java
                     .getResource("/rds.key.pem")
                     .readBytes(),
@@ -126,7 +126,7 @@ class RdsPostgresqlConfigurationTest {
     val sslServerCert =
         Base64.getEncoder()
             .encodeToString(
-                RdsPostgresqlMinioBackupIntegrationTest::class
+                TestConstants::class
                     .java
                     .getResource("/rds.pem")
                     .readBytes(),

@@ -4,9 +4,6 @@ terraform {
       source  = "hetznercloud/hcloud"
       version = ">=1.48.0"
     }
-    minio = {
-      source = "aminueza/minio"
-    }
   }
 }
 

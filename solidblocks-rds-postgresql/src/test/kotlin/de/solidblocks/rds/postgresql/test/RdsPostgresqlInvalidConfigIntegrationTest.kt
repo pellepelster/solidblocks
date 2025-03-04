@@ -58,10 +58,10 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
                       "DB_BACKUP_S3_ACCESS_KEY" to accessKey,
                       "DB_BACKUP_S3_SECRET_KEY" to secretKey,
                       "DB_INSTANCE_NAME" to database,
-                      "DB_DATABASE_${RdsPostgresqlMinioBackupIntegrationTest.DATABASE}" to database,
-                      "DB_USERNAME_${RdsPostgresqlMinioBackupIntegrationTest.DATABASE}" to
+                      "DB_DATABASE_${TestConstants.DATABASE}" to database,
+                      "DB_USERNAME_${TestConstants.DATABASE}" to
                           databaseUser,
-                      "DB_PASSWORD_${RdsPostgresqlMinioBackupIntegrationTest.DATABASE}" to
+                      "DB_PASSWORD_${TestConstants.DATABASE}" to
                           databasePassword,
                       "DB_BACKUP_S3_CA_PUBLIC_KEY" to caPublicBase64,
                   ),
