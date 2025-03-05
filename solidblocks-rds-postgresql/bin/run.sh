@@ -177,7 +177,13 @@ function ensure_databases() {
 
     done
 
-    ensure_backup
+    # combining pg_cron with postgres <= 14 leads to migration issues when migration to later versions
+    # since pg_cron is a newly introduced feature and postgres is already at version 17 cut off support for
+    # pg_cron in older versions
+    # TODO remove when solidblocks-docker image 14 is deprecated
+    if [[ "$(current_major_version)" != 14 ]]; then
+      ensure_backup
+    fi
 }
 
 function ensure_database() {

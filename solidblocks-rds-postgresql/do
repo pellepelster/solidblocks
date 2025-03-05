@@ -70,6 +70,8 @@ function task_build {
 
       local postgres_previous_version=$((postgres_version-1))
       local postgres_previous_version_path=${postgres_previous_version}
+
+      # TODO remove when solidblocks-docker image 14 is deprecated
       if [[ "${postgres_previous_version}" == "13" ]]; then
         postgres_previous_version_path=""
       fi
