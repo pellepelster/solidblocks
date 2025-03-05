@@ -177,7 +177,7 @@ function ensure_databases() {
 
     done
 
-    ensure_backup
+    #ensure_backup
 }
 
 function ensure_database() {
