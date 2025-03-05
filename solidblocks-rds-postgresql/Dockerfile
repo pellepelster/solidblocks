@@ -1,6 +1,21 @@
 ARG ALPINE_VERSION="3.21.3"
+ARG ALPINE_PREVIOUS_VERSION="3.21.3"
 
 FROM alpine:${ALPINE_VERSION} AS builder
+ARG POSTGRES_VERSION=""
+
+RUN apk upgrade --available
+RUN apk add \
+    git \
+    make \
+    gcc \
+    libc-dev \
+    postgresql-dev
+
+RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg_remote_exec && make install
+
+FROM alpine:${ALPINE_PREVIOUS_VERSION} AS builder_previous
+ARG POSTGRES_PREVIOUS_VERSION=""
 
 RUN apk upgrade --available
 RUN apk add \
@@ -16,6 +31,7 @@ FROM alpine:${ALPINE_VERSION}
 
 ARG POSTGRES_VERSION=""
 ARG POSTGRES_PREVIOUS_VERSION=""
+ARG POSTGRES_PREVIOUS_VERSION_PATH=""
 ENV POSTGRES_STOP_TIMEOUT="60"
 
 ENV DB_BACKUP_S3=0
@@ -76,6 +92,12 @@ COPY --from=builder /usr/lib/postgresql${POSTGRES_VERSION}/bitcode/pg_remote_exe
 COPY --from=builder /usr/lib/postgresql${POSTGRES_VERSION}/bitcode/pg_remote_exec.* /usr/lib/postgresql${POSTGRES_VERSION}/bitcode/
 COPY --from=builder /usr/share/postgresql${POSTGRES_VERSION}/extension/pg_remote_exec* /usr/share/postgresql${POSTGRES_VERSION}/extension/
 COPY --from=builder /usr/share/doc/postgresql${POSTGRES_VERSION}/extension/pg_remote_exec* /usr/share/doc/postgresql${POSTGRES_VERSION}/extension/
+
+COPY --from=builder_previous /usr/lib/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/pg_remote_exec.so /usr/lib/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/
+COPY --from=builder_previous /usr/lib/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/bitcode/pg_remote_exec /usr/lib/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/bitcode/pg_remote_exec
+COPY --from=builder_previous /usr/lib/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/bitcode/pg_remote_exec.* /usr/lib/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/bitcode/
+COPY --from=builder_previous /usr/share/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/extension/pg_remote_exec* /usr/share/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/extension/
+COPY --from=builder_previous /usr/share/doc/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/extension/pg_remote_exec* /usr/share/doc/postgresql${POSTGRES_PREVIOUS_VERSION_PATH}/extension/
 
 USER ${USER}
 

@@ -256,17 +256,18 @@ function migrate_old_data_if_needed() {
     log "starting and stopping server in '${PREVIOUS_PG_DATA_DIR}' to ensure clean data dir"
     cp -v /rds/config/postgresql.conf "${PREVIOUS_PG_DATA_DIR}/postgresql.conf"
     cp -v /rds/config/pg_hba.conf "${PREVIOUS_PG_DATA_DIR}/pg_hba.conf"
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off"
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
     ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
 
     log "upgrading postgres data in '${PREVIOUS_PG_DATA_DIR}' to '${PG_DATA_DIR}'"
     pg_upgrade \
+      --old-options "-c shared_preload_libraries=''" \
       --old-datadir=${PREVIOUS_PG_DATA_DIR} \
       --new-datadir=${PG_DATA_DIR} \
       --old-bindir=${PREVIOUS_POSTGRES_BIN_DIR} \
       --new-bindir=${POSTGRES_BIN_DIR}
 
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses=''"
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
     pgbackrest $(pgbackrest_default_arguments) --db-path=${PG_DATA_DIR} --no-online stanza-upgrade
     ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
   fi
