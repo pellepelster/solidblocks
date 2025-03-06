@@ -208,7 +208,7 @@ class RdsPostgresqlLocalBackupIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = [14, 15])
+    @ValueSource(ints = [14, 15, 16, 17])
     fun testRestoreDatabaseFromFullBackup(version: Int, rdsTestBed: RdsTestBed) {
         val localBackupDir = initWorldReadableTempDir()
         val postgresContainer1 =
