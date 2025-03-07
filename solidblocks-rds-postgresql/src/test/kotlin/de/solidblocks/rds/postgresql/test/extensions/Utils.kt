@@ -87,7 +87,6 @@ fun Jdbi.waitForReady() {
   await.atMost(Duration.ofMinutes(4)).until {
     try {
       this.useHandle<RuntimeException> { it.execute("select 1") == 1 }
-
       true
     } catch (e: Exception) {
       false

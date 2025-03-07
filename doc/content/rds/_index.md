@@ -66,17 +66,17 @@ from `/storage/data/${db_instance_name}/14`
 
 ### Global
 
-| configuration                     | type        | description                                                                                                                                                                         |
-|-----------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_INSTANCE_NAME`                | environment | unique name of this database instance                                                                                                                                               |
-| `DB_ADMIN_PASSWORD`               | environment | Password for the db superuser, if not set a random password will be assigned. Username for the superuser is `rds`                                                                   |
-| `DB_POSTGRES_EXTRA_CONFIG`        | environment | Extra postgres configurations options for the `postgresql.conf`                                                                                                                     |
-| `DB_BACKUP_ENCRYPTION_PASSPHRASE` | environment | Passphrase to use for backup encryption. If no passphrase is provided backups will be stored unencrypted                                                                            |
-| `DB_BACKUP_FULL_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should full backups be executed. If empty, full backups are disabled. Default: empty string.                |
-| `DB_BACKUP_DIFF_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should differential backups be executed. If empty, differential backups are disabled. Default: empty string.|
-| `DB_BACKUP_INCR_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should incremental backups be executed. If empty, incremental backups are disabled. Default: empty string.  |
-| /some/data/dir:/storage/data      | mount       | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions                   |
-| /some/backup/dir:/storage/backup  | mount       | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions     |
+| configuration                     | type        | description                                                                                                                                                                          |
+|-----------------------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_INSTANCE_NAME`                | environment | unique name of this database instance                                                                                                                                                |
+| `DB_ADMIN_PASSWORD`               | environment | Password for the db superuser, if not set a random password will be assigned. Username for the superuser is `rds`                                                                    |
+| `DB_POSTGRES_EXTRA_CONFIG`        | environment | Extra postgres configurations options for the `postgresql.conf`                                                                                                                      |
+| `DB_BACKUP_ENCRYPTION_PASSPHRASE` | environment | Passphrase to use for backup encryption. If no passphrase is provided backups will be stored unencrypted                                                                             |
+| `DB_BACKUP_FULL_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should full backups be executed. If empty, full backups are disabled. Default: empty string.                 |
+| `DB_BACKUP_DIFF_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should differential backups be executed. If empty, differential backups are disabled. Default: empty string. |
+| `DB_BACKUP_INCR_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should incremental backups be executed. If empty, incremental backups are disabled. Default: empty string.   |
+| /some/data/dir:/storage/data      | mount       | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions                    |
+| /some/backup/dir:/storage/backup  | mount       | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions      |
 
 Based on the functionality of [pgBackRest](https://pgbackrest.org/) three types of backup repositories are supported.
 Local filesystem (`local`), n S3 compatible object storage (`s3`) or Google cloud storage based (`gcs`). Those can be
@@ -93,7 +93,8 @@ configured individually, but at least one type has to be configured.
 
 ### S3 Backup
 
-The S3 backup target works with an S3 compatible service, so apart from AWS you can for example also use Hetzner Cloud Storage. In most cases you should only need to point `DB_BACKUP_S3_HOST` to your specific provider.
+The S3 backup target works with an S3 compatible service, so apart from AWS you can for example also use Hetzner Cloud
+Storage. In most cases you should only need to point `DB_BACKUP_S3_HOST` to your specific provider.
 
 | configuration                      | type        | description                                                                                                                                                                                  |
 |------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -133,16 +134,20 @@ configuration options.
 Multiple databases can automatically be provisioned by providing configurations for multiple distinct
 unique `${database_id}`s
 
-| per database configuration   | type        | description                                                                                                                                                                   |
-|------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_DATABASE_${database_id}` | environment | name of the database that will be crated when the PostgreSQL is initialized. The databaase id must adhere to the limitations of shell environment variable naming ([a-zA-Z_]) | 
-| `DB_USERNAME_${database_id}` | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}`                                                                                              |
-| `DB_PASSWORD_${database_id}` | environment | password for the database user                                                                                                                                                |
+| per database configuration     | type        | description                                                                                                                                                                   |
+|--------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_DATABASE_${database_id}`   | environment | name of the database that will be crated when the PostgreSQL is initialized. The databaase id must adhere to the limitations of shell environment variable naming ([a-zA-Z_]) | 
+| `DB_USERNAME_${database_id}`   | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}`                                                                                              |
+| `DB_PASSWORD_${database_id}`   | environment | password for the database user                                                                                                                                                |
+| `DB_ENCODING_${database_id}`   | environment | set `ENCODING` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-ENCODING)                             |
+| `DB_LC_COLLATE_${database_id}` | environment | set `LC_COLLATE` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-LC-COLLATE)                                                                   |
+| `DB_LC_CTYPE_${database_id}`   | environment | set `LC_CTYPE` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-LC-CTYPE)                                                                     |
+| `DB_TEMPLATE_${database_id}`   | environment | set `TEMPLATE` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-TEMPLATE)                                                                     |
 
 {{% notice tip %}}
 `DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on
-start to allow
-for easy password rotation or username change. Changing `DB_DATABASE_${database_id}` is currently not supported yet
+start to allow for easy password ropsqltation or username change. Changing `DB_DATABASE_${database_id}` is currently not
+supported.
 {{% /notice %}}
 
 ## Extensions
