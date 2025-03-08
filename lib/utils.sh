@@ -6,6 +6,6 @@ function version() {
       git rev-parse --short HEAD
     fi
   else
-    echo "snapshot"
+    echo "${VERSION:-snapshot}"
   fi
 }
