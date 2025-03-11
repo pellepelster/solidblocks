@@ -168,7 +168,6 @@ class RdsPostgresqlConfigurationTest {
 
         with(testBed.logConsumer) { waitForLogLine("database system is ready to accept connections") }
 
-        // ensure defaults if no database options are set
         container.createJdbi().also {
             it.waitForReady()
             it.useHandle<RuntimeException> {

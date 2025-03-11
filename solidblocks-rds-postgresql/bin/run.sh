@@ -208,7 +208,7 @@ function ensure_database() {
 
     local options="$(db_option "${database_id}" "ENCODING") $(db_option "${database_id}" "LC_COLLATE") $(db_option "${database_id}" "LC_CTYPE") $(db_option "${database_id}" "TEMPLATE")"
     if [[ -n "${options}" ]]; then
-      options="WITH ${options}"
+      options=" WITH ${options}"
     fi
 
     psql_execute "postgres" "CREATE DATABASE \"${database}\" ${options}"
