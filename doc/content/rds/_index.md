@@ -134,15 +134,12 @@ configuration options.
 Multiple databases can automatically be provisioned by providing configurations for multiple distinct
 unique `${database_id}`s
 
-| per database configuration     | type        | description                                                                                                                                                                   |
-|--------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_DATABASE_${database_id}`   | environment | name of the database that will be crated when the PostgreSQL is initialized. The databaase id must adhere to the limitations of shell environment variable naming ([a-zA-Z_]) | 
-| `DB_USERNAME_${database_id}`   | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}`                                                                                              |
-| `DB_PASSWORD_${database_id}`   | environment | password for the database user                                                                                                                                                |
-| `DB_ENCODING_${database_id}`   | environment | set `ENCODING` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-ENCODING)                             |
-| `DB_LC_COLLATE_${database_id}` | environment | set `LC_COLLATE` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-LC-COLLATE)                                                                   |
-| `DB_LC_CTYPE_${database_id}`   | environment | set `LC_CTYPE` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-LC-CTYPE)                                                                     |
-| `DB_TEMPLATE_${database_id}`   | environment | set `TEMPLATE` for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html#CREATE-DATABASE-TEMPLATE)                                                                     |
+| per database configuration         | type        | description                                                                                                                                                                      | example                                                                            |
+|------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| `DB_DATABASE_${database_id}`       | environment | name of the database that will be crated when the PostgreSQL is initialized. The databaase id must adhere to the limitations of shell environment variable naming ([a-zA-Z_])    | -                                                                                  | 
+| `DB_USERNAME_${database_id}`       | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}`                                                                                                 | -                                                                                  |
+| `DB_PASSWORD_${database_id}`       | environment | password for the database user                                                                                                                                                   | -                                                                                  |
+| `DB_CREATE_OPTIONS_${database_id}` | environment | options for database creation, see [documentation](https://www.postgresql.org/docs/current/sql-createdatabase.html), `WITH` will be automatically added of an option is provided | ENCODING='UTF8' LC_COLLATE='de_DE.UTF8' LC_CTYPE='de_DE.UTF8' TEMPLATE='template0' |
 
 {{% notice tip %}}
 `DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on
