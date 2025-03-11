@@ -66,17 +66,17 @@ from `/storage/data/${db_instance_name}/14`
 
 ### Global
 
-| configuration                     | type        | description                                                                                                                                                                         |
-|-----------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_INSTANCE_NAME`                | environment | unique name of this database instance                                                                                                                                               |
-| `DB_ADMIN_PASSWORD`               | environment | Password for the db superuser, if not set a random password will be assigned. Username for the superuser is `rds`                                                                   |
-| `DB_POSTGRES_EXTRA_CONFIG`        | environment | Extra postgres configurations options for the `postgresql.conf`                                                                                                                     |
-| `DB_BACKUP_ENCRYPTION_PASSPHRASE` | environment | Passphrase to use for backup encryption. If no passphrase is provided backups will be stored unencrypted                                                                            |
-| `DB_BACKUP_FULL_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should full backups be executed. If empty, full backups are disabled. Default: empty string.                |
-| `DB_BACKUP_DIFF_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should differential backups be executed. If empty, differential backups are disabled. Default: empty string.|
-| `DB_BACKUP_INCR_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should incremental backups be executed. If empty, incremental backups are disabled. Default: empty string.  |
-| /some/data/dir:/storage/data      | mount       | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions                   |
-| /some/backup/dir:/storage/backup  | mount       | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions     |
+| configuration                     | type        | description                                                                                                                                                                          |
+|-----------------------------------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_INSTANCE_NAME`                | environment | unique name of this database instance                                                                                                                                                |
+| `DB_ADMIN_PASSWORD`               | environment | Password for the db superuser, if not set a random password will be assigned. Username for the superuser is `rds`                                                                    |
+| `DB_POSTGRES_EXTRA_CONFIG`        | environment | Extra postgres configurations options for the `postgresql.conf`                                                                                                                      |
+| `DB_BACKUP_ENCRYPTION_PASSPHRASE` | environment | Passphrase to use for backup encryption. If no passphrase is provided backups will be stored unencrypted                                                                             |
+| `DB_BACKUP_FULL_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should full backups be executed. If empty, full backups are disabled. Default: empty string.                 |
+| `DB_BACKUP_DIFF_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should differential backups be executed. If empty, differential backups are disabled. Default: empty string. |
+| `DB_BACKUP_INCR_SCHEDULE`         | environment | [CRON](https://github.com/citusdata/pg_cron) expression specifying when should incremental backups be executed. If empty, incremental backups are disabled. Default: empty string.   |
+| /some/data/dir:/storage/data      | mount       | Container volume mount for the PostgreSQL data directory. The docker image uses a user with `uid` 10000, which needs to be reflected in the directory permissions                    |
+| /some/backup/dir:/storage/backup  | mount       | Container volume mount for the pgBackRest backup repository directory. The docker image uses a group with `gid` 10000, which needs to be reflected in the directory permissions      |
 
 Based on the functionality of [pgBackRest](https://pgbackrest.org/) three types of backup repositories are supported.
 Local filesystem (`local`), n S3 compatible object storage (`s3`) or Google cloud storage based (`gcs`). Those can be
@@ -93,7 +93,8 @@ configured individually, but at least one type has to be configured.
 
 ### S3 Backup
 
-The S3 backup target works with an S3 compatible service, so apart from AWS you can for example also use Hetzner Cloud Storage. In most cases you should only need to point `DB_BACKUP_S3_HOST` to your specific provider.
+The S3 backup target works with an S3 compatible service, so apart from AWS you can for example also use Hetzner Cloud
+Storage. In most cases you should only need to point `DB_BACKUP_S3_HOST` to your specific provider.
 
 | configuration                      | type        | description                                                                                                                                                                                  |
 |------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -133,11 +134,12 @@ configuration options.
 Multiple databases can automatically be provisioned by providing configurations for multiple distinct
 unique `${database_id}`s
 
-| per database configuration   | type        | description                                                                                                                                                                   |
-|------------------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DB_DATABASE_${database_id}` | environment | name of the database that will be crated when the PostgreSQL is initialized. The databaase id must adhere to the limitations of shell environment variable naming ([a-zA-Z_]) | 
-| `DB_USERNAME_${database_id}` | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}`                                                                                              |
-| `DB_PASSWORD_${database_id}` | environment | password for the database user                                                                                                                                                |
+| per database configuration   | type        | description                                                                                                                                                                                                                                                                        |
+|------------------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `DB_DATABASE_${database_id}` | environment | name of the database that will be crated when the PostgreSQL is initialized. The databaase id must adhere to the limitations of shell environment variable naming ([a-zA-Z_])                                                                                                      | 
+| `DB_USERNAME_${database_id}` | environment | name of the user who will be granted full access to `DB_DATABASE_${database_id}`                                                                                                                                                                                                   |
+| `DB_PASSWORD_${database_id}` | environment | password for the database user                                                                                                                                                                                                                                                     |
+| `DB_INIT_SQL_${database_id}` | environment | runs a SQL script from a file provided by `DB_INIT_SQL_*` on first database start. If the database already exists, the script will not be executed. If the database does not exists but a backup is available, it will also not be executed because the restore is executed first. |
 
 {{% notice tip %}}
 `DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on
@@ -147,41 +149,42 @@ for easy password rotation or username change. Changing `DB_DATABASE_${database_
 
 ## Extensions
 
-The following PostgreSQL extensions are available by default
+The following PostgreSQL extensions are available by default on the PostgreSQL 17 image 
 
 | name               | version | description                                                            |
 |--------------------|---------|------------------------------------------------------------------------|
-| adminpack          | 2.1     | administrative functions for PostgreSQL                                |
-| amcheck            | 1.3     | functions for verifying relation integrity                             |
+| amcheck            | 1.4     | functions for verifying relation integrity                             |
 | autoinc            | 1.0     | functions for autoincrementing fields                                  |
 | bloom              | 1.0     | bloom access method - signature file based index                       |
 | btree_gin          | 1.3     | support for indexing common datatypes in GIN                           |
-| btree_gist         | 1.6     | support for indexing common datatypes in GiST                          |
+| btree_gist         | 1.7     | support for indexing common datatypes in GiST                          |
 | citext             | 1.6     | data type for case-insensitive character strings                       |
 | cube               | 1.5     | data type for multidimensional cubes                                   |
 | dblink             | 1.2     | connect to other PostgreSQL databases from within a database           |
 | dict_int           | 1.0     | text search dictionary template for integers                           |
 | dict_xsyn          | 1.0     | text search dictionary template for extended synonym processing        |
-| earthdistance      | 1.1     | calculate great-circle distances on the surface of the Earth           |
+| earthdistance      | 1.2     | calculate great-circle distances on the surface of the Earth           |
 | file_fdw           | 1.0     | foreign-data wrapper for flat file access                              |
-| fuzzystrmatch      | 1.1     | determine similarities and distance between strings                    |
+| fuzzystrmatch      | 1.2     | determine similarities and distance between strings                    |
 | hstore             | 1.8     | data type for storing sets of (key, value) pairs                       |
 | insert_username    | 1.0     | functions for tracking who changed a table                             |
 | intagg             | 1.1     | integer aggregator and enumerator (obsolete)                           |
 | intarray           | 1.5     | functions, operators, and index support for 1-D arrays of integers     |
 | isn                | 1.2     | data types for international product numbering standards               |
 | lo                 | 1.1     | Large Object maintenance                                               |
-| ltree              | 1.2     | data type for hierarchical tree-like structures                        |
+| ltree              | 1.3     | data type for hierarchical tree-like structures                        |
 | moddatetime        | 1.0     | functions for tracking last modification time                          |
-| old_snapshot       | 1.0     | utilities in support of old_snapshot_threshold                         |
-| pageinspect        | 1.9     | inspect the contents of database pages at a low level                  |
-| pg_buffercache     | 1.3     | examine the shared buffer cache                                        |
+| pageinspect        | 1.12    | inspect the contents of database pages at a low level                  |
+| pg_buffercache     | 1.5     | examine the shared buffer cache                                        |
+| pg_cron            | 1.6     | Job scheduler for PostgreSQL                                           |
 | pg_freespacemap    | 1.2     | examine the free space map (FSM)                                       |
 | pg_prewarm         | 1.2     | prewarm relation data                                                  |
-| pg_stat_statements | 1.9     | track planning and execution statistics of all SQL statements executed |
+| pg_remote_exec     | 1.0     | remote shell execution for non-superusers                              |
+| pg_stat_statements | 1.11    | track planning and execution statistics of all SQL statements executed |
 | pg_surgery         | 1.0     | extension to perform surgery on a damaged relation                     |
 | pg_trgm            | 1.6     | text similarity measurement and index searching based on trigrams      |
 | pg_visibility      | 1.2     | examine the visibility map (VM) and page-level visibility info         |
+| pg_walinspect      | 1.1     | functions to inspect contents of PostgreSQL Write-Ahead Log            |
 | pgcrypto           | 1.3     | cryptographic functions                                                |
 | pgrowlocks         | 1.2     | show row-level locking information                                     |
 | pgstattuple        | 1.5     | show tuple-level statistics                                            |

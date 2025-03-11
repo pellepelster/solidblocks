@@ -201,7 +201,7 @@ function ensure_database() {
         echo "executing init sql file '${database_init_sql}'"
         psql_execute_file "${database}" "${database_init_sql}"
       else
-        echo "no init sql file found at '${database_init_sql}' ot the file is not readable"
+        echo "no init sql file found at '${database_init_sql}' or the file is not readable"
       fi
     fi
 
