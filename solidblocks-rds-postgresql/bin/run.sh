@@ -211,7 +211,6 @@ function ensure_database() {
       options="WITH ${options}"
     fi
 
-    echo "CREATE DATABASE \"${database}\" ${options}"
     psql_execute "postgres" "CREATE DATABASE \"${database}\" ${options}"
 
     local database_init_sql_var="DB_INIT_SQL_${database_id}"
