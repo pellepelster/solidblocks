@@ -186,7 +186,7 @@ function ensure_databases() {
     fi
 }
 
-function db_option() {
+function db_optional_env() {
   local database_id="${1:-}"
   local option_name="${2:-}"
 
@@ -195,7 +195,7 @@ function db_option() {
   if [[ -z "${option_value}" ]]; then
     echo ""
   else
-    echo "${option_name} = \"${option_value}\""
+    echo "${option_value}"
   fi
 }
 
@@ -206,12 +206,12 @@ function ensure_database() {
   if [[ $(psql_count "postgres" "SELECT count(datname) FROM pg_database WHERE datname = '${database}';") == "0" ]]; then
     log "creating database '${database}'"
 
-    local options="$(db_option "${database_id}" "ENCODING") $(db_option "${database_id}" "LC_COLLATE") $(db_option "${database_id}" "LC_CTYPE") $(db_option "${database_id}" "TEMPLATE")"
-    if [[ -n "${options}" ]]; then
-      options="WITH ${options}"
+    local create_options="$(db_optional_env "${database_id}" "CREATE_OPTIONS")"
+    if [[ -n "${create_options}" ]]; then
+      create_options=" WITH ${create_options}"
     fi
 
-    psql_execute "postgres" "CREATE DATABASE \"${database}\" ${options}"
+    psql_execute "postgres" "CREATE DATABASE \"${database}\" ${create_options}"
 
     local database_init_sql_var="DB_INIT_SQL_${database_id}"
     local database_init_sql="${!database_init_sql_var:-}"

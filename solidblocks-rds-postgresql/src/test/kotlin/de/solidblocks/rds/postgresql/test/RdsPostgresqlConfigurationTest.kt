@@ -156,10 +156,7 @@ class RdsPostgresqlConfigurationTest {
                 14,
                 mapOf(
                     "DB_BACKUP_LOCAL" to "1",
-                    "DB_ENCODING_$DATABASE" to "UTF8",
-                    "DB_LC_COLLATE_$DATABASE" to "de_DE.UTF8",
-                    "DB_LC_CTYPE_$DATABASE" to "de_DE.UTF8",
-                    "DB_TEMPLATE_$DATABASE" to "template0",
+                    "DB_CREATE_OPTIONS_$DATABASE" to "ENCODING='UTF8' LC_COLLATE='de_DE.UTF8' LC_CTYPE='de_DE.UTF8' TEMPLATE='template0'",
                 ),
                 dataDir,
             ) {
@@ -168,7 +165,6 @@ class RdsPostgresqlConfigurationTest {
 
         with(testBed.logConsumer) { waitForLogLine("database system is ready to accept connections") }
 
-        // ensure defaults if no database options are set
         container.createJdbi().also {
             it.waitForReady()
             it.useHandle<RuntimeException> {
