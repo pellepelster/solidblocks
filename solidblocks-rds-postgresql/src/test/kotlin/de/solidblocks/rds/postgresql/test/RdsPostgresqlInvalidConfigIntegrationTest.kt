@@ -21,7 +21,6 @@ import org.testcontainers.images.PullPolicy
 class RdsPostgresqlInvalidConfigIntegrationTest {
 
   companion object {
-    val backupHost = "minio"
     val bucket = "database1-backup"
     val accessKey = "database1-user1"
     val secretKey = "ccbaa67e-cf26-432f-a11f-0c9e72abccf8"
@@ -53,7 +52,6 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
               withEnv(
                   mapOf(
                       "DB_BACKUP_S3" to "1",
-                      "DB_BACKUP_S3_HOST" to backupHost,
                       "DB_BACKUP_S3_BUCKET" to bucket,
                       "DB_BACKUP_S3_ACCESS_KEY" to accessKey,
                       "DB_BACKUP_S3_SECRET_KEY" to secretKey,

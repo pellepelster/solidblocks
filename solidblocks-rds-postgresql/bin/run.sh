@@ -172,7 +172,7 @@ function ensure_databases() {
       fi
 
       log "ensuring database '${database}' with user '${username}'"
-      ensure_database "${database}"
+      ensure_database "${database}" "${database_id}"
       ensure_db_user "${database}" "${username}" "${password}"
 
     done
@@ -186,12 +186,32 @@ function ensure_databases() {
     fi
 }
 
+function db_optional_env() {
+  local database_id="${1:-}"
+  local option_name="${2:-}"
+
+  local var_name="DB_${option_name}_${database_id}"
+  local option_value="${!var_name:-}"
+  if [[ -z "${option_value}" ]]; then
+    echo ""
+  else
+    echo "${option_value}"
+  fi
+}
+
 function ensure_database() {
   local database="${1:-}"
+  local database_id="${2:-}"
 
   if [[ $(psql_count "postgres" "SELECT count(datname) FROM pg_database WHERE datname = '${database}';") == "0" ]]; then
     log "creating database '${database}'"
-    psql_execute "postgres" "CREATE DATABASE \"${database}\""
+
+    local create_options="$(db_optional_env "${database_id}" "CREATE_OPTIONS")"
+    if [[ -n "${create_options}" ]]; then
+      create_options=" WITH ${create_options}"
+    fi
+
+    psql_execute "postgres" "CREATE DATABASE \"${database}\" ${create_options}"
 
     local database_init_sql_var="DB_INIT_SQL_${database_id}"
     local database_init_sql="${!database_init_sql_var:-}"

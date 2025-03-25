@@ -2,6 +2,7 @@ package de.solidblocks.rds.postgresql.test
 
 import de.solidblocks.rds.postgresql.test.TestConstants.DATABASE
 import de.solidblocks.rds.postgresql.test.extensions.*
+import io.kotest.matchers.shouldBe
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -108,6 +109,73 @@ class RdsPostgresqlConfigurationTest {
             }
         }
 
+        container.stop()
+    }
+
+    @Test
+    fun testCreateDefault(testBed: RdsTestBed) {
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val container =
+            testBed.createAndStartPostgresContainer(
+                14,
+                mapOf(
+                    "DB_BACKUP_LOCAL" to "1",
+                ),
+                dataDir,
+            ) {
+                it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+            }
+
+        with(testBed.logConsumer) { waitForLogLine("database system is ready to accept connections") }
+
+        // ensure defaults if no database options are set
+        container.createJdbi().also {
+            it.waitForReady()
+            it.useHandle<RuntimeException> {
+                val databaseInfo =
+                    it.createQuery("SELECT pg_encoding_to_char(encoding) as encoding, datcollate, datctype FROM pg_database WHERE datname = '${DATABASE}';")
+                        .mapToMap().list().first()
+                databaseInfo["encoding"] shouldBe "UTF8"
+                databaseInfo["datcollate"] shouldBe "en_US.utf8"
+                databaseInfo["datctype"] shouldBe "en_US.utf8"
+            }
+        }
+
+        container.stop()
+    }
+
+    @Test
+    fun testCreateDatabaseOptions(testBed: RdsTestBed) {
+        val dataDir = initWorldReadableTempDir()
+        val localBackupDir = initWorldReadableTempDir()
+
+        val container =
+            testBed.createAndStartPostgresContainer(
+                14,
+                mapOf(
+                    "DB_BACKUP_LOCAL" to "1",
+                    "DB_CREATE_OPTIONS_$DATABASE" to "ENCODING='UTF8' LC_COLLATE='de_DE.UTF8' LC_CTYPE='de_DE.UTF8' TEMPLATE='template0'",
+                ),
+                dataDir,
+            ) {
+                it.withFileSystemBind(localBackupDir.absolutePath, "/storage/backup")
+            }
+
+        with(testBed.logConsumer) { waitForLogLine("database system is ready to accept connections") }
+
+        container.createJdbi().also {
+            it.waitForReady()
+            it.useHandle<RuntimeException> {
+                val databaseInfo =
+                    it.createQuery("SELECT pg_encoding_to_char(encoding) as encoding, datcollate, datctype FROM pg_database WHERE datname = '${DATABASE}';")
+                        .mapToMap().list().first()
+                databaseInfo["encoding"] shouldBe "UTF8"
+                databaseInfo["datcollate"] shouldBe "de_DE.UTF8"
+                databaseInfo["datctype"] shouldBe "de_DE.UTF8"
+            }
+        }
         container.stop()
     }
 
