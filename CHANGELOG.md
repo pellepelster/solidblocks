@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.3
+
+**IMPROVEMENTS**
+
+* add option to provide database initialization options via `DB_CREATE_OPTIONS_*`, see [RDS PostgreSQL container](https://pellepelster.github.io/solidblocks/rds/#databases)
+
 ## v0.3.2
 
 **IMPROVEMENTS**
