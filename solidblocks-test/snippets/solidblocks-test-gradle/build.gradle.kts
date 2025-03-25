@@ -9,7 +9,7 @@ repositories {
 dependencies {
     implementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     implementation("org.junit.jupiter:junit-jupiter-engine:5.11.0")
-    implementation("de.solidblocks:infra-test:0.3.2")
+    implementation("de.solidblocks:infra-test:0.3.3")
 }
 
 tasks.named<Test>("test") {
