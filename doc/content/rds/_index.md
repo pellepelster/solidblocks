@@ -149,7 +149,7 @@ for easy password rotation or username change. Changing `DB_DATABASE_${database_
 
 ## Extensions
 
-The following PostgreSQL extensions are available by default on the PostgreSQL 17 image 
+The following PostgreSQL extensions are available by default on the PostgreSQL 17 image
 
 | name               | version | description                                                            |
 |--------------------|---------|------------------------------------------------------------------------|
