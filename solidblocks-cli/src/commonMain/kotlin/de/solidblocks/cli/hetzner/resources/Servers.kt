@@ -24,7 +24,7 @@ data class ServerResponse(
 
 class HetznerServersApi(private val api: HetznerApi) : HetznerComplexResourceApi<ServerResponse>,
     HetznerProtectedResourceApi {
-    suspend fun create(): ServersListWrapper = api.post("v1/servers", String())
+    suspend fun create(): ServersListWrapper = api.post("v1/servers", "")
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): ServersListWrapper =
         api.get("v1/servers?page=${page}&per_page=${perPage}")

@@ -48,6 +48,7 @@ jobs:
           - { runner: macos-latest, target: macosX64 }
           - { runner: macos-latest, target: macosArm64 }
           - { runner: ubuntu-24.04, target: linuxX64 }
+          - { runner: ubuntu-24.04, target: jvm }
           - { runner: windows-latest, target: mingwX64 }
     runs-on: ${{ matrix.job.runner }}
     env:
@@ -63,7 +64,7 @@ jobs:
       - name: Build
         shell: bash
         working-directory: solidblocks-cli/
-        run: ./do build
+        run: ./do build-${{ matrix.job.target }}
       - name: Test
         shell: bash
         working-directory: solidblocks-cli/

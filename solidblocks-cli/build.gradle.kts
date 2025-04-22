@@ -1,6 +1,8 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
-    kotlin("multiplatform") version "2.0.20"
-    kotlin("plugin.serialization") version "2.0.20"
+    kotlin("multiplatform") version "2.1.20"
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 group = "de.solidblocks.cli"
@@ -11,6 +13,15 @@ repositories {
 }
 
 kotlin {
+    jvm {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        binaries {
+            executable {
+                mainClass.set("MainKt")
+            }
+        }
+    }
+
     linuxArm64 {
         binaries { executable() }
     }
@@ -35,24 +46,29 @@ kotlin {
                 implementation("com.saveourtool.okio-extras:okio-extras:1.1.3")
                 implementation("com.github.ajalt.clikt:clikt:4.4.0")
                 implementation("com.kgit2:kommand:2.2.1")
-                implementation("io.ktor:ktor-client-resources:3.0.0-beta-2")
-                implementation("io.ktor:ktor-client-content-negotiation:3.0.0-beta-2")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0-beta-2")
+                implementation("io.ktor:ktor-client-resources:3.1.2")
+                implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
             }
         }
         linuxMain {
             dependencies {
-                implementation("io.ktor:ktor-client-curl:3.0.0-beta-2")
+                implementation("io.ktor:ktor-client-curl:3.1.2")
             }
         }
         appleMain {
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:3.0.0-beta-2")
+                implementation("io.ktor:ktor-client-darwin:3.1.2")
             }
         }
         mingwMain {
             dependencies {
-                implementation("io.ktor:ktor-client-winhttp:3.0.0-beta-2")
+                implementation("io.ktor:ktor-client-winhttp:3.1.2")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation("io.ktor:ktor-client-java:3.1.2")
             }
         }
         commonTest {

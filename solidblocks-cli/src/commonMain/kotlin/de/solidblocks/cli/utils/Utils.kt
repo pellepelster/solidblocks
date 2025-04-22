@@ -83,3 +83,5 @@ fun String.pascalCaseToWhiteSpace() = this.replace(Regex("([A-Z])"), " $1").trim
 
 fun KClass<out HetznerNamedResource>.pascalCaseToWhiteSpace() =
     this.simpleName!!.removeSuffix("Response").pascalCaseToWhiteSpace().lowercase()
+
+public expect fun getenv(name: String): String?

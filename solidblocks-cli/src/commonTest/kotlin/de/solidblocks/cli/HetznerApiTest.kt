@@ -2,18 +2,15 @@ package de.solidblocks.cli
 
 import de.solidblocks.cli.hetzner.HetznerApi
 import de.solidblocks.cli.hetzner.HetznerApiException
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.toKString
+import de.solidblocks.cli.utils.getenv
 import kotlinx.coroutines.runBlocking
-import platform.posix.getenv
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class HetznerApiTest {
 
-    @OptIn(ExperimentalForeignApi::class)
-    val hcloudToken = getenv("HCLOUD_TOKEN")?.toKString().toString()
+    val hcloudToken = getenv("HCLOUD_TOKEN").toString()
 
     val api = HetznerApi(hcloudToken)
 

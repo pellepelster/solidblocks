@@ -7,7 +7,8 @@ import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.cli.utils.logError
 import de.solidblocks.cli.utils.logInfo
 import de.solidblocks.cli.utils.logWarning
-import platform.posix.sleep
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 class NukeCommand : CliktCommand(name = "nuke", help = "delete all Hetzner cloud resources from a project") {
     private val hcloudToken by option(
@@ -22,35 +23,37 @@ class NukeCommand : CliktCommand(name = "nuke", help = "delete all Hetzner cloud
     ).flag(default = false)
 
     override fun run() {
-        val nuker = HetznerNuker(hcloudToken)
+        runBlocking {
+            val nuker = HetznerNuker(hcloudToken)
 
-        try {
-            if (doNuke) {
-                logError("nuking all resources, running simulation...")
+            try {
+                if (doNuke) {
+                    logError("nuking all resources, running simulation...")
 
-                val result = nuker.simulate()
-                if (result == 0) {
-                    logInfo("no resources found to delete")
-                    return
+                    val result = nuker.simulate()
+                    if (result == 0) {
+                        logInfo("no resources found to delete")
+                        return@runBlocking
+                    }
+
+                    logInfo("will delete ${result} resources")
+
+                    var count = 15
+                    while (count > 0) {
+                        logWarning("waiting before starting deletion, $count seconds left...")
+                        delay(1000L)
+                        count--
+                    }
+
+                    nuker.nuke()
+                } else {
+                    logInfo("running a simulated nuke, add '--do-nuke' to actually delete resources")
+                    val result = nuker.simulate()
+                    logInfo("found ${result} resources to delete")
                 }
-
-                logInfo("will delete ${result} resources")
-
-                var count = 15
-                while (count > 0) {
-                    logWarning("waiting before starting deletion, $count seconds left...")
-                    sleep(1u)
-                    count--
-                }
-
-                nuker.nuke()
-            } else {
-                logInfo("running a simulated nuke, add '--do-nuke' to actually delete resources")
-                val result = nuker.simulate()
-                logInfo("found ${result} resources to delete")
+            } catch (e: HetznerApiException) {
+                logError("nuke failed error: ${e.error.message} (${e.error.code})")
             }
-        } catch (e: HetznerApiException) {
-            logError("nuke failed error: ${e.error.message} (${e.error.code})")
         }
     }
 }
