@@ -1,5 +1,3 @@
-<a href='{{ (cond (and (ne .Site.Params.landingPageURL nil) (.Site.IsMultiLingual)) .Site.Params.landingPageURL "/") }}'>
-
-<h2 id="logo" >solidblocks</h2>
-
+<a id="R-logo" href="{{ partial "permalink.gotmpl" (dict "to" .Site.Home) }}">
+<img src="{{"images/logo.png" | relURL}}" alt="brand logo">
 </a>

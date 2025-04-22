@@ -56,8 +56,8 @@ function software_ensure_semver() {
 #                 hugo                    #
 ###########################################
 
-HUGO_VERSION="0.101.0"
-HUGO_CHECKSUM="3a22bf2b467b861afa62bd0cd1c0bbd18e2c95cac0e0b61f3c7c8459c2b313eb"
+HUGO_VERSION="0.145.0"
+HUGO_CHECKSUM="5be7b7d5026d01515685a8aad1ca015133c0569688819f139ae9fb21e33fd9aa"
 
 # see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_hugo
 function software_ensure_hugo() {

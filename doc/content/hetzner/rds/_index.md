@@ -1,8 +1,9 @@
----
-title: RDS PostgreSQL
-weight: 50
-description: RDS PostgreSQL Terraform module
----
++++
+title = "RDS PostgreSQL"
+description = "RDS PostgreSQL Hetzner Terraform module"
+overviewGroup = "hetzner"
+faIcon = "fa-cloud"
++++
 
 Based on the [RDS PostgreSQL]({{%relref "rds/_index.md" %}}) docker image this Terraform module provides a
 ready to use PostgreSQL server that is backed up to a S3 compatible object store.

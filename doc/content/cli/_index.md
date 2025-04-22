@@ -1,8 +1,9 @@
----
-title: CLI
-weight: 90
-description: Various tooling for infrastructure provisioning
----
++++
+title = 'CLI'
+description = 'Command line tooling for infrastructure provisioning and operation'
+overviewGroup = "util"
+faIcon = "fa-terminal"
++++
 
 The Soliblocks CLI (`blcks`) is available for all major platforms and provides tools around infrastructure provisioning
 

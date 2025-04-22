@@ -1,8 +1,10 @@
----
-title: Cloud-Init
-weight: 20
-description: Based on Solidblocks Shell reusable shell functions for typical Cloud-Init usage scenarios
----
++++
+title = "Cloud-Init"
+weight = 20
+description = "Based on Solidblocks Shell reusable functions for Cloud-Init usage"
+overviewGroup = "shell"
+faIcon = "fa-terminal"
++++
 
 Based on [Shell]({{%relref "shell/_index.md" %}}) reusable shell functions for typical [Cloud-Init](https://cloudinit.readthedocs.io/en/latest/) user-data usage scenarios.
 

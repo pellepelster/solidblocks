@@ -1,11 +1,21 @@
 baseURL = 'https://pellepelster.github.io/solidblocks/'
 languageCode = 'en-us'
 title = 'Solidblocks'
-theme = "relearn"
-
-[params]
-    themeVariant = "green"
 
 [security]
+
 [security.funcs]
 getenv = ['.*_VERSION$', '.*_CHECKSUM$']
+
+[markup]
+[markup.goldmark.renderer]
+unsafe = true
+
+[params]
+themeVariant = "blcks"
+disableLandingPageButton = true
+
+[module]
+[[module.imports]]
+path = 'github.com/McShelby/hugo-theme-relearn'
+

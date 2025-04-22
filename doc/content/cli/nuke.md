@@ -1,10 +1,10 @@
----
-title: Hetzner Nuke
-weight: 60
-description: Hetzner nuke deletes all resources in a Hetzner account, similar to aws-nuke
-aliases:
-  - /hetzner/nuke
----
++++
+title = 'Hetzner Nuke'
+description = 'Hetzner Nuke deletes all resources in a Hetzner account, similar to aws-nuke'
+aliases = ['/hetzner/nuke']
+overviewDescription = 'Hetzner Nuke deletes all resources in a Hetzner account'
+faIcon = "fa-bomb"
++++
 
 `blcks hetzner nuke` deletes all resources in a Hetzner account, similar to [aws-nuke](https://github.com/rebuy-de/aws-nuke).
 

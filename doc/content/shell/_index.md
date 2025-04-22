@@ -1,13 +1,14 @@
----
-title: Shell
-weight: 10
-description: Reusable shell functions for infrastructure automation and developer experience
----
++++
+title = "Shell"
+weight = 10
+description = "Reusable shell functions for infrastructure automation and developer experience"
+overviewGroup = "shell"
+faIcon = "fa-terminal"
++++
 
-Reusable shell functions for infrastructure automation and developer experience 
+Reusable shell functions for infrastructure automation and developer experience
 
 {{% children description="true" %}}
-
 
 All functions are tested on the following distributions
 
@@ -15,7 +16,7 @@ All functions are tested on the following distributions
 * Debian 10
 * Debian 11
 * Debian 12
-* Ubuntu 20.04 
+* Ubuntu 20.04
 * Ubuntu 22.04
 * Ubuntu 24.04
 

@@ -1,8 +1,8 @@
----
-title: Development
-weight: 99
-description: Guide for development of Solidblocks
----
++++
+title = "Development"
+description = "Guide for development of Solidblocks"
+overviewGroup = "dev"
++++
 
 ## Repository Structure
 

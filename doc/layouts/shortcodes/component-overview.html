@@ -1,0 +1,36 @@
+<div class="component-row">
+    <div class="component-column" style="width: 24rem;">
+        {{ range where .Site.Pages "Params.overviewGroup" "util" }}
+        {{ partial "component.html" (dict "page" . "color" "yellow") }}
+        {{ end }}
+    </div>
+    <div class="component-column">
+        <div class="component-row">
+            {{ range where .Site.Pages.Reverse "Params.overviewGroup" "hetzner" }}
+            {{ partial "component.html" (dict "page" . "color" "orange") }}
+            {{ end }}
+
+            {{ range where .Site.Pages.Reverse "Params.overviewGroup" "terraform" }}
+            {{ partial "component.html" (dict "page" . "color" "orange") }}
+            {{ end }}
+        </div>
+        <div class="component-row">
+            {{ range where .Site.Pages.Reverse "Params.overviewGroup" "rds" }}
+            {{ partial "component.html" (dict "page" . "color" "orange") }}
+            {{ end }}
+        </div>
+        <div class="component-row">
+            <div class="component-column">
+                {{ range where .Site.Pages.Reverse "Params.overviewGroup" "shell" }}
+                {{ partial "component.html" (dict "page" . "color" "green") }}
+                {{ end }}
+            </div>
+            <div class="component-row">
+                {{ range where .Site.Pages "Params.overviewGroup" "library" }}
+                {{ partial "component.html" (dict "page" . "color" "green") }}
+                {{ end }}
+            </div>
+        </div>
+    </div>
+</div>
+

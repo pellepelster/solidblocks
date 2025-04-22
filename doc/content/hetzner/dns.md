@@ -1,8 +1,9 @@
----
-title: DNS
-weight: 70
-description: Assertions and JUnit extensions for infrastructure testing 
----
++++
+title = "Hetzner DNS"
+description = "Java library for the Hetzner DNS API"
+overviewGroup = "library"
+faIcon = "fa-brands fa-java"
++++
 
 Kotlin API for the [Hetzner DNS Api](https://dns.hetzner.com/api-docs). Documentation is pending since the API is still developing, for an introduction please see this post [Hetzner DNS Api](https://pelle.io/posts/hetzner-dns-api/).
 

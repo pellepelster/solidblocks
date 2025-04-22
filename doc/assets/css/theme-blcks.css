@@ -1,0 +1,67 @@
+@import "theme-relearn-light.css";
+
+:root {
+    --SECONDARY-COLOR: rgb(238, 238, 238);
+    --INTERNAL-MENU-HEADER-BG-color: var(--SECONDARY-COLOR);
+    --INTERNAL-MENU-SEARCH-BG-color: rgb(255, 255, 255);
+    --INTERNAL-MENU-SEARCH-color: rgb(0, 0, 0);
+}
+
+#R-topbar {
+    background-color: var(--SECONDARY-COLOR);
+}
+
+.solidblocks-green {
+    color: #2ebc6f;
+}
+
+.solidblocks-green-bg {
+    background-color: #2ebc6f;
+}
+
+.solidblocks-orange {
+    color: #df964f;
+}
+
+.solidblocks-orange-bg {
+    background-color: #df964f;
+}
+
+.solidblocks-yellow {
+    color: #ebd129;
+}
+
+.solidblocks-yellow-bg {
+    background-color: #ebd129;
+}
+
+.solidblocks-component {
+    border-radius: 1rem;
+    padding: 0.8rem;
+}
+
+.component-column {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+}
+
+.component-row {
+    display: flex;
+    gap: 10px;
+    flex-direction: row;
+}
+
+.component-s {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.solidblocks-component a {
+    color: #000;
+    font-weight: bolder;
+}
+
+.solidblocks-component h4 {
+    margin-top: 0.5rem;
+}

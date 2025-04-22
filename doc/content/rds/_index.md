@@ -1,8 +1,10 @@
----
-title: RDS PostgreSQL
-weight: 30
-description: A containerized PostgreSQL database with an all batteries included backup solution powered by pgBackRest
----
++++
+title = "RDS PostgreSQL"
+description = "A containerized PostgreSQL database with an all batteries included backup solution powered by pgBackRest"
+overviewGroup = "rds"
+faIcon = "fa-brands fa-docker"
+weight= 20
++++
 
 A containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution
 powered by [pgBackRest](https://pgbackrest.org/)

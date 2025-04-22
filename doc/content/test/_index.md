@@ -1,8 +1,11 @@
----
-title: Test
-weight: 70
-description: Assertions and JUnit extensions for infrastructure testing 
----
++++
+title = 'Test'
+weight = 70
+description = 'Assertions and JUnit extensions for infrastructure testing'
+overviewGroup = "util"
+faIcon = "fa-brands fa-java"
++++
+
 
 Documentation is pending since the API is still developing, for an introduction please see this post [Infrastructure testing with Solidblocks](https://pelle.io/posts/solidblocks-test/)
 

@@ -1,8 +1,10 @@
----
-title: Terraform
-weight: 30
-description: Use cloud-init function Terraform deployments
----
++++
+title = "Cloud-Init Terraform"
+description = "Use cloud-init functions in Terraform deployments"
+overviewGroup = "terraform"
+faIcon = "fa-cloud"
++++
+
 
 If you are in an environment where resources are provisioned using Terraform, you can use the provisioned Terraform module to generate a Solidblocks cloud-init based user data script.
 

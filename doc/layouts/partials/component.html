@@ -1,0 +1,21 @@
+<div class="solidblocks-component solidblocks-{{ .color }}-bg">
+    <h4>
+        <a href="{{ .page.RelPermalink }}">
+            <i class="fas {{ .page.Params.faIcon }}"></i>
+            {{ .page.LinkTitle }}
+        </a>
+    </h4>
+    <p>
+        {{ .page.Description }}
+    </p>
+
+    <ul>
+        {{ range where .page.Pages "Params.overviewDescription" "ne" nil }}
+        <li>
+            <i class="fas {{ .Params.faIcon }}"></i>
+            <a href="{{ .RelPermalink }}">{{ .Description }}</a>
+        </li>
+        {{ end }}
+    </ul>
+
+</div>
