@@ -1,10 +1,6 @@
 package de.solidblocks.cli.hetzner.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerComplexResourceApi
-import de.solidblocks.cli.hetzner.HetznerProtectedResource
-import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.HetznerProtectionResponse
+import de.solidblocks.cli.hetzner.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -22,16 +18,13 @@ data class ServerResponse(
 ) : HetznerProtectedResource
 
 
-class HetznerServersApi(private val api: HetznerApi) : HetznerComplexResourceApi<ServerResponse>,
-    HetznerProtectedResourceApi {
+class HetznerServersApi(private val api: HetznerApi) : HetznerDeleteWithActionResourceApi<ServerResponse>, HetznerProtectedResourceApi {
     suspend fun create(): ServersListWrapper = api.post("v1/servers", "")
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): ServersListWrapper =
         api.get("v1/servers?page=${page}&per_page=${perPage}")
 
-    override suspend fun delete(id: Long): ActionResponseWrapper {
-        return api.complexDelete("v1/servers/${id}")
-    }
+    override suspend fun delete(id: Long): ActionResponseWrapper = api.complexDelete("v1/servers/${id}")
 
     override suspend fun action(id: Long): ActionResponseWrapper = api.get("v1/servers/actions/${id}")
 

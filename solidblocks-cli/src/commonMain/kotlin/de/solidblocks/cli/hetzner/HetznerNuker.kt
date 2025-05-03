@@ -82,7 +82,7 @@ class HetznerNuker(hcloudToken: String) {
                     }
                 }
 
-                if (resourceApi is HetznerComplexResourceApi) {
+                if (resourceApi is HetznerDeleteWithActionResourceApi) {
                     logInfo("deleting ${it.logText()}")
                     api.waitFor({
                         resourceApi.delete(it.id)

@@ -7,7 +7,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-actual fun createHttpClient(url: String, apiToken: String) = HttpClient(Java) {
+actual fun createHttpClient(url: kotlin.String, apiToken: kotlin.String) = io.ktor.client.HttpClient(Java) {
     install(ContentNegotiation) {
         json(Json {
             isLenient = true

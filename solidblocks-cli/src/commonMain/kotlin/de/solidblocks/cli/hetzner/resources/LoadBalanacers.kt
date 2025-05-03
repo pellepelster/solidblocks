@@ -1,8 +1,6 @@
 package de.solidblocks.cli.hetzner.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.HetznerNamedResource
+import de.solidblocks.cli.hetzner.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -18,10 +16,18 @@ data class LoadBalancersListWrapper(
 }
 
 @Serializable
-data class LoadBalancerResponse(override val id: Long, override val name: String) : HetznerNamedResource
+data class LoadBalancerResponse(
+    override val id: Long,
+    override val name: String,
+    override val protection: HetznerProtectionResponse,
+) : HetznerProtectedResource
+
+@Serializable
+data class ChangeLoadBalancerProtectionRequest(val delete: Boolean)
 
 
-class HetznerLoadBalancersApi(private val api: HetznerApi) : HetznerSimpleResourceApi<LoadBalancerResponse> {
+class HetznerLoadBalancersApi(private val api: HetznerApi) : HetznerDeleteResourceApi<LoadBalancerResponse>,
+    HetznerProtectedResourceApi {
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): LoadBalancersListWrapper =
         api.get("v1/load_balancers?page=${page}&per_page=${perPage}")
@@ -30,7 +36,12 @@ class HetznerLoadBalancersApi(private val api: HetznerApi) : HetznerSimpleResour
         listPaged(page, perPage)
     }
 
-    override suspend fun delete(id: Long) = api.simpleDelete("v1/load_balancers/${id}")
+    override suspend fun delete(id: Long): Boolean = api.simpleDelete("v1/load_balancers/${id}")
+
+    override suspend fun changeProtection(id: Long, delete: Boolean): ActionResponseWrapper =
+        api.post("v1/load_balancers/$id/actions/change_protection", ChangeLoadBalancerProtectionRequest(delete))
+
+    override suspend fun action(id: Long): ActionResponseWrapper = api.get("v1/load_balancers/actions/${id}")
 
 }
 

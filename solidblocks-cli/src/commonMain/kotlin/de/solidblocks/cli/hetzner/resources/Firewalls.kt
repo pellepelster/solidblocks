@@ -29,5 +29,3 @@ class HetznerFirewallsApi(private val api: HetznerApi) : HetznerSimpleResourceAp
     override suspend fun delete(id: Long) = api.simpleDelete("v1/firewalls/${id}")
 
 }
-
-
