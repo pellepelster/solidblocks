@@ -32,5 +32,12 @@
             </div>
         </div>
     </div>
+    <div class="component-column">
+        <div class="component-row">
+            {{ range where .Site.Pages.Reverse "Params.overviewGroup" "k8s" }}
+            {{ partial "component.html" (dict "page" . "color" "orange") }}
+            {{ end }}
+        </div>
+    </div>
 </div>
 

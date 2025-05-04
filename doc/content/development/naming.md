@@ -4,29 +4,40 @@ description = "Infrastructure naming conventions"
 draft = true
 +++
 
-Naming conventions for infrastructure resources serve two main purposes. One is to ensure a consistent and distinctive
-naming of created resources. The other one is to ensure with correct labeling that different resources are
-able to reference each other, and play together nicely.
+Naming conventions for infrastructure resources serve two main purposes. One is to ensure a unique, consistent and
+distinctive
+naming of created resources. The other one is to ensure with correct labeling that different resources are able to
+reference each other, and play together nicely.
 
-Resource in this context is used as an abstract term for any piece of virtual (SaaX) or physical infrastructure that is created or used, e.g. servers, load-balancers, databases, firewall rules, users, roles, ...
+Resource in this context is used as an abstract term for any piece of virtual (SaaX) or physical infrastructure that is
+created or used, e.g. servers, load-balancers, databases, firewall rules, users, roles, and so on.
+
+# Identifiers
+
+The name of the resource itself, typically is a concatenation of multiple of the following identifiers
+
+| identifier  | description                                                                                       | examples                        |
+|-------------|---------------------------------------------------------------------------------------------------|---------------------------------|
+| name        | The name of the application or solution                                                           | `k3s`, `postgresql`             |
+| namespace   | A preferably short (~5 letters) abbreviation of the company or organizational unit                | `accounting`, `hr`              |
+| tenant      | A customer identifier, indicating who this instance of a resource is for                          | `initech`, `acme`               |
+| region      | For multi region deployments this identifies the regions the resource is associated to            | `eu`, `apac`, `asia`            |
+| environment | Stage the resource belongs to                                                                     | `prod`, `dev`                   |
+| channel     | In the case of multiple development streams, the name of the stream the resource was created from | `nightly`, `stable`             |
+| instance    | A unique name identifying the instance of an application, typically refering to the `name`        | `k3s-z5KyMg`, `postgres-UIf2IS` |
+| index       | A counter designating the sequential number of a resource with multiple instances                 | `k3s-1`, `postgres-002`         |
+
+{{% notice style="caution"  %}}
+Make sure you are not using internal identifiers from external systems or APIs that are subject to changes.
+{{% /notice %}}
+
+_ -
+
+uniqie
+
+length
 
 # Resource Naming
-
-
-The best strategy to create a unique resource
-
-| identifier  | description                                                                     |
-|-------------|---------------------------------------------------------------------------------|
-| namespace   | A preferably short (~5 letters) abbreviation of the company/organizational unit |
-| tenant      | name of the tenant in case that customer-specific resources need to be managed  |
-| region      | for multi region deployments this                                               |
-| environment |                                                                                 |
-| channel     |                                                                                 |
-| name        | The name of the application that owns the resources, such as K3S or postgresql  |
-
-
-If the identifiers that are used, are being derived from external systems or API, make sure that you are no using internal ids or identifiers that are subject to change.   
-
 
 # Namespace
 
@@ -35,7 +46,7 @@ blcks.de
 
 * labeling usecases
 * dashboards -> components
-* 
+*
 
 # Metadata
 

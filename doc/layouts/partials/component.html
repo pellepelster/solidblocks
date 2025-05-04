@@ -13,7 +13,7 @@
         {{ range where .page.Pages "Params.overviewDescription" "ne" nil }}
         <li>
             <i class="fas {{ .Params.faIcon }}"></i>
-            <a href="{{ .RelPermalink }}">{{ .Description }}</a>
+            <a href="{{ .RelPermalink }}">{{ .Params.overviewDescription }}</a>
         </li>
         {{ end }}
     </ul>

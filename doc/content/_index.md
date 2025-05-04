@@ -1,5 +1,6 @@
 +++
 title = "Solidblocks"
+type = 'wide'
 +++
 
 Solidblocks is a library of reusable components for infrastructure operation, automation and developer experience. It consists of several components, each covering a different infrastructure automation aspects. 
@@ -11,7 +12,6 @@ Solidblocks is a library of reusable components for infrastructure operation, au
 * **Tested** Components should be tested, in particular covering potential failure cases
 * **Resilience** Components should be immune against temporary outages, especially in regard to networking and storage
 * **Logging** Components should give helpful feedback for during normal operation and especially when errors occur
-
 
 ## Components
 

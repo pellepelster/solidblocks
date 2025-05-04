@@ -65,3 +65,8 @@
 .solidblocks-component h4 {
     margin-top: 0.5rem;
 }
+
+.wide > .flex-block-wrapper {
+    max-width: 90% !important;
+    width: 90% !important;
+}
