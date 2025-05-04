@@ -1,0 +1,11 @@
+---
+k3s_name: ${k3s_name}
+k3s_environment: ${k3s_environment}
+k3s_token: ${k3s_token}
+k3s_api_endpoint: ${k3s_api_endpoint}
+k3s_api_endpoint_ip: ${k3s_api_endpoint_ip}
+
+cluster_cidr: ${cluster_cidr}
+service_cidr: ${service_cidr}
+network_cidr: ${network_cidr}
+nodes_cidr: ${nodes_cidr}

@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/../lib/utils.sh"
+
+export VERSION="$(version)"
+export VENV_DIR="${DIR}/.venv"
+export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
+export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/test/dns_api_token)}"
+export TF_VAR_hcloud_token="${HCLOUD_TOKEN}"
+
+function task_build() {
+  python_ensure_venv "${DIR}"
+
+  mkdir -p "${DIR}/build"
+
+  for module in "network-hetzner" "nodes-hetzner" "nodes-ssh-hetzner" "output-ansible" "output-ansible-hetzner" "output-ssh-config"; do
+    (
+      cd "${DIR}/terraform/${module}"
+      tar -czf "${DIR}/build/blcks-k3s-terraform-${module}-${VERSION}.tar.gz" .
+    )
+    terraform-docs markdown table --hide modules --output-mode inject --output-file "${DIR}/../doc/content/k3s/terraform/${module}.md" "${DIR}/terraform/${module}"
+  done
+
+  "${VENV_DIR}/bin/ansible-galaxy" \
+    collection build \
+    --output-path "${DIR}/build" \
+    --force \
+    --verbose \
+    "${DIR}/ansible/blcks/k3s"
+
+}
+
+function python_hash_requirements() {
+  local dir="${1:-.}"
+  sha256sum < "${dir}/requirements.txt" | cut -f 1 -d " "
+}
+
+function python_ensure_venv() {
+  local dir="${1:-.}"
+  local venv_dir="${dir}/${2:-.venv}"
+
+  mkdir -p "${venv_dir}"
+  local requirements_hash_file="${venv_dir}/requirements.sha256"
+
+  if [[ ! -f "${requirements_hash_file}" ]]; then
+    echo "random" | sha256sum > "${requirements_hash_file}"
+  fi
+
+  if [[ "$(python_hash_requirements "${dir}")" != "$(cat "${requirements_hash_file}")" ]]; then
+    python3 -m venv "${venv_dir}"
+    "${venv_dir}/bin/pip" install -r "${dir}/requirements.txt"
+    python_hash_requirements "${dir}" > "${requirements_hash_file}"
+  fi
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+function task_test_terraform {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  (
+    cd "${DIR}/test/terraform"
+    terraform init -upgrade
+    terraform apply -auto-approve
+  )
+}
+
+function task_test_ansible {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  #task_build
+
+  python_ensure_venv "${DIR}"
+  #export PYTHONUNBUFFERED=1
+
+  "${VENV_DIR}/bin/ansible-galaxy" \
+    collection install \
+    --force \
+    -v \
+    -r "${DIR}/test/ansible/requirements.yml"
+
+  "${VENV_DIR}/bin/ansible-playbook" \
+    -i "${DIR}/test/terraform/output/test/cluster1/ansible/blcks_k3s_inventory.yml" \
+    "--extra-vars" "@${DIR}/test/terraform/output/test/cluster1/ansible/blcks_k3s_variables.yml" \
+    "--extra-vars" "@${DIR}/test/terraform/output/test/cluster1/ansible/blcks_k3s_hetzner_variables.yml" \
+    "--extra-vars" "k3s_api_endpoint_use_ip=true" \
+    "${DIR}/test/ansible/site.yml"
+}
+
+function task_test {
+  task_test_terraform
+  task_test_ansible
+}
+
+function task_clean {
+  (
+    cd "${DIR}/test/terraform"
+    terraform destroy -auto-approve
+  )
+}
+
+function task_format {
+  (
+    cd "${DIR}"
+    ${DIR}/../gradlew :solidblocks-hetzner-nuke:spotlessApply
+    terraform fmt -recursive
+  )
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  test-terraform) task_test_terraform "$@" ;;
+  test-ansible) task_test_ansible "$@" ;;
+  format) task_format "$@" ;;
+  clean) task_clean "$@" ;;
+  release-artifacts) ;;
+  release-prepare) ;;
+  release-test);;
+  *) task_usage ;;
+esac

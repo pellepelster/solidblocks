@@ -1,0 +1,69 @@
+---
+podAnnotations:
+  co.elastic.logs/json.add_error_key: "false"
+  co.elastic.logs/keys_under_root: "true"
+
+operator:
+  replicas: 2
+routingMode: native
+{% if k3s_api_endpoint_use_ip %}
+k8sServiceHost: {{ k3s_api_endpoint_ip }}
+{% else %}
+k8sServiceHost: {{ k3s_api_endpoint }}
+{% endif %}
+k8sServicePort: 6443
+ipv4NativeRoutingCIDR: {{ network_cidr }}
+ipam:
+  operator:
+    clusterPoolIPv4PodCIDRList: {{ cluster_cidr }}
+autoDirectNodeRoutes: true
+kubeProxyReplacement: true
+directRoutingSkipUnreachable: true
+nodePort:
+  enabled: true # https://docs.cilium.io/en/latest/network/servicemesh/ingress/#prerequisites
+ingressController:
+  enabled: true
+  loadbalancerMode: shared
+  enableProxyProtocol: true
+  hostNetwork:
+    enabled: true # https://docs.cilium.io/en/latest/network/servicemesh/ingress/#gs-ingress-host-network-mode
+    sharedListenerPort: 8080
+  externalTrafficPolicy: Local
+  service:
+    externalTrafficPolicy: null
+    type: ClusterIP
+  loadBalancer:
+    l7:
+      backend: envoy
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 512Mi
+
+envoy:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  connectTimeoutSeconds: 10
+  maxConcurrentRetries: 256
+  httpRetryCount: 6
+  log:
+    accessLogBufferSize: 32768
+
+#debug:
+#  enabled: true
+#  verbose: envoy
+
+{% if cilium_hubble_export_allow_list is defined and cilium_hubble_export_allow_list | length > 0 %}
+hubble:
+  export:
+    static:
+      enabled: true
+      filePath: stdout
+      allowList:
+        {{ cilium_hubble_export_allow_list | to_nice_yaml  | indent(width=8) }}
+{% endif %}
+
+

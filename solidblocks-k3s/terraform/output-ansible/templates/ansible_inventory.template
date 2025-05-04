@@ -1,0 +1,16 @@
+---
+k3s_servers:
+    hosts:
+        %{~ for server in k3s_servers ~}
+        ${server.name}:
+            ansible_host: ${server.name}
+            ansible_ssh_common_args: "-F ${ssh_config_file}"
+        %{~ endfor ~}
+
+k3s_agents:
+    hosts:
+        %{~ for agent in k3s_agents ~}
+        ${agent.name}:
+            ansible_host: ${agent.name}
+            ansible_ssh_common_args: "-F ${ssh_config_file}"
+        %{~ endfor ~}

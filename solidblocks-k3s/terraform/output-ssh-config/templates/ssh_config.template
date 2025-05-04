@@ -1,0 +1,11 @@
+Host *
+    IdentityFile ${client_identity_file}
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking accept-new
+    IdentitiesOnly yes
+
+%{ for server in servers ~}
+Host ${server.name}
+    Hostname ${server.ipv4_address}
+    User ${try(server.user, "root")}
+%{ endfor ~}

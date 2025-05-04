@@ -1,0 +1,10 @@
+---
+collections:
+  - name: "kubernetes.core"
+    version: ">=5.1.0"
+#  - name: build/blcks-k3s-0.0.0-snapshot.tar.gz
+#    type: file
+  - name: ansible/blcks/k3s
+    type: dir
+  - name: "ansible.utils"
+    version: ">=6.0.0"

@@ -1,0 +1,26 @@
+---
+- name: basic K3S setup
+  hosts: k3s_servers:k3s_agents
+  become: true
+  roles:
+    - role: blcks.k3s.k3s_common
+      tags: [ k3s ]
+
+- name: setup K3S servers
+  hosts: k3s_servers
+  become: true
+  roles:
+    - role: blcks.k3s.k3s_server
+      k3s_api_endpoint_use_ip: true
+      tags: [ k3s ]
+    - role: blcks.k3s.k3s_hetzner
+      k3s_api_endpoint_use_ip: true
+      tags: [ k3s ]
+
+- name: setup K3S agents
+  hosts: k3s_agents
+  become: true
+  roles:
+    - role: blcks.k3s.k3s_agent
+      k3s_api_endpoint_use_ip: true
+      tags: [ k3s ]

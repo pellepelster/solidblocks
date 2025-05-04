@@ -1,0 +1,12 @@
+---
+k3s_version: "v1.30.2+k3s2"
+
+k3s_agent_args: |-
+  {% if k3s_api_endpoint_use_ip %}
+  --server https://{{ k3s_api_endpoint_ip }}:6443 \
+  {% else %}
+  --server https://{{ k3s_api_endpoint }}:6443 \
+  {% endif %}
+  --node-ip {{ k3s_node_private_ip }} \
+  --node-external-ip {{ ansible_default_ipv4.address }} \
+  --token {{ k3s_token }}

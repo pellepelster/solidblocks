@@ -1,0 +1,39 @@
+---
+- name: populate k3s node facts
+  ansible.builtin.set_fact:
+    k3s_node_private_ip: "{{ (ansible_all_ipv4_addresses | ansible.utils.ipaddr(nodes_cidr))[0] }}"
+
+- name: populate service facts
+  ansible.builtin.service_facts:
+
+- name: enforce minimum ansible version
+  ansible.builtin.assert:
+    that:
+      - ansible_version.full is version('2.14', '>=')
+    msg: "minimum ansible-core version required is 2.14"
+
+- name: install required packages
+  ansible.builtin.apt:
+    name: policycoreutils
+    update_cache: true
+
+- name: enable IPv4 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: true
+
+- name: enable IPv6 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "1"
+    state: present
+    reload: true
+  when: ansible_all_ipv6_addresses
+
+- name: create k3s config dir
+  ansible.builtin.file:
+    path: "/etc/rancher/k3s/"
+    state: directory
+    mode: '0700'
