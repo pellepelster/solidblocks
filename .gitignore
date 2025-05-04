@@ -17,7 +17,9 @@ build
 *.pem
 .temp*
 /doc/snippets/
+ssh_config
 venv
+.venv
 .kotlin
 __pycache__
 .terraform.tfstate.lock.info
@@ -28,7 +30,6 @@ solidblocks-hetzner/modules/rds-postgresql/cloud_init_bootstrap_solidblocks
 /**/test-*_ssh_config
 /**/test-*_id_rsa
 /**/test-*_id_rsa.pub
-/**/ssh_config
 /**/test_id_rsa
 /**/test_id_rsa.pub
 .test_*/
