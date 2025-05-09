@@ -1,10 +1,6 @@
 package de.solidblocks.cli.hetzner.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerProtectedResource
-import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.HetznerProtectionResponse
-import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
+import de.solidblocks.cli.hetzner.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -20,7 +16,7 @@ data class VolumeResponse(
 data class ChangeVolumeProtectionRequest(val delete: Boolean, val rebuild: Boolean? = null)
 
 
-class HetznerVolumesApi(private val api: HetznerApi) : HetznerSimpleResourceApi<VolumeResponse>,
+class HetznerVolumesApi(private val api: HetznerApi) : HetznerDeleteResourceApi<VolumeResponse>,
     HetznerProtectedResourceApi {
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): VolumesListWrapper =

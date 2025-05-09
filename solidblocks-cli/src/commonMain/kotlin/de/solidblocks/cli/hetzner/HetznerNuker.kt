@@ -75,7 +75,7 @@ class HetznerNuker(hcloudToken: String) {
                     }
                 }
 
-                if (resourceApi is HetznerSimpleResourceApi) {
+                if (resourceApi is HetznerDeleteResourceApi<*>) {
                     logInfo("deleting ${it.logText()}")
                     if (!resourceApi.delete(it.id)) {
                         logError("deleting ${it.logText()} failed")

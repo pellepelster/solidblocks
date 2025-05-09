@@ -1,10 +1,6 @@
 package de.solidblocks.cli.hetzner.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerProtectedResource
-import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.HetznerProtectionResponse
-import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
+import de.solidblocks.cli.hetzner.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -23,7 +19,7 @@ data class NetworkResponse(
 ) : HetznerProtectedResource
 
 
-class HetznerNetworksApi(private val api: HetznerApi) : HetznerSimpleResourceApi<NetworkResponse>,
+class HetznerNetworksApi(private val api: HetznerApi) : HetznerDeleteResourceApi<NetworkResponse>,
     HetznerProtectedResourceApi {
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): NetworksListWrapper =

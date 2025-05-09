@@ -29,7 +29,7 @@ data class PrimaryIpResponse(
 }
 
 
-class HetznerPrimaryIpsApi(private val api: HetznerApi) : HetznerSimpleResourceApi<PrimaryIpResponse>,
+class HetznerPrimaryIpsApi(private val api: HetznerApi) : HetznerDeleteResourceApi<PrimaryIpResponse>,
     HetznerProtectedResourceApi, HetznerAssignedResourceApi {
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): PrimaryIpListWrapper =

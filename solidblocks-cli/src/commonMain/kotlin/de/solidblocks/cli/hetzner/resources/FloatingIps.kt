@@ -1,10 +1,6 @@
 package de.solidblocks.cli.hetzner.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.HetznerSimpleResourceApi
-import de.solidblocks.cli.hetzner.HetznerProtectedResource
-import de.solidblocks.cli.hetzner.HetznerProtectionResponse
+import de.solidblocks.cli.hetzner.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -29,7 +25,7 @@ data class FloatingIpResponse(
 ) : HetznerProtectedResource
 
 
-class HetznerFloatingIpsApi(private val api: HetznerApi) : HetznerSimpleResourceApi<FloatingIpResponse>,
+class HetznerFloatingIpsApi(private val api: HetznerApi) : HetznerDeleteResourceApi<FloatingIpResponse>,
     HetznerProtectedResourceApi {
 
     suspend fun listPaged(page: Int = 0, perPage: Int = 25): FloatingIPsListWrapper =

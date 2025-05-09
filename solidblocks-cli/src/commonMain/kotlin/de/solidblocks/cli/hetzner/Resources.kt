@@ -26,7 +26,7 @@ interface HetznerBaseResourceApi<T : HetznerNamedResource> {
     suspend fun list(): List<T>
 }
 
-interface HetznerSimpleResourceApi<T : HetznerNamedResource> : HetznerBaseResourceApi<T> {
+interface HetznerDeleteResourceApi<T : HetznerNamedResource> : HetznerBaseResourceApi<T> {
     suspend fun delete(id: Long): Boolean
 }
 
@@ -43,11 +43,6 @@ interface HetznerAssignedResourceApi {
 
 interface HetznerDeleteWithActionResourceApi<T : HetznerNamedResource>: HetznerBaseResourceApi<T> {
     suspend fun delete(id: Long): ActionResponseWrapper
-    suspend fun action(id: Long): ActionResponseWrapper
-}
-
-interface HetznerDeleteResourceApi<T : HetznerNamedResource> : HetznerBaseResourceApi<T> {
-    suspend fun delete(id: Long): Boolean
     suspend fun action(id: Long): ActionResponseWrapper
 }
 
