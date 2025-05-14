@@ -1,41 +1,5 @@
 ---
-- name: get k3s installed version
-  ansible.builtin.command: k3s --version
-  register: k3s_installed_version_output
-  changed_when: false
-  ignore_errors: true
-
-- name: set k3s installed version
-  when: k3s_installed_version_output.rc == 0
-  ansible.builtin.set_fact:
-    k3s_installed_version: "{{ k3s_installed_version_output.stdout_lines[0].split(' ')[2] }}"
-
-- name: download k3s artifacts
-  when: k3s_installed_version_output.rc != 0 or k3s_installed_version is version(k3s_version, '<')
-  block:
-    - name: download k3s binary x64
-      ansible.builtin.get_url:
-        url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
-        checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-amd64.txt
-        dest: /usr/local/bin/k3s
-        owner: root
-        group: root
-        mode: "0755"
-      when: ansible_facts.architecture == "x86_64"
-
-    - name: download k3s binary arm64
-      ansible.builtin.get_url:
-        url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s-arm64
-        checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-arm64.txt
-        dest: /usr/local/bin/k3s
-        owner: root
-        group: root
-        mode: "0755"
-      when:
-        - ( ansible_facts.architecture is search("arm") and ansible_facts.userspace_bits == "64" )
-          or ansible_facts.architecture is search("aarch64")
-
-- name: copy k3s service file
+- name: "copy k3s service file"
   register: k3s_service
   ansible.builtin.template:
     src: k3s.service.j2
@@ -43,9 +7,8 @@
     owner: root
     group: root
     mode: "0644"
-  notify: restart k3s
 
-- name: enable and start k3s service
+- name: "enable and start k3s service"
   ansible.builtin.systemd:
     name: k3s
     daemon_reload: true

@@ -1,2 +1,2 @@
 ---
-api_port: 6443
+k3s_version: "v1.32.4+k3s1"

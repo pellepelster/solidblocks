@@ -14,16 +14,15 @@ variable "location" {
   default     = "nbg1"
 }
 
+variable "network_id" {
+  type        = number
+  description = "Hetzner network id"
+}
+
 variable "labels" {
   type        = map(string)
   description = "additional labels for all created resources"
   default     = {}
-}
-
-variable "network_cidr" {
-  type        = string
-  description = "CIDR for the private network"
-  default     = "10.0.0.0/8"
 }
 
 variable "network_zone" {
@@ -36,4 +35,10 @@ variable "load_balancers_subnet_cidr" {
   description = "CIDR for the loadbalancer subnet"
   type        = string
   default     = "10.0.2.0/24"
+}
+
+variable "load_balancers_subnet_offset" {
+  description = "Offset for ip allocated in the load_balancers_subnet_cidr"
+  type        = number
+  default     = 0
 }

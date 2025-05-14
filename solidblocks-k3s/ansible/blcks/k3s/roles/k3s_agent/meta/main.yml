@@ -1,0 +1,11 @@
+---
+argument_specs:
+  main:
+    short_description: setup K3S agents
+    options:
+      k3s_name:
+        description: name for the K3S cluster
+        required: true
+      k3s_environment:
+        description: environment name for the K3S cluster
+        required: false

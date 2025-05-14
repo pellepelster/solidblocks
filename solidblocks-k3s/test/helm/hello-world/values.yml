@@ -1,0 +1,20 @@
+image:
+  repository: nginxdemos/hello
+  tag: latest
+
+domain:
+  name: hello-world
+
+readiness:
+  enabled: true
+  path: /
+
+deployment:
+  replicaCount: 2
+
+environmentVariables:
+
+secrets:
+
+service:
+  port: 80

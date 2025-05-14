@@ -79,10 +79,7 @@ function task_test_ansible {
     exit 0
   fi
 
-  #task_build
-
   python_ensure_venv "${DIR}"
-  #export PYTHONUNBUFFERED=1
 
   "${VENV_DIR}/bin/ansible-galaxy" \
     collection install \
@@ -94,20 +91,130 @@ function task_test_ansible {
     -i "${DIR}/test/terraform/output/test/cluster1/ansible/blcks_k3s_inventory.yml" \
     "--extra-vars" "@${DIR}/test/terraform/output/test/cluster1/ansible/blcks_k3s_variables.yml" \
     "--extra-vars" "@${DIR}/test/terraform/output/test/cluster1/ansible/blcks_k3s_hetzner_variables.yml" \
-    "--extra-vars" "k3s_api_endpoint_use_ip=true" \
     "${DIR}/test/ansible/site.yml"
+}
+
+function task_test_dual_terraform {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  (
+    cd "${DIR}/test/terraform-dual"
+    terraform init -upgrade
+    terraform apply -auto-approve
+  )
+}
+
+function task_test_dual_ansible {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  python_ensure_venv "${DIR}"
+
+  "${VENV_DIR}/bin/ansible-galaxy" \
+    collection install \
+    --force \
+    -v \
+    -r "${DIR}/test/ansible/requirements.yml"
+
+  "${VENV_DIR}/bin/ansible-playbook" \
+    -i "${DIR}/test/terraform-dual/output/test/cluster1-blue/ansible/blcks_k3s_inventory.yml" \
+    "--extra-vars" "@${DIR}/test/terraform-dual/output/test/cluster1-blue/ansible/blcks_k3s_variables.yml" \
+    "--extra-vars" "@${DIR}/test/terraform-dual/output/test/cluster1-blue/ansible/blcks_k3s_hetzner_variables.yml" \
+    "${DIR}/test/ansible/site.yml"
+
+  "${VENV_DIR}/bin/ansible-playbook" \
+    -i "${DIR}/test/terraform-dual/output/test/cluster1-green/ansible/blcks_k3s_inventory.yml" \
+    "--extra-vars" "@${DIR}/test/terraform-dual/output/test/cluster1-green/ansible/blcks_k3s_variables.yml" \
+    "--extra-vars" "@${DIR}/test/terraform-dual/output/test/cluster1-green/ansible/blcks_k3s_hetzner_variables.yml" \
+    "${DIR}/test/ansible/site.yml"
+}
+
+function test_helm {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  local ssh_config="${1:-}"
+  local server="${2:-}"
+  local api_address="${3:-}"
+  local hello_world_domain="${4:-}"
+
+  mkdir -p "${DIR}/output/"
+  scp -F "${ssh_config}" ${server}:/etc/rancher/k3s/k3s.yaml "${DIR}/output/"
+  sed -i "s/https:\/\/127\.0\.0\.1:6443/https:\/\/${api_address}:6443/" "${DIR}/output/k3s.yaml"
+
+  helm --kubeconfig output/k3s.yaml \
+    --namespace hello-world \
+    upgrade \
+    --install \
+    --create-namespace \
+    --set domain.name="${hello_world_domain}" \
+    --values test/helm/hello-world/values.yml \
+    hello-world test/helm/blcks-service/
+}
+
+function task_test_dual_helm {
+
+  test_helm \
+    "${DIR}/test/terraform-dual/output/test/cluster1-blue/ssh/client_config" \
+    "test-cluster1-blue-k3s-server-0" \
+    "k3s-api.cluster1-blue.blcks.de" \
+    "hello-world.cluster1-blue"
+
+  test_helm \
+    "${DIR}/test/terraform-dual/output/test/cluster1-green/ssh/client_config" \
+    "test-cluster1-green-k3s-server-0" \
+    "k3s-api.cluster1-green.blcks.de" \
+    "hello-world.cluster1-green"
+}
+
+function task_test_dual {
+  task_test_dual_terraform
+  task_test_dual_ansible
+  task_test_dual_helm
+  curl --fail hello-world.cluster1-blue.blcks.de &> /dev/null
+  curl --fail hello-world.cluster1-green.blcks.de &> /dev/null
+}
+
+function task_test_helm {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  mkdir -p "${DIR}/output/"
+  scp -F "${DIR}/test/terraform/output/test/cluster1/ssh/client_config" test-cluster1-k3s-server-0:/etc/rancher/k3s/k3s.yaml "${DIR}/output/"
+  sed -i 's/https:\/\/127\.0\.0\.1:6443/https:\/\/test-k3s.blcks.de:6443/' "${DIR}/output/k3s.yaml"
+
+# --set domain.name=$(tr -dc a-z </dev/urandom | head -c 13; echo) \
+helm --kubeconfig output/k3s.yaml \
+    --namespace hello-world \
+    upgrade \
+    --install \
+    --create-namespace \
+    --values test/helm/hello-world/values.yml \
+    hello-world test/helm/blcks-service/
+}
+
+function task_test_helm {
+  test_helm \
+    "${DIR}/test/terraform/output/test/cluster1/ssh/client_config" \
+    "test-cluster1-k3s-server-0" \
+    "k3s-api.cluster1.blcks.de" \
+    "hello-world.cluster1"
 }
 
 function task_test {
   task_test_terraform
   task_test_ansible
+  task_test_helm
+  curl --fail hello-world-cluster1.blcks.de &> /dev/null
 }
 
 function task_clean {
-  (
-    cd "${DIR}/test/terraform"
-    terraform destroy -auto-approve
-  )
+  blcks hetzner nuke --do-nuke
 }
 
 function task_format {
@@ -125,6 +232,11 @@ case ${arg} in
   test) task_test "$@" ;;
   test-terraform) task_test_terraform "$@" ;;
   test-ansible) task_test_ansible "$@" ;;
+  test-helm) task_test_helm "$@" ;;
+  test-dual) task_test_dual "$@" ;;
+  test-dual-terraform-) task_test_dual_terraform "$@" ;;
+  test-dual-ansible) task_test_dual_ansible "$@" ;;
+  test-dual-helm) task_test_dual_helm "$@" ;;
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-artifacts) ;;

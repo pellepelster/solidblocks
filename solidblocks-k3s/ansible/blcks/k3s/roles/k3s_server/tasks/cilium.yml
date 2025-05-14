@@ -112,13 +112,9 @@
           owner: root
           group: root
           mode: "0644"
+        notify:
+          - deploy cilium chart
 
-      - name: deploy cilium chart
-        kubernetes.core.helm:
-          name: cilium
-          chart_ref: cilium/cilium
-          release_namespace: kube-system
-          chart_version: "{{ cilium_version }}"
-          kubeconfig: "/etc/rancher/k3s/k3s.yaml"
-          values_files:
-            - "/root/cilium.values.yml"
+      - name: "flush handlers"
+        ansible.builtin.meta: flush_handlers
+

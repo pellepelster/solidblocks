@@ -1,12 +1,21 @@
 [Unit]
-Description=K3S agent
+Description=Lightweight Kubernetes
+Documentation=https://k3s.io
 After=network-online.target
 
 [Service]
 Type=notify
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/local/bin/k3s agent {{ k3s_agent_args }}
+ExecStart=/usr/local/bin/k3s agent  \
+    --server https://{{ k3s_api_endpoint }}:6443 \
+    --node-ip {{ k3s_node_private_ip }} \
+    --node-external-ip {{ ansible_default_ipv4.address }} \
+    --node-label "blcks.de/environment={{ k3s_environment }}" \
+    --node-label "blcks.de/name={{ k3s_name }}" \
+    --node-label "blcks.de/k3s-node-type=agent" \
+    --token {{ k3s_token }}
+
 KillMode=process
 Delegate=yes
 # Having non-zero Limit*s causes performance problems due to accounting overhead

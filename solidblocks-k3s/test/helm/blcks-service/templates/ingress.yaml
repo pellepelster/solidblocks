@@ -1,0 +1,43 @@
+{{- $fullName := include "blcks-service.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    ingress.cilium.io/force-https: disabled
+  labels:
+    {{- include "blcks-service.labels" . | nindent 4 }}
+spec:
+  ingressClassName: cilium
+  rules:
+    - host: {{ .Values.domain.name | default .Release.Name }}.{{ .Values.domain.root }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+            path: /
+            pathType: Prefix
+    {{- range $alternativeName := .Values.domain.alternativeNames }}
+    - host: {{ $alternativeName }}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+            path: /
+            pathType: Prefix
+    {{- end }}
+  tls:
+    - hosts:
+        - {{ .Values.domain.name | default .Release.Name }}.{{ .Values.domain.root }}
+        {{- range $alternativeName := .Values.domain.alternativeNames }}
+        - {{ $alternativeName }}
+        {{- end }}
+      secretName: {{ $fullName }}-cert

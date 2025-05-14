@@ -1,0 +1,42 @@
+image:
+  repository:
+  tag:
+  pullPolicy: IfNotPresent
+
+environment: test
+nameOverride:
+fullnameOverride:
+
+resources: {}
+
+domain:
+  root: blcks.de
+  name: # defaults to release name
+  alternativeNames: []
+
+deployment:
+  replicaCount: 1
+
+service:
+  port: 1337
+
+readiness:
+  enabled: false
+  path: /
+
+log:
+  parseAsJson: false
+
+terminationGracePeriodSeconds: 30
+
+environmentVariables:
+#  - name: DATABASE_HOST
+#    value: pgbouncer.database
+
+secrets:
+#  - name: DATABASE_USERNAME
+#    secret: cms-database
+#  - name: DATABASE_USERNAME
+#    secret: cms-database
+#    from: DATABASE_USERNAME_DIFFERENT_KEY
+

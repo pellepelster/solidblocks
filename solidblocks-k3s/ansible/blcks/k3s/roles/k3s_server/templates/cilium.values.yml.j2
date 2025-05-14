@@ -1,21 +1,25 @@
 ---
+{% if cilium_pod_annotations is defined  %}
 podAnnotations:
-  co.elastic.logs/json.add_error_key: "false"
-  co.elastic.logs/keys_under_root: "true"
+  {{ cilium_pod_annotations | to_nice_yaml | indent(width=2) }}
+{% endif %}
 
 operator:
   replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
 routingMode: native
-{% if k3s_api_endpoint_use_ip %}
-k8sServiceHost: {{ k3s_api_endpoint_ip }}
-{% else %}
 k8sServiceHost: {{ k3s_api_endpoint }}
-{% endif %}
 k8sServicePort: 6443
 ipv4NativeRoutingCIDR: {{ network_cidr }}
+
 ipam:
-  operator:
-    clusterPoolIPv4PodCIDRList: {{ cluster_cidr }}
+  mode: {{ cilium_ipam_mode }}
+#  operator:
+#    clusterPoolIPv4PodCIDRList: {{ cluster_cidr }}
+
 autoDirectNodeRoutes: true
 kubeProxyReplacement: true
 directRoutingSkipUnreachable: true
@@ -38,17 +42,15 @@ ingressController:
 
 resources:
   requests:
-    cpu: 150m
+    cpu: 250m
     memory: 512Mi
 
 envoy:
   resources:
     requests:
-      cpu: 50m
-      memory: 64Mi
+      cpu: 150m
+      memory: 128Mi
   connectTimeoutSeconds: 10
-  maxConcurrentRetries: 256
-  httpRetryCount: 6
   log:
     accessLogBufferSize: 32768
 
@@ -63,7 +65,5 @@ hubble:
       enabled: true
       filePath: stdout
       allowList:
-        {{ cilium_hubble_export_allow_list | to_nice_yaml  | indent(width=8) }}
+        {{ cilium_hubble_export_allow_list | to_nice_yaml | indent(width=8) }}
 {% endif %}
-
-

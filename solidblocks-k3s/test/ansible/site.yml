@@ -11,10 +11,11 @@
   become: true
   roles:
     - role: blcks.k3s.k3s_server
-      k3s_api_endpoint_use_ip: true
+      cilium_hubble_export_allow_list:
+        - '{"source_pod":["hello-world/"]}'
+        - '{"destination_pod":["hello-world/"]}'
       tags: [ k3s ]
     - role: blcks.k3s.k3s_hetzner
-      k3s_api_endpoint_use_ip: true
       tags: [ k3s ]
 
 - name: setup K3S agents
@@ -22,5 +23,4 @@
   become: true
   roles:
     - role: blcks.k3s.k3s_agent
-      k3s_api_endpoint_use_ip: true
       tags: [ k3s ]

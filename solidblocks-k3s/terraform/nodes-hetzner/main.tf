@@ -1,14 +1,18 @@
 locals {
   labels = {
-    "blcks.de/name" : "k3s",
+    "blcks.de/name" : var.name,
     "blcks.de/environment" : var.environment,
   }
+}
+
+locals {
+  base_name = "${var.environment}-${var.name}"
 }
 
 resource "hcloud_volume" "k3s_server_data" {
   location          = var.location
   count             = var.server_count
-  name              = "${var.environment}-${var.name}-k3s-server-data-${count.index}"
+  name              = "${local.base_name}-k3s-server-${count.index}-data"
   size              = 32
   format            = "ext4"
   delete_protection = true
@@ -25,7 +29,7 @@ resource "hcloud_network_subnet" "k3s_nodes" {
 
 resource "hcloud_server" "k3s_server" {
   count    = var.server_count
-  name     = "${var.environment}-${var.name}-k3s-server-${count.index}"
+  name     = "${local.base_name}-k3s-server-${count.index}"
   location = var.location
 
   ssh_keys           = [var.ssh_key_id]
@@ -35,7 +39,7 @@ resource "hcloud_server" "k3s_server" {
   user_data = templatefile("${path.module}/user_data.sh.template", {
     user_data_lib       = file("${path.module}/user_data_lib.sh")
     storage_data_device = hcloud_volume.k3s_server_data[count.index].linux_device
-  }
+    }
   )
 
   network {
@@ -44,7 +48,7 @@ resource "hcloud_server" "k3s_server" {
   }
 
   image       = "debian-12"
-  server_type = "ccx13"
+  server_type = var.server_type
 
   public_net {
     ipv4_enabled = true
@@ -52,8 +56,7 @@ resource "hcloud_server" "k3s_server" {
   }
 
   labels = merge(local.labels, var.labels, {
-    "blcks.de/name" : "k3s",
-    "blcks.de/node" : "master",
+    "blcks.de/k3s-node-type" : "server",
   })
 }
 
@@ -71,7 +74,7 @@ resource "random_string" "k3s_token" {
 
 resource "hcloud_server" "k3s_agent" {
   count    = var.agent_count
-  name     = "${var.environment}-${var.name}-k3s-agent-${count.index}"
+  name     = "${local.base_name}-k3s-agent-${count.index}"
   location = var.location
 
   ssh_keys = [var.ssh_key_id]
@@ -85,7 +88,7 @@ resource "hcloud_server" "k3s_agent" {
   }
 
   image       = "debian-12"
-  server_type = "ccx23"
+  server_type = var.agent_type
 
   public_net {
     ipv4_enabled = true
@@ -93,7 +96,6 @@ resource "hcloud_server" "k3s_agent" {
   }
 
   labels = merge(local.labels, var.labels, {
-    "blcks.de/name" : "k3s",
-    "blcks.de/node" : "agent",
+    "blcks.de/k3s-node-type" : "agent",
   })
 }

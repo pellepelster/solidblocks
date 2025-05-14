@@ -1,48 +1,50 @@
 ---
+- name: "check if hcloud secret is present"
+  ansible.builtin.command: k3s kubectl -n kube-system get secret hcloud
+  register: hcloud_secret_present
+  ignore_errors: true
 
-- name: "add hetzner workloads"
+- name: "create hcloud secret"
   run_once: true
-  block:
-    - name: "check if hcloud secret is present"
-      ansible.builtin.command: k3s kubectl -n kube-system get secret hcloud
-      register: hcloud_secret_present
-      ignore_errors: true
+  ansible.builtin.command: k3s kubectl -n kube-system create secret generic hcloud --from-literal=token={{ hcloud_token }} --from-literal=network={{ network_id }}
+  environment:
+    KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+  when: hcloud_secret_present.rc != 0
 
-    - name: "create hcloud secret"
-      ansible.builtin.command: k3s kubectl -n kube-system create secret generic hcloud --from-literal=token={{ hcloud_token }} --from-literal=network={{ network_id }}
-      environment:
-        KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-      when: hcloud_secret_present.rc != 0
+- name: "add hetzner-ccm chart repo"
+  run_once: true
+  kubernetes.core.helm_repository:
+    name: hcloud
+    repo_url: "https://charts.hetzner.cloud"
 
-    - name: "add hetzner-ccm chart repo"
-      run_once: true
-      kubernetes.core.helm_repository:
-        name: hcloud
-        repo_url: "https://charts.hetzner.cloud"
+- name: "deploy hetzner-ccm chart"
+  run_once: true
+  kubernetes.core.helm:
+    name: hcloud-ccm
+    chart_ref: hcloud/hcloud-cloud-controller-manager
+    release_namespace: kube-system
+    chart_version: "{{ hetzner_ccm_version }}"
+    kubeconfig: "/etc/rancher/k3s/k3s.yaml"
+    set_values:
+      - value: networking.enabled=true
+        value_type: string
+      - value: networking.clusterCIDR={{ cluster_cidr }}
+        value_type: string
+      - value: additionalTolerations[0].key=node.kubernetes.io/not-ready
+        value_type: string
+      - value: additionalTolerations[0].effect=NoSchedule
+        value_type: string
 
-    - name: "deploy hetzner-ccm chart"
-      run_once: true
-      kubernetes.core.helm:
-        name: hcloud-ccm
-        chart_ref: hcloud/hcloud-cloud-controller-manager
-        release_namespace: kube-system
-        chart_version: "{{ hetzner_ccm_version }}"
-        kubeconfig: "/etc/rancher/k3s/k3s.yaml"
-        set_values:
-          - value: networking.enabled=true
-            value_type: string
-          - value: networking.clusterCIDR={{ cluster_cidr }}
-            value_type: string
-          - value: additionalTolerations[0].key=node.kubernetes.io/not-ready
-            value_type: string
-          - value: additionalTolerations[0].effect=NoSchedule
-            value_type: string
-
-    - name: "deploy hetzner-csi chart"
-      run_once: true
-      kubernetes.core.helm:
-        name: hcloud-csi
-        chart_ref: hcloud/hcloud-csi
-        release_namespace: kube-system
-        chart_version: "{{ hetzner_csi_version }}"
-        kubeconfig: "/etc/rancher/k3s/k3s.yaml"
+- name: "deploy hetzner-csi chart"
+  run_once: true
+  kubernetes.core.helm:
+    name: hcloud-csi
+    chart_ref: hcloud/hcloud-csi
+    release_namespace: kube-system
+    chart_version: "{{ hetzner_csi_version }}"
+    kubeconfig: "/etc/rancher/k3s/k3s.yaml"
+    set_values:
+      - value: hcloudToken.existingSecret.name=hcloud
+        value_type: string
+      - value: hcloudToken.existingSecret.key=token
+        value_type: string

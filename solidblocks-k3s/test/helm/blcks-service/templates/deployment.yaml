@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "blcks-service.fullname" . }}
+  labels:
+    {{- include "blcks-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "blcks-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.log.parseAsJson }}
+        co.elastic.logs/ignore_decoding_error: "true"
+        co.elastic.logs/json.add_error_key: "true"
+        co.elastic.logs/json.keys_under_root: "true"
+        {{ end }}
+      labels:
+        app.kubernetes.io/part-of: blcks
+        {{- include "blcks-service.selectorLabels" . | nindent 8 }}
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/master
+                    operator: DoesNotExist
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{ if .Values.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              path:  {{ .Values.readiness.path }}
+              scheme: HTTP
+              port: {{ .Values.service.port }}
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 10
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            {{- range $v := .Values.environmentVariables }}
+            - name: {{ $v.name }}
+              value: {{ $v.value | quote }}
+            {{- end }}
+            {{- range $v := .Values.secrets }}
+            - name: {{  $v.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{  $v.secret }}
+                  key: {{  $v.from | default $v.name }}
+            {{- end }}
+            {{- range $v := .Values.gcpSecrets }}
+            - name: {{ $v.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: gcp
+                  key: {{ $v.from }}
+            {{- end }}
+      terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds}}

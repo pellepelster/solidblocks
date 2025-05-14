@@ -6,9 +6,9 @@ resource "local_file" "ssh_client_identity" {
 
 resource "local_file" "ssh_config" {
   filename = "${var.output_path}/ssh/client_config"
-  content  = templatefile("${path.module}/templates/ssh_config.template", {
+  content = templatefile("${path.module}/templates/ssh_config.template", {
     servers              = var.ssh_servers
     client_identity_file = abspath(local_file.ssh_client_identity.filename)
-  }
+    }
   )
 }

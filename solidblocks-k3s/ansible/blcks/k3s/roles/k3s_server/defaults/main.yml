@@ -1,49 +1,14 @@
 ---
 storage_data_dir: "/storage/data"
 
-k3s_version: "v1.30.2+k3s2"
+k3s_name:
+k3s_environment:
 k3s_data_dir: "{{ storage_data_dir }}/k3s"
 
-k3s_server_extra_args: ""
-k3s_api_endpoint_use_ip: false
-
-ks_server_init_args: |-
-  {% if groups['k3s_servers'] | length > 1 %}
-    {% if inventory_hostname == groups['k3s_servers'][0] %}
-      --cluster-init \
-    {% else %}
-      {% if k3s_api_endpoint_use_ip %}
-      --server https://{{ k3s_api_endpoint_ip }}:6443 \
-      {% else %}
-      --server https://{{ k3s_api_endpoint }}:6443 \
-      {% endif %}
-    {% endif %}
-  {% endif %}
-
-k3s_server_common_args: |-
-  --token {{ k3s_token }} \
-  --advertise-address {{ k3s_node_private_ip }} \
-  --node-ip {{ k3s_node_private_ip }} \
-  --node-external-ip {{ ansible_default_ipv4.address }} \
-  --tls-san {{ k3s_api_endpoint }} \
-  --tls-san {{ k3s_api_endpoint_ip }} \
-  --tls-san {{ k3s_node_private_ip }} \
-  --tls-san {{ ansible_default_ipv4.address }} \
-  --data-dir {{ k3s_data_dir }} \
-  --cluster-cidr {{ cluster_cidr }} \
-  --service-cidr {{ service_cidr }} \
-  --flannel-backend=none \
-  --disable-network-policy \
-  --disable-kube-proxy \
-  --disable-cloud-controller \
-  --egress-selector-mode disabled \
-  --disable local-storage \
-  --disable servicelb \
-  --disable traefik
-
-k3s_server_args: |-
-  {{ ks_server_init_args }} \
-  {{ k3s_server_common_args }} 
-
 cilium_version: "1.17.3"
-cilium_hubble_export_allow_list: []
+cilium_hubble_export_allow_list: [ ]
+cilium_ipam_mode: "kubernetes"
+
+cilium_pod_annotations:
+  co.elastic.logs/json.add_error_key: "false"
+  co.elastic.logs/keys_under_root: "true"
