@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+MD_MONITOR_LOG_FILE="${MDADM_LOG_FILE:-/var/log/mdadm_status.log}"
+
+for device_index in $(ls /dev/md/); do
+	mdadm --query --detail "/dev/md${device_index}" | jc --raw --monochrome --mdadm >> "${MD_MONITOR_LOG_FILE}"
+done
+
+

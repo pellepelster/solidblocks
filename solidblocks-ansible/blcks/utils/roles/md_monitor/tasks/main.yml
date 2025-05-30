@@ -1,0 +1,33 @@
+---
+- name: install packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - jc
+
+- name: "install md-monitor.sh"
+  ansible.builtin.template:
+    src: "md-monitor.sh.j2"
+    dest: "{{ bin_dir }}/md-monitor.sh"
+    owner: root
+    mode: '0755'
+
+- name: "create md-monitor systemd service"
+  ansible.builtin.template:
+    src: "md-monitor.service.j2"
+    dest: "/etc/systemd/system/md-monitor.service"
+    mode: '0755'
+
+- name: "create md-monitor systemd timer"
+  ansible.builtin.template:
+    src: "md-monitor.timer.j2"
+    dest: "/etc/systemd/system/md-monitor.timer"
+    mode: '0755'
+
+- name: "enable md-monitor systemd timer"
+  ansible.builtin.systemd_service:
+    name: md-monitor.timer
+    daemon_reload: true
+    state: started
+    enabled: true

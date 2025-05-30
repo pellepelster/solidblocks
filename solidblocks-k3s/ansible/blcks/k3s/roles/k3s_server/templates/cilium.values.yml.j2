@@ -1,4 +1,6 @@
 ---
+# cilium {{ cilium_version }}
+
 {% if cilium_pod_annotations is defined  %}
 podAnnotations:
   {{ cilium_pod_annotations | to_nice_yaml | indent(width=2) }}
@@ -19,6 +21,8 @@ ipam:
   mode: {{ cilium_ipam_mode }}
 #  operator:
 #    clusterPoolIPv4PodCIDRList: {{ cluster_cidr }}
+
+policyEnforcementMode: never
 
 autoDirectNodeRoutes: true
 kubeProxyReplacement: true
@@ -50,7 +54,6 @@ envoy:
     requests:
       cpu: 150m
       memory: 128Mi
-  connectTimeoutSeconds: 10
   log:
     accessLogBufferSize: 32768
 

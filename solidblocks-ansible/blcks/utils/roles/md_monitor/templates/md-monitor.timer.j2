@@ -1,0 +1,9 @@
+[Unit]
+Description=md monitor
+
+[Timer]
+OnCalendar={{ schedule }}
+Unit=md-monitor.service
+
+[Install]
+WantedBy=multi-user.target

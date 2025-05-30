@@ -17,7 +17,7 @@ function task_build() {
 
   mkdir -p "${DIR}/build"
 
-  for module in "network-hetzner" "nodes-hetzner" "nodes-ssh-hetzner" "output-ansible" "output-ansible-hetzner" "output-ssh-config"; do
+  for module in "network-hetzner" "network-loadbalancer-hetzner" "nodes-hetzner" "nodes-ssh-hetzner" "output-ansible" "output-ansible-hetzner" "output-ssh-config"; do
     (
       cd "${DIR}/terraform/${module}"
       tar -czf "${DIR}/build/blcks-k3s-terraform-${module}-${VERSION}.tar.gz" .

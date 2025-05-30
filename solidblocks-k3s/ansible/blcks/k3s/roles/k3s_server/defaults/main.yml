@@ -5,7 +5,7 @@ k3s_name:
 k3s_environment:
 k3s_data_dir: "{{ storage_data_dir }}/k3s"
 
-cilium_version: "1.17.3"
+cilium_version: "1.17.4"
 cilium_hubble_export_allow_list: [ ]
 cilium_ipam_mode: "kubernetes"
 

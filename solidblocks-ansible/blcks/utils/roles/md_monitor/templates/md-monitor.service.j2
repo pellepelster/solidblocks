@@ -1,0 +1,10 @@
+[Unit]
+Description=md monitor
+
+[Service]
+Type=oneshot
+ExecStart={{ bin_dir }}/md-monitor.sh
+Environment="MD_MONITOR_LOG_FILE={{ logfile }}"
+
+[Install]
+WantedBy=multi-user.target

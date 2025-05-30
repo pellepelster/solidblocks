@@ -24,9 +24,9 @@ No requirements.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_hcloud_token"></a> [hcloud\_token](#input\_hcloud\_token) | n/a | `string` | n/a | yes |
-| <a name="input_network_id"></a> [network\_id](#input\_network\_id) | n/a | `string` | n/a | yes |
-| <a name="input_output_path"></a> [output\_path](#input\_output\_path) | n/a | `string` | n/a | yes |
+| <a name="input_hcloud_token"></a> [hcloud\_token](#input\_hcloud\_token) | Hetzner API token with R/W access | `string` | n/a | yes |
+| <a name="input_network_id"></a> [network\_id](#input\_network\_id) | Hetzner resource id of the network | `string` | n/a | yes |
+| <a name="input_output_path"></a> [output\_path](#input\_output\_path) | path for the generated files | `string` | n/a | yes |
 
 ## Outputs
 

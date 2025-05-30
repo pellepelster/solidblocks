@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  role_name: md_monitor
+  namespace: utils
+  description: "Poll status for linux software raids and add them as JSON formatted events to a logfile"
+  platforms:
+    - name: Debian
+      versions:
+        - buster
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - bionic
+  galaxy_tags:
+    - system
+dependencies: []

@@ -1,0 +1,12 @@
+---
+# title: systemd schedule
+# description: execution schedule for software raid status checks
+schedule: "*-*-* *:*:00"
+
+# title: status logfile
+# description: path for the logfile where the software raid status event will be written to
+logfile: /var/log/md_status.log
+
+# title: installation dir for check script
+# description: installation dir for check script
+bin_dir: /usr/local/bin

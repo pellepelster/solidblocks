@@ -25,13 +25,13 @@ No requirements.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_output_path"></a> [output\_path](#input\_output\_path) | n/a | `string` | n/a | yes |
-| <a name="input_ssh_private_key_openssh"></a> [ssh\_private\_key\_openssh](#input\_ssh\_private\_key\_openssh) | n/a | `string` | n/a | yes |
-| <a name="input_ssh_servers"></a> [ssh\_servers](#input\_ssh\_servers) | n/a | <pre>list(object({<br/>    name         = string,<br/>    user         = optional(string, "root"),<br/>    ipv4_address = string<br/>  }))</pre> | n/a | yes |
+| <a name="input_output_path"></a> [output\_path](#input\_output\_path) | path for the generated files | `string` | n/a | yes |
+| <a name="input_ssh_private_key_openssh"></a> [ssh\_private\_key\_openssh](#input\_ssh\_private\_key\_openssh) | public key for server access in OpenSSH format | `string` | n/a | yes |
+| <a name="input_ssh_servers"></a> [ssh\_servers](#input\_ssh\_servers) | list of servers that can be accessed via the supplied `ssh_private_key_openssh` | <pre>list(object({<br/>    name         = string,<br/>    user         = optional(string, "root"),<br/>    ipv4_address = string<br/>  }))</pre> | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_ssh_config_file"></a> [ssh\_config\_file](#output\_ssh\_config\_file) | n/a |
+| <a name="output_ssh_config_file"></a> [ssh\_config\_file](#output\_ssh\_config\_file) | full path for the generated openssh client configuration |
 <!-- END_TF_DOCS -->
