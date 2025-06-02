@@ -136,7 +136,7 @@ function task_build_mingwX64 {
 }
 
 function task_build {
-  local target=${1:-none}
+  local target=${1:-linuxX64}
   ${DIR}/gradlew "${target}Binaries"
   find "${DIR}/build/bin/${target}/releaseExecutable/" -type f -exec cp {} ${DIR}/blcks-${target}-${VERSION} \;
   chmod +x ${DIR}/blcks-${target}-${VERSION}

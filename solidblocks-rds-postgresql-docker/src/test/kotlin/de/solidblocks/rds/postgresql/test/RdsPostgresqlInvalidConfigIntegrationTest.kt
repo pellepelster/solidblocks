@@ -17,7 +17,6 @@ import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.images.PullPolicy
 
 @ExtendWith(RdsTestBedExtension::class)
-@Disabled
 class RdsPostgresqlInvalidConfigIntegrationTest {
 
   companion object {
@@ -39,6 +38,7 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
   }
 
   @Test
+  @Disabled
   fun doesNotStartIfNoDataDirIsMounted() {
     val logConsumer = TestContainersLogConsumer(Slf4jLogConsumer(logger))
 
@@ -76,6 +76,7 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
   }
 
   @Test
+  @Disabled
   fun doesNotStartIfNoBackupMethodSelected(rdsTestBed: RdsTestBed) {
     assertThrows(ContainerLaunchException::class.java) {
       rdsTestBed.createAndStartPostgresContainer(
