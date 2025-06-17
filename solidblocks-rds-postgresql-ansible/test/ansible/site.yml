@@ -11,6 +11,8 @@
       extension_pglogical_enabled: true
       extension_postgis_enabled: true
       extension_pg_ivm_enabled: true
+      extension_pgvector_enabled: true
+      extension_pgaudit_enabled: true
       primary_node: "{{ database1_primary_node }}"
 
 #- name: "database2 setup"

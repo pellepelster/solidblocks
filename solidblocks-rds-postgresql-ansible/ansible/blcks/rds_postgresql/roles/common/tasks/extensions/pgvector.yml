@@ -1,0 +1,12 @@
+---
+- name: "create pgvector extension install script"
+  ansible.builtin.template:
+    src: extensions/install-pgvector.sh.j2
+    dest: /root/install-pgvector.sh
+    mode: '0700'
+
+- name: "create vector extension"
+  ansible.builtin.command:
+    cmd: "/root/install-pgvector.sh"
+    creates: "/usr/lib/postgresql/{{ postgres_version }}/lib/vector.so"
+  notify: "enable vector extension"

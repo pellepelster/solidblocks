@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+apt-get -y install git make gcc postgresql-server-dev-{{ postgres_version }} libkrb5-dev
+git clone --branch REL_{{ postgres_version }}_STABLE  https://github.com/pgaudit/pgaudit.git /tmp/pgaudit
+cd /tmp/pgaudit && make install USE_PGXS=1
+apt-get -y remove make gcc postgresql-server-dev-{{ postgres_version }} libkrb5-dev
+rm -rf /tmp/pgaudit

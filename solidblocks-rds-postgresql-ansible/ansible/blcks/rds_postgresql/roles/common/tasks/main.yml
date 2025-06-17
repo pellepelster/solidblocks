@@ -38,6 +38,11 @@
   ansible.builtin.apt:
     upgrade: full
 
+- name: "install python3-psycopg2"
+  ansible.builtin.package:
+    name: python3-psycopg2
+    state: present
+
 - name: "add postgres repository key"
   ansible.builtin.get_url:
     url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
@@ -85,6 +90,16 @@
   ansible.builtin.include_tasks:
     file: extensions/pglogical.yml
   when: extension_pglogical_enabled
+
+- name: "setup pgaudit extension"
+  ansible.builtin.include_tasks:
+    file: extensions/pgaudit.yml
+  when: extension_pgaudit_enabled
+
+- name: "setup pgvector extension"
+  ansible.builtin.include_tasks:
+    file: extensions/pgvector.yml
+  when: extension_pgvector_enabled
 
 - name: "setup postgis extension"
   ansible.builtin.include_tasks:

@@ -19,7 +19,7 @@
   become: yes
   become_user: postgres
 
-- name: "stopping db aftet recovery"
+- name: "stopping db after recovery"
   ansible.builtin.command: /usr/lib/postgresql/{{ postgres_version }}/bin/pg_ctl -D "{{ postgres_data_dir }}" stop
   become: yes
   become_user: postgres

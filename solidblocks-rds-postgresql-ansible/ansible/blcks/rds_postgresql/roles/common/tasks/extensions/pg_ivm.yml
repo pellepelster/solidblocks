@@ -9,4 +9,4 @@
   ansible.builtin.command:
     cmd: "/root/install-pg-ivm.sh"
     creates: "/usr/lib/postgresql/{{ postgres_version }}/lib/pg_ivm.so"
-
+  notify: "enable pg_ivm extension"

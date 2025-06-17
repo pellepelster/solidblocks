@@ -3,7 +3,7 @@
 set -eu -o pipefail
 
 apt-get -y install git make gcc postgresql-server-dev-{{ postgres_version }}
-git clone --branch v1.11 https://github.com/sraoss/pg_ivm.git /tmp/pg_ivm
-cd /tmp/pg_ivm && make install
+git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git /tmp/pgvector
+cd /tmp/pgvector && make && make install
 apt-get -y remove make gcc postgresql-server-dev-{{ postgres_version }}
-rm -rf /tmp/pg_ivm
+rm -rf /tmp/pgvector

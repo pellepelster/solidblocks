@@ -1,0 +1,14 @@
+---
+- name: "create pgaudit extension install script"
+  ansible.builtin.template:
+    src: extensions/install-pgaudit.sh.j2
+    dest: /root/install-pgaudit.sh
+    mode: '0700'
+
+- name: "create pgaudit extension"
+  ansible.builtin.command:
+    cmd: "/root/install-pgaudit.sh"
+    creates: "/usr/lib/postgresql/{{ postgres_version }}/lib/pgaudit.so"
+  notify:
+    - "restart postgres"
+    - "enable pgaudit extension"

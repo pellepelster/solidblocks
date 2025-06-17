@@ -1,6 +1,4 @@
-from pprint import pprint
-
-from fixtures import conn, ip_addr, TEST_ID
+from fixtures import *
 
 
 def test_data_still_there(conn):

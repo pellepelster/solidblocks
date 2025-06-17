@@ -1,0 +1,40 @@
+---
+- name: "enable postgis extension"
+  community.postgresql.postgresql_query:
+    login_db: postgres
+    login_user: "{{ postgres_superuser_username }}"
+    login_password: "{{ postgres_superuser_password }}"
+    query: "CREATE EXTENSION IF NOT EXISTS postgis;"
+
+- name: "enable pg_ivm extension"
+  community.postgresql.postgresql_query:
+    login_db: postgres
+    login_user: "{{ postgres_superuser_username }}"
+    login_password: "{{ postgres_superuser_password }}"
+    query: "CREATE EXTENSION IF NOT EXISTS pg_ivm;"
+
+- name: "enable pglogical extension"
+  community.postgresql.postgresql_query:
+    login_db: postgres
+    login_user: "{{ postgres_superuser_username }}"
+    login_password: "{{ postgres_superuser_password }}"
+    query: "CREATE EXTENSION IF NOT EXISTS pglogical;"
+
+- name: "enable vector extension"
+  community.postgresql.postgresql_query:
+    login_db: postgres
+    login_user: "{{ postgres_superuser_username }}"
+    login_password: "{{ postgres_superuser_password }}"
+    query: "CREATE EXTENSION IF NOT EXISTS vector;"
+
+- name: "enable pgaudit extension"
+  community.postgresql.postgresql_query:
+    login_db: postgres
+    login_user: "{{ postgres_superuser_username }}"
+    login_password: "{{ postgres_superuser_password }}"
+    query: "CREATE EXTENSION IF NOT EXISTS pgaudit;"
+
+- name: "restart postgres"
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: "{{ service_name }}"

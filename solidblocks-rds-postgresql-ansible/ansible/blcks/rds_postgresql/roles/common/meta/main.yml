@@ -38,6 +38,12 @@ argument_specs:
       extension_pg_ivm_enabled:
         description: enable postgis postgres extension
         required: false
+      extension_pgvector_enabled:
+        description: enable pgvector postgres extension
+        required: false
+      extension_pgaudit_enabled:
+        description: enable pgaudit postgres extension
+        required: false
 
       backup_s3_endpoint:
         description: TODO

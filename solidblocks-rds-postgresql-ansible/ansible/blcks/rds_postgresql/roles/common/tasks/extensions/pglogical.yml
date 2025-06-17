@@ -4,3 +4,4 @@
     name:
       - "postgresql-{{ postgres_version }}-pglogical"
     state: present
+  notify: "enable pglogical extension"
