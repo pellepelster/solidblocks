@@ -1,0 +1,3 @@
+---
+- ansible.builtin.include_role:
+    name: blcks.rds_postgresql.common

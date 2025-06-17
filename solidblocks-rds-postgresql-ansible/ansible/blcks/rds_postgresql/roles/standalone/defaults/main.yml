@@ -1,0 +1,20 @@
+---
+postgres_version: 17
+extension_pglogical_enabled: false
+extension_postgis_enabled: false
+extension_pg_ivm_enabled: false
+storage_mount: "/storage/data"
+postgres_data_dir: "{{ storage_mount }}/{{ environment_name }}/{{ instance_name }}"
+postgres_superuser_username: "rds"
+#postgres_superuser_password:
+
+postgres_replicator_username: "TODO"
+postgres_replicator_password: "TODO"
+todo: "TODO"
+todo_cidr: "192.168.0.0/24"
+
+service_name: "{{ environment_name }}-{{ instance_name }}"
+pgbackrest_stanza_name: "{{ service_name }}"
+pgbackrest_bucket_name: "{{ service_name }}"
+
+backup_s3_uri_style: "host"

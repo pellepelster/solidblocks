@@ -1,0 +1,20 @@
+[global]
+start-fast=y
+log-level-console=info
+compress-type=zst
+compress-level=1
+
+[{{ pgbackrest_stanza_name }}]
+pg1-path={{ postgres_data_dir }}
+pg1-user={{ postgres_superuser_username }}
+repo1-cipher-pass={{ backup_password }}
+repo1-cipher-type=aes-256-cbc
+repo1-type=s3
+repo1-s3-endpoint={{ backup_s3_endpoint }}
+repo1-s3-bucket={{ backup_s3_bucket }}
+repo1-s3-key={{ backup_s3_key }}
+repo1-s3-key-secret={{ backup_s3_key_secret }}
+repo1-s3-region={{ backup_s3_region }}
+repo1-path=/{{ pgbackrest_stanza_name }}
+repo1-s3-uri-style={{ backup_s3_uri_style }}
+repo1-retention-full=7

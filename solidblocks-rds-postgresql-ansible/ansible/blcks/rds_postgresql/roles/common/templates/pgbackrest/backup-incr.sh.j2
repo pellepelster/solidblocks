@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+sudo -u postgres pgbackrest --stanza={{ pgbackrest_stanza_name }} backup --type=incr

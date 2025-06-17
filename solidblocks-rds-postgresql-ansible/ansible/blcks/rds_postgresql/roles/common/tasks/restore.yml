@@ -1,0 +1,25 @@
+---
+- name: "restoring backup"
+  ansible.builtin.command: pgbackrest --stanza={{ pgbackrest_stanza_name }} --db-path={{ postgres_data_dir }} restore --recovery-option="recovery_end_command=/usr/local/bin/{{ pgbackrest_stanza_name }}-recovery-complete.sh"
+  become: yes
+  become_user: postgres
+
+- name: "starting db for recovery"
+  ansible.builtin.command: /usr/lib/postgresql/{{ postgres_version }}/bin/pg_ctl -D "{{ postgres_data_dir }}" start --options="-c listen_addresses=''"
+  become: yes
+  become_user: postgres
+
+- name: "wait for pgbackrest recovery completed"
+  ansible.builtin.wait_for:
+    path: /tmp/{{ pgbackrest_stanza_name }}-recovery-complete
+    search_regex: completed
+
+- name: "wait for database recovery"
+  ansible.builtin.command: /usr/local/bin/{{ pgbackrest_stanza_name }}-wait-for-recovery.sh
+  become: yes
+  become_user: postgres
+
+- name: "stopping db aftet recovery"
+  ansible.builtin.command: /usr/lib/postgresql/{{ postgres_version }}/bin/pg_ctl -D "{{ postgres_data_dir }}" stop
+  become: yes
+  become_user: postgres

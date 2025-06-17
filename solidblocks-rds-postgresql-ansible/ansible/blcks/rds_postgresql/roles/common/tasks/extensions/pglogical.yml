@@ -1,0 +1,6 @@
+---
+- name: "install pglogical postgresql extensions"
+  ansible.builtin.package:
+    name:
+      - "postgresql-{{ postgres_version }}-pglogical"
+    state: present

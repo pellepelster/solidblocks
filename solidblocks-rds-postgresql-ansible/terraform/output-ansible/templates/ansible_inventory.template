@@ -1,0 +1,11 @@
+---
+%{ for id, database in databases ~}
+${id}:
+    hosts:
+        %{~ for server in database.servers ~}
+        ${server.name}:
+            ansible_host: ${server.name}
+            ansible_ssh_common_args: "-F ${ssh_config_file}"
+            data_device: ${server.data_linux_device}
+        %{~ endfor ~}
+%{~ endfor ~}

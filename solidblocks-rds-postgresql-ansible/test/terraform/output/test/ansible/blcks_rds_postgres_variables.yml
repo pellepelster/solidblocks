@@ -1,0 +1,7 @@
+---
+backup_s3_endpoint: "https://s3.fr-par.scw.cloud"
+backup_s3_bucket: "test-test1-backup"
+backup_s3_key: "SCW41AEK0D9HBNZJ1NEJ"
+backup_s3_key_secret: "d8d2c998-a942-4fb0-84a5-ee5a4c6a5776"
+backup_s3_region: "fr-par"
+backup_s3_uri_style: host

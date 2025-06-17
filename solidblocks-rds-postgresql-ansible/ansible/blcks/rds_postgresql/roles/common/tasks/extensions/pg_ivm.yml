@@ -1,0 +1,12 @@
+---
+- name: "create pg_ivm extension install script"
+  ansible.builtin.template:
+    src: extensions/install-pg-ivm.sh.j2
+    dest: /root/install-pg-ivm.sh
+    mode: '0700'
+
+- name: "create pg_ivm extension"
+  ansible.builtin.command:
+    cmd: "/root/install-pg-ivm.sh"
+    creates: "/usr/lib/postgresql/{{ postgres_version }}/lib/pg_ivm.so"
+

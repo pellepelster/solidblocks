@@ -1,0 +1,117 @@
+---
+- name: "install pgbackrest"
+  ansible.builtin.package:
+    name: pgbackrest
+    state: present
+
+- name: "configure pgbackrest"
+  ansible.builtin.template:
+    src: pgbackrest/pgbackrest.conf.j2
+    dest: /etc/pgbackrest.conf
+    mode: '0600'
+
+- name: "write recovery-complete.sh"
+  ansible.builtin.template:
+    src: pgbackrest/recovery-complete.sh.j2
+    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-recovery-complete.sh"
+    mode: '0755'
+
+- name: "write wait-for-recovery.sh"
+  ansible.builtin.template:
+    src: pgbackrest/wait-for-recovery.sh.j2
+    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-wait-for-recovery.sh"
+    mode: '0755'
+
+- name: "write backup-full.sh"
+  ansible.builtin.template:
+    src: pgbackrest/backup-full.sh.j2
+    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-backup-full.sh"
+    mode: '0755'
+
+- name: "write backup-full service"
+  ansible.builtin.template:
+    src: pgbackrest/backup-full.service.j2
+    dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-full.service"
+    mode: '0755'
+
+- name: "write backup-full timer"
+  ansible.builtin.template:
+    src: pgbackrest/backup-full.timer.j2
+    dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-full.timer"
+    mode: '0755'
+
+- name: "enable backup-full timer"
+  ansible.builtin.systemd_service:
+    name: "{{ pgbackrest_stanza_name }}-backup-full.timer"
+    daemon_reload: true
+    state: started
+    enabled: true
+  when: is_primary
+
+- name: "disable backup-incr timer"
+  ansible.builtin.systemd_service:
+    name: "{{ pgbackrest_stanza_name }}-backup-full.timer"
+    daemon_reload: true
+    state: stopped
+    enabled: false
+  when: not is_primary
+
+- name: "write backup-incr.sh"
+  ansible.builtin.template:
+    src: pgbackrest/backup-incr.sh.j2
+    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-backup-incr.sh"
+    mode: '0755'
+
+- name: "write backup-incr service"
+  ansible.builtin.template:
+    src: pgbackrest/backup-incr.service.j2
+    dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-incr.service"
+    mode: '0755'
+
+- name: "write backup-incr timer"
+  ansible.builtin.template:
+    src: pgbackrest/backup-incr.timer.j2
+    dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-incr.timer"
+    mode: '0755'
+
+- name: "enable backup-incr timer"
+  ansible.builtin.systemd_service:
+    name: "{{ pgbackrest_stanza_name }}-backup-incr.timer"
+    daemon_reload: true
+    state: started
+    enabled: true
+  when: is_primary
+
+- name: "disable backup-incr timer"
+  ansible.builtin.systemd_service:
+    name: "{{ pgbackrest_stanza_name }}-backup-incr.timer"
+    daemon_reload: true
+    state: stopped
+    enabled: false
+  when: not is_primary
+
+- name: "check if backup stanza exists"
+  ansible.builtin.command: pgbackrest --stanza={{ pgbackrest_stanza_name }} info
+  become: yes
+  become_user: postgres
+  register: stanza_exists_result
+  ignore_errors: true
+
+- name: "setting facts"
+  ansible.builtin.set_fact:
+    stanza_exists: "{{ 'missing stanza path' not in stanza_exists_result.stdout }}"
+
+- name: "check if restore is available"
+  ansible.builtin.command: pgbackrest --stanza={{ pgbackrest_stanza_name }} info
+  become: yes
+  become_user: postgres
+  register: restore_available_result
+  ignore_errors: true
+
+- name: "setting facts"
+  ansible.builtin.set_fact:
+    restore_available: "{{ stanza_exists and 'no valid backups' not in restore_available_result.stdout }}"
+
+- name: "backup facts"
+  ansible.builtin.debug:
+    msg: "stanza_exists: {{ stanza_exists }}, restore_available: {{ restore_available }}"

@@ -1,0 +1,9 @@
+# host      database        user            address                 auth-method
+host        all             all             ::1/128                 trust
+host        all             all             127.0.0.1/32            trust
+local       all             all                                     trust
+
+
+host        replication        replicator             {{ todo_cidr }}             password
+host        all        all             0.0.0.0/0             scram-sha-256
+host        all        all             {{ todo_cidr }}             scram-sha-256

@@ -1,0 +1,27 @@
+---
+- name: "database1 setup"
+  hosts: database1
+  become: true
+  roles:
+    - role: blcks.rds_postgresql.standalone
+      instance_name: database1
+      environment_name: test
+      postgres_superuser_password: yolo2000
+      backup_password: yolo2000
+      extension_pglogical_enabled: true
+      extension_postgis_enabled: true
+      extension_pg_ivm_enabled: true
+      primary_node: "{{ database1_primary_node }}"
+
+#- name: "database2 setup"
+#  hosts: database2
+#  become: true
+#  roles:
+#    - role: blcks.rds_postgresql.standalone
+#      database_name: database2
+#      database_environment: test
+#      postgres_superuser_password: yolo2000
+#      backup_password: yolo2000
+#      primary_node: "{{ database2_primary_node }}"
+#      extension_pglogical_enabled: true
+#      extension_postgis_enabled: false

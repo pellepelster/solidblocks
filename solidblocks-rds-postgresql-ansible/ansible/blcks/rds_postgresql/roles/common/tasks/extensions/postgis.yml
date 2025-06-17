@@ -1,0 +1,6 @@
+---
+- name: "install postgis postgresql extensions"
+  ansible.builtin.package:
+    name:
+      - "postgresql-{{ postgres_version }}-postgis-3"
+    state: present

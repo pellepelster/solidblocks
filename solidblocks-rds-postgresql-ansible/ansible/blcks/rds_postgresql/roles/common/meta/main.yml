@@ -1,0 +1,59 @@
+---
+argument_specs:
+  main:
+    short_description: setup PostgreSQL database
+    options:
+      instance_name:
+        description: database instance name
+        required: true
+
+      environment_name:
+        description: environment name
+        required: true
+
+      postgres_version:
+        description: postgres version to install
+        required: false
+      postgres_superuser_username:
+        description: database superuser name
+        required: false
+      postgres_superuser_password:
+        description: database superuser password
+        required: true
+
+      primary_node:
+        description: hostname of the primary database node
+        required: true
+
+      backup_password:
+        description: pgbackrest encryption password
+        required: true
+
+      extension_pglogical_enabled:
+        description: enable pglogical postgres extension
+        required: false
+      extension_postgis_enabled:
+        description: enable postgis postgres extension
+        required: false
+      extension_pg_ivm_enabled:
+        description: enable postgis postgres extension
+        required: false
+
+      backup_s3_endpoint:
+        description: TODO
+        required: true
+      backup_s3_bucket:
+        description: TODO
+        required: true
+      backup_s3_key:
+        description: TODO
+        required: true
+      backup_s3_key_secret:
+        description: TODO
+        required: true
+      backup_s3_region:
+        description: TODO
+        required: true
+      backup_s3_uri_style:
+        description: TODO
+        required: false

@@ -1,0 +1,7 @@
+---
+backup_s3_endpoint: ${backup_s3_endpoint}
+backup_s3_bucket: ${backup_s3_bucket}
+backup_s3_key: ${backup_s3_key}
+backup_s3_key_secret: ${backup_s3_key_secret}
+backup_s3_region: ${backup_s3_region}
+backup_s3_uri_style: ${backup_s3_uri_style}

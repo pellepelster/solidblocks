@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -eu
+
+until [[ "$(psql --user {{ postgres_superuser_username }} postgres --field-separator-zero --record-separator-zero --tuples-only --quiet --command "SELECT pg_is_in_recovery();" | tr -d '[:space:]')" == "f" ]]; do
+  log "waiting for server to be ready"
+  sleep 5
+done

@@ -1,0 +1,17 @@
+---
+database1:
+    hosts:
+        test-test1-database1-blue:
+            ansible_host: test-test1-database1-blue
+            ansible_ssh_common_args: "-F /home/pelle/git/solidblocks/solidblocks-rds-postgresql-ansible/test/terraform/output/test/ssh/client_config"
+            data_device: /dev/disk/by-id/scsi-0HC_Volume_102756608
+database2:
+    hosts:
+        test-test1-database2-blue:
+            ansible_host: test-test1-database2-blue
+            ansible_ssh_common_args: "-F /home/pelle/git/solidblocks/solidblocks-rds-postgresql-ansible/test/terraform/output/test/ssh/client_config"
+            data_device: /dev/disk/by-id/scsi-0HC_Volume_102756609
+        test-test1-database2-green:
+            ansible_host: test-test1-database2-green
+            ansible_ssh_common_args: "-F /home/pelle/git/solidblocks/solidblocks-rds-postgresql-ansible/test/terraform/output/test/ssh/client_config"
+            data_device: /dev/disk/by-id/scsi-0HC_Volume_102756610
