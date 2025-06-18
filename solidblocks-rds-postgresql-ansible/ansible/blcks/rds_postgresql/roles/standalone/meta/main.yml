@@ -21,10 +21,6 @@ argument_specs:
         description: database superuser password
         required: true
 
-      primary_node:
-        description: hostname of the primary database node
-        required: true
-
       backup_password:
         description: pgbackrest encryption password
         required: true

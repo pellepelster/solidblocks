@@ -13,17 +13,15 @@
       extension_pg_ivm_enabled: true
       extension_pgvector_enabled: true
       extension_pgaudit_enabled: true
-      primary_node: "{{ database1_primary_node }}"
 
 #- name: "database2 setup"
 #  hosts: database2
 #  become: true
 #  roles:
-#    - role: blcks.rds_postgresql.standalone
-#      database_name: database2
-#      database_environment: test
+#    - role: blcks.rds_postgresql.cluster
+#      tags: [ cluster ]
+#      instance_name: database2
+#      environment_name: test
 #      postgres_superuser_password: yolo2000
 #      backup_password: yolo2000
 #      primary_node: "{{ database2_primary_node }}"
-#      extension_pglogical_enabled: true
-#      extension_postgis_enabled: false

@@ -1,0 +1,29 @@
+---
+- ansible.builtin.include_role:
+    name: blcks.rds_postgresql.common
+  vars:
+    primary_node: "{{ ansible_hostname }}"
+
+- name: "wait for primary node"
+  wait_for:
+    host: "{{ primary_ip }}"
+    port: "{{ item }}"
+    state: started
+    timeout: 5
+  ignore_errors: yes
+  with_items:
+    - 5432
+
+- name: "restore secondary from initial backup"
+  ansible.builtin.command: pgbackrest --stanza={{ pgbackrest_stanza_name }} --delta restore --type=standby --recovery-option="primary_conninfo=host={{ primary_ip }} user=replicator" --recovery-option=recovery_target_timeline=latest
+  become: yes
+  become_user: postgres
+  when: postgres_data_dir_empty and not is_primary
+
+- name: "install postgres password file"
+  ansible.builtin.template:
+    src: .pgpass.j2
+    dest: "{{ postgres_data_dir }}/.pgpass"
+    owner: postgres
+    mode: '0600'
+

@@ -17,7 +17,7 @@ lc_numeric = 'en_US.UTF-8'			# locale for number formatting
 lc_time = 'en_US.UTF-8'				# locale for time formatting
 
 default_text_search_config = 'pg_catalog.english'
-shared_preload_libraries = 'pglogical{% if extension_pgaudit_enabled %},pgaudit{% endif %}'
+shared_preload_libraries = 'pg_stat_statements{% if extension_pglogical_enabled %},pglogical{% endif %}{% if extension_pgaudit_enabled %},pgaudit{% endif %}'
 
 # https://pgtune.leopard.in.ua/
 #max_connections = 500

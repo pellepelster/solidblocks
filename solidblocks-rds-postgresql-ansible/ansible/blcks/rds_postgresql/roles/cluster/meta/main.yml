@@ -11,6 +11,10 @@ argument_specs:
         description: environment name
         required: true
 
+      primary_node:
+        description: name of the primary database node
+        required: true
+
       postgres_version:
         description: postgres version to install
         required: false
@@ -19,10 +23,6 @@ argument_specs:
         required: false
       postgres_superuser_password:
         description: database superuser password
-        required: true
-
-      primary_node:
-        description: hostname of the primary database node
         required: true
 
       backup_password:
@@ -39,7 +39,7 @@ argument_specs:
         description: enable postgis postgres extension
         required: false
       extension_pgvector_enabled:
-        description: enable pgvector postgres extension
+        description: enable postgis postgres extension
         required: false
       extension_pgaudit_enabled:
         description: enable pgaudit postgres extension

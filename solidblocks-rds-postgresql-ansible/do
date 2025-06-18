@@ -133,7 +133,7 @@ function task_test_ansible {
     --extra-vars "@${DIR}/test/terraform/output/test/ansible/blcks_rds_postgres_variables.yml" \
     --extra-vars "database1_primary_node=${database1_primary_node}" \
     --extra-vars "database2_primary_node=${database2_primary_node}" \
-    "${DIR}/test/ansible/site.yml"
+    "${DIR}/test/ansible/site.yml" "$@"
 }
 
 function task_build {
@@ -253,7 +253,7 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test ;;
   test-terraform) task_test_terraform ;;
-  test-ansible) task_test_ansible ;;
+  test-ansible) task_test_ansible "$@" ;;
   test-after-bootstrap) task_test_after_bootstrap ;;
   test-destroy-instances) task_destroy_instances ;;
   test-after-instance-rebuild) task_test_after_instance_rebuild ;;

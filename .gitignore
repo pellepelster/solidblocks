@@ -41,3 +41,4 @@ solidblocks-cloud-init/modules/solidblocks-cloud-init/solidblocks-cloud-init-boo
 solidblocks-hetzner-k3s/terraform/output/
 solidblocks-do-python/dist/
 solidblocks-rds-postgresql-ansible/test.id
+solidblocks-rds-postgresql-ansible/test/terraform/output/

@@ -6,6 +6,7 @@
   ansible.builtin.set_fact:
     primary_node_hostvars: "{{ hostvars[primary_node] }}"
     is_primary: "{{ inventory_hostname == primary_node }}"
+    primary_ip: "{{ hostvars[primary_node]['ansible_default_ipv4']['address'] }}"
 
 - name: "primary node not found"
   ansible.builtin.fail:
@@ -14,7 +15,7 @@
 
 - name: "database facts"
   ansible.builtin.debug:
-    msg: "is_primary: {{ is_primary }}, data_device: {{ primary_node_hostvars['data_device'] }}"
+    msg: "is_primary: {{ is_primary }}, primary_ip: {{ primary_ip }}"
 
 - name: "mount data disk"
   ansible.posix.mount:
@@ -111,45 +112,16 @@
     file: extensions/pg_ivm.yml
   when: extension_pg_ivm_enabled
 
-- name: "setup pgbackrest"
-  ansible.builtin.include_tasks:
-    file: pgbackrest.yml
-
-- name: "bootstrap database"
-  ansible.builtin.include_tasks:
-    file: bootstrap.yml
-  when: postgres_data_dir_empty and not restore_available
-
-- name: "restore database"
-  ansible.builtin.include_tasks:
-    file: restore.yml
-  when: postgres_data_dir_empty and restore_available and stanza_exists
+- name: "write psql.j2"
+  ansible.builtin.template:
+    src: psql.j2
+    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-psql"
+    mode: '0755'
 
 - name: "install postgres systemd unit file"
   ansible.builtin.template:
     src: postgres.service.j2
     dest: "/etc/systemd/system/{{ service_name }}.service"
-    mode: '0600'
-
-- name: "install postgres config file"
-  ansible.builtin.template:
-    src: postgresql.conf.j2
-    dest: "{{ postgres_data_dir }}/postgresql.conf"
-    owner: postgres
-    mode: '0600'
-
-- name: "install postgres password file"
-  ansible.builtin.template:
-    src: .pgpass.j2
-    dest: "{{ postgres_data_dir }}/.pgpass"
-    owner: postgres
-    mode: '0600'
-
-- name: "install authentication config file"
-  ansible.builtin.template:
-    src: pg_hba.conf.j2
-    dest: "{{ postgres_data_dir }}/pg_hba.conf"
-    owner: postgres
     mode: '0600'
 
 - name: "load postgres systemd unit"
@@ -165,25 +137,3 @@
     owner: postgres
     group: postgres
     mode: '0700'
-
-- name: "starting postgres"
-  ansible.builtin.systemd_service:
-    state: started
-    name: "{{ service_name }}"
-#  when: postgres_data_dir_empty
-
-- name: "create backup stanza"
-  ansible.builtin.command: pgbackrest --stanza={{ pgbackrest_stanza_name }} stanza-create
-  become: yes
-  become_user: postgres
-  when: is_primary and not stanza_exists
-
-- name: "run initial full backup"
-  ansible.builtin.command: "/usr/local/bin/{{ pgbackrest_stanza_name }}-backup-full.sh"
-  when: is_primary and not stanza_exists
-
-- name: "write psql.j2"
-  ansible.builtin.template:
-    src: psql.j2
-    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-psql"
-    mode: '0755'

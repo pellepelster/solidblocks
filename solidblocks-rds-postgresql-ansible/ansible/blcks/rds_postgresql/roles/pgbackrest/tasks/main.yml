@@ -6,37 +6,37 @@
 
 - name: "configure pgbackrest"
   ansible.builtin.template:
-    src: pgbackrest/pgbackrest.conf.j2
+    src: pgbackrest.conf.j2
     dest: /etc/pgbackrest.conf
     mode: '0600'
 
 - name: "write recovery-complete.sh"
   ansible.builtin.template:
-    src: pgbackrest/recovery-complete.sh.j2
+    src: recovery-complete.sh.j2
     dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-recovery-complete.sh"
     mode: '0755'
 
 - name: "write wait-for-recovery.sh"
   ansible.builtin.template:
-    src: pgbackrest/wait-for-recovery.sh.j2
+    src: wait-for-recovery.sh.j2
     dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-wait-for-recovery.sh"
     mode: '0755'
 
 - name: "write backup-full.sh"
   ansible.builtin.template:
-    src: pgbackrest/backup-full.sh.j2
+    src: backup-full.sh.j2
     dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-backup-full.sh"
     mode: '0755'
 
 - name: "write backup-full service"
   ansible.builtin.template:
-    src: pgbackrest/backup-full.service.j2
+    src: backup-full.service.j2
     dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-full.service"
     mode: '0755'
 
 - name: "write backup-full timer"
   ansible.builtin.template:
-    src: pgbackrest/backup-full.timer.j2
+    src: backup-full.timer.j2
     dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-full.timer"
     mode: '0755'
 
@@ -58,19 +58,19 @@
 
 - name: "write backup-incr.sh"
   ansible.builtin.template:
-    src: pgbackrest/backup-incr.sh.j2
+    src: backup-incr.sh.j2
     dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-backup-incr.sh"
     mode: '0755'
 
 - name: "write backup-incr service"
   ansible.builtin.template:
-    src: pgbackrest/backup-incr.service.j2
+    src: backup-incr.service.j2
     dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-incr.service"
     mode: '0755'
 
 - name: "write backup-incr timer"
   ansible.builtin.template:
-    src: pgbackrest/backup-incr.timer.j2
+    src: backup-incr.timer.j2
     dest: "/etc/systemd/system/{{ pgbackrest_stanza_name }}-backup-incr.timer"
     mode: '0755'
 
