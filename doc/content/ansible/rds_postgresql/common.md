@@ -1,0 +1,23 @@
++++
+title = "Role common"
++++
+
+## Defaults
+
+| Name    | Value |
+| ------- | ----- |
+|postgres_version|17|
+|storage_mount|/storage/data|
+|postgres_data_dir|{{ storage_mount }}/{{ environment_name }}/{{ instance_name }}|
+|postgres_superuser_username|rds|
+|extension_pglogical_enabled|false|
+|extension_postgis_enabled|false|
+|extension_pg_ivm_enabled|false|
+|extension_pgvector_enabled|false|
+|extension_pgaudit_enabled|false|
+
+## Variables
+
+| Name    | Value |
+| ------- | ----- |
+| &lt;none&gt; | &lt;none&gt; |
