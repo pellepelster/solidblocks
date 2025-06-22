@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from solidblocks_do.command import command_exists, command_run, command_run_interactive, command_exec
 
 
@@ -19,8 +18,20 @@ def test_command_run_interactive():
 
 
 def test_command_run():
+    assert command_run(['ls'], shell=True) is True
     assert command_run(['ls']) is True
+
+    assert command_run('ls', shell=True) is True
+    assert command_run('ls') is True
+
+    assert command_run(['ls', '-lsa']) is True
+    assert command_run(['ls', '-lsa'], shell=True) is True
+
+    assert command_run('ls -lsa', shell=True) is True
+
     assert command_run(['invalid']) is False
+    assert command_run('invalid') is False
+    assert command_run(['invalid'], shell=True) is False
 
 
 def test_command_exec():

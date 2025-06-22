@@ -54,18 +54,23 @@ def command_run_interactive(command, env=None, workdir=None):
     return p.returncode == 0
 
 
-def command_run(command, env=None, workdir=None):
+def command_run(command, env=None, workdir=None, shell=False):
     log_divider_top()
+
+    c = command
+    if type(command) is list:
+        c = ' '.join(command)
+
     if workdir:
-        log_ok(f"running command '{' '.join(command)}' in '{workdir}'")
+        log_ok(f"running command '{c}' in '{workdir}'")
     else:
-        log_ok(f"running command '{' '.join(command)}'")
+        log_ok(f"running command '{c}'")
     log_divider_thin()
 
     command_env = {**(env or {}), **dict(os.environ)}
 
     try:
-        proc = subprocess.Popen(command, env=command_env, cwd=workdir)
+        proc = subprocess.Popen(command, env=command_env, cwd=workdir, shell=shell)
         proc.wait()
         return proc.returncode == 0
     except FileNotFoundError:
