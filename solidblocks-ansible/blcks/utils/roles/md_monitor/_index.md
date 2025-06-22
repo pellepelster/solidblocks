@@ -20,6 +20,169 @@ Description: Poll status for linux software raids and add them as JSON formatted
 
 
 
+<details>
+<summary><b>🧩 Argument Specifications in meta/argument_specs</b></summary>
+
+#### Key: main
+**Description**: setup PostgreSQL database
+
+
+  - **instance_name**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: database instance name
+  
+  
+  
+
+  - **environment_name**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: environment name
+  
+  
+  
+
+  - **postgres_version**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: postgres version to install
+  
+  
+  
+
+  - **postgres_superuser_username**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: database superuser name
+  
+  
+  
+
+  - **postgres_superuser_password**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: database superuser password
+  
+  
+  
+
+  - **backup_password**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: pgbackrest encryption password
+  
+  
+  
+
+  - **extension_pglogical_enabled**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: enable pglogical postgres extension
+  
+  
+  
+
+  - **extension_postgis_enabled**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: enable postgis postgres extension
+  
+  
+  
+
+  - **extension_pg_ivm_enabled**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: enable postgis postgres extension
+  
+  
+  
+
+  - **extension_pgvector_enabled**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: enable postgis postgres extension
+  
+  
+  
+
+  - **extension_pgaudit_enabled**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: enable pgaudit postgres extension
+  
+  
+  
+
+  - **backup_s3_endpoint**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: TODO
+  
+  
+  
+
+  - **backup_s3_bucket**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: TODO
+  
+  
+  
+
+  - **backup_s3_key**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: TODO
+  
+  
+  
+
+  - **backup_s3_key_secret**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: TODO
+  
+  
+  
+
+  - **backup_s3_region**
+    - **Required**: True
+    - **Type**: 
+    - **Default**: none
+    - **Description**: TODO
+  
+  
+  
+
+  - **backup_s3_uri_style**
+    - **Required**: False
+    - **Type**: 
+    - **Default**: none
+    - **Description**: TODO
+  
+  
+  
+
+
+
+</details>
 
 
 

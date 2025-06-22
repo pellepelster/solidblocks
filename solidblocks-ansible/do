@@ -24,14 +24,7 @@ function task_test {
 
 function task_build {
   python_ensure_venv "${DIR}"
-  VENV_DIR="${DIR}/venv"
-  "${VENV_DIR}/bin/docsible" \
-    --md-collection-template "${DIR}/templates/collections.j2" \
-    --collection "${DIR}/blcks" \
-    --no-backup \
-    --no-docsible \
-    --output _index.md
-  cat "${DIR}/blcks/utils/_index.md" | sed '1d;$d' > "${DIR}/../doc/content/ansible/collections/uils/_index.md"
+  blcks docs ansible --collection "${DIR}/blcks/utils" --target ~/git/solidblocks/doc/content/ansible/utils
 }
 
 function task_clean {
