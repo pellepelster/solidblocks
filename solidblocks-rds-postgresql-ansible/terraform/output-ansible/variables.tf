@@ -1,6 +1,6 @@
 variable "name" {
   type        = string
-  description = "Name for the K3S cluster associated resources"
+  description = "resources base name"
 }
 
 variable "environment" {
@@ -15,7 +15,7 @@ variable "output_path" {
 
 variable "ssh_config_file" {
   type        = string
-  description = "path to the ssh client config file for K3S node access"
+  description = "path to the ssh client config file for node access"
 }
 
 variable "backup_s3_endpoint" {

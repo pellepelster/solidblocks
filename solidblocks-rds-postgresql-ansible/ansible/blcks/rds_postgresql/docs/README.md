@@ -1,0 +1,1 @@
+The `rds_postgresql` collection contains roles to deploy standalone and clustered PostgreSQL servers 

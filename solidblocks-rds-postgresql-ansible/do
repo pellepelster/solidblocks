@@ -138,6 +138,14 @@ function task_test_ansible {
 
 function task_build {
   python_ensure_venv "${DIR}"
+  mkdir -p "${DIR}/build"
+  "${VENV_DIR}/bin/ansible-galaxy" \
+    collection build \
+    --output-path "${DIR}/build" \
+    --force \
+    --verbose \
+    "${DIR}/ansible/blcks/rds_postgresql"
+  blcks docs ansible --collection "${DIR}/ansible/blcks/rds_postgresql" --target ~/git/solidblocks/doc/content/ansible/rds_postgresql
 }
 
 function task_release_prepare {

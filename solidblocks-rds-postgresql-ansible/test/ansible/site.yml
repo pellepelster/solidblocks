@@ -1,5 +1,5 @@
 ---
-- name: "database1 setup"
+- name: "database1"
   hosts: database1
   become: true
   roles:
@@ -15,7 +15,7 @@
       extension_pgvector_enabled: true
       extension_pgaudit_enabled: true
 
-- name: "database2 setup"
+- name: "database2"
   hosts: database2
   become: true
   roles:

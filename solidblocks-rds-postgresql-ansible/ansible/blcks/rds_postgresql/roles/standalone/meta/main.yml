@@ -1,7 +1,10 @@
 ---
+dependencies:
+  - role: blcks.rds_postgresql.common
+
 argument_specs:
   main:
-    short_description: setup PostgreSQL database
+    short_description: A role to create a standalone PostgreSQL server
     options:
       instance_name:
         description: database instance name
@@ -14,9 +17,11 @@ argument_specs:
       postgres_version:
         description: postgres version to install
         required: false
+
       postgres_superuser_username:
         description: database superuser name
         required: false
+
       postgres_superuser_password:
         description: database superuser password
         required: true
@@ -28,15 +33,19 @@ argument_specs:
       extension_pglogical_enabled:
         description: enable pglogical postgres extension
         required: false
+
       extension_postgis_enabled:
         description: enable postgis postgres extension
         required: false
+
       extension_pg_ivm_enabled:
         description: enable postgis postgres extension
         required: false
+
       extension_pgvector_enabled:
         description: enable postgis postgres extension
         required: false
+
       extension_pgaudit_enabled:
         description: enable pgaudit postgres extension
         required: false
@@ -44,18 +53,23 @@ argument_specs:
       backup_s3_endpoint:
         description: TODO
         required: true
+
       backup_s3_bucket:
         description: TODO
         required: true
+
       backup_s3_key:
         description: TODO
         required: true
+
       backup_s3_key_secret:
         description: TODO
         required: true
+
       backup_s3_region:
         description: TODO
         required: true
+
       backup_s3_uri_style:
         description: TODO
         required: false

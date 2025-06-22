@@ -1,11 +1,11 @@
 variable "name" {
   type        = string
-  description = "Name for the K3S cluster associated resources"
+  description = "resources base name"
 }
 
 variable "environment" {
   type        = string
-  description = "Environment/stage for the resources (prod, dev, staging)"
+  description = "environment/stage for the resources (prod, dev, staging)"
 }
 
 variable "location" {
