@@ -13,7 +13,6 @@ class YamlTest {
 
     @Test
     fun testParse() {
-
         val rawYaml = """
             root-key1:
               - command: ping

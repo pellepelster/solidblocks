@@ -1,19 +1,12 @@
 package de.solidblocks.cli.utils
 
-import com.charleskorn.kaml.Location
-import com.charleskorn.kaml.MalformedYamlException
-import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlList
-import com.charleskorn.kaml.YamlMap
-import com.charleskorn.kaml.YamlNode
-import com.charleskorn.kaml.YamlNull
-import com.charleskorn.kaml.YamlScalar
-import com.charleskorn.kaml.yamlMap
-import com.charleskorn.kaml.yamlScalar
+import com.charleskorn.kaml.*
 
 fun Location.logMessage() = "line ${this.line} colum ${this.column}"
 
 fun YamlNode.isList(key: String) = (this.yamlMap.get<YamlNode>(key) is YamlList)
+
+fun YamlNode.isScalar(key: String) = (this.yamlMap.get<YamlNode>(key) is YamlScalar)
 
 fun YamlNode.isMap(key: String) = (this.yamlMap.get<YamlNode>(key) is YamlMap)
 
@@ -46,6 +39,7 @@ fun YamlMap.getList(key: String) =
             Success(this.get<YamlList>(key)!!)
         }
     }
+
 
 fun YamlNode.getKeys() = if (this is YamlMap) {
     this.yamlMap.getKeys()

@@ -1,6 +1,7 @@
 package de.solidblocks.cli.hetzner
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
@@ -10,7 +11,10 @@ import de.solidblocks.cli.utils.logWarning
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
-class NukeCommand : CliktCommand(name = "nuke", help = "delete all Hetzner cloud resources from a project") {
+class NukeCommand : CliktCommand(name = "nuke") {
+
+    override fun help(context: Context) = "delete all Hetzner cloud resources from a project"
+
     private val hcloudToken by option(
         "--hcloud-token",
         help = "the api token for the project",

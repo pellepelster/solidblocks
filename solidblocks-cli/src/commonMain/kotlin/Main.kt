@@ -1,11 +1,14 @@
+import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import de.solidblocks.cli.commands.BlcksCommand
+import de.solidblocks.cli.docs.DocsCommand
+import de.solidblocks.cli.docs.ansible.AnsibleCommand
 import de.solidblocks.cli.hetzner.HetznerCommand
 import de.solidblocks.cli.hetzner.NukeCommand
 
 
 fun main(args: Array<String>) {
-    val root = BlcksCommand()
+    val blcks = BlcksCommand()
 
     /*
     val workflowCommand = if (WorkflowParser.workflowExists()) {
@@ -23,7 +26,11 @@ fun main(args: Array<String>) {
 
     val hetzner = HetznerCommand()
     hetzner.subcommands(NukeCommand())
-    root.subcommands(hetzner)
+    blcks.subcommands(hetzner)
 
-    root.main(args)
+    val docs = DocsCommand()
+    docs.subcommands(AnsibleCommand())
+    blcks.subcommands(docs)
+
+    blcks.main(args)
 }

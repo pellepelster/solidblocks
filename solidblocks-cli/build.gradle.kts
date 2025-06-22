@@ -44,7 +44,7 @@ kotlin {
                 implementation("com.charleskorn.kaml:kaml:0.61.0")
                 implementation("com.squareup.okio:okio:3.9.0")
                 implementation("com.saveourtool.okio-extras:okio-extras:1.1.3")
-                implementation("com.github.ajalt.clikt:clikt:4.4.0")
+                implementation("com.github.ajalt.clikt:clikt:5.0.3")
                 implementation("com.kgit2:kommand:2.2.1")
                 implementation("io.ktor:ktor-client-resources:3.1.2")
                 implementation("io.ktor:ktor-client-content-negotiation:3.1.2")

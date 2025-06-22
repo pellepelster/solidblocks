@@ -8,7 +8,7 @@ source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
 
-BUILD_TARGET=${BUILD_TARGET:-linuxX64}
+DEFAULT_BUILD_TARGET=${BUILD_TARGET:-linuxX64}
 
 function task_usage {
   echo "Usage: $0 ..."
@@ -20,7 +20,7 @@ function task_test {
     exit 0
   fi
 
-  ${DIR}/gradlew ${BUILD_TARGET}Test
+  ${DIR}/gradlew ${DEFAULT_BUILD_TARGET}Test
 }
 
 function task_test_hetzner_nuke {
@@ -136,10 +136,16 @@ function task_build_mingwX64 {
 }
 
 function task_build {
-  local target=${1:-linuxX64}
+  local target=${1:-$DEFAULT_BUILD_TARGET}
   ${DIR}/gradlew "${target}Binaries"
   find "${DIR}/build/bin/${target}/releaseExecutable/" -type f -exec cp {} ${DIR}/blcks-${target}-${VERSION} \;
   chmod +x ${DIR}/blcks-${target}-${VERSION}
+}
+
+function task_install {
+  local target=${1:-$DEFAULT_BUILD_TARGET}
+  task_build
+  cp ${DIR}/blcks-${target}-${VERSION} ~/bin/blcks
 }
 
 function task_build_jvm {
@@ -155,6 +161,7 @@ arg=${1:-}
 shift || true
 case ${arg} in
   build) task_build "$@" ;;
+  install) task_install "$@" ;;
   build-jvm) task_build_jvm "$@" ;;
   build-macosX64) task_build_macosX64 "$@" ;;
   build-macosArm64) task_build_macosArm64 "$@" ;;
