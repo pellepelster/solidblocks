@@ -5,6 +5,7 @@ set -eu
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 source "${DIR}/../lib/utils.sh"
+source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 export VERSION="$(version)"
 export VENV_DIR="${DIR}/.venv"
@@ -32,6 +33,7 @@ function task_build() {
     --verbose \
     "${DIR}/ansible/blcks/k3s"
 
+  blcks docs ansible --collection "${DIR}/ansible/blcks/k3s" --target ~/git/solidblocks/doc/content/ansible/k3s
 }
 
 function task_usage {
