@@ -26,10 +26,6 @@ argument_specs:
         description: database superuser password
         required: true
 
-      backup_password:
-        description: pgbackrest encryption password
-        required: true
-
       extension_pglogical_enabled:
         description: enable pglogical postgres extension
         required: false
@@ -50,26 +46,30 @@ argument_specs:
         description: enable pgaudit postgres extension
         required: false
 
+      backup_password:
+        description: "S3 backup [encryption password](https://pgbackrest.org/configuration.html#section-repository/option-repo-cipher-pass)"
+        required: true
+
       backup_s3_endpoint:
-        description: TODO
+        description: "S3 backup bucket [endpoint](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-endpoint)"
         required: true
 
       backup_s3_bucket:
-        description: TODO
+        description: "S3 backup bucket [name](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-bucket)"
         required: true
 
       backup_s3_key:
-        description: TODO
+        description: "S3 backup bucket [access key](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-key)"
         required: true
 
       backup_s3_key_secret:
-        description: TODO
+        description: "S3 backup bucket [secret access key](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-key-secret)"
         required: true
 
       backup_s3_region:
-        description: TODO
+        description: "S3 backup bucket [region](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-region)"
         required: true
 
       backup_s3_uri_style:
-        description: TODO
+        description: "S3 backup bucket [uri style](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-uri-style)"
         required: false

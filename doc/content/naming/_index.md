@@ -1,7 +1,6 @@
 +++
 title = "Naming Conventions"
 description = "Infrastructure naming conventions"
-draft = true
 +++
 
 Naming conventions for infrastructure resources serve two main purposes. One is to ensure a unique, consistent and

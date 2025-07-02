@@ -1,1 +1,2 @@
 ---
+primary_node: "{{ ansible_hostname }}"
