@@ -137,7 +137,7 @@ jobs:
            solidblocks-shell/build/solidblocks-shell-*.zip
            solidblocks-shell/build/snippets/*
 
-  solidblocks-do-python:
+  solidblocks-python:
     runs-on: ubuntu-24.04
     steps:
       - name: install python3-pip
@@ -149,17 +149,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        working-directory: solidblocks-do-python
+        working-directory: solidblocks-python
         run: ./do build
       - name: Test Integration
-        working-directory: solidblocks-do-python
+        working-directory: solidblocks-python
         run: ./do test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: solidblocks-do-python
+          name: solidblocks-python
           path: |
-            solidblocks-do-python/dist/solidblocks_do*
+            solidblocks-python/dist/solidblocks_do*
 
   solidblocks-shell-test:
     runs-on: ubuntu-24.04
@@ -435,7 +435,7 @@ jobs:
       - solidblocks-shell-test
       - solidblocks-rds-postgresql-docker
       - solidblocks-cli
-      - solidblocks-do-python
+      - solidblocks-python
       - solidblocks-cli-test
       - solidblocks-rds-postgresql-test
       - solidblocks-hetzner
