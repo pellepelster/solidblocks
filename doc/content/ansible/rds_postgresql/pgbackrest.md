@@ -1,15 +1,10 @@
 +++
 title = "Role pgbackrest"
+description = "<no description>"
 +++
-
-## Defaults
-
-| Name    | Value |
-| ------- | ----- |
-| &lt;none&gt; | &lt;none&gt; |
 
 ## Variables
 
-| Name    | Value |
-| ------- | ----- |
-| &lt;none&gt; | &lt;none&gt; |
+| Name | Value | Description | Required |
+| ---- | ----- | ----------- | -------- |
+

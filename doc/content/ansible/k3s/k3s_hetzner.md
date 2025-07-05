@@ -1,16 +1,11 @@
 +++
 title = "Role k3s_hetzner"
+description = "deploy Hetzner specific K8S components"
 +++
-
-## Defaults
-
-| Name    | Value |
-| ------- | ----- |
-|hetzner_ccm_version|1.24.0|
-|hetzner_csi_version|2.13.0|
 
 ## Variables
 
-| Name    | Value |
-| ------- | ----- |
-| &lt;none&gt; | &lt;none&gt; |
+| Name | Value | Description | Required |
+| ---- | ----- | ----------- | -------- |
+| hetzner_ccm_version | 1.24.0 | &lt;none&gt; | false  |
+| hetzner_csi_version | 2.13.0 | &lt;none&gt; | false  |

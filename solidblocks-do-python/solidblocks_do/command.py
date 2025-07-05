@@ -1,3 +1,4 @@
+import json
 import os
 import pty
 import select
@@ -6,10 +7,11 @@ import sys
 import termios
 import tty
 
-from solidblocks_do.log import log_divider_thin, log_divider_top, log_divider_bottom, log_ok, log_error
+from solidblocks_do.log import log_divider_thin, log_divider_top, log_divider_bottom, log_success, log_error
 
 
-def command_exists(command):
+# see https://pellepelster.github.io/solidblocks/python/command/#command_run
+def command_ensure_exists(command):
     if not subprocess.run(['which', command], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL).returncode == 0:
         log_error(f"command '{command}' not found")
         return False
@@ -18,7 +20,7 @@ def command_exists(command):
 
 def command_run_interactive(command, env=None, workdir=None):
     log_divider_top()
-    log_ok(f"running command '{' '.join(command)}'")
+    log_success(f"running command '{' '.join(command)}'")
     log_divider_thin()
     # save original tty setting then set it to raw mode
     old_tty = termios.tcgetattr(sys.stdin)
@@ -54,25 +56,25 @@ def command_run_interactive(command, env=None, workdir=None):
     return p.returncode == 0
 
 
-def command_run(command, env=None, workdir=None, shell=False):
+# see https://pellepelster.github.io/solidblocks/python/command/#command_run
+def command_run(command, env=None, workdir=None, shell=True):
     log_divider_top()
 
-    c = command
+    command_log = command
     if type(command) is list:
-        c = ' '.join(command)
+        command_log = ' '.join(command)
 
     if workdir:
-        log_ok(f"running command '{c}' in '{workdir}'")
+        log_success(f"running command '{command_log}' in '{workdir}'")
     else:
-        log_ok(f"running command '{c}'")
+        log_success(f"running command '{command_log}'")
     log_divider_thin()
 
     command_env = {**(env or {}), **dict(os.environ)}
 
     try:
-        proc = subprocess.Popen(command, env=command_env, cwd=workdir, shell=shell)
-        proc.wait()
-        return proc.returncode == 0
+        result = subprocess.run(command_log, env=command_env, cwd=workdir, shell=shell)
+        return result.returncode == 0
     except FileNotFoundError:
         return False
     finally:
@@ -91,3 +93,12 @@ def command_exec(command, env=None, workdir=None):
     proc.wait()
 
     return proc.returncode, stdout.decode("utf-8"), stderr.decode("utf-8")
+
+
+# see https://pellepelster.github.io/solidblocks/python/command/#command_exec_json
+def command_exec_json(command, env=None, workdir=None):
+    _, stdout, _ = command_exec(command, env, workdir)
+    try:
+        return json.loads(stdout)
+    except:
+        return None

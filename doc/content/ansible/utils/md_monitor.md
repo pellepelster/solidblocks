@@ -1,17 +1,12 @@
 +++
 title = "Role md_monitor"
+description = "<no description>"
 +++
-
-## Defaults
-
-| Name    | Value |
-| ------- | ----- |
-|schedule|*-*-* *:*:00|
-|logfile|/var/log/md_status.log|
-|bin_dir|/usr/local/bin|
 
 ## Variables
 
-| Name    | Value |
-| ------- | ----- |
-| &lt;none&gt; | &lt;none&gt; |
+| Name | Value | Description | Required |
+| ---- | ----- | ----------- | -------- |
+| bin_dir | /usr/local/bin | &lt;none&gt; | false  |
+| logfile | /var/log/md_status.log | &lt;none&gt; | false  |
+| schedule | *-*-* *:*:00 | &lt;none&gt; | false  |

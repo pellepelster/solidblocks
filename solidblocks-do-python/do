@@ -18,12 +18,20 @@ trap clean_temp_dir EXIT
 source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
+function task_clean() {
+    rm -rf ${DIR}/tests/terraform/*.terraform*
+    rm -rf ${DIR}/tests/terraform/*.tfstate*
+    rm -rf ${DIR}/tests/tofu/.terraform*
+    rm -rf ${DIR}/tests/tofu/.tfstate*
+}
+
 function task_test() {
-  export FOO="foo_env"
-  export TEST_SOME_PASSWORD="test_some_password_env"
-  export TEST_SOME_SECRET_WITH_DASHES="test_some_secret_with_dashes_env"
-  export ONLY_FROM_ENV="only_from_env"
-  poetry run pytest -s
+  export NON_EXISTING_OVERRIDE="non_existing_override"
+  export CUSTOM_ENV_NAME="custom_env_name"
+  export OVERRIDE_PASSWORD="override_password"
+
+  task_clean
+  poetry run pytest -s $@
 }
 
 function task_build() {

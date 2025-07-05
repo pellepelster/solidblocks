@@ -1,10 +1,10 @@
 +++
 title = "Collection k3s"
-description = "your collection description"
+description = "The k3s collection contains roles to deploy K3S kubernetes clusters"
 +++
 
 ## Description
 The `k3s` collection contains roles to deploy K3S kubernetes clusters 
 
 ## Roles
-{{% children %}}
+{{% children description="true" %}}

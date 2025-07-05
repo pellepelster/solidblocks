@@ -8,16 +8,16 @@ from solidblocks_do.log import log_divider_thin, log_divider_bottom, \
 
 
 # see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_init
-def terraform_init(path, args=[], env=None):
-    if not terraform_ensure():
+def tofu_init(path, args=[], env=None):
+    if not tofu_ensure():
         return False
 
-    return command_run(['terraform', 'init'] + args, workdir=path, env=env)
+    return command_run(['tofu', 'init'] + args, workdir=path, env=env)
 
 
 # see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_apply
-def terraform_apply(path, apply=False, env=None):
-    if not terraform_ensure():
+def tofu_apply(path, apply=False, env=None):
+    if not tofu_ensure():
         return False
 
     extra_args = []
@@ -25,23 +25,23 @@ def terraform_apply(path, apply=False, env=None):
     if apply:
         extra_args = ['-auto-approve']
 
-    return command_run(['terraform', 'apply'] + extra_args, workdir=path, env=env)
+    return command_run(['tofu', 'apply'] + extra_args, workdir=path, env=env)
 
 
 # see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_has_output
-def terraform_has_output(path, output):
-    if not terraform_ensure():
+def tofu_has_output(path, output):
+    if not tofu_ensure():
         return None
 
-    return terraform_get_output(path, output) is not None
+    return tofu_get_output(path, output) is not None
 
 
 # see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_get_output
-def terraform_get_output(path, output):
-    if not terraform_ensure():
+def tofu_get_output(path, output):
+    if not tofu_ensure():
         return None
 
-    exitcode, stdout, stderr = command_exec(['terraform', 'output', '-raw', output], workdir=path)
+    exitcode, stdout, stderr = command_exec(['tofu', 'output', '-raw', output], workdir=path)
     if exitcode != 0:
         return None
 
@@ -49,16 +49,16 @@ def terraform_get_output(path, output):
 
 
 # see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_print_output
-def terraform_print_output(path, env=None):
-    if not terraform_ensure():
+def tofu_print_output(path, env=None):
+    if not tofu_ensure():
         return False
 
-    exitcode, stdout, stderr = command_exec(['terraform', 'output'], workdir=path, env=env)
+    exitcode, stdout, stderr = command_exec(['tofu', 'output'], workdir=path, env=env)
     if exitcode != 0:
         return False
 
     log_divider_top()
-    log_hint(f"terraform output for '{path}'")
+    log_hint(f"tofu output for '{path}'")
     log_divider_thin()
     print(stdout.strip())
     log_divider_bottom()
@@ -66,19 +66,19 @@ def terraform_print_output(path, env=None):
     return True
 
 
-# see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_ensure
-def terraform_ensure(min_version=None):
-    if not command_ensure_exists('terraform'):
-        log_error(f"terraform not found")
+# see https://pellepelster.github.io/solidblocks/python/terraform/#tofu_ensure
+def tofu_ensure(min_version=None):
+    if not command_ensure_exists('tofu'):
+        log_error(f"tofu not found")
         return False
 
     if min_version is None:
         return True
 
-    exit_code, stdout, stderr = command_exec(['terraform', 'version', '-json'])
+    exit_code, stdout, stderr = command_exec(['tofu', 'version', '-json'])
 
     if exit_code != 0:
-        log_error(f"failed to detect terraform version (exit code {exit_code})")
+        log_error(f"failed to detect tofu version (exit code {exit_code})")
         return False
 
     tf_version_data = json.loads(stdout)
@@ -86,7 +86,7 @@ def terraform_ensure(min_version=None):
     tf_min_version = semver.Version.parse(min_version)
 
     if tf_version < tf_min_version:
-        log_error(f"expected at least terraform version '{min_version}' but found '{tf_version}'")
+        log_error(f"expected at least tofu version '{min_version}' but found '{tf_version}'")
         return False
 
     return True

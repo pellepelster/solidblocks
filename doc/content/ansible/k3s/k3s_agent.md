@@ -1,16 +1,11 @@
 +++
 title = "Role k3s_agent"
+description = "deploy K3S cluster agents"
 +++
-
-## Defaults
-
-| Name    | Value |
-| ------- | ----- |
-|k3s_name|null|
-|k3s_environment|null|
 
 ## Variables
 
-| Name    | Value |
-| ------- | ----- |
-| &lt;none&gt; | &lt;none&gt; |
+| Name | Value | Description | Required |
+| ---- | ----- | ----------- | -------- |
+| k3s_environment | &lt;none&gt; | environment name for the K3S cluster | true  |
+| k3s_name | &lt;none&gt; | name for the K3S cluster | true  |

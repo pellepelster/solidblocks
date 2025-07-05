@@ -1,23 +1,18 @@
 +++
 title = "Role common"
+description = "<no description>"
 +++
-
-## Defaults
-
-| Name    | Value |
-| ------- | ----- |
-|postgres_version|17|
-|storage_mount|/storage/data|
-|postgres_data_dir|{{ storage_mount }}/{{ environment_name }}/{{ instance_name }}|
-|postgres_superuser_username|rds|
-|extension_pglogical_enabled|false|
-|extension_postgis_enabled|false|
-|extension_pg_ivm_enabled|false|
-|extension_pgvector_enabled|false|
-|extension_pgaudit_enabled|false|
 
 ## Variables
 
-| Name    | Value |
-| ------- | ----- |
-| &lt;none&gt; | &lt;none&gt; |
+| Name | Value | Description | Required |
+| ---- | ----- | ----------- | -------- |
+| extension_pg_ivm_enabled | false | &lt;none&gt; | false  |
+| extension_pgaudit_enabled | false | &lt;none&gt; | false  |
+| extension_pglogical_enabled | false | &lt;none&gt; | false  |
+| extension_pgvector_enabled | false | &lt;none&gt; | false  |
+| extension_postgis_enabled | false | &lt;none&gt; | false  |
+| postgres_data_dir | {{ storage_mount }}/{{ environment_name }}/{{ instance_name }} | &lt;none&gt; | false  |
+| postgres_superuser_username | rds | &lt;none&gt; | false  |
+| postgres_version | 17 | &lt;none&gt; | false  |
+| storage_mount | /storage/data | &lt;none&gt; | false  |

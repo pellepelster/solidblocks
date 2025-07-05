@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from solidblocks_do import log_error, log_hint
-from solidblocks_do.command import command_run_interactive, command_exec, command_exists
+from solidblocks_do.command import command_run_interactive, command_exec, command_ensure_exists
 
 
 def pass_env(secret_store):
@@ -25,7 +25,7 @@ def pass_wrapper(command=None, secret_store=None):
     if env is None:
         return None
 
-    if not command_exists('pass'):
+    if not command_ensure_exists('pass'):
         return None
 
     exitcode, stdout, _ = command_exec(['pass'] + command, env)
@@ -41,7 +41,7 @@ def pass_insert_secret(path, secret_store=None, multiline=False):
     if env is None:
         return False
 
-    if not command_exists('pass'):
+    if not command_ensure_exists('pass'):
         return None
 
     command_run_interactive(['pass', 'insert'] + (['--multiline'] if multiline else []) + [path],
@@ -49,14 +49,11 @@ def pass_insert_secret(path, secret_store=None, multiline=False):
     return True
 
 
-def pass_get_secret(path, secret_store=None):
-    return pass_wrapper([path], secret_store)
-
-
-def pass_ensure_secrets_env(paths, secret_store=None):
+# see https://pellepelster.github.io/solidblocks/python/pass/#pass_ensure_secrets
+def pass_ensure_secrets(paths, secret_store=None, env_name=None):
     missing_secret = True
     for path in paths:
-        env_name = pass_env_name(path)
+        env_name = pass_env_name(path, env_name)
         env_secret = os.getenv(env_name)
         secret = pass_get_secret(path, secret_store)
         if secret is None and env_secret is None:
@@ -74,38 +71,39 @@ def pass_ensure_secrets_env(paths, secret_store=None):
     return missing_secret
 
 
-def pass_env_name(path):
-    return path.replace("/", "_").replace("-", "_").upper()
+def pass_env_name(path, env_name):
+    if env_name is not None:
+        return env_name
+    else:
+        return path.replace("/", "_").replace("-", "_").upper()
 
 
-def pass_get_secret_env(path, secret_store=None):
-    env_name = pass_env_name(path)
+# see https://pellepelster.github.io/solidblocks/python/pass/#pass_get_secret
+def pass_get_secret(path, secret_store=None, env_name=None):
+    env_name = pass_env_name(path, env_name)
+
     if os.getenv(env_name):
         log_hint(f"found environment variable '{env_name}' for secret with path '{path}'")
         return os.getenv(env_name)
 
-    return pass_get_secret(path, secret_store)
+    return pass_wrapper([path], secret_store)
 
 
-def pass_has_secret(path, secret_store=None):
-    return pass_get_secret(path, secret_store) is not None
+# see https://pellepelster.github.io/solidblocks/python/pass/#pass_has_secret
+def pass_has_secret(path, secret_store=None, env_name=None):
+    return pass_get_secret(path, secret_store, env_name) is not None
 
 
 class PassTempFileContext:
 
-    def __init__(self, path, from_env=False, secret_store=None):
+    def __init__(self, path, secret_store=None):
         self.path = path
         self.secret_store = secret_store
-        self.from_env = from_env
 
     def __enter__(self):
         self.temp_file = tempfile.NamedTemporaryFile()
 
-        secret = None
-        if self.from_env:
-            secret = pass_get_secret_env(self.path, self.secret_store)
-        else:
-            secret = pass_get_secret(self.path, self.secret_store)
+        secret = pass_get_secret(self.path, self.secret_store)
 
         if secret is None:
             log_error(f"no secret found for key '{self.path}' from_env: {self.from_env}")
@@ -121,12 +119,9 @@ class PassTempFileContext:
         self.temp_file.close()
 
 
+# see https://pellepelster.github.io/solidblocks/python/pass/#pass_temp_file
 def pass_temp_file(path, secret_store=None):
-    return PassTempFileContext(path, False, secret_store)
-
-
-def pass_temp_file_env(path, secret_store=None):
-    return PassTempFileContext(path, True, secret_store)
+    return PassTempFileContext(path, secret_store)
 
 
 def pass_init(secret_store=None):
