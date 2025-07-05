@@ -159,7 +159,6 @@ function task_release_prepare {
 }
 
 function task_clean {
-  #rm -rf "${DIR}/build"
 
   #scw object config install type=rclone || true
   rclone purge scaleway:test-test1-backup || true
@@ -171,6 +170,7 @@ function task_clean {
 
   blcks hetzner nuke --do-nuke
 
+  rm -rf "${DIR}/build"
   rm -rf ${DIR}/test/**/.terraform
   rm -rf ${DIR}/test/**/*.tfstate
   rm -rf ${DIR}/test/**/*.tfstate.backup

@@ -95,6 +95,12 @@ function ci_detected {
     fi
     
     
+    if [[ -n "${WORKERS_CI:-}" ]]; then
+      echo "true"
+      return
+    fi
+    
+    
     if [[ -n "${CF_BUILD_ID:-}" ]]; then
       echo "true"
       return
