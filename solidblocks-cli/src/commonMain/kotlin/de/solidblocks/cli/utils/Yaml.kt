@@ -17,13 +17,33 @@ fun YamlNode.getMapString(key: String) = if (this !is YamlMap) {
         .map { it.value.yamlScalar.content }.firstOrNull()
 }
 
+fun YamlNode.getMapBool(key: String) = if (this !is YamlMap) {
+    null
+} else {
+    this.yamlMap.entries.filter { it.key.content == key }.filter { it.value is YamlScalar }
+        .map { it.value.yamlScalar.content.toBoolean() }.firstOrNull()
+}
+
+fun YamlNode.getMapBool(key: String, default: Boolean) = if (this !is YamlMap) {
+    null
+} else {
+    this.yamlMap.entries.filter { it.key.content == key }.filter { it.value is YamlScalar }
+        .map { it.value.yamlScalar.content.toBoolean() }.firstOrNull()
+} ?: default
+
+fun YamlNode.getMapMap(key: String) = if (this !is YamlMap) {
+    null
+} else {
+    this.yamlMap.entries.filter { it.key.content == key }.values.filterIsInstance<YamlMap>().singleOrNull()
+}
+
 fun yamlParse(yaml: String) = try {
     Success(Yaml.default.parseToYamlNode(yaml))
 } catch (e: MalformedYamlException) {
     Error("invalid yml")
 }
 
-fun YamlNode.getList(key: String) = if (this is YamlMap) {
+fun YamlNode.getMapList(key: String) = if (this is YamlMap) {
     this.yamlMap.getList(key)
 } else {
     Error("expected a map, got '${contentToString()}'")

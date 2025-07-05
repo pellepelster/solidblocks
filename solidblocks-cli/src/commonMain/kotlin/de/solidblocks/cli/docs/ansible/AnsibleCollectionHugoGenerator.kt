@@ -33,10 +33,14 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
         val roles = fs.list(rolesDir).map {
             val roleName = it.segments.last()
 
-            val defaults = parseRoleVariables(rolesDir.resolve(roleName).resolve("defaults").resolve("main.yml"))
-            val variables = parseRoleVariables(rolesDir.resolve(roleName).resolve("variables").resolve("main.yml"))
+            val metaData = loadRoleMetaYml(roleName)
 
-            Role(roleName, defaults, variables)
+            val defaults =
+                parseRoleVariables(rolesDir.resolve(roleName).resolve("defaults").resolve("main.yml")) ?: emptyList()
+            val variables =
+                parseRoleVariables(rolesDir.resolve(roleName).resolve("variables").resolve("main.yml")) ?: emptyList()
+
+            Role(roleName, defaults, variables, metaData ?: RoleMetaData(null, emptyList()))
         }
 
         val collectionIndexHugo = """
@@ -64,32 +68,20 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
             val roleIndex = targetDir.resolve("${role.name}.md")
             logInfo("writing role index to '${roleIndex}'")
 
+
             val roleIndexHugo = """
 +++
 title = "Role ${role.name}"
+description = "${role.metaData.shortDescription ?: "<no description>"}"
 +++
-
-## Defaults
-
-| Name    | Value |
-| ------- | ----- |
-${
-                role.defaults?.joinToString("\n") {
-                    "|${it.name}|${it.value}|"
-                } ?: "| &lt;none&gt; | &lt;none&gt; |"
-            }
 
 ## Variables
 
-| Name    | Value |
-| ------- | ----- |
-${
-                role.variables?.joinToString("\n") {
-                    "|${it.name}|${it.value}|"
-                } ?: "| &lt;none&gt; | &lt;none&gt; |"
-            }
-""".trimIndent()
+| Name | Value | Description | Required |
+| ---- | ----- | ----------- | -------- |
+${role.tableRows().toMarkdownTableRow()}
 
+""".trimIndent()
             fs.write(roleIndex) {
                 writeUtf8(roleIndexHugo)
             }
@@ -166,6 +158,31 @@ ${
         return Galaxy(namespace, name, version, data.getMapString("description"))
     }
 
+    private fun parseRoleMetadata(data: YamlNode): RoleMetaData? {
+
+        val argumentSpecs = data.getMapMap("argument_specs")
+        val main = argumentSpecs?.getMapMap("main")
+
+        val shortDescription = main?.getMapString("short_description")
+        val options = main?.getMapMap("options")
+
+        val argumentSpecOptions = when (val optionNames = options?.getKeys()) {
+            is Success -> {
+                optionNames.data.map {
+                    val option = options.getMapMap(it)
+                    val description = option?.getMapString("description")
+                    val required = option?.getMapBool("required") ?: false
+
+                    Option(it, description, required)
+                }
+            }
+
+            else -> emptyList()
+        }
+
+        return RoleMetaData(shortDescription, argumentSpecOptions)
+    }
+
     private fun parseVariables(data: YamlNode) = when (val ymlKeys = data.getKeys()) {
         is Success ->
             ymlKeys.data
@@ -206,5 +223,35 @@ ${
             }
         }
     }
+
+    fun loadRoleMetaYml(roleName: String): RoleMetaData? {
+        val metaYmlFile = collectionDir.resolve("roles").resolve(roleName).resolve("meta").resolve("main.yml")
+        if (!fs.exists(metaYmlFile)) {
+            logWarning("role metadata '$metaYmlFile' not found")
+            return null
+        }
+
+        logInfo("loading role metadata from '$metaYmlFile'")
+        val metaYml = yamlParse(fs.read(metaYmlFile) {
+            readUtf8()
+        })
+
+        return when (metaYml) {
+            is Success -> {
+                val roleMetaData = parseRoleMetadata(metaYml.data)
+                if (roleMetaData == null) {
+                    logError("failed to parse role metadata from '${metaYmlFile}'")
+                    return null
+                }
+                roleMetaData
+            }
+
+            else -> {
+                logError("failed to parse role metadata from '${metaYmlFile}'")
+                return null
+            }
+        }
+    }
+
 }
 

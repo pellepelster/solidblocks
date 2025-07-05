@@ -9,40 +9,11 @@ argument_specs:
   main:
     short_description: setup PostgreSQL database
     options:
-      instance_name:
-        description: database instance name
+      var1:
+        description: meta information for var1
         required: true
 
-      environment_name:
-        description: environment name
+      default1:
+        description: meta information for default1
         required: true
 
-      postgres_version:
-        description: postgres version to install
-        required: false
-      postgres_superuser_username:
-        description: database superuser name
-        required: false
-      postgres_superuser_password:
-        description: database superuser password
-        required: true
-
-      backup_password:
-        description: pgbackrest encryption password
-        required: true
-
-      extension_pglogical_enabled:
-        description: enable pglogical postgres extension
-        required: false
-      extension_postgis_enabled:
-        description: enable postgis postgres extension
-        required: false
-      extension_pg_ivm_enabled:
-        description: enable postgis postgres extension
-        required: false
-      extension_pgvector_enabled:
-        description: enable postgis postgres extension
-        required: false
-      extension_pgaudit_enabled:
-        description: enable pgaudit postgres extension
-        required: false
