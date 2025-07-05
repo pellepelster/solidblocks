@@ -1,0 +1,4 @@
+---
+argument_specs:
+  main:
+    short_description: deploy Hetzner specific K8S components

@@ -1,0 +1,4 @@
+---
+argument_specs:
+  main:
+    short_description: deploy common components for K3S cluster servers and agents
