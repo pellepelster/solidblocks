@@ -154,12 +154,15 @@ jobs:
       - name: Test Integration
         working-directory: solidblocks-python
         run: ./do test
+      - name: debug
+        working-directory: solidblocks-python
+        run: find ./
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: solidblocks-python
           path: |
-            solidblocks-python/dist/solidblocks_do*
+            solidblocks-python/build/solidblocks_do*
 
   solidblocks-shell-test:
     runs-on: ubuntu-24.04

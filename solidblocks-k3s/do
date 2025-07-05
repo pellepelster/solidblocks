@@ -26,6 +26,9 @@ function task_build() {
     terraform-docs markdown table --hide modules --output-mode inject --output-file "${DIR}/../doc/content/k3s/terraform/${module}.md" "${DIR}/terraform/${module}"
   done
 
+  rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/k3s/galaxy.yml" --replace "\${1}${VERSION}\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/k3s/galaxy.yml.tmp"
+  mv "${DIR}/ansible/blcks/k3s/galaxy.yml.tmp" "${DIR}/ansible/blcks/k3s/galaxy.yml"
+
   "${VENV_DIR}/bin/ansible-galaxy" \
     collection build \
     --output-path "${DIR}/build" \

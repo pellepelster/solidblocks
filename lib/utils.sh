@@ -1,4 +1,4 @@
-function version() {
+function version_old() {
   if [[ "${CI:-}" == "true" ]]; then
     if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
       echo "${GITHUB_REF_NAME:-}"
@@ -46,7 +46,7 @@ function next_rc_version() {
   echo "$(next_version $(current_version))-rc"
 }
 
-function version_new() {
+function version() {
   if [[ "${CI:-}" == "true" ]] && [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
     echo "${GITHUB_REF_NAME:-}"
   else

@@ -5,7 +5,7 @@ set -eu
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 source "${DIR}/../lib/utils.sh"
-export VERSION="$(version_new)"
+export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.temp_$$"
 
@@ -19,7 +19,7 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_clean() {
-    rm -rf ${DIR}/dist
+    rm -rf ${DIR}/build
     rm -rf ${DIR}/tests/terraform/*.terraform*
     rm -rf ${DIR}/tests/terraform/*.tfstate*
     rm -rf ${DIR}/tests/tofu/.terraform*
@@ -36,9 +36,9 @@ function task_test() {
 }
 
 function task_build() {
-    poetry version "${VERSION}"
-    poetry install
-    poetry build
+  poetry version "${VERSION}"
+  poetry install
+  poetry build --output "${DIR}/build"
 }
 
 function task_usage {

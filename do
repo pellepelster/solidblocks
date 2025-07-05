@@ -99,15 +99,18 @@ function task_clean {
     rm -rf "${DIR}/doc/snippets"
 
     for component in ${COMPONENTS}; do
+      echo "================================================================================="
+      echo "running clean for '${component}'"
+      echo "================================================================================="
         (
           cd "${DIR}/${component}"
           "./do" clean
         )
     done
 
-    task_clean_aws
-    task_clean_hetzner
-    task_clean_gcloud
+    #task_clean_aws
+    #task_clean_hetzner
+    #task_clean_gcloud
 }
 
 function task_test_init {

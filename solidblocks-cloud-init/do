@@ -129,10 +129,6 @@ function clean_cloud_resources() {
 }
 
 function task_clean {
-  for test in ${TESTS}; do
-    clean_cloud_resources "${test}"
-  done
-
   rm -rf "${DIR}/build"
 }
 
