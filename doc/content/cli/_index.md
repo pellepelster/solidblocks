@@ -14,7 +14,7 @@ Latest release can be downloaded from the [Soldiblocks releases page](https://gi
 ## Linux
 
 ```shell
-curl -L https://github.com/pellepelster/solidblocks/releases/download/v{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-linuxX64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
+curl -L https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-linuxX64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
 chmod +x blcks
 ./blcks --help
 ```
@@ -22,7 +22,7 @@ chmod +x blcks
 ## Windows
 
 ```shell
-curl -L https://github.com/pellepelster/solidblocks/releases/download/v{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-mingwX64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
+curl -L https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-mingwX64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
 chmod +x blcks
 ./blcks --help
 ```
@@ -30,7 +30,7 @@ chmod +x blcks
 ## macOS (Intel)
 
 ```shell
-curl -L https://github.com/pellepelster/solidblocks/releases/download/v{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-macosX64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
+curl -L https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-macosX64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
 chmod +x blcks
 ./blcks --help
 ```
@@ -38,7 +38,7 @@ chmod +x blcks
 ## macOS (Arm)
 
 ```shell
-curl -L https://github.com/pellepelster/solidblocks/releases/download/v{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-macosArm64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
+curl -L https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-macosArm64-{{% env "SOLIDBLOCKS_VERSION" %}} -o blcks
 chmod +x blcks
 ./blcks --help
 ```

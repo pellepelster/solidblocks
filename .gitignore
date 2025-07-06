@@ -16,7 +16,6 @@ terraform.tfstate.backup
 build
 *.pem
 .temp*
-/doc/snippets/
 ssh_config
 venv
 .venv
@@ -42,3 +41,4 @@ solidblocks-hetzner-k3s/terraform/output/
 solidblocks-python/dist/
 solidblocks-rds-postgresql-ansible/test.id
 solidblocks-rds-postgresql-ansible/test/terraform/output/
+doc/content/snippets/

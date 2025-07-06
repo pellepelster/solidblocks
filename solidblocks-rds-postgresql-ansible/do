@@ -178,7 +178,7 @@ function task_clean {
   local application_id="$(scw iam application list --output json | jq -r '.[] | select(.name == "test-test1-backup").id')"
   scw iam application delete "${application_id}" || true
 
-  blcks hetzner nuke --do-nuke
+  #blcks hetzner nuke --do-nuke || true
 
   rm -rf "${DIR}/build"
   rm -rf ${DIR}/test/**/.terraform

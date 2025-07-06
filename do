@@ -159,20 +159,22 @@ function prepare_documentation_env {
   for version in ${versions}; do
     eval "export ${version}"
   done
-  export SOLIDBLOCKS_VERSION="$(current_version)"
+  export SOLIDBLOCKS_VERSION="$VERSION"
+  echo $SOLIDBLOCKS_VERSION
 }
 
 function task_build_documentation {
     ensure_environment
 
-    rm -rf "${DIR}/doc/snippets"
-    mkdir -p "${DIR}/doc/snippets"
+    local snippet_dir="${DIR}/doc/content/snippets"
+    rm -rf "${snippet_dir}"
+    mkdir -p "${snippet_dir}"
 
     if [[ -n "${CI:-}" ]]; then
-      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${DIR}/doc/snippets"
+      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${snippet_dir}"
     else
-      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${DIR}/doc/snippets"
-      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${DIR}/doc/snippets"
+      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${snippet_dir}"
+      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${snippet_dir}"
     fi
 
     mkdir -p "${DIR}/build/documentation"
@@ -248,7 +250,7 @@ function task_release {
 
   task_release_check ${VERSION}
 
-  git tag -a "v${VERSION}" -m "v${VERSION}"
+  git tag -a "${VERSION}" -m "${VERSION}"
   git push --tags
 }
 
@@ -283,7 +285,7 @@ function task_release_tf_module {
   git clone "git@github.com:pellepelster/${module}.git" "${TEMP_DIR}/${module}/git"
 
   mkdir -p "${TEMP_DIR}/${module}/sources"
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${version}/${module}-v${version}.zip" -o "${TEMP_DIR}/${module}/${module}.zip"
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${version}/${module}-${version}.zip" -o "${TEMP_DIR}/${module}/${module}.zip"
   unzip "${TEMP_DIR}/${module}/${module}.zip" -d "${TEMP_DIR}/${module}/sources"
   cp -rv ${TEMP_DIR}/${module}/sources/* "${TEMP_DIR}/${module}/git"
   (

@@ -8,13 +8,13 @@ Releases are viable via [https://github.com/pellepelster/solidblocks/releases](h
 
 
 ```shell
-{{% include "/snippets/shell-bootstrap-solidblocks.sh" %}}
+{{% includef "/snippets/shell-bootstrap-solidblocks-%s.sh" %}}
 ```
 
 A full example that you can use as a skeleton for your own scripts
 
 ```shell
-{{% include "/snippets/shell-minimal-skeleton-do" %}}
+{{% includef "/snippets/shell-minimal-skeleton-%s.sh" %}}
 ```
 
 After download and extraction the different components can be sourced in via

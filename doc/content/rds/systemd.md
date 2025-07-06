@@ -10,7 +10,7 @@ Below is an example how to use systemd to start a docker-compose based Solidbloc
 version: "3"
 services:
   instance1:
-    image: ghcr.io/pellepelster/solidblocks-rds-postgresql:17-v{{% env "SOLIDBLOCKS_VERSION" %}}
+    image: ghcr.io/pellepelster/solidblocks-rds-postgresql:17-{{% env "SOLIDBLOCKS_VERSION" %}}
     environment:
       - "DB_INSTANCE_NAME=instance1"
       - "DB_..." # see https://pellepelster.github.io/solidblocks/rds/index.html#configuration

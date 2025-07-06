@@ -1,0 +1,4 @@
+{{- partial "shortcodes/include.html" (dict
+"page"             .Page
+"file"             (printf (.Get 0) (getenv "SOLIDBLOCKS_VERSION"))
+) }}
