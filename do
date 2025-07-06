@@ -159,7 +159,7 @@ function prepare_documentation_env {
   for version in ${versions}; do
     eval "export ${version}"
   done
-  export SOLIDBLOCKS_VERSION="${VERSION}"
+  export SOLIDBLOCKS_VERSION="$(current_version)"
 }
 
 function task_build_documentation {

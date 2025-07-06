@@ -11,7 +11,7 @@ function version_old() {
 }
 
 function current_version() {
-  git describe --tags --abbrev=0
+  git describe --tags --abbrev=0 | sed -e "s/^v//"
 }
 
 function next_version() {
