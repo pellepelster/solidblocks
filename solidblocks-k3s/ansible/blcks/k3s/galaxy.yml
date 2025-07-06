@@ -1,7 +1,7 @@
 namespace: blcks
 name: k3s
 
-version: 0.3.4-rc
+version: 0.4.1-rc
 
 readme: README.md
 
