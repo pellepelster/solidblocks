@@ -446,6 +446,7 @@ jobs:
       - solidblocks-debug-container
       - solidblocks-shell-test
       - solidblocks-terraform
+      - solidblocks-python
       - solidblocks-hetzner-dns
     steps:
       - name: Login to GitHub Container Registry
@@ -488,6 +489,7 @@ jobs:
             solidblocks-hetzner/snippets/*.zip
             solidblocks-hetzner/terraform-hcloud-solidblocks-rds-postgresql-*.zip
             solidblocks-cli-*/blcks-*
+            solidblocks-python/solidblocks_do*
 
   documentation:
     needs:
@@ -504,6 +506,7 @@ jobs:
       - solidblocks-shell-test
       - solidblocks-terraform
       - solidblocks-hetzner-dns
+      - solidblocks-python
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

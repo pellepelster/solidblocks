@@ -9,16 +9,19 @@ source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 export VERSION="$(version)"
 export VENV_DIR="${DIR}/.venv"
-export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-export SCW_ACCESS_KEY="${SCW_ACCESS_KEY:-$(pass solidblocks/scaleway/test/access_key_id)}"
-export SCW_SECRET_KEY="${SCW_SECRET_KEY:-$(pass solidblocks/scaleway/test/secret_key)}"
-export SCW_DEFAULT_ORGANIZATION_ID="${SCW_DEFAULT_ORGANIZATION_ID:-$(pass solidblocks/scaleway/oranization_id)}"
-export TF_VAR_scw_organization_id="${SCW_DEFAULT_ORGANIZATION_ID}"
-export TF_VAR_environment="test"
-export TF_VAR_location="nbg1"
-export TF_VAR_name="test1"
-
 TEMP_DIR="${DIR}/.test_$$"
+
+function prepare_env() {
+  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
+  export SCW_ACCESS_KEY="${SCW_ACCESS_KEY:-$(pass solidblocks/scaleway/test/access_key_id)}"
+  export SCW_SECRET_KEY="${SCW_SECRET_KEY:-$(pass solidblocks/scaleway/test/secret_key)}"
+  export SCW_DEFAULT_ORGANIZATION_ID="${SCW_DEFAULT_ORGANIZATION_ID:-$(pass solidblocks/scaleway/oranization_id)}"
+  export TF_VAR_scw_organization_id="${SCW_DEFAULT_ORGANIZATION_ID}"
+  export TF_VAR_environment="test"
+  export TF_VAR_location="nbg1"
+  export TF_VAR_name="test1"
+}
+
 
 function clean_temp_dir {
   rm -rf "${TEMP_DIR}"
@@ -38,6 +41,7 @@ trap clean_temp_dir EXIT
 source "${DIR}/../solidblocks-shell/lib/software.sh"
 
 function test_terraform {
+  prepare_env
   (
     local module="${1:-}"
     shift || true
@@ -52,6 +56,8 @@ function task_usage {
 }
 
 function task_test_terraform {
+  prepare_env
+
   test_terraform "storage" init -upgrade
   test_terraform "storage" apply -auto-approve
 
@@ -69,6 +75,8 @@ function task_test_terraform {
 }
 
 function task_destroy_instances {
+  prepare_env
+
   export TF_VAR_backup_s3_bucket=$(test_terraform "backup" output backup_s3_bucket)
   export TF_VAR_backup_s3_endpoint=$(test_terraform "backup" output backup_s3_endpoint)
   export TF_VAR_backup_s3_key=$(test_terraform "backup" output backup_s3_key)
@@ -79,6 +87,7 @@ function task_destroy_instances {
 }
 
 function task_destroy_storage {
+  prepare_env
   test_terraform "storage" destroy -auto-approve
 }
 
@@ -118,6 +127,7 @@ function task_test_after_storage_rebuild {
 }
 
 function task_test_ansible {
+  prepare_env
   python_ensure_venv "${DIR}"
   local database1_primary_node=$(test_terraform "instance" output database1_blue_name)
   local database2_primary_node=$(test_terraform "instance" output database2_blue_name)
@@ -270,8 +280,8 @@ case ${arg} in
   test-full-backup) task_full_backup ;;
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
-  release-artifacts) task_release_artifacts "$@" ;;
-  release-prepare) task_release_prepare "$@" ;;
+  release-artifacts) ;;
+  release-prepare) ;;
   release-test);;
   *) task_usage ;;
 esac
