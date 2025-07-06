@@ -149,11 +149,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        working-directory: solidblocks-python
-        run: ./do build
+        run: ./solidblocks-python/do build
       - name: Test Integration
-        working-directory: solidblocks-python
-        run: ./do test
+        run: ./solidblocks-python/do test
       - name: debug
         working-directory: solidblocks-python
         run: find ./
@@ -162,7 +160,7 @@ jobs:
         with:
           name: solidblocks-python
           path: |
-            solidblocks-python/build/solidblocks_do*
+            solidblocks-python/dist/solidblocks_do*
 
   solidblocks-shell-test:
     runs-on: ubuntu-24.04
@@ -438,7 +436,6 @@ jobs:
       - solidblocks-shell-test
       - solidblocks-rds-postgresql-docker
       - solidblocks-cli
-      - solidblocks-python
       - solidblocks-cli-test
       - solidblocks-rds-postgresql-test
       - solidblocks-hetzner

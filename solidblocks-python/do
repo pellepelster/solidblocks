@@ -27,18 +27,24 @@ function task_clean() {
 }
 
 function task_test() {
-  export NON_EXISTING_OVERRIDE="non_existing_override"
-  export CUSTOM_ENV_NAME="custom_env_name"
-  export OVERRIDE_PASSWORD="override_password"
+  (
+    cd "${DIR}"
+    export NON_EXISTING_OVERRIDE="non_existing_override"
+    export CUSTOM_ENV_NAME="custom_env_name"
+    export OVERRIDE_PASSWORD="override_password"
 
-  task_clean
-  poetry run pytest -s $@
+    task_clean
+    poetry run pytest -s $@
+  )
 }
 
 function task_build() {
-  poetry version "${VERSION}"
-  poetry install
-  poetry build --output "${DIR}/build"
+  (
+    cd "${DIR}"
+    poetry version "${VERSION}"
+    poetry install
+    poetry build
+  )
 }
 
 function task_usage {

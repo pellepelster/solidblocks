@@ -22,9 +22,12 @@ function task_test {
 }
 
 
+function task_release_prepare {
+  blcks docs ansible --collection "${DIR}/blcks/utils" --target ~/git/solidblocks/doc/content/ansible/utils
+}
+
 function task_build {
   python_ensure_venv "${DIR}"
-  blcks docs ansible --collection "${DIR}/blcks/utils" --target ~/git/solidblocks/doc/content/ansible/utils
 }
 
 function task_clean {
@@ -36,7 +39,7 @@ shift || true
 case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
-  release-prepare) ;;
+  release-prepare) task_release_prepare "$@" ;;
   release-artifacts) ;;
   format) ;;
   clean) task_clean "$@" ;;
