@@ -53,7 +53,7 @@ To pass docker artifacts between build steps without accidentally releasing an u
 Especially the infrastructure heavy components of Solidblocks rely on downloading released code from Github releases. To be able to mimic this behaviour during integration tests, all code using released code from Github should provide the ability to override the release server to allow for injecting of development code during integration tests:
 
 ```shell
-curl -v -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/[...]"
+curl -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/[...]"
 ```
 
 For code where it is not feasible to inject a local webserver (e.g. code running on a cloud provider in cloud-init) AWS S3 is used as a webserver because it is easily scriptable.
