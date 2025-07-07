@@ -21,7 +21,6 @@ function task_test {
   fi
 }
 
-
 function task_release_prepare {
   blcks docs ansible --collection "${DIR}/blcks/utils" --target ~/git/solidblocks/doc/content/ansible/utils
 }

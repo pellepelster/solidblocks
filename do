@@ -271,6 +271,12 @@ function task_renovate {
     renovate/renovate:35.14.4
 }
 
+function task_info {
+  echo "================================================================="
+  echo "version: ${VERSION}"
+  echo "================================================================="
+}
+
 function task_release_tf_module {
   local module="${1:-}"
   local version="${2:-}"
@@ -328,5 +334,6 @@ case ${ARG} in
   release-test) task_release_test "$@" ;;
   bootstrap) task_bootstrap "$@" ;;
   renovate) task_renovate "$@" ;;
+  info) task_info "$@" ;;
   *) task_usage ;;
 esac

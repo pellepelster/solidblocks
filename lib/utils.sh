@@ -1,5 +1,9 @@
 function current_version() {
-  git describe --tags --abbrev=0
+  if which git >/dev/null 2>&1; then
+    git describe --tags --abbrev=0
+  else
+    echo "0.0.0"
+  fi
 }
 
 function version() {
@@ -15,9 +19,5 @@ function version() {
 }
 
 function version_rc() {
-  if [[ "${CI:-}" == "true" ]] && [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
-    echo "${GITHUB_REF_NAME:-}-rc"
-  else
-    echo "$(current_version)-dev-rc"
-  fi
+  echo "$(version)-rc"
 }
