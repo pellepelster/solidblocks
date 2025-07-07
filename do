@@ -16,6 +16,11 @@ export VERSION="$(version)"
 TEMP_DIR="${DIR}/.temp"
 COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-hetzner-dns solidblocks-terraform solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible solidblocks-python"
 
+function ensure_environment {
+  software_ensure_hugo
+  software_set_export_path
+}
+
 function task_build {
     for component in ${COMPONENTS}; do
       (
@@ -163,6 +168,8 @@ function prepare_documentation_env {
 }
 
 function task_build_documentation {
+    ensure_environment
+
     local snippet_dir="${DIR}/doc/content/snippets"
     rm -rf "${snippet_dir}"
     mkdir -p "${snippet_dir}"
@@ -184,6 +191,7 @@ function task_build_documentation {
 }
 
 function task_serve_documentation {
+    ensure_environment
     (
       cd "${DIR}/doc"
 
@@ -312,6 +320,7 @@ shift || true
 
 case "${ARG}" in
   bootstrap) ;;
+  *) ensure_environment ;;
 esac
 
 case ${ARG} in

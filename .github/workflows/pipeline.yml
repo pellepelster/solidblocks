@@ -257,6 +257,7 @@ jobs:
             solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/build/terraform-null-solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/build/solidblocks-cloud-init-bootstrap.sh
+            solidblocks-cloud-init/build/snippets/solidblocks-cloud-init-bootstrap-*.sh
 
   solidblocks-hetzner:
     runs-on: ubuntu-24.04
