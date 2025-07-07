@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.2
+
+* release engineering
+
 ## v0.4.1
 
 * release engineering

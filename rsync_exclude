@@ -1,0 +1,6 @@
+.terraform
+*.tfstate*
+.terraform.lock.hcl
+.gradle
+build
+.git*

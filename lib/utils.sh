@@ -3,10 +3,14 @@ function current_version() {
 }
 
 function version() {
-  if [[ "${CI:-}" == "true" ]] && [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
-    echo "${GITHUB_REF_NAME:-}"
+  if [[ -z ${VERSION:-} ]]; then
+    if [[ "${CI:-}" == "true" ]] && [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+      echo "${GITHUB_REF_NAME:-}"
+    else
+      echo "$(current_version)-dev"
+    fi
   else
-    echo "$(current_version)-dev"
+    echo "${VERSION}"
   fi
 }
 

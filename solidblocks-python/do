@@ -41,9 +41,17 @@ function task_test() {
 function task_build() {
   (
     cd "${DIR}"
-    poetry version "${VERSION}"
+    poetry version "${VERSION#"v"}"
     poetry install
     poetry build
+  )
+}
+
+function task_release_prepare() {
+  local version="${1:-}"
+  (
+    cd "${DIR}"
+    poetry version "${version#"v"}"
   )
 }
 
@@ -59,5 +67,8 @@ case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
+  release-artifacts) ;;
+  release-prepare) task_release_prepare "$@" ;;
+  release-test) ;;
   *) task_usage ;;
 esac

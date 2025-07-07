@@ -14,15 +14,14 @@ source "${DIR}/lib/utils.sh"
 export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.temp"
-COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-hetzner-dns solidblocks-terraform solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible"
-
-function ensure_environment {
-  software_set_export_path
-}
+COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-hetzner-dns solidblocks-terraform solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible solidblocks-python"
 
 function task_build {
     for component in ${COMPONENTS}; do
       (
+        echo "================================================================================="
+        echo "running clean for '${component}'"
+        echo "================================================================================="
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" build
       )
@@ -164,17 +163,15 @@ function prepare_documentation_env {
 }
 
 function task_build_documentation {
-    ensure_environment
-
     local snippet_dir="${DIR}/doc/content/snippets"
     rm -rf "${snippet_dir}"
     mkdir -p "${snippet_dir}"
 
     if [[ -n "${CI:-}" ]]; then
-      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${DIR}/rsync_exclude ${DIR}/*/snippets/* "${snippet_dir}"
     else
-      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/snippets/* "${snippet_dir}"
-      rsync -rv --exclude=".terraform" --exclude="*.tfstate*" --exclude=".terraform.lock.hcl" ${DIR}/*/build/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${DIR}/rsync_exclude ${DIR}/*/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${DIR}/rsync_exclude ${DIR}/*/build/snippets/* "${snippet_dir}"
     fi
 
     mkdir -p "${DIR}/build/documentation"
@@ -187,7 +184,6 @@ function task_build_documentation {
 }
 
 function task_serve_documentation {
-    ensure_environment
     (
       cd "${DIR}/doc"
 
@@ -310,7 +306,6 @@ shift || true
 
 case "${ARG}" in
   bootstrap) ;;
-  *) ensure_environment ;;
 esac
 
 case ${ARG} in

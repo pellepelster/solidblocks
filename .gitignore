@@ -17,6 +17,7 @@ build
 *.pem
 .temp*
 ssh_config
+doc/themes/relearn
 venv
 .venv
 .kotlin
