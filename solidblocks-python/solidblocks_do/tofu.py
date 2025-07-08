@@ -16,7 +16,7 @@ def tofu_init(path, args=[], env=None):
 
 
 # see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_apply
-def tofu_apply(path, apply=False, env=None):
+def tofu_apply(path, apply=False, args=[], env=None):
     if not tofu_ensure():
         return False
 
@@ -25,7 +25,7 @@ def tofu_apply(path, apply=False, env=None):
     if apply:
         extra_args = ['-auto-approve']
 
-    return command_run(['tofu', 'apply'] + extra_args, workdir=path, env=env)
+    return command_run(['tofu', 'apply'] + extra_args + args, workdir=path, env=env)
 
 
 # see https://pellepelster.github.io/solidblocks/python/terraform/#terraform_has_output

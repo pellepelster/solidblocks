@@ -14,6 +14,6 @@ def test_terraform_version_ensure():
 def test_terraform_flow():
     assert terraform_init(f"{current_dir}/terraform")
     assert terraform_init(f"{current_dir}/terraform", ['-upgrade'])
-    assert terraform_apply(f"{current_dir}/terraform", apply=True)
+    assert terraform_apply(f"{current_dir}/terraform", apply=True, args=['-json'])
     assert terraform_get_output(f"{current_dir}/terraform", "foo") == "bar"
     assert terraform_print_output(f"{current_dir}/terraform")

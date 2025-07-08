@@ -30,9 +30,9 @@ if terraform_init('path/to/tf/files', ['--upgrade']):
     pass
 ```
 
-### `[terraform|tofu]_apply(path, args=[], env=None)` {#terraform_init}
+### `[terraform|tofu]_apply(path, apply=False, args=[], env=None)` {#terraform_init}
 
-Runs terraform/tofu apply in `path` with extra arguments `args` and environment `env`.   
+Runs terraform/tofu apply in `path` with extra arguments `args` and environment `env`. If `apply` is `True` apply will be started with `-auto-approve`.   
 
 ```python
 from solidblocks_do.terraform import terraform_apply

@@ -25,5 +25,6 @@ def test_tofu_flow():
     assert tofu_init(f"{current_dir}/tofu")
     assert tofu_init(f"{current_dir}/tofu", ['-upgrade'])
     assert tofu_apply(f"{current_dir}/tofu", apply=True)
+    assert tofu_apply(f"{current_dir}/tofu", apply=True, args=['-json'])
     assert tofu_get_output(f"{current_dir}/tofu", "foo") == "bar"
     assert tofu_print_output(f"{current_dir}/tofu")
