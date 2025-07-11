@@ -1,6 +1,6 @@
 +++
 title = "Role k3s_server"
-description = "deploy K3S cluster servers"
+description = "setup k3s servers"
 +++
 
 ## Variables
