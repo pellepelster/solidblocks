@@ -28,6 +28,7 @@ def test_extension_pglogical(conn):
     res = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'pglogical';")
     assert res.fetchone()[0] == "2.4.5"
 
+
 def test_extension_pgaudit(conn):
     res = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'pgaudit';")
     assert res.fetchone()[0] == "17.1"
@@ -36,3 +37,13 @@ def test_extension_pgaudit(conn):
 def test_extension_pg_ivm(conn):
     res = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'pg_ivm';")
     assert res.fetchone()[0] == "1.11"
+
+
+def test_psql_wrapper(host):
+    cmd = host.run("test-database1-psql postgres -c 'SELECT now();'")
+    assert cmd.rc == 0
+
+
+def test_pgbackrest_wrapper(host):
+    cmd = host.run("test-database1-pgbackrest info")
+    assert cmd.rc == 0

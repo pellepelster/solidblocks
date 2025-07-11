@@ -5,7 +5,7 @@ title = 'Solidblocks'
 [security]
 
 [security.funcs]
-getenv = ['.*_VERSION$', '.*_CHECKSUM$']
+getenv = ['.*_VERSION$', '.*_CHECKSUM$', 'SOLIDBLOCKS_VERSION_RAW']
 
 [markup]
 [markup.goldmark.renderer]

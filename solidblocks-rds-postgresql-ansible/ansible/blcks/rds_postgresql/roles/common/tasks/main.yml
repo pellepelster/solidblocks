@@ -118,6 +118,12 @@
     dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-psql"
     mode: '0755'
 
+- name: "write pgbackrest.j2"
+  ansible.builtin.template:
+    src: pgbackrest.j2
+    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-pgbackrest"
+    mode: '0755'
+
 - name: "install postgres systemd unit file"
   ansible.builtin.template:
     src: postgres.service.j2

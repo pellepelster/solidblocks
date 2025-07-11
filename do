@@ -112,9 +112,9 @@ function task_clean {
         )
     done
 
-    #task_clean_aws
-    #task_clean_hetzner
-    #task_clean_gcloud
+    task_clean_aws
+    task_clean_hetzner
+    task_clean_gcloud
 }
 
 function task_test_init {
@@ -164,7 +164,7 @@ function prepare_documentation_env {
     eval "export ${version}"
   done
   export SOLIDBLOCKS_VERSION="$VERSION"
-  echo $SOLIDBLOCKS_VERSION
+  export SOLIDBLOCKS_VERSION_RAW="${VERSION#"v"}"
 }
 
 function task_build_documentation {
