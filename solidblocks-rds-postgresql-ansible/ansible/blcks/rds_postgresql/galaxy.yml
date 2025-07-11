@@ -1,7 +1,7 @@
 namespace: blcks
 name: rds_postgresql
 
-version: 0.0.0-snapshot
+version: 1.2.3
 
 readme: README.md
 

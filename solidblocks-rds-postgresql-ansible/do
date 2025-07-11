@@ -155,17 +155,13 @@ function task_build {
     --force \
     --verbose \
     "${DIR}/ansible/blcks/rds_postgresql"
-  blcks docs ansible --collection "${DIR}/ansible/blcks/rds_postgresql" --target ~/git/solidblocks/doc/content/ansible/rds_postgresql
 }
 
 function task_release_prepare {
   local version="${1:-}"
-
-  if [[ -z "${version}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
-  echo "setting version: ${version}"
+  rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml" --replace "\${1}"${VERSION#"v"}"\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp"
+  mv "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp" "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml"
+  blcks docs ansible --collection "${DIR}/ansible/blcks/rds_postgresql" --target ~/git/solidblocks/doc/content/ansible/rds_postgresql
 }
 
 function task_clean {
@@ -281,7 +277,7 @@ case ${arg} in
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-artifacts) ;;
-  release-prepare) ;;
+  release-prepare) task_release_prepare ;;
   release-test);;
   *) task_usage ;;
 esac

@@ -26,17 +26,12 @@ function task_build() {
     terraform-docs markdown table --hide modules --output-mode inject --output-file "${DIR}/../doc/content/k3s/terraform/${module}.md" "${DIR}/terraform/${module}"
   done
 
-  rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/k3s/galaxy.yml" --replace "\${1}"${VERSION#"v"}"\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/k3s/galaxy.yml.tmp"
-  mv "${DIR}/ansible/blcks/k3s/galaxy.yml.tmp" "${DIR}/ansible/blcks/k3s/galaxy.yml"
-
   "${VENV_DIR}/bin/ansible-galaxy" \
     collection build \
     --output-path "${DIR}/build" \
     --force \
     --verbose \
     "${DIR}/ansible/blcks/k3s"
-
-  blcks docs ansible --collection "${DIR}/ansible/blcks/k3s" --target ~/git/solidblocks/doc/content/ansible/k3s
 }
 
 function task_usage {
@@ -199,6 +194,12 @@ function task_clean {
   blcks hetzner nuke --do-nuke
 }
 
+function task_release_prepare {
+  rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/k3s/galaxy.yml" --replace "\${1}"${VERSION#"v"}"\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/k3s/galaxy.yml.tmp"
+  mv "${DIR}/ansible/blcks/k3s/galaxy.yml.tmp" "${DIR}/ansible/blcks/k3s/galaxy.yml"
+  blcks docs ansible --collection "${DIR}/ansible/blcks/k3s" --target ~/git/solidblocks/doc/content/ansible/k3s
+}
+
 function task_format {
   (
     cd "${DIR}"
@@ -222,7 +223,7 @@ case ${arg} in
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-artifacts) ;;
-  release-prepare) ;;
+  release-prepare) task_release_prepare ;;
   release-test);;
   *) task_usage ;;
 esac
