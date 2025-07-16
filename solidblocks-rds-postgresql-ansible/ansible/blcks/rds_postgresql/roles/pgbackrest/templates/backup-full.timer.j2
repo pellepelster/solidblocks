@@ -1,9 +1,9 @@
 [Unit]
-Description={{ pgbackrest_stanza_name }} database full backup
+Description={{ stanza_name }} database full backup
 
 [Timer]
 OnCalendar=*-*-* 20:00:00
-Unit={{ pgbackrest_stanza_name }}-backup-full.service
+Unit={{ stanza_name }}-backup-full.service
 
 [Install]
 WantedBy=multi-user.target

@@ -1,6 +1,6 @@
 listen_addresses = '*'
 
-archive_command = 'pgbackrest --stanza={{ pgbackrest_stanza_name }} archive-push %p'
+archive_command = 'pgbackrest --stanza={{ stanza_name }} archive-push %p'
 archive_mode = on
 max_wal_senders = 5
 wal_level = logical

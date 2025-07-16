@@ -1,9 +1,9 @@
 [Unit]
-Description={{ pgbackrest_stanza_name }} database incr backup
+Description={{ stanza_name }} database incr backup
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/{{ pgbackrest_stanza_name }}-backup-incr.sh
+ExecStart=/usr/local/bin/{{ stanza_name }}-backup-incr.sh
 
 [Install]
 WantedBy=multi-user.target

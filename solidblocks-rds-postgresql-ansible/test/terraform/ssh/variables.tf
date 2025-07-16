@@ -10,7 +10,3 @@ variable "location" {
   type = string
 }
 
-variable "scw_organization_id" {
-  type = string
-}
-

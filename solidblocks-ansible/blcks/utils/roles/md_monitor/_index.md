@@ -54,7 +54,7 @@ Description: Poll status for linux software raids and add them as JSON formatted
   
   
 
-  - **postgres_superuser_username**
+  - **superuser_username**
     - **Required**: False
     - **Type**: 
     - **Default**: none
@@ -63,7 +63,7 @@ Description: Poll status for linux software raids and add them as JSON formatted
   
   
 
-  - **postgres_superuser_password**
+  - **superuser_password**
     - **Required**: True
     - **Type**: 
     - **Default**: none

@@ -69,23 +69,23 @@
 
 - name: "create postgres data dir"
   ansible.builtin.file:
-    path: "{{ postgres_data_dir }}"
+    path: "{{ data_dir }}"
     state: directory
     owner: postgres
     group: postgres
 
 - name: "check postgres data dir needs to be initialized"
   find:
-    paths: "{{ postgres_data_dir }}"
-  register: postgres_data_dir_content
+    paths: "{{ data_dir }}"
+  register: data_dir_content
 
 - name: "set data dir facts"
   ansible.builtin.set_fact:
-    postgres_data_dir_empty: "{{ postgres_data_dir_content.matched == 0 }}"
+    data_dir_empty: "{{ data_dir_content.matched == 0 }}"
 
 - name: "data dir facts"
   ansible.builtin.debug:
-    msg: "postgres_data_dir_empty: {{ postgres_data_dir_empty }}"
+    msg: "data_dir_empty: {{ data_dir_empty }}"
 
 - name: "setup pglogical extension"
   ansible.builtin.include_tasks:
@@ -115,13 +115,13 @@
 - name: "write psql.j2"
   ansible.builtin.template:
     src: psql.j2
-    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-psql"
+    dest: "/usr/local/bin/{{ stanza_name }}-psql"
     mode: '0755'
 
 - name: "write pgbackrest.j2"
   ansible.builtin.template:
     src: pgbackrest.j2
-    dest: "/usr/local/bin/{{ pgbackrest_stanza_name }}-pgbackrest"
+    dest: "/usr/local/bin/{{ stanza_name }}-pgbackrest"
     mode: '0755'
 
 - name: "install postgres systemd unit file"
@@ -138,7 +138,7 @@
 
 - name: "create storage dir"
   ansible.builtin.file:
-    path: "{{ postgres_data_dir }}"
+    path: "{{ data_dir }}"
     state: directory
     owner: postgres
     group: postgres

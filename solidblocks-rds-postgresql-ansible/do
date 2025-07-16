@@ -55,11 +55,14 @@ function task_usage {
   exit 1
 }
 
-function task_test_terraform {
+function task_test_terraform_standalone {
   prepare_env
 
-  test_terraform "storage" init -upgrade
-  test_terraform "storage" apply -auto-approve
+  test_terraform "storage-standalone" init -upgrade
+  test_terraform "storage-standalone" apply -auto-approve
+
+  test_terraform "ssh" init -upgrade
+  test_terraform "ssh" apply -auto-approve
 
   test_terraform "backup" init -upgrade
   test_terraform "backup" apply -auto-approve
@@ -70,11 +73,33 @@ function task_test_terraform {
   export TF_VAR_backup_s3_key_secret=$(test_terraform "backup" output backup_s3_key_secret)
   export TF_VAR_backup_s3_region=$(test_terraform "backup" output backup_s3_region)
 
-  test_terraform "instance" init -upgrade
-  test_terraform "instance" apply -auto-approve
+  test_terraform "standalone" init -upgrade
+  test_terraform "standalone" apply -auto-approve
 }
 
-function task_destroy_instances {
+function task_test_terraform_cluster {
+  prepare_env
+
+  test_terraform "storage-cluster" init -upgrade
+  test_terraform "storage-cluster" apply -auto-approve
+
+  test_terraform "ssh" init -upgrade
+  test_terraform "ssh" apply -auto-approve
+
+  test_terraform "backup" init -upgrade
+  test_terraform "backup" apply -auto-approve
+
+  export TF_VAR_backup_s3_bucket=$(test_terraform "backup" output backup_s3_bucket)
+  export TF_VAR_backup_s3_endpoint=$(test_terraform "backup" output backup_s3_endpoint)
+  export TF_VAR_backup_s3_key=$(test_terraform "backup" output backup_s3_key)
+  export TF_VAR_backup_s3_key_secret=$(test_terraform "backup" output backup_s3_key_secret)
+  export TF_VAR_backup_s3_region=$(test_terraform "backup" output backup_s3_region)
+
+  test_terraform "cluster" init -upgrade
+  test_terraform "cluster" apply -auto-approve
+}
+
+function task_destroy_instances_standalone {
   prepare_env
 
   export TF_VAR_backup_s3_bucket=$(test_terraform "backup" output backup_s3_bucket)
@@ -83,67 +108,67 @@ function task_destroy_instances {
   export TF_VAR_backup_s3_key_secret=$(test_terraform "backup" output backup_s3_key_secret)
   export TF_VAR_backup_s3_region=$(test_terraform "backup" output backup_s3_region)
 
-  test_terraform "instance" destroy -auto-approve
+  test_terraform "standalone" destroy -auto-approve
 }
 
-function task_destroy_storage {
+function task_destroy_storage_standalone {
   prepare_env
-  test_terraform "storage" destroy -auto-approve
+  test_terraform "storage-standalone" destroy -auto-approve
 }
 
 function ssh_wrapper() {
-  ssh -F "${DIR}/test/terraform/output/test/ssh/client_config" test-test1-database1-blue "$@"
+  ssh -F "${DIR}/test/terraform/output/test/standalone/ssh/client_config" test-test1-database1-blue "$@"
 }
 
-function task_full_backup() {
+function task_full_backup_standalone {
   ssh_wrapper /usr/local/bin/test-database1-backup-full.sh
 }
 
-function task_test_after_bootstrap {
+function task_test_after_bootstrap_standalone {
   python_ensure_venv "${DIR}"
 
   "${VENV_DIR}/bin/py.test" \
     --capture=tee-sys \
-    --ssh-config="${DIR}/test/terraform/output/test/ssh/client_config" \
+    --ssh-config="${DIR}/test/terraform/output/test/standalone/ssh/client_config" \
     --hosts='ssh://test-test1-database1-blue' "${DIR}/test/test-test1-database1-blue-after-bootstrap.py"
 }
 
-function task_test_after_instance_rebuild {
+function task_test_after_instance_rebuild_standalone {
   python_ensure_venv "${DIR}"
 
   "${VENV_DIR}/bin/py.test" \
     --capture=tee-sys \
-    --ssh-config="${DIR}/test/terraform/output/test/ssh/client_config" \
+    --ssh-config="${DIR}/test/terraform/output/test/standalone/ssh/client_config" \
     --hosts='ssh://test-test1-database1-blue' "${DIR}/test/test-test1-database1-blue-after-instance-rebuild.py"
 }
 
-function task_test_after_storage_rebuild {
+function task_test_after_storage_rebuild_standalone {
   python_ensure_venv "${DIR}"
 
   "${VENV_DIR}/bin/py.test" \
     --capture=tee-sys \
-    --ssh-config="${DIR}/test/terraform/output/test/ssh/client_config" \
+    --ssh-config="${DIR}/test/terraform/output/test/standalone/ssh/client_config" \
     --hosts='ssh://test-test1-database1-blue' "${DIR}/test/test-test1-database1-blue-after-storage-rebuild.py"
 }
 
-function task_test_ansible {
+function task_test_ansible_standalone {
   prepare_env
   python_ensure_venv "${DIR}"
-  local database1_primary_node=$(test_terraform "instance" output database1_blue_name)
-  local database2_primary_node=$(test_terraform "instance" output database2_blue_name)
+  local database1_primary_node=$(test_terraform "standalone" output database1_blue_name)
+  #local database2_primary_node=$(test_terraform "standalone" output database2_blue_name)
+  #--extra-vars "database2_primary_node=${database2_primary_node}" \
 
   "${VENV_DIR}/bin/ansible-galaxy" \
     collection install \
     --force \
     -v \
-    -r "${DIR}/test/ansible/requirements.yml"
+    -r "${DIR}/test/ansible/standalone/requirements.yml"
 
   "${VENV_DIR}/bin/ansible-playbook" \
-    -i "${DIR}/test/terraform/output/test/ansible/blcks_rds_postgres_inventory.yml" \
-    --extra-vars "@${DIR}/test/terraform/output/test/ansible/blcks_rds_postgres_variables.yml" \
+    -i "${DIR}/test/terraform/output/test/standalone/ansible/blcks_rds_postgres_inventory.yml" \
+    --extra-vars "@${DIR}/test/terraform/output/test/standalone/ansible/blcks_rds_postgres_variables.yml" \
     --extra-vars "database1_primary_node=${database1_primary_node}" \
-    --extra-vars "database2_primary_node=${database2_primary_node}" \
-    "${DIR}/test/ansible/site.yml" "$@"
+    "${DIR}/test/ansible/standalone/site.yml" "$@"
 }
 
 function task_build {
@@ -161,7 +186,7 @@ function task_release_prepare {
   local version="${1:-}"
   rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml" --replace "\${1}"${VERSION#"v"}"\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp"
   mv "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp" "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml"
-  blcks docs ansible --collection "${DIR}/ansible/blcks/rds_postgresql" --target ~/git/solidblocks/doc/content/ansible/rds_postgresql
+  blcks docs ansible --collection "${DIR}/ansible/blcks/rds_postgresql" --target ~/git/solidblocks/doc/content/rds/ansible/rds_postgresql
 }
 
 function task_clean {
@@ -190,90 +215,105 @@ function task_format {
   )
 }
 
-function task_test() {
+function task_test_cluster() {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
  echo "====================================================================================="
- echo "task_test_terraform"
+   echo "task_test_terraform_cluster"
  echo "====================================================================================="
- task_test_terraform
+ task_test_terraform_cluster
+}
+
+function task_test_standalone() {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
 
  echo "====================================================================================="
- echo "task_test_ansible"
+   echo "task_test_terraform_standalone"
  echo "====================================================================================="
- task_test_ansible
+ task_test_terraform_standalone
 
  echo "====================================================================================="
- echo "task_test_after_bootstrap"
+ echo "task_test_ansible_standalone"
  echo "====================================================================================="
- task_test_after_bootstrap
+ task_test_ansible_standalone
 
  echo "====================================================================================="
- echo "task_full_backup"
+ echo "task_test_after_bootstrap_standalone"
  echo "====================================================================================="
- task_full_backup
+ task_test_after_bootstrap_standalone
 
  echo "====================================================================================="
- echo "task_destroy_instances"
+ echo "task_full_backup_standalone"
  echo "====================================================================================="
- task_destroy_instances
+ task_full_backup_standalone
 
  echo "====================================================================================="
- echo "task_test_terraform"
+ echo "task_destroy_instances_standalone"
  echo "====================================================================================="
- task_test_terraform
+ task_destroy_instances_standalone
 
  echo "====================================================================================="
- echo "task_test_ansible"
+ echo "task_test_terraform_standalone"
  echo "====================================================================================="
- task_test_ansible
+ task_test_terraform_standalone
 
  echo "====================================================================================="
- echo "task_test_after_instance_rebuild"
+ echo "task_test_ansible_standalone"
  echo "====================================================================================="
- task_test_after_instance_rebuild
+ task_test_ansible_standalone
 
  echo "====================================================================================="
- echo "task_destroy_instances"
+ echo "task_test_after_instance_rebuild_standalone"
  echo "====================================================================================="
- task_destroy_instances
+ task_test_after_instance_rebuild_standalone
 
  echo "====================================================================================="
- echo "task_destroy_storage"
+ echo "task_destroy_instances_standalone"
  echo "====================================================================================="
- task_destroy_storage
+ task_destroy_instances_standalone
 
  echo "====================================================================================="
- echo "task_test_terraform"
+ echo "task_destroy_storage_standalone"
  echo "====================================================================================="
- task_test_terraform
+ task_destroy_storage_standalone
 
  echo "====================================================================================="
- echo "task_test_ansible"
+ echo "task_test_terraform_standalone"
  echo "====================================================================================="
- task_test_ansible
+ task_test_terraform_standalone
 
  echo "====================================================================================="
- echo "task_test_after_storage_rebuild"
+ echo "task_test_ansible_standalone"
  echo "====================================================================================="
- task_test_after_storage_rebuild
+ task_test_ansible_standalone
+
+ echo "====================================================================================="
+ echo "task_test_after_storage_rebuild_standalone"
+ echo "====================================================================================="
+ task_test_after_storage_rebuild_standalone
 }
 
 arg=${1:-}
 shift || true
 case ${arg} in
   build) task_build "$@" ;;
-  test) task_test ;;
-  test-terraform) task_test_terraform ;;
-  test-ansible) task_test_ansible "$@" ;;
-  test-after-bootstrap) task_test_after_bootstrap ;;
-  test-destroy-instances) task_destroy_instances ;;
-  test-after-instance-rebuild) task_test_after_instance_rebuild ;;
-  test-destroy-storage) task_destroy_storage ;;
-  test-after-storage-rebuild) task_test_after_storage_rebuild ;;
+  test-standalone) task_test_standalone ;;
+  test-terraform-standalone) task_test_terraform_standalone ;;
+  test-ansible-standalone) task_test_ansible_standalone "$@" ;;
+  test-after-bootstrap-standalone) task_test_after_bootstrap_standalone ;;
+  test-destroy-instances-standalone) task_destroy_instances_standalone ;;
+  test-after-instance-rebuild-standalone) task_test_after_instance_rebuild_standalone ;;
+  test-destroy-storage-standalone) task_destroy_storage_standalone ;;
+  test-after-storage-rebuild-standalone) task_test_after_storage_rebuild_standalone ;;
   test-full-backup) task_full_backup ;;
+
+  test-cluster) task_test_cluster ;;
+  test-terraform-cluster) task_test_terraform_cluster ;;
+
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-artifacts) ;;

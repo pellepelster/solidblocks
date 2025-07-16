@@ -1,6 +1,6 @@
 module "ansible_output" {
   source      = "../../../terraform/output-ansible"
-  output_path = "${path.root}/../output/${var.environment}/"
+  output_path = "${path.root}/../output/${var.environment}/standalone"
 
   environment     = var.environment
   ssh_config_file = module.ssh_config.ssh_config_file
@@ -16,20 +16,6 @@ module "ansible_output" {
         },
       ]
     }
-    "database2" = {
-      servers = [
-        {
-          name              = hcloud_server.database2_blue.name,
-          ipv4_address      = hcloud_server.database2_blue.ipv4_address,
-          data_linux_device = data.hcloud_volume.database2_blue_data.linux_device
-        },
-        {
-          name              = hcloud_server.database2_green.name,
-          ipv4_address      = hcloud_server.database2_green.ipv4_address,
-          data_linux_device = data.hcloud_volume.database2_green_data.linux_device
-        }
-      ]
-    }
   }
   backup_s3_bucket     = var.backup_s3_bucket
   backup_s3_endpoint   = var.backup_s3_endpoint
@@ -40,16 +26,12 @@ module "ansible_output" {
 
 module "ssh_config" {
   source      = "../../../terraform/output-ssh-config"
-  output_path = "${path.root}/../output/${var.environment}"
+  output_path = "${path.root}/../output/${var.environment}/standalone"
 
   ssh_private_key_openssh = module.ssh_hetzner.ssh_private_key_openssh
-  ssh_servers = [hcloud_server.database1_blue, hcloud_server.database2_green, hcloud_server.database2_blue]
+  ssh_servers = [hcloud_server.database1_blue]
 }
 
 output "database1_blue_name" {
   value = hcloud_server.database1_blue.name
-}
-
-output "database2_blue_name" {
-  value = hcloud_server.database2_blue.name
 }

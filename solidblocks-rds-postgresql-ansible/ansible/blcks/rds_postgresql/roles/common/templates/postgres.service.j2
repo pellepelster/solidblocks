@@ -7,12 +7,12 @@ Wants=network-online.target
 [Service]
 Type=notify
 User=postgres
-ExecStart=/usr/lib/postgresql/{{ postgres_version }}/bin/postgres -D {{ postgres_data_dir }}
+ExecStart=/usr/lib/postgresql/{{ postgres_version }}/bin/postgres -D {{ data_dir }}
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
 KillSignal=SIGINT
 TimeoutSec=infinity
-Environment="PGPASSFILE={{ postgres_data_dir }}/.pgpass"
+Environment="PGPASSFILE={{ data_dir }}/.pgpass"
 
 # prevent OOM killer from choosing the postmaster (individual backends will
 # reset the score to 0)

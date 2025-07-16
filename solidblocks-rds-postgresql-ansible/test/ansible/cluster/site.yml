@@ -1,0 +1,28 @@
+---
+- name: "database1"
+  hosts: database1
+  become: true
+  roles:
+    - role: blcks.rds_postgresql.standalone
+      tags: [ standalone ]
+      instance_name: database1
+      environment_name: test
+      superuser_password: yolo2000
+      backup_password: yolo2000
+      extension_pglogical_enabled: true
+      extension_postgis_enabled: true
+      extension_pg_ivm_enabled: true
+      extension_pgvector_enabled: true
+      extension_pgaudit_enabled: true
+
+- name: "database2"
+  hosts: database2
+  become: true
+  roles:
+    - role: blcks.rds_postgresql.cluster
+      tags: [ cluster ]
+      instance_name: database2
+      environment_name: test
+      superuser_password: yolo2000
+      backup_password: yolo2000
+      primary_node: "{{ database2_primary_node }}"

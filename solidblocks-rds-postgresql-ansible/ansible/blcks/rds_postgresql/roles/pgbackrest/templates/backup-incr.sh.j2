@@ -2,4 +2,4 @@
 
 set -eu -o pipefail
 
-sudo -u postgres pgbackrest --stanza={{ pgbackrest_stanza_name }} backup --type=incr
+sudo -u postgres pgbackrest --stanza={{ stanza_name }} backup --type=incr

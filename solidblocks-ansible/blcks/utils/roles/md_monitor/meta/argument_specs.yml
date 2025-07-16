@@ -14,10 +14,10 @@ argument_specs:
       postgres_version:
         description: postgres version to install
         required: false
-      postgres_superuser_username:
+      superuser_username:
         description: database superuser name
         required: false
-      postgres_superuser_password:
+      superuser_password:
         description: database superuser password
         required: true
 

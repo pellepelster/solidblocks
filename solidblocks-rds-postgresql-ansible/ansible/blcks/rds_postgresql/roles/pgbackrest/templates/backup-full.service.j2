@@ -1,9 +1,9 @@
 [Unit]
-Description={{ pgbackrest_stanza_name }} database full backup
+Description={{ stanza_name }} database full backup
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/{{ pgbackrest_stanza_name }}-backup-full.sh
+ExecStart=/usr/local/bin/{{ stanza_name }}-backup-full.sh
 
 [Install]
 WantedBy=multi-user.target
