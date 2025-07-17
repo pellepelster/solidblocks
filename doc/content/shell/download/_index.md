@@ -1,6 +1,5 @@
 ---
 title: Download
-weight: 20
 description: Secure and reliable data retrieval from remote servers
 ---
 

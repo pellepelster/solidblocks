@@ -1,6 +1,5 @@
 ---
 title: Software
-weight: 40
 description: Tooling setup for local development and continuous integration environments
 ---
 

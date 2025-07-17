@@ -1,6 +1,5 @@
 ---
 title: Installation
-weight: 10
 description: Installation instructions
 ---
 

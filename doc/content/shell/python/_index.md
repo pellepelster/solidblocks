@@ -1,6 +1,5 @@
 ---
 title: Python
-weight: 80
 description: Wrappers and helpers for Python
 ---
 

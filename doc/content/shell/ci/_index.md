@@ -1,6 +1,5 @@
 ---
 title: CI
-weight: 60
 description: Utilities for various CI/CD systems
 ---
 
