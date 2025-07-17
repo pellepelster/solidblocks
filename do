@@ -252,6 +252,7 @@ function task_release {
   # ensure terraform-docs is available
   terraform-docs --version
 
+  task_release_prepare ${VERSION}
   task_release_check ${VERSION}
 
   git tag -a "${VERSION}" -m "${VERSION}"

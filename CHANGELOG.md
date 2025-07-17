@@ -3,7 +3,7 @@
 ## v0.4.4
 
 * add [network_wait_for_port_open](https://pellepelster.github.io/solidblocks/shell/network/#network_wait_for_port_open) to shell utils
-
+* add [RDS PostgreSQL Ansible role](https://pellepelster.github.io/solidblocks/rds/ansible/)
 ## v0.4.3
 
 * documentation updates
