@@ -61,9 +61,6 @@ function task_test_terraform_standalone {
   test_terraform "storage-standalone" init -upgrade
   test_terraform "storage-standalone" apply -auto-approve
 
-  test_terraform "ssh" init -upgrade
-  test_terraform "ssh" apply -auto-approve
-
   test_terraform "backup" init -upgrade
   test_terraform "backup" apply -auto-approve
 
@@ -82,9 +79,6 @@ function task_test_terraform_cluster {
 
   test_terraform "storage-cluster" init -upgrade
   test_terraform "storage-cluster" apply -auto-approve
-
-  test_terraform "ssh" init -upgrade
-  test_terraform "ssh" apply -auto-approve
 
   test_terraform "backup" init -upgrade
   test_terraform "backup" apply -auto-approve

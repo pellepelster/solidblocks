@@ -4,7 +4,7 @@ resource "scaleway_iam_application" "backup" {
 }
 
 resource "scaleway_object_bucket" "backup" {
-  name       = "${var.environment}-${var.name}-backup"
+  name       = "${var.environment}-${var.name}-backup-tmp"
   project_id = data.scaleway_account_project.project.id
 }
 
