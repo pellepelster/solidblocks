@@ -2,7 +2,7 @@
 Description={{ stanza_name }} database incr backup
 
 [Timer]
-OnCalendar=*-*-* 0/3:00:00
+OnCalendar={{backup_incr_schedule}}
 Unit={{ stanza_name }}-backup-incr.service
 
 [Install]

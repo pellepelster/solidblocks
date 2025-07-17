@@ -1,12 +1,14 @@
 +++
 title = "Role standalone"
-description = "A role to create a standalone PostgreSQL server"
+description = "Provisions a standalone PostgreSQL server"
 +++
 
 ## Variables
 
 | Name | Value | Description | Required |
 | ---- | ----- | ----------- | -------- |
+| backup_full_schedule | *-*-* 02:00:00 | Systemd calendar schedule for full backups | false  |
+| backup_incr_schedule | *-*-* 0/3:00:00 | Systemd calendar schedule for incremental backups | false  |
 | backup_password | &lt;none&gt; | S3 backup [encryption password](https://pgbackrest.org/configuration.html#section-repository/option-repo-cipher-pass) | true  |
 | backup_s3_bucket | &lt;none&gt; | S3 backup bucket [name](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-bucket) | true  |
 | backup_s3_endpoint | &lt;none&gt; | S3 backup bucket [endpoint](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-endpoint) | true  |
@@ -20,8 +22,8 @@ description = "A role to create a standalone PostgreSQL server"
 | extension_pglogical_enabled | false | enable pglogical postgres extension | false  |
 | extension_pgvector_enabled | false | enable postgis postgres extension | false  |
 | extension_postgis_enabled | false | enable postgis postgres extension | false  |
+| extra_configuration | &lt;none&gt; | additional database configuration options as key/value pairs | false  |
 | instance_name | &lt;none&gt; | database instance name | true  |
-| pgbackrest_bucket_name | {{ service_name }} | &lt;none&gt; | false  |
 | postgres_version | &lt;none&gt; | postgres version to install | false  |
 | service_name | {{ environment_name }}-{{ instance_name }} | &lt;none&gt; | false  |
 | stanza_name | {{ service_name }} | &lt;none&gt; | false  |

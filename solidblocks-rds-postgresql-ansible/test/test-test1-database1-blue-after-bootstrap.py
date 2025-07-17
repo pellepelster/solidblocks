@@ -47,3 +47,7 @@ def test_psql_wrapper(host):
 def test_pgbackrest_wrapper(host):
     cmd = host.run("test-database1-pgbackrest info")
     assert cmd.rc == 0
+
+
+def test_extra_configuration_is_rendered(host):
+    host.file("/storage/data/test/database1/postgresql.conf").contains("debug_pretty_print = off")

@@ -3,7 +3,6 @@ title = "Ansible"
 description = "Ansible role to install a PostgreSQL database with an all batteries included backup solution powered by pgBackRest"
 overviewGroup = "rds"
 faIcon = "fa-cloud"
-weight = 20
 +++
 
 Ansible role to install a [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup
@@ -19,17 +18,17 @@ touch the running instance to avoid potential data loss or interference with man
 The [standalone role](rds_postgresql/standalone) provisions a standalone PostgreSQL database with pgBackRest as a backup
 solution. If started without any data, restore will automatically be started if a back is available.
 
-## Configuration
+### Overview
 
 The full documentation of all configuration parameters is in
 the [standalone role documentation](rds_postgresql/standalone), this section will only highlight some important options
 
-### Naming
+#### Naming
 
 All names for services, folders, backups etc. are created from the variables `environment_name` and `instance_name` name, where both are concatenated as `<environment_name>-<instance_name>`. If needed the derived names like `service_name`, `stanza_name` can be overridden. 
 
 
-### Backup
+#### Backup
 
 The target S3 compatible backup bucket can be configured using the `backup_s3_*` variables.
 
@@ -37,14 +36,45 @@ The target S3 compatible backup bucket can be configured using the `backup_s3_*`
 Make sure you never loose the `backup_password` which is used to encrypt all backups. Without this password restore will not work.
 {{% /notice %}}
 
+Per default full and incremental backups are enabled, the schedules can be tuned using the `backup_<full|incr>_schedule` variables.
 
-## Credentials
+#### Credentials
 
 The name as well as the password of the database superuser can be configured using the `superuser_*` password variables.
 
-### Extensions
+#### Extensions
 
 Several PostgreSQL extensions are available for installation by switching on the `extension_*_enabled` variables. 
+
+### Usage
+
+**Add Solidblocks RDS collection to Ansible requirements**
+
+```yaml
+---
+collections:
+  - name: https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-rds_postgresql-{{% env "SOLIDBLOCKS_VERSION_RAW" %}}.tar.gz
+    type: url
+```
+
+**Apply role to database host**
+```yaml
+---
+- name: "database1"
+  hosts: database1
+  become: true
+  roles:
+    - role: blcks.rds_postgresql.standalone
+      instance_name: database1
+      environment_name: prod
+      superuser_password: foobar
+      backup_password: foobar
+      extension_pglogical_enabled: true
+      extension_postgis_enabled: true
+      extension_pgaudit_enabled: true
+      extra_configuration:
+        debug_pretty_print: "on"
+```
 
 ### Provisioning Flow
 
@@ -71,4 +101,43 @@ start_database --> stanza_exists{"`backup
 stanza_exists -->|yes| provisioning_finished@{shape: stadium, label: "provisioning finished"}
 stanza_exists -->|no|stanza_create["`create backup stanza`"]
 stanza_create --> provisioning_finished
+```
+
+### Operations
+
+Naming for all services and helpers is based on the `<environment_name>-<instance_name>` naming convention.
+
+#### Restart database
+
+```shell
+systemctl restart <environment_name>-<instance_name>
+```
+
+#### Show database log
+
+```shell
+journalctl --follow --unit <environment_name>-<instance_name>
+```
+
+#### Show available backups
+
+**wrapper**
+```shell
+<environment_name>-<instance_name>-pgbackrest info
+```
+
+**pgbackrest**
+```shell
+pgbackrest --stanza=<environment_name>-<instance_name> info
+```
+
+#### Start psql
+
+**wrapper**
+```shell
+<environment_name>-<instance_name>-psql postgres
+```
+**wrapper**
+```shell
+sudo -u postgres psql --user <superuser_name> postgres
 ```

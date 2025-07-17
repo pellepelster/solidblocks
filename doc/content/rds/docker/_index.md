@@ -3,7 +3,6 @@ title = "Docker"
 description = "Containerized PostgreSQL database with an all batteries included backup solution powered by pgBackRest"
 overviewGroup = "rds"
 faIcon = "fa-brands fa-docker"
-weight= 20
 +++
 
 Containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution

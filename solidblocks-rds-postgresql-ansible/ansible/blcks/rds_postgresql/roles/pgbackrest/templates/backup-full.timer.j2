@@ -2,7 +2,7 @@
 Description={{ stanza_name }} database full backup
 
 [Timer]
-OnCalendar=*-*-* 20:00:00
+OnCalendar={{backup_full_schedule}}
 Unit={{ stanza_name }}-backup-full.service
 
 [Install]

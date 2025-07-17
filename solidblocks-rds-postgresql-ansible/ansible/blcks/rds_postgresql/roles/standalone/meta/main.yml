@@ -4,7 +4,7 @@ dependencies:
 
 argument_specs:
   main:
-    short_description: A role to create a standalone PostgreSQL server
+    short_description: Provisions a standalone PostgreSQL server
     options:
       instance_name:
         description: database instance name
@@ -72,4 +72,16 @@ argument_specs:
 
       backup_s3_uri_style:
         description: "S3 backup bucket [uri style](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-uri-style)"
+        required: false
+
+      backup_full_schedule:
+        description: "Systemd calendar schedule for full backups"
+        required: false
+
+      backup_incr_schedule:
+        description: "Systemd calendar schedule for incremental backups"
+        required: false
+
+      extra_configuration:
+        description: "additional database configuration options as key/value pairs"
         required: false

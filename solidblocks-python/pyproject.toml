@@ -1,6 +1,6 @@
 [project]
 name = "solidblocks_do"
-version= "0.4.3"
+version= "0.4.2-dev"
 description = ""
 authors = [
     { name = "Christian 'Pelle' Pelster", email = "pelle@pelle.io" }

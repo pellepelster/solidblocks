@@ -33,12 +33,14 @@
     src: backup-full.service.j2
     dest: "/etc/systemd/system/{{ stanza_name }}-backup-full.service"
     mode: '0755'
+  notify: "reload systemd"
 
 - name: "write backup-full timer"
   ansible.builtin.template:
     src: backup-full.timer.j2
     dest: "/etc/systemd/system/{{ stanza_name }}-backup-full.timer"
     mode: '0755'
+  notify: "reload systemd"
 
 - name: "enable backup-full timer"
   ansible.builtin.systemd_service:
@@ -67,12 +69,14 @@
     src: backup-incr.service.j2
     dest: "/etc/systemd/system/{{ stanza_name }}-backup-incr.service"
     mode: '0755'
+  notify: "reload systemd"
 
 - name: "write backup-incr timer"
   ansible.builtin.template:
     src: backup-incr.timer.j2
     dest: "/etc/systemd/system/{{ stanza_name }}-backup-incr.timer"
     mode: '0755'
+  notify: "reload systemd"
 
 - name: "enable backup-incr timer"
   ansible.builtin.systemd_service:

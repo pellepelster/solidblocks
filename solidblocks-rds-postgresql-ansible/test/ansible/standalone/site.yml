@@ -14,3 +14,5 @@
       extension_pg_ivm_enabled: true
       extension_pgvector_enabled: true
       extension_pgaudit_enabled: true
+      extra_configuration:
+        debug_pretty_print: "off"
