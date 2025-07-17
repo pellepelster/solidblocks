@@ -142,7 +142,7 @@ function task_build {
   chmod +x ${DIR}/blcks-${target}-${VERSION}
 }
 
-function task_install {
+function task_install_local {
   local target=${1:-$DEFAULT_BUILD_TARGET}
   task_build
   cp ${DIR}/blcks-${target}-${VERSION} ~/bin/blcks
@@ -161,7 +161,7 @@ arg=${1:-}
 shift || true
 case ${arg} in
   build) task_build "$@" ;;
-  install) task_install "$@" ;;
+  install-local) task_install_local "$@" ;;
   build-jvm) task_build_jvm "$@" ;;
   build-macosX64) task_build_macosX64 "$@" ;;
   build-macosArm64) task_build_macosArm64 "$@" ;;

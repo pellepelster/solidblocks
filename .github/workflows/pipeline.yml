@@ -486,7 +486,7 @@ jobs:
             solidblocks-hetzner/terraform-hcloud-solidblocks-rds-postgresql-*.zip
             solidblocks-cli-*/blcks-*
             solidblocks-python/solidblocks_do*
-            solidblocks-rds-postgresql-ansible/*
+            solidblocks-rds-postgresql-ansible/blcks-rds*
 
   documentation:
     needs:
