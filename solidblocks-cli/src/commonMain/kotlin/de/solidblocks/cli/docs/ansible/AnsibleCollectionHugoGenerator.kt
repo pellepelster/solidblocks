@@ -38,9 +38,9 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
             val defaults =
                 parseRoleVariables(rolesDir.resolve(roleName).resolve("defaults").resolve("main.yml")) ?: emptyList()
             val variables =
-                parseRoleVariables(rolesDir.resolve(roleName).resolve("variables").resolve("main.yml")) ?: emptyList()
+                parseRoleVariables(rolesDir.resolve(roleName).resolve("vars").resolve("main.yml")) ?: emptyList()
 
-            Role(roleName, defaults, variables, metaData ?: RoleMetaData(null, emptyList()))
+            Role(roleName, defaults, variables, metaData ?: RoleMetaData(null, null, emptyList()))
         }
 
         val collectionIndexHugo = """
@@ -74,6 +74,8 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
 title = "Role ${role.name}"
 description = "${role.metaData.shortDescription ?: "<no description>"}"
 +++
+
+${role.metaData.description ?: role.metaData.shortDescription ?: "<no description>"}
 
 ## Variables
 
@@ -121,13 +123,13 @@ ${role.tableRows().toMarkdownTableRow()}
             return null
         }
 
-        val defaultsYml = yamlParse(fs.read(mainYmlFile) {
+        val yml = yamlParse(fs.read(mainYmlFile) {
             readUtf8()
         })
 
-        return when (defaultsYml) {
+        return when (yml) {
             is Success -> {
-                parseVariables(defaultsYml.data)
+                parseVariables(yml.data)
             }
 
             else -> {
@@ -164,6 +166,7 @@ ${role.tableRows().toMarkdownTableRow()}
         val main = argumentSpecs?.getMapMap("main")
 
         val shortDescription = main?.getMapString("short_description")
+        val description = main?.getMapString("description")
         val options = main?.getMapMap("options")
 
         val argumentSpecOptions = when (val optionNames = options?.getKeys()) {
@@ -172,15 +175,17 @@ ${role.tableRows().toMarkdownTableRow()}
                     val option = options.getMapMap(it)
                     val description = option?.getMapString("description")
                     val required = option?.getMapBool("required") ?: false
+                    val type = option?.getMapString("type")
+                    val default = option?.getMapString("default")
 
-                    Option(it, description, required)
+                    Option(it, description, required, default, type)
                 }
             }
 
             else -> emptyList()
         }
 
-        return RoleMetaData(shortDescription, argumentSpecOptions)
+        return RoleMetaData(shortDescription, description, argumentSpecOptions)
     }
 
     private fun parseVariables(data: YamlNode) = when (val ymlKeys = data.getKeys()) {

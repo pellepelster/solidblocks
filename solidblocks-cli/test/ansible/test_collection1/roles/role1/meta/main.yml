@@ -9,11 +9,16 @@ argument_specs:
   main:
     short_description: setup PostgreSQL database
     options:
-      var1:
-        description: meta information for var1
+      variable1:
+        description: description for variable1
         required: true
-
-      default1:
-        description: meta information for default1
-        required: true
-
+      variable2:
+        description: description for optional variable2
+        required: false
+      variable3:
+        description: description for variable3 with value from defaults/main.yml
+      variable4:
+        description: description for variable4 with default
+        default: "variable4 default"
+      variable5:
+        description: description for variable5 with value from vars/main.yml

@@ -1,3 +1,3 @@
 ---
-var1: "some var"
-var2: "some var"
+variable5: "value from vars/main.yaml"
+variable7: "value for variable7"

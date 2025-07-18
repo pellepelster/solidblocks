@@ -3,6 +3,8 @@ title = "Role pgbackrest"
 description = "pgBackrest setup for PostgreSQL"
 +++
 
+pgBackrest setup for PostgreSQL
+
 ## Variables
 
 | Name | Value | Description | Required |

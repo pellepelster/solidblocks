@@ -13,22 +13,28 @@ fun List<Variable>.get(name: String) = this.singleOrNull { it.name == name }
 fun Role.tableRows(): List<VariableTableRow> {
     val defaults = this.defaults.map {
         val option = metaData.getOption(it.name)
-        VariableTableRow(it.name, it.value, option?.description, option?.required ?: false)
+        VariableTableRow(it.name, option?.default ?: it.value, option?.description, option?.required ?: false)
     }
 
     val variables = this.variables.map {
         val option = this.metaData.getOption(it.name)
         val default = this.defaults.get(it.name)
 
-        VariableTableRow(it.name, it.value ?: default?.value, option?.description, option?.required ?: false)
+        VariableTableRow(
+            it.name,
+            option?.default ?: it.value ?: default?.value,
+            option?.description,
+            option?.required ?: false
+        )
     }
 
     val defaultsNotInVariables =
         defaults.filter { variables.none { v -> v.name == it.name } }
             .map {
+                val option = metaData.getOption(it.name)
                 val default = this.defaults.get(it.name)
 
-                VariableTableRow(it.name, default?.value, it.description, it.required)
+                VariableTableRow(it.name, option?.default ?: default?.value, it.description, it.required)
             }
 
     val variablesAndDefaults = variables + defaultsNotInVariables
@@ -36,7 +42,7 @@ fun Role.tableRows(): List<VariableTableRow> {
     val optionsNotInVariablesOrDefaults =
         metaData.options.filter { option -> variablesAndDefaults.none { it.name == option.name } }
             .map {
-                VariableTableRow(it.name, null, it.description, it.required)
+                VariableTableRow(it.name, it.default, it.description, it.required)
             }
 
     return (variablesAndDefaults + optionsNotInVariablesOrDefaults).sortedBy { it.name }
@@ -54,9 +60,15 @@ data class Role(
     val metaData: RoleMetaData
 )
 
-data class RoleMetaData(val shortDescription: String?, val options: List<Option>)
+data class RoleMetaData(val shortDescription: String?, val description: String?, val options: List<Option>)
 
-data class Option(val name: String, val description: String?, val required: Boolean)
+data class Option(
+    val name: String,
+    val description: String?,
+    val required: Boolean,
+    val default: String?,
+    val type: String?
+)
 
 data class Collection(val galaxy: Galaxy)
 

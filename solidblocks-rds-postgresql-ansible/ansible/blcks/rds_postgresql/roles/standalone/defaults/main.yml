@@ -10,7 +10,4 @@ extension_pg_ivm_enabled: false
 extension_pgvector_enabled: false
 extension_pgaudit_enabled: false
 
-backup_full_schedule: "*-*-* 02:00:00"
-backup_incr_schedule: "*-*-* 0/3:00:00"
-
 extra_configuration:

@@ -3,6 +3,8 @@ title = "Role k3s_agent"
 description = "deploy K3S cluster agents"
 +++
 
+deploy K3S cluster agents
+
 ## Variables
 
 | Name | Value | Description | Required |

@@ -3,6 +3,8 @@ title = "Role k3s_hetzner"
 description = "deploy Hetzner specific K8S components"
 +++
 
+deploy Hetzner specific K8S components
+
 ## Variables
 
 | Name | Value | Description | Required |

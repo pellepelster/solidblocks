@@ -3,6 +3,8 @@ title = "Role k3s_server"
 description = "setup k3s servers"
 +++
 
+setup k3s servers
+
 ## Variables
 
 | Name | Value | Description | Required |

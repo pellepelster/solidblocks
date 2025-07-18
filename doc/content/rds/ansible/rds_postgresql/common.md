@@ -3,6 +3,8 @@ title = "Role common"
 description = "Basic PostgreSQL setup"
 +++
 
+Basic PostgreSQL setup
+
 ## Variables
 
 | Name | Value | Description | Required |
