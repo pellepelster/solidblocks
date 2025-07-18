@@ -73,8 +73,7 @@ account:
 
 # Metadata
 
-Often created resources support metadata, which in most cases are labels in the form of key/value pairs. Following
-establish K8S standards for labeling, the following best practices are a good starting point for choosing label names:
+Clud resources often support metadata, which in most cases are labels in the form of key/value pairs. Following established K8S standards for labeling, the following best practices are a good starting point for choosing label names:
 
 * Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
 * The name segment is required and must be 63 characters or less, beginning and ending with an alphanumeric
