@@ -1,6 +1,6 @@
 +++
 title = "Paperback offline backup"
-description = "Offline backup for credentials"
+description = "Paper based backup for secrets"
 +++
 
 For disaster recovery purposes, it is crucial to always have access to all secrets that are needed to black start your
@@ -20,18 +20,22 @@ To make sure the backup is secure and reliable, the following requirements shoul
   secrets alone
 * be stored on non-digital mediums to avoid accidental deletion or exposure
 * have multiple copies that are geographically redundant and distributed to protect from single-point of failure (e.g.,
-  house fire, flood)
+  house fire or floods)
 * stored in a secure, tamper-proof location
 * written guides for rotation and recovery exist and are regularly tested and trained
 * include checksums or validation words to be able to verify the correct entry during recovery
 
 ## paperback
 
-[paperback](https://github.com/cyphar/paperback) is a paper-based backup scheme that is secure, easy-to-use and can
-fulfil those requirements. Backups are encrypted, and the secret key is split into numerous `key shards` which can be
+[Paperback](https://github.com/cyphar/paperback) is a paper-based backup scheme that is secure, easy-to-use and can
+fulfil those requirements. Backups are encrypted, and the secret key can be split into numerous `key shards` which can be
 stored separately (by different individuals), removing the need for any individual to memorise a secret passphrase.
 
-### Download
+### Backup
+
+To create a backup of your sensitive data using paperback, execute the following steps
+
+#### Download
 
 | File                                                | Sha256 Checksum                                                    |
 |-----------------------------------------------------|--------------------------------------------------------------------|
@@ -40,29 +44,29 @@ stored separately (by different individuals), removing the need for any individu
 | [Apple x86_64](paperback-x86_64-apple-darwin)       | `50baacfcceb1aaa302972a7a5eb2e1946b07ed719efc9985b5cfed1eee09c070` |
 | [Linux x86_64](paperback-x86_64-unknown-linux-musl) | `41dbbb0e4e9b3217e16bb06ad4157d6dc2792e261790a005854bed915ec057e6` |
 
-## Backup
 
-To create a backup of sensitive data, execute the following steps
+#### Write secrets to a file
 
-### Write secrets to a file
+Depending on the type of secrets you handle, you should consider running the backup process on a dedicated, non-networked
+machine that is booted from USB using a clean and verified ephemeral operating system, for 
+example, [grml](https://grml.org/) or [knoppix](http://www.knoppix.org/).  
 
 **backup.txt**
-
 ```
 foo-bar
 ```
 
-### Create backup documents from file
+#### Create backup documents from a file
 
-Depending on your needs, define the total number of `key_shards` you want to distribute and a `quorum` which is the
-number
-of key shards needed to restore the secrets from the backup
+To create the backup you need to choose the total number of `key_shards` you want to distribute and a `quorum` which is the number
+of key shards needed to restore the secrets from the backup. For example, when you create 8 `key_shards` with a `quorum` of 3, then 
+at least three `key_shard` holders are needed to restore the data.
 
 ```shell
 paperback backup --quorum-size <quorum> --shards <key_shards> backup.txt
 ```
 
-### Distribute PDFs
+#### Distribute PDFs
 
 `paperback` backup will create a main document with a unique `document_id` and `n` key shards with unique `key_shard_id`
 s
@@ -83,7 +87,7 @@ When printing the documents, please keep in mind that the printer may keep your 
 Also consider to user archival paper, which is a grade of paper that is designed to last longer than ordinary copy paper.
 {{% /notice %}}
 
-#### Main document
+##### Main document
 
 The main document consists of
 
@@ -93,7 +97,7 @@ The main document consists of
 
 ![main document](offlinebackup_main_document.png)
 
-#### Key shard
+##### Key shard
 
 The key shard document contains
 
@@ -101,17 +105,20 @@ The key shard document contains
 * ❺ the `document_id`
 * ❻ the encrypted key shard data
 * ❼ a checksum that can be used to verify the key shard data entry during restore
-* ❽ codewords to decrypt the key shard data
+* ❽ codewords to decrypt the key shard data. Note that without the codewords, the `key_shard` can not be used for restore.
 
 ![key shard](offlinebackup_key_shard.png)
 
-### Clean up
+#### Clean up
 
-After document distribution, clean up the machine where the backup was created and remove the PDFs and the secret file.
+After document distribution, remember to clean up the machine where the backup was created and remove the PDFs and 
+the secret file. 
 
-## Recovery
+### Recovery
 
-Start the interactive recovery process with the target file where the record data should be written to
+Again, like during backup, consider using an ephemeral machine and operating system to securely restore your data. 
+Start the interactive recovery process with the target file where the record 
+data should be written to
 
 ```shell
 paperback recover --interactive recover.txt
@@ -119,8 +126,8 @@ paperback recover --interactive recover.txt
 
 To recover, you need to enter
 
-* the encrypted document data (❷)
-* a `<quorum>` number of
+* the encrypted main document data (❷)
+* at least a `<quorum>` number of
     * encrypted key shard data (❻)
     * codewords to decrypt the key shard data (❽)
 
