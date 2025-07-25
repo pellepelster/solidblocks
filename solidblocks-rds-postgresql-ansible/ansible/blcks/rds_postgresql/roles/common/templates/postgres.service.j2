@@ -12,7 +12,11 @@ ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
 KillSignal=SIGINT
 TimeoutSec=infinity
-Environment="PGPASSFILE={{ data_dir }}/.pgpass"
+{% if extra_environment_vars is not none %}
+{% for key, value in extra_environment_vars.items() %}
+Environment="{{key}}={{value | replace('<data_dir>', data_dir)}}"
+{% endfor %}
+{% endif %}
 
 # prevent OOM killer from choosing the postmaster (individual backends will
 # reset the score to 0)

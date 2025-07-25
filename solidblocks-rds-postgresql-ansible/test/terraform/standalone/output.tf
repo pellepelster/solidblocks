@@ -39,3 +39,4 @@ output "database1_blue_name" {
 output "database1_blue_ip" {
   value = hcloud_server.database1_blue.ipv4_address
 }
+

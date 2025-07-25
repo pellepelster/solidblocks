@@ -2,11 +2,15 @@
 - name: "populate service facts"
   ansible.builtin.service_facts:
 
+#- name: "debug"
+#  ansible.builtin.debug:
+#    var: hostvars[primary_node]['ansible_all_ipv4_addresses'] | ipaddr(private_subnet) | first
+
 - name: "setting database facts"
   ansible.builtin.set_fact:
     primary_node_hostvars: "{{ hostvars[primary_node] }}"
     is_primary: "{{ inventory_hostname == primary_node }}"
-    primary_ip: "{{ hostvars[primary_node]['ansible_default_ipv4']['address'] }}"
+    primary_ip: "{{ hostvars[primary_node]['ansible_all_ipv4_addresses'] | ipaddr(private_subnet) | first }}"
 
 - name: "primary node not found"
   ansible.builtin.fail:
@@ -42,6 +46,11 @@
 - name: "install python3-psycopg2"
   ansible.builtin.package:
     name: python3-psycopg2
+    state: present
+
+- name: "install python3-netaddr"
+  ansible.builtin.package:
+    name:  python3-netaddr
     state: present
 
 - name: "add postgres repository key"
@@ -135,11 +144,3 @@
     daemon_reload: true
     enabled: true
     name: "{{ service_name }}"
-
-- name: "create storage dir"
-  ansible.builtin.file:
-    path: "{{ data_dir }}"
-    state: directory
-    owner: postgres
-    group: postgres
-    mode: '0700'

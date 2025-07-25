@@ -1,11 +1,11 @@
 +++
 title = "Docker"
-description = "Containerized PostgreSQL database with an all batteries included backup solution powered by pgBackRest"
+description = "Containerized PostgreSQL database with all batteries included backup solution powered by pgBackRest"
 overviewGroup = "rds"
 faIcon = "fa-brands fa-docker"
 +++
 
-Containerized [PostgreSQL](https://www.postgresql.org/) database with an all batteries included backup solution
+Containerized [PostgreSQL](https://www.postgresql.org/) database with all batteries included backup solution
 powered by [pgBackRest](https://pgbackrest.org/)
 
 RDS PostgreSQL aims at being easy to use while keeping data a safe as possible. Based on the conventions of

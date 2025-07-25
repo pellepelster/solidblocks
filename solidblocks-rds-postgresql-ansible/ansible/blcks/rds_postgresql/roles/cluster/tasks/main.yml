@@ -4,7 +4,8 @@
     name: blcks.rds_postgresql.common
     public: true
   vars:
-    primary_node: "{{ ansible_hostname }}"
+    extra_environment_vars:
+      PGPASSFILE: "<data_dir>/.pgpass"
 
 - name: "setup pgbackrest"
   ansible.builtin.include_role:
@@ -43,6 +44,17 @@
     name: "{{ service_name }}"
   when: is_primary
 
+- name: "creating replication user"
+  community.postgresql.postgresql_user:
+    login_db: postgres
+    login_user: "{{ superuser_username }}"
+    login_password: "{{ superuser_password }}"
+    name: "{{ replicator_username }}"
+    password: "{{ replicator_password }}"
+    role_attr_flags: "REPLICATION"
+    expires: infinity
+  when: is_primary
+
 - name: "create backup stanza"
   ansible.builtin.command: pgbackrest --stanza={{ stanza_name }} stanza-create
   become: yes
@@ -64,8 +76,22 @@
     - 5432
   when: not is_primary
 
-- name: "restore secondary from initial backup"
+- name: "restore secondary from backup"
   ansible.builtin.command: pgbackrest --stanza={{ stanza_name }} --delta restore --type=standby --recovery-option="primary_conninfo=host={{ primary_ip }} user=replicator" --recovery-option=recovery_target_timeline=latest
   become: yes
   become_user: postgres
   when: data_dir_empty and not is_primary
+
+- name: "install postgres password file"
+  ansible.builtin.template:
+    src: .pgpass.j2
+    dest: "{{ data_dir }}/.pgpass"
+    owner: postgres
+    mode: '0600'
+
+- name: "starting postgres"
+  ansible.builtin.systemd_service:
+    state: started
+    name: "{{ service_name }}"
+  when: not is_primary
+

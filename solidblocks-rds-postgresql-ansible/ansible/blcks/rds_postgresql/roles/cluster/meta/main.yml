@@ -1,7 +1,10 @@
 ---
+dependencies:
+  - role: blcks.rds_postgresql.common
+
 argument_specs:
   main:
-    short_description: setup PostgreSQL database
+    short_description: Provisions a clustered PostgreSQL server
     options:
       instance_name:
         description: database instance name
@@ -11,55 +14,93 @@ argument_specs:
         description: environment name
         required: true
 
-      primary_node:
-        description: name of the primary database node
-        required: true
-
       postgres_version:
         description: postgres version to install
         required: false
+
       superuser_username:
         description: database superuser name
         required: false
+
       superuser_password:
         description: database superuser password
-        required: true
-
-      backup_password:
-        description: pgbackrest encryption password
         required: true
 
       extension_pglogical_enabled:
         description: enable pglogical postgres extension
         required: false
+
       extension_postgis_enabled:
         description: enable postgis postgres extension
         required: false
+
       extension_pg_ivm_enabled:
         description: enable postgis postgres extension
         required: false
+
       extension_pgvector_enabled:
         description: enable postgis postgres extension
         required: false
+
       extension_pgaudit_enabled:
         description: enable pgaudit postgres extension
         required: false
 
+      backup_password:
+        description: "S3 backup [encryption password](https://pgbackrest.org/configuration.html#section-repository/option-repo-cipher-pass)"
+        required: true
+
       backup_s3_endpoint:
-        description: TODO
+        description: "S3 backup bucket [endpoint](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-endpoint)"
         required: true
+
       backup_s3_bucket:
-        description: TODO
+        description: "S3 backup bucket [name](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-bucket)"
         required: true
+
       backup_s3_key:
-        description: TODO
+        description: "S3 backup bucket [access key](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-key)"
         required: true
+
       backup_s3_key_secret:
-        description: TODO
+        description: "S3 backup bucket [secret access key](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-key-secret)"
         required: true
+
       backup_s3_region:
-        description: TODO
+        description: "S3 backup bucket [region](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-region)"
         required: true
+
       backup_s3_uri_style:
-        description: TODO
+        description: "S3 backup bucket [uri style](https://pgbackrest.org/configuration.html#section-repository/option-repo-s3-uri-style)"
         required: false
+
+      backup_full_schedule:
+        description: "Systemd calendar schedule for full backups"
+        default: "*-*-* 02:00:02"
+        required: false
+
+      backup_incr_schedule:
+        description: "Systemd calendar schedule for incremental backups"
+        default: "*-*-* 0/3:00:02"
+        required: false
+
+      extra_configuration:
+        description: "additional database configuration options as key/value pairs"
+        type: "dict"
+        required: false
+
+      primary_node:
+        description: "ansible host name of the primary database node"
+        required: true
+
+      private_subnet:
+        description: "ip subnet that contains the leader als well as all secondary database nodes"
+        required: true
+
+      replicator_username:
+        description: "username for the replication user, access will only be allowed from within `private_subnet`"
+        required: true
+
+      replicator_password:
+        description: "password for the replication user, access will only be allowed from within `private_subnet`"
+        required: true

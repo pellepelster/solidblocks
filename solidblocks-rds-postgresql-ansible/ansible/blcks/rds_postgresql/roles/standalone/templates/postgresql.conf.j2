@@ -13,6 +13,8 @@ timezone = 'Etc/UTC'
 
 shared_preload_libraries = 'pg_stat_statements{% if extension_pglogical_enabled %},pglogical{% endif %}{% if extension_pgaudit_enabled %},pgaudit{% endif %}'
 
+{% if extra_configuration is not none %}
 {% for key, value in extra_configuration.items() %}
 {{key}} = {{value}}
 {% endfor %}
+{% endif %}

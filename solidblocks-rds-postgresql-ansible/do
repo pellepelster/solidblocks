@@ -78,7 +78,7 @@ function task_test_standalone_terraform {
   network_wait_for_port_open ${database1_blue_ip} 22
 }
 
-function task_test_terraform_cluster {
+function task_test_cluster_terraform {
   prepare_env
 
   test_terraform "storage-cluster" init -upgrade
@@ -131,6 +131,43 @@ function task_test_standalone_after_bootstrap {
     --hosts='ssh://test-test1-database1-blue' "${DIR}/test/test-test1-database1-blue-after-bootstrap.py"
 }
 
+function task_test_cluster_failover {
+  ssh -F "${DIR}/test/terraform/output/test/cluster/ssh/client_config" test-test1-database2-blue 'systemctl stop test-database2'
+  ssh -F "${DIR}/test/terraform/output/test/cluster/ssh/client_config" test-test1-database2-green 'rm /storage/data/test/database2/postgresql.auto.conf'
+  ssh -F "${DIR}/test/terraform/output/test/cluster/ssh/client_config" test-test1-database2-green 'systemctl restart test-database2'
+  ssh -F "${DIR}/test/terraform/output/test/cluster/ssh/client_config" test-test1-database2-green 'test-database2-psql postgres -c "SELECT pg_promote();"'
+  ssh -F "${DIR}/test/terraform/output/test/cluster/ssh/client_config" test-test1-database2-green 'test-database2-backup-incr.sh'
+  ssh -F "${DIR}/test/terraform/output/test/cluster/ssh/client_config" test-test1-database2-blue 'rm -rf /storage/data/test/'
+}
+
+function task_test_cluster_after_bootstrap {
+  python_ensure_venv "${DIR}"
+
+  "${VENV_DIR}/bin/py.test" \
+    --capture=tee-sys \
+    --ssh-config="${DIR}/test/terraform/output/test/cluster/ssh/client_config" \
+    --hosts='ssh://test-test1-database2-blue' "${DIR}/test/test-test1-database2-blue-after-bootstrap.py"
+
+  "${VENV_DIR}/bin/py.test" \
+    --capture=tee-sys \
+    --ssh-config="${DIR}/test/terraform/output/test/cluster/ssh/client_config" \
+    --hosts='ssh://test-test1-database2-green' "${DIR}/test/test-test1-database2-green-after-bootstrap.py"
+}
+
+function task_test_cluster_after_failover {
+  python_ensure_venv "${DIR}"
+
+  "${VENV_DIR}/bin/py.test" \
+    --capture=tee-sys \
+    --ssh-config="${DIR}/test/terraform/output/test/cluster/ssh/client_config" \
+    --hosts='ssh://test-test1-database2-blue' "${DIR}/test/test-test1-database2-blue-after-failover.py"
+
+  "${VENV_DIR}/bin/py.test" \
+    --capture=tee-sys \
+    --ssh-config="${DIR}/test/terraform/output/test/cluster/ssh/client_config" \
+    --hosts='ssh://test-test1-database2-green' "${DIR}/test/test-test1-database2-green-after-failover.py"
+}
+
 function task_test_standalone_after_instance_rebuild {
   python_ensure_venv "${DIR}"
 
@@ -167,6 +204,42 @@ function task_test_standalone_ansible {
     --extra-vars "@${DIR}/test/terraform/output/test/standalone/ansible/blcks_rds_postgres_variables.yml" \
     --extra-vars "database1_primary_node=${database1_primary_node}" \
     "${DIR}/test/ansible/standalone/site.yml" "$@"
+}
+
+function task_test_cluster_ansible {
+  prepare_env
+  python_ensure_venv "${DIR}"
+  local database2_primary_node=$(test_terraform "cluster" output database2_blue_name)
+
+  "${VENV_DIR}/bin/ansible-galaxy" \
+    collection install \
+    --force \
+    -v \
+    -r "${DIR}/test/ansible/cluster/requirements.yml"
+
+  "${VENV_DIR}/bin/ansible-playbook" \
+    -i "${DIR}/test/terraform/output/test/cluster/ansible/blcks_rds_postgres_inventory.yml" \
+    --extra-vars "@${DIR}/test/terraform/output/test/cluster/ansible/blcks_rds_postgres_variables.yml" \
+    --extra-vars "database2_primary_node=${database2_primary_node}" \
+    "${DIR}/test/ansible/cluster/site.yml" "$@"
+}
+
+function task_test_cluster_ansible_after_failover {
+  prepare_env
+  python_ensure_venv "${DIR}"
+  local database2_primary_node=$(test_terraform "cluster" output database2_green_name)
+
+  "${VENV_DIR}/bin/ansible-galaxy" \
+    collection install \
+    --force \
+    -v \
+    -r "${DIR}/test/ansible/cluster/requirements.yml"
+
+  "${VENV_DIR}/bin/ansible-playbook" \
+    -i "${DIR}/test/terraform/output/test/cluster/ansible/blcks_rds_postgres_inventory.yml" \
+    --extra-vars "@${DIR}/test/terraform/output/test/cluster/ansible/blcks_rds_postgres_variables.yml" \
+    --extra-vars "database2_primary_node=${database2_primary_node}" \
+    "${DIR}/test/ansible/cluster/site.yml" "$@"
 }
 
 function task_build {
@@ -219,10 +292,35 @@ function task_test_cluster() {
     exit 0
   fi
 
- echo "====================================================================================="
-   echo "task_test_terraform_cluster"
- echo "====================================================================================="
- task_test_terraform_cluster
+  echo "====================================================================================="
+  echo "task_test_cluster_terraform"
+  echo "====================================================================================="
+  task_test_cluster_terraform
+
+  echo "====================================================================================="
+  echo "task_test_cluster_ansible"
+  echo "====================================================================================="
+  task_test_cluster_ansible
+
+  echo "====================================================================================="
+  echo "task_test_cluster_after_bootstrap"
+  echo "====================================================================================="
+  task_test_cluster_after_bootstrap
+
+  echo "====================================================================================="
+  echo "task_test_cluster_failover"
+  echo "====================================================================================="
+  task_test_cluster_failover
+
+  echo "====================================================================================="
+  echo "task_test_cluster_ansible_after_failover"
+  echo "====================================================================================="
+  task_test_cluster_ansible_after_failover
+
+  echo "====================================================================================="
+  echo "task_test_cluster_after_failover"
+  echo "====================================================================================="
+  task_test_cluster_after_failover
 }
 
 function task_test_standalone() {
@@ -310,7 +408,12 @@ case ${arg} in
   test-standalone-after-storage-rebuild) task_test_standalone_after_storage_rebuild ;;
 
   test-cluster) task_test_cluster ;;
-  test-terraform-cluster) task_test_terraform_cluster ;;
+  test-cluster-terraform) task_test_cluster_terraform ;;
+  test-cluster-ansible) task_test_cluster_ansible "$@" ;;
+  test-cluster-after-bootstrap) task_test_cluster_after_bootstrap ;;
+  test-cluster-failover) task_test_cluster_failover ;;
+  test-cluster-after-failover) task_test_cluster_after_failover ;;
+  test-cluster-ansible-after-failover) task_test_cluster_ansible_after_failover ;;
 
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;

@@ -76,14 +76,15 @@ argument_specs:
 
       backup_full_schedule:
         description: "Systemd calendar schedule for full backups"
+        default: "*-*-* 02:00:02"
         required: false
 
       backup_incr_schedule:
         description: "Systemd calendar schedule for incremental backups"
-        default: "*-*-* 02:00:02"
+        default: "*-*-* 0/3:00:02"
         required: false
 
       extra_configuration:
         description: "additional database configuration options as key/value pairs"
-        default: "*-*-* 0/3:00:02"
+        type: "dict"
         required: false

@@ -10,4 +10,4 @@ extension_pg_ivm_enabled: false
 extension_pgvector_enabled: false
 extension_pgaudit_enabled: false
 
-extra_configuration:
+extra_environment_vars:

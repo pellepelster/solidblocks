@@ -1,6 +1,6 @@
 module "ansible_output" {
   source      = "../../../terraform/output-ansible"
-  output_path = "${path.root}/../output/${var.environment}/"
+  output_path = "${path.root}/../output/${var.environment}/cluster"
 
   environment     = var.environment
   ssh_config_file = module.ssh_config.ssh_config_file
@@ -31,7 +31,7 @@ module "ansible_output" {
 
 module "ssh_config" {
   source      = "../../../terraform/output-ssh-config"
-  output_path = "${path.root}/../output/${var.environment}"
+  output_path = "${path.root}/../output/${var.environment}/cluster"
 
   ssh_private_key_openssh = module.ssh_hetzner.ssh_private_key_openssh
   ssh_servers = [hcloud_server.database2_green, hcloud_server.database2_blue]
@@ -39,4 +39,8 @@ module "ssh_config" {
 
 output "database2_blue_name" {
   value = hcloud_server.database2_blue.name
+}
+
+output "database2_green_name" {
+  value = hcloud_server.database2_green.name
 }
