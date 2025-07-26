@@ -9,7 +9,7 @@ weight = 1
 The Ansible role to install a [PostgreSQL](https://www.postgresql.org/) comes in two flavors:
 
 * [standalone](./standalone) for single node installations
-* [cluster](./cluster) featuring a primary/secondary setup, supporting failover
+* [cluster](./cluster) featuring a primary/standby setup, supporting failover
 
 
 ## Common Concepts
