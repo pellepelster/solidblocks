@@ -21,7 +21,7 @@ node is created it retrieves all backup data from the S3 bucket ❻ and replays 
 
 ### WAL
 
-The WAL ❶ stores all data altering operations in a log to be able to replay them in a crash or restore scenario. The WAL is divided into small (16MB) files called segments ❷ that are numbered in ascending order. Each WAL (segment) also has a unique timeline id ❸. When failover happens, e.g. in case of an outage of the primary node, the WAL on the new node ❺ restored from the backup gets a new timeline id ❹ to prevent clashes with WAl segments from the other nodes. 
+The WAL ❶ stores all data altering operations in a log to be able to replay them in a crash or restore scenario. The WAL is divided into small (16MB) files called segments ❷ that are numbered in ascending order. Each WAL (segment) also has a unique timeline id ❸. When failover happens, e.g. in case of an outage of the primary node, the WAL on the new node ❺ restored from the backup gets a new timeline id ❹ to prevent clashes with WAL segments from the other nodes. 
 
 Nodes that are attached to replication slots have to be on the same timeline id as the node offering the replication slot. This is especially important after failover, when a node dies ❻. If the latest WAL segments that were pushed to the backup repository are still from the old node ❼, attaching a node that was restored from this backup to the replication slot of the new node ❺ will fail, because they are on the different timelines. Only when a new backup is pushed from the new node ❽, the backup repository is updated with the new timeline and nodes created form that backup can be attached to the primary again.
 

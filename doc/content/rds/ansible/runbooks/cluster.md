@@ -68,7 +68,7 @@ which should return `f` now.
 
 ### Trigger a backup
 
-When the failover process is done, PostgreSQL internally creates a new [timeline](https://www.postgresql.org/docs/current/continuous-archiving.html#BACKUP-TIMELINES) to be able to track changes from that point onward. This ensures that previous Write-Ahead Log (WAL) data isn’t overwritten. Because the latest backup was created on the old node with the previous timeline, we need to trigger a new backup, so the backup repository knows the latest timeline 
+When the failover process is done, PostgreSQL internally creates a new [timeline](https://www.postgresql.org/docs/current/continuous-archiving.html#BACKUP-TIMELINES) to be able to track changes from that point onward. This ensures that previous Write-Ahead Log (WAL) data isn’t overwritten. Because the latest backup was created on the old node with the previous timeline, we need to trigger a new backup, so the backup repository knows the latest timeline. See also the [role documentation](../cluster#wal) for an in depth explanation
 
 On the new primary trigger a backup
 
