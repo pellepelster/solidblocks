@@ -10,7 +10,6 @@
   ansible.builtin.set_fact:
     primary_node_hostvars: "{{ hostvars[primary_node] }}"
     is_primary: "{{ inventory_hostname == primary_node }}"
-    primary_ip: "{{ hostvars[primary_node]['ansible_all_ipv4_addresses'] | ipaddr(private_subnet) | first }}"
 
 - name: "primary node not found"
   ansible.builtin.fail:
@@ -19,7 +18,7 @@
 
 - name: "database facts"
   ansible.builtin.debug:
-    msg: "is_primary: {{ is_primary }}, primary_ip: {{ primary_ip }}"
+    msg: "is_primary: {{ is_primary }}"
 
 - name: "mount data disk"
   ansible.posix.mount:

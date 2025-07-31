@@ -7,6 +7,14 @@
     extra_environment_vars:
       PGPASSFILE: "<data_dir>/.pgpass"
 
+- name: "setting database facts"
+  ansible.builtin.set_fact:
+    primary_ip: "{{ hostvars[primary_node]['ansible_all_ipv4_addresses'] | ipaddr(private_subnet) | first }}"
+
+- name: "database facts"
+  ansible.builtin.debug:
+    msg: "primary_ip: {{ primary_ip }}"
+
 - name: "setup pgbackrest"
   ansible.builtin.include_role:
     name: blcks.rds_postgresql.pgbackrest
