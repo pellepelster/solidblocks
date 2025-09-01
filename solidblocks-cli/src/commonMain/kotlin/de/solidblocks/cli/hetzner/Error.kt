@@ -12,6 +12,7 @@ enum class HetznerApiErrorType {
     locked,
     not_found,
     rate_limit_exceeded,
+    resource_in_use,
     server_not_stopped,
     resource_limit_exceeded,
     resource_unavailable,
