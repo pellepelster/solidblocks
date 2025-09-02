@@ -8,8 +8,6 @@ source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
 
-DEFAULT_BUILD_TARGET=${BUILD_TARGET:-linuxX64}
-
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -20,7 +18,15 @@ function task_test {
     exit 0
   fi
 
-  ${DIR}/gradlew ${DEFAULT_BUILD_TARGET}Test
+  ${DIR}/../gradlew check
+}
+
+function integration_test_blcks_wrapper() {
+  if [[ -d "${DIR}/blcks" ]]; then
+    "${DIR}/blcks/bin/blcks" $@
+  else
+    "${DIR}/blcks" $@
+  fi
 }
 
 function task_test_hetzner_nuke {
@@ -37,23 +43,23 @@ function task_test_hetzner_nuke {
   )
 
   divider_header "--help"
-  "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" --help
+  integration_test_blcks_wrapper --help
   divider_footer
 
   divider_header "hetzner --help"
-  "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" hetzner --help
+  integration_test_blcks_wrapper hetzner --help
   divider_footer
 
   divider_header "hetzner nuke --help"
-  "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" hetzner nuke --help
+  integration_test_blcks_wrapper hetzner nuke --help
   divider_footer
 
   divider_header "hetzner nuke"
-  "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" hetzner nuke
+  integration_test_blcks_wrapper hetzner nuke
   divider_footer
 
   divider_header "hetzner nuke --do-nuke"
-  "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" hetzner nuke --do-nuke
+  integration_test_blcks_wrapper hetzner nuke --do-nuke
   divider_footer
 }
 
@@ -62,11 +68,11 @@ function task_test_workflow {
     cd ${DIR}/test/no_workflow_file
 
     divider_header "no_workflow_file -> check"
-    "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" workflow check || true
+    integration_test_blcks_wrapper workflow check || true
     divider_footer
 
     divider_header "no_workflow_file --> --help"
-    "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" workflow --help
+    integration_test_blcks_wrapper workflow --help
     divider_footer
   )
 
@@ -74,15 +80,15 @@ function task_test_workflow {
     cd ${DIR}/test/testbed1
 
     divider_header "testbed1 --> workflow --help"
-    "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" workflow --help
+    "${DIR}/blcks" workflow --help
     divider_footer
 
     divider_header "testbed1 --> workflow example"
-    "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" workflow example
+    "${DIR}/blcks" workflow example
     divider_footer
 
     divider_header "testbed1 --> workflow check"
-    "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" workflow check
+    "${DIR}/blcks" workflow check
     divider_footer
   )
 
@@ -90,7 +96,7 @@ function task_test_workflow {
      cd ${DIR}/test/testbed2
 
     divider_header "testbed2 --> workflow check"
-    "${DIR}/blcks-${BUILD_TARGET}-${VERSION}" workflow check || true
+    "${DIR}/blcks" workflow check || true
     divider_footer
   )
 }
@@ -114,43 +120,54 @@ function divider_footer() {
   echo ""
 }
 
-function task_build_macosX64 {
-  task_build "macosX64"
+function task_build_darwin_arm64 {
+  export BUILD_TARGET="darwin-arm64"
+  task_build
 }
 
-function task_build_macosArm64 {
-  task_build "macosArm64"
+function task_build_darwin_amd64 {
+  export BUILD_TARGET="darwin-amd64"
+  task_build
 }
 
-function task_build_linuxX64 {
-  if [[ "${CI:-}" == "true" ]]; then
-    sudo apt-get update
-    sudo apt-get install libcurl4-gnutls-dev
-  fi
-
-  task_build "linuxX64"
+function task_build_linux_amd64 {
+  export BUILD_TARGET="linux-amd64"
+  task_build
 }
 
-function task_build_mingwX64 {
-  task_build "mingwX64"
+function task_build_windows_amd64 {
+  export BUILD_TARGET="windows-amd64"
+  # graalvm native image build fails when the vm and the sources are on different drives
+  (
+    mkdir -p "/c/solidblocks"
+    cp -r ${DIR}/../ "/c/solidblocks"
+  )
+  task_build "/c/solidblocks"
 }
 
 function task_build {
-  local target=${1:-$DEFAULT_BUILD_TARGET}
-  ${DIR}/gradlew "${target}Binaries"
-  find "${DIR}/build/bin/${target}/releaseExecutable/" -type f -exec cp {} ${DIR}/blcks-${target}-${VERSION} \;
-  chmod +x ${DIR}/blcks-${target}-${VERSION}
+  BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
+  local dir="${1:-${DIR}/..}"
+  (
+    cd ${dir}
+    ./gradlew --stacktrace :solidblocks-cli:nativeCompile
+    cp solidblocks-cli/build/native/nativeCompile/blcks* ${DIR}/blcks
+    chmod +x ${DIR}/blcks
+  )
 }
 
 function task_install_local {
-  local target=${1:-$DEFAULT_BUILD_TARGET}
-  task_build
-  cp ${DIR}/blcks-${target}-${VERSION} ~/bin/blcks
+  task_build_linux_amd64
+  cp ${DIR}/blcks ~/bin/blcks
 }
 
-function task_build_jvm {
-  ${DIR}/gradlew jvmDistZip
-  find "${DIR}/build/distributions/solidblocks-cli-${VERSION}-jvm.zip" -type f -exec cp {} ${DIR}/blcks-jvm-${VERSION}.zip \;
+function task_build_jvm_all {
+  ${DIR}/../gradlew distZip distTar
+  (
+    mkdir -p "${DIR}/blcks/blcks"
+    cd "${DIR}/blcks/blcks"
+    tar -xvf "${DIR}/build/distributions/blcks-${VERSION}.tar" --strip-components=1
+  )
 }
 
 function task_clean {
@@ -162,11 +179,11 @@ shift || true
 case ${arg} in
   build) task_build "$@" ;;
   install-local) task_install_local "$@" ;;
-  build-jvm) task_build_jvm "$@" ;;
-  build-macosX64) task_build_macosX64 "$@" ;;
-  build-macosArm64) task_build_macosArm64 "$@" ;;
-  build-linuxX64) task_build_linuxX64 "$@" ;;
-  build-mingwX64) task_build_mingwX64 "$@" ;;
+  build-jvm-all) task_build_jvm_all "$@" ;;
+  build-darwin-arm64) task_build_darwin_arm64 "$@" ;;
+  build-darwin-amd64) task_build_darwin_amd64 "$@" ;;
+  build-linux-amd64) task_build_linux_amd64 "$@" ;;
+  build-windows-amd64) task_build_windows_amd64 "$@" ;;
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;
   test-hetzner-nuke) task_test_hetzner_nuke "$@" ;;

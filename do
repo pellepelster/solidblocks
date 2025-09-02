@@ -83,7 +83,7 @@ function task_clean_aws {
 
 function task_clean_hetzner {
   export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-  ./solidblocks-cli/blcks-linuxX64-${VERSION} hetzner nuke --do-nuke
+  ./solidblocks-cli-linux-amd64/blcks hetzner nuke --do-nuke
 }
 
 function task_clean_gcloud {

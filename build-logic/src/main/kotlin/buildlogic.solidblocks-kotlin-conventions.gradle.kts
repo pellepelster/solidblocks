@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("com.diffplug.spotless")
+    kotlin("plugin.serialization")
 }
 
 object Versions {
@@ -28,6 +29,7 @@ fun getPassCredential(passPath: String, envName: String): String {
         return System.getenv(envName)!!
     }
 
+    /*
     val secret = ByteArrayOutputStream()
     exec {
         commandLine("pass", passPath)
@@ -35,6 +37,9 @@ fun getPassCredential(passPath: String, envName: String): String {
     }
 
     return secret.toString().trim()
+
+     */
+    return "yolo"
 }
 
 tasks.test {

@@ -1,0 +1,614 @@
+[
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.SshKeyResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.SshKeyResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.LoadBalancerResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.LoadBalancerResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.NetworkResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.NetworkResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ServerResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ServerResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.Meta",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.Meta$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.Pagination",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.Pagination$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PrimaryIpListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PrimaryIpListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FirewallResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FirewallResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.NetworksListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.NetworksListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ImageResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ImageResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ActionResource",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ActionResource$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ActionResponseWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ActionResponseWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.CertificatesListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.CertificatesListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FloatingIPsListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FloatingIPsListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PrimaryIpResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PrimaryIpResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ServersListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ServersListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.CertificatesResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.CertificatesResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ChangeLoadBalancerProtectionRequest",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ChangeLoadBalancerProtectionRequest$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerProtectionResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerProtectionResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PlacementGroupsListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PlacementGroupsListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerApiErrorWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerApiErrorWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ChangeVolumeProtectionRequest",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ChangeVolumeProtectionRequest$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PlacementGroupResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.PlacementGroupResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FirewallsListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FirewallsListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ImagesListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ImagesListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.LoadBalancersListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.LoadBalancersListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.VolumeResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.VolumeResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerApiErrorType",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerApiErrorType$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.VolumesListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.VolumesListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.SSHKeysListWrapper",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.SSHKeysListWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ActionError",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.ActionError$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FloatingIpResponse",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.FloatingIpResponse$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.Action",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.resources.Action$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerApiError",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.HetznerApiError$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  }
+]

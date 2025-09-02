@@ -95,6 +95,12 @@ function task_test_cluster_terraform {
 
   test_terraform "cluster" init -upgrade
   test_terraform "cluster" apply -auto-approve
+
+  local database2_green_ip=$(test_terraform "cluster" output -raw database2_green_ip)
+  network_wait_for_port_open ${database2_green_ip} 22
+
+  local database1_blue_ip=$(test_terraform "cluster" output -raw database1_blue_ip)
+  network_wait_for_port_open ${database1_blue_ip} 22
 }
 
 function task_test_standalone_destroy_instances {

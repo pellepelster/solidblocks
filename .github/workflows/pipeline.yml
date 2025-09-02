@@ -53,22 +53,23 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { runner: macos-latest, target: macosX64 }
-          - { runner: macos-latest, target: macosArm64 }
-          - { runner: ubuntu-24.04, target: linuxX64 }
-          - { runner: ubuntu-24.04, target: jvm }
-          - { runner: windows-latest, target: mingwX64 }
+          - { runner: macos-latest, target: darwin-amd64 }
+          - { runner: macos-latest, target: darwin-arm64 }
+          - { runner: ubuntu-24.04, target: linux-amd64 }
+          - { runner: ubuntu-24.04, target: jvm-all }
+          - { runner: windows-latest, target: windows-amd64 }
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: ${{ matrix.job.target }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '21'
-          distribution: 'corretto'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
       - name: Build
         shell: bash
         working-directory: solidblocks-cli/
@@ -79,10 +80,11 @@ jobs:
         run: ./do test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: solidblocks-cli-${{ matrix.job.target }}
           path: |
-            solidblocks-cli/blcks-*-*
+            solidblocks-cli/blcks
 
   solidblocks-cli-test:
     needs:
@@ -94,10 +96,10 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { runner: macos-latest, target: macosX64 }
-          - { runner: macos-latest, target: macosArm64 }
-          - { runner: ubuntu-24.04, target: linuxX64 }
-          - { runner: windows-latest, target: mingwX64 }
+          - { runner: macos-latest, target: darwin-amd64 }
+          - { runner: macos-latest, target: darwin-arm64 }
+          - { runner: ubuntu-24.04, target: linux-amd64 }
+          - { runner: windows-latest, target: windows-amd64 }
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: ${{ matrix.job.target }}
@@ -111,10 +113,8 @@ jobs:
       - name: Rename blcks
         shell: bash
         run: |
-          find .
-          find ./solidblocks-cli-${{ matrix.job.target }}/blcks-* -type f -exec cp {} ./solidblocks-cli/ \;
-          chmod +x ./solidblocks-cli/blcks-*
-          find .
+          chmod +x ./solidblocks-cli-${{ matrix.job.target }}/blcks
+          cp ./solidblocks-cli-${{ matrix.job.target }}/blcks ./solidblocks-cli/blcks
       - name: Test Integration
         shell: bash
         working-directory: solidblocks-cli/
@@ -422,9 +422,8 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Hetzner Nuke
         run: |
-          find ./solidblocks-cli-linuxX64/blcks-* -type f -exec cp {} blcks \;
-          chmod +x blcks
-          ./blcks hetzner nuke --do-nuke
+          chmod +x ./solidblocks-cli-linux-amd64/blcks
+          ./solidblocks-cli-linux-amd64/blcks hetzner nuke --do-nuke
 
   release:
     runs-on: ubuntu-24.04

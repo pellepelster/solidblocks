@@ -41,6 +41,14 @@ output "database2_blue_name" {
   value = hcloud_server.database2_blue.name
 }
 
+output "database1_blue_ip" {
+  value = hcloud_server.database2_blue.ipv4_address
+}
+
 output "database2_green_name" {
   value = hcloud_server.database2_green.name
+}
+
+output "database2_green_ip" {
+  value = hcloud_server.database2_green.ipv4_address
 }

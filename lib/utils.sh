@@ -8,7 +8,7 @@ function version() {
       if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
         echo "${GITHUB_REF_NAME:-}"
       else
-        echo "0.0.0-dev"
+        echo "v0.0.0-dev"
       fi
     else
       echo "$(current_version)-dev"

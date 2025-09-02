@@ -9,5 +9,6 @@ repositories {
 
 dependencies {
     implementation(libs.kotlin.gradle.plugin)
-    implementation("com.diffplug.spotless:spotless-plugin-gradle:7.0.0.BETA2")
+    implementation(libs.kotlin.serialization.plugin)
+    implementation("com.diffplug.spotless:spotless-plugin-gradle:7.2.1")
 }
