@@ -1,15 +1,9 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import java.io.ByteArrayOutputStream
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
     id("com.diffplug.spotless")
     kotlin("plugin.serialization")
-}
-
-object Versions {
-    const val junitJupiterVersion = "5.11.0"
-    const val testContainersVersion = "1.17.1"
 }
 
 repositories {
@@ -19,9 +13,16 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:${Versions.junitJupiterVersion}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Versions.junitJupiterVersion}")
-    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.9.0")
+    testImplementation("io.kotest:kotest-assertions-json:5.9.0")
+    testImplementation("io.kotest:kotest-property:5.9.0")
+    testImplementation("io.mockk:mockk:1.13.11")
 }
 
 fun getPassCredential(passPath: String, envName: String): String {

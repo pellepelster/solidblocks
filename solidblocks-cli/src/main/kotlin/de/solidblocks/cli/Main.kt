@@ -7,10 +7,11 @@ import de.solidblocks.cli.docs.DocsCommand
 import de.solidblocks.cli.docs.ansible.AnsibleCommand
 import de.solidblocks.cli.hetzner.HetznerCommand
 import de.solidblocks.cli.hetzner.NukeCommand
+import de.solidblocks.cli.terraform.*
 
 
 fun main(args: Array<String>) {
-    val blcks = BlcksCommand()
+    val root = BlcksCommand()
 
     /*
     val workflowCommand = if (WorkflowParser.workflowExists()) {
@@ -26,13 +27,29 @@ fun main(args: Array<String>) {
     }
     */
 
-    val hetzner = HetznerCommand()
-    hetzner.subcommands(NukeCommand())
-    blcks.subcommands(hetzner)
+    HetznerCommand().also {
+        root.subcommands(it)
+        it.subcommands(NukeCommand())
+    }
 
-    val docs = DocsCommand()
-    docs.subcommands(AnsibleCommand())
-    blcks.subcommands(docs)
+    DocsCommand().also {
+        root.subcommands(it)
+        it.subcommands(AnsibleCommand())
+    }
 
-    blcks.main(args)
+    TerraformCommand().also {
+        root.subcommands(it)
+        it.subcommands(BackendsCommand(TYPE.terraform).also {
+            it.subcommands(BackendsS3Command(TYPE.terraform))
+        })
+    }
+
+    TofuCommand().also {
+        root.subcommands(it)
+        it.subcommands(BackendsCommand(TYPE.tofu).also {
+            it.subcommands(BackendsS3Command(TYPE.tofu))
+        })
+    }
+
+    root.main(args)
 }

@@ -21,6 +21,10 @@ dependencies {
     implementation("io.ktor:ktor-client-resources:3.1.2")
     implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
+
+    implementation("aws.sdk.kotlin:s3-jvm:1.5.26")
+    implementation("aws.sdk.kotlin:s3:1.5.26")
+
     testImplementation(kotlin("test"))
     testImplementation("org.reflections:reflections:0.10.2")
 }

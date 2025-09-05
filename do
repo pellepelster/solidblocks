@@ -14,7 +14,7 @@ source "${DIR}/lib/utils.sh"
 export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.temp"
-COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-hetzner-dns solidblocks-terraform solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible solidblocks-python"
+COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-hetzner-dns solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible solidblocks-python"
 
 function ensure_environment {
   software_ensure_hugo
@@ -63,22 +63,24 @@ function task_release_test {
 }
 
 function task_clean_aws {
-
-  #export AWS_REGION="eu-central-1"
-  #export AWS_ACCESS_KEY_ID="$(pass solidblocks/aws/admin/access_key)"
-  #export AWS_SECRET_ACCESS_KEY="$(pass solidblocks/aws/admin/secret_access_key)"
-  #aws s3 ls | cut -d" " -f 3 | xargs -I{} aws s3 rb s3://{} --force
-
-  docker run \
-    --rm \
-    -v $(pwd)/contrib/aws-nuke.yaml:/home/aws-nuke/config.yml \
-    quay.io/rebuy/aws-nuke:v2.25.0 \
+  aws-nuke run \
     --access-key-id "$(pass solidblocks/aws/admin/access_key)" \
     --secret-access-key "$(pass solidblocks/aws/admin/secret_access_key)" \
-    --config /home/aws-nuke/config.yml \
+    --config ${DIR}/contrib/aws-nuke.yaml \
     --no-dry-run \
     --force
+}
 
+function task_test_init_aws {
+  (
+    export AWS_REGION="eu-central-1"
+    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/admin/access_key_id)}"
+    export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/admin/secret_access_key)}"
+
+    cd "${DIR}/contrib/terraform/test"
+    terraform init -upgrade
+    terraform apply -auto-approve
+  )
 }
 
 function task_clean_hetzner {
@@ -115,16 +117,6 @@ function task_clean {
     task_clean_aws
     task_clean_hetzner
     task_clean_gcloud
-}
-
-function task_test_init {
-  #(
-  #  cd "${DIR}/testbeds/gcs"
-  #  terraform init -upgrade
-  #  terraform apply -auto-approve
-  #)
-  echo ""
-  #terraform_wrapper "${DIR}/testbeds/hetzner/bootstrap" apply -auto-approve
 }
 
 function task_test {
@@ -331,7 +323,7 @@ case ${ARG} in
   clean-hetzner) task_clean_hetzner "$@" ;;
   clean-gcloud) task_clean_gcloud "$@" ;;
   clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
-  test-init) task_test_init "$@" ;;
+  test-init-aws) task_test_init_aws "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   build-documentation) task_build_documentation "$@" ;;

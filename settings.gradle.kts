@@ -18,7 +18,6 @@ include(
     "solidblocks-shell",
     "solidblocks-hetzner-dns",
     "solidblocks-rds-postgresql-docker",
-    "solidblocks-terraform",
     "solidblocks-debug-container",
     "solidblocks-cli"
 )

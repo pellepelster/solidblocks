@@ -1,16 +1,35 @@
 ---
+presets:
+  defaults:
+    filters:
+      IAMUser:
+        - "admin"
+        - "solidblocks"
+      IAMUserPolicyAttachment:
+        - "admin -> AdministratorAccess"
+      IAMUserAccessKey:
+        - "admin -> AKIA5VENMCB5IINZHWEO"
+        - "solidblocks -> AKIA5VENMCB5MTY25IZJ"
+
 regions:
   - "eu-central-1"
+  - "global"
 
-account-blocklist:
+blocklist:
   - 938746843251
 
 resource-types:
+  excludes:
+    - S3Object # Excluded because S3 bucket removal handles removing all S3Objects
   targets:
     - S3Bucket
     - DynamoDBTable
-  excludes:
+    - IAMUserPolicy
+    - IAMUserAccessKey
     - IAMUser
+    - ECRRepository
 
 accounts:
   938746843258:
+    presets:
+      - defaults

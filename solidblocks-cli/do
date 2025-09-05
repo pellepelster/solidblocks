@@ -63,6 +63,65 @@ function task_test_hetzner_nuke {
   divider_footer
 }
 
+function task_test_terraform {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  export AWS_REGION="eu-central-1"
+  export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/admin/access_key_id)}"
+  export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/admin/secret_access_key)}"
+
+  divider_header "--help"
+  integration_test_blcks_wrapper --help
+  divider_footer
+
+  divider_header "terraform --help"
+  integration_test_blcks_wrapper terraform --help
+  divider_footer
+
+  divider_header "tofu --help"
+  integration_test_blcks_wrapper tofu --help
+  divider_footer
+
+  divider_header "terraform backends --help"
+  integration_test_blcks_wrapper terraform backends --help
+  divider_footer
+
+  divider_header "tofu backends --help"
+  integration_test_blcks_wrapper tofu backends --help
+  divider_footer
+
+  divider_header "terraform backends s3 --help"
+  integration_test_blcks_wrapper terraform backends s3 --help
+  divider_footer
+
+  divider_header "tofu backends s3 --help"
+  integration_test_blcks_wrapper tofu backends s3 --help
+  divider_footer
+
+  local bucket="test-terraform-$(uuidgen)"
+
+  divider_header "terraform backends s3"
+  integration_test_blcks_wrapper terraform backends s3 "${bucket}"
+  integration_test_blcks_wrapper terraform backends s3 "${bucket}"
+  divider_footer
+
+  divider_header "terraform backends --file /tmp/${bucket}.tf s3"
+  integration_test_blcks_wrapper terraform backends s3 --file "/tmp/${bucket}.tf" "${bucket}"
+  divider_footer
+
+  bucket="test-tofu-$(uuidgen)"
+
+  divider_header "tofu backends s3"
+  integration_test_blcks_wrapper tofu backends s3 "${bucket}"
+  divider_footer
+
+  divider_header "tofu backends --file /tmp/${bucket}.tf s3"
+  integration_test_blcks_wrapper tofu backends s3 --file "/tmp/${bucket}.tf" "${bucket}"
+  divider_footer
+}
+
 function task_test_workflow {
   (
     cd ${DIR}/test/no_workflow_file
@@ -105,6 +164,7 @@ function task_test_integration {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
+  task_test_terraform
   task_test_hetzner_nuke
 }
 
@@ -171,7 +231,8 @@ function task_build_jvm_all {
 }
 
 function task_clean {
-  ${DIR}/gradlew clean
+  "${DIR}/../gradlew" clean
+  rm -rf "${DIR}/blcks"
 }
 
 arg=${1:-}
@@ -187,6 +248,7 @@ case ${arg} in
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;
   test-hetzner-nuke) task_test_hetzner_nuke "$@" ;;
+  test-terraform) task_test_terraform "$@" ;;
   release-prepare) ;;
   release-artifacts) ;;
   format) ;;
