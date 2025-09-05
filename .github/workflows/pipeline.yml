@@ -84,7 +84,7 @@ jobs:
         with:
           name: solidblocks-cli-${{ matrix.job.target }}
           path: |
-            solidblocks-cli/blcks
+            solidblocks-cli/build/solidblocks-cli-*.zip
 
   solidblocks-cli-test:
     needs:
@@ -113,8 +113,9 @@ jobs:
       - name: Rename blcks
         shell: bash
         run: |
-          chmod +x ./solidblocks-cli-${{ matrix.job.target }}/blcks
-          cp ./solidblocks-cli-${{ matrix.job.target }}/blcks ./solidblocks-cli/blcks
+          find ./solidblocks-cli-${{ matrix.job.target }} -name "solidblocks-cli-*.zip" -exec unzip {} \;
+          chmod +x ./blcks
+          cp ./blcks ./solidblocks-cli/blcks
       - name: Test Integration
         shell: bash
         working-directory: solidblocks-cli/
@@ -422,8 +423,9 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Hetzner Nuke
         run: |
-          chmod +x ./solidblocks-cli-linux-amd64/blcks
-          ./solidblocks-cli-linux-amd64/blcks hetzner nuke --do-nuke
+          find ./solidblocks-cli-linux-amd64 -name "solidblocks-cli-*.zip" -exec unzip {} \;
+          chmod +x ./blcks
+          ./blcks hetzner nuke --do-nuke
 
   release:
     runs-on: ubuntu-24.04

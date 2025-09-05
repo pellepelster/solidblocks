@@ -197,6 +197,7 @@ function task_build_linux_amd64 {
 
 function task_build_windows_amd64 {
   export BUILD_TARGET="windows-amd64"
+  choco install zip
   # graalvm native image build fails when the vm and the sources are on different drives
   (
     mkdir -p "/c/solidblocks"
@@ -211,8 +212,11 @@ function task_build {
   (
     cd ${dir}
     ./gradlew --stacktrace :solidblocks-cli:nativeCompile
+    rm -rf ${DIR}/blcks
     cp solidblocks-cli/build/native/nativeCompile/blcks* ${DIR}/blcks
     chmod +x ${DIR}/blcks
+    mkdir -p "${DIR}/build"
+    zip --junk-paths "${DIR}/build/solidblocks-cli-${BUILD_TARGET}-${VERSION}.zip" ${DIR}/blcks
   )
 }
 
@@ -224,9 +228,13 @@ function task_install_local {
 function task_build_jvm_all {
   ${DIR}/../gradlew distZip distTar
   (
+    rm -rf ${DIR}/blcks
     mkdir -p "${DIR}/blcks/blcks"
     cd "${DIR}/blcks/blcks"
     tar -xvf "${DIR}/build/distributions/blcks-${VERSION}.tar" --strip-components=1
+    cd "${DIR}/blcks"
+    mkdir -p "${DIR}/build"
+    zip -vr "${DIR}/build/solidblocks-cli-jvm-all-${VERSION}.zip" ./
   )
 }
 
