@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.5
+
+* add [blcks terraform *](https://pellepelster.github.io/solidblocks/cli/terraforn/) commands
+
 ## v0.4.4
 
 * add [network_wait_for_port_open](https://pellepelster.github.io/solidblocks/shell/network/#network_wait_for_port_open) to shell utils

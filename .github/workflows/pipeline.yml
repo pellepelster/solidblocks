@@ -485,7 +485,7 @@ jobs:
             solidblocks-cloud-init/snippets/*
             solidblocks-hetzner/snippets/*.zip
             solidblocks-hetzner/terraform-hcloud-solidblocks-rds-postgresql-*.zip
-            solidblocks-cli-*/blcks-*
+            solidblocks-cli-*/solidblocks-cli-*
             solidblocks-python/solidblocks_do*
             solidblocks-rds-postgresql-ansible/blcks-rds*
 
