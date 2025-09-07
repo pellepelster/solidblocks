@@ -8,8 +8,8 @@ data class KeywordHelp(
 )
 
 enum class KeywordType {
-  string,
-  enum
+  STRING,
+  ENUM,
 }
 
 data class Keyword(val name: String, val type: KeywordType, val help: KeywordHelp)

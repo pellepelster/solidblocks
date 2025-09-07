@@ -10,9 +10,9 @@ import kotlinx.serialization.Serializable
 @Serializable data class ActionResource(val id: Long, val type: String)
 
 enum class ActionStatus {
-  running,
-  success,
-  error
+  RUNNING,
+  SUCCESS,
+  ERROR,
 }
 
 @Serializable
@@ -31,7 +31,7 @@ class HetznerActionsApi(private val api: HetznerApi) {
   suspend fun create(): ServersListWrapper = api.post("v1/servers", "")
 
   suspend fun listPaged(page: Int = 0, perPage: Int = 25): ServersListWrapper =
-      api.get("v1/servers?page=${page}&per_page=${perPage}")
+      api.get("v1/servers?page=$page&per_page=$perPage")
 
-  suspend fun get(id: Long): ActionResponseWrapper = api.get("actions/${id}")
+  suspend fun get(id: Long): ActionResponseWrapper = api.get("actions/$id")
 }

@@ -12,6 +12,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 suspend fun <T> retryUtil(
@@ -29,7 +30,7 @@ suspend fun <T> retryUtil(
       val result = block()
       return result
     } catch (exception: HetznerApiException) {
-      if (exception.error.code != HetznerApiErrorType.rate_limit_exceeded) {
+      if (exception.error.code != HetznerApiErrorType.RATE_LIMIT_EXCEEDED) {
         throw exception
       }
     }
@@ -41,6 +42,7 @@ suspend fun <T> retryUtil(
   return block()
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 fun createHttpClient(url: String, apiToken: String) =
     io.ktor.client.HttpClient(Java) {
       install(ContentNegotiation) {
@@ -48,6 +50,7 @@ fun createHttpClient(url: String, apiToken: String) =
             Json {
               isLenient = true
               ignoreUnknownKeys = true
+              decodeEnumsCaseInsensitive = true
             },
         )
       }
@@ -137,8 +140,8 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
   ) = runBlocking {
     val response = action.invoke()
 
-    if (response.action.status != ActionStatus.running) {
-      return@runBlocking response.action.status == ActionStatus.success
+    if (response.action.status != ActionStatus.RUNNING) {
+      return@runBlocking response.action.status == ActionStatus.SUCCESS
     }
 
     val result =
@@ -154,10 +157,10 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
               )
               response
             },
-            condition = { it.action.status == ActionStatus.running },
+            condition = { it.action.status == ActionStatus.RUNNING },
         )
 
-    result.action.status == ActionStatus.success
+    result.action.status == ActionStatus.SUCCESS
   }
 }
 

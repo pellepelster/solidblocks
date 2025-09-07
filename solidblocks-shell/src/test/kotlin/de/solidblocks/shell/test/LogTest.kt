@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(SolidblocksTest::class)
 public class LogTest {
 
-  @RepeatedTest(value = 10, failureThreshold = 1)
+  @RepeatedTest(value = 10)
   fun testLogMessages(testContext: SolidblocksTestContext) {
     val result =
         testContext

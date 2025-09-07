@@ -39,14 +39,14 @@ fun main(args: Array<String>) {
   TerraformCommand().also {
     root.subcommands(it)
     it.subcommands(
-        BackendsCommand(TYPE.terraform).also { it.subcommands(BackendsS3Command(TYPE.terraform)) },
+        BackendsCommand(TYPE.TERRAFORM).also { it.subcommands(BackendsS3Command(TYPE.TERRAFORM)) },
     )
   }
 
   TofuCommand().also {
     root.subcommands(it)
     it.subcommands(
-        BackendsCommand(TYPE.tofu).also { it.subcommands(BackendsS3Command(TYPE.tofu)) },
+        BackendsCommand(TYPE.TOFU).also { it.subcommands(BackendsS3Command(TYPE.TOFU)) },
     )
   }
 

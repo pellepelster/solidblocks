@@ -124,7 +124,6 @@ ${role.tableRows().toMarkdownTableRow()}
       is Success -> {
         parseVariables(yml.data)
       }
-
       else -> {
         logError("failed to parse '$mainYmlFile'")
         return null
@@ -174,7 +173,6 @@ ${role.tableRows().toMarkdownTableRow()}
               Option(it, description, required, default, type)
             }
           }
-
           else -> emptyList()
         }
 
@@ -184,7 +182,6 @@ ${role.tableRows().toMarkdownTableRow()}
   private fun parseVariables(data: YamlNode) =
       when (val ymlKeys = data.getKeys()) {
         is Success -> ymlKeys.data
-
         else -> {
           logError("invalid format")
           null
@@ -210,7 +207,6 @@ ${role.tableRows().toMarkdownTableRow()}
         }
         galaxy
       }
-
       else -> {
         logError("failed to parse metadata from '$galaxyYmlFile'")
         return null
@@ -238,7 +234,6 @@ ${role.tableRows().toMarkdownTableRow()}
         }
         roleMetaData
       }
-
       else -> {
         logError("failed to parse role metadata from '$metaYmlFile'")
         return null

@@ -14,8 +14,8 @@ import kotlin.io.path.writeText
 import kotlinx.coroutines.runBlocking
 
 enum class TYPE {
-  terraform,
-  tofu
+  TERRAFORM,
+  TOFU,
 }
 
 class TerraformCommand : CliktCommand("terraform") {

@@ -41,12 +41,15 @@ public class HetznerDnsApi(
         if (!response.isSuccessful && response.code != 404) {
           return Result.failure(
               RuntimeException(
-                  "http call failed with '${response.code}' for '${response.request.url}'"))
+                  "http call failed with '${response.code}' for '${response.request.url}'",
+              ),
+          )
         }
 
         if (response.body == null) {
           return Result.failure(
-              RuntimeException("response body was empty for '${response.request.url}'"))
+              RuntimeException("response body was empty for '${response.request.url}'"),
+          )
         }
 
         val body = response.body!!.bytes()
@@ -72,7 +75,8 @@ public class HetznerDnsApi(
             .post(
                 objectMapper
                     .writeValueAsString(body)
-                    .toRequestBody("application/json; charset=utf-8".toMediaType()))
+                    .toRequestBody("application/json; charset=utf-8".toMediaType()),
+            )
             .build()
 
     return client.newCall(request).executeAndParse()
@@ -86,7 +90,8 @@ public class HetznerDnsApi(
             .put(
                 objectMapper
                     .writeValueAsString(body)
-                    .toRequestBody("application/json; charset=utf-8".toMediaType()))
+                    .toRequestBody("application/json; charset=utf-8".toMediaType()),
+            )
             .build()
 
     return client.newCall(request).executeAndParse()

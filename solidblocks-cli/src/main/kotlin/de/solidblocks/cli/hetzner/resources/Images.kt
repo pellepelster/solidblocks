@@ -7,14 +7,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 enum class ImageType {
-  system,
-  snapshot
+  SYSTEM,
+  SNAPSHOT,
 }
 
 @Serializable
 data class ImagesListWrapper(
     @SerialName("images") val images: List<ImageResponse>,
-    override val meta: Meta
+    override val meta: Meta,
 ) : ListResponse<ImageResponse> {
 
   override val list: List<ImageResponse>
@@ -28,10 +28,10 @@ data class ImageResponse(override val id: Long, override val name: String?, val 
 class HetznerImagesApi(private val api: HetznerApi) : HetznerDeleteResourceApi<ImageResponse> {
 
   suspend fun listPaged(page: Int = 0, perPage: Int = 25): ImagesListWrapper =
-      api.get("v1/images?page=${page}&per_page=${perPage}&type=${ImageType.snapshot}")
+      api.get("v1/images?page=$page&per_page=$perPage&type=${ImageType.SNAPSHOT}")
 
   override suspend fun list() =
       api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/images/${id}")
+  override suspend fun delete(id: Long) = api.simpleDelete("v1/images/$id")
 }

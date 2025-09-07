@@ -36,7 +36,7 @@ class YamlTest {
     val result = yamlParse(rawYaml)
     assertTrue(result is Success)
 
-    val value = result.data.valueForKeyword(Keyword("command", KeywordType.string, HELP))
+    val value = result.data.valueForKeyword(Keyword("command", KeywordType.STRING, HELP))
 
     assertTrue(value is Success)
     assertEquals("ping", value.data)
@@ -54,7 +54,7 @@ class YamlTest {
     val result = yamlParse(rawYaml)
     assertTrue(result is Success)
 
-    val value = result.data.valueForKeyword(Keyword("command", KeywordType.string, HELP))
+    val value = result.data.valueForKeyword(Keyword("command", KeywordType.STRING, HELP))
     assertTrue(value is Empty)
   }
 
@@ -63,7 +63,7 @@ class YamlTest {
     val result = yamlParse("---")
     assertTrue(result is Success)
 
-    val value = result.data.valueForKeyword(Keyword("command", KeywordType.string, HELP))
+    val value = result.data.valueForKeyword(Keyword("command", KeywordType.STRING, HELP))
 
     assertTrue(value is Error)
     assertEquals("expected a map, got 'null'", value.error)
@@ -80,7 +80,7 @@ class YamlTest {
     val result = yamlParse(rawYaml)
     assertTrue(result is Success)
 
-    val value = result.data.valueForKeyword(Keyword("command1", KeywordType.string, HELP))
+    val value = result.data.valueForKeyword(Keyword("command1", KeywordType.STRING, HELP))
     assertTrue(value is Empty)
   }
 
@@ -97,8 +97,8 @@ class YamlTest {
 
     val value =
         result.data.valueForKeyword(
-            Keyword("command", KeywordType.string, HELP),
-            Keyword("command1", KeywordType.string, HELP),
+            Keyword("command", KeywordType.STRING, HELP),
+            Keyword("command1", KeywordType.STRING, HELP),
         )
     assertTrue(value is Success)
     assertEquals("ping", value.data)

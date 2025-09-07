@@ -4,21 +4,21 @@ import de.solidblocks.cli.hetzner.HetznerNamedResource
 import kotlin.reflect.KClass
 
 public enum class LogType {
-  blcks,
-  stdout,
-  stderr
+  BLCKS,
+  STDOUT,
+  STDERR,
 }
 
-fun logInfo(message: String, logType: LogType = LogType.blcks) = println("[${logType}] ${message}")
+fun logInfo(message: String, logType: LogType = LogType.BLCKS) = println("[$logType] $message")
 
-fun logError(message: String, logType: LogType = LogType.blcks) =
-    println("[${logType}] ${color(message, COLORS.RED)}")
+fun logError(message: String, logType: LogType = LogType.BLCKS) =
+    println("[$logType.toString().lowercase()] ${color(message, COLORS.RED)}")
 
-fun logSuccess(message: String, logType: LogType = LogType.blcks) =
-    println("[${logType}] ${color(message, COLORS.GREEN)}")
+fun logSuccess(message: String, logType: LogType = LogType.BLCKS) =
+    println("[$logType.toString().lowercase()] ${color(message, COLORS.GREEN)}")
 
-fun logWarning(message: String, logType: LogType = LogType.blcks) =
-    println("[${logType}] ${color(message, COLORS.YELLOW)}")
+fun logWarning(message: String, logType: LogType = LogType.BLCKS) =
+    println("[${logType.toString().lowercase()}] ${color(message, COLORS.YELLOW)}")
 
 sealed interface Result<T>
 
@@ -49,7 +49,7 @@ enum class FORMATS(val start: Int, val reset: Int) {
   DIM(2, 22),
   ITALIC(3, 23),
   UNDERLINE(4, 24),
-  STRIKETHROUGH(9, 29)
+  STRIKETHROUGH(9, 29),
 }
 
 enum class COLORS(val color: Int, val background: Int) {
@@ -64,7 +64,7 @@ enum class COLORS(val color: Int, val background: Int) {
 enum class RESETS(val reset: Int) {
   ALL(0),
   COLOR(39),
-  BACKGROUND(49)
+  BACKGROUND(49),
 }
 
 fun escapeCode(code: Int) = "\u001b[${code}m"
