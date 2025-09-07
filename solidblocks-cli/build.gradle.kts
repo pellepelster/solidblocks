@@ -14,12 +14,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("io.ktor:ktor-client-java:3.1.2")
     implementation("com.github.ajalt.clikt:clikt:5.0.3")
-    implementation("com.kgit2:kommand:2.2.1")
     implementation("com.charleskorn.kaml:kaml:0.61.0")
-    implementation("io.ktor:ktor-client-resources:3.1.2")
-    implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
-
     implementation("aws.sdk.kotlin:s3-jvm:1.5.26")
     implementation("aws.sdk.kotlin:s3:1.5.26")
 
