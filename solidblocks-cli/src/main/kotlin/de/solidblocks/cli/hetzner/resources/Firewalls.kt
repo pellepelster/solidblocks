@@ -9,23 +9,22 @@ import kotlinx.serialization.Serializable
 data class FirewallsListWrapper(val firewalls: List<FirewallResponse>, override val meta: Meta) :
     ListResponse<FirewallResponse> {
 
-    override val list: List<FirewallResponse>
-        get() = firewalls
+  override val list: List<FirewallResponse>
+    get() = firewalls
 }
 
 @Serializable
-data class FirewallResponse(override val id: Long, override val name: String) : HetznerNamedResource
+data class FirewallResponse(override val id: Long, override val name: String) :
+    HetznerNamedResource
 
+class HetznerFirewallsApi(private val api: HetznerApi) :
+    HetznerDeleteResourceApi<FirewallResponse> {
 
-class HetznerFirewallsApi(private val api: HetznerApi) : HetznerDeleteResourceApi<FirewallResponse> {
+  suspend fun listPaged(page: Int = 0, perPage: Int = 25): FirewallsListWrapper =
+      api.get("v1/firewalls?page=$page&per_page=$perPage")
 
-    suspend fun listPaged(page: Int = 0, perPage: Int = 25): FirewallsListWrapper =
-        api.get("v1/firewalls?page=${page}&per_page=${perPage}")
+  override suspend fun list() =
+      api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }
 
-    override suspend fun list() = api.handlePaginatedList { page, perPage ->
-        listPaged(page, perPage)
-    }
-
-    override suspend fun delete(id: Long) = api.simpleDelete("v1/firewalls/${id}")
-
+  override suspend fun delete(id: Long) = api.simpleDelete("v1/firewalls/$id")
 }

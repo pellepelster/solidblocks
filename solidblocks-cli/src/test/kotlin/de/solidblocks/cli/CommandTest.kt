@@ -6,10 +6,9 @@ import org.junit.jupiter.api.Test
 
 class CommandTest {
 
-    @Test
-    fun testCommandExists() {
-        assertTrue(commandExists("ping"))
-        assertFalse(commandExists("pong"))
-    }
-
+  @Test
+  fun testCommandExists() {
+    assertTrue(commandExists("ping"))
+    assertFalse(commandExists("pong"))
+  }
 }

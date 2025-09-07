@@ -1,31 +1,31 @@
 package de.solidblocks.cli
 
-import com.saveourtool.okio.toRealPath
 import de.solidblocks.cli.docs.ansible.AnsibleCollectionHugoGenerator
-import okio.FileSystem
-import okio.Path.Companion.toPath
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import io.kotest.matchers.paths.shouldExist
+import io.kotest.matchers.shouldBe
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
+import kotlin.io.path.deleteRecursively
 import org.junit.jupiter.api.Test
 
 class AnsibleCollectionHugoGeneratorTest {
 
-    val fs = FileSystem.SYSTEM
+  @Test
+  fun invalidPath() {
+    AnsibleCollectionHugoGenerator(Path("invalid_path"), Path("invalid_path")).run() shouldBe false
+  }
 
-    @Test
-    fun invalidPath() {
-        assertFalse(AnsibleCollectionHugoGenerator("invalid_path".toPath(), "invalid_path".toPath()).run())
-    }
+  @OptIn(ExperimentalPathApi::class)
+  @Test
+  fun generateDocumentation() {
+    val testbedDir =
+        Path(".").toRealPath().resolve("test").resolve("ansible").resolve("test_collection1")
+    val targetDir = Path(".").toRealPath().resolve("build").resolve("hugo").resolve("collection1")
 
-    @Test
-    fun generateDocumentation() {
-        val testbedDir = ".".toPath().toRealPath().resolve("test").resolve("ansible").resolve("test_collection1")
-        val targetDir = ".".toPath().toRealPath().resolve("build").resolve("hugo").resolve("collection1")
+    targetDir.deleteRecursively()
 
-        fs.deleteRecursively(targetDir)
-
-        assertTrue(AnsibleCollectionHugoGenerator(testbedDir, targetDir).run())
-        assertTrue(fs.exists(targetDir.resolve("_index.md")))
-        assertTrue(fs.exists(targetDir.resolve("role1.md")))
-    }
+    AnsibleCollectionHugoGenerator(testbedDir, targetDir).run() shouldBe true
+    targetDir.resolve("_index.md").shouldExist()
+    targetDir.resolve("role1.md").shouldExist()
+  }
 }

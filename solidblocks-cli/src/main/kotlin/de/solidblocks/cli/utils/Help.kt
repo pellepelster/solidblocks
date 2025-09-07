@@ -1,6 +1,5 @@
 package de.solidblocks.cli.utils
 
-
 data class Help(val description: String)
 
 data class KeywordHelp(
@@ -8,10 +7,9 @@ data class KeywordHelp(
     val description: String,
 )
 
-enum class KeywordType { string, enum }
+enum class KeywordType {
+  string,
+  enum
+}
 
-data class Keyword(
-    val name: String,
-    val type: KeywordType,
-    val help: KeywordHelp
-)
+data class Keyword(val name: String, val type: KeywordType, val help: KeywordHelp)

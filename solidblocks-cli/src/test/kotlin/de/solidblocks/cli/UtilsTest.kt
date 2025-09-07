@@ -7,9 +7,8 @@ import org.junit.jupiter.api.Test
 
 class UtilsTest {
 
-    @Test
-    fun pascalCaseToWhiteSpace() {
-        assertEquals("floating ip", FloatingIpResponse::class.pascalCaseToWhiteSpace())
-    }
+  @Test
+  fun pascalCaseToWhiteSpace() {
+    assertEquals("floating ip", FloatingIpResponse::class.pascalCaseToWhiteSpace())
+  }
 }
-
