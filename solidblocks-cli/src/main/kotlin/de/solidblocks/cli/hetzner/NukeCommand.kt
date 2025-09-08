@@ -13,56 +13,56 @@ import kotlinx.coroutines.runBlocking
 
 class NukeCommand : CliktCommand(name = "nuke") {
 
-  override fun help(context: Context) = "delete all Hetzner cloud resources from a project"
+    override fun help(context: Context) = "delete all Hetzner cloud resources from a project"
 
-  private val hcloudToken by
-      option(
-              "--hcloud-token",
-              help = "the api token for the project",
-              envvar = "HCLOUD_TOKEN",
-          )
-          .required()
+    private val hcloudToken by
+    option(
+        "--hcloud-token",
+        help = "the api token for the project",
+        envvar = "HCLOUD_TOKEN",
+    )
+        .required()
 
-  private val doNuke by
-      option(
-              "--do-nuke",
-              help =
-                  "actually delete resources, if not set only the resources that would be deleted are logged",
-          )
-          .flag(default = false)
+    private val doNuke by
+    option(
+        "--do-nuke",
+        help =
+            "actually delete resources, if not set only the resources that would be deleted are logged",
+    )
+        .flag(default = false)
 
-  override fun run() {
-    runBlocking {
-      val nuker = HetznerNuker(hcloudToken)
+    override fun run() {
+        runBlocking {
+            val nuker = HetznerNuker(hcloudToken)
 
-      try {
-        if (doNuke) {
-          logError("nuking all resources, running simulation...")
+            try {
+                if (doNuke) {
+                    logError("nuking all resources, running simulation...")
 
-          val result = nuker.simulate()
-          if (result == 0) {
-            logInfo("no resources found to delete")
-            return@runBlocking
-          }
+                    val result = nuker.simulate()
+                    if (result == 0) {
+                        logInfo("no resources found to delete")
+                        return@runBlocking
+                    }
 
-          logInfo("will delete $result resources")
+                    logInfo("will delete $result resources")
 
-          var count = 15
-          while (count > 0) {
-            logWarning("waiting before starting deletion, $count seconds left...")
-            delay(1000L)
-            count--
-          }
+                    var count = 15
+                    while (count > 0) {
+                        logWarning("waiting before starting deletion, $count seconds left...")
+                        delay(1000L)
+                        count--
+                    }
 
-          nuker.nuke()
-        } else {
-          logInfo("running a simulated nuke, add '--do-nuke' to actually delete resources")
-          val result = nuker.simulate()
-          logInfo("found $result resources to delete")
+                    nuker.nuke()
+                } else {
+                    logInfo("running a simulated nuke, add '--do-nuke' to actually delete resources")
+                    val result = nuker.simulate()
+                    logInfo("found $result resources to delete")
+                }
+            } catch (e: HetznerApiException) {
+                logError("nuke failed error: ${e.error.message} (${e.error.code}) at '${e.url}'")
+            }
         }
-      } catch (e: HetznerApiException) {
-        logError("nuke failed error: ${e.error.message} (${e.error.code})")
-      }
     }
-  }
 }

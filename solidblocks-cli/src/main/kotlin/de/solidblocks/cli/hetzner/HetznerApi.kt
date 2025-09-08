@@ -23,145 +23,141 @@ suspend fun <T> retryUtil(
     block: suspend () -> T,
     condition: (T) -> Boolean,
 ): T {
-  var currentDelay = initialDelay
+    var currentDelay = initialDelay
 
-  repeat(times - 1) {
-    try {
-      val result = block()
-      return result
-    } catch (exception: HetznerApiException) {
-      if (exception.error.code != HetznerApiErrorType.RATE_LIMIT_EXCEEDED) {
-        throw exception
-      }
+    repeat(times - 1) {
+        try {
+            val result = block()
+            return result
+        } catch (exception: HetznerApiException) {
+            if (exception.error.code != HetznerApiErrorType.RATE_LIMIT_EXCEEDED) {
+                throw exception
+            }
+        }
+
+        delay(currentDelay)
+        currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
     }
 
-    delay(currentDelay)
-    currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
-  }
-
-  return block()
+    return block()
 }
 
 @OptIn(ExperimentalSerializationApi::class)
 fun createHttpClient(url: String, apiToken: String) =
     io.ktor.client.HttpClient(Java) {
-      install(ContentNegotiation) {
-        json(
-            Json {
-              isLenient = true
-              ignoreUnknownKeys = true
-              decodeEnumsCaseInsensitive = true
-            },
-        )
-      }
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                    decodeEnumsCaseInsensitive = true
+                },
+            )
+        }
 
-      defaultRequest {
-        url(url)
-        headers.append("Authorization", "Bearer $apiToken")
-      }
+        defaultRequest {
+            url(url)
+            headers.append("Authorization", "Bearer $apiToken")
+        }
     }
 
 public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 5) {
 
-  val volumes = HetznerVolumesApi(this)
-  val servers = HetznerServersApi(this)
-  val certificates = HetznerCertificatesApi(this)
-  val sshKeys = HetznerSSHKeysApi(this)
-  val networks = HetznerNetworksApi(this)
-  val firewalls = HetznerFirewallsApi(this)
-  val loadBalancers = HetznerLoadBalancersApi(this)
-  val floatingIps = HetznerFloatingIpsApi(this)
-  val primaryIps = HetznerPrimaryIpsApi(this)
-  val placementGroups = HetznerPlacementGroupsApi(this)
-  val images = HetznerImagesApi(this)
+    val volumes = HetznerVolumesApi(this)
+    val servers = HetznerServersApi(this)
+    val certificates = HetznerCertificatesApi(this)
+    val sshKeys = HetznerSSHKeysApi(this)
+    val networks = HetznerNetworksApi(this)
+    val firewalls = HetznerFirewallsApi(this)
+    val loadBalancers = HetznerLoadBalancersApi(this)
+    val floatingIps = HetznerFloatingIpsApi(this)
+    val primaryIps = HetznerPrimaryIpsApi(this)
+    val placementGroups = HetznerPlacementGroupsApi(this)
+    val images = HetznerImagesApi(this)
 
-  internal val client = createHttpClient("https://api.hetzner.cloud", hcloudToken)
+    internal val client = createHttpClient("https://api.hetzner.cloud", hcloudToken)
 
-  internal suspend inline fun <reified T> post(path: String, data: Any? = null): T =
-      client
-          .post(path) {
-            contentType(ContentType.Application.Json)
-            data?.let { this.setBody(it) }
-          }
-          .handle<T>()
+    internal suspend inline fun <reified T> post(path: String, data: Any? = null): T =
+        client
+            .post(path) {
+                contentType(ContentType.Application.Json)
+                data?.let { this.setBody(it) }
+            }
+            .handle<T>()
 
-  internal suspend inline fun <reified T> get(path: String): T = client.get(path).handle<T>()
+    internal suspend inline fun <reified T> get(path: String): T = client.get(path).handle<T>()
 
-  internal suspend fun simpleDelete(path: String): Boolean =
-      client.delete(path).handleSimpleDelete()
+    internal suspend fun simpleDelete(path: String): Boolean =
+        client.delete(path).handleSimpleDelete()
 
-  internal suspend inline fun <reified T> complexDelete(path: String): T =
-      client.delete(path).handle()
+    internal suspend inline fun <reified T> complexDelete(path: String): T =
+        client.delete(path).handle()
 
-  private suspend fun HttpResponse.handleSimpleDelete(): Boolean {
-    if (this.status.isSuccess()) {
-      return true
+    private suspend fun HttpResponse.handleSimpleDelete(): Boolean {
+        if (this.status.isSuccess()) {
+            return true
+        }
+
+        if (this.status.isBadRequest()) {
+            val error: HetznerApiErrorWrapper = this.body()
+            throw HetznerApiException(error.error, this.request.url)
+        }
+
+        throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
 
-    if (this.status.isBadRequest()) {
-      val error: HetznerApiErrorWrapper = this.body()
-      throw HetznerApiException(error.error)
+    internal suspend inline fun <reified T> HttpResponse.handle(): T {
+        if (this.status.isSuccess()) {
+            return this.body()
+        }
+
+        if (this.status.isBadRequest()) {
+            val error: HetznerApiErrorWrapper = this.body()
+            throw HetznerApiException(error.error, this.request.url)
+        }
+
+        throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
 
-    throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
-  }
+    suspend fun <T> handlePaginatedList(
+        block: suspend (page: Int, perPage: Int) -> ListResponse<T>,
+    ): List<T> {
+        var currentPage: Int? = 0
+        val result = mutableListOf<T>()
 
-  internal suspend inline fun <reified T> HttpResponse.handle(): T {
-    if (this.status.isSuccess()) {
-      return this.body()
+        while (currentPage != null) {
+            val response: ListResponse<T> = block(currentPage, defaultPageSize)
+            result.addAll(response.list)
+            currentPage = response.meta.pagination.next_page
+        }
+
+        return result.toList()
     }
 
-    if (this.status.isBadRequest()) {
-      val error: HetznerApiErrorWrapper = this.body()
-      throw HetznerApiException(error.error)
-    }
+    fun waitFor(
+        action: suspend () -> ActionResponseWrapper,
+        getAction: suspend (Long) -> ActionResponseWrapper,
+    ) = runBlocking {
+        val response = action.invoke()
 
-    throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
-  }
-
-  suspend fun <T> handlePaginatedList(
-      block: suspend (page: Int, perPage: Int) -> ListResponse<T>,
-  ): List<T> {
-    var currentPage: Int? = 0
-    val result = mutableListOf<T>()
-
-    while (currentPage != null) {
-      val response: ListResponse<T> = block(currentPage, defaultPageSize)
-      result.addAll(response.list)
-      currentPage = response.meta.pagination.next_page
-    }
-
-    return result.toList()
-  }
-
-  fun waitFor(
-      action: suspend () -> ActionResponseWrapper,
-      getAction: suspend (Long) -> ActionResponseWrapper,
-  ) = runBlocking {
-    val response = action.invoke()
-
-    if (response.action.status != ActionStatus.RUNNING) {
-      return@runBlocking response.action.status == ActionStatus.SUCCESS
-    }
-
-    val result =
-        retryUtil(
-            block = {
-              val response = getAction.invoke(response.action.id)
-              logInfo(
-                  "waiting for '${response.action.command}' to finish for resources ${
+        val result =
+            retryUtil(
+                block = {
+                    val response = getAction.invoke(response.action.id)
+                    logInfo(
+                        "waiting for '${response.action.command}' to finish for resources ${
                             response.action.resources.joinToString(
                                 ", ",
                             ) { "${it.type} ${it.id}" }
                         }",
-              )
-              response
-            },
-            condition = { it.action.status == ActionStatus.RUNNING },
-        )
+                    )
+                    response
+                },
+                condition = { it.action.status == ActionStatus.SUCCESS },
+            )
 
-    result.action.status == ActionStatus.SUCCESS
-  }
+        result.action.status == ActionStatus.SUCCESS
+    }
 }
 
 public fun HttpStatusCode.isBadRequest(): Boolean = value in (400 until 500)
