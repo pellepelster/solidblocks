@@ -4,21 +4,21 @@ import de.solidblocks.cli.hetzner.HetznerNamedResource
 import kotlin.reflect.KClass
 
 public enum class LogType {
-  BLCKS,
-  STDOUT,
-  STDERR,
+    BLCKS,
+    STDOUT,
+    STDERR,
 }
 
-fun logInfo(message: String, logType: LogType = LogType.BLCKS) = println("[$logType] $message")
+fun logInfo(message: String, logType: LogType = LogType.BLCKS) = println("[${logType.name.lowercase()}] $message")
 
 fun logError(message: String, logType: LogType = LogType.BLCKS) =
-    println("[$logType.toString().lowercase()] ${color(message, COLORS.RED)}")
+    println("[${logType.name.lowercase()}] ${color(message, COLORS.RED)}")
 
 fun logSuccess(message: String, logType: LogType = LogType.BLCKS) =
-    println("[$logType.toString().lowercase()] ${color(message, COLORS.GREEN)}")
+    println("[${logType.name.lowercase()}] ${color(message, COLORS.GREEN)}")
 
 fun logWarning(message: String, logType: LogType = LogType.BLCKS) =
-    println("[${logType.toString().lowercase()}] ${color(message, COLORS.YELLOW)}")
+    println("[${logType.name.lowercase()}] ${color(message, COLORS.YELLOW)}")
 
 sealed interface Result<T>
 
@@ -37,34 +37,34 @@ fun <T> Collection<Result<*>>.mapSuccess() = this.filterIsInstance<Success<T>>()
 
 public fun List<String>.indentWithYamlObjectMarker() =
     this.withIndex().map {
-      if (it.index == 0) {
-        "- ${it.value}"
-      } else {
-        "  ${it.value}"
-      }
+        if (it.index == 0) {
+            "- ${it.value}"
+        } else {
+            "  ${it.value}"
+        }
     }
 
 enum class FORMATS(val start: Int, val reset: Int) {
-  BOLD(1, 22),
-  DIM(2, 22),
-  ITALIC(3, 23),
-  UNDERLINE(4, 24),
-  STRIKETHROUGH(9, 29),
+    BOLD(1, 22),
+    DIM(2, 22),
+    ITALIC(3, 23),
+    UNDERLINE(4, 24),
+    STRIKETHROUGH(9, 29),
 }
 
 enum class COLORS(val color: Int, val background: Int) {
-  RED(31, 41),
-  GREEN(32, 42),
-  YELLOW(33, 43),
-  MAGENTA(35, 45),
-  CYAN(36, 46),
-  BRIGHT_BLUE(94, 104),
+    RED(31, 41),
+    GREEN(32, 42),
+    YELLOW(33, 43),
+    MAGENTA(35, 45),
+    CYAN(36, 46),
+    BRIGHT_BLUE(94, 104),
 }
 
 enum class RESETS(val reset: Int) {
-  ALL(0),
-  COLOR(39),
-  BACKGROUND(49),
+    ALL(0),
+    COLOR(39),
+    BACKGROUND(49),
 }
 
 fun escapeCode(code: Int) = "\u001b[${code}m"
