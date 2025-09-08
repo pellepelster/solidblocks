@@ -28,7 +28,7 @@ graalvmNative {
             imageName.set("blcks")
             buildArgs(
                 listOf(
-                    "-Os",
+                    //"-Os",
                     "--no-fallback",
                     "--initialize-at-build-time",
                     "-H:+UnlockExperimentalVMOptions",
