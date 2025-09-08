@@ -78,7 +78,7 @@ tasks.withType<Test> {
     environment(
         mapOf(
             "HETZNER_DNS_API_TOKEN" to providers.of(PassSecretValueSource::class) {
-                this.parameters.passName.set("solidblocks/hetzner/test/dns_api_token")
+                this.parameters.path.set("solidblocks/hetzner/test/dns_api_token")
             }.get(),
         )
     )

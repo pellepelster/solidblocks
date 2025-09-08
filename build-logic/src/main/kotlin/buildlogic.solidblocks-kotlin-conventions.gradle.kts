@@ -25,24 +25,6 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.11")
 }
 
-fun getPassCredential(passPath: String, envName: String): String {
-    if (System.getenv(envName) != null) {
-        return System.getenv(envName)!!
-    }
-
-    /*
-    val secret = ByteArrayOutputStream()
-    exec {
-        commandLine("pass", passPath)
-        standardOutput = secret
-    }
-
-    return secret.toString().trim()
-
-     */
-    return "yolo"
-}
-
 tasks.test {
     useJUnitPlatform()
     testLogging {
@@ -58,13 +40,12 @@ tasks.test {
 
     environment(
         mapOf(
-            "HETZNER_DNS_API_TOKEN" to getPassCredential(
-                "solidblocks/hetzner/test/dns_api_token",
-                "HETZNER_DNS_API_TOKEN"
-            )
+            "HETZNER_DNS_API_TOKEN" to providers.of(PassSecretValueSource::class) {
+                this.parameters.path.set("solidblocks/hetzner/test/dns_api_token")
+                this.parameters.environment.set("HETZNER_DNS_API_TOKEN")
+            }.get()
         )
     )
-
 }
 
 java {

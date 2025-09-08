@@ -9,8 +9,8 @@ import javax.inject.Inject
 
 public interface PassSecretValueSourceParameters : ValueSourceParameters {
     @get:Input
-    val passName: Property<String>
-
+    val path: Property<String>
+    val environment: Property<String>
 }
 
 val secretCache = mutableMapOf<String, String>()
@@ -21,19 +21,16 @@ abstract class PassSecretValueSource : ValueSource<String, PassSecretValueSource
     abstract val execOperations: ExecOperations
 
     override fun obtain(): String {
-        val passName = parameters.passName.get()
-        return secretCache.computeIfAbsent(passName) {
-            if (System.getenv("CI") != null) {
-                val envVarName = passName.replace("/", "_").uppercase()
-                if (System.getenv(envVarName) != null) {
-                    System.getenv(envVarName)
-                } else {
-                    throw RuntimeException("missing environment variable $envVarName")
-                }
+        val path = parameters.path.get()
+        return secretCache.computeIfAbsent(path) {
+            val derivedEnvVarName = path.replace("/", "_").uppercase()
+            val envVarName = parameters.environment.getOrElse(derivedEnvVarName)
+            if (System.getenv(envVarName) != null) {
+                System.getenv(envVarName)
             } else {
                 val output = ByteArrayOutputStream()
                 execOperations.exec {
-                    commandLine("pass", passName)
+                    commandLine("pass", path)
                     standardOutput = output
                 }
                 val secret = String(output.toByteArray(), Charset.defaultCharset()).trim()
