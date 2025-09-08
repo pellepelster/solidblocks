@@ -13,8 +13,6 @@ public interface PassSecretValueSourceParameters : ValueSourceParameters {
     val environment: Property<String>
 }
 
-val secretCache = mutableMapOf<String, String>()
-
 abstract class PassSecretValueSource : ValueSource<String, PassSecretValueSourceParameters> {
 
     @get:Inject
@@ -22,20 +20,24 @@ abstract class PassSecretValueSource : ValueSource<String, PassSecretValueSource
 
     override fun obtain(): String {
         val path = parameters.path.get()
-        return secretCache.computeIfAbsent(path) {
-            val derivedEnvVarName = path.replace("/", "_").uppercase()
-            val envVarName = parameters.environment.getOrElse(derivedEnvVarName)
-            if (System.getenv(envVarName) != null) {
-                System.getenv(envVarName)
-            } else {
-                val output = ByteArrayOutputStream()
-                execOperations.exec {
-                    commandLine("pass", path)
-                    standardOutput = output
-                }
-                val secret = String(output.toByteArray(), Charset.defaultCharset()).trim()
-                secret
+
+        val derivedEnvVarName = path.replace("/", "_").uppercase()
+        val envVarName = parameters.environment.getOrElse(derivedEnvVarName)
+
+        return if (System.getenv(envVarName) != null) {
+            println("using environment variable '${envVarName}' instead of pass secret from '$path'")
+
+            System.getenv(envVarName)
+        } else {
+            println("retrieving pass secret from '$path'")
+
+            val output = ByteArrayOutputStream()
+            execOperations.exec {
+                commandLine("pass", path)
+                standardOutput = output
             }
+
+            return String(output.toByteArray(), Charset.defaultCharset()).trim()
         }
     }
 }
