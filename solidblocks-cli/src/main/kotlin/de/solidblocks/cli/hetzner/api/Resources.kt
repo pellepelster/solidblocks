@@ -37,7 +37,7 @@ interface HetznerProtectedResourceApi {
 }
 
 interface HetznerAssignedResourceApi {
-    suspend fun unassign(id: Long): ActionResponseWrapper
+    suspend fun unassign(id: Long): ActionResponseWrapper?
     suspend fun action(id: Long): ActionResponseWrapper
 }
 

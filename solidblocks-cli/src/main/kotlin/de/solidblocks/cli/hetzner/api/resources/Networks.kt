@@ -1,18 +1,14 @@
 package de.solidblocks.cli.hetzner.api.resources
 
-import de.solidblocks.cli.hetzner.api.HetznerApi
-import de.solidblocks.cli.hetzner.api.HetznerDeleteResourceApi
-import de.solidblocks.cli.hetzner.api.HetznerProtectedResource
-import de.solidblocks.cli.hetzner.api.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.api.HetznerProtectionResponse
+import de.solidblocks.cli.hetzner.api.*
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class NetworksListWrapper(val networks: List<NetworkResponse>, override val meta: Meta) :
     ListResponse<NetworkResponse> {
 
-  override val list: List<NetworkResponse>
-    get() = networks
+    override val list: List<NetworkResponse>
+        get() = networks
 }
 
 @Serializable
@@ -25,16 +21,18 @@ data class NetworkResponse(
 class HetznerNetworksApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<NetworkResponse>, HetznerProtectedResourceApi {
 
-  suspend fun listPaged(page: Int = 0, perPage: Int = 25): NetworksListWrapper =
-      api.get("v1/networks?page=$page&per_page=$perPage")
+    suspend fun listPaged(page: Int = 0, perPage: Int = 25): NetworksListWrapper =
+        api.get("v1/networks?page=$page&per_page=$perPage") ?: throw RuntimeException("failed to list networks")
 
-  override suspend fun list() =
-      api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }
+    override suspend fun list() =
+        api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/networks/$id")
+    override suspend fun delete(id: Long) = api.simpleDelete("v1/networks/$id")
 
-  override suspend fun changeProtection(id: Long, delete: Boolean): ActionResponseWrapper =
-      api.post("v1/networks/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))
+    override suspend fun changeProtection(id: Long, delete: Boolean): ActionResponseWrapper =
+        api.post("v1/networks/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))
+            ?: throw RuntimeException("failed to change network protection")
 
-  override suspend fun action(id: Long): ActionResponseWrapper = api.get("v1/networks/actions/$id")
+    override suspend fun action(id: Long): ActionResponseWrapper =
+        api.get("v1/networks/actions/$id") ?: throw RuntimeException("failed to get network action")
 }

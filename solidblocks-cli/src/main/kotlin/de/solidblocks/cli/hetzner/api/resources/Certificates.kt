@@ -23,7 +23,7 @@ class HetznerCertificatesApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<CertificatesResponse> {
 
   suspend fun listPaged(page: Int = 0, perPage: Int = 25): CertificatesListWrapper =
-      api.get("v1/certificates?page=$page&per_page=$perPage")
+      api.get("v1/certificates?page=$page&per_page=$perPage") ?: throw RuntimeException("failed to list certificates")
 
   override suspend fun list() =
       api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }

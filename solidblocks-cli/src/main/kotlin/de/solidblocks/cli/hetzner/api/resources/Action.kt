@@ -3,16 +3,19 @@ package de.solidblocks.cli.hetzner.api.resources
 import de.solidblocks.cli.hetzner.api.HetznerApi
 import kotlinx.serialization.Serializable
 
-@Serializable data class ActionResponseWrapper(val action: Action)
+@Serializable
+data class ActionResponseWrapper(val action: Action)
 
-@Serializable data class ActionError(val code: String, val message: String)
+@Serializable
+data class ActionError(val code: String, val message: String)
 
-@Serializable data class ActionResource(val id: Long, val type: String)
+@Serializable
+data class ActionResource(val id: Long, val type: String)
 
 enum class ActionStatus {
-  RUNNING,
-  SUCCESS,
-  ERROR,
+    RUNNING,
+    SUCCESS,
+    ERROR,
 }
 
 @Serializable
@@ -28,10 +31,9 @@ data class Action(
 )
 
 class HetznerActionsApi(private val api: HetznerApi) {
-  suspend fun create(): ServersListWrapper = api.post("v1/servers", "")
 
-  suspend fun listPaged(page: Int = 0, perPage: Int = 25): ServersListWrapper =
-      api.get("v1/servers?page=$page&per_page=$perPage")
+    suspend fun listPaged(page: Int = 0, perPage: Int = 25): ServersListWrapper =
+        api.get("v1/servers?page=$page&per_page=$perPage") ?: throw RuntimeException("failed to list servers")
 
-  suspend fun get(id: Long): ActionResponseWrapper = api.get("actions/$id")
+    suspend fun get(id: Long): ActionResponseWrapper? = api.get("actions/$id")
 }

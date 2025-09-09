@@ -123,17 +123,85 @@ resource "hcloud_floating_ip_assignment" "hcloud_floating_ip_assignment" {
   server_id      = hcloud_server.hcloud_server1.id
 }
 
-resource "hcloud_load_balancer" "hcloud_load_balancer1" {
-  name               = "hcloud-load-balancer-${random_string.test_id.id}"
+resource "hcloud_load_balancer" "hcloud_load_balancer_asg1" {
+  name               = "hcloud-load-balancer-asg1"
   load_balancer_type = "lb11"
   location           = "nbg1"
 }
 
-resource "hcloud_server" "hcloud_server1" {
-  name               = "hcloud-server-${random_string.test_id.id}"
-  server_type        = "cx22"
-  image              = "debian-11"
+resource "hcloud_load_balancer" "hcloud_load_balancer_asg2" {
+  name               = "hcloud-load-balancer-asg2"
+  load_balancer_type = "lb11"
   location           = "nbg1"
+}
+
+resource "hcloud_load_balancer" "hcloud_load_balancer_asg3" {
+  name               = "hcloud-load-balancer-asg3"
+  load_balancer_type = "lb11"
+  location           = "nbg1"
+}
+
+resource "hcloud_load_balancer_service" "hcloud_load_balancer_service_asg1" {
+  load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg1.id
+  protocol         = "tcp"
+  listen_port      = 22
+  destination_port = 22
+}
+
+resource "hcloud_load_balancer_service" "hcloud_load_balancer_service_asg2" {
+  load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg2.id
+  protocol         = "tcp"
+  listen_port      = 22
+  destination_port = 22
+}
+
+resource "hcloud_load_balancer_service" "hcloud_load_balancer_service_asg3" {
+  load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg3.id
+  protocol         = "tcp"
+  listen_port      = 22
+  destination_port = 22
+}
+
+resource "hcloud_load_balancer_target" "hcloud_load_balancer_target_asg1" {
+  load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg1.id
+  type             = "server"
+  server_id        = hcloud_server.hcloud_server1.id
+}
+
+resource "hcloud_load_balancer_target" "hcloud_load_balancer_target_asg2" {
+  load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg2.id
+  type             = "label_selector"
+  label_selector   = "foo=bar"
+}
+
+resource "hcloud_server" "hcloud_server1" {
+  name               = "hcloud-server1"
+  server_type        = "cx22"
+  image              = "debian-12"
+  location           = "nbg1"
+  ssh_keys           = [hcloud_ssh_key.hcloud_ssh_key1.id]
+  placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
+  labels = {
+    "blcks.de/user-data-checksum" : "yolo"
+  }
+}
+
+resource "hcloud_server" "hcloud_server2" {
+  name               = "hcloud-server2"
+  server_type        = "cx22"
+  image              = "debian-12"
+  location           = "nbg1"
+  ssh_keys           = [hcloud_ssh_key.hcloud_ssh_key1.id]
+  placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
+  labels             = { foo : "bar" }
+}
+
+resource "hcloud_server" "hcloud_server3" {
+  name               = "hcloud-server3"
+  server_type        = "cx22"
+  image              = "debian-12"
+  location           = "nbg1"
+  ssh_keys           = [hcloud_ssh_key.hcloud_ssh_key1.id]
   placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
 }
 

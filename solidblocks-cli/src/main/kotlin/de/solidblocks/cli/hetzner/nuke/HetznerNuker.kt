@@ -1,15 +1,6 @@
 package de.solidblocks.cli.hetzner.nuke
 
-import de.solidblocks.cli.hetzner.api.HetznerApi
-import de.solidblocks.cli.hetzner.api.HetznerApiErrorType
-import de.solidblocks.cli.hetzner.api.HetznerApiException
-import de.solidblocks.cli.hetzner.api.HetznerAssignedResource
-import de.solidblocks.cli.hetzner.api.HetznerAssignedResourceApi
-import de.solidblocks.cli.hetzner.api.HetznerDeleteResourceApi
-import de.solidblocks.cli.hetzner.api.HetznerDeleteWithActionResourceApi
-import de.solidblocks.cli.hetzner.api.HetznerProtectedResource
-import de.solidblocks.cli.hetzner.api.HetznerProtectedResourceApi
-import de.solidblocks.cli.hetzner.api.logText
+import de.solidblocks.cli.hetzner.api.*
 import de.solidblocks.cli.hetzner.api.resources.VolumeResponse
 import de.solidblocks.cli.utils.logError
 import de.solidblocks.cli.utils.logInfo
@@ -87,18 +78,15 @@ class HetznerNuker(hcloudToken: String) {
 
                     if (resourceApi is HetznerAssignedResourceApi && it is HetznerAssignedResource) {
                         if (it.isAssigned) {
-                            try {
+                            val actionResponse = resourceApi.unassign(it.id)
+                            if (actionResponse != null) {
                                 api.waitFor(
                                     {
                                         logInfo("unassigning ${it.logText()}")
-                                        resourceApi.unassign(it.id)
+                                        actionResponse
                                     },
                                     { resourceApi.action(it) },
                                 )
-                            } catch (e: HetznerApiException) {
-                                if (e.error.code != HetznerApiErrorType.NOT_FOUND) {
-                                    throw e
-                                }
                             }
                         }
                     }

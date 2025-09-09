@@ -1,21 +1,8 @@
 package de.solidblocks.cli.hetzner.api
 
-import de.solidblocks.cli.hetzner.api.resources.ActionResponseWrapper
-import de.solidblocks.cli.hetzner.api.resources.ActionStatus
-import de.solidblocks.cli.hetzner.api.resources.HetznerCertificatesApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerFirewallsApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerFloatingIpsApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerImagesApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerLoadBalancersApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerNetworksApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerPlacementGroupsApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerPrimaryIpsApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerSSHKeysApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerServersApi
-import de.solidblocks.cli.hetzner.api.resources.HetznerVolumesApi
-import de.solidblocks.cli.hetzner.api.resources.ListResponse
+import de.solidblocks.cli.hetzner.api.resources.*
 import de.solidblocks.cli.utils.logInfo
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.*
@@ -91,7 +78,7 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
 
     internal val client = createHttpClient("https://api.hetzner.cloud", hcloudToken)
 
-    internal suspend inline fun <reified T> post(path: String, data: Any? = null): T =
+    internal suspend inline fun <reified T> post(path: String, data: Any? = null): T? =
         client
             .post(path) {
                 contentType(ContentType.Application.Json)
@@ -99,12 +86,12 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
             }
             .handle<T>()
 
-    internal suspend inline fun <reified T> get(path: String): T = client.get(path).handle<T>()
+    internal suspend inline fun <reified T> get(path: String): T? = client.get(path).handle<T>()
 
     internal suspend fun simpleDelete(path: String): Boolean =
         client.delete(path).handleSimpleDelete()
 
-    internal suspend inline fun <reified T> complexDelete(path: String): T =
+    internal suspend inline fun <reified T> complexDelete(path: String): T? =
         client.delete(path).handle()
 
     private suspend fun HttpResponse.handleSimpleDelete(): Boolean {
@@ -120,9 +107,13 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
         throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
 
-    internal suspend inline fun <reified T> HttpResponse.handle(): T {
+    internal suspend inline fun <reified T> HttpResponse.handle(): T? {
         if (this.status.isSuccess()) {
             return this.body()
+        }
+
+        if (this.status.isNotFound()) {
+            return null
         }
 
         if (this.status.isBadRequest()) {
@@ -173,5 +164,7 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
         result.action.status == ActionStatus.SUCCESS
     }
 }
+
+public fun HttpStatusCode.isNotFound(): Boolean = value == 404
 
 public fun HttpStatusCode.isBadRequest(): Boolean = value in (400 until 500)

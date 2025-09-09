@@ -21,7 +21,7 @@ class HetznerFirewallsApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<FirewallResponse> {
 
   suspend fun listPaged(page: Int = 0, perPage: Int = 25): FirewallsListWrapper =
-      api.get("v1/firewalls?page=$page&per_page=$perPage")
+      api.get("v1/firewalls?page=$page&per_page=$perPage") ?: throw RuntimeException("failed to list firewalls")
 
   override suspend fun list() =
       api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }

@@ -6,49 +6,51 @@ import de.solidblocks.cli.commands.BlcksCommand
 import de.solidblocks.cli.docs.DocsCommand
 import de.solidblocks.cli.docs.ansible.AnsibleCommand
 import de.solidblocks.cli.hetzner.HetznerCommand
+import de.solidblocks.cli.hetzner.asg.HetznerAsgCommand
 import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
 import de.solidblocks.cli.terraform.*
 
 fun main(args: Array<String>) {
-  val root = BlcksCommand()
+    val root = BlcksCommand()
 
-  /*
-  val workflowCommand = if (WorkflowParser.workflowExists()) {
-      when (val result = WorkflowParser.parse(WorkflowParser.readWorkflow())) {
-          is Empty -> WorkflowErrorCommand(result.message)
-          is Error -> WorkflowErrorCommand(result.error)
-          is Success -> {
-              WorkflowCommand.createFromWorkflow(result.data)
-          }
-      }
-  } else {
-      WorkflowErrorCommand("no workflow file found at '${WorkflowParser.workflowFile}'")
-  }
-   */
+    /*
+    val workflowCommand = if (WorkflowParser.workflowExists()) {
+        when (val result = WorkflowParser.parse(WorkflowParser.readWorkflow())) {
+            is Empty -> WorkflowErrorCommand(result.message)
+            is Error -> WorkflowErrorCommand(result.error)
+            is Success -> {
+                WorkflowCommand.createFromWorkflow(result.data)
+            }
+        }
+    } else {
+        WorkflowErrorCommand("no workflow file found at '${WorkflowParser.workflowFile}'")
+    }
+     */
 
-  HetznerCommand().also {
-    root.subcommands(it)
-    it.subcommands(HetznerNukeCommand())
-  }
+    HetznerCommand().also {
+        root.subcommands(it)
+        it.subcommands(HetznerNukeCommand())
+        it.subcommands(HetznerAsgCommand())
+    }
 
-  DocsCommand().also {
-    root.subcommands(it)
-    it.subcommands(AnsibleCommand())
-  }
+    DocsCommand().also {
+        root.subcommands(it)
+        it.subcommands(AnsibleCommand())
+    }
 
-  TerraformCommand().also {
-    root.subcommands(it)
-    it.subcommands(
-        BackendsCommand(TYPE.TERRAFORM).also { it.subcommands(BackendsS3Command(TYPE.TERRAFORM)) },
-    )
-  }
+    TerraformCommand().also {
+        root.subcommands(it)
+        it.subcommands(
+            BackendsCommand(TYPE.TERRAFORM).also { it.subcommands(BackendsS3Command(TYPE.TERRAFORM)) },
+        )
+    }
 
-  TofuCommand().also {
-    root.subcommands(it)
-    it.subcommands(
-        BackendsCommand(TYPE.TOFU).also { it.subcommands(BackendsS3Command(TYPE.TOFU)) },
-    )
-  }
+    TofuCommand().also {
+        root.subcommands(it)
+        it.subcommands(
+            BackendsCommand(TYPE.TOFU).also { it.subcommands(BackendsS3Command(TYPE.TOFU)) },
+        )
+    }
 
-  root.main(args)
+    root.main(args)
 }

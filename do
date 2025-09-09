@@ -64,7 +64,7 @@ function task_release_test {
 
 function task_clean_aws {
   aws-nuke run \
-    --access-key-id "$(pass solidblocks/aws/admin/access_key)" \
+    --access-key-id "$(pass solidblocks/aws/admin/access_key_id)" \
     --secret-access-key "$(pass solidblocks/aws/admin/secret_access_key)" \
     --config ${DIR}/contrib/aws-nuke.yaml \
     --no-dry-run \
