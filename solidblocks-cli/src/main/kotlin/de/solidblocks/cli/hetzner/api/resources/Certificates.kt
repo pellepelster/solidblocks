@@ -1,8 +1,8 @@
-package de.solidblocks.cli.hetzner.resources
+package de.solidblocks.cli.hetzner.api.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerDeleteResourceApi
-import de.solidblocks.cli.hetzner.HetznerNamedResource
+import de.solidblocks.cli.hetzner.api.HetznerApi
+import de.solidblocks.cli.hetzner.api.HetznerDeleteResourceApi
+import de.solidblocks.cli.hetzner.api.HetznerNamedResource
 import kotlinx.serialization.Serializable
 
 @Serializable

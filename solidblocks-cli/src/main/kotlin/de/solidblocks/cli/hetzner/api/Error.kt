@@ -1,4 +1,4 @@
-package de.solidblocks.cli.hetzner
+package de.solidblocks.cli.hetzner.api
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable

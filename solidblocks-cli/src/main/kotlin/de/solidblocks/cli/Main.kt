@@ -6,7 +6,7 @@ import de.solidblocks.cli.commands.BlcksCommand
 import de.solidblocks.cli.docs.DocsCommand
 import de.solidblocks.cli.docs.ansible.AnsibleCommand
 import de.solidblocks.cli.hetzner.HetznerCommand
-import de.solidblocks.cli.hetzner.NukeCommand
+import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
 import de.solidblocks.cli.terraform.*
 
 fun main(args: Array<String>) {
@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
 
   HetznerCommand().also {
     root.subcommands(it)
-    it.subcommands(NukeCommand())
+    it.subcommands(HetznerNukeCommand())
   }
 
   DocsCommand().also {

@@ -1,11 +1,12 @@
 package de.solidblocks.cli
 
-import de.solidblocks.cli.hetzner.HetznerApi
-import de.solidblocks.cli.hetzner.HetznerApiException
+import de.solidblocks.cli.hetzner.api.HetznerApi
+import de.solidblocks.cli.hetzner.api.HetznerApiException
 import io.kotest.assertions.throwables.shouldThrow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class HetznerApiTest {
 
@@ -13,6 +14,7 @@ class HetznerApiTest {
 
     val api = HetznerApi(hcloudToken)
 
+    @Test
     fun testPermissionDenied() {
         runBlocking {
             shouldThrow<RuntimeException> {
@@ -21,22 +23,27 @@ class HetznerApiTest {
         }
     }
 
+    @Test
     fun testListServersPaged() {
         runBlocking { assertEquals(1, api.servers.listPaged().servers.size) }
     }
 
+    @Test
     fun testListServers() {
         runBlocking { assertEquals(1, api.servers.list().size) }
     }
 
+    @Test
     fun testListVolumesPaged() {
-        runBlocking { assertEquals(21, api.volumes.listPaged().volumes.size) }
+        runBlocking { assertEquals(13, api.volumes.listPaged().volumes.size) }
     }
 
+    @Test
     fun testListVolumes() {
-        runBlocking { assertEquals(21, api.volumes.list().size) }
+        runBlocking { assertEquals(13, api.volumes.list().size) }
     }
 
+    @Test
     fun testWaitFor() {
         runBlocking {
             val volume = api.volumes.list().first()
@@ -48,6 +55,7 @@ class HetznerApiTest {
         }
     }
 
+    @Test
     fun testErrorResponse() {
         runBlocking {
             shouldThrow<HetznerApiException> {

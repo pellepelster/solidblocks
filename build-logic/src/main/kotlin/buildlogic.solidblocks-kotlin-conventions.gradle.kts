@@ -41,6 +41,10 @@ tasks.test {
             "HETZNER_DNS_API_TOKEN" to providers.of(PassSecretValueSource::class) {
                 this.parameters.path.set("solidblocks/hetzner/test/dns_api_token")
                 this.parameters.environment.set("HETZNER_DNS_API_TOKEN")
+            }.get(),
+            "HCLOUD_TOKEN" to providers.of(PassSecretValueSource::class) {
+                this.parameters.path.set("solidblocks/hetzner/test/hcloud_api_token")
+                this.parameters.environment.set("HCLOUD_TOKEN")
             }.get()
         )
     )

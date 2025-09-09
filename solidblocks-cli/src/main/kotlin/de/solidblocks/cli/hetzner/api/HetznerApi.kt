@@ -1,7 +1,21 @@
-package de.solidblocks.cli.hetzner
+package de.solidblocks.cli.hetzner.api
 
-import de.solidblocks.cli.hetzner.resources.*
+import de.solidblocks.cli.hetzner.api.resources.ActionResponseWrapper
+import de.solidblocks.cli.hetzner.api.resources.ActionStatus
+import de.solidblocks.cli.hetzner.api.resources.HetznerCertificatesApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerFirewallsApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerFloatingIpsApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerImagesApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerLoadBalancersApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerNetworksApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerPlacementGroupsApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerPrimaryIpsApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerSSHKeysApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerServersApi
+import de.solidblocks.cli.hetzner.api.resources.HetznerVolumesApi
+import de.solidblocks.cli.hetzner.api.resources.ListResponse
 import de.solidblocks.cli.utils.logInfo
+import io.ktor.client.HttpClient
 import io.ktor.client.call.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.*
@@ -44,7 +58,7 @@ suspend fun <T> retryUtil(
 
 @OptIn(ExperimentalSerializationApi::class)
 fun createHttpClient(url: String, apiToken: String) =
-    io.ktor.client.HttpClient(Java) {
+    HttpClient(Java) {
         install(ContentNegotiation) {
             json(
                 Json {

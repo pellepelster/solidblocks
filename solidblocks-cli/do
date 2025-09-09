@@ -18,6 +18,7 @@ function task_test {
     exit 0
   fi
 
+  task_init_testbed
   ${DIR}/../gradlew check
 }
 
@@ -29,19 +30,22 @@ function integration_test_blcks_wrapper() {
   fi
 }
 
+function task_init_testbed() {
+    export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
+
+    (
+      cd "${DIR}/test/hetzner_nuke"
+      terraform init -upgrade
+      terraform apply -auto-approve
+    )
+}
+
 function task_test_hetzner_nuke {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
   fi
 
-  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-
-  (
-    cd "${DIR}/test/hetzner_nuke"
-    terraform init -upgrade
-    terraform apply -auto-approve
-  )
-
+  task_init_testbed
   divider_header "--help"
   integration_test_blcks_wrapper --help
   divider_footer
@@ -257,6 +261,7 @@ case ${arg} in
   test-integration) task_test_integration "$@" ;;
   test-hetzner-nuke) task_test_hetzner_nuke "$@" ;;
   test-terraform) task_test_terraform "$@" ;;
+  init-testbed) task_init_testbed "$@" ;;
   release-prepare) ;;
   release-artifacts) ;;
   format) ;;

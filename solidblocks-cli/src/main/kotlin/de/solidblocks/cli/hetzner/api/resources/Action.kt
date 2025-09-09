@@ -1,6 +1,6 @@
-package de.solidblocks.cli.hetzner.resources
+package de.solidblocks.cli.hetzner.api.resources
 
-import de.solidblocks.cli.hetzner.HetznerApi
+import de.solidblocks.cli.hetzner.api.HetznerApi
 import kotlinx.serialization.Serializable
 
 @Serializable data class ActionResponseWrapper(val action: Action)
