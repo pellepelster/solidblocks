@@ -34,7 +34,7 @@ function task_init_testbed() {
     export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
 
     (
-      cd "${DIR}/test/hetzner_nuke"
+      cd "${DIR}/test/terraform"
       terraform init -upgrade
       terraform apply -auto-approve
     )

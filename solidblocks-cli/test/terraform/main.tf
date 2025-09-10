@@ -25,6 +25,11 @@ resource "tls_private_key" "ssh_key1" {
   rsa_bits  = 4096
 }
 
+resource "local_file" "ssh_key1" {
+  filename = "${path.module}/id_rsa"
+  content  = tls_private_key.ssh_key1.private_key_openssh
+}
+
 resource "hcloud_uploaded_certificate" "hcloud_uploaded_certificate1" {
   name        = "hcloud-uploaded-certificate-${random_string.test_id.id}"
   certificate = <<-EOT
@@ -104,12 +109,31 @@ resource "hcloud_ssh_key" "hcloud_ssh_key1" {
 
 resource "hcloud_firewall" "hcloud_firewall1" {
   name = "hcloud-firewall-${random_string.test_id.id}"
-}
 
+  rule {
+    direction = "in"
+    protocol  = "tcp"
+    port      = "22"
+    source_ips = [
+      "0.0.0.0/0",
+      "::/0"
+    ]
+  }
+
+  rule {
+    direction = "in"
+    protocol  = "tcp"
+    port      = "80"
+    source_ips = [
+      "0.0.0.0/0",
+      "::/0"
+    ]
+  }
+}
 
 resource "hcloud_firewall_attachment" "hcloud_firewall_attachment" {
   firewall_id = hcloud_firewall.hcloud_firewall1.id
-  server_ids  = [hcloud_server.hcloud_server1.id]
+  server_ids = [hcloud_server.hcloud_server1.id]
 }
 
 resource "hcloud_floating_ip" "hcloud_floating_ip1" {
@@ -144,22 +168,22 @@ resource "hcloud_load_balancer" "hcloud_load_balancer_asg3" {
 resource "hcloud_load_balancer_service" "hcloud_load_balancer_service_asg1" {
   load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg1.id
   protocol         = "tcp"
-  listen_port      = 22
-  destination_port = 22
+  listen_port      = 80
+  destination_port = 80
 }
 
 resource "hcloud_load_balancer_service" "hcloud_load_balancer_service_asg2" {
   load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg2.id
   protocol         = "tcp"
-  listen_port      = 22
-  destination_port = 22
+  listen_port      = 80
+  destination_port = 80
 }
 
 resource "hcloud_load_balancer_service" "hcloud_load_balancer_service_asg3" {
   load_balancer_id = hcloud_load_balancer.hcloud_load_balancer_asg3.id
   protocol         = "tcp"
-  listen_port      = 22
-  destination_port = 22
+  listen_port      = 80
+  destination_port = 80
 }
 
 resource "hcloud_load_balancer_target" "hcloud_load_balancer_target_asg1" {
@@ -179,30 +203,31 @@ resource "hcloud_server" "hcloud_server1" {
   server_type        = "cx22"
   image              = "debian-12"
   location           = "nbg1"
-  ssh_keys           = [hcloud_ssh_key.hcloud_ssh_key1.id]
+  ssh_keys = [hcloud_ssh_key.hcloud_ssh_key1.id]
   placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
+  user_data = templatefile("${path.module}/cloud_init.template", {})
   labels = {
     "blcks.de/user-data-checksum" : "yolo"
   }
 }
 
 resource "hcloud_server" "hcloud_server2" {
-  name               = "hcloud-server2"
-  server_type        = "cx22"
-  image              = "debian-12"
-  location           = "nbg1"
-  ssh_keys           = [hcloud_ssh_key.hcloud_ssh_key1.id]
-  placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
-  labels             = { foo : "bar" }
+  name        = "hcloud-server2"
+  server_type = "cx22"
+  image       = "debian-12"
+  location    = "nbg1"
+  ssh_keys = [hcloud_ssh_key.hcloud_ssh_key1.id]
+  user_data = templatefile("${path.module}/cloud_init.template", {})
+  labels = { foo : "bar" }
 }
 
 resource "hcloud_server" "hcloud_server3" {
-  name               = "hcloud-server3"
-  server_type        = "cx22"
-  image              = "debian-12"
-  location           = "nbg1"
-  ssh_keys           = [hcloud_ssh_key.hcloud_ssh_key1.id]
-  placement_group_id = hcloud_placement_group.hcloud_placement_group1.id
+  name        = "hcloud-server3"
+  server_type = "cx22"
+  image       = "debian-12"
+  location    = "nbg1"
+  ssh_keys = [hcloud_ssh_key.hcloud_ssh_key1.id]
+  user_data = templatefile("${path.module}/cloud_init.template", {})
 }
 
 resource "hcloud_network" "hcloud_network1" {

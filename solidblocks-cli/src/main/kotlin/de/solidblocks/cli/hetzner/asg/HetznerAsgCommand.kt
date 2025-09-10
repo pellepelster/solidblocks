@@ -7,8 +7,11 @@ import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.groups.required
 import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 
 sealed class LoadBalancerReference {
@@ -34,6 +37,14 @@ class HetznerAsgCommand : CliktCommand(name = "asg") {
 
     val server by ServerOptions()
 
+    val userData by option(help = "user data for newly created servers").file(
+        mustExist = true,
+        canBeFile = true,
+        canBeDir = false
+    ).required()
+
+    val replicas by option(help = "number of replicas").int().default(1)
+
     private val hcloudToken by
     option(
         "--hcloud-token",
@@ -44,6 +55,6 @@ class HetznerAsgCommand : CliktCommand(name = "asg") {
 
 
     override fun run() {
-        HetznerAsg(hcloudToken).run(loadbalancer)
+        HetznerAsg(hcloudToken).run(loadbalancer, replicas, userData.readText())
     }
 }
