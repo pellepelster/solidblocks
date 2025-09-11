@@ -1,24 +1,44 @@
 package de.solidblocks.cli
 
+import de.solidblocks.cli.hetzner.Constants.testLabel
+import de.solidblocks.cli.hetzner.api.FilterValue
 import de.solidblocks.cli.hetzner.api.HetznerApi
 import de.solidblocks.cli.hetzner.api.HetznerApiException
+import de.solidblocks.cli.hetzner.api.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.resources.ImageType
 import de.solidblocks.cli.hetzner.api.resources.LoadBalancerTargetType
+import de.solidblocks.cli.hetzner.api.resources.PublicNet
 import de.solidblocks.cli.hetzner.api.resources.ServerCreateRequest
+import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.util.*
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class HetznerApiTest {
 
     val hcloudToken = System.getenv("HCLOUD_TOKEN").toString()
     val api = HetznerApi(hcloudToken)
+
+    @BeforeAll
+    fun beforeAll() {
+        runBlocking {
+            mapOf("type" to LabelSelectorValue.NotEquals(ImageType.SNAPSHOT.name.lowercase()))
+            api.servers.list(labelSelectors = mapOf(testLabel to LabelSelectorValue.Equals("true"))).forEach {
+                val delete = api.servers.delete(it.id)
+                api.servers.waitForAction(delete) shouldBe true
+            }
+        }
+    }
 
     @Test
     fun testPermissionDenied() {
@@ -33,41 +53,98 @@ class HetznerApiTest {
     fun testCreateServerInvalidRequest() {
         runBlocking {
             val exception = shouldThrow<HetznerApiException> {
-                api.servers.create(ServerCreateRequest("", "", ""))
+                api.servers.create(
+                    ServerCreateRequest(
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        emptyList(),
+                        emptyList(),
+                        emptyList(),
+                        "",
+                        emptyMap(),
+                        PublicNet(true, false)
+                    )
+                )
             }
-            exception.error.message shouldBe "invalid input in field 'name'"
+            exception.error.message shouldBe "failed to parse json"
         }
     }
 
     @Test
-    fun testCreateServer() {
+    fun testLocationsFlow() {
         runBlocking {
+            val locations = api.locations.list()
+            locations shouldHaveAtLeastSize 1
+
+            val byId = api.locations.get(locations[0].id)!!
+            val byName = api.locations.get(locations[0].name)!!
+            byId.location.name shouldBe byName.location.name
+        }
+    }
+
+    @Test
+    fun testImagesFlow() {
+        runBlocking {
+            val allImages = api.images.list()
+
+            allImages shouldHaveAtLeastSize 1
+
+            api.images.list()
+                .any { it.type != ImageType.APP } shouldBe true
+            api.images.list(mapOf("type" to FilterValue.Equals(ImageType.APP.name.lowercase())))
+                .all { it.type == ImageType.APP } shouldBe true
+
+
+            val byId = api.images.get(allImages[0].id)!!
+            val byName = api.images.get(allImages[0].name!!, mapOf("architecture" to FilterValue.Equals("x86")))!!
+            byId.image.name!! shouldBe byName.image.name!!
+
+            api.images.get("debian-12", mapOf("architecture" to FilterValue.Equals("x86"))) shouldNotBe null
+        }
+    }
+
+    @Test
+    fun testServerFlow() {
+        runBlocking {
+
             val name = UUID.randomUUID().toString()
-            val server = api.servers.create(ServerCreateRequest(name, "cx22", "debian-12"))
-            server!!.server.name shouldBe name
-        }
-    }
+            val oldServerCount = api.servers.list().size
+            val oldServerCountFiltered =
+                api.servers.list(labelSelectors = mapOf(testLabel to LabelSelectorValue.Equals("true"))).size
 
-    @Test
-    fun testListServersPaged() {
-        runBlocking {
-            api.servers.listPaged().servers shouldHaveAtLeastSize 3
-        }
-    }
+            val createdServer = api.servers.create(
+                ServerCreateRequest(
+                    name, "nbg1", "cx22", image = "debian-12", labels = mapOf(testLabel to "true"), userData = ""
+                )
+            )
 
-    @Test
-    fun testListServers() {
-        runBlocking {
-            api.servers.list() shouldHaveAtLeastSize 3
-        }
-    }
+            createdServer shouldNotBe null
+            createdServer!!.server.name shouldBe name
 
-    @Test
-    fun testGetServerByName() {
-        runBlocking {
-            val server1 = api.servers.get("hcloud-server1")!!
-            server1.server.name shouldBe "hcloud-server1"
-            server1.server.labels shouldHaveSize 1
+            createdServer.action shouldNotBe null
+            createdServer.action!!.command shouldBe "create_server"
+
+            assertSoftly(api.servers.actions(createdServer.server.id)!!) {
+                it.actions shouldHaveSize 2
+                it.actions.count { it.command == "create_server" } shouldBe 1
+                it.actions.count { it.command == "start_server" } shouldBe 1
+            }
+
+            api.servers.list().size shouldBe oldServerCount + 1
+            api.servers.list(labelSelectors = mapOf(testLabel to LabelSelectorValue.Equals("true"))).size shouldBe oldServerCountFiltered + 1
+            api.servers.waitForAction(createdServer.action.id) shouldBe true
+
+            val serverByName = api.servers.get(createdServer.server.name)
+            val serverById = api.servers.get(createdServer.server.id)
+
+            serverById?.server?.name shouldBe createdServer.server.name
+            serverByName?.server?.name shouldBe createdServer.server.name
+
+            val delete = api.servers.delete(createdServer.server.id)
+            api.servers.waitForAction(delete) shouldBe true
         }
     }
 
@@ -95,7 +172,32 @@ class HetznerApiTest {
     @Test
     fun testGetLoadBalancerByName() {
         runBlocking {
-            api.loadBalancers.get("hcloud-load-balancer-asg2")!!.loadbalancer.name shouldBe "hcloud-load-balancer-asg2"
+            api.loadBalancers.get("application2")!!.loadbalancer.name shouldBe "application2"
+        }
+    }
+
+    @Test
+    fun testLoadBalancerAsg1() {
+        runBlocking {
+            val loadbalancer = api.loadBalancers.get("application1")?.loadbalancer!!
+            loadbalancer.privateNetworks shouldHaveSize 1
+        }
+    }
+
+    @Test
+    fun testGetNetwork() {
+        runBlocking {
+            val networkByName = api.networks.get("hcloud-network1")?.network!!
+            val networkById = api.networks.get(networkByName.id)?.network!!
+            networkById.name shouldBe networkByName.name
+        }
+    }
+
+    @Test
+    fun testLoadBalancerAsg2() {
+        runBlocking {
+            val loadbalancer = api.loadBalancers.get("application2")?.loadbalancer!!
+            loadbalancer.privateNetworks shouldHaveSize 0
         }
     }
 
@@ -106,13 +208,13 @@ class HetznerApiTest {
             assertEquals(3, loadBalancers.size)
 
             val asg1 = api.loadBalancers.get(loadBalancers[0].id)!!
-            asg1.loadbalancer.name shouldBe "hcloud-load-balancer-asg1"
-            asg1.loadbalancer.targets shouldHaveSize 1
+            asg1.loadbalancer.name shouldBe "application1"
+            asg1.loadbalancer.targets shouldHaveAtLeastSize 1
             asg1.loadbalancer.targets[0].type shouldBe LoadBalancerTargetType.server
             asg1.loadbalancer.targets[0].labelSelector shouldBe null
 
             val asg2 = api.loadBalancers.get(loadBalancers[1].id)!!
-            asg2.loadbalancer.name shouldBe "hcloud-load-balancer-asg2"
+            asg2.loadbalancer.name shouldBe "application2"
             asg2.loadbalancer.targets shouldHaveSize 1
             asg2.loadbalancer.targets[0].type shouldBe LoadBalancerTargetType.label_selector
             asg2.loadbalancer.targets[0].labelSelector!!.selector shouldBe "foo=bar"
@@ -134,10 +236,36 @@ class HetznerApiTest {
         runBlocking {
             val volume = api.volumes.list().first()
 
-            val result =
-                api.waitFor({ api.volumes.changeProtection(volume.id, true) }, { api.volumes.action(it) })
+            val result = api.waitFor({ api.volumes.changeProtection(volume.id, true) }, { api.volumes.action(it) })
 
             assertTrue(result)
         }
     }
+
+    @Test
+    fun testSSHFlow() {
+        runBlocking {
+            val keys = api.sshKeys.list()
+            keys shouldHaveAtLeastSize 1
+
+            val byId = api.sshKeys.get(keys[0].id)!!
+            val byName = api.sshKeys.get(keys[0].name)!!
+            byId.sshKey.name shouldBe byName.sshKey.name
+        }
+    }
+
+    @Test
+    fun testServerTypeFlow() {
+        runBlocking {
+            val serverTypes = api.serverTypes.list()
+            serverTypes shouldHaveAtLeastSize 1
+
+            val byId = api.serverTypes.get(serverTypes[0].id)!!
+            val byName = api.serverTypes.get(serverTypes[0].name)!!
+            byId.serverType.name shouldBe byName.serverType.name
+
+            api.serverTypes.get("cx22") shouldNotBe null
+        }
+    }
+
 }

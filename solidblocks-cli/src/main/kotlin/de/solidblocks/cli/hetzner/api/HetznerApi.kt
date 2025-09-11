@@ -16,20 +16,24 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
+
 suspend fun <T> retryUtil(
-    times: Int = 5,
-    initialDelay: Long = 100,
-    maxDelay: Long = 1000,
-    factor: Double = 2.0,
     block: suspend () -> T,
     condition: (T) -> Boolean,
+    times: Int = 20,
+    initialDelay: Long = 1000,
+    maxDelay: Long = 5000,
+    factor: Double = 2.0,
 ): T {
     var currentDelay = initialDelay
 
     repeat(times - 1) {
         try {
             val result = block()
-            return result
+
+            if (condition(result)) {
+                return result
+            }
         } catch (exception: HetznerApiException) {
             if (exception.error.code != HetznerApiErrorType.RATE_LIMIT_EXCEEDED) {
                 throw exception
@@ -41,6 +45,29 @@ suspend fun <T> retryUtil(
     }
 
     return block()
+}
+
+fun listQuery(
+    page: Int = 0,
+    perPage: Int = 25,
+    filter: Map<String, FilterValue>,
+    labelSelector: Map<String, LabelSelectorValue>
+): String {
+    val labelSelector = if (labelSelector.isNotEmpty()) {
+        "label_selector=${
+            labelSelector.entries.joinToString(",") {
+                it.value.query(it.key)
+            }
+        }"
+    } else {
+        null
+    }
+
+    val filter = filter.entries.joinToString("&") { "${it.key}=${it.value.query}" }
+    val page = "page=$page"
+    val perPage = "per_page=$perPage"
+
+    return listOfNotNull(page, perPage, filter, labelSelector).joinToString("&")
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -66,6 +93,8 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
 
     val volumes = HetznerVolumesApi(this)
     val servers = HetznerServersApi(this)
+    val serverTypes = HetznerServerTypesApi(this)
+    val locations = HetznerLocationsApi(this)
     val certificates = HetznerCertificatesApi(this)
     val sshKeys = HetznerSSHKeysApi(this)
     val networks = HetznerNetworksApi(this)
@@ -125,13 +154,15 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
     }
 
     suspend fun <T> handlePaginatedList(
-        block: suspend (page: Int, perPage: Int) -> ListResponse<T>,
+        filter: Map<String, FilterValue>,
+        labelSelectors: Map<String, LabelSelectorValue>,
+        block: suspend (page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) -> ListResponse<T>,
     ): List<T> {
         var currentPage: Int? = 0
         val result = mutableListOf<T>()
 
         while (currentPage != null) {
-            val response: ListResponse<T> = block(currentPage, defaultPageSize)
+            val response: ListResponse<T> = block(currentPage, defaultPageSize, filter, labelSelectors)
             result.addAll(response.list)
             currentPage = response.meta.pagination.next_page
         }
@@ -159,6 +190,28 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
                     response
                 },
                 condition = { it.action.status == ActionStatus.SUCCESS },
+            )
+
+        result.action.status == ActionStatus.SUCCESS
+    }
+
+    fun waitForAction(
+        id: Long,
+        getAction: suspend (Long) -> ActionResponseWrapper,
+    ) = runBlocking {
+        val result =
+            retryUtil(
+                block = {
+                    val response = getAction.invoke(id)
+
+                    logInfo(
+                        "waiting for '${response.action.command}' to finish current status is '${response.action.status.name.lowercase()}'",
+                    )
+                    response
+                },
+                condition = {
+                    it.action.status == ActionStatus.SUCCESS
+                },
             )
 
         result.action.status == ActionStatus.SUCCESS

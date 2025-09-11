@@ -24,13 +24,26 @@ data class FloatingIpResponse(
 ) : HetznerProtectedResource
 
 class HetznerFloatingIpsApi(private val api: HetznerApi) :
-    HetznerDeleteResourceApi<FloatingIpResponse>, HetznerProtectedResourceApi {
+    HetznerDeleteResourceApi<FloatingIpResponse>, HetznerProtectedResourceApi<FloatingIpResponse> {
 
-    suspend fun listPaged(page: Int = 0, perPage: Int = 25): FloatingIPsListWrapper =
-        api.get("v1/floating_ips?page=$page&per_page=$perPage") ?: throw RuntimeException("failed to list floating ips")
+    suspend fun listPaged(
+        page: Int = 0,
+        perPage: Int = 25,
+        filter: Map<String, FilterValue>,
+        labelSelectors: Map<String, LabelSelectorValue>
+    ): FloatingIPsListWrapper =
+        api.get("v1/floating_ips?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list floating ips")
 
-    override suspend fun list() =
-        api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }
+    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
+        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
+            listPaged(
+                page,
+                perPage,
+                filter,
+                labelSelectors
+            )
+        }
 
     override suspend fun delete(id: Long) = api.simpleDelete("v1/floating_ips/$id")
 

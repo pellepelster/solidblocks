@@ -5,33 +5,35 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SSHKeysListResponseWrapper(
-    @SerialName("ssh_keys") val sshKeys: List<SshKeyResponse>,
+data class ServerTypeListResponseWrapper(
+    @SerialName("server_types")
+    val serverTypes: List<ServerTypeResponse>,
     override val meta: Meta,
-) : ListResponse<SshKeyResponse> {
-
-    override val list: List<SshKeyResponse>
-        get() = sshKeys
+) : ListResponse<ServerTypeResponse> {
+    override val list: List<ServerTypeResponse>
+        get() = serverTypes
 }
 
 @Serializable
-data class SSHKeyResponseWrapper(@SerialName("ssh_key") val sshKey: SshKeyResponse)
+data class ServerTypeResponseWrapper(
+    @SerialName("server_type")
+    val serverType: ServerTypeResponse,
+)
 
 @Serializable
-data class SshKeyResponse(override val id: Long, override val name: String) : HetznerNamedResource
+data class ServerTypeResponse(val id: Long, val name: String)
 
-class HetznerSSHKeysApi(private val api: HetznerApi) : HetznerDeleteResourceApi<SshKeyResponse> {
+class HetznerServerTypesApi(private val api: HetznerApi) :
+    HetznerBaseResourceApi<ServerTypeResponse> {
 
     suspend fun listPaged(
         page: Int = 0,
         perPage: Int = 25,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
-    ): SSHKeysListResponseWrapper =
-        api.get("v1/ssh_keys?${listQuery(page, perPage, filter, labelSelectors)}")
-            ?: throw RuntimeException("failed to list ssh keys")
-
-    override suspend fun delete(id: Long) = api.simpleDelete("v1/ssh_keys/$id")
+    ): ServerTypeListResponseWrapper =
+        api.get("v1/server_types?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list server types")
 
     override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
         api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
@@ -43,7 +45,7 @@ class HetznerSSHKeysApi(private val api: HetznerApi) : HetznerDeleteResourceApi<
             )
         }
 
-    suspend fun get(id: Long) = api.get<SSHKeyResponseWrapper>("v1/ssh_keys/$id")
+    suspend fun get(id: Long) = api.get<ServerTypeResponseWrapper>("v1/server_types/$id")
 
     suspend fun get(name: String) =
         list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()?.let {

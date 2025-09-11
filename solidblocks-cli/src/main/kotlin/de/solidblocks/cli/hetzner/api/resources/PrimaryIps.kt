@@ -29,14 +29,27 @@ data class PrimaryIpResponse(
 
 class HetznerPrimaryIpsApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<PrimaryIpResponse>,
-    HetznerProtectedResourceApi,
+    HetznerProtectedResourceApi<PrimaryIpResponse>,
     HetznerAssignedResourceApi {
 
-    suspend fun listPaged(page: Int = 0, perPage: Int = 25): PrimaryIpListWrapper =
-        api.get("v1/primary_ips?page=$page&per_page=$perPage") ?: throw RuntimeException("failed list primary ips")
+    suspend fun listPaged(
+        page: Int = 0,
+        perPage: Int = 25,
+        filter: Map<String, FilterValue>,
+        labelSelectors: Map<String, LabelSelectorValue>
+    ): PrimaryIpListWrapper =
+        api.get("v1/primary_ips?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed list primary ips")
 
-    override suspend fun list() =
-        api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }
+    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
+        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
+            listPaged(
+                page,
+                perPage,
+                filter,
+                labelSelectors
+            )
+        }
 
     override suspend fun delete(id: Long) = api.simpleDelete("v1/primary_ips/$id")
 

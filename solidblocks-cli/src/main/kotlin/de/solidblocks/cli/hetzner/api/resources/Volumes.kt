@@ -15,13 +15,26 @@ data class VolumeResponse(
 data class ChangeVolumeProtectionRequest(val delete: Boolean, val rebuild: Boolean? = null)
 
 class HetznerVolumesApi(private val api: HetznerApi) :
-    HetznerDeleteResourceApi<VolumeResponse>, HetznerProtectedResourceApi {
+    HetznerDeleteResourceApi<VolumeResponse>, HetznerProtectedResourceApi<VolumeResponse> {
 
-    suspend fun listPaged(page: Int = 0, perPage: Int = 25): VolumesListWrapper =
-        api.get("v1/volumes?page=$page&per_page=$perPage") ?: throw RuntimeException("failed to list volumes")
+    suspend fun listPaged(
+        page: Int = 0,
+        perPage: Int = 25,
+        filter: Map<String, FilterValue> = emptyMap(),
+        labelSelectors: Map<String, LabelSelectorValue> = emptyMap()
+    ): VolumesListWrapper =
+        api.get("v1/volumes?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list volumes")
 
-    override suspend fun list() =
-        api.handlePaginatedList { page, perPage -> listPaged(page, perPage) }
+    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
+        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
+            listPaged(
+                page,
+                perPage,
+                filter,
+                labelSelectors
+            )
+        }
 
     override suspend fun changeProtection(id: Long, delete: Boolean): ActionResponseWrapper =
         api.post("v1/volumes/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))

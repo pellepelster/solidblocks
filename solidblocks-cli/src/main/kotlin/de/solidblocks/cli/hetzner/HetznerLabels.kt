@@ -41,6 +41,11 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
         return HashComparisonResult(actualValue == expectedValue, expectedValue, actualValue)
     }
 
+    fun labelMatches(key: String, expectedValue: String): Boolean {
+        val actualValue = this.safeLabels()[key]
+        return actualValue == expectedValue
+    }
+
     private fun safeLabels(): Map<String, String> {
 
         data class IndexedLabelKey(val key: String, val index: Int)

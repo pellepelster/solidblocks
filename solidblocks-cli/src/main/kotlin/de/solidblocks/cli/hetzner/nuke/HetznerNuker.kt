@@ -1,6 +1,8 @@
 package de.solidblocks.cli.hetzner.nuke
 
 import de.solidblocks.cli.hetzner.api.*
+import de.solidblocks.cli.hetzner.api.resources.HetznerImagesApi
+import de.solidblocks.cli.hetzner.api.resources.ImageType
 import de.solidblocks.cli.hetzner.api.resources.VolumeResponse
 import de.solidblocks.cli.utils.logError
 import de.solidblocks.cli.utils.logInfo
@@ -26,8 +28,14 @@ class HetznerNuker(hcloudToken: String) {
                 api.certificates,
             )
                 .map { resourceApi ->
+                    val filter = if (resourceApi is HetznerImagesApi) {
+                        mapOf("type" to FilterValue.Equals(ImageType.SNAPSHOT.name.lowercase()))
+                    } else {
+                        emptyMap()
+                    }
+
                     resourceApi
-                        .list()
+                        .list(filter)
                         .map {
                             logInfo("would delete ${it.logText()}")
                             1
@@ -52,7 +60,13 @@ class HetznerNuker(hcloudToken: String) {
             api.certificates,
         )
             .forEach { resourceApi ->
-                resourceApi.list().forEach {
+                val filter = if (resourceApi is HetznerImagesApi) {
+                    mapOf("type" to FilterValue.Equals(ImageType.SNAPSHOT.name.lowercase()))
+                } else {
+                    emptyMap()
+                }
+
+                resourceApi.list(filter).forEach {
                     if (it is VolumeResponse && it.server != null) {
                         api.waitFor(
                             {
@@ -93,8 +107,14 @@ class HetznerNuker(hcloudToken: String) {
 
                     if (resourceApi is HetznerDeleteResourceApi<*>) {
                         logInfo("deleting ${it.logText()}")
-                        if (!resourceApi.delete(it.id)) {
-                            logError("deleting ${it.logText()} failed")
+                        try {
+                            if (!resourceApi.delete(it.id)) {
+                                logError("deleting ${it.logText()} failed")
+                            }
+                        } catch (e: HetznerApiException) {
+                            if (e.error.code != HetznerApiErrorType.NOT_FOUND) {
+                                throw e
+                            }
                         }
                     }
 

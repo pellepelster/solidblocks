@@ -1,37 +1,37 @@
 package de.solidblocks.cli.hetzner.api.resources
 
 import de.solidblocks.cli.hetzner.api.*
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SSHKeysListResponseWrapper(
-    @SerialName("ssh_keys") val sshKeys: List<SshKeyResponse>,
+data class LocationsListResponseWrapper(
+    val locations: List<LocationResponse>,
     override val meta: Meta,
-) : ListResponse<SshKeyResponse> {
-
-    override val list: List<SshKeyResponse>
-        get() = sshKeys
+) : ListResponse<LocationResponse> {
+    override val list: List<LocationResponse>
+        get() = locations
 }
 
 @Serializable
-data class SSHKeyResponseWrapper(@SerialName("ssh_key") val sshKey: SshKeyResponse)
+data class LocationResponseWrapper(
+    val location: LocationResponse,
+)
 
 @Serializable
-data class SshKeyResponse(override val id: Long, override val name: String) : HetznerNamedResource
+data class LocationResponse(override val id: Long, override val name: String) :
+    HetznerNamedResource
 
-class HetznerSSHKeysApi(private val api: HetznerApi) : HetznerDeleteResourceApi<SshKeyResponse> {
+class HetznerLocationsApi(private val api: HetznerApi) :
+    HetznerBaseResourceApi<LocationResponse> {
 
     suspend fun listPaged(
         page: Int = 0,
         perPage: Int = 25,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
-    ): SSHKeysListResponseWrapper =
-        api.get("v1/ssh_keys?${listQuery(page, perPage, filter, labelSelectors)}")
-            ?: throw RuntimeException("failed to list ssh keys")
-
-    override suspend fun delete(id: Long) = api.simpleDelete("v1/ssh_keys/$id")
+    ): LocationsListResponseWrapper =
+        api.get("v1/locations?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list locations")
 
     override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
         api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
@@ -43,7 +43,7 @@ class HetznerSSHKeysApi(private val api: HetznerApi) : HetznerDeleteResourceApi<
             )
         }
 
-    suspend fun get(id: Long) = api.get<SSHKeyResponseWrapper>("v1/ssh_keys/$id")
+    suspend fun get(id: Long) = api.get<LocationResponseWrapper>("v1/locations/$id")
 
     suspend fun get(name: String) =
         list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()?.let {
