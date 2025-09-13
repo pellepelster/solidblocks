@@ -33,6 +33,16 @@ enum class HetznerApiErrorType {
 data class HetznerApiErrorWrapper(val error: HetznerApiError)
 
 @Serializable
-data class HetznerApiError(val message: String, val code: HetznerApiErrorType)
+data class HetznerApiError(
+    val message: String,
+    val code: HetznerApiErrorType,
+    val details: HetznerApiErrorDetails? = null
+)
+
+@Serializable
+data class HetznerApiErrorDetails(val fields: List<HetznerApiErrorDetailsField>)
+
+@Serializable
+data class HetznerApiErrorDetailsField(val name: String, val messages: List<String>)
 
 class HetznerApiException(val error: HetznerApiError, val url: Url) : RuntimeException()

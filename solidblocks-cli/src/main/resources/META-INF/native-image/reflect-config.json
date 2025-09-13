@@ -648,6 +648,24 @@
     ]
   },
   {
+    "name": "de.solidblocks.cli.hetzner.api.HetznerApiErrorDetails",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.api.HetznerApiErrorDetails$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
     "name": "de.solidblocks.cli.hetzner.api.resources.ActionResponseWrapper",
     "fields": [
       {
@@ -658,6 +676,24 @@
   },
   {
     "name": "de.solidblocks.cli.hetzner.api.resources.ActionResponseWrapper$Companion",
+    "fields": [],
+    "methods": [
+      {
+        "name": "serializer"
+      }
+    ]
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.api.HetznerApiErrorDetailsField",
+    "fields": [
+      {
+        "name": "Companion"
+      }
+    ],
+    "methods": []
+  },
+  {
+    "name": "de.solidblocks.cli.hetzner.api.HetznerApiErrorDetailsField$Companion",
     "fields": [],
     "methods": [
       {

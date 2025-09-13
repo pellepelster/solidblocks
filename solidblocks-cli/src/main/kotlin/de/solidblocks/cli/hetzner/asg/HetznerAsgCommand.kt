@@ -1,7 +1,9 @@
 package de.solidblocks.cli.hetzner.asg
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.installMordantMarkdown
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
@@ -9,6 +11,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
+import de.solidblocks.cli.utils.logInfo
 
 class LoadBalancerReference(val reference: String)
 
@@ -20,13 +23,46 @@ class ImageReference(val reference: String)
 
 class FirewallReference(val reference: String)
 
+class NetworkReference(val reference: String)
+
 class ServerTypeReference(val reference: String)
 
 class PlacementGroupReference(val reference: String)
 
 class HetznerAsgCommand : CliktCommand(name = "asg") {
 
-    override fun help(context: Context) = "rolling rotate for servers attached to a load balancer"
+    init {
+        installMordantMarkdown()
+    }
+
+    override fun help(context: Context) = """
+        
+        ## Overview
+        
+        A rolling rotate for cloud servers attached to a Hetzner load balancer. All servers that are 
+        attached to a Hetzner load balancer provided by `--loadbalancer` will be replaced with new 
+        servers created using the user data from `--user-data`.
+        
+        ## Details
+        
+        The command works stateless in the sense that all needed information is stored as meta-data
+        in the labels of the affected Hetzner cloud resources.
+         
+        This also means, that the command will only manage resources that have the label marker
+        **blcks.de/managed-by** set to **asg**.
+        
+        The decision if a server needs to be updated is made by comparing the SHA-256 hash of 
+        the user data script used to create a server with the hash of the new user data script 
+        provided by `--user-data`. The user data hash is stored in the **blcks.de/user-data-hash**
+        label of the server.
+        
+        The rotate process is atomic an can be cancelled and restarted at any time. Once 
+        started it will try to reconcile towards the target state of ~~n~~ up-to-date `--replicas`
+        and afterwards remove all old servers attached to the `--loadbalancer`.
+         
+        If a server gets detached from a load balancer, it will also re-attach them, to achieve this,
+        the load balancer association is stored in **blcks.de/load-balancer-id**.
+    """.trimIndent()
 
     val loadbalancer by option(help = "id or name of the loadbalancer to attach new servers to").required()
 
@@ -36,7 +72,7 @@ class HetznerAsgCommand : CliktCommand(name = "asg") {
 
     val image by option(help = "id or name of the image to use for new servers").default("debian-12")
 
-    val placementGroup by option(help = "id or name of the placement group to use for new servers").default("debian-12")
+    val placementGroup by option(help = "id or name of the placement group to use for new servers")
 
     val enableIpv4 by option(help = "enable IpV4 for new servers").boolean().default(true)
 
@@ -47,9 +83,14 @@ class HetznerAsgCommand : CliktCommand(name = "asg") {
         help = "id or name of the ssh key(s) to use for new servers"
     ).multiple()
 
-    val firewall: List<String> by option(
+    val firewalls: List<String> by option(
         "--firewall",
         help = "id or name of the firewall(s) to use for new servers"
+    ).multiple()
+
+    val networks: List<String> by option(
+        "--network",
+        help = "id or name of the networks(s) to use for new servers"
     ).multiple()
 
     val serverNamePrefix by option(help = "name prefix for the servers to create, if not provided the load balancer name will be used as prefix")
@@ -62,13 +103,13 @@ class HetznerAsgCommand : CliktCommand(name = "asg") {
 
     private val hcloudToken by option(
         "--hcloud-token",
-        help = "the api token for the project",
+        help = "the api token for the project, can also be provided via the environment variable *HCLOUD_TOKEN*",
         envvar = "HCLOUD_TOKEN",
     ).required()
 
 
     override fun run() {
-        HetznerAsg(hcloudToken).run(
+        val result = HetznerAsg(hcloudToken).rotate(
             LoadBalancerReference(loadbalancer),
             LocationReference(location),
             ServerTypeReference(serverType),
@@ -77,10 +118,18 @@ class HetznerAsgCommand : CliktCommand(name = "asg") {
             replicas,
             serverNamePrefix,
             sshKeys.map { SSHKeyReference(it) },
-            firewall.map { FirewallReference(it) },
-            PlacementGroupReference(placementGroup),
+            firewalls.map { FirewallReference(it) },
+            networks.map { NetworkReference(it) },
+            placementGroup?.let { PlacementGroupReference(it) },
             enableIpv4,
             enableIpv6,
         )
+
+        when (result) {
+            ASG_ROTATE_STATUS.OK -> logInfo("rollout finished")
+            ASG_ROTATE_STATUS.TIMEOUT -> throw CliktError("rollout did not finish within timeout")
+            ASG_ROTATE_STATUS.LOADBALANCER_NOT_FOUND -> throw CliktError("loadbalancer '${loadbalancer}' not found")
+        }
     }
+
 }
