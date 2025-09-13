@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.5
+## v0.4.6
 
 * add [blcks hetzner asg *](https://pellepelster.github.io/solidblocks/cli/asg/) commands to manage servers attached to hetzner load balancers
 

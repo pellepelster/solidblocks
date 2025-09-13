@@ -43,3 +43,4 @@ solidblocks-python/dist/
 solidblocks-rds-postgresql-ansible/test.id
 solidblocks-rds-postgresql-ansible/test/terraform/output/
 doc/content/snippets/
+solidblocks-cli/test/terraform/id_rsa
