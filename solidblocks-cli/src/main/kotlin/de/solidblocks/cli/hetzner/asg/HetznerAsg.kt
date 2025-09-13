@@ -1,7 +1,7 @@
 package de.solidblocks.cli.hetzner.asg
 
 import com.github.ajalt.clikt.core.CliktError
-import de.solidblocks.cli.hetzner.AlphanumericHasher
+import de.solidblocks.cli.hetzner.Constants
 import de.solidblocks.cli.hetzner.Constants.deploymentIdLabel
 import de.solidblocks.cli.hetzner.Constants.loadBalancerIdLabel
 import de.solidblocks.cli.hetzner.Constants.managedByLabel
@@ -17,8 +17,11 @@ import de.solidblocks.cli.hetzner.api.resources.LoadBalancerTargetType.label_sel
 import de.solidblocks.cli.hetzner.hashString
 import de.solidblocks.cli.utils.logError
 import de.solidblocks.cli.utils.logInfo
+import de.solidblocks.cli.utils.logWarning
 import kotlinx.coroutines.runBlocking
 import java.lang.Thread.sleep
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -44,8 +47,11 @@ data class LoadbalancerServer @OptIn(ExperimentalTime::class) constructor(
     val age: Duration
         get() = Clock.System.now().minus(created)
 
+    val isManaged: Boolean
+        get() = labels.containsKey(Constants.managedByLabel)
+
     val status: LoadBalancerHealthStatus
-        get() = if (age < 30.seconds) {
+        get() = if (age < 45.seconds) {
             LoadBalancerHealthStatus.unhealthy
         } else if (lbStatus.all { it.status == LoadBalancerHealthStatus.healthy }) {
             LoadBalancerHealthStatus.healthy
@@ -61,7 +67,9 @@ data class LoadbalancerServer @OptIn(ExperimentalTime::class) constructor(
 
 fun List<LoadbalancerServer>.statusLogText() = this.joinToString(", ") { "'${it.name}' (age: ${it.age})" }
 
-enum class ASG_ROTATE_STATUS { OK, TIMEOUT, LOADBALANCER_NOT_FOUND, LOCATION_NOT_FOUND, SERVER_TYPE_NOT_FOUND, IMAGE_TYPE_NOT_FOUND }
+fun List<LoadbalancerServer>.logText() = this.joinToString(", ") { "'${it.name}'" }
+
+enum class ASG_ROTATE_STATUS { OK, TIMEOUT, LOADBALANCER_NOT_FOUND }
 
 class HetznerAsg(hcloudToken: String) {
 
@@ -131,7 +139,7 @@ class HetznerAsg(hcloudToken: String) {
     }
 
     @OptIn(ExperimentalTime::class)
-    fun run(
+    fun rotate(
         loadbalancerRef: LoadBalancerReference,
         locationRef: LocationReference,
         serverTypeRef: ServerTypeReference,
@@ -141,6 +149,7 @@ class HetznerAsg(hcloudToken: String) {
         namePrefix: String? = null,
         sshKeyRefs: List<SSHKeyReference> = emptyList(),
         firewallRefs: List<FirewallReference> = emptyList(),
+        networkRefs: List<NetworkReference> = emptyList(),
         placementGroupRef: PlacementGroupReference? = null,
         enableIpv4: Boolean = true,
         enableIpv6: Boolean = false,
@@ -197,11 +206,14 @@ class HetznerAsg(hcloudToken: String) {
         }
 
         var finished = false
-        val deploymentId = AlphanumericHasher.hashToBase62(userDataHash, 12)
+        val deploymentId = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+            .withZone(ZoneOffset.UTC)
+            .format(java.time.Instant.now())
+
         val serverNamePrefix = "${namePrefix ?: loadbalancer.name}-${deploymentId}"
         val controlLoopDelay = 5.seconds
 
-        logInfo("starting deployment with id '${deploymentId}', server name prefix is '${serverNamePrefix}' and timeout for newly created servers is '${healthTimeout}'")
+        logInfo("starting rollout '${deploymentId}' to ${replicas} replicas, server name prefix is '${serverNamePrefix}' and timeout for newly created servers is '${healthTimeout}'")
 
         while (!finished) {
 
@@ -216,6 +228,7 @@ class HetznerAsg(hcloudToken: String) {
 
             val pendingLoadbalancerActions =
                 api.loadBalancers.actions(loadbalancer.id).actions.filter { it.status == ActionStatus.RUNNING }
+
             if (pendingLoadbalancerActions.isNotEmpty()) {
                 logInfo("load balancer '${loadbalancer.name}' has pending actions")
                 pendingLoadbalancerActions.forEach {
@@ -266,21 +279,32 @@ class HetznerAsg(hcloudToken: String) {
                 continue
             }
 
-            val upToDateServers = loadbalancerServers.filter {
+            val unmanagedServers = loadbalancerServers.filter {
+                !it.isManaged
+            }
+
+            val managedServers = loadbalancerServers.filter {
+                it.isManaged
+            }
+
+            val upToDateServers = managedServers.filter {
                 it.isUpToDate(userDataHash)
             }
 
-            val serversToRotate = loadbalancerServers.filter {
+            val serversToRotate = managedServers.filter {
                 !it.isUpToDate(userDataHash)
             }
 
-            logInfo("found ${loadbalancerServers.size} server(s) in total, ${serversToRotate.size} outdated and ${upToDateServers.size} up to date")
+            if (unmanagedServers.isNotEmpty()) {
+                logWarning("ignoring ${unmanagedServers.size} unmanaged server(s) (${unmanagedServers.logText()})")
+            }
+            logInfo("rotating ${managedServers.size} managed server(s), ${serversToRotate.size} outdated and ${upToDateServers.size} up to date")
 
             val updatedButNoYetHealthyServers = upToDateServers.filter {
                 it.age < healthTimeout && it.status != LoadBalancerHealthStatus.healthy
             }
             if (updatedButNoYetHealthyServers.isNotEmpty()) {
-                logInfo("waiting for ${updatedButNoYetHealthyServers.statusLogText()} to become healthy within ${healthTimeout}")
+                logInfo("waiting for servers ${updatedButNoYetHealthyServers.statusLogText()} to become healthy within ${healthTimeout}")
                 continue
             }
 
@@ -324,7 +348,7 @@ class HetznerAsg(hcloudToken: String) {
                                 placementGroupRef?.reference,
                                 imageRef.reference,
                                 sshKeyRefs.map { it.reference },
-                                networks.map { it.network.id.toString() },
+                                networks.map { it.network.id.toString() } + networkRefs.map { it.reference },
                                 firewallRefs.map { it.reference },
                                 userData,
                                 labels.rawLabels(),
@@ -333,7 +357,7 @@ class HetznerAsg(hcloudToken: String) {
                         )
 
                         if (server == null || server.action == null) {
-                            logError("creation failed for server '$serverName'")
+                            logError("error while creating server '$serverName'")
                             continue
                         }
 
@@ -342,12 +366,24 @@ class HetznerAsg(hcloudToken: String) {
                         })
 
                         if (!result) {
-                            logError("creation failed for server '$serverName'")
+                            logError("server '$serverName' did not become ready within timeout")
                             continue
                         }
 
                     } catch (e: HetznerApiException) {
-                        logError("creation failed for server '$serverName'")
+                        logError(
+                            "creation failed for server '$serverName', error was '${e.error.message}' (${e.error.code}), details: ${
+                                e.error.details?.let {
+                                    it.fields.joinToString {
+                                        "field: ${it.name}, error: ${
+                                            it.messages.joinToString(
+                                                ", "
+                                            )
+                                        }"
+                                    }
+                                } ?: "<none>"
+                            }"
+                        )
                         continue
                     }
                 }
@@ -356,22 +392,42 @@ class HetznerAsg(hcloudToken: String) {
             val updatedAndHealthyServers = upToDateServers.filter {
                 it.status == LoadBalancerHealthStatus.healthy
             }
-            finished = updatedAndHealthyServers.count() == replicas
+            if (updatedAndHealthyServers.isNotEmpty()) {
+                logInfo("wanted ${replicas} healthy servers found ${updatedAndHealthyServers.size} (${updatedAndHealthyServers.statusLogText()})")
+            }
+
+            finished = updatedAndHealthyServers.count() >= replicas
         }
 
-        api.servers.list(labelSelectors = mapOf(loadBalancerIdLabel to LabelSelectorValue.Equals(loadbalancer.id.toString())))
-            .filter {
-                it.labels[deploymentIdLabel] != deploymentId
-            }.forEach {
-            logInfo("deleting outdated server '${it.name}'")
-            val delete = api.servers.delete(it.id)
-            api.servers.waitForAction(delete)
+        val loadbalancerServers = fetchLoadbalancerServers(loadbalancer.id)
+
+        val updatedAndHealthyServers = loadbalancerServers.filter {
+            it.status == LoadBalancerHealthStatus.healthy && it.isUpToDate(userDataHash)
+        }.sortedBy { it.age }
+
+        if (updatedAndHealthyServers.count() > replicas) {
+            logInfo("wanted ${replicas} and have ${updatedAndHealthyServers.count()} removing ${updatedAndHealthyServers.count() - replicas}")
+
+            updatedAndHealthyServers.take(updatedAndHealthyServers.count() - replicas).forEach {
+                logInfo("deleting server '${it.name}'")
+                val delete = api.servers.delete(it.id)
+                api.servers.waitForAction(delete)
+            }
+        }
+
+        val outdatedServers = loadbalancerServers.filter {
+            it.isManaged && !it.isUpToDate(userDataHash)
+        }.distinctBy { it.id }
+
+        if (outdatedServers.isNotEmpty()) {
+            logInfo("deleting outdated managed servers: ${outdatedServers.joinToString(", ") { "'${it.name}'" }}")
+            outdatedServers.forEach {
+                logInfo("deleting outdated managed server '${it.name}'")
+                val delete = api.servers.delete(it.id)
+                api.servers.waitForAction(delete)
+            }
         }
 
         ASG_ROTATE_STATUS.OK
-    }
-
-    fun List<LoadbalancerServer>.updatedCount(userDataHash: String) = this.count {
-        it.isUpToDate(userDataHash)
     }
 }

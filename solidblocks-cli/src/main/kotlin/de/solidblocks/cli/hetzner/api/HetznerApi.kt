@@ -1,12 +1,14 @@
 package de.solidblocks.cli.hetzner.api
 
 import de.solidblocks.cli.hetzner.api.resources.*
+import de.solidblocks.cli.utils.logDebug
 import de.solidblocks.cli.utils.logInfo
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.java.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -70,9 +72,21 @@ fun listQuery(
     return listOfNotNull(page, perPage, filter, labelSelector).joinToString("&")
 }
 
+class BlcksHttpLogger() : Logger {
+    override fun log(message: String) {
+        logDebug(message)
+    }
+}
+
 @OptIn(ExperimentalSerializationApi::class)
-fun createHttpClient(url: String, apiToken: String) =
+fun createHttpClient(url: String, apiToken: String, debug: Boolean) =
     HttpClient(Java) {
+        if (debug) {
+            install(Logging) {
+                logger = BlcksHttpLogger()
+                level = io.ktor.client.plugins.logging.LogLevel.BODY
+            }
+        }
         install(ContentNegotiation) {
             json(
                 Json {
@@ -105,15 +119,17 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
     val placementGroups = HetznerPlacementGroupsApi(this)
     val images = HetznerImagesApi(this)
 
-    internal val client = createHttpClient("https://api.hetzner.cloud", hcloudToken)
+    internal val client =
+        createHttpClient("https://api.hetzner.cloud", hcloudToken, System.getenv("BLCKS_DEBUG") != null)
 
-    internal suspend inline fun <reified T> post(path: String, data: Any? = null): T? =
-        client
+    internal suspend inline fun <reified T> post(path: String, data: Any? = null): T? {
+        return client
             .post(path) {
                 contentType(ContentType.Application.Json)
                 data?.let { this.setBody(it) }
             }
             .handle<T>()
+    }
 
     internal suspend inline fun <reified T> get(path: String): T? = client.get(path).handle<T>()
 

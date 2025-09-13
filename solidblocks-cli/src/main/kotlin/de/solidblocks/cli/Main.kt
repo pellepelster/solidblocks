@@ -7,6 +7,7 @@ import de.solidblocks.cli.docs.DocsCommand
 import de.solidblocks.cli.docs.ansible.AnsibleCommand
 import de.solidblocks.cli.hetzner.HetznerCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgCommand
+import de.solidblocks.cli.hetzner.asg.HetznerAsgRotateCommand
 import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
 import de.solidblocks.cli.terraform.*
 
@@ -30,7 +31,7 @@ fun main(args: Array<String>) {
     HetznerCommand().also {
         root.subcommands(it)
         it.subcommands(HetznerNukeCommand())
-        it.subcommands(HetznerAsgCommand())
+        it.subcommands(HetznerAsgCommand().subcommands(HetznerAsgRotateCommand()))
     }
 
     DocsCommand().also {

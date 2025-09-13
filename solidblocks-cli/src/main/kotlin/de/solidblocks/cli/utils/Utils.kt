@@ -20,6 +20,9 @@ fun logSuccess(message: String, logType: LogType = LogType.BLCKS) =
 fun logWarning(message: String, logType: LogType = LogType.BLCKS) =
     println("[${logType.name.lowercase()}] ${color(message, COLORS.YELLOW)}")
 
+fun logDebug(message: String, logType: LogType = LogType.BLCKS) =
+    println("[${logType.name.lowercase()}] ${color(message, COLORS.BRIGHT_BLUE)}")
+
 sealed interface Result<T>
 
 data class Success<T>(val data: T) : Result<T>

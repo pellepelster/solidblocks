@@ -2,7 +2,11 @@
 
 ## v0.4.5
 
-* add [blcks terraform *](https://pellepelster.github.io/solidblocks/cli/terraforn/) commands
+* add [blcks hetzner asg *](https://pellepelster.github.io/solidblocks/cli/asg/) commands to manage servers attached to hetzner load balancers
+
+## v0.4.5
+
+* add [blcks terraform *](https://pellepelster.github.io/solidblocks/cli/terraforn/) commands to manage S3 based state backends
 
 ## v0.4.4
 

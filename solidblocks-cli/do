@@ -40,6 +40,24 @@ function task_init_testbed() {
     )
 }
 
+function task_test_hetzner_asg {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  task_init_testbed
+
+  divider_header " hetzner asg --help"
+  integration_test_blcks_wrapper hetzner asg --help
+  divider_footer
+
+  divider_header " hetzner asg rotate --help"
+  integration_test_blcks_wrapper hetzner asg rotate --help
+  divider_footer
+
+  integration_test_blcks_wrapper hetzner asg rotate --loadbalancer application1 --user-data ${DIR}/test/terraform/cloud_init.template --replicas 1
+}
+
 function task_test_hetzner_nuke {
   if [[ "${SKIP_TESTS:-}" == "true" ]]; then
     exit 0
@@ -169,6 +187,7 @@ function task_test_integration {
     exit 0
   fi
   task_test_terraform
+  task_test_hetzner_asg
   task_test_hetzner_nuke
 }
 
@@ -260,6 +279,7 @@ case ${arg} in
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;
   test-hetzner-nuke) task_test_hetzner_nuke "$@" ;;
+  test-hetzner-asg) task_test_hetzner_asg "$@" ;;
   test-terraform) task_test_terraform "$@" ;;
   init-testbed) task_init_testbed "$@" ;;
   release-prepare) ;;
