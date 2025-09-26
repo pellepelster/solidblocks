@@ -152,7 +152,7 @@ jobs:
       - name: install python3-pip
         run: sudo apt-get install -y python3-pip
       - name: install poetry
-        run: sudo pip install poetry pytest
+        run: sudo pip install poetry
       - name: Install terraform
         uses: hashicorp/setup-terraform@v3
       - name: Checkout
