@@ -1,4 +1,4 @@
-package de.solidblocks.cli.hetzner.api.resources
+package de.solidblocks.cli.hetzner.api.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

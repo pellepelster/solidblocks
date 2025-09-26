@@ -1,6 +1,11 @@
 package de.solidblocks.cli.hetzner.api.resources
 
 import de.solidblocks.cli.hetzner.api.*
+import de.solidblocks.cli.hetzner.api.model.FilterValue
+import de.solidblocks.cli.hetzner.api.model.HetznerNamedResource
+import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.model.ListResponse
+import de.solidblocks.cli.hetzner.api.model.Meta
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -31,32 +36,20 @@ data class ImageResponse(override val id: Long, override val name: String?, val 
 
 class HetznerImagesApi(private val api: HetznerApi) : HetznerDeleteResourceApi<ImageResponse> {
 
-    suspend fun listPaged(
-        page: Int = 0,
-        perPage: Int = 25,
+    override suspend fun listPaged(
+        page: Int,
+        perPage: Int,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
     ): ImagesListResponseWrapper =
         api.get("v1/images?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list images")
 
-    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
-        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
-            listPaged(
-                page,
-                perPage,
-                filter,
-                labelSelectors
-            )
-        }
-
     override suspend fun delete(id: Long) = api.simpleDelete("v1/images/$id")
 
-    suspend fun get(id: Long) = api.get<ImageResponseWrapper>("v1/images/$id")
+    suspend fun get(id: Long) = api.get<ImageResponseWrapper>("v1/images/$id")?.image
 
     suspend fun get(name: String, filter: Map<String, FilterValue> = emptyMap()) =
-        list(mapOf("name" to FilterValue.Equals(name)) + filter).singleOrNull()?.let {
-            get(it.id)
-        }
+        list(mapOf("name" to FilterValue.Equals(name)) + filter).singleOrNull()
 
 }

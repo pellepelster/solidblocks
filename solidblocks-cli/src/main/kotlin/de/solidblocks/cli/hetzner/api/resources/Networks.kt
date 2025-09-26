@@ -1,6 +1,10 @@
 package de.solidblocks.cli.hetzner.api.resources
 
-import de.solidblocks.cli.hetzner.api.*
+import de.solidblocks.cli.hetzner.api.HetznerApi
+import de.solidblocks.cli.hetzner.api.HetznerDeleteResourceApi
+import de.solidblocks.cli.hetzner.api.HetznerProtectedResourceApi
+import de.solidblocks.cli.hetzner.api.listQuery
+import de.solidblocks.cli.hetzner.api.model.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -27,31 +31,21 @@ data class NetworkResponse(
 class HetznerNetworksApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<NetworkResponse>, HetznerProtectedResourceApi<NetworkResponse> {
 
-    suspend fun listPaged(
-        page: Int = 0,
-        perPage: Int = 25,
+    override suspend fun listPaged(
+        page: Int,
+        perPage: Int,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
     ): NetworksListResponseWrapper =
         api.get("v1/networks?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list networks")
 
-    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
-        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
-            listPaged(
-                page,
-                perPage,
-                filter,
-                labelSelectors
-            )
-        }
-
     override suspend fun delete(id: Long) = api.simpleDelete("v1/networks/$id")
 
-    suspend fun get(id: Long): NetworkResponseWrapper? = api.get<NetworkResponseWrapper>("v1/networks/$id")
+    suspend fun get(id: Long) = api.get<NetworkResponseWrapper>("v1/networks/$id")?.network
 
-    suspend fun get(name: String): NetworkResponseWrapper? =
-        list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()?.let { get(it.id) }
+    suspend fun get(name: String) =
+        list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
     override suspend fun changeProtection(id: Long, delete: Boolean): ActionResponseWrapper =
         api.post("v1/networks/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))

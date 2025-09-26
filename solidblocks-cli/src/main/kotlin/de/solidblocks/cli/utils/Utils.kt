@@ -1,6 +1,6 @@
 package de.solidblocks.cli.utils
 
-import de.solidblocks.cli.hetzner.api.HetznerNamedResource
+import de.solidblocks.cli.hetzner.api.model.HetznerNamedResource
 import kotlin.reflect.KClass
 
 public enum class LogType {

@@ -8,9 +8,9 @@ import de.solidblocks.cli.hetzner.Constants.managedByLabel
 import de.solidblocks.cli.hetzner.Constants.userDataHashLabel
 import de.solidblocks.cli.hetzner.HetznerLabels
 import de.solidblocks.cli.hetzner.api.HetznerApi
-import de.solidblocks.cli.hetzner.api.HetznerApiErrorType
-import de.solidblocks.cli.hetzner.api.HetznerApiException
-import de.solidblocks.cli.hetzner.api.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.model.HetznerApiErrorType
+import de.solidblocks.cli.hetzner.api.model.HetznerApiException
+import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
 import de.solidblocks.cli.hetzner.api.resources.*
 import de.solidblocks.cli.hetzner.api.resources.LoadBalancerTargetType.ip
 import de.solidblocks.cli.hetzner.api.resources.LoadBalancerTargetType.label_selector
@@ -50,16 +50,15 @@ data class LoadbalancerServer @OptIn(ExperimentalTime::class) constructor(
     val isManaged: Boolean
         get() = labels.containsKey(Constants.managedByLabel)
 
-    val status: LoadBalancerHealthStatus
-        get() = if (age < 45.seconds) {
-            LoadBalancerHealthStatus.unhealthy
-        } else if (lbStatus.all { it.status == LoadBalancerHealthStatus.healthy }) {
-            LoadBalancerHealthStatus.healthy
-        } else if (lbStatus.all { it.status == LoadBalancerHealthStatus.unhealthy }) {
-            LoadBalancerHealthStatus.unhealthy
-        } else {
-            LoadBalancerHealthStatus.unknown
-        }
+    fun status(coolDownTime: Duration) = if (age < coolDownTime) {
+        LoadBalancerHealthStatus.unhealthy
+    } else if (lbStatus.all { it.status == LoadBalancerHealthStatus.healthy }) {
+        LoadBalancerHealthStatus.healthy
+    } else if (lbStatus.all { it.status == LoadBalancerHealthStatus.unhealthy }) {
+        LoadBalancerHealthStatus.unhealthy
+    } else {
+        LoadBalancerHealthStatus.unknown
+    }
 
     val statusLogText: String
         get() = lbStatus.joinToString { "port ${it.listenPort}: ${it.status}" }
@@ -78,7 +77,7 @@ class HetznerAsg(hcloudToken: String) {
     @OptIn(ExperimentalTime::class)
     suspend fun fetchLoadbalancerServers(id: Long): List<LoadbalancerServer> {
         val loadbalancer =
-            api.loadBalancers.get(id)?.loadbalancer ?: throw RuntimeException("loadbalancer '$id' not found")
+            api.loadBalancers.get(id) ?: throw RuntimeException("loadbalancer '$id' not found")
 
         val list = mutableListOf<LoadbalancerServer>()
 
@@ -88,12 +87,12 @@ class HetznerAsg(hcloudToken: String) {
                 if (server != null) {
                     list.add(
                         LoadbalancerServer(
-                            server.server.name,
-                            server.server.id,
+                            server.name,
+                            server.id,
                             lbTarget.status,
                             ServerInfoAttachmentType.direct,
-                            server.server.created,
-                            labels = server.server.labels,
+                            server.created,
+                            labels = server.labels,
                         )
                     )
                 }
@@ -105,12 +104,12 @@ class HetznerAsg(hcloudToken: String) {
                     if (server != null) {
                         list.add(
                             LoadbalancerServer(
-                                server.server.name,
-                                server.server.id,
+                                server.name,
+                                server.id,
                                 it.status,
                                 ServerInfoAttachmentType.label_selector,
-                                server.server.created,
-                                labels = server.server.labels,
+                                server.created,
+                                labels = server.labels,
                                 lbTarget.labelSelector.selector
                             )
                         )
@@ -123,10 +122,10 @@ class HetznerAsg(hcloudToken: String) {
     }
 
     suspend fun ensureLoadBalancer(loadbalancer: LoadBalancerReference): LoadBalancerResponse? {
-        val lbByName = api.loadBalancers.get(loadbalancer.reference)?.loadbalancer
+        val lbByName = api.loadBalancers.get(loadbalancer.reference)
         val lbById = try {
             val id = loadbalancer.reference.toLong()
-            api.loadBalancers.get(id)?.loadbalancer
+            api.loadBalancers.get(id)
         } catch (e: Exception) {
             null
         }
@@ -167,7 +166,7 @@ class HetznerAsg(hcloudToken: String) {
                 "load balancer '${loadbalancer.name}' is attached to private network(s) ${
                     networks.joinToString(
                         ", "
-                    ) { "'${it.network.name}'" }
+                    ) { "'${it.name}'" }
                 }, new servers will be attached to those networks as well"
             )
             networks
@@ -185,6 +184,8 @@ class HetznerAsg(hcloudToken: String) {
         logInfo("hash for provided user data is '${userDataHash}'")
         logInfo("inspecting load balancer '${loadbalancer.name}'")
 
+        val coolDownTime = loadbalancer.services.maxOf { it.healthCheck.retries * it.healthCheck.interval }.seconds + 10.seconds
+        logInfo("using '${coolDownTime}' as cool down time for newly created servers")
         val servers = fetchLoadbalancerServers(loadbalancer.id)
 
         servers.filter { it.attachment == ServerInfoAttachmentType.direct }.let {
@@ -301,7 +302,7 @@ class HetznerAsg(hcloudToken: String) {
             logInfo("rotating ${managedServers.size} managed server(s), ${serversToRotate.size} outdated and ${upToDateServers.size} up to date")
 
             val updatedButNoYetHealthyServers = upToDateServers.filter {
-                it.age < healthTimeout && it.status != LoadBalancerHealthStatus.healthy
+                it.age < healthTimeout && it.status(coolDownTime) != LoadBalancerHealthStatus.healthy
             }
             if (updatedButNoYetHealthyServers.isNotEmpty()) {
                 logInfo("waiting for servers ${updatedButNoYetHealthyServers.statusLogText()} to become healthy within ${healthTimeout}")
@@ -309,7 +310,7 @@ class HetznerAsg(hcloudToken: String) {
             }
 
             val updatedButFailedServers = upToDateServers.filter {
-                it.age > healthTimeout && it.status != LoadBalancerHealthStatus.healthy
+                it.age > healthTimeout && it.status(coolDownTime) != LoadBalancerHealthStatus.healthy
             }
             if (updatedButFailedServers.isNotEmpty()) {
                 logInfo("servers ${updatedButFailedServers.statusLogText()} did not become healthy within ${healthTimeout}, deleting...")
@@ -330,8 +331,7 @@ class HetznerAsg(hcloudToken: String) {
 
             val serverName = "${serverNamePrefix}-${upToDateServers.size}"
             if (upToDateServers.size != replicas) {
-                var server = api.servers.get(serverName)
-                if (server == null) {
+                if (api.servers.get(serverName) == null) {
                     logInfo("creating server '$serverName'")
                     try {
                         val labels = HetznerLabels()
@@ -340,7 +340,7 @@ class HetznerAsg(hcloudToken: String) {
                         labels.addLabel(deploymentIdLabel, deploymentId)
                         labels.addLabel(userDataHashLabel, userDataHash)
 
-                        server = api.servers.create(
+                        val newServer = api.servers.create(
                             ServerCreateRequest(
                                 serverName,
                                 locationRef.reference,
@@ -348,7 +348,7 @@ class HetznerAsg(hcloudToken: String) {
                                 placementGroupRef?.reference,
                                 imageRef.reference,
                                 sshKeyRefs.map { it.reference },
-                                networks.map { it.network.id.toString() } + networkRefs.map { it.reference },
+                                networks.map { it.id.toString() } + networkRefs.map { it.reference },
                                 firewallRefs.map { it.reference },
                                 userData,
                                 labels.rawLabels(),
@@ -356,12 +356,12 @@ class HetznerAsg(hcloudToken: String) {
                             )
                         )
 
-                        if (server == null || server.action == null) {
+                        if (newServer == null || newServer.action == null) {
                             logError("error while creating server '$serverName'")
                             continue
                         }
 
-                        val result = api.waitForAction(server.action.id, {
+                        val result = api.waitForAction(newServer.action.id, {
                             api.servers.action(it)
                         })
 
@@ -374,7 +374,7 @@ class HetznerAsg(hcloudToken: String) {
                         logError(
                             "creation failed for server '$serverName', error was '${e.error.message}' (${e.error.code}), details: ${
                                 e.error.details?.let {
-                                    it.fields.joinToString {
+                                    it.fields?.joinToString {
                                         "field: ${it.name}, error: ${
                                             it.messages.joinToString(
                                                 ", "
@@ -390,7 +390,7 @@ class HetznerAsg(hcloudToken: String) {
             }
 
             val updatedAndHealthyServers = upToDateServers.filter {
-                it.status == LoadBalancerHealthStatus.healthy
+                it.status(coolDownTime) == LoadBalancerHealthStatus.healthy
             }
             if (updatedAndHealthyServers.isNotEmpty()) {
                 logInfo("wanted ${replicas} healthy servers found ${updatedAndHealthyServers.size} (${updatedAndHealthyServers.statusLogText()})")
@@ -402,7 +402,7 @@ class HetznerAsg(hcloudToken: String) {
         val loadbalancerServers = fetchLoadbalancerServers(loadbalancer.id)
 
         val updatedAndHealthyServers = loadbalancerServers.filter {
-            it.status == LoadBalancerHealthStatus.healthy && it.isUpToDate(userDataHash)
+            it.status(coolDownTime) == LoadBalancerHealthStatus.healthy && it.isUpToDate(userDataHash)
         }.sortedBy { it.age }
 
         if (updatedAndHealthyServers.count() > replicas) {

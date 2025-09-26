@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.cli.hetzner.api.HetznerApiException
+import de.solidblocks.cli.hetzner.api.model.HetznerApiException
 import de.solidblocks.cli.utils.logError
 import de.solidblocks.cli.utils.logInfo
 import de.solidblocks.cli.utils.logWarning

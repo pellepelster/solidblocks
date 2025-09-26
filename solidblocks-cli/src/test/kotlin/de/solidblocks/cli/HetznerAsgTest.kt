@@ -51,8 +51,8 @@ class HetznerAsgTest {
     fun testAsg1() {
         runBlocking {
 
-            val unmanagedServer = api.servers.get("hcloud-server1")!!.server
-            var targets = api.loadBalancers.get("application1")!!.loadbalancer.targets
+            val unmanagedServer = api.servers.get("hcloud-server1")!!
+            var targets = api.loadBalancers.get("application1")!!.targets
             targets.map { it.server!!.id } shouldContain unmanagedServer.id
             val initialServerCount = targets.count()
 
@@ -64,7 +64,7 @@ class HetznerAsgTest {
                 userData = createUserData(),
             ) shouldBe ASG_ROTATE_STATUS.OK
 
-            targets = api.loadBalancers.get("application1")!!.loadbalancer.targets
+            targets = api.loadBalancers.get("application1")!!.targets
             targets.map { it.server!!.id } shouldContain unmanagedServer.id
             targets shouldHaveSize initialServerCount
 
@@ -77,7 +77,7 @@ class HetznerAsgTest {
                 replicas = 2
             ) shouldBe ASG_ROTATE_STATUS.OK
 
-            targets = api.loadBalancers.get("application1")!!.loadbalancer.targets
+            targets = api.loadBalancers.get("application1")!!.targets
             targets.map { it.server!!.id } shouldContain unmanagedServer.id
             targets shouldHaveSize initialServerCount + 1
 
@@ -92,7 +92,7 @@ class HetznerAsgTest {
                 replicas = 1
             ) shouldBe ASG_ROTATE_STATUS.OK
 
-            targets = api.loadBalancers.get("application1")!!.loadbalancer.targets
+            targets = api.loadBalancers.get("application1")!!.targets
             targets.map { it.server!!.id } shouldContain unmanagedServer.id
             targets shouldHaveSize initialServerCount
 
@@ -105,7 +105,7 @@ class HetznerAsgTest {
                 replicas = 1
             ) shouldBe ASG_ROTATE_STATUS.OK
 
-            targets = api.loadBalancers.get("application1")!!.loadbalancer.targets
+            targets = api.loadBalancers.get("application1")!!.targets
             targets.map { it.server!!.id } shouldContain unmanagedServer.id
             targets shouldHaveSize initialServerCount
         }

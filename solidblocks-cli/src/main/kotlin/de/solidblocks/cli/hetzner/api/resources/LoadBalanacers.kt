@@ -1,6 +1,12 @@
 package de.solidblocks.cli.hetzner.api.resources
 
 import de.solidblocks.cli.hetzner.api.*
+import de.solidblocks.cli.hetzner.api.model.FilterValue
+import de.solidblocks.cli.hetzner.api.model.HetznerProtectedResource
+import de.solidblocks.cli.hetzner.api.model.HetznerProtectionResponse
+import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.model.ListResponse
+import de.solidblocks.cli.hetzner.api.model.Meta
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -47,7 +53,7 @@ data class LoadBalancerTargetResponse(
     @SerialName("health_status")
     val status: List<LoadBalancerHealthStatusResponse> = emptyList(),
     @SerialName("label_selector")
-    val labelSelector: LoadBalancerLabelSelectorResponseResponse? = null,
+    val labelSelector: LoadBalancerLabelSelectorResponse? = null,
     val server: LoadBalancerTargetServerResponse? = null,
     val targets: List<LoadBalancerTargetsResponse>? = null,
 )
@@ -68,7 +74,13 @@ data class LoadBalancerAttachRequest(
 )
 
 @Serializable
-data class LoadBalancerLabelSelectorResponseResponse(val selector: String)
+data class LoadBalancerLabelSelectorResponse(val selector: String)
+
+@Serializable
+data class LoadBalancerServiceResponse(@SerialName("health_check") val healthCheck: LoadBalancerHealthCheckResponse)
+
+@Serializable
+data class LoadBalancerHealthCheckResponse(val interval: Int, val retries: Int)
 
 @Serializable
 data class LoadBalancerResponse(
@@ -77,7 +89,8 @@ data class LoadBalancerResponse(
     override val protection: HetznerProtectionResponse,
     val targets: List<LoadBalancerTargetResponse>,
     @SerialName("private_net")
-    val privateNetworks: List<PrivateNetworkResponse> = emptyList()
+    val privateNetworks: List<PrivateNetworkResponse> = emptyList(),
+    val services: List<LoadBalancerServiceResponse> = emptyList()
 ) : HetznerProtectedResource
 
 @Serializable
@@ -86,31 +99,19 @@ data class ChangeLoadBalancerProtectionRequest(val delete: Boolean)
 class HetznerLoadBalancersApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<LoadBalancerResponse>, HetznerProtectedResourceApi<LoadBalancerResponse> {
 
-    suspend fun listPaged(
-        page: Int = 0,
-        perPage: Int = 25,
+    override suspend fun listPaged(
+        page: Int,
+        perPage: Int,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
     ): LoadBalancersListWrapper =
         api.get("v1/load_balancers?${listQuery(page, perPage, filter, labelSelectors)}&sort=name")
             ?: throw RuntimeException("failed to list load balancers")
 
-    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
-        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
-            listPaged(
-                page,
-                perPage,
-                filter,
-                labelSelectors
-            )
-        }
-
     suspend fun get(id: Long) =
-        api.get<LoadBalancerResponseWrapper>("v1/load_balancers/$id/")
+        api.get<LoadBalancerResponseWrapper>("v1/load_balancers/$id/")?.loadbalancer
 
-    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()?.let {
-        get(it.id)
-    }
+    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
     override suspend fun delete(id: Long): Boolean = api.simpleDelete("v1/load_balancers/$id")
 

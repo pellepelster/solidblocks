@@ -1,6 +1,10 @@
 package de.solidblocks.cli.hetzner.api.resources
 
 import de.solidblocks.cli.hetzner.api.*
+import de.solidblocks.cli.hetzner.api.model.FilterValue
+import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.model.ListResponse
+import de.solidblocks.cli.hetzner.api.model.Meta
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -26,30 +30,18 @@ data class ServerTypeResponse(val id: Long, val name: String)
 class HetznerServerTypesApi(private val api: HetznerApi) :
     HetznerBaseResourceApi<ServerTypeResponse> {
 
-    suspend fun listPaged(
-        page: Int = 0,
-        perPage: Int = 25,
+    override suspend fun listPaged(
+        page: Int,
+        perPage: Int,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
     ): ServerTypeListResponseWrapper =
         api.get("v1/server_types?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list server types")
 
-    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
-        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
-            listPaged(
-                page,
-                perPage,
-                filter,
-                labelSelectors
-            )
-        }
-
-    suspend fun get(id: Long) = api.get<ServerTypeResponseWrapper>("v1/server_types/$id")
+    suspend fun get(id: Long) = api.get<ServerTypeResponseWrapper>("v1/server_types/$id")?.serverType
 
     suspend fun get(name: String) =
-        list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()?.let {
-            get(it.id)
-        }
+        list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
 }

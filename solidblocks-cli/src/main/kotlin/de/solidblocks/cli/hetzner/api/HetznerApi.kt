@@ -1,5 +1,12 @@
 package de.solidblocks.cli.hetzner.api
 
+import de.solidblocks.cli.hetzner.api.Constants.defaultPageSize
+import de.solidblocks.cli.hetzner.api.model.FilterValue
+import de.solidblocks.cli.hetzner.api.model.HetznerApiErrorType
+import de.solidblocks.cli.hetzner.api.model.HetznerApiErrorWrapper
+import de.solidblocks.cli.hetzner.api.model.HetznerApiException
+import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.model.ListResponse
 import de.solidblocks.cli.hetzner.api.resources.*
 import de.solidblocks.cli.utils.logDebug
 import de.solidblocks.cli.utils.logInfo
@@ -103,7 +110,7 @@ fun createHttpClient(url: String, apiToken: String, debug: Boolean) =
         }
     }
 
-public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 5) {
+public class HetznerApi(hcloudToken: String) {
 
     val volumes = HetznerVolumesApi(this)
     val servers = HetznerServersApi(this)
@@ -169,23 +176,6 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
         throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
 
-    suspend fun <T> handlePaginatedList(
-        filter: Map<String, FilterValue>,
-        labelSelectors: Map<String, LabelSelectorValue>,
-        block: suspend (page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) -> ListResponse<T>,
-    ): List<T> {
-        var currentPage: Int? = 0
-        val result = mutableListOf<T>()
-
-        while (currentPage != null) {
-            val response: ListResponse<T> = block(currentPage, defaultPageSize, filter, labelSelectors)
-            result.addAll(response.list)
-            currentPage = response.meta.pagination.next_page
-        }
-
-        return result.toList()
-    }
-
     fun waitFor(
         action: suspend () -> ActionResponseWrapper,
         getAction: suspend (Long) -> ActionResponseWrapper,
@@ -237,3 +227,20 @@ public class HetznerApi(hcloudToken: String, private val defaultPageSize: Int = 
 public fun HttpStatusCode.isNotFound(): Boolean = value == 404
 
 public fun HttpStatusCode.isBadRequest(): Boolean = value in (400 until 500)
+
+suspend fun <T> handlePaginatedList(
+    filter: Map<String, FilterValue>,
+    labelSelectors: Map<String, LabelSelectorValue>,
+    block: suspend (page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) -> ListResponse<T>,
+): List<T> {
+    var currentPage: Int? = 0
+    val result = mutableListOf<T>()
+
+    while (currentPage != null) {
+        val response: ListResponse<T> = block(currentPage, defaultPageSize, filter, labelSelectors)
+        result.addAll(response.list)
+        currentPage = response.meta.pagination.next_page
+    }
+
+    return result.toList()
+}

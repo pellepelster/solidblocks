@@ -1,6 +1,12 @@
 package de.solidblocks.cli.hetzner.api.resources
 
 import de.solidblocks.cli.hetzner.api.*
+import de.solidblocks.cli.hetzner.api.model.FilterValue
+import de.solidblocks.cli.hetzner.api.model.HetznerProtectedResource
+import de.solidblocks.cli.hetzner.api.model.HetznerProtectionResponse
+import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.model.ListResponse
+import de.solidblocks.cli.hetzner.api.model.Meta
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -26,24 +32,14 @@ data class FloatingIpResponse(
 class HetznerFloatingIpsApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<FloatingIpResponse>, HetznerProtectedResourceApi<FloatingIpResponse> {
 
-    suspend fun listPaged(
-        page: Int = 0,
-        perPage: Int = 25,
+    override suspend fun listPaged(
+        page: Int,
+        perPage: Int,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
     ): FloatingIPsListWrapper =
         api.get("v1/floating_ips?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list floating ips")
-
-    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
-        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
-            listPaged(
-                page,
-                perPage,
-                filter,
-                labelSelectors
-            )
-        }
 
     override suspend fun delete(id: Long) = api.simpleDelete("v1/floating_ips/$id")
 

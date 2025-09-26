@@ -1,6 +1,11 @@
 package de.solidblocks.cli.hetzner.api.resources
 
 import de.solidblocks.cli.hetzner.api.*
+import de.solidblocks.cli.hetzner.api.model.FilterValue
+import de.solidblocks.cli.hetzner.api.model.HetznerNamedResource
+import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
+import de.solidblocks.cli.hetzner.api.model.ListResponse
+import de.solidblocks.cli.hetzner.api.model.Meta
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -22,32 +27,20 @@ data class SshKeyResponse(override val id: Long, override val name: String) : He
 
 class HetznerSSHKeysApi(private val api: HetznerApi) : HetznerDeleteResourceApi<SshKeyResponse> {
 
-    suspend fun listPaged(
-        page: Int = 0,
-        perPage: Int = 25,
+    override suspend fun listPaged(
+        page: Int,
+        perPage: Int,
         filter: Map<String, FilterValue>,
         labelSelectors: Map<String, LabelSelectorValue>
     ): SSHKeysListResponseWrapper =
         api.get("v1/ssh_keys?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list ssh keys")
 
-    override suspend fun delete(id: Long) = api.simpleDelete("v1/ssh_keys/$id")
-
-    override suspend fun list(filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>) =
-        api.handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
-            listPaged(
-                page,
-                perPage,
-                filter,
-                labelSelectors
-            )
-        }
-
-    suspend fun get(id: Long) = api.get<SSHKeyResponseWrapper>("v1/ssh_keys/$id")
+    suspend fun get(id: Long) = api.get<SSHKeyResponseWrapper>("v1/ssh_keys/$id")?.sshKey
 
     suspend fun get(name: String) =
-        list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()?.let {
-            get(it.id)
-        }
+        list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+
+    override suspend fun delete(id: Long) = api.simpleDelete("v1/ssh_keys/$id")
 
 }

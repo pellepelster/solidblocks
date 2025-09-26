@@ -1,4 +1,4 @@
-package de.solidblocks.cli.hetzner.api
+package de.solidblocks.cli.hetzner.api.model
 
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
@@ -40,7 +40,7 @@ data class HetznerApiError(
 )
 
 @Serializable
-data class HetznerApiErrorDetails(val fields: List<HetznerApiErrorDetailsField>)
+data class HetznerApiErrorDetails(val fields: List<HetznerApiErrorDetailsField>? = null)
 
 @Serializable
 data class HetznerApiErrorDetailsField(val name: String, val messages: List<String>)
