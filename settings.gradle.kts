@@ -17,6 +17,7 @@ include(
     "solidblocks-test",
     "solidblocks-shell",
     "solidblocks-hetzner-dns",
+    "solidblocks-hetzner-cloud",
     "solidblocks-rds-postgresql-docker",
     "solidblocks-debug-container",
     "solidblocks-cli"

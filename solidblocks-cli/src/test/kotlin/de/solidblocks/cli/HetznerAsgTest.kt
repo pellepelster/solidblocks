@@ -1,7 +1,7 @@
 package de.solidblocks.cli
 
-import de.solidblocks.cli.hetzner.api.HetznerApi
 import de.solidblocks.cli.hetzner.asg.*
+import de.solidblocks.hetzner.cloud.HetznerApi
 import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize

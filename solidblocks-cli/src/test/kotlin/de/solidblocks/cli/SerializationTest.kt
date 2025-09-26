@@ -40,7 +40,7 @@ class SerializationTest {
   @Test
   fun generateConfig() {
     val config =
-        findSerializableClasses("de.solidblocks.cli.hetzner").flatMap {
+        findSerializableClasses("de.solidblocks").flatMap {
           listOf(
               SerializationConfig(
                   it.name,

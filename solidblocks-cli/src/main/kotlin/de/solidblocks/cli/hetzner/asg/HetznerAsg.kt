@@ -7,17 +7,17 @@ import de.solidblocks.cli.hetzner.Constants.loadBalancerIdLabel
 import de.solidblocks.cli.hetzner.Constants.managedByLabel
 import de.solidblocks.cli.hetzner.Constants.userDataHashLabel
 import de.solidblocks.cli.hetzner.HetznerLabels
-import de.solidblocks.cli.hetzner.api.HetznerApi
-import de.solidblocks.cli.hetzner.api.model.HetznerApiErrorType
-import de.solidblocks.cli.hetzner.api.model.HetznerApiException
-import de.solidblocks.cli.hetzner.api.model.LabelSelectorValue
-import de.solidblocks.cli.hetzner.api.resources.*
-import de.solidblocks.cli.hetzner.api.resources.LoadBalancerTargetType.ip
-import de.solidblocks.cli.hetzner.api.resources.LoadBalancerTargetType.label_selector
 import de.solidblocks.cli.hetzner.hashString
 import de.solidblocks.cli.utils.logError
 import de.solidblocks.cli.utils.logInfo
 import de.solidblocks.cli.utils.logWarning
+import de.solidblocks.hetzner.cloud.HetznerApi
+import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
+import de.solidblocks.hetzner.cloud.model.HetznerApiException
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.resources.*
+import de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetType.ip
+import de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetType.label_selector
 import kotlinx.coroutines.runBlocking
 import java.lang.Thread.sleep
 import java.time.ZoneOffset
@@ -34,7 +34,7 @@ enum class ServerInfoAttachmentType { direct, label_selector }
 data class LoadbalancerServer @OptIn(ExperimentalTime::class) constructor(
     val name: String,
     val id: Long,
-    private val lbStatus: List<LoadBalancerHealthStatusResponse>,
+    private val lbStatus: List<de.solidblocks.hetzner.cloud.resources.LoadBalancerHealthStatusResponse>,
     val attachment: ServerInfoAttachmentType,
     val created: Instant,
     val labels: Map<String, String>,
@@ -76,6 +76,7 @@ class HetznerAsg(hcloudToken: String) {
 
     @OptIn(ExperimentalTime::class)
     suspend fun fetchLoadbalancerServers(id: Long): List<LoadbalancerServer> {
+
         val loadbalancer =
             api.loadBalancers.get(id) ?: throw RuntimeException("loadbalancer '$id' not found")
 
@@ -83,7 +84,7 @@ class HetznerAsg(hcloudToken: String) {
 
         loadbalancer.targets.forEach { lbTarget ->
             if (lbTarget.type == LoadBalancerTargetType.server && lbTarget.server != null) {
-                val server = api.servers.get(lbTarget.server.id)
+                val server = api.servers.get(lbTarget.server!!.id)
                 if (server != null) {
                     list.add(
                         LoadbalancerServer(
@@ -99,7 +100,7 @@ class HetznerAsg(hcloudToken: String) {
             }
 
             if (lbTarget.type == label_selector && lbTarget.labelSelector != null && lbTarget.targets != null) {
-                lbTarget.targets.forEach {
+                lbTarget.targets!!.forEach {
                     val server = api.servers.get(it.server.id)
                     if (server != null) {
                         list.add(
@@ -110,7 +111,7 @@ class HetznerAsg(hcloudToken: String) {
                                 ServerInfoAttachmentType.label_selector,
                                 server.created,
                                 labels = server.labels,
-                                lbTarget.labelSelector.selector
+                                lbTarget.labelSelector!!.selector
                             )
                         )
                     }
@@ -184,7 +185,8 @@ class HetznerAsg(hcloudToken: String) {
         logInfo("hash for provided user data is '${userDataHash}'")
         logInfo("inspecting load balancer '${loadbalancer.name}'")
 
-        val coolDownTime = loadbalancer.services.maxOf { it.healthCheck.retries * it.healthCheck.interval }.seconds + 10.seconds
+        val coolDownTime =
+            loadbalancer.services.maxOf { it.healthCheck.retries * it.healthCheck.interval }.seconds + 10.seconds
         logInfo("using '${coolDownTime}' as cool down time for newly created servers")
         val servers = fetchLoadbalancerServers(loadbalancer.id)
 
@@ -233,7 +235,9 @@ class HetznerAsg(hcloudToken: String) {
             if (pendingLoadbalancerActions.isNotEmpty()) {
                 logInfo("load balancer '${loadbalancer.name}' has pending actions")
                 pendingLoadbalancerActions.forEach {
-                    api.loadBalancers.waitForAction(it)
+                    api.loadBalancers.waitForAction(it) {
+                        logInfo(it)
+                    }
                 }
             }
 
@@ -250,7 +254,9 @@ class HetznerAsg(hcloudToken: String) {
                 if (actions.isNotEmpty()) {
                     logInfo("server '${server.name}' has pending actions")
                     actions.forEach {
-                        api.servers.waitForAction(it)
+                        api.servers.waitForAction(it) {
+                            logInfo(it)
+                        }
                     }
                 }
             }
@@ -265,7 +271,7 @@ class HetznerAsg(hcloudToken: String) {
 
                     try {
                         val action = api.loadBalancers.attachServer(loadbalancer.id, server.id)
-                        if (!api.loadBalancers.waitForAction(action)) {
+                        if (!api.loadBalancers.waitForAction(action, { logInfo(it) })) {
                             logError("attaching server '${server.name}' to load balancer '${loadbalancer.name}' failed")
                             continue
                         }
@@ -318,7 +324,7 @@ class HetznerAsg(hcloudToken: String) {
                     logInfo("deleting server '${server.name}'")
                     try {
                         val delete = api.servers.delete(server.id)
-                        if (!api.servers.waitForAction(delete)) {
+                        if (!api.servers.waitForAction(delete, { logInfo(it) })) {
                             logError("deleting server '${server.name}' failed")
                             continue
                         }
@@ -361,7 +367,7 @@ class HetznerAsg(hcloudToken: String) {
                             continue
                         }
 
-                        val result = api.waitForAction(newServer.action.id, {
+                        val result = api.waitForAction(newServer.action.id, { logInfo(it) }, {
                             api.servers.action(it)
                         })
 
@@ -411,7 +417,7 @@ class HetznerAsg(hcloudToken: String) {
             updatedAndHealthyServers.take(updatedAndHealthyServers.count() - replicas).forEach {
                 logInfo("deleting server '${it.name}'")
                 val delete = api.servers.delete(it.id)
-                api.servers.waitForAction(delete)
+                api.servers.waitForAction(delete, { logInfo(it) })
             }
         }
 
@@ -424,7 +430,7 @@ class HetznerAsg(hcloudToken: String) {
             outdatedServers.forEach {
                 logInfo("deleting outdated managed server '${it.name}'")
                 val delete = api.servers.delete(it.id)
-                api.servers.waitForAction(delete)
+                api.servers.waitForAction(delete) { logInfo(it) }
             }
         }
 
