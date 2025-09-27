@@ -72,36 +72,6 @@ fun listQuery(
     return listOfNotNull(page, perPage, filter, labelSelector).joinToString("&")
 }
 
-class SolidblocksHttpLogger() : Logger {
-    override fun log(message: String) {
-        println(message)
-    }
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-fun createHttpClient(url: String, apiToken: String, debug: Boolean) =
-    HttpClient(Java) {
-        if (debug) {
-            install(Logging) {
-                logger = SolidblocksHttpLogger()
-                level = io.ktor.client.plugins.logging.LogLevel.BODY
-            }
-        }
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                    decodeEnumsCaseInsensitive = true
-                },
-            )
-        }
-
-        defaultRequest {
-            url(url)
-            headers.append("Authorization", "Bearer $apiToken")
-        }
-    }
 
 public class HetznerApi(hcloudToken: String) {
 
@@ -121,6 +91,37 @@ public class HetznerApi(hcloudToken: String) {
 
     internal val client =
         createHttpClient("https://api.hetzner.cloud", hcloudToken, System.getenv("BLCKS_DEBUG") != null)
+
+    class SolidblocksHttpLogger() : Logger {
+        override fun log(message: String) {
+            println(message)
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun createHttpClient(url: String, apiToken: String, debug: Boolean) =
+        HttpClient(Java) {
+            if (debug) {
+                install(Logging) {
+                    logger = SolidblocksHttpLogger()
+                    level = LogLevel.BODY
+                }
+            }
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        isLenient = true
+                        ignoreUnknownKeys = true
+                        decodeEnumsCaseInsensitive = true
+                    },
+                )
+            }
+
+            defaultRequest {
+                url(url)
+                headers.append("Authorization", "Bearer $apiToken")
+            }
+        }
 
     internal suspend inline fun <reified T> post(path: String, data: Any? = null): T? {
         return client
@@ -187,18 +188,7 @@ public class HetznerApi(hcloudToken: String) {
         val result =
             retryUtil(
                 block = {
-                    val response = getAction.invoke(response.action.id)
-                    /**
-                     * TODO
-                    logInfo(
-                    "waiting for '${response.action.command}' to finish for resources ${
-                    response.action.resources.joinToString(
-                    ", ",
-                    ) { "${it.type} ${it.id}" }
-                    }",
-                    )
-                     */
-                    response
+                    getAction.invoke(response.action.id)
                 },
                 condition = { it.action.status == ActionStatus.SUCCESS },
             )

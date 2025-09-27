@@ -1,141 +1,132 @@
 package de.solidblocks.hetzner.dns
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import de.solidblocks.hetzner.dns.model.ListZonesResponse
-import de.solidblocks.hetzner.dns.model.RecordRequest
-import de.solidblocks.hetzner.dns.model.RecordResponseWrapper
-import de.solidblocks.hetzner.dns.model.RecordsResponseWrapper
-import de.solidblocks.hetzner.dns.model.ZoneRequest
-import de.solidblocks.hetzner.dns.model.ZoneResponseWrapper
-import java.io.IOException
-import okhttp3.Call
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
+import de.solidblocks.hetzner.dns.model.*
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.java.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 
 public class HetznerDnsApi(
     val apiKey: String,
-    val baseApiUrl: String = "https://dns.hetzner.com/api/v1",
+    val baseApiUrl: String = "https://dns.hetzner.com/api/v1/",
 ) {
 
-  private val client = OkHttpClient.Builder().build()
-
-  private val objectMapper =
-      jacksonObjectMapper()
-          .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-          .registerKotlinModule()
-          .registerModules(
-              JavaTimeModule(),
-          )
-
-  private inline fun <reified T> Call.executeAndParse(): Result<T> {
-    try {
-      this.execute().use { response ->
-        if (!response.isSuccessful && response.code != 404) {
-          return Result.failure(
-              RuntimeException(
-                  "http call failed with '${response.code}' for '${response.request.url}'",
-              ),
-          )
+    class SolidblocksHttpLogger() : Logger {
+        override fun log(message: String) {
+            println(message)
         }
-
-        if (response.body == null) {
-          return Result.failure(
-              RuntimeException("response body was empty for '${response.request.url}'"),
-          )
-        }
-
-        val body = response.body!!.bytes()
-        return Result.success(objectMapper.readValue(body))
-      }
-    } catch (e: IOException) {
-      return Result.failure(e)
     }
-  }
 
-  private inline fun <reified T> get(path: String): Result<T> {
-    val request: Request =
-        Request.Builder().url("$baseApiUrl/$path").header("Auth-API-Token", apiKey).build()
+    internal val client =
+        createHttpClient(baseApiUrl, apiKey, System.getenv("BLCKS_DEBUG") != null)
 
-    return client.newCall(request).executeAndParse()
-  }
+    @OptIn(ExperimentalSerializationApi::class)
+    fun createHttpClient(baseUrl: String, apiToken: String, debug: Boolean) =
+        HttpClient(Java) {
+            if (debug) {
+                install(Logging) {
+                    logger = SolidblocksHttpLogger()
+                    level = LogLevel.BODY
+                }
+            }
+            install(ContentNegotiation) {
+                json(
+                    Json {
+                        isLenient = true
+                        ignoreUnknownKeys = true
+                        decodeEnumsCaseInsensitive = true
+                    },
+                )
+            }
 
-  private inline fun <reified T> post(path: String, body: Any): Result<T> {
-    val request: Request =
-        Request.Builder()
-            .url("$baseApiUrl/$path")
-            .header("Auth-API-Token", apiKey)
-            .post(
-                objectMapper
-                    .writeValueAsString(body)
-                    .toRequestBody("application/json; charset=utf-8".toMediaType()),
-            )
-            .build()
+            defaultRequest {
+                url(baseUrl)
+                headers.append("Auth-API-Token", apiToken)
+            }
+        }
 
-    return client.newCall(request).executeAndParse()
-  }
 
-  private inline fun <reified T> put(path: String, body: Any): Result<T> {
-    val request: Request =
-        Request.Builder()
-            .url("$baseApiUrl/$path")
-            .header("Auth-API-Token", apiKey)
-            .put(
-                objectMapper
-                    .writeValueAsString(body)
-                    .toRequestBody("application/json; charset=utf-8".toMediaType()),
-            )
-            .build()
+    internal suspend inline fun <reified T> get(path: String): T? = client.get(path).handle<T>()
 
-    return client.newCall(request).executeAndParse()
-  }
+    internal suspend inline fun <reified T> post(path: String, data: Any? = null): T? {
+        return client
+            .post(path) {
+                contentType(ContentType.Application.Json)
+                data?.let { this.setBody(it) }
+            }
+            .handle<T>()
+    }
 
-  private fun delete(path: String): Boolean {
-    val request: Request =
-        Request.Builder().url("$baseApiUrl/$path").header("Auth-API-Token", apiKey).delete().build()
-    return client.newCall(request).execute().isSuccessful
-  }
+    internal suspend inline fun <reified T> put(path: String, data: Any? = null): T? {
+        return client
+            .put(path) {
+                contentType(ContentType.Application.Json)
+                data?.let { this.setBody(it) }
+            }
+            .handle<T>()
+    }
 
-  fun zoneById(zoneId: String): Result<ZoneResponseWrapper> = get("zones/$zoneId")
+    internal suspend inline fun <reified T> HttpResponse.handle(): T? {
+        if (this.status.isSuccess()) {
+            return this.body()
+        }
 
-  fun createZone(request: ZoneRequest): Result<ZoneResponseWrapper> = post("zones", request)
+        if (this.status.isNotFound()) {
+            return null
+        }
 
-  fun updateZone(zoneId: String, request: ZoneRequest): Result<ZoneResponseWrapper> =
-      put("zones/$zoneId", request)
+        if (this.status.isBadRequest()) {
+            throw HetznerApiException(this.body())
+        }
 
-  fun zones(name: String? = null): Result<ListZonesResponse> =
-      get(
-          if (name != null) {
-            "zones?name=$name"
-          } else {
-            "zones"
-          },
-      )
+        throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
+    }
 
-  fun deleteZone(zoneId: String) = delete("zones/$zoneId")
+    suspend fun zoneById(zoneId: String): ZoneResponseWrapper? = get("zones/$zoneId")
 
-  fun records(zoneId: String): Result<RecordsResponseWrapper> = get("records?zone_id=$zoneId")
+    suspend fun createZone(request: ZoneRequest): ZoneResponseWrapper? = post("zones", request)
 
-  fun createRecord(record: RecordRequest): Result<RecordResponseWrapper> = post("records", record)
+    suspend fun updateZone(zoneId: String, request: ZoneRequest): ZoneResponseWrapper? =
+        put("zones/$zoneId", request)
 
-  fun updateRecord(recordId: String, record: RecordRequest): Result<RecordResponseWrapper> =
-      put("records/$recordId", record)
+    suspend fun zones(name: String? = null): ListZonesResponse? =
+        get(
+            if (name != null) {
+                "zones?name=$name"
+            } else {
+                "zones"
+            },
+        )
 
-  /*
-  fun createRecords(record: RecordRequest): Result<RecordResponseWrapper>  {
-      var entity =
-          new HttpEntity<>(
-                  BulkRecordsRequest.builder().records(Arrays.asList(request)).build(), httpHeaders);
-      return request("/records/bulk", HttpMethod.POST, entity, ListRecordsResponse.class)
-          .map(ListRecordsResponse::getRecords)
-          .orElse(Collections.emptyList());
-  }
-   */
+    suspend fun deleteZone(zoneId: String) = !client.delete("zones/$zoneId").status.isNotFound()
+
+    suspend fun records(zoneId: String): RecordsResponseWrapper? = get("records?zone_id=$zoneId")
+
+    suspend fun createRecord(record: RecordRequest): RecordResponseWrapper? = post("records", record)
+
+    suspend fun updateRecord(recordId: String, record: RecordRequest): RecordResponseWrapper? =
+        put("records/$recordId", record)
+
+    /*
+    fun createRecords(record: RecordRequest): RecordResponseWrapper  {
+        var entity =
+            new HttpEntity<>(
+                    BulkRecordsRequest.builder().records(Arrays.asList(request)).build(), httpHeaders);
+        return request("/records/bulk", HttpMethod.POST, entity, ListRecordsResponse.class)
+            .map(ListRecordsResponse::getRecords)
+            .orElse(Collections.emptyList());
+    }
+     */
 }
+
+public fun HttpStatusCode.isNotFound(): Boolean = value == 404
+
+public fun HttpStatusCode.isBadRequest(): Boolean = value in (400 until 500)

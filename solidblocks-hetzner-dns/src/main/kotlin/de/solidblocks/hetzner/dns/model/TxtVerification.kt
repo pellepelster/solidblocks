@@ -3,7 +3,7 @@ package de.solidblocks.hetzner.dns.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ZoneRequest(
+data class TxtVerification(
     val name: String? = null,
-    val ttl: Int? = null,
+    val token: String? = null,
 )

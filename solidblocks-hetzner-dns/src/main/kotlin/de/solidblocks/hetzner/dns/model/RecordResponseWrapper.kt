@@ -1,3 +1,6 @@
 package de.solidblocks.hetzner.dns.model
 
-public data class RecordResponseWrapper(val record: RecordResponse)
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class RecordResponseWrapper(val record: RecordResponse)

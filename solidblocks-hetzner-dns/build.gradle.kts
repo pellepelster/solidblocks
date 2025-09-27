@@ -47,9 +47,11 @@ mavenPublishing {
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("io.ktor:ktor-client-resources:3.1.2")
+    implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
+    implementation("io.ktor:ktor-client-java:3.1.2")
+    implementation("io.ktor:ktor-client-logging:3.1.2")
+
     testImplementation("org.wiremock:wiremock:3.13.1")
 }

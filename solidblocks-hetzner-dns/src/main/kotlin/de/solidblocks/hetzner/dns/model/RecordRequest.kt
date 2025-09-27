@@ -1,9 +1,11 @@
 package de.solidblocks.hetzner.dns.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-public data class RecordRequest(
-    @JsonProperty("zone_id") val zoneId: String? = null,
+@Serializable
+data class RecordRequest(
+    @SerialName("zone_id") val zoneId: String? = null,
     val type: RecordType? = null,
     val name: String? = null,
     val value: String? = null,

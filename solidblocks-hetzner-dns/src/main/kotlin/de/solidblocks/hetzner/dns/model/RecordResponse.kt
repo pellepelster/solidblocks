@@ -1,17 +1,22 @@
 package de.solidblocks.hetzner.dns.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import de.solidblocks.hetzner.dns.MultiFormatInstantDeserializer
-import java.time.Instant
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@Serializable
+@OptIn(ExperimentalTime::class)
 data class RecordResponse(
     val id: String,
-    @JsonProperty("zone_id") val zoneId: String,
+    @SerialName("zone_id") val zoneId: String,
     val name: String,
     val value: String,
-    val ttl: Int,
+    val ttl: Int? = null,
     val type: RecordType,
-    @JsonDeserialize(using = MultiFormatInstantDeserializer::class) val created: Instant,
-    @JsonDeserialize(using = MultiFormatInstantDeserializer::class) val modified: Instant?,
+    @Serializable(with = MultiFormatInstantDeserializer::class)
+    val created: Instant,
+    @Serializable(with = MultiFormatInstantDeserializer::class)
+    val modified: Instant? = null,
 )

@@ -1,6 +1,6 @@
 package de.solidblocks.hetzner.dns.model
 
-public enum class RecordType {
+enum class RecordType {
   A,
   AAAA,
   NS,

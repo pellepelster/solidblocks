@@ -1,3 +1,7 @@
 package de.solidblocks.hetzner.dns.model
 
-public class ListZonesResponse(val zones: List<ZoneResponse>, val meta: MetaResponse)
+import kotlinx.serialization.Serializable
+
+
+@Serializable
+data class ListZonesResponse(val zones: List<ZoneResponse>, val meta: MetaResponse)

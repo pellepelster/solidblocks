@@ -1,32 +1,32 @@
 package de.solidblocks.hetzner.dns.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import de.solidblocks.hetzner.dns.MultiFormatInstantDeserializer
-import java.time.Instant
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
-public data class TxtVerification(
-    val name: String? = null,
-    val token: String? = null,
-)
 
-public data class ZoneResponse(
+@Serializable
+@OptIn(ExperimentalTime::class)
+data class ZoneResponse(
     val id: String,
     val name: String,
     val owner: String,
-    val paused: Boolean,
+    val paused: Boolean? = null,
     val project: String,
     val status: String,
-    val ttl: Int,
-    @JsonDeserialize(using = MultiFormatInstantDeserializer::class) val created: Instant,
-    @JsonProperty("legacy_ns") val legacyNs: List<String> = emptyList(),
+    val ttl: Int? = null ,
+    @Serializable(with = MultiFormatInstantDeserializer::class)
+    val created: Instant,
+    @SerialName("legacy_ns") val legacyNs: List<String> = emptyList(),
     val ns: List<String> = emptyList(),
-    @JsonProperty("records_count") val recordsCount: Int,
+    @SerialName("records_count") val recordsCount: Int ? = null,
     val modified: String? = null,
     val verified: String? = null,
     val permission: String? = null,
     val registrar: String? = null,
-    @JsonProperty("legacy_dns_host") val legacyDnsHost: String? = null,
-    @JsonProperty("is_secondary_dns") val isSecondaryDns: Boolean = false,
-    @JsonProperty("txt_verification") val txtVerification: TxtVerification? = null,
+    @SerialName("legacy_dns_host") val legacyDnsHost: String? = null,
+    @SerialName("is_secondary_dns") val isSecondaryDns: Boolean = false,
+    @SerialName("txt_verification") val txtVerification: TxtVerification? = null,
 )
