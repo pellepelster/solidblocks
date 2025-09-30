@@ -82,6 +82,14 @@
     owner: postgres
     group: postgres
 
+- name: "ensure data dir permissions"
+  ansible.builtin.file:
+    path: "{{ data_dir }}"
+    state: directory
+    recurse: yes
+    owner: postgres
+    group: postgres
+
 - name: "check postgres data dir needs to be initialized"
   find:
     paths: "{{ data_dir }}"
