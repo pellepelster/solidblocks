@@ -16,6 +16,13 @@ export VERSION="$(version)"
 TEMP_DIR="${DIR}/.temp"
 COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-hetzner-dns solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible solidblocks-python"
 
+mkdir -p "${TEMP_DIR}"
+
+function clean_temp_dir {
+  rm -rf "${TEMP_DIR}"
+}
+trap clean_temp_dir EXIT
+
 function ensure_environment {
   software_ensure_hugo
   software_set_export_path
@@ -89,6 +96,10 @@ function task_clean_hetzner {
 }
 
 function task_clean_gcloud {
+  trap clean_temp_dir EXIT
+  pass solidblocks/gcp/test/service_account_key > "${TEMP_DIR}/service_account_key.json"
+  gcloud auth activate-service-account --key-file "${TEMP_DIR}/service_account_key.json"
+
   for bucket in $(gcloud storage ls); do
     if [[ ${bucket} = gs://test-* ]]; then
       echo "deleting bucket '${bucket}'"
