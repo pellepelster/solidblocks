@@ -2,7 +2,7 @@
 title = "Development"
 description = "Guide for development of Solidblocks"
 overviewGroup = "dev"
-weight = 105
+weight = 200
 +++
 
 ## Repository Structure
@@ -63,74 +63,21 @@ Tests that make uses of cloud VM instances are expected to create a temporary `s
 
 ## Secrets
 
-For cloud provider specific integration tests credentials are needed, that are either taken from environment variables, or if not set pulled from a
-local [pass](https://www.passwordstore.org/)-based password store.
+For cloud provider specific integration tests credentials are needed, that are either taken from environment variables, or if not set pulled from a local [pass](https://www.passwordstore.org/)-based password store.
 
 ### Cloud Accounts
 
-Components that work on cloud resources come with full integration tests using a real cloud backend.
-It is highly advised to create separate cloud accounts for test executions. 
+Components that work on cloud resources come with full integration tests using a real cloud backend. It is highly advised to create separate cloud accounts for test executions. 
 
 #### AWS
 
 Access to a dedicated AWS account  via `AWS_ACCESS_KEY_ID` (`pass solidblocks/aws/test/access_key_id`) and `AWS_SECRET_ACCESS_KEY` (`pass solidblocks/aws/test/secret_access_key`) is needed with the following permissions:  
 
-#### S3
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": "s3:*",
-            "Resource": "arn:aws:s3:::test-*/**"
-        },
-        {
-            "Sid": "VisualEditor1",
-            "Effect": "Allow",
-            "Action": "s3:ListAllMyBuckets*",
-            "Resource": "*"
-        },
-        {
-            "Sid": "VisualEditor2",
-            "Effect": "Allow",
-            "Action": "s3:*",
-            "Resource": "arn:aws:s3:::test-*"
-        }
-  ]
-}
-```
+An appropiate `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` with minimal permissions can be created by calling
 
-##### DynamoDB
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": "dynamodb:*",
-            "Resource": "arn:aws:dynamodb:*:*:table/test-*"
-        },
-        {
-            "Sid": "VisualEditor1",
-            "Effect": "Allow",
-            "Action": "dynamodb:List*",
-            "Resource": "arn:aws:dynamodb:*:*:table/*"
-        },
-        {
-            "Sid": "VisualEditor2",
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:List*",
-                "dynamodb:Describe*"
-            ],
-            "Resource": "arn:aws:dynamodb:*:*:table/*"
-        }
-  ]
-}
-```
+````
+./do test-init-aws
+````
 
 {{% notice warning %}}
 All resources included in the account will be cleaned to ensure a consistent test environment
