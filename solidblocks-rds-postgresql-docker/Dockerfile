@@ -9,8 +9,6 @@ RUN apt-get update && \
 RUN apt-get update
 
 RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen && \
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen && \
     locale-gen && \
     update-locale LANG=en_US.UTF-8
 
