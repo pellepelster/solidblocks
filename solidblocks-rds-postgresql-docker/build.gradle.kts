@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 object Versions {
-    const val testContainersVersion = "1.17.1"
+    const val testContainersVersion = "1.21.3"
 }
 
 plugins {
@@ -16,6 +16,9 @@ dependencies {
     testImplementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
     testImplementation("org.assertj:assertj-core:3.22.0")
     testImplementation("org.testcontainers:testcontainers:${Versions.testContainersVersion}")
+
+    testImplementation("com.github.docker-java:docker-java:3.5.1")
+    testImplementation("com.github.docker-java:docker-java-transport-zerodep:3.5.1")
 
     testImplementation("org.eclipse:yasson:1.0.1")
     testImplementation("org.glassfish:javax.json:1.1.2")
@@ -38,12 +41,10 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-
     systemProperties["junit.jupiter.execution.parallel.enabled"] = "true"
     systemProperties["junit.jupiter.execution.parallel.mode.default"] = "concurrent"
     systemProperties["junit.jupiter.execution.parallel.config.strategy"] = "fixed"
-    systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 1
-
+    systemProperties["junit.jupiter.execution.parallel.config.fixed.parallelism"] = 5
     testLogging {
         events = setOf(
             TestLogEvent.PASSED,

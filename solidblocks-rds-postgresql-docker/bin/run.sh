@@ -20,7 +20,7 @@ function log() {
 }
 
 function current_major_version() {
-  postgres --version | rg '([0-9]{1,})\.[0-9]{1,}' -or '$1'
+  postgres --version | rg ' ([0-9]{1,})\.[0-9]{1,} ' -or '$1'
 }
 
 function ensure_environment_variables() {
@@ -116,7 +116,7 @@ if [[ -f "${PG_DATA_BASE_DIR}/PG_VERSION" ]]; then
 fi
 
 export PG_DATA_DIR="${PG_DATA_BASE_DIR}/$(current_major_version)"
-export POSTGRES_BASE_DIR="/usr/libexec/postgresql$(current_major_version)"
+export POSTGRES_BASE_DIR="/usr/lib/postgresql/$(current_major_version)/bin"
 export POSTGRES_BIN_DIR="${POSTGRES_BASE_DIR}"
 
 log "setting PG_DATA_DIR to '${PG_DATA_DIR}'"
@@ -270,7 +270,7 @@ function migrate_old_data_if_needed() {
 
   PREVIOUS_VERSION="$(($(current_major_version)-1))"
   PREVIOUS_PG_DATA_DIR="${PG_DATA_BASE_DIR}/${PREVIOUS_VERSION}"
-  PREVIOUS_POSTGRES_BASE_DIR="/usr/libexec/postgresql${PREVIOUS_VERSION}"
+  PREVIOUS_POSTGRES_BASE_DIR="/usr/lib/postgresql/${PREVIOUS_VERSION}/bin"
   PREVIOUS_POSTGRES_BIN_DIR="${PREVIOUS_POSTGRES_BASE_DIR}"
 
   if [[ -f "${PREVIOUS_PG_DATA_DIR}/PG_VERSION" ]] && [[ -z "$(ls -A ${PG_DATA_DIR})" ]]; then

@@ -142,8 +142,8 @@ class RdsPostgresqlConfigurationTest {
                 .list()
                 .first()
         databaseInfo["encoding"] shouldBe "UTF8"
-        databaseInfo["datcollate"] shouldBe "en_US.utf8"
-        databaseInfo["datctype"] shouldBe "en_US.utf8"
+        databaseInfo["datcollate"] shouldBe "en_US.UTF-8"
+        databaseInfo["datctype"] shouldBe "en_US.UTF-8"
       }
     }
 
@@ -161,7 +161,7 @@ class RdsPostgresqlConfigurationTest {
             mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_CREATE_OPTIONS_$DATABASE" to
-                    "ENCODING='UTF8' LC_COLLATE='de_DE.UTF8' LC_CTYPE='de_DE.UTF8' TEMPLATE='template0'",
+                    "ENCODING='UTF8' LC_COLLATE='de_DE.UTF-8' LC_CTYPE='de_DE.UTF-8' TEMPLATE='template0'",
             ),
             dataDir,
         ) {
@@ -181,8 +181,8 @@ class RdsPostgresqlConfigurationTest {
                 .list()
                 .first()
         databaseInfo["encoding"] shouldBe "UTF8"
-        databaseInfo["datcollate"] shouldBe "de_DE.UTF8"
-        databaseInfo["datctype"] shouldBe "de_DE.UTF8"
+        databaseInfo["datcollate"] shouldBe "de_DE.UTF-8"
+        databaseInfo["datctype"] shouldBe "de_DE.UTF-8"
       }
     }
     container.stop()
