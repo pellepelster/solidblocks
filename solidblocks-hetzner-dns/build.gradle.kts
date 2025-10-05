@@ -14,7 +14,7 @@ mavenPublishing {
 
     pom {
 
-        name.set("Solidblocks DNS")
+        name.set("Solidblocks Hetzner DNS")
         description.set("Solidblocks is a library of reusable components for infrastructure operation, automation and developer experience")
         inceptionYear.set("2019")
         url.set("https://github.com/pellepelster/solidblocks/")
