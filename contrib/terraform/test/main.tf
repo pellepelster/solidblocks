@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "solidblocks_test_dynamodb" {
 }
 
 resource "aws_iam_user_policy" "solidblocks" {
-  name   = "solidblocks"
+  name   = "solidblocks-test"
   user   = aws_iam_user.solidblocks_test.name
   policy = data.aws_iam_policy_document.solidblocks_test_s3.json
 }

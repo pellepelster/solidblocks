@@ -2,14 +2,16 @@
 presets:
   defaults:
     filters:
+      S3Object:
+        - "solidblocks-test"
       IAMUser:
         - "admin"
-        - "solidblocks"
+        - "solidblocks-test"
       IAMUserPolicyAttachment:
         - "admin -> AdministratorAccess"
       IAMUserAccessKey:
         - "admin -> AKIA5VENMCB5IINZHWEO"
-        - "solidblocks -> AKIA5VENMCB5MTY25IZJ"
+        - "solidblocks-test -> AKIA5VENMCB5MTY25IZJ"
 
 regions:
   - "eu-central-1"
