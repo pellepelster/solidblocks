@@ -200,7 +200,24 @@ The container includes a set of scripts for various maintenance operations and d
 * `backup-info.sh` show information about backups
 * `rds_provisioning_completed.sh` exits with 0 when provisioning and/or restore has completed
 
- 
+
+### Access the database locally
+
+In case you need to interact with the database directly, you can always `exec` into the docker container and use `psql` directly
+
+```shell
+docker exec -ti <container> bash
+psql -h /rds/socket -d postgres
+```
+
+### Manual password reset 
+
+```shell
+docker exec -ti <container> bash
+psql -h /rds/socket -d postgres
+ALTER USER rds WITH PASSWORD '<new admin password>';
+```
+
 ### Maintenance
 
 In case of errors or the need for manual intervention a maintenance mode is available. Triggering the maintenance mode will set up the container like it would be set up for database startup, but without actually starting the database. This allows to `exec` into the container to debug issues.
