@@ -9,7 +9,7 @@ Basic PostgreSQL setup
 
 | Name | Value | Description | Required |
 | ---- | ----- | ----------- | -------- |
-| data_dir | {{ storage_mount }}/{{ environment_name }}/{{ instance_name }} | &lt;none&gt; | false  |
+| data_dir | {{ storage_mount }}/{{ environment_name }}/{{ instance_name }}/{{ postgres_version }} | &lt;none&gt; | false  |
 | extension_pg_ivm_enabled | false | &lt;none&gt; | false  |
 | extension_pgaudit_enabled | false | &lt;none&gt; | false  |
 | extension_pglogical_enabled | false | &lt;none&gt; | false  |

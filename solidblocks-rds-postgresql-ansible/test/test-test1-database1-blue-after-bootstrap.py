@@ -50,4 +50,4 @@ def test_pgbackrest_wrapper(host):
 
 
 def test_extra_configuration_is_rendered(host):
-    host.file("/storage/data/test/database1/postgresql.conf").contains("debug_pretty_print = off")
+    host.file("/storage/data/test/database1/17/postgresql.conf").contains("debug_pretty_print = off")
