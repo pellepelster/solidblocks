@@ -21,6 +21,7 @@ env:
 
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
   SOLIDBLOCKS_AWS_TEST_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   SOLIDBLOCKS_AWS_TEST_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -305,8 +306,6 @@ jobs:
       fail-fast: false
       matrix:
         test_name: [ test-migration, test-restore-local, test-restore-s3, test-restore-gcp, test-private-network, test-arm, test-ssl ]
-    env:
-      GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -373,8 +372,6 @@ jobs:
 
   solidblocks-rds-postgresql-test:
     runs-on: ubuntu-24.04
-    env:
-      GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
     needs:
       - solidblocks-rds-postgresql-docker
     steps:
