@@ -43,6 +43,7 @@ class RdsPostgresqlConfigurationTest {
           "pageinspect",
           "pg_buffercache",
           "pg_cron",
+          "pg_audit",
           "pg_freespacemap",
           "pg_prewarm",
           "pg_remote_exec",

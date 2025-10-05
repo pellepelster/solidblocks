@@ -179,12 +179,15 @@ The following PostgreSQL extensions are available by default
 | old_snapshot       | 1.0     | utilities in support of old_snapshot_threshold                         |
 | pageinspect        | 1.9     | inspect the contents of database pages at a low level                  |
 | pg_buffercache     | 1.3     | examine the shared buffer cache                                        |
+| pg_cron            | 1.6     | Job scheduler for PostgreSQL                                           |
 | pg_freespacemap    | 1.2     | examine the free space map (FSM)                                       |
 | pg_prewarm         | 1.2     | prewarm relation data                                                  |
+| pg_remote_exec     | 1.0     | remote shell execution for non-superusers                              |
 | pg_stat_statements | 1.9     | track planning and execution statistics of all SQL statements executed |
 | pg_surgery         | 1.0     | extension to perform surgery on a damaged relation                     |
 | pg_trgm            | 1.6     | text similarity measurement and index searching based on trigrams      |
 | pg_visibility      | 1.2     | examine the visibility map (VM) and page-level visibility info         |
+| pgaudit            | 1.6.3   | provides auditing functionality                                        |
 | pgcrypto           | 1.3     | cryptographic functions                                                |
 | pgrowlocks         | 1.2     | show row-level locking information                                     |
 | pgstattuple        | 1.5     | show tuple-level statistics                                            |

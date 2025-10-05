@@ -22,14 +22,38 @@ RUN apt-get -y install \
 FROM build_base AS builder
 ARG POSTGRES_VERSION=""
 
+#############
+# pg_remote #
+#############
 RUN apt-get install -y postgresql-server-dev-${POSTGRES_VERSION}
 RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg_remote_exec && make install
+
+###########
+# pgaudit #
+###########
+RUN apt-get install -y libkrb5-dev && \
+    git clone https://github.com/pgaudit/pgaudit.git && \
+    cd pgaudit &&  \
+    git checkout REL_${POSTGRES_VERSION}_STABLE && \
+    make install USE_PGXS=1
 
 FROM build_base AS builder_previous
 ARG POSTGRES_PREVIOUS_VERSION=""
 
+#############
+# pg_remote #
+#############
 RUN apt-get install -y postgresql-server-dev-${POSTGRES_PREVIOUS_VERSION}
 RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg_remote_exec && make install
+
+###########
+# pgaudit #
+###########
+RUN apt-get install -y libkrb5-dev && \
+    git clone https://github.com/pgaudit/pgaudit.git && \
+    cd pgaudit &&  \
+    git checkout REL_${POSTGRES_PREVIOUS_VERSION}_STABLE && \
+    make install USE_PGXS=1
 
 FROM base
 
@@ -91,6 +115,10 @@ COPY --from=builder /usr/lib/postgresql/${POSTGRES_VERSION}/lib/bitcode/pg_remot
 COPY --from=builder /usr/lib/postgresql/${POSTGRES_VERSION}/lib/bitcode/pg_remote_exec.* /usr/lib/postgresql/${POSTGRES_VERSION}/lib/bitcode/
 COPY --from=builder /usr/share/postgresql/${POSTGRES_VERSION}/extension/pg_remote_exec* /usr/share/postgresql/${POSTGRES_VERSION}/extension/
 COPY --from=builder /usr/share/doc/postgresql-doc-${POSTGRES_VERSION}/extension/pg_remote_exec* /usr/share/doc/postgresql-doc-${POSTGRES_VERSION}/extension/
+
+COPY --from=builder /usr/lib/postgresql/${POSTGRES_VERSION}/lib/pgaudit.so /usr/lib/postgresql/${POSTGRES_VERSION}/lib/
+COPY --from=builder /usr/share/postgresql/${POSTGRES_VERSION}/extension/pgaudit* /usr/share/postgresql/${POSTGRES_VERSION}/extension/
+COPY --from=builder /usr/lib/postgresql/${POSTGRES_VERSION}/lib/bitcode/pgaudit* /usr/lib/postgresql/${POSTGRES_VERSION}/lib/bitcode/
 
 COPY --from=builder_previous /usr/lib/postgresql/${POSTGRES_PREVIOUS_VERSION}/lib/pg_remote_exec.so /usr/lib/postgresql/${POSTGRES_PREVIOUS_VERSION}/lib/
 COPY --from=builder_previous /usr/lib/postgresql/${POSTGRES_PREVIOUS_VERSION}/lib/bitcode/pg_remote_exec /usr/lib/postgresql/${POSTGRES_PREVIOUS_VERSION}/lib/bitcode/pg_remote_exec
