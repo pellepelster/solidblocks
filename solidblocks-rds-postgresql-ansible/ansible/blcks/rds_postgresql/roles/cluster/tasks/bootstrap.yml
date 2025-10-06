@@ -11,7 +11,7 @@
   become: yes
   become_user: postgres
   args:
-    creates: "{{ data_dir }}/pg_multixact"
+    creates: "{{ data_dir }}/PG_VERSION"
 
 - name: "remove superuser password file"
   ansible.builtin.file:

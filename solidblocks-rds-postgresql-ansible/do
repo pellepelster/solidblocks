@@ -195,9 +195,9 @@ function task_test_standalone_after_storage_rebuild {
 function task_test_standalone_ansible {
   prepare_env
   python_ensure_venv "${DIR}"
+  local postgres_version=${1:-16}
+  shift || true
   local database1_primary_node=$(test_terraform "standalone" output database1_blue_name)
-  #local database2_primary_node=$(test_terraform "standalone" output database2_blue_name)
-  #--extra-vars "database2_primary_node=${database2_primary_node}" \
 
   "${VENV_DIR}/bin/ansible-galaxy" \
     collection install \
@@ -209,6 +209,7 @@ function task_test_standalone_ansible {
     -i "${DIR}/test/terraform/output/test/standalone/ansible/blcks_rds_postgres_inventory.yml" \
     --extra-vars "@${DIR}/test/terraform/output/test/standalone/ansible/blcks_rds_postgres_variables.yml" \
     --extra-vars "database1_primary_node=${database1_primary_node}" \
+    --extra-vars "postgres_version=${postgres_version}" \
     "${DIR}/test/ansible/standalone/site.yml" "$@"
 }
 

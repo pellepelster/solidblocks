@@ -90,14 +90,14 @@
     owner: postgres
     group: postgres
 
-- name: "check postgres data dir needs to be initialized"
+- name: "check if postgres data is empty"
   find:
     paths: "{{ data_dir }}"
-  register: data_dir_content
+  register: data_dir_result
 
 - name: "set data dir facts"
   ansible.builtin.set_fact:
-    data_dir_empty: "{{ data_dir_content.matched == 0 }}"
+    data_dir_empty: "{{ data_dir_result.matched == 0 }}"
 
 - name: "data dir facts"
   ansible.builtin.debug:

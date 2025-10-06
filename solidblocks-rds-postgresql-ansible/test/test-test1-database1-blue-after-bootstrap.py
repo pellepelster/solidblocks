@@ -31,7 +31,7 @@ def test_extension_pglogical(conn):
 
 def test_extension_pgaudit(conn):
     res = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'pgaudit';")
-    assert res.fetchone()[0] == "17.1"
+    assert res.fetchone()[0] == "16.1"
 
 
 def test_extension_pg_ivm(conn):
@@ -50,4 +50,4 @@ def test_pgbackrest_wrapper(host):
 
 
 def test_extra_configuration_is_rendered(host):
-    host.file("/storage/data/test/database1/17/postgresql.conf").contains("debug_pretty_print = off")
+    host.file("/storage/data/test/database1/16/postgresql.conf").contains("debug_pretty_print = off")

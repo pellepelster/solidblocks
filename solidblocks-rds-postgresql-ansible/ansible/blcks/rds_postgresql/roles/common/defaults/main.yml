@@ -1,7 +1,8 @@
 ---
 postgres_version: 17
 storage_mount: "/storage/data"
-data_dir: "{{ storage_mount }}/{{ environment_name }}/{{ instance_name }}/{{ postgres_version }}"
+data_dir_base: "{{ storage_mount }}/{{ environment_name }}/{{ instance_name }}"
+data_dir: "{{ data_dir_base }}/{{ postgres_version }}"
 superuser_username: "rds"
 
 extension_pglogical_enabled: false

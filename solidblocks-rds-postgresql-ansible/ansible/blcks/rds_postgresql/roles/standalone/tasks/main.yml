@@ -14,10 +14,38 @@
     file: bootstrap.yml
   when: data_dir_empty and not restore_available and is_primary
 
+################################################
+# check for previous postgres version and data #
+################################################
+- name: "check if previous version exists"
+  ansible.builtin.stat:
+    path: "/usr/lib/postgresql/{{ ((postgres_version | int) - 1) }}/bin/initdb"
+  register: previous_version
+
+- name: "check if previous data exists"
+  ansible.builtin.stat:
+    path: "{{ data_dir_base }}/{{ ((postgres_version | int) - 1) }}/PG_VERSION"
+  register: previous_data
+
+- name: "setting facts"
+  ansible.builtin.set_fact:
+    previous_version_exists: "{{ previous_version.stat.exists }}"
+    previous_data_exists: "{{ previous_data.stat.exists }}"
+    previous_postgres_version: "{{ ((postgres_version | int) - 1) }}"
+
+- name: "show previous data and version facts"
+  ansible.builtin.debug:
+    msg: "previous_postgres_version: {{ previous_postgres_version }}, previous_version_exists: {{ previous_version_exists }}, previous_data_exists: {{ previous_data_exists }}"
+
+- name: "migrate old data"
+  ansible.builtin.include_tasks:
+    file: migrate.yml
+  when: data_dir_empty and previous_data_exists and previous_version_exists and is_primary
+
 - name: "restore database"
   ansible.builtin.include_tasks:
     file: restore.yml
-  when: data_dir_empty and restore_available and stanza_exists and is_primary
+  when: data_dir_empty and restore_available and stanza_exists and is_primary and not previous_data_exists
 
 - name: "install postgres config file"
   ansible.builtin.template:
