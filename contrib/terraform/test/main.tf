@@ -22,6 +22,16 @@ data "aws_iam_policy_document" "solidblocks_test_s3" {
     actions   = ["s3:*"]
     resources = ["arn:aws:s3:::test-*"]
   }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = ["arn:aws:s3:::solidblocks-test"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = ["arn:aws:s3:::solidblocks-test/**"]
+  }
 }
 
 data "aws_iam_policy_document" "solidblocks_test_dynamodb" {
