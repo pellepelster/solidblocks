@@ -97,30 +97,30 @@ log "starting..."
 log "postgres major version is $(current_major_version)"
 log "s3 backup bucket: ${DB_BACKUP_S3_BUCKET:-<none>}"
 
-export PG_DATA_BASE_DIR="${DATA_DIR}/${DB_INSTANCE_NAME}"
+export POSTGRES_DATA_BASE_DIR="${DATA_DIR}/${DB_INSTANCE_NAME}"
 
 ###########################################################
 # migrate old data not in major version dependent folders #
 ###########################################################
-if [[ -f "${PG_DATA_BASE_DIR}/PG_VERSION" ]]; then
-  log "old directory layout detected, migrating data files from '${PG_DATA_BASE_DIR}' to '${PG_DATA_BASE_DIR}/$(current_major_version)'"
+if [[ -f "${POSTGRES_DATA_BASE_DIR}/PG_VERSION" ]]; then
+  log "old directory layout detected, migrating data files from '${POSTGRES_DATA_BASE_DIR}' to '${POSTGRES_DATA_BASE_DIR}/$(current_major_version)'"
 
-  if [[ ! -d "${PG_DATA_BASE_DIR}_$(current_major_version)" ]]; then
-    mv "${PG_DATA_BASE_DIR}" "${PG_DATA_BASE_DIR}_$(current_major_version)"
+  if [[ ! -d "${POSTGRES_DATA_BASE_DIR}_$(current_major_version)" ]]; then
+    mv "${POSTGRES_DATA_BASE_DIR}" "${POSTGRES_DATA_BASE_DIR}_$(current_major_version)"
   fi
 
-  if [[ ! -d "${PG_DATA_BASE_DIR}/$(current_major_version)" ]]; then
-    mkdir -p "${PG_DATA_BASE_DIR}"
-    mv "${PG_DATA_BASE_DIR}_$(current_major_version)" "${PG_DATA_BASE_DIR}/$(current_major_version)"
+  if [[ ! -d "${POSTGRES_DATA_BASE_DIR}/$(current_major_version)" ]]; then
+    mkdir -p "${POSTGRES_DATA_BASE_DIR}"
+    mv "${POSTGRES_DATA_BASE_DIR}_$(current_major_version)" "${POSTGRES_DATA_BASE_DIR}/$(current_major_version)"
   fi
 fi
 
-export PG_DATA_DIR="${PG_DATA_BASE_DIR}/$(current_major_version)"
+export POSTGRES_DATA_DIR="${POSTGRES_DATA_BASE_DIR}/$(current_major_version)"
 export POSTGRES_BASE_DIR="/usr/lib/postgresql/$(current_major_version)/bin"
 export POSTGRES_BIN_DIR="${POSTGRES_BASE_DIR}"
 
-log "setting PG_DATA_DIR to '${PG_DATA_DIR}'"
-mkdir -p "${PG_DATA_DIR}"
+log "setting POSTGRES_DATA_DIR to '${POSTGRES_DATA_DIR}'"
+mkdir -p "${POSTGRES_DATA_DIR}"
 
 gomplate --input-dir /rds/templates/config/ --output-map='/rds/config/{{ .in | strings.ReplaceAll ".template" "" }}'
 gomplate --input-dir /rds/templates/bin/ --output-map='/rds/bin/{{ .in | strings.ReplaceAll ".template" "" }}'
@@ -162,7 +162,6 @@ function ensure_databases() {
         echo "no username provided for database '${database}'"
         continue
       fi
-
 
       local database_password_var="DB_PASSWORD_${database_id}"
       local password="${!database_password_var:-}"
@@ -251,8 +250,8 @@ function ensure_db_user() {
 
   log "granting all privileges for '${username}' on '${database}'"
 
-  if [[ -f "${PG_DATA_DIR}/solidblocks_current_db_username_${database}" ]]; then
-    local last_db_username=$(cat "${PG_DATA_DIR}/solidblocks_current_db_username_${database}")
+  if [[ -f "${POSTGRES_DATA_DIR}/solidblocks_current_db_username_${database}" ]]; then
+    local last_db_username=$(cat "${POSTGRES_DATA_DIR}/solidblocks_current_db_username_${database}")
 
     if [[ "${last_db_username}" != "${username}" ]]; then
       log "reassigning ownerships from '${last_db_username}' to '${username}'"
@@ -263,55 +262,55 @@ function ensure_db_user() {
 
   ensure_permissions
 
-  echo "${username}" > "${PG_DATA_DIR}/solidblocks_current_db_username_${database}"
+  echo "${username}" > "${POSTGRES_DATA_DIR}/solidblocks_current_db_username_${database}"
 }
 
 function migrate_old_data_if_needed() {
 
   PREVIOUS_VERSION="$(($(current_major_version)-1))"
-  PREVIOUS_PG_DATA_DIR="${PG_DATA_BASE_DIR}/${PREVIOUS_VERSION}"
+  PREVIOUS_POSTGRES_DATA_DIR="${POSTGRES_DATA_BASE_DIR}/${PREVIOUS_VERSION}"
   PREVIOUS_POSTGRES_BASE_DIR="/usr/lib/postgresql/${PREVIOUS_VERSION}/bin"
   PREVIOUS_POSTGRES_BIN_DIR="${PREVIOUS_POSTGRES_BASE_DIR}"
 
-  if [[ -f "${PREVIOUS_PG_DATA_DIR}/PG_VERSION" ]] && [[ -z "$(ls -A ${PG_DATA_DIR})" ]]; then
+  if [[ -f "${PREVIOUS_POSTGRES_DATA_DIR}/PG_VERSION" ]] && [[ -z "$(ls -A ${POSTGRES_DATA_DIR})" ]]; then
 
     init_db
 
-    log "found old version data in '${PREVIOUS_PG_DATA_DIR}' and empty data dir '${PG_DATA_DIR}' migrating data"
+    log "found old version data in '${PREVIOUS_POSTGRES_DATA_DIR}' and empty data dir '${POSTGRES_DATA_DIR}' migrating data"
 
-    log "starting and stopping server in '${PREVIOUS_PG_DATA_DIR}' to ensure clean data dir"
-    cp -v /rds/config/postgresql.conf "${PREVIOUS_PG_DATA_DIR}/postgresql.conf"
-    cp -v /rds/config/pg_hba.conf "${PREVIOUS_PG_DATA_DIR}/pg_hba.conf"
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
+    log "starting and stopping server in '${PREVIOUS_POSTGRES_DATA_DIR}' to ensure clean data dir"
+    cp -v /rds/config/postgresql.conf "${PREVIOUS_POSTGRES_DATA_DIR}/postgresql.conf"
+    cp -v /rds/config/pg_hba.conf "${PREVIOUS_POSTGRES_DATA_DIR}/pg_hba.conf"
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_POSTGRES_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_POSTGRES_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
 
-    log "upgrading postgres data in '${PREVIOUS_PG_DATA_DIR}' to '${PG_DATA_DIR}'"
+    log "upgrading postgres data in '${PREVIOUS_POSTGRES_DATA_DIR}' to '${POSTGRES_DATA_DIR}'"
     pg_upgrade \
       --old-options "-c shared_preload_libraries=''" \
-      --old-datadir=${PREVIOUS_PG_DATA_DIR} \
-      --new-datadir=${PG_DATA_DIR} \
+      --old-datadir=${PREVIOUS_POSTGRES_DATA_DIR} \
+      --new-datadir=${POSTGRES_DATA_DIR} \
       --old-bindir=${PREVIOUS_POSTGRES_BIN_DIR} \
       --new-bindir=${POSTGRES_BIN_DIR}
 
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
-    pgbackrest $(pgbackrest_default_arguments) --db-path=${PG_DATA_DIR} --no-online stanza-upgrade
-    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_POSTGRES_DATA_DIR}" start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
+    pgbackrest $(pgbackrest_default_arguments) --db-path=${POSTGRES_DATA_DIR} --no-online stanza-upgrade
+    ${PREVIOUS_POSTGRES_BIN_DIR}/pg_ctl -D "${PREVIOUS_POSTGRES_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
   fi
 }
 
 function init_db() {
   log "initializing database instance"
-  ${POSTGRES_BIN_DIR}/initdb --username="${DB_ADMIN_USERNAME}" --encoding=UTF8 --pwfile=<(echo "${DB_ADMIN_PASSWORD}") -D "${PG_DATA_DIR}" || true
+  ${POSTGRES_BIN_DIR}/initdb --username="${DB_ADMIN_USERNAME}" --encoding=UTF8 --pwfile=<(echo "${DB_ADMIN_PASSWORD}") -D "${POSTGRES_DATA_DIR}" || true
 
-  cp -v /rds/config/postgresql.conf "${PG_DATA_DIR}/postgresql.conf"
-  cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
+  cp -v /rds/config/postgresql.conf "${POSTGRES_DATA_DIR}/postgresql.conf"
+  cp -v /rds/config/pg_hba.conf "${POSTGRES_DATA_DIR}/pg_hba.conf"
 }
 
 function initialize_db_and_config() {
   init_db
 
   # make sure we only listen public when DB is ready to go
-  ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
+  ${POSTGRES_BIN_DIR}/pg_ctl -D "${POSTGRES_DATA_DIR}" start --options="-c listen_addresses=''"
 
   pgbackrest $(pgbackrest_default_arguments) stanza-create
   ensure_databases
@@ -320,7 +319,7 @@ function initialize_db_and_config() {
   pgbackrest $(pgbackrest_default_arguments) --log-level-console=info --type=full backup
 
   log "stopping postgres"
-  ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
+  ${POSTGRES_BIN_DIR}/pg_ctl -D "${POSTGRES_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
 }
 
 function pgbackrest_status_code() {
@@ -335,7 +334,7 @@ function pgbackrest_status_code() {
 }
 
 function pgbackrest_default_restore_arguments() {
-  echo $(pgbackrest_default_arguments) --db-path=${PG_DATA_DIR} restore --recovery-option="recovery_end_command=/rds/bin/recovery_complete.sh"
+  echo $(pgbackrest_default_arguments) --db-path=${POSTGRES_DATA_DIR} restore --recovery-option="recovery_end_command=/rds/bin/recovery_complete.sh"
 }
 
 function start_db_restore_only() {
@@ -380,7 +379,7 @@ function ensure_backup() {
 function start_db() {
   migrate_old_data_if_needed
 
-  if [[ -z "$(ls -A ${PG_DATA_DIR})" ]]; then
+  if [[ -z "$(ls -A ${POSTGRES_DATA_DIR})" ]]; then
     log "data dir is empty"
 
 
@@ -400,7 +399,7 @@ function start_db() {
       sleep 5
 
       log "starting db for recovery"
-      ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
+      ${POSTGRES_BIN_DIR}/pg_ctl -D "${POSTGRES_DATA_DIR}" start --options="-c listen_addresses=''"
 
       while [[ -f /tmp/recovery_complete ]]; do
         log "waiting for recovery completion"
@@ -415,7 +414,7 @@ function start_db() {
       ensure_databases
 
       log "stopping postgres"
-      ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
+      ${POSTGRES_BIN_DIR}/pg_ctl -D "${POSTGRES_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
     else
       initialize_db_and_config
     fi
@@ -423,12 +422,12 @@ function start_db() {
     log "data dir is not empty"
 
     rm -f /rds/socket/*
-    rm -f "${PG_DATA_DIR}/postmaster.pid"
+    rm -f "${POSTGRES_DATA_DIR}/postmaster.pid"
 
-    cp -v /rds/config/postgresql.conf "${PG_DATA_DIR}/postgresql.conf"
-    cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
+    cp -v /rds/config/postgresql.conf "${POSTGRES_DATA_DIR}/postgresql.conf"
+    cp -v /rds/config/pg_hba.conf "${POSTGRES_DATA_DIR}/pg_hba.conf"
 
-    ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" start --options="-c listen_addresses=''"
+    ${POSTGRES_BIN_DIR}/pg_ctl -D "${POSTGRES_DATA_DIR}" start --options="-c listen_addresses=''"
 
     pgbackrest $(pgbackrest_default_arguments) stanza-create
     ensure_databases
@@ -436,15 +435,15 @@ function start_db() {
     log "setting password for '${DB_ADMIN_USERNAME}'"
     psql_execute "postgres" "ALTER USER \"${DB_ADMIN_USERNAME}\" WITH ENCRYPTED PASSWORD '${DB_ADMIN_PASSWORD}'"
 
-    ${POSTGRES_BIN_DIR}/pg_ctl -D "${PG_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
+    ${POSTGRES_BIN_DIR}/pg_ctl -D "${POSTGRES_DATA_DIR}" stop --timeout ${POSTGRES_STOP_TIMEOUT}
   fi
 
-  cp -v /rds/config/postgresql.conf "${PG_DATA_DIR}/postgresql.conf"
-  cp -v /rds/config/pg_hba.conf "${PG_DATA_DIR}/pg_hba.conf"
+  cp -v /rds/config/postgresql.conf "${POSTGRES_DATA_DIR}/postgresql.conf"
+  cp -v /rds/config/pg_hba.conf "${POSTGRES_DATA_DIR}/pg_hba.conf"
 
   log "provisioning completed"
   touch /rds/run/provisioning_completed
-  exec ${POSTGRES_BIN_DIR}/postgres -D "${PG_DATA_DIR}"
+  exec ${POSTGRES_BIN_DIR}/postgres -D "${POSTGRES_DATA_DIR}"
 }
 
 function maintenance() {

@@ -70,5 +70,5 @@ repo{{ $repoIndex }}-retention-diff={{ getenv "DB_BACKUP_GCS_RETENTION_DIFF" "4"
 log-level-console=info
 
 [{{ .Env.DB_INSTANCE_NAME }}]
-pg1-path={{ .Env.PG_DATA_DIR }}
+pg1-path={{ .Env.POSTGRES_DATA_DIR }}
 pg1-socket-path=/rds/socket
