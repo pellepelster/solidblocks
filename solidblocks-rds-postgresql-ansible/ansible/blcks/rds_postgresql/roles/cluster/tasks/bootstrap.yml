@@ -7,11 +7,11 @@
     mode: '0600'
 
 - name: "init postgres data dir"
-  ansible.builtin.command: "/usr/lib/postgresql/{{ postgres_version }}/bin/initdb -D {{ data_dir }} --username={{ superuser_username }} --pwfile=/var/lib/postgresql/.superuser_password --encoding=UTF8"
+  ansible.builtin.command: "/usr/lib/postgresql/{{ postgres_version }}/bin/initdb -D {{ postgres_data_dir }} --username={{ superuser_username }} --pwfile=/var/lib/postgresql/.superuser_password --encoding=UTF8"
   become: yes
   become_user: postgres
   args:
-    creates: "{{ data_dir }}/PG_VERSION"
+    creates: "{{ postgres_data_dir }}/PG_VERSION"
 
 - name: "remove superuser password file"
   ansible.builtin.file:

@@ -24,7 +24,7 @@
 
 - name: "check if previous data exists"
   ansible.builtin.stat:
-    path: "{{ data_dir_base }}/{{ ((postgres_version | int) - 1) }}/PG_VERSION"
+    path: "{{ postgres_data_base_dir }}/{{ ((postgres_version | int) - 1) }}/PG_VERSION"
   register: previous_data
 
 - name: "setting facts"
@@ -50,14 +50,14 @@
 - name: "install postgres config file"
   ansible.builtin.template:
     src: postgresql.conf.j2
-    dest: "{{ data_dir }}/postgresql.conf"
+    dest: "{{ postgres_data_dir }}/postgresql.conf"
     owner: postgres
     mode: '0600'
 
 - name: "install authentication config file"
   ansible.builtin.template:
     src: pg_hba.conf.j2
-    dest: "{{ data_dir }}/pg_hba.conf"
+    dest: "{{ postgres_data_dir }}/pg_hba.conf"
     owner: postgres
     mode: '0600'
 

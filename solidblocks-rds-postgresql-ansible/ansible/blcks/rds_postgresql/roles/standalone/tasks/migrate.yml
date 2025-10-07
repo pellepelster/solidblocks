@@ -11,32 +11,32 @@
 
 - name: "copy previous postgresql.conf"
   ansible.builtin.copy:
-    src: "{{ data_dir_base }}/{{ previous_postgres_version }}/postgresql.conf"
+    src: "{{ postgres_data_base_dir }}/{{ previous_postgres_version }}/postgresql.conf"
     remote_src: true
-    dest: "{{ data_dir_base }}/{{ postgres_version }}/postgresql.conf"
+    dest: "{{ postgres_data_base_dir }}/{{ postgres_version }}/postgresql.conf"
     owner: postgres
     mode: '0600'
 
 - name: "copy previous postgresql.conf"
   ansible.builtin.copy:
-    src: "{{ data_dir_base }}/{{ previous_postgres_version }}/pg_hba.conf"
+    src: "{{ postgres_data_base_dir }}/{{ previous_postgres_version }}/pg_hba.conf"
     remote_src: true
-    dest: "{{ data_dir_base }}/{{ postgres_version }}/pg_hba.conf"
+    dest: "{{ postgres_data_base_dir }}/{{ postgres_version }}/pg_hba.conf"
     owner: postgres
     mode: '0600'
 
 - name: "start db"
-  ansible.builtin.command: /usr/lib/postgresql/{{ previous_postgres_version }}/bin/pg_ctl -D {{ data_dir_base }}/{{ previous_postgres_version }} start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
+  ansible.builtin.command: /usr/lib/postgresql/{{ previous_postgres_version }}/bin/pg_ctl -D {{ postgres_data_base_dir }}/{{ previous_postgres_version }} start --options="-c listen_addresses='' -c archive_mode=off -c shared_preload_libraries=''"
   become: yes
   become_user: postgres
 
 - name: "stop db"
-  ansible.builtin.command: /usr/lib/postgresql/{{ previous_postgres_version }}/bin/pg_ctl -D {{ data_dir_base }}/{{ previous_postgres_version }} stop --timeout 60
+  ansible.builtin.command: /usr/lib/postgresql/{{ previous_postgres_version }}/bin/pg_ctl -D {{ postgres_data_base_dir }}/{{ previous_postgres_version }} stop --timeout 60
   become: yes
   become_user: postgres
 
 - name: "upgrade pg"
-  ansible.builtin.command: /usr/lib/postgresql/{{ postgres_version }}/bin/pg_upgrade --username {{ superuser_username }} --old-options "-c archive_mode=off -c shared_preload_libraries=''" --old-datadir={{ data_dir_base }}/{{ previous_postgres_version }} --new-datadir={{ data_dir_base }}/{{ postgres_version }}/ --old-bindir=/usr/lib/postgresql/{{ previous_postgres_version }}/bin --new-bindir=/usr/lib/postgresql/{{ postgres_version }}/bin
+  ansible.builtin.command: /usr/lib/postgresql/{{ postgres_version }}/bin/pg_upgrade --username {{ superuser_username }} --old-options "-c archive_mode=off -c shared_preload_libraries=''" --old-datadir={{ postgres_data_base_dir }}/{{ previous_postgres_version }} --new-datadir={{ postgres_data_base_dir }}/{{ postgres_version }}/ --old-bindir=/usr/lib/postgresql/{{ previous_postgres_version }}/bin --new-bindir=/usr/lib/postgresql/{{ postgres_version }}/bin
   become: yes
   become_user: postgres
 

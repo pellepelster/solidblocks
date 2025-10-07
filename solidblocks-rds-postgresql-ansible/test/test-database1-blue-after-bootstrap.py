@@ -34,6 +34,11 @@ def test_extension_pgaudit(conn):
     assert res.fetchone()[0] == "16.1"
 
 
+def test_version(conn):
+    res = conn.execute("SELECT version();")
+    assert res.fetchone()[0].startswith("PostgreSQL 16")
+
+
 def test_extension_pg_ivm(conn):
     res = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'pg_ivm';")
     assert res.fetchone()[0] == "1.11"

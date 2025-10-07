@@ -1,10 +1,18 @@
 ---
+- name: "check data versions"
+  ansible.builtin.shell: "ls | sort --reverse | head -1"
+  register: result
+  args:
+    chdir: "{{ postgres_data_base_dir }}"
+  ignore_errors: true
+
+- name: "fail if data version too new"
+  fail:
+    msg: "downgrade not supported found postgres data for version {{ result.stdout }} but postgres version {{ postgres_version }} was requested"
+  when: result.stdout > postgres_version
+
 - name: "populate service facts"
   ansible.builtin.service_facts:
-
-#- name: "debug"
-#  ansible.builtin.debug:
-#    var: hostvars[primary_node]['ansible_all_ipv4_addresses'] | ipaddr(private_subnet) | first
 
 - name: "setting database facts"
   ansible.builtin.set_fact:
@@ -49,7 +57,7 @@
 
 - name: "install python3-netaddr"
   ansible.builtin.package:
-    name:  python3-netaddr
+    name: python3-netaddr
     state: present
 
 - name: "add postgres repository key"
@@ -77,14 +85,14 @@
 
 - name: "create postgres data dir"
   ansible.builtin.file:
-    path: "{{ data_dir }}"
+    path: "{{ postgres_data_dir }}"
     state: directory
     owner: postgres
     group: postgres
 
 - name: "ensure data dir permissions"
   ansible.builtin.file:
-    path: "{{ data_dir }}"
+    path: "{{ postgres_data_dir }}"
     state: directory
     recurse: yes
     owner: postgres
@@ -92,7 +100,7 @@
 
 - name: "check if postgres data is empty"
   find:
-    paths: "{{ data_dir }}"
+    paths: "{{ postgres_data_dir }}"
   register: data_dir_result
 
 - name: "set data dir facts"

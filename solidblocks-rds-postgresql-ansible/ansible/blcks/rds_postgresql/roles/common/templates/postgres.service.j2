@@ -7,14 +7,14 @@ Wants=network-online.target
 [Service]
 Type=notify
 User=postgres
-ExecStart=/usr/lib/postgresql/{{ postgres_version }}/bin/postgres -D {{ data_dir }}
+ExecStart=/usr/lib/postgresql/{{ postgres_version }}/bin/postgres -D {{ postgres_data_dir }}
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
 KillSignal=SIGINT
 TimeoutSec=infinity
 {% if extra_environment_vars is not none %}
 {% for key, value in extra_environment_vars.items() %}
-Environment="{{key}}={{value | replace('<data_dir>', data_dir)}}"
+Environment="{{key}}={{value | replace('<postgres_data_dir>', postgres_data_dir)}}"
 {% endfor %}
 {% endif %}
 

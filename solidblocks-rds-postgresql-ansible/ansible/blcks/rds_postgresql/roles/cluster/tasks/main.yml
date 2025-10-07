@@ -5,7 +5,7 @@
     public: true
   vars:
     extra_environment_vars:
-      PGPASSFILE: "<data_dir>/.pgpass"
+      PGPASSFILE: "<postgres_data_dir>/.pgpass"
 
 - name: "setting database facts"
   ansible.builtin.set_fact:
@@ -33,7 +33,7 @@
 - name: "install postgres config file"
   ansible.builtin.template:
     src: postgresql.conf.j2
-    dest: "{{ data_dir }}/postgresql.conf"
+    dest: "{{ postgres_data_dir }}/postgresql.conf"
     owner: postgres
     mode: '0600'
   when: is_primary
@@ -41,7 +41,7 @@
 - name: "install authentication config file"
   ansible.builtin.template:
     src: pg_hba.conf.j2
-    dest: "{{ data_dir }}/pg_hba.conf"
+    dest: "{{ postgres_data_dir }}/pg_hba.conf"
     owner: postgres
     mode: '0600'
   when: is_primary
@@ -93,7 +93,7 @@
 - name: "install postgres password file"
   ansible.builtin.template:
     src: .pgpass.j2
-    dest: "{{ data_dir }}/.pgpass"
+    dest: "{{ postgres_data_dir }}/.pgpass"
     owner: postgres
     mode: '0600'
 
