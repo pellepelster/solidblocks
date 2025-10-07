@@ -11,7 +11,7 @@ resource "hcloud_volume_attachment" "example" {
 }
 
 module "example" {
-  source  = "github.com/pellepelster/terraform-null-solidblocks-cloud-init?ref=v0.4.6"
+  source  = "github.com/pellepelster/terraform-null-solidblocks-cloud-init?ref=v0.4.7"
 
   storage = [
     { linux_device = hcloud_volume.example.linux_device, mount_path = "/data1" },
