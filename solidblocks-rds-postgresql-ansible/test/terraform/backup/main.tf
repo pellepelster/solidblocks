@@ -4,15 +4,17 @@ resource "scaleway_iam_application" "backup" {
 }
 
 resource "scaleway_object_bucket" "backup" {
-  name       = "${var.environment}-${var.name}-backup"
-  project_id = data.scaleway_account_project.project.id
+  name          = "${var.environment}-${var.name}-backup"
+  project_id    = data.scaleway_account_project.project.id
+  force_destroy = true
 }
 
 resource "scaleway_iam_api_key" "backup" {
   application_id     = scaleway_iam_application.backup.id
   default_project_id = data.scaleway_account_project.project.id
 }
-data scaleway_account_project "project" {
+
+data "scaleway_account_project" "project" {
   name            = "solidblocks-test"
   organization_id = var.scw_organization_id
 }
