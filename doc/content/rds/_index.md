@@ -54,3 +54,10 @@ the migration is aborted oder cancelled, it can be re-triggered by removing the
 Currently only strictly sequential upgrades are allowed. E.g. to upgrade from PostgreSQL `15` to `17` an intermediate
 upgrade to `16` needs to be performed first.
 {{% /notice %}}
+
+{{% notice style="note" %}}
+Please keep in mind that the old data is kept and will not be deleted. This means that after an upgrade from `14`
+to `15` `/storage/data/${db_instance_name}/14` is still present with the old data
+and `/storage/data/${db_instance_name}/15` will contain the migrated version of the data
+from `/storage/data/${db_instance_name}/14`
+{{% /notice %}}

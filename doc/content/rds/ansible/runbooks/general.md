@@ -17,6 +17,12 @@ systemctl <stop|start|restart> <environment_name>-<instance_name>
 journalctl --follow --unit <environment_name>-<instance_name>
 ```
 
+## Trigger full backup
+
+```shell
+<environment_name>-<instance_name>-backup-full.sh
+```
+
 ## Show available backups
 
 **using the wrapper**

@@ -20,9 +20,12 @@ To prevent service interruption, the standalone, as well as the cluster role, wi
 service if explicitly told to do so. Otherwise, it will just start the service after the initial provisioning and
 otherwise not touch the running instance to avoid potential data loss or interference with manual processes.
 
-### Naming
+### Directory Layout and Naming
 
-To support running multiple instances per host, all names for services, folders, backups, etc. are prefixed with the concatenation of the variables `environment_name` and `instance_name` (`<environment_name>-<instance_name>`). Data is stored in the directory `/storage/data/<environment_name>/<instance_name>`
+To support running multiple instances per host, all names for services, folders, backups, etc. are prefixed with the concatenation of the variables `environment_name` and `instance_name` (`<environment_name>-<instance_name>`). 
+
+The same applies for the data storage directory, that is built according to the naming scheme described [here](../#storage) where the `<instance_name>` is created from `<environment_name>}/<instance_name>`.
+
 
 ### Backup
 

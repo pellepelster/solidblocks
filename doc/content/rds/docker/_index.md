@@ -14,14 +14,22 @@ environment variables.
 
 ## Architecture
 
+The naming conventions for the data directories are implemented according to the common [storage](../#storage) conventions.
 Configuration and backup operations are encoded in the startup script `run.sh` that implements the following flow
 
 ```mermaid
 graph TD
-    startup[container startup] -->|get postgres major version| set_data_dir["set data dir to\n/${major_version}"]
-    set_data_dir -->|get previous postgres major version| has_old_data{"has old data in\n/${previous_version}"}
-    has_old_data -->|no| data_dir_empty{"data dir '/${major_version}'\nis empty?"}
-    has_old_data -->|yes| migrate_data["migrate data from /${previous_version}\n to /${major_version}"]
+    startup[container startup] -->|get postgres major version| set_data_dir["`set postgres_data_dir to 
+    **&lt;postgres_data_base_dir&gt;/&lt;major_version&gt;**`"]
+    set_data_dir -->|get previous postgres major version| has_old_data{"`has is old 
+    data present in 
+    **&lt;postgres_data_base_dir&gt;/
+    &lt;previous_version&gt;**`"}
+    has_old_data -->|no| data_dir_empty{"` is **&lt;postgres_data_dir&gt;** 
+    is empty`"}
+    has_old_data -->|yes| migrate_data["`migrate data from **&lt;postgres_data_base_dir&gt;/
+    &lt;previous_version&gt;** to **&lt;postgres_data_base_dir&gt;/
+    &lt;version&gt;**`"]
     backup_exists -->|no| init_db
     data_dir_empty -->|no| init_db
     data_dir_empty -->|yes| backup_exists{backup exists?}
@@ -41,27 +49,20 @@ The PostgreSQL version can be selected via specific docker image tags
 * `ghcr.io/pellepelster/solidblocks-rds-postgresql:15-{{% env "SOLIDBLOCKS_VERSION" %}}`
 * `ghcr.io/pellepelster/solidblocks-rds-postgresql:16-{{% env "SOLIDBLOCKS_VERSION" %}}`
 * `ghcr.io/pellepelster/solidblocks-rds-postgresql:17-{{% env "SOLIDBLOCKS_VERSION" %}}`
+* `ghcr.io/pellepelster/solidblocks-rds-postgresql:18-{{% env "SOLIDBLOCKS_VERSION" %}}`
 
 Each docker image includes at least the previous PostgreSQL version for version migration purposes. The current version
 can be shown with `pg_versions` and the versions are stored at `/usr/libexec/postgresql/${postgresql_major_version}`
 
-### Upgrade
+### Version upgrades
 
-Based on the startup logic explained above and the fact that the database data is stored in a version specific
-directory `/storage/data/${db_instance_name}/${postgresql_major_version}` a version upgrade looks like this:
+The database can be updated simply by switching to antother docker image tag, where all versions from the official PostgreSQL repository are available as described in the general [documentation](../#packages).
+
+For details of the update process please refer to this [part](../#version-upgrades) of the documentation, the following steps are recommended for a version upgrade:
 
 * execute a full backup (`backup-full.sh`)
 * stop container with currently running version
 * start new container with the same configuration but a new PostgreSQL version
-    * the new version will look for any data from a previous version and start a migration
-      using [pg_upgrade](https://www.postgresql.org/docs/current/pgupgrade.html)
-
-{{% notice style="note" %}}
-Please keep in mind that the old data is kept and will not be deleted. This means that after an upgrade from `14`
-to `15` `/storage/data/${db_instance_name}/14` is still present with the old data
-and `/storage/data/${db_instance_name}/15` will contain the migrated version of the data
-from `/storage/data/${db_instance_name}/14`
-{{% /notice %}}
 
 ## Configuration
 
@@ -144,7 +145,7 @@ unique `${database_id}`s
 
 {{% notice tip %}}
 `DB_USERNAME_${database_id}` and `DB_PASSWORD_${database_id}` can be changed at any time and will be re-provisioned on
-start to allow for easy password ropsqltation or username change. Changing `DB_DATABASE_${database_id}` is currently not
+start to allow for easy password rotation or username change. Changing `DB_DATABASE_${database_id}` is currently not
 supported.
 {{% /notice %}}
 

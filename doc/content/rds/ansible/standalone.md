@@ -32,6 +32,18 @@ collections:
       backup_password: foobar
 ```
 
+### Version upgrades
+
+The database can be updated by setting the roles `<postgres_version>` variable to the desired major version, where all versions from the official PostgreSQL repository are available as described in the general [documentation](../#packages). 
+
+
+For details of the update process please refer to this [part](../#version-upgrades) of the documentation, the following steps are recommended for a version upgrade:
+
+* execute a full backup [backup](../runbooks/general/#trigger-full-backup)
+* update `<postgres_version>` to desired target version
+* execute Ansible playbook
+
+
 ## Provisioning Flow
 
 ```mermaid
