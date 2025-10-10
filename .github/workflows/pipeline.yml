@@ -363,6 +363,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Restore cached layers
+        id: docker-layers-cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .cache
+          key: ${{ runner.os }}-layers
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx

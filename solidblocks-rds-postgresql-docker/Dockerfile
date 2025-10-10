@@ -6,7 +6,6 @@ RUN apt-get update && \
     curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
     . /etc/os-release && \
     echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-RUN apt-get update
 
 RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen && \
     locale-gen && \
@@ -14,10 +13,11 @@ RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen && \
 
 FROM base AS build_base
 
-RUN apt-get -y install \
-    git \
-    make \
-    gcc
+RUN apt-get update && \
+    apt-get -y install \
+        git \
+        make \
+        gcc
 
 FROM build_base AS builder
 ARG POSTGRES_VERSION=""
@@ -85,23 +85,21 @@ RUN addgroup --gid $GID $GROUP \
   --gid $GID \
   --uid $UID
 
-#postgresql-${POSTGRES_PREVIOUS_VERSION}-contrib \
-#postgresql-${POSTGRES_VERSION}-contrib \
-
-RUN apt-get -y install \
-    postgresql-${POSTGRES_PREVIOUS_VERSION} \
-    postgresql-${POSTGRES_VERSION} \
-    postgresql-${POSTGRES_VERSION}-cron \
-    jq \
-    bash \
-    coreutils \
-    openssh-client \
-    curl \
-    pgbackrest \
-    util-linux \
-    ripgrep \
-    uuid-runtime \
-    netcat-traditional
+RUN apt-get update && \
+    apt-get -y install \
+        postgresql-${POSTGRES_PREVIOUS_VERSION} \
+        postgresql-${POSTGRES_VERSION} \
+        postgresql-${POSTGRES_VERSION}-cron \
+        jq \
+        bash \
+        coreutils \
+        openssh-client \
+        curl \
+        pgbackrest \
+        util-linux \
+        ripgrep \
+        uuid-runtime \
+        netcat-traditional
 
 RUN chown -R ${USER}:${USER} ${USER}
 RUN mkdir -p /run/postgresql/ && chown -R ${USER}:${USER} /run/postgresql/
