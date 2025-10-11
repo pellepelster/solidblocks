@@ -1,4 +1,4 @@
-function current_version() {
+function version_current() {
   git describe --tags --abbrev=0
 }
 
@@ -8,16 +8,28 @@ function version() {
       if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
         echo "${GITHUB_REF_NAME:-}"
       else
-        echo "v0.0.0-dev"
+        echo "v0.0.0"
       fi
     else
-      echo "$(current_version)-dev"
+      echo "$(version_current)"
     fi
   else
     echo "${VERSION}"
   fi
 }
 
-function version_rc() {
-  echo "$(version)-rc"
+function version_ensure() {
+    local version="${1:-}"
+
+    if [[ -z "${version}" ]]; then
+      echo "no version set"
+      exit 1
+    fi
+
+    if [[ "${version}" =~ ^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-rc[0-9]{1,2})?$ ]]; then
+      echo "version: '${version}'"
+    else
+      echo "invalid version '${version}'"
+      exit 1
+    fi
 }

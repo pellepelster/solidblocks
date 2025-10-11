@@ -37,7 +37,7 @@ class RdsTestBed {
       createAndStartPostgresContainer(
           "ghcr.io/pellepelster/solidblocks-rds-postgresql:$postgresVersion-${
                 System.getenv("VERSION") ?: "snapshot"
-            }-rc",
+            }",
           environment,
           storageDir,
           password,

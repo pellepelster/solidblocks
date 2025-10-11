@@ -8,7 +8,6 @@ source "${DIR}/../solidblocks-shell/lib/software.sh"
 source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
-export VERSION_RC="$(version_rc)"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
@@ -39,13 +38,14 @@ function task_build {
       --build-arg VERSION=${VERSION} \
       --platform linux/amd64 \
       --push \
-      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION_RC}" \
+      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-snapshot" \
+      --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:snapshot" \
       .
   )
 }
 
 function task_release_artifacts {
-  docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION_RC}"
+  docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-snapshot"
 }
 
 function task_release_prepare {

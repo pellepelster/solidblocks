@@ -44,7 +44,7 @@ class RdsPostgresqlInvalidConfigIntegrationTest {
 
     val container =
         GenericContainer(
-                "ghcr.io/pellepelster/solidblocks-rds-postgresql:${System.getenv("VERSION") ?: "snapshot"}-rc",
+                "ghcr.io/pellepelster/solidblocks-rds-postgresql:${System.getenv("VERSION") ?: "snapshot"}",
             )
             .apply {
               withImagePullPolicy(PullPolicy.alwaysPull())

@@ -19,6 +19,7 @@ source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_clean() {
+    rm -rf ${DIR}/dist
     rm -rf ${DIR}/build
     rm -rf ${DIR}/tests/terraform/*.terraform*
     rm -rf ${DIR}/tests/terraform/*.tfstate*

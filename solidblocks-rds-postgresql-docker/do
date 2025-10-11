@@ -7,7 +7,6 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
-export VERSION_RC="$(version_rc)"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
@@ -82,8 +81,8 @@ function task_build {
         --cache-from=type=local,src=${CACHE_DIR} \
         --build-arg POSTGRES_VERSION=${postgres_version} \
         --build-arg POSTGRES_PREVIOUS_VERSION=${postgres_previous_version} \
-        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION_RC}" \
-        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-snapshot-rc" \
+        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-snapshot" \
+        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-snapshot" \
         .
     done
   )
@@ -91,7 +90,7 @@ function task_build {
 
 function task_release_artifacts {
   for postgres_version in ${POSTGRES_VERSIONS}; do
-    docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION_RC}"
+    docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-snapshot"
   done
 }
 

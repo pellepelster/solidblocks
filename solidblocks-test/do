@@ -7,7 +7,6 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
-export VERSION_RC="$(version_rc)"
 
 TESTCONTAINER_IMAGES="debian-10 debian-11 debian-12 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04"
 

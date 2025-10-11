@@ -29,6 +29,8 @@ function ensure_environment {
 }
 
 function task_build {
+    version_ensure "${VERSION}"
+
     for component in ${COMPONENTS}; do
       (
         echo "================================================================================="
@@ -44,11 +46,7 @@ function task_build {
 
 function task_release_prepare {
   export VERSION="${1:-}"
-
-  if [[ -z "${VERSION}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
+  version_ensure "${VERSION}"
 
   for component in ${COMPONENTS}; do
     (
@@ -220,14 +218,9 @@ function task_release_check() {
   local previous_version="${previous_tag#v}"
 
   export VERSION="${1:-}"
-
-  if [[ -z "${VERSION}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
+  version_ensure "${VERSION}"
 
   echo "checking for release version '${VERSION}'"
-
   task_build
   task_build_documentation
 

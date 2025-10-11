@@ -258,13 +258,13 @@ class RdsPostgresqlLocalBackupIntegrationTest {
         runCommand(
             "ghcr.io/pellepelster/solidblocks-rds-postgresql:$version-${
                 System.getenv("VERSION") ?: "snapshot"
-            }-rc", "psql", "--version"
+            }", "psql", "--version"
         ) shouldStartWith "psql (PostgreSQL) ${version}"
 
         runCommand(
             "ghcr.io/pellepelster/solidblocks-rds-postgresql:$version-${
                 System.getenv("VERSION") ?: "snapshot"
-            }-rc", "uuidgen", "--version"
+            }", "uuidgen", "--version"
         ) shouldStartWith "uuidgen from util-linux"
     }
 
