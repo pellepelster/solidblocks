@@ -369,14 +369,20 @@ jobs:
         with:
           path: |
             .cache
-          key: ${{ runner.os }}-layers
+          key: ${{ runner.os }}-docker-layers
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build
         run: solidblocks-rds-postgresql-docker/do build
-
+      - name: Save cached layers
+        id: cache-primes-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .cache
+          key: ${{ runner.os }}-docker-layers
   solidblocks-rds-postgresql-test:
     runs-on: ubuntu-24.04
     needs:
