@@ -232,11 +232,15 @@ function task_release_check() {
   task_build_documentation
 
   local previous_version_escaped="${previous_version//\./\\.}"
-  echo "checking for previous version '${previous_version}'"
 
-  if git --no-pager grep "${previous_version_escaped}" | greo -v "poetry.lock" | grep -v CHANGELOG.md | grep -v "doc/content/runbooks/paperback" | grep -v README.md; then
-    echo "previous version '${previous_version_escaped}' found in repository"
-    exit 1
+  if [[ "${VERSION}" == *"pre"* ]]; then
+    echo "skipping check for pre-version '${VERSION}'"
+  else
+    echo "checking for previous version '${previous_version}'"
+    if git --no-pager grep "${previous_version_escaped}" | grep -v "poetry.lock" | grep -v CHANGELOG.md | grep -v "doc/content/runbooks/paperback" | grep -v README.md; then
+      echo "previous version '${previous_version_escaped}' found in repository"
+      exit 1
+    fi
   fi
 
   if [[ "${VERSION}" == *"pre"* ]]; then
