@@ -279,22 +279,47 @@ function task_release_prepare {
   rm "${DIR}/../doc/content/rds/ansible/rds_postgresql/cluster.md"
 }
 
+function s3cmd_wrapper() {
+    s3cmd \
+      --access_key ${SCW_ACCESS_KEY_ID} \
+      --secret_key ${SCW_SECRET_ACCESS_KEY} \
+      --host "s3.${SCW_REGION}.scw.cloud" \
+      --bucket-location "${SCW_REGION}" \
+      --ssl \
+      $@
+}
+
+function task_clean_data {
+    export SCW_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/scaleway/test/access_key_id)}" #
+    export SCW_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/scaleway/test/secret_key)}"
+    export SCW_REGION="fr-par"
+
+    bucket="test-${TEST_ID}-backup"
+    echo "removing objects from bucket '${bucket}'"
+
+    local buckets=$(s3cmd_wrapper ls | awk '{print $NF}')
+
+    for bucket in ${buckets}; do
+      local bucket_name=${bucket#"s3://"}
+      echo "cleaning objects in bucket '${bucket}'"
+      s3cmd_wrapper rm ${bucket} \
+        --recursive \
+        --host-bucket "${bucket_name}.s3.${SCW_REGION}.scw.cloud" \
+        --force
+    done
+}
+
 function task_clean {
-    #export AWS_DEFAULT_REGION="eu-central-1"
-    #export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/scaleway/test/access_key_id)}" #
-    #export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/scaleway/test/secret_key)}"
 
-    #cls3 --bucketName "test-${TEST_ID}-backup" --endpointUrl "https://test-${TEST_ID}-backup.s3.fr-par.scw.cloud"
-
+    task_clean_data
     prepare_env
 
     test_terraform "storage-standalone" destroy -auto-approve
     test_terraform "backup" destroy -auto-approve
     test_terraform "standalone" destroy -auto-approve
 
-
-    #rm -f "${DIR}/test.id"
-    #rm -rf "${DIR}/build"
+    rm -f "${DIR}/test.id"
+    rm -rf "${DIR}/build"
 }
 
 function task_format {
@@ -482,6 +507,7 @@ case ${arg} in
 
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
+  clean-data) task_clean_data "$@" ;;
   release-artifacts) ;;
   release-prepare) task_release_prepare ;;
   release-test);;

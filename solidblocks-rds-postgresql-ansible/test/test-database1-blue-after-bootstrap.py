@@ -26,7 +26,7 @@ def test_extension_postgis(conn):
 
 def test_extension_pglogical(conn):
     res = conn.execute("SELECT extversion FROM pg_extension WHERE extname = 'pglogical';")
-    assert res.fetchone()[0] == "2.4.5"
+    assert res.fetchone()[0] == "2.4.6"
 
 
 def test_extension_pgaudit(conn):
