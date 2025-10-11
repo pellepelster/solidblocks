@@ -9,7 +9,7 @@
 - name: "fail if data version too new"
   fail:
     msg: "downgrade not supported found postgres data for version {{ result.stdout }} but postgres version {{ postgres_version }} was requested"
-  when: result.stdout > postgres_version
+  when: (result.stdout | int) > postgres_version
 
 - name: "populate service facts"
   ansible.builtin.service_facts:

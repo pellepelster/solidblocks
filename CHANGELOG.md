@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.7-pre
+
+* add version upgrade support to [RDS PostgreSQL Ansible role](https://pellepelster.github.io/solidblocks/rds/ansible/)
+* update and streamline documentation for [RDS](https://pellepelster.github.io/solidblocks/rds/) Docker and Ansible
+* use Debian as base image for [RDS PostgreSQL Docker](https://pellepelster.github.io/solidblocks/rds/docker/)
+
 ## v0.4.6
 
 * add [blcks hetzner asg *](https://pellepelster.github.io/solidblocks/cli/asg/) commands to manage servers attached to hetzner load balancers

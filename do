@@ -57,6 +57,10 @@ function task_release_prepare {
       "./do" release-prepare "${VERSION}"
     )
   done
+
+  task_build
+  task_build_documentation
+
 }
 
 function task_release_test {
@@ -230,7 +234,7 @@ function task_release_check() {
   local previous_version_escaped="${previous_version//\./\\.}"
   echo "checking for previous version '${previous_version}'"
 
-  if git --no-pager grep "${previous_version_escaped}" | grep -v CHANGELOG.md | grep -v "doc/content/runbooks/paperback" | grep -v README.md; then
+  if git --no-pager grep "${previous_version_escaped}" | greo -v "poetry.lock" | grep -v CHANGELOG.md | grep -v "doc/content/runbooks/paperback" | grep -v README.md; then
     echo "previous version '${previous_version_escaped}' found in repository"
     exit 1
   fi
