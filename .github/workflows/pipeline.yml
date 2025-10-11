@@ -368,7 +368,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
-            .cache
+            solidblocks-rds-postgresql-docker/.cache
           key: ${{ runner.os }}-docker-layers
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -381,7 +381,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
-            .cache
+            solidblocks-rds-postgresql-docker/.cache
           key: ${{ runner.os }}-docker-layers
   solidblocks-rds-postgresql-test:
     runs-on: ubuntu-24.04
