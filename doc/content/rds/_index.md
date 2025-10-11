@@ -18,9 +18,9 @@ solutions.
 ### Packages
 
 Both variants use the official [PostgreSQL](https://www.postgresql.org/download/linux/debian/) package repositories so
-the database is always installed at `/usr/lib/postgresql/${postgres_version}/`
+the database is always installed at `/usr/lib/postgresql/<postgres_version>/`
 
-### Storage
+### Directory Layout and Naming
 
 The storage path is built using the following pattern `<data_dir>/<instance_name>/<postgres_version>`.
 
@@ -57,7 +57,7 @@ upgrade to `16` needs to be performed first.
 
 {{% notice style="note" %}}
 Please keep in mind that the old data is kept and will not be deleted. This means that after an upgrade from `14`
-to `15` `/storage/data/${db_instance_name}/14` is still present with the old data
-and `/storage/data/${db_instance_name}/15` will contain the migrated version of the data
-from `/storage/data/${db_instance_name}/14`
+to `15` `/storage/data/<db_instance_name>/14` is still present with the old data
+and `/storage/data/<db_instance_name>/15` will contain the migrated version of the data
+from `/storage/data/<db_instance_name>/14`
 {{% /notice %}}

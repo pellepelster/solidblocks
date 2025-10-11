@@ -14,7 +14,7 @@ environment variables.
 
 ## Architecture
 
-The naming conventions for the data directories are implemented according to the common [storage](../#storage) conventions.
+The naming conventions for the data directories are implemented according to the common [storage](../##directory-layout-and-naming) conventions.
 Configuration and backup operations are encoded in the startup script `run.sh` that implements the following flow
 
 ```mermaid

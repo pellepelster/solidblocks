@@ -24,7 +24,7 @@ otherwise not touch the running instance to avoid potential data loss or interfe
 
 To support running multiple instances per host, all names for services, folders, backups, etc. are prefixed with the concatenation of the variables `environment_name` and `instance_name` (`<environment_name>-<instance_name>`). 
 
-The same applies for the data storage directory, that is built according to the naming scheme described [here](../#storage) where the `<instance_name>` is created from `<environment_name>}/<instance_name>`.
+The same applies for the data storage directory, that is built according to the naming scheme described [here](../##directory-layout-and-naming) where the `<instance_name>` is created from `<environment_name>/<instance_name>`.
 
 
 ### Backup
