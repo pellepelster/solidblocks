@@ -35,7 +35,7 @@ Nodes that are attached to replication slots have to be on the same timeline id 
 ```yaml
 ---
 collections:
-  - name: https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-rds_postgresql-{{% env "SOLIDBLOCKS_VERSION_RAW" %}}.tar.gz
+  - name: https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks-rds_postgresql-{{% env "SOLIDBLOCKS_VERSION" %}}.tar.gz
     type: url
 ```
 

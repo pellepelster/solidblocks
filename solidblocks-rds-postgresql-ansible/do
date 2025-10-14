@@ -273,7 +273,7 @@ function task_build {
 
 function task_release_prepare {
   local version="${1:-}"
-  rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml" --replace "\${1}"${VERSION#"v"}"\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp"
+  rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml" --replace "\${1}"${VERSION}"\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp"
   mv "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp" "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml"
   blcks docs ansible --collection "${DIR}/ansible/blcks/rds_postgresql" --target "${DIR}/../doc/content/rds/ansible/rds_postgresql"
   rm "${DIR}/../doc/content/rds/ansible/rds_postgresql/cluster.md"
