@@ -14,7 +14,7 @@ Reusable Python functions for CLI infrastructure automation and developer experi
 
 **requirements.txt**
 ```python
-https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/solidblocks_do-{{% env "SOLIDBLOCKS_VERSION_RAW" %}}-py3-none-any.whl
+https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/solidblocks_do-{{% env "SOLIDBLOCKS_VERSION" %}}-py3-none-any.whl
 click==8.1.7
 ```
 
