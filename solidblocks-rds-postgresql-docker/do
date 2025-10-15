@@ -14,6 +14,12 @@ DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
 DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
 
+if [[ -n "${BUILD_LOCAL:-}" ]]; then
+  echo "running local build"
+  DOCKER_OPTIONS=""
+  DOCKER_PLATFORM="linux/amd64"
+fi
+
 POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-14 15 16 17 18}"
 
 TEMP_DIR="${DIR}/.test_$$"
