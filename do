@@ -172,6 +172,7 @@ function prepare_documentation_env {
   done
   export SOLIDBLOCKS_VERSION="$VERSION"
   export SOLIDBLOCKS_VERSION_RAW="${VERSION#"v"}"
+  export SOLIDBLOCKS_VERSION_PYTHON="${SOLIDBLOCKS_VERSION_RAW//-/}"
 }
 
 function task_build_documentation {
