@@ -1,11 +1,10 @@
 package de.solidblocks.hetzner.dns.model
 
 import de.solidblocks.hetzner.dns.MultiFormatInstantDeserializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
-
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
 @OptIn(ExperimentalTime::class)
@@ -16,12 +15,11 @@ data class ZoneResponse(
     val paused: Boolean? = null,
     val project: String,
     val status: String,
-    val ttl: Int? = null ,
-    @Serializable(with = MultiFormatInstantDeserializer::class)
-    val created: Instant,
+    val ttl: Int? = null,
+    @Serializable(with = MultiFormatInstantDeserializer::class) val created: Instant,
     @SerialName("legacy_ns") val legacyNs: List<String> = emptyList(),
     val ns: List<String> = emptyList(),
-    @SerialName("records_count") val recordsCount: Int ? = null,
+    @SerialName("records_count") val recordsCount: Int? = null,
     val modified: String? = null,
     val verified: String? = null,
     val permission: String? = null,

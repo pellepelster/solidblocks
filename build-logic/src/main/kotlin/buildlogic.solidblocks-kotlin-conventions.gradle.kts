@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
-    //id("com.diffplug.spotless")
+    id("com.diffplug.spotless")
     kotlin("plugin.serialization")
 }
 
@@ -60,11 +60,9 @@ java {
     }
 }
 
-/*
 spotless {
     kotlin {
         ktlint()
         ktfmt()
     }
 }
-*/

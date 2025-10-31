@@ -8,9 +8,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 enum class ImageType {
-    SYSTEM,
-    SNAPSHOT,
-    APP,
+  SYSTEM,
+  SNAPSHOT,
+  APP,
 }
 
 @Serializable
@@ -19,8 +19,8 @@ data class ImagesListResponseWrapper(
     override val meta: MetaResponse,
 ) : ListResponse<ImageResponse> {
 
-    override val list: List<ImageResponse>
-        get() = images
+  override val list: List<ImageResponse>
+    get() = images
 }
 
 @Serializable
@@ -34,20 +34,19 @@ data class ImageResponse(override val id: Long, override val name: String?, val 
 
 class HetznerImagesApi(private val api: HetznerApi) : HetznerDeleteResourceApi<ImageResponse> {
 
-    override suspend fun listPaged(
-        page: Int,
-        perPage: Int,
-        filter: Map<String, FilterValue>,
-        labelSelectors: Map<String, LabelSelectorValue>
-    ): ImagesListResponseWrapper =
-        api.get("v1/images?${listQuery(page, perPage, filter, labelSelectors)}")
-            ?: throw RuntimeException("failed to list images")
+  override suspend fun listPaged(
+      page: Int,
+      perPage: Int,
+      filter: Map<String, FilterValue>,
+      labelSelectors: Map<String, LabelSelectorValue>,
+  ): ImagesListResponseWrapper =
+      api.get("v1/images?${listQuery(page, perPage, filter, labelSelectors)}")
+          ?: throw RuntimeException("failed to list images")
 
-    override suspend fun delete(id: Long) = api.simpleDelete("v1/images/$id")
+  override suspend fun delete(id: Long) = api.simpleDelete("v1/images/$id")
 
-    suspend fun get(id: Long) = api.get<ImageResponseWrapper>("v1/images/$id")?.image
+  suspend fun get(id: Long) = api.get<ImageResponseWrapper>("v1/images/$id")?.image
 
-    suspend fun get(name: String, filter: Map<String, FilterValue> = emptyMap()) =
-        list(mapOf("name" to FilterValue.Equals(name)) + filter).singleOrNull()
-
+  suspend fun get(name: String, filter: Map<String, FilterValue> = emptyMap()) =
+      list(mapOf("name" to FilterValue.Equals(name)) + filter).singleOrNull()
 }

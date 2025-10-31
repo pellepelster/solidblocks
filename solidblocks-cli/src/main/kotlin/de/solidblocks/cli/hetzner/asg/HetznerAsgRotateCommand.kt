@@ -32,29 +32,29 @@ class PlacementGroupReference(val reference: String)
 
 class HetznerAsgCommand : CliktCommand(name = "asg") {
 
-    override fun help(context: Context) = "Manage and update servers attached to Hetzner load balancers"
+  override fun help(context: Context) =
+      "Manage and update servers attached to Hetzner load balancers"
 
-    override fun run() {
-    }
-
+  override fun run() {}
 }
 
 class HetznerAsgRotateCommand : CliktCommand(name = "rotate") {
 
-    init {
-        context {
-            helpFormatter = {
-                MordantMarkdownHelpFormatter(
-                    it,
-                    showDefaultValues = true,
-                    showRequiredTag = true,
-                    requiredOptionMarker = "*"
-                )
-            }
-        }
+  init {
+    context {
+      helpFormatter = {
+        MordantMarkdownHelpFormatter(
+            it,
+            showDefaultValues = true,
+            showRequiredTag = true,
+            requiredOptionMarker = "*",
+        )
+      }
     }
+  }
 
-    override fun help(context: Context) = """
+  override fun help(context: Context) =
+      """
         ## Overview
         
         A rolling replace for cloud servers attached to a Hetzner load balancer. All servers that are 
@@ -80,73 +80,95 @@ class HetznerAsgRotateCommand : CliktCommand(name = "rotate") {
         If a server gets detached from a load balancer, it will automatically be re-attached. 
         To achieve this, the load balancer association is stored in the 
         `blcks.de/load-balancer-id` labels.
-    """.trimIndent()
+    """
+          .trimIndent()
 
-    val loadbalancer by option(help = "id or name of the loadbalancer to attach new servers to").required()
+  val loadbalancer by
+      option(help = "id or name of the loadbalancer to attach new servers to").required()
 
-    val location by option(help = "id or name of the location for new servers").default("nbg1")
+  val location by option(help = "id or name of the location for new servers").default("nbg1")
 
-    val serverType by option(help = "id or name of the server type for new servers").default("cx22")
+  val serverType by option(help = "id or name of the server type for new servers").default("cx22")
 
-    val image by option(help = "id or name of the image to use for new servers").default("debian-12")
+  val image by option(help = "id or name of the image to use for new servers").default("debian-12")
 
-    val placementGroup by option(help = "id or name of the placement group to use for new servers")
+  val placementGroup by option(help = "id or name of the placement group to use for new servers")
 
-    val enableIpv4 by option(help = "enable IpV4 for new servers").boolean().default(true)
+  val enableIpv4 by option(help = "enable IpV4 for new servers").boolean().default(true)
 
-    val enableIpv6 by option(help = "enable IpV6 for new servers").boolean().default(true)
+  val enableIpv6 by option(help = "enable IpV6 for new servers").boolean().default(true)
 
-    val sshKeys: List<String> by option(
-        "--ssh-key",
-        help = "id or name of the ssh key(s) to use for new servers"
-    ).multiple()
+  val sshKeys: List<String> by
+      option(
+              "--ssh-key",
+              help = "id or name of the ssh key(s) to use for new servers",
+          )
+          .multiple()
 
-    val firewalls: List<String> by option(
-        "--firewall",
-        help = "id or name of the firewall(s) to use for new servers"
-    ).multiple()
+  val firewalls: List<String> by
+      option(
+              "--firewall",
+              help = "id or name of the firewall(s) to use for new servers",
+          )
+          .multiple()
 
-    val networks: List<String> by option(
-        "--network",
-        help = "id or name of the networks(s) to use for new servers"
-    ).multiple()
+  val networks: List<String> by
+      option(
+              "--network",
+              help = "id or name of the networks(s) to use for new servers",
+          )
+          .multiple()
 
-    val serverNamePrefix by option(help = "name prefix for the servers to create, if not provided the load balancer name will be used as prefix")
+  val serverNamePrefix by
+      option(
+          help =
+              "name prefix for the servers to create, if not provided the load balancer name will be used as prefix",
+      )
 
-    val userData by option(help = "user data for newly created servers").file(
-        mustExist = true, canBeFile = true, canBeDir = false
-    ).required()
+  val userData by
+      option(help = "user data for newly created servers")
+          .file(
+              mustExist = true,
+              canBeFile = true,
+              canBeDir = false,
+          )
+          .required()
 
-    val replicas by option(help = "number of replicas").int().default(1)
+  val replicas by option(help = "number of replicas").int().default(1)
 
-    private val hcloudToken by option(
-        "--hcloud-token",
-        help = "the api token for the project, can also be provided via the environment variable *HCLOUD_TOKEN*",
-        envvar = "HCLOUD_TOKEN",
-    ).required()
+  private val hcloudToken by
+      option(
+              "--hcloud-token",
+              help =
+                  "the api token for the project, can also be provided via the environment variable *HCLOUD_TOKEN*",
+              envvar = "HCLOUD_TOKEN",
+          )
+          .required()
 
+  override fun run() {
+    val result =
+        HetznerAsg(hcloudToken)
+            .rotate(
+                LoadBalancerReference(loadbalancer),
+                LocationReference(location),
+                ServerTypeReference(serverType),
+                ImageReference(image),
+                userData.readText(),
+                replicas,
+                serverNamePrefix,
+                sshKeys.map { SSHKeyReference(it) },
+                firewalls.map { FirewallReference(it) },
+                networks.map { NetworkReference(it) },
+                placementGroup?.let { PlacementGroupReference(it) },
+                enableIpv4,
+                enableIpv6,
+            )
 
-    override fun run() {
-        val result = HetznerAsg(hcloudToken).rotate(
-            LoadBalancerReference(loadbalancer),
-            LocationReference(location),
-            ServerTypeReference(serverType),
-            ImageReference(image),
-            userData.readText(),
-            replicas,
-            serverNamePrefix,
-            sshKeys.map { SSHKeyReference(it) },
-            firewalls.map { FirewallReference(it) },
-            networks.map { NetworkReference(it) },
-            placementGroup?.let { PlacementGroupReference(it) },
-            enableIpv4,
-            enableIpv6,
-        )
-
-        when (result) {
-            ASG_ROTATE_STATUS.OK -> logInfo("rollout finished")
-            ASG_ROTATE_STATUS.TIMEOUT -> throw CliktError("rollout did not finish within timeout")
-            ASG_ROTATE_STATUS.LOADBALANCER_NOT_FOUND -> throw CliktError("loadbalancer '${loadbalancer}' not found")
-        }
+    when (result) {
+      AsgRotateStatus.OK -> logInfo("rollout finished")
+      AsgRotateStatus.TIMEOUT -> throw CliktError("rollout did not finish within timeout")
+      AsgRotateStatus.LOADBALANCER_NOT_FOUND ->
+          throw CliktError("loadbalancer '$loadbalancer' not found")
     }
+  }
 }

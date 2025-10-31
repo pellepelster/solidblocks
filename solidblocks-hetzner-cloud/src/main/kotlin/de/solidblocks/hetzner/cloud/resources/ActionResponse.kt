@@ -2,19 +2,16 @@ package de.solidblocks.hetzner.cloud.resources
 
 import kotlinx.serialization.Serializable
 
-@Serializable
-data class ActionResponseWrapper(val action: ActionResponse)
+@Serializable data class ActionResponseWrapper(val action: ActionResponse)
 
-@Serializable
-data class ActionError(val code: String, val message: String)
+@Serializable data class ActionError(val code: String, val message: String)
 
-@Serializable
-data class ActionResource(val id: Long, val type: String)
+@Serializable data class ActionResource(val id: Long, val type: String)
 
 enum class ActionStatus {
-    RUNNING,
-    SUCCESS,
-    ERROR,
+  RUNNING,
+  SUCCESS,
+  ERROR,
 }
 
 @Serializable
@@ -31,6 +28,5 @@ data class ActionResponse(
 
 @Serializable
 data class ActionsListResponseWrapper(
-    val actions: List<ActionResponse>
+    val actions: List<ActionResponse>,
 )
-

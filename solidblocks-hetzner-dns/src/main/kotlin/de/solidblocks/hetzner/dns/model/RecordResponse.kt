@@ -1,10 +1,10 @@
 package de.solidblocks.hetzner.dns.model
 
 import de.solidblocks.hetzner.dns.MultiFormatInstantDeserializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
 @OptIn(ExperimentalTime::class)
@@ -15,8 +15,6 @@ data class RecordResponse(
     val value: String,
     val ttl: Int? = null,
     val type: RecordType,
-    @Serializable(with = MultiFormatInstantDeserializer::class)
-    val created: Instant,
-    @Serializable(with = MultiFormatInstantDeserializer::class)
-    val modified: Instant? = null,
+    @Serializable(with = MultiFormatInstantDeserializer::class) val created: Instant,
+    @Serializable(with = MultiFormatInstantDeserializer::class) val modified: Instant? = null,
 )
