@@ -1,10 +1,11 @@
 # Changelog
 
-## v0.4.7-rc1
+## v0.4.7
 
 * add version upgrade support to [RDS PostgreSQL Ansible role](https://pellepelster.github.io/solidblocks/rds/ansible/)
 * update and streamline documentation for [RDS](https://pellepelster.github.io/solidblocks/rds/) Docker and Ansible
 * use Debian as base image for [RDS PostgreSQL Docker](https://pellepelster.github.io/solidblocks/rds/docker/)
+* add PostgreSQL 18 to [RDS PostgreSQL Docker](https://pellepelster.github.io/solidblocks/rds/docker/)
 
 ## v0.4.6
 
