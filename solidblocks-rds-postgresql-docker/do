@@ -74,6 +74,7 @@ function task_build {
       local postgres_previous_version_path=${postgres_previous_version}
 
       echo "========================================================================"
+      echo "version: ${VERSION}"
       echo "postgres_version: ${postgres_version}"
       echo "postgres_previous_version: ${postgres_previous_version}"
       echo "docker platform: ${DOCKER_PLATFORM}"

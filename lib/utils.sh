@@ -11,7 +11,8 @@ function version() {
         echo "v0.0.0"
       fi
     else
-      echo "$(version_current)"
+      echo "v0.0.0"
+      #echo "$(version_current)"
     fi
   else
     echo "${VERSION}"
