@@ -1,0 +1,15 @@
+services:
+  docker:
+    image: registry:3
+    volumes:
+      - data:/data
+    environment:
+      - "REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data"
+      - "OTEL_TRACES_EXPORTER=none"
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+
+volumes:
+  data:
