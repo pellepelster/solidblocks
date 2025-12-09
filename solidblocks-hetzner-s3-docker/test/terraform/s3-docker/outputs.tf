@@ -12,3 +12,12 @@ output "s3_api_host" {
   value = module.s3_docker.s3_api_host
 }
 
+output "garage_admin_address" {
+  value = module.s3_docker.garage_admin_address
+}
+
+output "garage_admin_token" {
+  value     = module.s3_docker.garage_admin_token
+  sensitive = true
+}
+

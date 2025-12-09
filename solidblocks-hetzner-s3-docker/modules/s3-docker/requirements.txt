@@ -1,0 +1,1 @@
+git+https://git.deuxfleurs.fr/garage-sdk/garage-admin-sdk-python

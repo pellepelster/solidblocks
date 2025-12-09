@@ -20,9 +20,9 @@ resource "hcloud_zone_rrset" "s3_admin" {
   ]
 }
 
-resource "hcloud_zone_rrset" "s3_web" {
+resource "hcloud_zone_rrset" "docker" {
   zone = var.dns_zone
-  name = local.s3_web_domain
+  name = local.docker_registry_domain
   type = "A"
   ttl  = 60
 
@@ -32,12 +32,12 @@ resource "hcloud_zone_rrset" "s3_web" {
 }
 
 resource "hcloud_zone_rrset" "s3_web_bucket" {
-  for_each     = { for s3_bucket in local.s3_buckets : s3_bucket.name => s3_bucket }
+  for_each = { for s3_bucket in local.s3_buckets : s3_bucket.name => s3_bucket }
 
-  zone     = var.dns_zone
-  name     = "${each.value.name}.${local.s3_web_domain}"
-  type     = "A"
-  ttl      = 60
+  zone = var.dns_zone
+  name = "${each.value.name}.${local.s3_web_domain}"
+  type = "A"
+  ttl  = 60
 
   records = [
     { value = hcloud_server.s3_docker.ipv4_address },
@@ -45,12 +45,12 @@ resource "hcloud_zone_rrset" "s3_web_bucket" {
 }
 
 resource "hcloud_zone_rrset" "s3_api_bucket" {
-  for_each     = { for s3_bucket in local.s3_buckets : s3_bucket.name => s3_bucket }
+  for_each = { for s3_bucket in local.s3_buckets : s3_bucket.name => s3_bucket }
 
-  zone     = var.dns_zone
-  name     = "${each.value.name}.${local.s3_api_domain}"
-  type     = "A"
-  ttl      = 60
+  zone = var.dns_zone
+  name = "${each.value.name}.${local.s3_api_domain}"
+  type = "A"
+  ttl  = 60
 
   records = [
     { value = hcloud_server.s3_docker.ipv4_address },

@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
+source "${DIR}/../lib/utils.sh"
+
+export VERSION="$(version)"
+export TEMP_DIR="${DIR}/.tmp"
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+function terraform_wrapper {
+  local module=${1:-}
+  shift || true
+
+  (
+    cd "${DIR}/${module}"
+
+    if [[ ! -d ".terraform" ]]; then
+      terraform init -upgrade
+    fi
+
+    export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
+    export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/test/dns_api_token)}"
+    export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
+    export AWS_DEFAULT_REGION="eu-central-1"
+
+    terraform ${@}
+  )
+}
+
+function task_test_deploy {
+  terraform_wrapper "test/terraform/base" init -upgrade
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_allow_public_access="true"
+
+  terraform_wrapper "test/terraform/s3-docker" init -upgrade
+  terraform_wrapper "test/terraform/s3-docker" apply -auto-approve
+}
+
+function s3cmd_wrapper() {
+  s3cmd --host-bucket ${S3_HOST} --host ${S3_HOST} --access_key ${S3_KEY_ID} --secret_key ${S3_SECRET_KEY} $@
+}
+
+function task_test() {
+    if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+      exit 0
+    fi
+
+    task_test_deploy
+    task_test_run
+}
+
+function task_test_provision() {
+
+    if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+      exit 0
+    fi
+
+    source "${DIR}/../solidblocks-shell/lib/python.sh"
+    python_ensure_venv ${DIR}/modules/s3-docker
+
+    export ADMIN_ADDRESS="$(terraform_wrapper "test/terraform/s3-docker" output -raw garage_admin_address)"
+    export ADMIN_TOKEN="$(terraform_wrapper "test/terraform/s3-docker" output -raw garage_admin_token)"
+
+    echo '[{"enable_public_web_access":true,"name":"bucket1","owner_key_id":"GKb8072c79fb19a42eb79f103e","owner_secret_key":"c9fea82596e440b75e43f170266b410b29713cdc43006ea2571fcbcb7de4f801","ro_key_id":"GK1f4d1941d56dad6235f7f307","ro_secret_key":"b8f852bf274dd582fe8403317d7d9624c404b62f57cfdac61be71699c8da52ba","rw_key_id":"GK3f550d04f8dd7b4db121c20d","rw_secret_key":"967764457a8befda338c09fdbf36d1efd621efa20bbbdea3e2986956e17c10f5"},{"enable_public_web_access":false,"name":"bucket2","owner_key_id":"GK2563e32313aa6ba886377c82","owner_secret_key":"97f4fd2f97f01eec04fd1c61d62f41364ef68ad9e9b7376e36ce2ea152ff2f92","ro_key_id":"GK66ff949689f6ff9343ac807c","ro_secret_key":"1033835e9a8b1038129c62a3c7c966c256184d42098ec19790ac57b1a9536c29","rw_key_id":"GKee8e23142112ab416f10ce26","rw_secret_key":"bdf6ac050191e55224575ccbc69e5420ff11a3c0f6e1407f47c926a05bac6382"}]' > ${TEMP_DIR}/buckets.json
+    ${DIR}/modules/s3-docker/venv/bin/python modules/s3-docker/garage.py ${TEMP_DIR}/buckets.json
+}
+
+function task_test_run {
+
+  export S3_API_HOST="$(terraform_wrapper "test/terraform/s3-docker" output -raw s3_api_host)"
+  echo ${S3_API_HOST}
+
+  export S3_BUCKETS="$(terraform_wrapper "test/terraform/s3-docker" output -json s3_buckets)"
+  echo ${S3_BUCKETS} | jq
+
+  local BUCKET1_NAME="$(echo ${S3_BUCKETS} | jq -r '.[0].name')"
+  local BUCKET1_WEB_ADDRESS="$(echo ${S3_BUCKETS} | jq -r '.[0].web_address')"
+  local BUCKET1_OWNER_KEY_ID="$(echo ${S3_BUCKETS} | jq -r '.[0].owner_key_id')"
+  local BUCKET1_OWNER_SECRET_KEY="$(echo ${S3_BUCKETS} | jq -r '.[0].owner_secret_key')"
+  local BUCKET1_RO_KEY_ID="$(echo ${S3_BUCKETS} | jq -r '.[0].ro_key_id')"
+  local BUCKET1_RO_SECRET_KEY="$(echo ${S3_BUCKETS} | jq -r '.[0].ro_secret_key')"
+
+  local BUCKET2_NAME="$(echo ${S3_BUCKETS} | jq -r '.[1].name')"
+  local BUCKET2_OWNER_KEY_ID="$(echo ${S3_BUCKETS} | jq -r '.[1].owner_key_id')"
+  local BUCKET2_OWNER_SECRET_KEY="$(echo ${S3_BUCKETS} | jq -r '.[1].owner_secret_key')"
+
+  export S3_HOST="${S3_API_HOST}"
+  export S3_BUCKET="${BUCKET1_NAME}"
+
+  export S3_KEY_ID="${BUCKET1_OWNER_KEY_ID}"
+  export S3_SECRET_KEY="${BUCKET1_OWNER_SECRET_KEY}"
+
+  while ! s3cmd_wrapper ls ; do
+    echo "waiting for s3 api"
+    sleep 5000
+  done
+
+  local random="$(uuidgen)"
+  rm -rf "${TEMP_DIR}" && mkdir -p "${TEMP_DIR}"
+  echo "${random}" > "${TEMP_DIR}/test.txt"
+
+  s3cmd_wrapper ls
+  s3cmd_wrapper la
+  s3cmd_wrapper ls s3://${BUCKET1_NAME}
+  s3cmd_wrapper put "${TEMP_DIR}/test.txt" "s3://${BUCKET1_NAME}"
+
+  #s3cmd_wrapper_readonly put "${TEMP_DIR}/test.txt" "s3://${bucket}/${random}.txt" || true
+  #curl -s -o /dev/null -w "%{http_code}" "https://${HOST}/${bucket}/${random}.txt" | grep 404
+
+  s3cmd_wrapper get "s3://${BUCKET1_NAME}/test.txt" "${TEMP_DIR}/test_fetched.txt"
+  diff "${TEMP_DIR}/test.txt" "${TEMP_DIR}/test_fetched.txt"
+
+  echo "${BUCKET1_WEB_ADDRESS}/test.txt"
+  curl "${BUCKET1_WEB_ADDRESS}/test.txt" > "${TEMP_DIR}/test_fetched_curl.txt"
+  diff "${TEMP_DIR}/test.txt" "${TEMP_DIR}/test_fetched_curl.txt"
+
+  export S3_KEY_ID="${BUCKET1_RO_KEY_ID}"
+  export S3_SECRET_KEY="${BUCKET1_RO_SECRET_KEY}"
+  s3cmd_wrapper get "s3://${BUCKET1_NAME}/test.txt" "${TEMP_DIR}/test_fetched_ro.txt"
+  diff "${TEMP_DIR}/test.txt" "${TEMP_DIR}/test_fetched_ro.txt"
+
+  export S3_KEY_ID="${BUCKET1_OWNER_KEY_ID}"
+  export S3_SECRET_KEY="${BUCKET1_OWNER_SECRET_KEY}"
+  s3cmd_wrapper del "s3://${BUCKET1_NAME}/test.txt"
+
+  export S3_KEY_ID="${BUCKET2_OWNER_KEY_ID}"
+  export S3_SECRET_KEY="${BUCKET2_OWNER_SECRET_KEY}"
+  s3cmd_wrapper ls
+  s3cmd_wrapper la
+  s3cmd_wrapper ls s3://${BUCKET2_NAME}
+  s3cmd_wrapper put "${TEMP_DIR}/test.txt" "s3://${BUCKET2_NAME}"
+}
+
+function test_ip_address() {
+  cat "${DIR}/test/terraform/ipv4_address"
+}
+
+function task_test_ssh {
+  ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  lint) task_lint "$@" ;;
+  clean) task_clean "$@" ;;
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  format) task_format "$@" ;;
+
+  test-deploy) task_test_deploy "$@" ;;
+  test-provision) task_test_provision "$@" ;;
+  test-run) task_test_run "$@" ;;
+  test-ssh) task_test_ssh "$@" ;;
+  test) task_test "$@" ;;
+  release-artifacts) ;;
+  release-prepare) task_release_prepare "$@" ;;
+  release-test) task_release_test "$@" ;;
+  *) task_usage ;;
+esac
