@@ -16,7 +16,7 @@ variable "ssh_keys" {
 variable "server_type" {
   type        = string
   description = "Hetzner cloud server type, supports x86 and ARM architectures"
-  default     = "cx22"
+  default     = "cx23"
 }
 
 variable "data_volume" {

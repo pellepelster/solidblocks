@@ -47,6 +47,6 @@ module "cloud_init" {
 module "test" {
   source      = "../../../testbeds/hetzner/test-server"
   name        = "test-x86-${random_string.test_id.id}"
-  server_type = "cx22"
+  server_type = "cx23"
   user_data   = module.cloud_init.user_data
 }

@@ -1,7 +1,7 @@
 resource "hcloud_server" "database1_blue" {
   name        = "${var.environment}-${var.name}-database1-blue"
   image       = "debian-11"
-  server_type = "cx22"
+  server_type = "cx23"
   ssh_keys = [module.ssh_hetzner.root_ssh_key_id]
   location    = var.location
 }
