@@ -8,7 +8,7 @@ faIcon = "fa-cloud"
 Based on the [RDS PostgreSQL]({{%relref "rds/_index.md" %}}) docker image this Terraform module provides a
 ready to use PostgreSQL server that is backed up to a S3 compatible object store.
 
-The module supports two backup methods either local storage (Hetzner cloud Volume) or a S3 compatible object store. To
+The module supports two backup methods either local storage (Hetzner Cloud Volume) or a S3 compatible object store. To
 avoid data loss it is not possible to run the database without one of the backup methods enabled.
 
 ## Design Goals
@@ -18,6 +18,14 @@ Acknowledging that there are a lot of available solutions to run PostgreSQL in t
 * First and foremost goal is to preserve the data stored in the PostgreSQL instance. This is ensured by an extensive set of [full integration tests](https://github.com/pellepelster/solidblocks/tree/main/solidblocks-rds-postgresql/test) replicating the intended usage scenarios
 * Reduced complexity through single node operations. Running a PostgreSQL server with replication or in multi master comes with its own set of diverse failure scenarios and edge-cases. This solution aims at workloads that can easily handled by a single node and if in doubt favours [MTTR](https://de.wikipedia.org/wiki/Mean_Time_To_Recover) over [MTBF](https://de.wikipedia.org/wiki/Mean_Time_Between_Failures)
 * Reduced complexity through less moving parts. Features like autoscaling, automatic recovery after zone outages, user interfaces, etc. like they are provided by the [Zalando PostgreSQL Operator](https://github.com/zalando/postgres-operator) provide a lot of value but also add multiple layers between the VM and the actual PostgreSQL instance. This solutions explicitly tries to avoid these features trying to keep the stack as simple as running a docker container on a VM.
+
+## Usage
+
+```terraform
+{{% include "/snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" %}}
+```
+
+For more usage examples see [Extended Usage]({{< ref "usage.md" >}})
 
 ## Operations
 
@@ -29,13 +37,13 @@ To access the created instance use one of SSH keys that was provided via `ssh_ke
 journalctl -u rds@rds-postgresql-${name}.service
 ```
 
-### Start/Stop Databaase
+### Start/Stop Database
 
 ```shell
 systemctl [start|stop] rds@rds-postgresql-${name}.service 
 ```
 
-### Maintenance
+### Maintenance Mode
 
 In case of errors or the need for manual intervention a maintenance mode is available. Triggering the maintenance mode will set up the VM like it would be set up for database startup, but without actually starting the database. This allows to `exec` into the container to debug issues.
 

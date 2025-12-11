@@ -1,5 +1,5 @@
 ---
-title: Usage
+title: Extended Usage
 weight: 50
 description: RDS PostgreSQL Terraform module
 ---
