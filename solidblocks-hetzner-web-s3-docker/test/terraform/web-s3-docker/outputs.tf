@@ -8,8 +8,20 @@ output "s3_buckets" {
   value     = module.s3_docker.s3_buckets
 }
 
-output "s3_api_host" {
-  value = module.s3_docker.s3_api_host
+output "s3_host" {
+  value = module.s3_docker.s3_host
+}
+
+output "docker_host" {
+  value = module.s3_docker.docker_host
+}
+
+output "docker_user" {
+  value = local.docker_user
+}
+
+output "docker_password" {
+  value = local.docker_password
 }
 
 output "garage_admin_address" {
@@ -21,3 +33,6 @@ output "garage_admin_token" {
   sensitive = true
 }
 
+output "debug" {
+  value = module.s3_docker.debug
+}

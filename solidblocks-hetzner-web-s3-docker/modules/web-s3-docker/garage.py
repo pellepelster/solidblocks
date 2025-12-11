@@ -3,6 +3,7 @@ from os import getenv
 
 import garage_admin_sdk
 from garage_admin_sdk.api.access_key_api import *
+from garage_admin_sdk.api.bucket_alias_api import *
 from garage_admin_sdk.api.bucket_api import *
 from garage_admin_sdk.api.cluster_layout_api import *
 from garage_admin_sdk.api.node_api import *
@@ -24,6 +25,7 @@ configuration = garage_admin_sdk.Configuration(
 api = garage_admin_sdk.ApiClient(configuration)
 node_api = NodeApi(api)
 bucket_api = BucketApi(api)
+bucket_alias_api = BucketAliasApi(api)
 access_keys_api = AccessKeyApi(api)
 layout_api = ClusterLayoutApi(api)
 permission_api = PermissionApi(api)
@@ -31,7 +33,8 @@ permission_api = PermissionApi(api)
 
 class S3Bucket:
     name: str
-    enable_public_web_access: str
+    web_access_public_enable: str
+    web_access_domains: list[str]
     owner_key_id: str
     owner_secret_key: str
     ro_key_id: str = None
@@ -39,11 +42,15 @@ class S3Bucket:
     rw_key_id: str = None
     rw_secret_key: str = None
 
-    def __init__(self, name: str, enable_public_web_access: str, owner_key_id: str, owner_secret_key: str,
+    def __init__(self, name: str,
+                 web_access_domains: list[str],
+                 web_access_public_enable:
+                 str, owner_key_id: str, owner_secret_key: str,
                  ro_key_id: str = None, ro_secret_key: str = None,
                  rw_key_id: str = None, rw_secret_key: str = None):
         self.name = name
-        self.enable_public_web_access = enable_public_web_access
+        self.web_access_public_enable = web_access_public_enable
+        self.web_access_domains = web_access_domains
         self.owner_key_id = owner_key_id
         self.owner_secret_key = owner_secret_key
         self.ro_key_id = ro_key_id
@@ -104,10 +111,27 @@ def s3_buckets_apply():
 
         bucket_info = bucket_api.get_bucket_info(search=s3_bucket.name)
 
-        if bucket_info.website_access != s3_bucket.enable_public_web_access:
-            print(f"setting bucket '{s3_bucket.name}' website access to {s3_bucket.enable_public_web_access}")
+        if bucket_info.website_access != s3_bucket.web_access_public_enable:
+            print(f"setting bucket '{s3_bucket.name}' website access to {s3_bucket.web_access_public_enable}")
             bucket_api.update_bucket(bucket_info.id, UpdateBucketRequestBody(
-                website_access=UpdateBucketWebsiteAccess(enabled=s3_bucket.enable_public_web_access,index_document="index.html")))
+                website_access=UpdateBucketWebsiteAccess(enabled=s3_bucket.web_access_public_enable,
+                                                         index_document="index.html")))
+
+        for web_access_domain in s3_bucket.web_access_domains:
+            if web_access_domain in bucket_info.global_aliases:
+                print(f"web domain '{web_access_domain}' is already an alias for bucket '{s3_bucket.name}'")
+            else:
+                print(f"adding web domain '{web_access_domain}' as alias for bucket '{s3_bucket.name}'")
+                bucket_alias_api.add_bucket_alias(
+                    AddBucketAliasRequest(bucket_id=bucket_info.id, local_alias="", access_key_id="",
+                                          global_alias=web_access_domain))
+
+        for global_alias in bucket_info.global_aliases:
+            if global_alias != s3_bucket.name and global_alias not in s3_bucket.web_access_domains:
+                print(f"removing global alias '{global_alias}' from bucket '{s3_bucket.name}'")
+                bucket_alias_api.remove_bucket_alias(
+                    RemoveBucketAliasRequest(bucket_id=bucket_info.id, global_alias=global_alias, local_alias="",
+                                             access_key_id=""))
 
         if s3_bucket.owner_key_id and s3_bucket.owner_secret_key:
             access_key_ensure(managed_access_keys, s3_bucket.owner_key_id, s3_bucket.owner_secret_key)

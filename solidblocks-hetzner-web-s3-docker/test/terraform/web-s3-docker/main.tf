@@ -11,17 +11,22 @@ resource "random_bytes" "bucket2_owner_secret_key" {
 }
 
 locals {
+  docker_user     = "yolo1"
+  docker_password = "yolo2"
+  name = "web-s3-docker"
 }
 
 module "s3_docker" {
-  source = "../../../modules/s3-docker"
-  name   = "s3-docker-1"
+  source = "../../../modules/web-s3-docker"
+  name   = local.name
 
+  dns_zone = "blcks-test.de"
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
 
   s3_buckets = [
     { name                     = var.bucket1_name,
-      enable_public_web_access = true,
+      web_access_public_enable = true,
+      web_access_domains       = ["blcks-test.de", "www.blcks-test.de", "www.${local.name}.blcks-test.de"]
     },
     { name             = var.bucket2_name,
       owner_key_id     = random_bytes.bucket2_owner_key_id.hex,
@@ -29,7 +34,5 @@ module "s3_docker" {
     },
   ]
 
-  docker_users = [{ username : "yolo", password : "yolo" }]
-
-  dns_zone = "blcks.de"
+  docker_users = [{ username : local.docker_user, password : local.docker_password }]
 }

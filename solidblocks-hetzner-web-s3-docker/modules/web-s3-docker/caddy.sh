@@ -47,7 +47,7 @@ ${s3_bucket.name}.$${S3_API_FQDN} {
   reverse_proxy http://localhost:3900 {
   }
 }
-
+%{ if s3_bucket.web_access_public_enable }
 ${s3_bucket.name}.$${S3_WEB_FQDN} {
   log {
     level  INFO
@@ -63,8 +63,26 @@ ${s3_bucket.name}.$${S3_WEB_FQDN} {
   reverse_proxy http://localhost:3902 {
   }
 }
-%{ endfor }
 
+%{ for web_access_domain in s3_bucket.web_access_domains }
+${web_access_domain} {
+  log {
+    level  INFO
+
+    output file $${BLCKS_STORAGE_MOUNT_DATA}/www/logs/${web_access_domain}.log {
+      roll_uncompressed
+      roll_keep     10000
+      roll_keep_for 87600h
+      roll_size     10MiB
+    }
+  }
+
+  reverse_proxy http://localhost:3902 {
+  }
+}
+%{ endfor }
+%{ endif }
+%{ endfor }
 
 $${S3_ADMIN_FQDN} {
   log {

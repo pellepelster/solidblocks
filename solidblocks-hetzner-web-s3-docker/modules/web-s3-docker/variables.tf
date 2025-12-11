@@ -9,6 +9,11 @@ variable "location" {
   default     = "hel1"
 }
 
+variable "datacenter" {
+  type    = string
+  default = "hel1-dc2"
+}
+
 variable "ssh_keys" {
   type        = list(number)
   description = "ssh keys to provision for instance access"
@@ -29,7 +34,8 @@ variable "s3_buckets" {
     ro_secret_key            = optional(string)
     rw_key_id                = optional(string)
     rw_secret_key            = optional(string)
-    enable_public_web_access = optional(bool, false)
+    web_access_public_enable = optional(bool, false)
+    web_access_domains       = optional(list(string))
   }))
   default = []
 
