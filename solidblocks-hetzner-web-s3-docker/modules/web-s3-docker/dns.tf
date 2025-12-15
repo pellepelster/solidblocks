@@ -22,7 +22,6 @@ resource "hcloud_zone_rrset" "root_domain_catchall_ipv4" {
 
 locals {
   all_web_access_domains = flatten([for s3_bucket in local.s3_buckets : s3_bucket.web_access_domains])
-  debug                  = [for web_access_domain in local.all_web_access_domains : web_access_domain]
 }
 
 resource "hcloud_zone_rrset" "web_access_domains_ipv4" {
@@ -37,6 +36,3 @@ resource "hcloud_zone_rrset" "web_access_domains_ipv4" {
   ]
 }
 
-output "debug" {
-  value = local.debug
-}

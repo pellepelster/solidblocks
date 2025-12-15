@@ -27,6 +27,8 @@ storage:
     maxthreads: 100
 http:
   addr: :5000
+  host: https://${DOCKER_REGISTRY_FQDN}
+
 health:
   storagedriver:
     enabled: true

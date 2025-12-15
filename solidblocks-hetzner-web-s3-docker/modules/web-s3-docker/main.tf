@@ -34,6 +34,16 @@ locals {
     ro_secret_key = s3_bucket.ro_secret_key == null ? random_bytes.ro_secret_keys[s3_bucket.name].hex : s3_bucket.ro_secret_key
   }]
 
+  docker_ro_users = [for index, user in var.docker_ro_users : {
+    username = user.username
+    password = user.password == null ? random_bytes.docker_ro_password[user.username].hex : user.password
+  }]
+
+  docker_rw_users = [for index, user in var.docker_rw_users : {
+    username = user.username
+    password = user.password == null ? random_bytes.docker_rw_password[user.username].hex : user.password
+  }]
+
   user_data = templatefile("${path.module}/user_data_skeleton.sh", {
 
     caddy_lib               = file("${path.module}/caddy_lib.sh")
@@ -47,8 +57,9 @@ locals {
     requirements_txt_base64 = base64encode(file("${path.module}/requirements.txt"))
 
     caddy = templatefile("${path.module}/caddy.sh", {
-      docker_users = var.docker_users
-      s3_buckets   = local.s3_buckets
+      docker_ro_users = local.docker_ro_users
+      docker_rw_users = local.docker_rw_users
+      s3_buckets      = local.s3_buckets
     })
 
     garage = templatefile("${path.module}/garage.sh", {

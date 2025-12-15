@@ -59,10 +59,18 @@ variable "labels" {
   default     = {}
 }
 
-variable "docker_users" {
+variable "docker_rw_users" {
   type = list(object({
     username : string,
-    password : string
+    password : optional(string)
+  }))
+  default = []
+}
+
+variable "docker_ro_users" {
+  type = list(object({
+    username : string,
+    password : optional(string)
   }))
   default = []
 }

@@ -111,7 +111,16 @@ $${DOCKER_REGISTRY_FQDN} {
   }
 
   basicauth @write {
-    %{ for user in docker_users }
+    %{ for user in docker_rw_users }
+    ${user.username} $(echo ${user.password} | caddy hash-password)
+    %{ endfor }
+  }
+
+  basicauth @read {
+    %{ for user in docker_ro_users }
+    ${user.username} $(echo ${user.password} | caddy hash-password)
+    %{ endfor }
+    %{ for user in docker_rw_users }
     ${user.username} $(echo ${user.password} | caddy hash-password)
     %{ endfor }
   }

@@ -56,3 +56,10 @@ output "garage_admin_token" {
   sensitive = true
 }
 
+output "docker_ro_users" {
+  value = local.docker_ro_users
+}
+
+output "docker_rw_users" {
+  value = local.docker_rw_users
+}

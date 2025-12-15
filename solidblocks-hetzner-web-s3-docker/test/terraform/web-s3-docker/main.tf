@@ -13,10 +13,10 @@ resource "random_bytes" "bucket2_owner_secret_key" {
 locals {
   docker_user     = "yolo1"
   docker_password = "yolo2"
-  name = "web-s3-docker"
+  name            = "web-s3-docker"
 }
 
-module "s3_docker" {
+module "web_s3_docker" {
   source = "../../../modules/web-s3-docker"
   name   = local.name
 
@@ -34,5 +34,7 @@ module "s3_docker" {
     },
   ]
 
-  docker_users = [{ username : local.docker_user, password : local.docker_password }]
+  docker_rw_users = [{ username : local.docker_user }]
+
+  docker_ro_users = [{ username : "ro" }]
 }

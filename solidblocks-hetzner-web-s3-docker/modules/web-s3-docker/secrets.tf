@@ -39,3 +39,13 @@ resource "random_bytes" "rw_key_ids" {
   for_each = { for s3_bucket in var.s3_buckets : s3_bucket.name => s3_bucket.name }
   length   = 12
 }
+
+resource "random_bytes" "docker_ro_password" {
+  for_each = { for user in var.docker_ro_users : user.username => user.username }
+  length   = 16
+}
+
+resource "random_bytes" "docker_rw_password" {
+  for_each = { for user in var.docker_rw_users : user.username => user.username }
+  length   = 16
+}
