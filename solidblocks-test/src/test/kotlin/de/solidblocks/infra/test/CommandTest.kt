@@ -47,7 +47,7 @@ public class CommandTest {
         .listContainersCmd()
         .exec()
         .filter { container ->
-          Constants.dockerTestimageLabels.all { container.labels[it.key] == it.value }
+          Constants.dockerTestImageLabels.all { container.labels[it.key] == it.value }
         }
         .forEach {
           logger.info { "cleaning up container '${it.id}'" }

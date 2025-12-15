@@ -11,7 +11,7 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 object Constants {
-  val dockerTestimageLabels = mapOf("managed-by" to "solidblocks-test")
+  val dockerTestImageLabels = mapOf("managed-by" to "solidblocks-test")
   val durationFormat = DecimalFormat("000.000")
 }
 
@@ -31,6 +31,11 @@ fun log(duration: Duration, message: String, type: LogType = LogType.TEST) {
   println("${durationFormat.format(duration.inWholeMilliseconds / 1000f)}s [$logType] $message")
 }
 
+fun log(message: String, type: LogType = LogType.TEST) {
+  val logType = type.name.padStart(logTypeMaxLength)
+  println("[$logType] $message")
+}
+
 fun createDockerClient(): DockerClient {
   val config: DefaultDockerClientConfig.Builder =
       DefaultDockerClientConfig.createDefaultConfigBuilder()
@@ -43,4 +48,33 @@ fun createDockerClient(): DockerClient {
           .withDockerHttpClient(httpClient.build())
           .build()
   return dockerClient
+}
+
+data class GolangPlatform(val os: String, val arch: String)
+
+fun detectGolangPlatform(): GolangPlatform {
+  val osName = System.getProperty("os.name").lowercase()
+  val osArch = System.getProperty("os.arch").lowercase()
+
+  val os =
+      when {
+        osName.contains("mac") || osName.contains("darwin") -> "darwin"
+        osName.contains("win") -> "windows"
+        osName.contains("nux") || osName.contains("nix") -> "linux"
+        osName.contains("freebsd") -> "freebsd"
+        osName.contains("openbsd") -> "openbsd"
+        osName.contains("solaris") || osName.contains("sunos") -> "solaris"
+        else -> throw RuntimeException("unsupported os '$osName'")
+      }
+
+  val arch =
+      when {
+        osArch.contains("aarch64") || osArch.contains("arm64") -> "arm64"
+        osArch.contains("amd64") || osArch.contains("x86_64") -> "amd64"
+        osArch.contains("arm") -> "arm"
+        osArch == "x86" || osArch == "i386" || osArch == "i686" -> "386"
+        else -> throw RuntimeException("unsupported architecture '$osArch'")
+      }
+
+  return GolangPlatform(os, arch)
 }

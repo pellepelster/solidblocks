@@ -8,7 +8,7 @@ import com.github.dockerjava.api.model.HostConfig
 import com.github.dockerjava.api.model.Mount
 import com.github.dockerjava.api.model.MountType
 import com.github.dockerjava.api.model.PullResponseItem
-import de.solidblocks.infra.test.Constants.dockerTestimageLabels
+import de.solidblocks.infra.test.Constants.dockerTestImageLabels
 import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
@@ -115,7 +115,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                         ),
                     ),
             )
-            .withLabels(dockerTestimageLabels)
+            .withLabels(dockerTestImageLabels)
             .withCmd("sleep", "infinity")
             .exec()
     dockerClient.startContainerCmd(createContainer.id).exec()
