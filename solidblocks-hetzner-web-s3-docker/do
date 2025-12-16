@@ -32,11 +32,40 @@ function task_test_run {
 }
 
 function test_ip_address() {
-  cat "${DIR}/test/terraform/ipv4_address"
+  cat "${DIR}/src/test/resources/terraform/ipv4_address"
 }
 
 function task_test_ssh {
-  ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
+  ssh -F ${DIR}/src/test/resources/terraform/ssh_config $(test_ip_address) ${@}
+}
+
+function task_test_provision() {
+
+    if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+      exit 0
+    fi
+
+    source "${DIR}/../solidblocks-shell/lib/python.sh"
+    python_ensure_venv ${DIR}/modules/web-s3-docker
+
+    export ADMIN_ADDRESS="$(cat "${DIR}/src/test/resources/terraform/garage_admin_address")"
+    export ADMIN_TOKEN="$(cat "${DIR}/src/test/resources/terraform/garage_admin_token")"
+
+    echo '[{"name":"bucket1","owner_key_id":"GKb8072c79fb19a42eb79f103e","owner_secret_key":"c9fea82596e440b75e43f170266b410b29713cdc43006ea2571fcbcb7de4f801","ro_key_id":"GK1f4d1941d56dad6235f7f307","ro_secret_key":"b8f852bf274dd582fe8403317d7d9624c404b62f57cfdac61be71699c8da52ba","rw_key_id":"GK3f550d04f8dd7b4db121c20d","rw_secret_key":"967764457a8befda338c09fdbf36d1efd621efa20bbbdea3e2986956e17c10f5","web_access_domains":["web-s3-docker.blcks-test.de","www.web-s3-docker.blcks-test.de"],"web_access_public_enable":true},{"name":"bucket2","owner_key_id":"GK2563e32313aa6ba886377c82","owner_secret_key":"97f4fd2f97f01eec04fd1c61d62f41364ef68ad9e9b7376e36ce2ea152ff2f92","ro_key_id":"GK66ff949689f6ff9343ac807c","ro_secret_key":"1033835e9a8b1038129c62a3c7c966c256184d42098ec19790ac57b1a9536c29","rw_key_id":"GKee8e23142112ab416f10ce26","rw_secret_key":"bdf6ac050191e55224575ccbc69e5420ff11a3c0f6e1407f47c926a05bac6382","web_access_domains":[],"web_access_public_enable":false}]' > ${TEMP_DIR}/buckets.json
+    ${DIR}/modules/web-s3-docker/venv/bin/python modules/web-s3-docker/garage.py ${TEMP_DIR}/buckets.json
+}
+
+function task_build {
+  #if which terraform-docs; then
+  #  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
+  #  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
+  #fi
+  mkdir -p "${DIR}/build"
+
+  (
+    cd "${DIR}/modules/web-s3-docker"
+    zip "${DIR}/build/terraform-hcloud-blcks-web-s3-docker-${VERSION}.zip" *.tf *.sh
+  )
 }
 
 arg=${1:-}

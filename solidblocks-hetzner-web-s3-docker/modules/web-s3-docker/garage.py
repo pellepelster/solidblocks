@@ -70,7 +70,7 @@ s3_buckets = [S3Bucket(**item) for item in raw_list]
 
 def s3_buckets_has_access_key(key_id):
     for s3_bucket in s3_buckets:
-        if s3_bucket.owner_key_id == key_id or s3_bucket.ro_key_id == key_id:
+        if s3_bucket.owner_key_id == key_id or s3_bucket.rw_key_id == key_id or s3_bucket.ro_key_id == key_id:
             return True
     return False
 
@@ -99,8 +99,8 @@ def s3_buckets_apply():
     managed_access_keys_to_disable = [access_key for access_key in managed_access_keys if
                                       not s3_buckets_has_access_key(access_key.id)]
 
-    for key in managed_access_keys_to_disable:
-        print(f"disabling unused access key '{key.id}'")
+    # for key in managed_access_keys_to_disable:
+    #    print(f"disabling unused access key '{key.id}'")
 
     for s3_bucket in s3_buckets:
 

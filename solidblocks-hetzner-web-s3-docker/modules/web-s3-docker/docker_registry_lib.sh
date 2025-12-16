@@ -13,6 +13,7 @@ WantedBy=multi-user.target
 EOF
 }
 
+
 function docker_registry_config() {
   cat <<EOF
 version: 0.1
@@ -55,7 +56,6 @@ function docker_registry_setup() {
     rm /tmp/registry.tar.gz
   )
   docker_registry_config > /etc/docker-registry/config.yml
-
   docker_registry_unit > /etc/systemd/system/docker-registry.service
   systemctl daemon-reload
   systemctl start docker-registry

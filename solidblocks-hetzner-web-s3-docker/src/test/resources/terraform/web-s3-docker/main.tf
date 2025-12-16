@@ -17,7 +17,7 @@ locals {
 }
 
 module "web_s3_docker" {
-  source = "../../../modules/web-s3-docker"
+  source = "../../../../../modules/web-s3-docker"
   name   = local.name
 
   dns_zone = "blcks-test.de"

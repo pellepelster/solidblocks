@@ -3,6 +3,16 @@ resource "local_file" "ipv4_address" {
   filename = "${path.module}/../ipv4_address"
 }
 
+resource "local_file" "garage_admin_address" {
+  content  = module.web_s3_docker.garage_admin_address
+  filename = "${path.module}/../garage_admin_address"
+}
+
+resource "local_file" "garage_admin_token" {
+  content  = module.web_s3_docker.garage_admin_token
+  filename = "${path.module}/../garage_admin_token"
+}
+
 output "s3_buckets" {
   sensitive = true
   value     = module.web_s3_docker.s3_buckets
