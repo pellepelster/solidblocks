@@ -291,7 +291,7 @@ jobs:
           name: solidblocks-hetzner
           path: |
             solidblocks-hetzner/build/snippets/*
-            solidblocks-hetzner/build/terraform-hcloud-solidblocks-rds-postgresql-*.zip
+            solidblocks-hetzner/build/terraform-hcloud-blcks-rds-postgresql-*.zip
 
   solidblocks-hetzner-test:
     runs-on: ubuntu-24.04
@@ -491,7 +491,7 @@ jobs:
             solidblocks-cloud-init/terraform-null-solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
             solidblocks-hetzner/snippets/*.zip
-            solidblocks-hetzner/terraform-hcloud-solidblocks-rds-postgresql-*.zip
+            solidblocks-hetzner/terraform-hcloud-blcks-rds-postgresql-*.zip
             solidblocks-cli-*/solidblocks-cli-*
             solidblocks-python/solidblocks_do*
             solidblocks-rds-postgresql-ansible/blcks-rds*

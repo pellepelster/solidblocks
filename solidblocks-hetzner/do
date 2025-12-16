@@ -43,7 +43,7 @@ function task_build {
 
   (
     cd "${DIR}/modules/rds-postgresql"
-    zip -r "${DIR}/build/terraform-hcloud-solidblocks-rds-postgresql-${VERSION}.zip" *
+    zip -r "${DIR}/build/terraform-hcloud-blcks-rds-postgresql-${VERSION}.zip" *
   )
 
 }

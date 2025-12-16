@@ -271,8 +271,8 @@ function clean_temp_dir {
 
 function task_release_tf_modules {
   local version="${1:-}"
-  task_release_tf_module "terraform-null-solidblocks-cloud-init" "${version}"
-  task_release_tf_module "terraform-hcloud-solidblocks-rds-postgresql" "${version}"
+  task_release_tf_module "terraform-null-blcks-cloud-init" "${version}"
+  task_release_tf_module "terraform-hcloud-blcks-rds-postgresql" "${version}"
 }
 
 function task_renovate {

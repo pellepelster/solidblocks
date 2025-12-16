@@ -7,9 +7,9 @@ RUN apt-get update && \
     . /etc/os-release && \
     echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
-RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen && \
-    locale-gen && \
-    update-locale LANG=en_US.UTF-8
+#RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen && \
+#    locale-gen && \
+#    update-locale LANG=en_US.UTF-8
 
 FROM base AS build_base
 
