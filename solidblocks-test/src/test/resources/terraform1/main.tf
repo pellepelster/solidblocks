@@ -7,16 +7,23 @@ terraform {
   }
 }
 
-resource "random_string" "random1" {
-  length = 12
+output "string1" {
+  value = "foo-bar"
 }
 
-output "random1" {
-  value = random_string.random1.id
+output "number1" {
+  value = 123
 }
 
+output "boolean1" {
+  value = true
+}
 
-output "json_list" {
+output "json1" {
+  value = { name : "foo" }
+}
+
+output "json_list1" {
   value = [
   { name : "foo" }]
 }

@@ -1,12 +1,12 @@
 package de.solidblocks.infra.test
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldHaveLength
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.ExperimentalPathApi
@@ -34,7 +34,7 @@ public class TerraformTest {
     exception.message shouldBe ("Terraform dir 'invalid' does not exist")
   }
 
-  @Serializable data class OutputType(val name: String)
+  @Serializable data class TestOutputType(val name: String)
 
   @Test
   fun testInitApplyOutput(context: SolidblocksTestContext) {
@@ -45,14 +45,26 @@ public class TerraformTest {
     val output = terraform.output()
 
     val raw = output.raw()
-    raw shouldHaveSize 2
-    raw.keys shouldContain "random1"
-    // raw["random1"] shouldHaveLength 12
+    raw shouldHaveSize 5
+    raw.keys shouldContain "string1"
+    raw.keys shouldContain "number1"
+    raw.keys shouldContain "boolean1"
+    raw.keys shouldContain "json1"
+    raw.keys shouldContain "json_list1"
 
-    output.getString("random1") shouldHaveLength 12
-    val list = output.getList("json_list", OutputType::class)
-    list shouldHaveSize 1
-    list[0].name shouldBe "foo"
+    output.getString("string1") shouldBe "foo-bar"
+    output.getNumber("number1") shouldBe 123
+    output.getBoolean("boolean1") shouldBe true
+
+    assertSoftly(output.getList("json_list1", TestOutputType::class)) {
+      it shouldHaveSize 1
+      it[0].name shouldBe "foo"
+    }
+
+    assertSoftly(output.getObject("json1", TestOutputType::class)) { it.name shouldBe "foo" }
+
+    terraform.apply()
+    terraform.deleteLocalState()
   }
 
   @Test

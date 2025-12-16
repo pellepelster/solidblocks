@@ -5,7 +5,7 @@ import de.solidblocks.infra.test.script.ScriptBuilder
 import java.io.Closeable
 import java.nio.file.Path
 
-interface TestContext<C : CommandBuilder, S : ScriptBuilder> : Closeable {
+interface CommandTestContext<C : CommandBuilder, S : ScriptBuilder> : Closeable {
 
   fun command(vararg command: String): C
 

@@ -8,8 +8,8 @@ import com.github.dockerjava.api.model.HostConfig
 import com.github.dockerjava.api.model.Mount
 import com.github.dockerjava.api.model.MountType
 import com.github.dockerjava.api.model.PullResponseItem
+import de.solidblocks.infra.test.CommandTestContext
 import de.solidblocks.infra.test.Constants.dockerTestImageLabels
-import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.command.ProcessResult
@@ -241,7 +241,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
 }
 
 class DockerTestContext(private val image: DockerTestImage) :
-    TestContext<DockerCommandBuilder, DockerScriptBuilder> {
+    CommandTestContext<DockerCommandBuilder, DockerScriptBuilder> {
 
   private val resources = mutableListOf<Closeable>()
 

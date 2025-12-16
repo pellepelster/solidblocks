@@ -1,4 +1,4 @@
-import de.solidblocks.infra.test.TestContext
+import de.solidblocks.infra.test.CommandTestContext
 import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.command.ProcessResult
@@ -138,7 +138,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
   }
 }
 
-class LocalTestContext : TestContext<LocalCommandBuilder, LocalScriptBuilder> {
+class LocalTestContext : CommandTestContext<LocalCommandBuilder, LocalScriptBuilder> {
 
   private val resources = mutableListOf<Closeable>()
 

@@ -13,18 +13,11 @@ import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 import kotlin.io.path.exists
-import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.serializer
 
 const val TERRAFORM_DEFAULT_VERSION = "1.14.2"
 
@@ -53,6 +46,8 @@ class TerraformTestContext(
 
   fun output() = terraform.output()
 
+  fun deleteLocalState() = terraform.deleteLocalState()
+
   fun addVariable(name: String, value: String) = terraform.addVariable(name, value)
 }
 
@@ -61,20 +56,6 @@ class Terraform(
     versionOverride: String? = null,
     val environment: Map<String, String> = emptyMap(),
 ) {
-
-  @Serializable
-  data class OutputVariable(
-      var type: JsonElement,
-      val value: JsonElement? = null,
-      var sensitive: Boolean,
-  ) {
-    fun asString() =
-        if (value is JsonPrimitive && value.isString) {
-          value.content
-        } else {
-          null
-        }
-  }
 
   val version = versionOverride ?: TERRAFORM_DEFAULT_VERSION
   val platform = detectGolangPlatform()
@@ -195,40 +176,16 @@ class Terraform(
 
   fun version() = run(listOf("-version")).stdout
 
-  data class Output(val output: Map<String, OutputVariable>) {
-    fun raw() = output.mapValues { it.value.value }
-
-    fun getString(name: String): String {
-      if (output[name]?.value is JsonPrimitive) {
-        return (output[name]!!.value as JsonPrimitive).content
-      }
-
-      throw RuntimeException("key '$name' not found or is not a string")
-    }
-
-    @OptIn(InternalSerializationApi::class)
-    fun <T : Any> getList(name: String, kClass: KClass<T>): List<T> {
-      if (output[name] != null) {
-        return Json.decodeFromJsonElement(
-            ListSerializer(kClass.serializer()),
-            output[name]!!.value!!,
-        )
-      }
-
-      throw RuntimeException("key '$name' not found or is not a string")
-    }
-  }
-
   @OptIn(ExperimentalSerializationApi::class)
-  fun output(): Output {
+  fun output(): TerraformOutput {
     val result = run(listOf("output", "-json"), false)
 
-    return Output(
+    return TerraformOutput(
         Json.decodeFromString<Map<String, OutputVariable>>(result.stdout),
     )
   }
 
-  data class Result(val stdout: String, val stderr: String)
+  private data class Result(val stdout: String, val stderr: String)
 
   private fun run(
       command: List<String>,

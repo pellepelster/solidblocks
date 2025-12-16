@@ -59,7 +59,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testFailure(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testFailure(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(context.command(getCommandPath("command-failure.sh")).runResult()) {
       it shouldHaveExitCode 1
     }
@@ -67,7 +67,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testFailureBuiltinCommand(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testFailureBuiltinCommand(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(context.command("test", "-f", "invalid file").runResult()) {
       it shouldHaveExitCode 1
     }
@@ -75,7 +75,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testSuccessBuiltinCommand(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testSuccessBuiltinCommand(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(context.command("test", "-f", "/etc/passwd").runResult()) {
       it shouldHaveExitCode 0
     }
@@ -83,7 +83,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testSuccessRunResult(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testSuccessRunResult(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(context.command(getCommandPath("command-success.sh")).runResult()) {
       it shouldHaveExitCode 0
     }
@@ -91,7 +91,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testSucessRunAndResult(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testSucessRunAndResult(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     runBlocking {
       val run = context.command(getCommandPath("command-success.sh")).run()
 
@@ -101,7 +101,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testExitCodeAssertionNegative(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testExitCodeAssertionNegative(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     shouldThrow<AssertionError> {
       assertSoftly(context.command(getCommandPath("command-failure.sh")).runResult()) {
         it shouldHaveExitCode 99
@@ -111,7 +111,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testSuccess(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testSuccess(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(context.command(getCommandPath("command-success.sh")).runResult()) {
       it shouldHaveExitCode 0
     }
@@ -119,7 +119,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testStdout(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testStdout(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(context.command(getCommandPath("command-stdout.sh")).runResult()) {
       it shouldHaveExitCode 0
       it stdoutShouldBe "stdout line 1\nstdout line 2\nstdout line 3\n"
@@ -129,7 +129,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testStderr(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testStderr(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(context.command(getCommandPath("command-stderr.sh")).runResult()) {
       it shouldHaveExitCode 0
       it stdoutShouldBe ""
@@ -139,7 +139,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testOutput(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testOutput(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(
         context.command(getCommandPath("command-output.sh")).runResult(),
     ) {
@@ -168,7 +168,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testTimeoutExceeded(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testTimeoutExceeded(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     measureTime {
       assertSoftly(
           context.command(getCommandPath("command-timeout.sh")).timeout(2.seconds).runResult(),
@@ -182,7 +182,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testWaitForOutputRunResult(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testWaitForOutputRunResult(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(
         context
             .command(getCommandPath("command-waitfor.sh"))
@@ -200,7 +200,9 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testWaitForOutputRunResultNegative(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testWaitForOutputRunResultNegative(
+      context: CommandTestContext<CommandBuilder, ScriptBuilder>,
+  ) {
     val exception =
         shouldThrow<RuntimeException> {
           context
@@ -213,7 +215,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testWaitForOutputRunAndResult(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testWaitForOutputRunAndResult(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     runBlocking {
       val run = context.command(getCommandPath("command-waitfor.sh")).run()
 
@@ -227,7 +229,7 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testStdIn(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testStdIn(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     assertSoftly(
         context
             .command(getCommandPath("command-stdin.sh"))
@@ -244,7 +246,9 @@ public class CommandTest {
 
   @ParameterizedTest
   @FieldSource("contexts")
-  fun testWaitForOutputNotMatchedRunResult(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testWaitForOutputNotMatchedRunResult(
+      context: CommandTestContext<CommandBuilder, ScriptBuilder>,
+  ) {
     runBlocking {
       val run = context.command(getCommandPath("command-waitfor.sh")).run()
 
@@ -255,7 +259,7 @@ public class CommandTest {
   @ParameterizedTest
   @FieldSource("contexts")
   @Disabled("could leak CI info via env")
-  fun testEnvironmentVariables(context: TestContext<CommandBuilder, ScriptBuilder>) {
+  fun testEnvironmentVariables(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
     runBlocking {
       val run = context.command("env").env("ABC" to "DEF").run()
 
