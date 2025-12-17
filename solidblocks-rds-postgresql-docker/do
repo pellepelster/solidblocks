@@ -13,16 +13,18 @@ DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
 DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
-
-if [[ -n "${BUILD_LOCAL:-}" ]]; then
-  echo "running local build"
-  DOCKER_OPTIONS=""
-  DOCKER_PLATFORM="linux/amd64"
-fi
-
 POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-14 15 16 17 18}"
 
-TEMP_DIR="${DIR}/.test_$$"
+if [[ -n "${BUILD_FAST:-}" ]]; then
+  echo "running fast build"
+  DOCKER_PLATFORM="linux/amd64"
+  POSTGRES_VERSIONS="18"
+fi
+
+
+TEMP_DIR="${DIR}/.temp"
+mkdir -p "${TEMP_DIR}"
+
 CACHE_DIR="${DIR}/.cache"
 mkdir -p "${CACHE_DIR}"
 
@@ -30,7 +32,7 @@ function clean_temp_dir {
   rm -rf "${TEMP_DIR}"
 }
 
-trap clean_temp_dir EXIT
+#trap clean_temp_dir EXIT
 
 source "${DIR}/../solidblocks-shell/lib/software.sh"
 
@@ -68,8 +70,13 @@ function task_build {
     cd "${DIR}"
     mkdir -p "${DIR}/build"
 
-    for postgres_version in ${POSTGRES_VERSIONS}; do
+    if [[ -n "${BUILD_FAST:-}" ]]; then
+      cp "${DIR}/install/fast-locale.gen" "${TEMP_DIR}/locale.gen"
+    else
+      cp "${DIR}/install/all-locale.gen" "${TEMP_DIR}/locale.gen"
+    fi
 
+    for postgres_version in ${POSTGRES_VERSIONS}; do
       local postgres_previous_version=$((postgres_version-1))
       local postgres_previous_version_path=${postgres_previous_version}
 
