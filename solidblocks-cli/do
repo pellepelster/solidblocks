@@ -204,7 +204,7 @@ function divider_footer() {
 }
 
 function task_build_darwin_arm64 {
-  if [[ "${FAST_BUILD:-}" == "true" ]]; then
+  if [[ "${BUILD_FAST:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -213,7 +213,7 @@ function task_build_darwin_arm64 {
 }
 
 function task_build_darwin_amd64 {
-  if [[ "${FAST_BUILD:-}" == "true" ]]; then
+  if [[ "${BUILD_FAST:-}" == "true" ]]; then
     exit 0
   fi
 
@@ -227,7 +227,7 @@ function task_build_linux_amd64 {
 }
 
 function task_build_windows_amd64 {
-  if [[ "${FAST_BUILD:-}" == "true" ]]; then
+  if [[ "${BUILD_FAST:-}" == "true" ]]; then
     exit 0
   fi
 
