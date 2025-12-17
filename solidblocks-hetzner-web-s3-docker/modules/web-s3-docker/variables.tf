@@ -3,6 +3,11 @@ variable "name" {
   description = "Unique name for the server instance"
 }
 
+variable "dns_zone" {
+  type        = string
+  description = "DNS zone to use for hostname and DNs entries"
+}
+
 variable "location" {
   type        = string
   description = "Hetzner location to use for provisioned resources"
@@ -68,8 +73,15 @@ variable "docker_rw_users" {
 }
 
 variable "docker_public_enable" {
-  type    = bool
-  default = false
+  type        = bool
+  description = "Enable public anonymous access to Docker registry"
+  default     = false
+}
+
+variable "docker_enable" {
+  type        = bool
+  description = "Enable Docker registry"
+  default     = false
 }
 
 variable "docker_ro_users" {
@@ -78,13 +90,4 @@ variable "docker_ro_users" {
     password : optional(string)
   }))
   default = []
-}
-
-variable "allow_public_access" {
-  type    = bool
-  default = false
-}
-
-variable "dns_zone" {
-  type = string
 }

@@ -31,7 +31,7 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
 
   @BeforeAll
   fun setup(context: SolidblocksTestContext) {
-    init(context, false)
+    init(context, true, false)
   }
 
   @Test
@@ -39,15 +39,10 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
     val dockerRwUser = dockerRwUsers.first()
     val rwAuth =
         AuthConfig().withUsername(dockerRwUser.username).withPassword(dockerRwUser.password)
-    println("pushing with user '${rwAuth.username}' and password '${rwAuth.password}'")
-
-    val randomTag = UUID.randomUUID().toString()
-
-    docker.tagImageCmd("alpine:latest", "$dockerHostPrivate/alpine", randomTag).exec()
 
     docker
         .pushImageCmd("$dockerHostPrivate/alpine")
-        .withTag(randomTag)
+        .withTag(imageTag)
         .withAuthConfig(rwAuth)
         .exec(PushImageResultCallback())
         .awaitCompletion()
@@ -59,7 +54,7 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
         shouldThrow<Exception> {
           docker
               .pushImageCmd("$dockerHostPrivate/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PushImageResultCallback())
               .awaitCompletion()
         }
@@ -72,7 +67,7 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
         shouldThrow<InternalServerErrorException> {
           docker
               .pullImageCmd("$dockerHostPublic/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PullImageResultCallback())
               .awaitCompletion()
         }
@@ -85,7 +80,7 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
         shouldThrow<InternalServerErrorException> {
           docker
               .pullImageCmd("$dockerHostPrivate/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PullImageResultCallback())
               .awaitCompletion()
         }
@@ -98,7 +93,7 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
         shouldThrow<Exception> {
           docker
               .pushImageCmd("$dockerHostPrivate/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PushImageResultCallback())
               .awaitCompletion()
         }
@@ -111,7 +106,7 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
         shouldThrow<Exception> {
           docker
               .pushImageCmd("$dockerHostPrivate/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PushImageResultCallback())
               .awaitCompletion()
         }

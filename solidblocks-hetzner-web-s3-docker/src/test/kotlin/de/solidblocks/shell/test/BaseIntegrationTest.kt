@@ -2,8 +2,10 @@ package de.solidblocks.shell.test
 
 import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.api.command.PullImageResultCallback
+import com.github.dockerjava.api.model.AuthConfig
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
+import com.github.dockerjava.core.command.PushImageResultCallback
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
 import de.solidblocks.infra.test.SolidblocksTestContext
 import java.net.HttpURLConnection
@@ -11,9 +13,12 @@ import java.net.URI
 import java.net.URL
 import java.nio.file.Path
 import java.time.Duration
+import java.util.*
 import org.awaitility.kotlin.await
 
 open class BaseIntegrationTest {
+
+  var imageTag = UUID.randomUUID().toString()
 
   lateinit var docker: DockerClient
   lateinit var s3Buckets: List<S3Bucket>
@@ -22,7 +27,7 @@ open class BaseIntegrationTest {
   lateinit var dockerHostPublic: String
   lateinit var dockerRwUsers: List<DockerUser>
 
-  fun init(context: SolidblocksTestContext, dockerPublicEnable: Boolean) {
+  fun init(context: SolidblocksTestContext, dockerEnable: Boolean, dockerPublicEnable: Boolean) {
     val baseTerraform = context.terraform(Path.of("./src/test/resources/terraform/base"))
     baseTerraform.init()
     baseTerraform.apply()
@@ -30,6 +35,7 @@ open class BaseIntegrationTest {
 
     val terraform = context.terraform(Path.of("./src/test/resources/terraform/web-s3-docker"))
     terraform.addVariable("test_id", baseOutput.getString("test_id"))
+    terraform.addVariable("docker_enable", dockerEnable)
     terraform.addVariable("docker_public_enable", dockerPublicEnable)
 
     terraform.init()
@@ -46,6 +52,9 @@ open class BaseIntegrationTest {
     dockerHostPublic = output.getString("docker_host_public")
     println("dockerHostPublic: $dockerHostPublic")
 
+    waitForUrl("https://$dockerHostPrivate")
+    waitForUrl("https://$s3Host")
+
     println("pushing docker image '$dockerHostPrivate/alpine'")
     dockerRwUsers = output.getList("docker_rw_users", DockerUser::class)
     docker = createDockerClient()
@@ -55,10 +64,20 @@ open class BaseIntegrationTest {
         .exec(PullImageResultCallback())
         .awaitCompletion()
 
-    docker.tagImageCmd("alpine:latest", "$dockerHostPrivate/alpine", "latest").exec()
+    docker.tagImageCmd("alpine:latest", "$dockerHostPrivate/alpine", imageTag).exec()
 
-    waitForUrl("https://$dockerHostPrivate")
-    waitForUrl("https://$s3Host")
+    val dockerRwUser = dockerRwUsers.first()
+
+    val rwAuth =
+        AuthConfig().withUsername(dockerRwUser.username).withPassword(dockerRwUser.password)
+    println("pushing with user '${rwAuth.username}' and password '${rwAuth.password}'")
+
+    docker
+        .pushImageCmd("$dockerHostPrivate/alpine")
+        .withTag(imageTag)
+        .withAuthConfig(rwAuth)
+        .exec(PushImageResultCallback())
+        .awaitCompletion()
   }
 
   fun createDockerClient(): DockerClient {

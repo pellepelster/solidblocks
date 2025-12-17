@@ -12,7 +12,8 @@ function caddy_setup() {
 function caddy_config() {
   cat <<EOF
 {
-    storage file_system $${BLCKS_STORAGE_MOUNT_DATA}/www
+  storage file_system $${BLCKS_STORAGE_MOUNT_DATA}/www
+  email contact@$${DNS_ZONE}
 }
 
 $${S3_API_FQDN} {
@@ -95,6 +96,7 @@ $${S3_ADMIN_FQDN} {
   reverse_proxy http://localhost:3903
 }
 
+%{ if docker_enable }
 $${DOCKER_REGISTRY_PRIVATE_FQDN} {
 
   @write {
@@ -155,6 +157,6 @@ $${DOCKER_REGISTRY_PUBLIC_FQDN} {
   }
 }
 %{ endif }
-
+%{ endif }
 EOF
 }

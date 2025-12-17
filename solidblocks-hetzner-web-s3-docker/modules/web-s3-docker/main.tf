@@ -67,6 +67,7 @@ locals {
       docker_rw_users      = length(local.docker_rw_users) == 0 ? local.docker_rw_default_users : local.docker_rw_users
       s3_buckets           = local.s3_buckets
       docker_public_enable = var.docker_public_enable
+      docker_enable        = var.docker_enable
     })
 
     garage = templatefile("${path.module}/garage.sh", {
@@ -85,9 +86,8 @@ locals {
       blcks_storage_device_data    = hcloud_volume.data.linux_device
     })
 
-    s3_buckets          = local.s3_buckets
-    allow_public_access = var.allow_public_access
-    data_volume_size    = var.data_volume_size
+    s3_buckets       = local.s3_buckets
+    data_volume_size = var.data_volume_size
   })
 }
 

@@ -17,7 +17,7 @@ public class IntegrationPublicDockerTest : BaseIntegrationTest() {
 
   @BeforeAll
   fun setup(context: SolidblocksTestContext) {
-    init(context, true)
+    init(context, true, true)
   }
 
   @Test
@@ -26,7 +26,7 @@ public class IntegrationPublicDockerTest : BaseIntegrationTest() {
         shouldThrow<Exception> {
           docker
               .pullImageCmd("$dockerHostPrivate/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PullImageResultCallback())
               .awaitCompletion()
         }
@@ -37,7 +37,7 @@ public class IntegrationPublicDockerTest : BaseIntegrationTest() {
   fun testDockerAnonymousUserCanPullFromPublic() {
     docker
         .pullImageCmd("$dockerHostPublic/alpine")
-        .withTag("latest")
+        .withTag(imageTag)
         .exec(PullImageResultCallback())
         .awaitCompletion()
   }
@@ -48,7 +48,7 @@ public class IntegrationPublicDockerTest : BaseIntegrationTest() {
         shouldThrow<Exception> {
           docker
               .pushImageCmd("$dockerHostPrivate/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PushImageResultCallback())
               .awaitCompletion()
         }
@@ -61,7 +61,7 @@ public class IntegrationPublicDockerTest : BaseIntegrationTest() {
         shouldThrow<Exception> {
           docker
               .pushImageCmd("$dockerHostPrivate/alpine")
-              .withTag("latest")
+              .withTag(imageTag)
               .exec(PushImageResultCallback())
               .awaitCompletion()
         }

@@ -20,8 +20,10 @@ module "web_s3_docker" {
   source = "../../../../../modules/web-s3-docker"
   name   = local.name
 
-  dns_zone             = "blcks-test.de"
-  ssh_keys             = [data.hcloud_ssh_key.ssh_key.id]
+  dns_zone = "blcks-test.de"
+  ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
+
+  docker_enable        = var.docker_enable
   docker_public_enable = var.docker_public_enable
 
   s3_buckets = [
