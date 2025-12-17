@@ -89,8 +89,8 @@ function software_hashicorp_ensure {
     file_extract_to_directory "${target_file}" "${BIN_DIR}"
 }
 
-TERRAFORM_VERSION="1.2.6"
-TERRAFORM_CHECKSUM="9fd445e7a191317dcfc99d012ab632f2cc01f12af14a44dfbaba82e0f9680365"
+TERRAFORM_VERSION="1.14.2"
+TERRAFORM_CHECKSUM="8314673d57e9fb8e01bfc98d074f51f7efb6e55484cfb2b10baed686de2190da"
 
 # see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_terraform
 function software_ensure_terraform {

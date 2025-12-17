@@ -159,7 +159,7 @@ public class SoftwareTest {
 
     assertSoftly(result) {
       it shouldHaveExitCode 0
-      it stdoutShouldMatch ".*Terraform v1.2.6.*"
+      it stdoutShouldMatch ".*Terraform v1.14.*"
     }
   }
 }
