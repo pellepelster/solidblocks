@@ -20,6 +20,5 @@ include(
     "solidblocks-rds-postgresql-docker",
     "solidblocks-debug-container",
     "solidblocks-cli",
-    "solidblocks-hetzner-dns",
     "solidblocks-hetzner-web-s3-docker"
 )
