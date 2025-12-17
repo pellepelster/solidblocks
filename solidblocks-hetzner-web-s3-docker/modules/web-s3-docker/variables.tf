@@ -6,12 +6,12 @@ variable "name" {
 variable "location" {
   type        = string
   description = "Hetzner location to use for provisioned resources"
-  default     = "hel1"
+  default     = "nbg1"
 }
 
 variable "datacenter" {
   type    = string
-  default = "hel1-dc2"
+  default = "nbg1-dc3"
 }
 
 variable "ssh_keys" {
@@ -65,6 +65,11 @@ variable "docker_rw_users" {
     password : optional(string)
   }))
   default = []
+}
+
+variable "docker_public_enable" {
+  type    = bool
+  default = false
 }
 
 variable "docker_ro_users" {

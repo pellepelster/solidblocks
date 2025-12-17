@@ -11,3 +11,7 @@ variable "bucket2_name" {
   type    = string
   default = "bucket2"
 }
+
+variable "docker_public_enable" {
+  type = bool
+}

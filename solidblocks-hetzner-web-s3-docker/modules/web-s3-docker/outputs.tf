@@ -17,8 +17,12 @@ output "s3_host" {
   value = local.s3_api_fqdn
 }
 
-output "docker_host" {
-  value = local.docker_registry_fqdn
+output "docker_host_private" {
+  value = local.docker_registry_private_fqdn
+}
+
+output "docker_host_public" {
+  value = local.docker_registry_public_fqdn
 }
 
 output "s3_buckets" {
@@ -57,9 +61,9 @@ output "garage_admin_token" {
 }
 
 output "docker_ro_users" {
-  value = local.docker_ro_users
+  value = [{ username = random_bytes.docker_ro_default_user.hex, password = random_bytes.docker_ro_default_password.hex }]
 }
 
 output "docker_rw_users" {
-  value = local.docker_rw_users
+  value = [{ username = random_bytes.docker_rw_default_user.hex, password = random_bytes.docker_rw_default_password.hex }]
 }

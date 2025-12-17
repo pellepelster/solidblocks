@@ -22,8 +22,12 @@ output "s3_host" {
   value = module.web_s3_docker.s3_host
 }
 
-output "docker_host" {
-  value = module.web_s3_docker.docker_host
+output "docker_host_public" {
+  value = module.web_s3_docker.docker_host_public
+}
+
+output "docker_host_private" {
+  value = module.web_s3_docker.docker_host_private
 }
 
 output "docker_user" {

@@ -1,6 +1,6 @@
 locals {
 
-  root_domain_parts = [var.name]
+  root_domain_parts = var.dns_zone == var.name ? [] : [var.name]
   root_domain       = join(".", local.root_domain_parts)
 
   s3_api_domain_parts = concat(["s3"], local.root_domain_parts)
@@ -15,9 +15,12 @@ locals {
   s3_admin_domain       = join(".", local.s3_admin_domain_parts)
   s3_admin_fqdn         = "${local.s3_admin_domain}.${var.dns_zone}"
 
-  docker_domain_parts    = concat(["docker"], local.root_domain_parts)
-  docker_registry_domain = join(".", local.docker_domain_parts)
-  docker_registry_fqdn   = "${local.docker_registry_domain}.${var.dns_zone}"
+  docker_domain_private_parts    = concat(["docker-private"], local.root_domain_parts)
+  docker_domain_public_parts     = concat(["docker-public"], local.root_domain_parts)
+  docker_registry_private_domain = join(".", local.docker_domain_private_parts)
+  docker_registry_public_domain  = join(".", local.docker_domain_public_parts)
+  docker_registry_private_fqdn   = "${local.docker_registry_private_domain}.${var.dns_zone}"
+  docker_registry_public_fqdn    = "${local.docker_registry_public_domain}.${var.dns_zone}"
 
   s3_buckets = [for index, s3_bucket in var.s3_buckets : {
     name                     = s3_bucket.name
@@ -39,6 +42,9 @@ locals {
     password = user.password == null ? random_bytes.docker_ro_password[user.username].hex : user.password
   }]
 
+  docker_rw_default_users = [{ username = random_bytes.docker_rw_default_user.hex, password = random_bytes.docker_rw_default_password.hex }]
+  docker_ro_default_users = [{ username = random_bytes.docker_ro_default_user.hex, password = random_bytes.docker_ro_default_password.hex }]
+
   docker_rw_users = [for index, user in var.docker_rw_users : {
     username = user.username
     password = user.password == null ? random_bytes.docker_rw_password[user.username].hex : user.password
@@ -57,9 +63,10 @@ locals {
     requirements_txt_base64 = base64encode(file("${path.module}/requirements.txt"))
 
     caddy = templatefile("${path.module}/caddy.sh", {
-      docker_ro_users = local.docker_ro_users
-      docker_rw_users = local.docker_rw_users
-      s3_buckets      = local.s3_buckets
+      docker_ro_users      = length(local.docker_ro_users) == 0 ? local.docker_ro_default_users : local.docker_ro_users
+      docker_rw_users      = length(local.docker_rw_users) == 0 ? local.docker_rw_default_users : local.docker_rw_users
+      s3_buckets           = local.s3_buckets
+      docker_public_enable = var.docker_public_enable
     })
 
     garage = templatefile("${path.module}/garage.sh", {
@@ -69,12 +76,13 @@ locals {
     })
 
     variables = templatefile("${path.module}/variables.sh", {
-      s3_api_fqdn               = local.s3_api_fqdn
-      s3_web_fqdn               = local.s3_web_fqdn
-      dns_zone                  = var.dns_zone
-      s3_admin_fqdn             = local.s3_admin_fqdn
-      docker_registry_fqdn      = local.docker_registry_fqdn
-      blcks_storage_device_data = hcloud_volume.data.linux_device
+      s3_api_fqdn                  = local.s3_api_fqdn
+      s3_web_fqdn                  = local.s3_web_fqdn
+      dns_zone                     = var.dns_zone
+      s3_admin_fqdn                = local.s3_admin_fqdn
+      docker_registry_private_fqdn = local.docker_registry_private_fqdn
+      docker_registry_public_fqdn  = local.docker_registry_public_fqdn
+      blcks_storage_device_data    = hcloud_volume.data.linux_device
     })
 
     s3_buckets          = local.s3_buckets

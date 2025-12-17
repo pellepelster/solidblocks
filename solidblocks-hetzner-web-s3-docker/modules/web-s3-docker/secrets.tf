@@ -49,3 +49,19 @@ resource "random_bytes" "docker_rw_password" {
   for_each = { for user in var.docker_rw_users : user.username => user.username }
   length   = 16
 }
+
+resource "random_bytes" "docker_rw_default_user" {
+  length = 16
+}
+
+resource "random_bytes" "docker_rw_default_password" {
+  length = 16
+}
+
+resource "random_bytes" "docker_ro_default_user" {
+  length = 16
+}
+
+resource "random_bytes" "docker_ro_default_password" {
+  length = 16
+}

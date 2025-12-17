@@ -27,8 +27,7 @@ $${S3_API_FQDN} {
     }
   }
 
-  reverse_proxy http://localhost:3900 {
-  }
+  reverse_proxy http://localhost:3900
 }
 
 %{ for s3_bucket in s3_buckets }
@@ -44,8 +43,7 @@ ${s3_bucket.name}.$${S3_API_FQDN} {
     }
   }
 
-  reverse_proxy http://localhost:3900 {
-  }
+  reverse_proxy http://localhost:3900
 }
 %{ if s3_bucket.web_access_public_enable }
 ${s3_bucket.name}.$${S3_WEB_FQDN} {
@@ -60,8 +58,7 @@ ${s3_bucket.name}.$${S3_WEB_FQDN} {
     }
   }
 
-  reverse_proxy http://localhost:3902 {
-  }
+  reverse_proxy http://localhost:3902
 }
 
 %{ for web_access_domain in s3_bucket.web_access_domains }
@@ -77,8 +74,7 @@ ${web_access_domain} {
     }
   }
 
-  reverse_proxy http://localhost:3902 {
-  }
+  reverse_proxy http://localhost:3902
 }
 %{ endfor }
 %{ endif }
@@ -96,48 +92,69 @@ $${S3_ADMIN_FQDN} {
     }
   }
 
-  reverse_proxy http://localhost:3903 {
-  }
+  reverse_proxy http://localhost:3903
 }
 
-$${DOCKER_REGISTRY_FQDN} {
+$${DOCKER_REGISTRY_PRIVATE_FQDN} {
 
   @write {
-      method POST PUT DELETE PATCH GET HEAD OPTIONS
+      method POST PUT DELETE PATCH DELETE
   }
 
   @read {
       method GET HEAD OPTIONS
   }
 
-  basicauth @write {
-    %{ for user in docker_rw_users }
-    ${user.username} $(echo ${user.password} | caddy hash-password)
-    %{ endfor }
+  handle @write {
+    basicauth {
+      %{ for user in docker_rw_users }
+      ${user.username} $(echo ${user.password} | caddy hash-password)
+      %{ endfor }
+    }
+    reverse_proxy http://localhost:5000
   }
 
-  basicauth @read {
-    %{ for user in docker_ro_users }
-    ${user.username} $(echo ${user.password} | caddy hash-password)
-    %{ endfor }
-    %{ for user in docker_rw_users }
-    ${user.username} $(echo ${user.password} | caddy hash-password)
-    %{ endfor }
+  handle @read {
+    basicauth {
+      %{ for user in docker_ro_users }
+      ${user.username} $(echo ${user.password} | caddy hash-password)
+      %{ endfor }
+      %{ for user in docker_rw_users }
+      ${user.username} $(echo ${user.password} | caddy hash-password)
+      %{ endfor }
+    }
+    reverse_proxy http://localhost:5000
   }
 
   log {
     level  INFO
 
-    output file $${BLCKS_STORAGE_MOUNT_DATA}/www/logs/$${DOCKER_REGISTRY_FQDN}.log {
+    output file $${BLCKS_STORAGE_MOUNT_DATA}/www/logs/$${DOCKER_REGISTRY_PRIVATE_FQDN}.log {
       roll_uncompressed
       roll_keep     10000
       roll_keep_for 87600h
       roll_size     10MiB
     }
   }
+}
 
-  reverse_proxy http://localhost:5000 {
+%{ if docker_public_enable }
+$${DOCKER_REGISTRY_PUBLIC_FQDN} {
+
+  reverse_proxy http://localhost:5000
+
+  log {
+    level  INFO
+
+    output file $${BLCKS_STORAGE_MOUNT_DATA}/www/logs/$${DOCKER_REGISTRY_PUBLIC_FQDN}.log {
+      roll_uncompressed
+      roll_keep     10000
+      roll_keep_for 87600h
+      roll_size     10MiB
+    }
   }
 }
+%{ endif }
+
 EOF
 }

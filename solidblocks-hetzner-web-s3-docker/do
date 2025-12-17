@@ -26,6 +26,15 @@ function task_test() {
   ${DIR}/../gradlew :solidblocks-hetzner-web-s3-docker:check
 }
 
+function task_format() {
+  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    exit 0
+  fi
+
+  ${DIR}/../gradlew :solidblocks-hetzner-web-s3-docker:spotlessApply
+  terraform fmt -recursive
+}
+
 
 function task_test_run {
   task_test_run_s3
@@ -71,7 +80,6 @@ function task_build {
 arg=${1:-}
 shift || true
 case ${arg} in
-  lint) task_lint "$@" ;;
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   format) task_format "$@" ;;
