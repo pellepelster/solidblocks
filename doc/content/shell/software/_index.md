@@ -50,9 +50,6 @@ software_ensure_terraform "0.13.4" "a92df4a151d390144040de5d18351301e597d3fae367
 ### `software_ensure_terraform(version = {{% env "TERRAFORM_VERSION" %}}, checksum)` {#software_ensure_terraform}
 Installs [HashiCorp Terraform](https://www.terraform.io/) version {{% env "TERRAFORM_VERSION" %}}
 
-### `software_ensure_consul(version = {{% env "CONSUL_VERSION" %}}, checksum)` {#software_ensure_consul}
-Installs [HashiCorp Consul](https://www.consul.io/) version {{% env "CONSUL_VERSION" %}}
-
 ### `software_ensure_hugo(version = {{% env "HUGO_VERSION" %}}, checksum)` {#software_ensure_hugo}
 Installs [Hugo](https://gohugo.io/) static site generator version {{% env "HUGO_VERSION" %}}
 

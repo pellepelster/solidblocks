@@ -102,19 +102,6 @@ function software_ensure_terraform {
   software_hashicorp_ensure "terraform" "${version}" "${checksum}"
 }
 
-CONSUL_VERSION="1.12.3"
-CONSUL_CHECKSUM="620a47cfba34bdf918b4c3238d22f6318b29403888cfd927c6006a4ac1b1c9f6"
-
-# see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_consul
-function software_ensure_consul {
-  local version=${1:-$CONSUL_VERSION}
-  local checksum=${2:-$CONSUL_CHECKSUM}
-
-  software_ensure_dirs
-
-  software_hashicorp_ensure "consul" "${version}" "${checksum}"
-}
-
 ###########################################
 #                github                   #
 ###########################################
