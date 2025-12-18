@@ -448,8 +448,7 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Hetzner Nuke
         run: |
-          find ./
-          find ./blcks- cli-linux-amd64 -name "blcks-cli-*.zip" -exec unzip {} \;
+          find ./solidblocks-cli-linux-amd64 -name "blcks-cli-*.zip" -exec unzip {} \;
           chmod +x ./blcks
           ./blcks hetzner nuke --do-nuke
 
