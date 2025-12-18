@@ -19,24 +19,24 @@ function task_build {
   (
     docker run  -v ${DIR}:/src hairyhenderson/gomplate:stable -d "vendors=https://raw.githubusercontent.com/watson/ci-info/master/vendors.json?type=application/array+json" -f /src/lib-templates/ci.sh.template > "${DIR}/lib/ci.sh"
 
-    mkdir -p "${DIR}/build/solidblocks-shell"
-    cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-shell/"
+    mkdir -p "${DIR}/build/blcks-shell"
+    cp -rv ${DIR}/lib/* "${DIR}/build/blcks-shell/"
     cd "${DIR}/build"
-    echo "creating distribution '${DIR}/build/solidblocks-shell-${VERSION}.zip'"
-    zip -r "${DIR}/build/solidblocks-shell-${VERSION}.zip" solidblocks-shell/*.sh
+    echo "creating distribution '${DIR}/build/blcks-shell-${VERSION}.zip'"
+    zip -r "${DIR}/build/blcks-shell-${VERSION}.zip" blcks-shell/*.sh
 
     mkdir -p "${DIR}/build/snippets"
 
-    local checksum="$(sha256sum "${DIR}/build/solidblocks-shell-${VERSION}.zip" | cut -f 1 -d " ")"
+    local checksum="$(sha256sum "${DIR}/build/blcks-shell-${VERSION}.zip" | cut -f 1 -d " ")"
     sed \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g" < "${DIR}/templates/snippets/shell-bootstrap-solidblocks.sh.template" > "${DIR}/build/snippets/shell-bootstrap-solidblocks-${VERSION}.sh"
+      --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g" < "${DIR}/templates/snippets/blcks-shell-bootstrap-solidblocks.sh.template" > "${DIR}/build/snippets/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell-bootstrap-solidblocks-${VERSION}.sh" "${DIR}/templates/snippets/shell-minimal-skeleton-do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell-minimal-skeleton-${VERSION}.sh"
-    chmod +x "${DIR}/build/snippets/shell-minimal-skeleton-${VERSION}.sh"
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" "${DIR}/templates/snippets/blcks-shell-minimal-skeleton-do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/blcks-shell-minimal-skeleton-${VERSION}.sh"
+    chmod +x "${DIR}/build/snippets/blcks-shell-minimal-skeleton-${VERSION}.sh"
 
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/shell-bootstrap-solidblocks-${VERSION}.sh" "${DIR}/templates/snippets/shell-kitchen-sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/shell-kitchen-sink-${VERSION}.sh"
-    chmod +x "${DIR}/build/snippets/shell-kitchen-sink-${VERSION}.sh"
+    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" "${DIR}/templates/snippets/blcks-shell-kitchen-sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/blcks-shell-kitchen-sink-${VERSION}.sh"
+    chmod +x "${DIR}/build/snippets/blcks-shell-kitchen-sink-${VERSION}.sh"
   )
 }
 

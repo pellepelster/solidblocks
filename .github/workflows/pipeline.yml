@@ -149,7 +149,7 @@ jobs:
         with:
           name: solidblocks-shell
           path: |
-           solidblocks-shell/build/solidblocks-shell-*.zip
+           solidblocks-shell/build/blcks-shell-*.zip
            solidblocks-shell/build/snippets/*
 
   solidblocks-do-python:
@@ -466,7 +466,7 @@ jobs:
         with:
           body_path: CHANGELOG.md
           files: |
-            solidblocks-shell/solidblocks-shell-*.zip
+            solidblocks-shell/blcks-shell-*.zip
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/terraform-null-blcks-cloud-init-*.zip
