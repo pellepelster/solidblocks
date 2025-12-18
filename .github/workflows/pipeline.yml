@@ -253,7 +253,7 @@ jobs:
           name: solidblocks-cloud-init
           path: |
             solidblocks-cloud-init/build/blcks-cloud-init-*.zip
-            solidblocks-cloud-init/build/terraform-null-blcks-cloud-init-*.zip
+            solidblocks-cloud-init/build/blcks-terraform-null-cloud-init-*.zip
             solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh
             solidblocks-cloud-init/build/snippets/blcks-cloud-init-bootstrap-*.sh
 
@@ -274,7 +274,7 @@ jobs:
           name: solidblocks-rds-postgresql-hetzner
           path: |
             solidblocks-rds-postgresql-hetzner/build/snippets/*
-            solidblocks-rds-postgresql-hetzner/build/terraform-hcloud-blcks-rds-postgresql-*.zip
+            solidblocks-rds-postgresql-hetzner/build/blcks-terraform-rds-postgresql-hetzner-*.zip
 
   solidblocks-rds-postgresql-hetzner-test:
     runs-on: ubuntu-24.04
@@ -469,10 +469,10 @@ jobs:
             solidblocks-shell/blcks-shell-*.zip
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/blcks-cloud-init-*.zip
-            solidblocks-cloud-init/terraform-null-blcks-cloud-init-*.zip
+            solidblocks-cloud-init/blcks-terraform-null-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
             solidblocks-rds-postgresql-hetzner/snippets/*.zip
-            solidblocks-rds-postgresql-hetzner/terraform-hcloud-blcks-rds-postgresql-*.zip
+            solidblocks-rds-postgresql-hetzner/blcks-terraform-rds-postgresql-hetzner-*.zip
             solidblocks-cli-*/blcks-cli-*
             solidblocks-do-python/blcks_do*
             solidblocks-rds-postgresql-ansible/blcks-rds*

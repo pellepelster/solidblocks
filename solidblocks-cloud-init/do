@@ -64,7 +64,7 @@ function task_build {
 
   (
     cd "${DIR}/modules/cloud-init"
-    zip -r "${DIR}/build/terraform-null-blcks-cloud-init-${VERSION}.zip" *
+    zip -r "${DIR}/build/blcks-terraform-null-cloud-init-${VERSION}.zip" *
   )
 }
 

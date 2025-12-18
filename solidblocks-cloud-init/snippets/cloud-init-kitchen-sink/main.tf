@@ -11,7 +11,8 @@ resource "hcloud_volume_attachment" "example" {
 }
 
 module "example" {
-  source  = "github.com/pellepelster/terraform-null-blcks-cloud-init?ref=v0.4.8-rc4"
+  # TODO
+  source  = "github.com/pellepelster/blcks-terraform-null-cloud-init?ref=v0.4.8-rc4"
 
   storage = [
     { linux_device = hcloud_volume.example.linux_device, mount_path = "/data1" },
