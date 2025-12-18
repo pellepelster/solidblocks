@@ -115,6 +115,10 @@ jobs:
       - name: Rename blcks
         shell: bash
         run: |
+          if [[ "${BUILD_FAST:-}" == "true" ]]; then
+            exit 0
+          fi
+
           find ./solidblocks-cli-${{ matrix.job.target }} -name "solidblocks-cli-*.zip" -exec unzip {} \;
           chmod +x ./blcks
           cp ./blcks ./solidblocks-cli/blcks
