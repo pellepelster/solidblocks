@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from solidblocks_do.tofu import tofu_init, tofu_apply, tofu_get_output, tofu_ensure, \
+from blcks_do.tofu import tofu_init, tofu_apply, tofu_get_output, tofu_ensure, \
     tofu_print_output
 
 current_dir = os.path.dirname(os.path.realpath(__file__))

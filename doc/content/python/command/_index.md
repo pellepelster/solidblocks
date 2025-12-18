@@ -13,7 +13,7 @@ Helper to assert and run other CLI commands and work with its output.
 Verifies that a command is available, and logs a message in case it is missing. 
 
 ```python
-from solidblocks_do.command import command_ensure_exists
+from blcks_do.command import command_ensure_exists
 
 if not command_ensure_exists('terraform'):
     pass
@@ -25,7 +25,7 @@ if not command_ensure_exists('terraform'):
 Runs a command and prints to full command line, as well as the commands output.
 
 ```python
-from solidblocks_do.command import command_run
+from blcks_do.command import command_run
 
 if command_run(['env', '--debug'], env={"SOME_ENV": "foo-bar"}, workdir="/tmp"):
     pass
@@ -47,7 +47,7 @@ SOME_ENV=foo-bar
 Executes a command and parses the output as JSON.
 
 ```python
-from solidblocks_do.command import command_exec_json
+from blcks_do.command import command_exec_json
 
 result = command_exec_json('some_json_command.sh')
 

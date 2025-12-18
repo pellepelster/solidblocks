@@ -1,4 +1,4 @@
-from solidblocks_do.log import log_divider_bold, log_divider_thin, log_divider_bottom, log_divider_top, log_info, \
+from blcks_do.log import log_divider_bold, log_divider_thin, log_divider_bottom, log_divider_top, log_info, \
     log_success, log_warning, log_error, log_hint
 
 

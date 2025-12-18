@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from solidblocks_do.secrets_pass import pass_temp_file, pass_has_secret, pass_get_secret, pass_init, \
+from blcks_do.secrets_pass import pass_temp_file, pass_has_secret, pass_get_secret, pass_init, \
     pass_wrapper, \
     pass_ensure_secrets
 

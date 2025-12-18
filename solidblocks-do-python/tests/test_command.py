@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from solidblocks_do.command import command_ensure_exists, command_run, command_run_interactive, command_exec, \
+from blcks_do.command import command_ensure_exists, command_run, command_run_interactive, command_exec, \
     command_exec_json
 
 current_path = os.path.dirname(os.path.realpath(__file__))

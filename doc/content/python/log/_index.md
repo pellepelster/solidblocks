@@ -13,7 +13,7 @@ Generic console and logging  helpers
 Logs a `message` with colored log level 
 
 ```python
-from solidblocks_do.log import log_info, log_success, log_warning, log_error, log_hint
+from blcks_do.log import log_info, log_success, log_warning, log_error, log_hint
 
 log_info("some info message")
 log_success("some success message")
@@ -30,7 +30,7 @@ log_hint("some hint message")
 Prints a divider to structure console output, useful for interleaving with output from other CLI commands.
 
 ```python
-from solidblocks_do.log import log_divider_bold, log_divider_thin, log_divider_bottom, log_divider_top
+from blcks_do.log import log_divider_bold, log_divider_thin, log_divider_bottom, log_divider_top
 
 log_divider_bold()
 log_divider_top()

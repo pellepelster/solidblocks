@@ -36,7 +36,7 @@ Override the environment variable named derived from `path`.
 Returns `True` if secret `path` exists in `secret_store` or is injected via environment variable derived from path or `env_name`.
 
 ```python
-from solidblocks_do.secrets_pass import pass_has_secret
+from blcks_do.secrets_pass import pass_has_secret
 
 if pass_has_secret('secret1', '/path/to/secret/store'):
     pass
@@ -47,7 +47,7 @@ if pass_has_secret('secret1', '/path/to/secret/store'):
 Returns value of secret at `path` inside `secret_store` or from environment variable derived from path (or `env_name`).
 
 ```python
-from solidblocks_do.secrets_pass import pass_get_secret
+from blcks_do.secrets_pass import pass_get_secret
 
 secret = pass_get_secret('secret1', '/path/to/secret/store')
 
@@ -60,7 +60,7 @@ if secret is not None:
 Stores value of secret at `path` from `secret_store` in a temporary file, that will get deleted when the `pass_temp_file` context is closed.
 
 ```python
-from solidblocks_do.secrets_pass import pass_temp_file
+from blcks_do.secrets_pass import pass_temp_file
 
 with pass_temp_file('some/password', '/path/to/secret/store') as temp_secret_file:
     secret = open(temp_secret_file, 'r').read()

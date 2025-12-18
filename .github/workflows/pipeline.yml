@@ -152,7 +152,7 @@ jobs:
            solidblocks-shell/build/solidblocks-shell-*.zip
            solidblocks-shell/build/snippets/*
 
-  solidblocks-python:
+  solidblocks-do-python:
     runs-on: ubuntu-24.04
     steps:
       - name: install python3-pip
@@ -164,15 +164,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        run: ./solidblocks-python/do build
+        run: ./solidblocks-do-python/do build
       - name: Test Integration
-        run: ./solidblocks-python/do test
+        run: ./solidblocks-do-python/do test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: solidblocks-python
+          name: solidblocks-do-python
           path: |
-            solidblocks-python/build/solidblocks_do*
+            solidblocks-do-python/build/blcks_do*
 
   solidblocks-rds-postgresql-ansible:
     runs-on: ubuntu-24.04
@@ -253,7 +253,7 @@ jobs:
           name: solidblocks-cloud-init
           path: |
             solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
-            solidblocks-cloud-init/build/terraform-null-solidblocks-cloud-init-*.zip
+            solidblocks-cloud-init/build/terraform-null-blcks-cloud-init-*.zip
             solidblocks-cloud-init/build/solidblocks-cloud-init-bootstrap.sh
             solidblocks-cloud-init/build/snippets/solidblocks-cloud-init-bootstrap-*.sh
 
@@ -431,7 +431,7 @@ jobs:
       - solidblocks-rds-postgresql-hetzner-test
       - solidblocks-debug-container
       - solidblocks-shell-test
-      - solidblocks-python
+      - solidblocks-do-python
       - solidblocks-rds-postgresql-ansible
     steps:
       - name: Login to GitHub Container Registry
@@ -469,12 +469,12 @@ jobs:
             solidblocks-shell/solidblocks-shell-*.zip
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
-            solidblocks-cloud-init/terraform-null-solidblocks-cloud-init-*.zip
+            solidblocks-cloud-init/terraform-null-blcks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
             solidblocks-rds-postgresql-hetzner/snippets/*.zip
             solidblocks-rds-postgresql-hetzner/terraform-hcloud-blcks-rds-postgresql-*.zip
             solidblocks-cli-*/solidblocks-cli-*
-            solidblocks-python/solidblocks_do*
+            solidblocks-do-python/blcks_do*
             solidblocks-rds-postgresql-ansible/blcks-rds*
 
   documentation:
@@ -490,7 +490,7 @@ jobs:
       - solidblocks-rds-postgresql-hetzner-test
       - solidblocks-debug-container
       - solidblocks-shell-test
-      - solidblocks-python
+      - solidblocks-do-python
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

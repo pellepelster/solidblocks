@@ -1,8 +1,8 @@
 import os
 import tempfile
 
-from solidblocks_do import log_error, log_hint
-from solidblocks_do.command import command_run_interactive, command_exec, command_ensure_exists
+from blcks_do import log_error, log_hint
+from blcks_do.command import command_run_interactive, command_exec, command_ensure_exists
 
 
 def pass_env(secret_store):

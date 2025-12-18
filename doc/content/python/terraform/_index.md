@@ -13,7 +13,7 @@ Wrappers to run Terraform and Tofu commands
 Ensure that the terraform/tofu executable present, and optionally makes sure, that it is a least `min_version`.
 
 ```python
-from solidblocks_do.terraform import terraform_ensure
+from blcks_do.terraform import terraform_ensure
 
 if terraform_ensure('1.1.0'):
     pass
@@ -24,7 +24,7 @@ if terraform_ensure('1.1.0'):
 Runs terraform/tofu init in `path` with extra arguments `args` and environment `env`.   
 
 ```python
-from solidblocks_do.terraform import terraform_init
+from blcks_do.terraform import terraform_init
 
 if terraform_init('path/to/tf/files', ['--upgrade']):
     pass
@@ -35,7 +35,7 @@ if terraform_init('path/to/tf/files', ['--upgrade']):
 Runs terraform/tofu apply in `path` with extra arguments `args` and environment `env`. If `apply` is `True` apply will be started with `-auto-approve`.   
 
 ```python
-from solidblocks_do.terraform import terraform_apply
+from blcks_do.terraform import terraform_apply
 
 if terraform_apply('path/to/tf/files'):
     pass
@@ -46,7 +46,7 @@ if terraform_apply('path/to/tf/files'):
 Returns `True` if terraform/tofu at `path` has output named `output`.   
 
 ```python
-from solidblocks_do.terraform import terraform_has_output
+from blcks_do.terraform import terraform_has_output
 
 if terraform_has_output('path/to/tf/files', 'output1'):
     pass
@@ -57,7 +57,7 @@ if terraform_has_output('path/to/tf/files', 'output1'):
 Returns content of `output` from terraform/tofu at `path`.   
 
 ```python
-from solidblocks_do.terraform import terraform_get_output
+from blcks_do.terraform import terraform_get_output
 
 result = terraform_get_output('path/to/tf/files', 'output1')
 
@@ -70,7 +70,7 @@ if result is not None:
 Prints terraform/tofu output from `path` as key value pairs.   
 
 ```python
-from solidblocks_do.terraform import terraform_print_output
+from blcks_do.terraform import terraform_print_output
 
 terraform_print_output('path/to/tf/files')
 ```

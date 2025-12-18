@@ -2,8 +2,8 @@ import json
 
 import semver
 
-from solidblocks_do.command import command_run, command_exec, command_ensure_exists
-from solidblocks_do.log import log_divider_thin, log_divider_bottom, \
+from blcks_do.command import command_run, command_exec, command_ensure_exists
+from blcks_do.log import log_divider_thin, log_divider_bottom, \
     log_divider_top, log_hint, log_error
 
 

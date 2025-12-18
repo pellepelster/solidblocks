@@ -1,6 +1,6 @@
 import os
 
-from solidblocks_do.terraform import terraform_init, terraform_apply, terraform_get_output, terraform_ensure, \
+from blcks_do.terraform import terraform_init, terraform_apply, terraform_get_output, terraform_ensure, \
     terraform_print_output
 
 current_dir = os.path.dirname(os.path.realpath(__file__))

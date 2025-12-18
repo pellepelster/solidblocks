@@ -7,7 +7,7 @@ import sys
 import termios
 import tty
 
-from solidblocks_do.log import log_divider_thin, log_divider_top, log_divider_bottom, log_success, log_error
+from blcks_do.log import log_divider_thin, log_divider_top, log_divider_bottom, log_success, log_error
 
 
 # see https://pellepelster.github.io/solidblocks/python/command/#command_run

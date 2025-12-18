@@ -14,7 +14,7 @@ Reusable Python functions for CLI infrastructure automation and developer experi
 
 **requirements.txt**
 ```python
-https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/solidblocks_do-{{% env "SOLIDBLOCKS_VERSION" %}}-py3-none-any.whl
+https://github.com/pellepelster/solidblocks/releases/download/{{% env "SOLIDBLOCKS_VERSION" %}}/blcks_do-{{% env "SOLIDBLOCKS_VERSION" %}}-py3-none-any.whl
 click==8.1.7
 ```
 
@@ -58,7 +58,7 @@ export PYTHONUNBUFFERED=1
 **do.py**
 ```shell
 import click
-from solidblocks_do import log_hint, command_run
+from blcks_do import log_hint, command_run
 
 @click.group()
 def cli():
