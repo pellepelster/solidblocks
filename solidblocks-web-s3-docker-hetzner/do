@@ -82,7 +82,7 @@ case ${arg} in
   test-ssh) task_test_ssh "$@" ;;
   test) task_test "$@" ;;
   release-artifacts) ;;
-  release-prepare) task_release_prepare "$@" ;;
+  release-prepare) ;;
   release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac
