@@ -44,6 +44,6 @@ solidblocks-rds-postgresql-ansible/test.id
 solidblocks-rds-postgresql-ansible/test/terraform/output/
 doc/content/snippets/
 solidblocks-cli/test/terraform/id_rsa
-/solidblocks-hetzner-web-s3-docker/src/test/resources/terraform/garage_admin_address
-/solidblocks-hetzner-web-s3-docker/src/test/resources/terraform/garage_admin_token
-/solidblocks-hetzner-web-s3-docker/src/test/resources/terraform/ipv4_address
+/solidblocks-web-s3-docker-hetzner/src/test/resources/terraform/garage_admin_address
+/solidblocks-web-s3-docker-hetzner/src/test/resources/terraform/garage_admin_token
+/solidblocks-web-s3-docker-hetzner/src/test/resources/terraform/ipv4_address

@@ -21,8 +21,9 @@ the [Hetzner Cloud API](https://www.hetzner.com/news/dns-beta/).
 
 ```terraform
 module "web_s3_docker" {
-  source = "TODO"
-
+  source  = "pellepelster/solidblocks-web-s3-docker/hcloud"
+  version = "{{% env "SOLIDBLOCKS_VERSION" %}}"
+  
   name     = "server1"
   dns_zone = "blcks-test.de"
 

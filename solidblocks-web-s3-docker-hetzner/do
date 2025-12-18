@@ -23,11 +23,11 @@ function task_test() {
     exit 0
   fi
 
-  ${DIR}/../gradlew :solidblocks-hetzner-web-s3-docker:check
+  ${DIR}/../gradlew :solidblocks-web-s3-docker-hetzner:check
 }
 
 function task_format() {
-  ${DIR}/../gradlew :solidblocks-hetzner-web-s3-docker:spotlessApply
+  ${DIR}/../gradlew :solidblocks-web-s3-docker-hetzner:spotlessApply
   terraform fmt -recursive
 }
 
