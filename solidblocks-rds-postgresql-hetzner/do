@@ -36,10 +36,10 @@ function task_build {
     zip -r "${DIR}/build/snippets/hetzner-postgres-rds-hetzner-s3-backup-${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
   )
 
-  #if which terraform-docs; then
-  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
-  terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
-  #fi
+  if which terraform-docs; then
+    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
+    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
+  fi
 
   (
     cd "${DIR}/modules/rds-postgresql"

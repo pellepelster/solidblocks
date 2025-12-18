@@ -66,8 +66,10 @@ function task_build {
     cd "${DIR}/modules/web-s3-docker"
     zip "${DIR}/build/terraform-hcloud-blcks-web-s3-docker-${VERSION}.zip" *.tf *.sh
   )
-  terraform-docs markdown table "${DIR}/modules/web-s3-docker" --hide modules --output-file "${DIR}/../doc/content/hetzner/web-s3-docker/_index.md"
-  terraform-docs markdown table "${DIR}/modules/web-s3-docker" --hide modules --output-file "${DIR}/modules/web-s3-docker/README.md"
+  if which terraform-docs; then
+    terraform-docs markdown table "${DIR}/modules/web-s3-docker" --hide modules --output-file "${DIR}/../doc/content/hetzner/web-s3-docker/_index.md"
+    terraform-docs markdown table "${DIR}/modules/web-s3-docker" --hide modules --output-file "${DIR}/modules/web-s3-docker/README.md"
+  fi
 }
 
 arg=${1:-}
