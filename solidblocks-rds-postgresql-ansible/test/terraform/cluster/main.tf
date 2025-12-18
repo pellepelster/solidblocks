@@ -21,7 +21,7 @@ resource "hcloud_server" "database2_green" {
   name        = "${var.environment}-${var.name}-database2-green"
   image       = "debian-11"
   server_type = "cx23"
-  ssh_keys = [module.ssh_hetzner.root_ssh_key_id]
+  ssh_keys    = [module.ssh_hetzner.root_ssh_key_id]
   location    = var.location
   network {
     network_id = hcloud_network.network.id
@@ -37,7 +37,7 @@ resource "hcloud_server" "database2_blue" {
   name        = "${var.environment}-${var.name}-database2-blue"
   image       = "debian-11"
   server_type = "cx23"
-  ssh_keys = [module.ssh_hetzner.root_ssh_key_id]
+  ssh_keys    = [module.ssh_hetzner.root_ssh_key_id]
   location    = var.location
   network {
     network_id = hcloud_network.network.id

@@ -34,7 +34,7 @@ function task_build {
     for component in ${COMPONENTS}; do
       (
         echo "================================================================================="
-        echo "running clean for '${component}'"
+        echo "running build for '${component}'"
         echo "================================================================================="
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" build
@@ -42,6 +42,18 @@ function task_build {
     done
 
     task_build_documentation
+}
+
+function task_format {
+    for component in ${COMPONENTS}; do
+      (
+        echo "================================================================================="
+        echo "running format for '${component}'"
+        echo "================================================================================="
+        cd "${DIR}/${component}"
+        "./do" format
+      )
+    done
 }
 
 function task_release_prepare {
@@ -143,15 +155,6 @@ function task_test {
       (
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" test
-      )
-    done
-}
-
-function task_format {
-    for component in ${COMPONENTS}; do
-      (
-        cd "${DIR}/${component}"
-        VERSION=${VERSION} "./do" format
       )
     done
 }

@@ -34,7 +34,7 @@ module "ssh_config" {
   output_path = "${path.root}/../output/${var.environment}/cluster"
 
   ssh_private_key_openssh = module.ssh_hetzner.ssh_private_key_openssh
-  ssh_servers = [hcloud_server.database2_green, hcloud_server.database2_blue]
+  ssh_servers             = [hcloud_server.database2_green, hcloud_server.database2_blue]
 }
 
 output "database2_blue_name" {

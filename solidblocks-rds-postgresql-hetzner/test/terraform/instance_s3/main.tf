@@ -27,7 +27,7 @@ module "rds-postgresql-1" {
   backup_s3_retention_diff      = 2
 
   postgres_extra_config = "checkpoint_timeout = 30"
-  restore_pitr = var.restore_pitr
+  restore_pitr          = var.restore_pitr
 
   databases = [
     { id : "database1", user : "user1", password : "password1" }

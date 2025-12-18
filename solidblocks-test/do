@@ -45,6 +45,14 @@ function task_release_artifacts {
   ${DIR}/../gradlew :solidblocks-test:publishAllPublicationsToMavenCentralRepository
 }
 
+function task_format() {
+  ${DIR}/../gradlew :solidblocks-test:spotlessApply
+  (
+    cd ${DIR}
+    terraform fmt -recursive
+  )
+}
+
 function task_clean {
   ${DIR}/../gradlew :solidblocks-test:clean
 }
@@ -75,6 +83,7 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
+  format) task_format "$@" ;;
   test-prepare) task_test_prepare "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-artifacts) task_release_artifacts;;

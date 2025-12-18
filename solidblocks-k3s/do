@@ -203,7 +203,6 @@ function task_release_prepare {
 function task_format {
   (
     cd "${DIR}"
-    ${DIR}/../gradlew :solidblocks-hetzner-nuke:spotlessApply
     terraform fmt -recursive
   )
 }

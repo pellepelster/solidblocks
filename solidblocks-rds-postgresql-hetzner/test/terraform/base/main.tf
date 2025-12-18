@@ -27,7 +27,7 @@ resource "aws_s3_bucket_public_access_block" "bootstrap" {
 
 data "aws_iam_policy_document" "bootstrap" {
   statement {
-    sid     = "AllowEveryoneReadOnlyAccess"
+    sid = "AllowEveryoneReadOnlyAccess"
     actions = [
       "s3:GetObject",
       "s3:ListBucket"
@@ -44,8 +44,8 @@ data "aws_iam_policy_document" "bootstrap" {
 }
 
 resource "aws_s3_bucket_policy" "bootstrap" {
-  bucket     = aws_s3_bucket.bootstrap.id
-  policy     = data.aws_iam_policy_document.bootstrap.json
+  bucket = aws_s3_bucket.bootstrap.id
+  policy = data.aws_iam_policy_document.bootstrap.json
   depends_on = [
     aws_s3_bucket_ownership_controls.bootstrap, aws_s3_bucket_public_access_block.bootstrap, aws_s3_bucket_acl.bootstrap
   ]

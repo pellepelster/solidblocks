@@ -48,6 +48,13 @@ function task_build() {
   )
 }
 
+function task_format {
+  (
+    cd "${DIR}"
+    terraform fmt -recursive
+  )
+}
+
 function task_release_prepare() {
   local version="${1:-}"
   (

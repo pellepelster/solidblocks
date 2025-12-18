@@ -14,7 +14,7 @@ module "rds-postgresql-1" {
 
   data_volume = hcloud_volume.data.id
 
-  db_backup_gcs_bucket          = data.google_storage_bucket.backup.name
+  db_backup_gcs_bucket      = data.google_storage_bucket.backup.name
   db_backup_gcs_service_key = var.db_backup_gcs_service_key
 
   solidblocks_base_url           = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"

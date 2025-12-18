@@ -29,7 +29,7 @@ module "ssh_config" {
   output_path = "${path.root}/../output/${var.environment}/standalone"
 
   ssh_private_key_openssh = module.ssh_hetzner.ssh_private_key_openssh
-  ssh_servers = [hcloud_server.database1_blue]
+  ssh_servers             = [hcloud_server.database1_blue]
 }
 
 output "database1_blue_name" {

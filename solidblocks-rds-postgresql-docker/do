@@ -128,7 +128,7 @@ function task_clean {
 
 function task_format {
   (
-    cd "${DIR}/test"
+    cd "${DIR}"
     terraform fmt -recursive
   )
 }
