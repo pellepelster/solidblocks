@@ -14,7 +14,7 @@ resource "hcloud_ssh_key" "ssh_key" {
 
 module "rds-postgresql" {
   source  = "pellepelster/solidblocks-rds-postgresql/hcloud"
-  version = "v0.4.8-rc2"
+  version = "v0.4.8-rc3"
 
   name     = "rds-postgresql"
   location = var.hetzner_location

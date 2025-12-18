@@ -314,9 +314,9 @@ function task_clean {
     task_clean_data
     prepare_env
 
-    test_terraform "storage-standalone" destroy -auto-approve
-    test_terraform "backup" destroy -auto-approve
-    test_terraform "standalone" destroy -auto-approve
+    test_terraform "storage-standalone" destroy -auto-approve || true
+    test_terraform "backup" destroy -auto-approve || true
+    test_terraform "standalone" destroy -auto-approve || true
 
     rm -f "${DIR}/test.id"
     rm -rf "${DIR}/build"

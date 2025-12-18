@@ -72,6 +72,10 @@ function task_build {
   fi
 }
 
+function task_clean {
+  rm -rf "${DIR}/build"
+}
+
 arg=${1:-}
 shift || true
 case ${arg} in

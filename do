@@ -141,9 +141,9 @@ function task_clean {
         )
     done
 
-    task_clean_aws
-    task_clean_hetzner
-    task_clean_gcloud
+    #task_clean_aws
+    #task_clean_hetzner
+    #task_clean_gcloud
 }
 
 function task_test {

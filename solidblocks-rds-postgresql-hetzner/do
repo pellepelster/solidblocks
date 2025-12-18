@@ -30,10 +30,10 @@ function task_build {
   mkdir -p "${DIR}/build/snippets"
   (
     cd "${DIR}/snippets"
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-s3-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-local-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-private-network-${VERSION}.zip" hetzner-postgres-rds-private-network/**/*.tf
-    zip -r "${DIR}/build/snippets/hetzner-postgres-rds-hetzner-s3-backup-${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/terraform-hcloud-blcks-rds-postgresql-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/terraform-hcloud-blcks-rds-postgresql-snippet-local-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/terraform-hcloud-blcks-rds-postgresql-snippet-private-network-${VERSION}.zip" hetzner-postgres-rds-private-network/**/*.tf
+    zip -r "${DIR}/build/snippets/terraform-hcloud-blcks-rds-postgresql-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
   )
 
   if which terraform-docs; then
