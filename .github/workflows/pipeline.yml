@@ -192,6 +192,24 @@ jobs:
           path: |
             solidblocks-k3s-ansible/build/blcks-k3s-*
 
+  solidblocks-ansible:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: install python3-pip
+        run: sudo apt-get install -y python3-pip
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: ./solidblocks-ansible/do build
+      - name: Test Integration
+        run: ./solidblocks-ansible/do test
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: solidblocks-ansible
+          path: |
+            solidblocks-ansible/build/blcks-
+
   solidblocks-rds-postgresql-ansible:
     runs-on: ubuntu-24.04
     steps:
@@ -452,6 +470,7 @@ jobs:
       - solidblocks-do-python
       - solidblocks-rds-postgresql-ansible
       - solidblocks-k3s-ansible
+      - solidblocks-ansible
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -496,6 +515,7 @@ jobs:
             solidblocks-do-python/blcks_do*
             solidblocks-rds-postgresql-ansible/blcks-rds*
             solidblocks-k3s-ansible/blcks-k3s-*
+            solidblocks-ansible/blcks-*
 
   documentation:
     needs:

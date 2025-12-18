@@ -27,10 +27,18 @@ function task_release_prepare {
 
 function task_build {
   python_ensure_venv "${DIR}"
+  mkdir -p "${DIR}/build"
+
+  "${DIR}/.venv/bin/ansible-galaxy" \
+    collection build \
+    --output-path "${DIR}/build" \
+    --force \
+    --verbose \
+    "${DIR}/blcks/utils"
 }
 
 function task_clean {
-  echo ""
+  rm -rf "${DIR}/.venv"
 }
 
 arg=${1:-}

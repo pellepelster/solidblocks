@@ -195,6 +195,7 @@ function task_test {
 function task_clean {
   #blcks hetzner nuke --do-nuke
   rm -rf "${DIR}/build"
+  rm -rf "${DIR}/.venv"
 }
 
 function task_release_prepare {
