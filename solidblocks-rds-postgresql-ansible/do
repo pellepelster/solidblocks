@@ -9,7 +9,7 @@ source "${DIR}/../solidblocks-shell/lib/python.sh"
 source "${DIR}/../solidblocks-shell/lib/network.sh"
 
 export VERSION="$(version)"
-export VENV_DIR="${DIR}/venv"
+export VENV_DIR="${DIR}/.venv"
 TEMP_DIR="${DIR}/.test_$$"
 
 function prepare_env() {
@@ -320,6 +320,7 @@ function task_clean {
 
     rm -f "${DIR}/test.id"
     rm -rf "${DIR}/build"
+    rm -rf "${DIR}/.venv"
 }
 
 function task_format {
