@@ -86,7 +86,7 @@ jobs:
         with:
           name: solidblocks-cli-${{ matrix.job.target }}
           path: |
-            solidblocks-cli/build/solidblocks-cli-*.zip
+            solidblocks-cli/build/blcks-cli-*.zip
 
   solidblocks-cli-test:
     needs:
@@ -119,7 +119,7 @@ jobs:
             exit 0
           fi
 
-          find ./solidblocks-cli-${{ matrix.job.target }} -name "solidblocks-cli-*.zip" -exec unzip {} \;
+          find ./blcks-cli-${{ matrix.job.target }} -name "blcks-cli-*.zip" -exec unzip {} \;
           chmod +x ./blcks
           cp ./blcks ./solidblocks-cli/blcks
       - name: Test Integration
@@ -252,10 +252,10 @@ jobs:
         with:
           name: solidblocks-cloud-init
           path: |
-            solidblocks-cloud-init/build/solidblocks-cloud-init-*.zip
+            solidblocks-cloud-init/build/blcks-cloud-init-*.zip
             solidblocks-cloud-init/build/terraform-null-blcks-cloud-init-*.zip
-            solidblocks-cloud-init/build/solidblocks-cloud-init-bootstrap.sh
-            solidblocks-cloud-init/build/snippets/solidblocks-cloud-init-bootstrap-*.sh
+            solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh
+            solidblocks-cloud-init/build/snippets/blcks-cloud-init-bootstrap-*.sh
 
   solidblocks-rds-postgresql-hetzner:
     runs-on: ubuntu-24.04
@@ -412,7 +412,7 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Hetzner Nuke
         run: |
-          find ./solidblocks-cli-linux-amd64 -name "solidblocks-cli-*.zip" -exec unzip {} \;
+          find ./blcks-cli-linux-amd64 -name "blcks-cli-*.zip" -exec unzip {} \;
           chmod +x ./blcks
           ./blcks hetzner nuke --do-nuke
 
@@ -468,12 +468,12 @@ jobs:
           files: |
             solidblocks-shell/blcks-shell-*.zip
             solidblocks-shell/snippets/*
-            solidblocks-cloud-init/solidblocks-cloud-init-*.zip
+            solidblocks-cloud-init/blcks-cloud-init-*.zip
             solidblocks-cloud-init/terraform-null-blcks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
             solidblocks-rds-postgresql-hetzner/snippets/*.zip
             solidblocks-rds-postgresql-hetzner/terraform-hcloud-blcks-rds-postgresql-*.zip
-            solidblocks-cli-*/solidblocks-cli-*
+            solidblocks-cli-*/blcks-cli-*
             solidblocks-do-python/blcks_do*
             solidblocks-rds-postgresql-ansible/blcks-rds*
 

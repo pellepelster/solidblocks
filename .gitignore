@@ -25,7 +25,7 @@ __pycache__
 .terraform.tfstate.lock.info
 solidblocks-rds-postgresql-hetzner/test/terraform/ipv4_address
 solidblocks-rds-postgresql-hetzner/test/terraform/jumphost_ipv4_address
-solidblocks-rds-postgresql-hetzner/modules/rds-postgresql/solidblocks-cloud-init-bootstrap.sh
+solidblocks-rds-postgresql-hetzner/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh
 solidblocks-rds-postgresql-hetzner/modules/rds-postgresql/cloud_init_bootstrap_solidblocks
 doc/generated/
 /**/test-*_ssh_config
@@ -34,10 +34,10 @@ doc/generated/
 /**/test_id_rsa
 /**/test_id_rsa.pub
 .test_*/
-solidblocks-cloud-init/modules/solidblocks-cloud-init/solidblocks-cloud-init-bootstrap.sh.template
-solidblocks-cloud-init/modules/solidblocks-cloud-init/cloud-init-bootstrap.sh
-solidblocks-cloud-init/modules/solidblocks-cloud-init/cloud-init-header.sh
-solidblocks-cloud-init/modules/solidblocks-cloud-init/solidblocks-cloud-init-bootstrap.sh
+solidblocks-cloud-init/modules/cloud-init/blcks-cloud-init-bootstrap.sh.template
+solidblocks-cloud-init/modules/cloud-init/cloud-init-bootstrap.sh
+solidblocks-cloud-init/modules/cloud-init/cloud-init-header.sh
+solidblocks-cloud-init/modules/cloud-init/blcks-cloud-init-bootstrap.sh
 solidblocks-hetzner-k3s/terraform/output/
 solidblocks-do-python/dist/
 solidblocks-rds-postgresql-ansible/test.id

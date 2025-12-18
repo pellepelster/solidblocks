@@ -31,39 +31,39 @@ function echo_include() {
 
 function task_build {
   (
-    mkdir -p "${DIR}/build/solidblocks-cloud-init/lib"
-    cp -rv ${DIR}/lib/* "${DIR}/build/solidblocks-cloud-init/lib/"
+    mkdir -p "${DIR}/build/blcks-cloud-init/lib"
+    cp -rv ${DIR}/lib/* "${DIR}/build/blcks-cloud-init/lib/"
 
-    cd "${DIR}/build/solidblocks-cloud-init"
+    cd "${DIR}/build/blcks-cloud-init"
 
-    echo "creating distribution '${DIR}/build/solidblocks-cloud-init-${VERSION}.zip'"
-    zip -r "${DIR}/build/solidblocks-cloud-init-${VERSION}.zip" *
+    echo "creating distribution '${DIR}/build/blcks-cloud-init-${VERSION}.zip'"
+    zip -r "${DIR}/build/blcks-cloud-init-${VERSION}.zip" *
 
-    local checksum="$(sha256sum "${DIR}/build/solidblocks-cloud-init-${VERSION}.zip" | cut -f 1 -d " ")"
+    local checksum="$(sha256sum "${DIR}/build/blcks-cloud-init-${VERSION}.zip" | cut -f 1 -d " ")"
 
-    cat "${DIR}/templates/cloud-init-header.template" > "${DIR}/modules/solidblocks-cloud-init/cloud-init-header.sh"
+    cat "${DIR}/templates/cloud-init-header.template" > "${DIR}/modules/cloud-init/cloud-init-header.sh"
 
-    echo_include "solidblocks-shell/lib/text-include.sh" > "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
-    echo_include "solidblocks-shell/lib/utils-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
-    echo_include "solidblocks-shell/lib/log-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
-    echo_include "solidblocks-shell/lib/curl-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
-    echo_include "solidblocks-shell/lib/apt.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
-    echo_include "solidblocks-shell/lib/package-include.sh" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
-    cat "${DIR}/templates/cloud-init-bootstrap.template" >> "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/text-include.sh" > "${DIR}/build/blcks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/utils-include.sh" >> "${DIR}/build/blcks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/log-include.sh" >> "${DIR}/build/blcks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/curl-include.sh" >> "${DIR}/build/blcks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/apt.sh" >> "${DIR}/build/blcks-cloud-init-bootstrap.sh"
+    echo_include "solidblocks-shell/lib/package-include.sh" >> "${DIR}/build/blcks-cloud-init-bootstrap.sh"
+    cat "${DIR}/templates/cloud-init-bootstrap.template" >> "${DIR}/build/blcks-cloud-init-bootstrap.sh"
 
     sed \
       -i \
       --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__/${checksum}/g" "${DIR}/build/solidblocks-cloud-init-bootstrap.sh"
+      --expression="s/__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__/${checksum}/g" "${DIR}/build/blcks-cloud-init-bootstrap.sh"
 
-    cp "${DIR}/build/solidblocks-cloud-init-bootstrap.sh" "${DIR}/modules/solidblocks-cloud-init/solidblocks-cloud-init-bootstrap.sh"
+    cp "${DIR}/build/blcks-cloud-init-bootstrap.sh" "${DIR}/modules/cloud-init/blcks-cloud-init-bootstrap.sh"
 
     mkdir -p "${DIR}/build/snippets"
-    cp "${DIR}/build/solidblocks-cloud-init-bootstrap.sh" "${DIR}/build/snippets/solidblocks-cloud-init-bootstrap-${VERSION}.sh"
+    cp "${DIR}/build/blcks-cloud-init-bootstrap.sh" "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
   )
 
   (
-    cd "${DIR}/modules/solidblocks-cloud-init"
+    cd "${DIR}/modules/cloud-init"
     zip -r "${DIR}/build/terraform-null-blcks-cloud-init-${VERSION}.zip" *
   )
 }

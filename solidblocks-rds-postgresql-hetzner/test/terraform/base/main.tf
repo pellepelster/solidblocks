@@ -70,8 +70,8 @@ resource "aws_s3_bucket_acl" "bootstrap" {
 
 locals {
   base_path         = "${path.module}/../../../../solidblocks-cloud-init/"
-  bootstrap_zip     = tolist(fileset(local.base_path, "**/solidblocks-cloud-init-${var.solidblocks_version}.zip"))[0]
-  bootstrap_snippet = tolist(fileset(local.base_path, "**/solidblocks-cloud-init-bootstrap.sh"))[0]
+  bootstrap_zip     = tolist(fileset(local.base_path, "**/blcks-cloud-init-${var.solidblocks_version}.zip"))[0]
+  bootstrap_snippet = tolist(fileset(local.base_path, "**/blcks-cloud-init-bootstrap.sh"))[0]
 }
 
 resource "aws_s3_object" "bootstrap_zip" {
@@ -84,7 +84,7 @@ resource "aws_s3_object" "bootstrap_zip" {
 
 resource "aws_s3_object" "bootstrap_snippet" {
   bucket     = aws_s3_bucket.bootstrap.id
-  key        = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/solidblocks-cloud-init-bootstrap.sh"
+  key        = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/blcks-cloud-init-bootstrap.sh"
   source     = "${local.base_path}/${local.bootstrap_snippet}"
   etag       = filemd5("${local.base_path}/${local.bootstrap_snippet}")
   depends_on = [aws_s3_bucket_acl.bootstrap]

@@ -252,7 +252,7 @@ function task_build {
     cp solidblocks-cli/build/native/nativeCompile/blcks* ${DIR}/blcks
     chmod +x ${DIR}/blcks
     mkdir -p "${DIR}/build"
-    zip --junk-paths "${DIR}/build/solidblocks-cli-${BUILD_TARGET}-${VERSION}.zip" ${DIR}/blcks
+    zip --junk-paths "${DIR}/build/blcks-cli-${BUILD_TARGET}-${VERSION}.zip" ${DIR}/blcks
   )
 }
 
@@ -270,7 +270,7 @@ function task_build_jvm_all {
     tar -xvf "${DIR}/build/distributions/blcks-${VERSION}.tar" --strip-components=1
     cd "${DIR}/blcks"
     mkdir -p "${DIR}/build"
-    zip -vr "${DIR}/build/solidblocks-cli-jvm-all-${VERSION}.zip" ./
+    zip -vr "${DIR}/build/blcks-cli-jvm-all-${VERSION}.zip" ./
   )
 }
 

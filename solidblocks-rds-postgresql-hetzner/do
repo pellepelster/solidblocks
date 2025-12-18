@@ -21,9 +21,9 @@ source "${DIR}/../solidblocks-shell/lib/python.sh"
 
 function task_build {
   if [[ -n "${CI:-}" ]]; then
-    cp ${DIR}/../solidblocks-cloud-init/solidblocks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/solidblocks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+    cp ${DIR}/../solidblocks-cloud-init/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
   else
-    cp ${DIR}/../solidblocks-cloud-init/build/solidblocks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/solidblocks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+    cp ${DIR}/../solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
   fi
 
 

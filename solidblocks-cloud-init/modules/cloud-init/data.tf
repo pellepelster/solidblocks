@@ -3,5 +3,5 @@ data "local_file" "cloud_init_header" {
 }
 
 data "local_file" "solidblocks_cloud_init_bootstrap" {
-  filename = "${path.module}/solidblocks-cloud-init-bootstrap.sh"
+  filename = "${path.module}/blcks-cloud-init-bootstrap.sh"
 }
