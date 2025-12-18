@@ -50,6 +50,8 @@ variable "s3_buckets" {
     ])
     error_message = "All key ids must be 24 characters long. The secret key must have 64 hexadecimal characters."
   }
+
+  description = "S3 buckets to provision, see https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/#s3-buckets for details"
 }
 
 variable "data_volume_size" {
@@ -69,13 +71,14 @@ variable "docker_rw_users" {
     username : string,
     password : optional(string)
   }))
-  default = []
+  default     = []
+  description = "Docker read-write users to provision. If no users is given a user will be auto.created, see https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/#docker for details"
 }
 
 variable "docker_public_enable" {
   type        = bool
-  description = "Enable public anonymous access to Docker registry"
   default     = false
+  description = "Enable public anonymous access to Docker registry, see https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/#docker for details"
 }
 
 variable "docker_enable" {
@@ -89,5 +92,6 @@ variable "docker_ro_users" {
     username : string,
     password : optional(string)
   }))
-  default = []
+  default     = []
+  description = "Docker read-write users to provision. If no users is given a user will be auto.created, see https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/#docker for details"
 }

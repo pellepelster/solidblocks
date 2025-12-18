@@ -26,6 +26,8 @@ module "web_s3_docker" {
   docker_enable        = var.docker_enable
   docker_public_enable = var.docker_public_enable
 
+  docker_ro_users = []
+
   s3_buckets = [
     { name                     = var.bucket1_name,
       web_access_public_enable = true,

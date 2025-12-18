@@ -1,11 +1,11 @@
 output "ipv4_address" {
   value       = hcloud_server.server.ipv4_address
-  description = "IPv4 address of the created server if applicable"
+  description = "IPv4 address of the created server"
 }
 
 output "ipv6_address" {
   value       = hcloud_server.server.ipv6_address
-  description = "IPv6 address of the created server if applicable"
+  description = "IPv6 address of the created server"
 }
 
 output "server_id" {
@@ -14,15 +14,18 @@ output "server_id" {
 }
 
 output "s3_host" {
-  value = local.s3_api_fqdn
+  value       = local.s3_api_fqdn
+  description = "fully qualified for the s3 endpoint"
 }
 
 output "docker_host_private" {
-  value = local.docker_registry_private_fqdn
+  value       = local.docker_registry_private_fqdn
+  description = "fully qualified domain for the private docker registry"
 }
 
 output "docker_host_public" {
-  value = local.docker_registry_public_fqdn
+  value       = var.docker_public_enable ? local.docker_registry_public_fqdn : null
+  description = "fully qualified domain for the public docker registry if enabled"
 }
 
 output "s3_buckets" {
@@ -44,26 +47,26 @@ output "s3_buckets" {
     rw_key_id     = s3_bucket.rw_key_id
     rw_secret_key = s3_bucket.rw_secret_key
   }]
-}
-
-output "garage_rpc_secret" {
-  value     = random_bytes.rpc_secret.hex
-  sensitive = true
+  description = "the created S3 bucket with access credentials and public endpoints if available"
 }
 
 output "garage_admin_address" {
-  value = "https://${local.s3_admin_domain}.${var.dns_zone}"
+  value       = "https://${local.s3_admin_domain}.${var.dns_zone}"
+  description = "address for the GarageFS admin endpoint"
 }
 
 output "garage_admin_token" {
-  value     = random_bytes.admin_token.hex
-  sensitive = true
+  value       = random_bytes.admin_token.hex
+  sensitive   = true
+  description = "token for the GarageFS admin endpoint"
 }
 
 output "docker_ro_users" {
-  value = [{ username = random_bytes.docker_ro_default_user.hex, password = random_bytes.docker_ro_default_password.hex }]
+  value       = [{ username = random_bytes.docker_ro_default_user.hex, password = random_bytes.docker_ro_default_password.hex }]
+  description = "readonly users for the docker registry"
 }
 
 output "docker_rw_users" {
-  value = [{ username = random_bytes.docker_rw_default_user.hex, password = random_bytes.docker_rw_default_password.hex }]
+  value       = [{ username = random_bytes.docker_rw_default_user.hex, password = random_bytes.docker_rw_default_password.hex }]
+  description = "write users for the docker registry"
 }
