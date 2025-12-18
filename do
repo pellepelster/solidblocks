@@ -14,7 +14,7 @@ source "${DIR}/lib/utils.sh"
 export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.temp"
-COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-shell solidblocks-cloud-init solidblocks-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible solidblocks-python"
+COMPONENTS="solidblocks-cli solidblocks-test solidblocks-ansible solidblocks-k3s solidblocks-shell solidblocks-cloud-init solidblocks-rds-postgresql-hetzner solidblocks-debug-container solidblocks-sshd solidblocks-rds-postgresql-docker solidblocks-rds-postgresql-ansible solidblocks-python"
 
 mkdir -p "${TEMP_DIR}"
 

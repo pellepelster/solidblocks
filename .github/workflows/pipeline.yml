@@ -92,7 +92,7 @@ jobs:
     needs:
       - solidblocks-cli
       - solidblocks-cloud-init
-      - solidblocks-hetzner-test
+      - solidblocks-rds-postgresql-hetzner-test
     strategy:
       max-parallel: 1
       fail-fast: false
@@ -257,7 +257,7 @@ jobs:
             solidblocks-cloud-init/build/solidblocks-cloud-init-bootstrap.sh
             solidblocks-cloud-init/build/snippets/solidblocks-cloud-init-bootstrap-*.sh
 
-  solidblocks-hetzner:
+  solidblocks-rds-postgresql-hetzner:
     runs-on: ubuntu-24.04
     needs:
       - solidblocks-cloud-init
@@ -267,19 +267,19 @@ jobs:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - name: Build
-        run: solidblocks-hetzner/do build
+        run: solidblocks-rds-postgresql-hetzner/do build
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: solidblocks-hetzner
+          name: solidblocks-rds-postgresql-hetzner
           path: |
-            solidblocks-hetzner/build/snippets/*
-            solidblocks-hetzner/build/terraform-hcloud-blcks-rds-postgresql-*.zip
+            solidblocks-rds-postgresql-hetzner/build/snippets/*
+            solidblocks-rds-postgresql-hetzner/build/terraform-hcloud-blcks-rds-postgresql-*.zip
 
-  solidblocks-hetzner-test:
+  solidblocks-rds-postgresql-hetzner-test:
     runs-on: ubuntu-24.04
     needs:
-      - solidblocks-hetzner
+      - solidblocks-rds-postgresql-hetzner
       - solidblocks-rds-postgresql-docker
     strategy:
       max-parallel: 4
@@ -295,9 +295,9 @@ jobs:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - name: Build
-        run: solidblocks-hetzner/do build
+        run: solidblocks-rds-postgresql-hetzner/do build
       - name: Test
-        run: solidblocks-hetzner/do ${{ matrix.test_name }}
+        run: solidblocks-rds-postgresql-hetzner/do ${{ matrix.test_name }}
 
   solidblocks-debug-container:
     name: solidblocks-debug-container
@@ -399,10 +399,10 @@ jobs:
       - solidblocks-cloud-init
       - solidblocks-rds-postgresql-docker
       - solidblocks-rds-postgresql-test
-      - solidblocks-hetzner
+      - solidblocks-rds-postgresql-hetzner
       - solidblocks-cli-test
       - solidblocks-cli
-      - solidblocks-hetzner-test
+      - solidblocks-rds-postgresql-hetzner-test
       - solidblocks-debug-container
       - solidblocks-test
     steps:
@@ -427,8 +427,8 @@ jobs:
       - solidblocks-cli
       - solidblocks-cli-test
       - solidblocks-rds-postgresql-test
-      - solidblocks-hetzner
-      - solidblocks-hetzner-test
+      - solidblocks-rds-postgresql-hetzner
+      - solidblocks-rds-postgresql-hetzner-test
       - solidblocks-debug-container
       - solidblocks-shell-test
       - solidblocks-python
@@ -471,8 +471,8 @@ jobs:
             solidblocks-cloud-init/solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/terraform-null-solidblocks-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
-            solidblocks-hetzner/snippets/*.zip
-            solidblocks-hetzner/terraform-hcloud-blcks-rds-postgresql-*.zip
+            solidblocks-rds-postgresql-hetzner/snippets/*.zip
+            solidblocks-rds-postgresql-hetzner/terraform-hcloud-blcks-rds-postgresql-*.zip
             solidblocks-cli-*/solidblocks-cli-*
             solidblocks-python/solidblocks_do*
             solidblocks-rds-postgresql-ansible/blcks-rds*
@@ -486,8 +486,8 @@ jobs:
       - solidblocks-cli
       - solidblocks-cli-test
       - solidblocks-rds-postgresql-test
-      - solidblocks-hetzner
-      - solidblocks-hetzner-test
+      - solidblocks-rds-postgresql-hetzner
+      - solidblocks-rds-postgresql-hetzner-test
       - solidblocks-debug-container
       - solidblocks-shell-test
       - solidblocks-python
