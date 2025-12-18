@@ -8,7 +8,7 @@ function python_hash_requirements() {
 # see https://pellepelster.github.io/solidblocks/shell/python/#python_ensure_venv
 function python_ensure_venv() {
   local dir="${1:-.}"
-  local venv_dir="${dir}/${2:-venv}"
+  local venv_dir="${dir}/${2:-.venv}"
 
   mkdir -p "${venv_dir}"
   local requirements_hash_file="${venv_dir}/requirements.sha256"
