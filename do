@@ -239,7 +239,7 @@ function task_release_check() {
     fi
   fi
 
-  if [[ "${VERSION}" == *"pre"* ]]; then
+  if [[ "${VERSION}" == *"rc"* ]]; then
     echo "skipping changelog check for pre-version '${VERSION}'"
   else
     echo "checking changelog for current version '${VERSION}'"
