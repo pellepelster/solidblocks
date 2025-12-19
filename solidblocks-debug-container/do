@@ -14,7 +14,7 @@ DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-debug-container"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
 
-if [[ -n "${BUILD_LOCAL:-}" ]]; then
+if [[ "${BUILD_LOCAL:-}" == "true" ]]; then
   echo "running local build"
   DOCKER_OPTIONS=""
 fi
