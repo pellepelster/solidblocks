@@ -70,11 +70,30 @@ function task_build {
     terraform-docs markdown table "${DIR}/modules/web-s3-docker" --hide modules --output-file "${DIR}/../doc/content/hetzner/web-s3-docker/_index.md"
     terraform-docs markdown table "${DIR}/modules/web-s3-docker" --hide modules --output-file "${DIR}/modules/web-s3-docker/README.md"
   fi
+
+  mkdir -p "${DIR}/build/snippets"
+  (
+    cd "${DIR}/snippets"
+    zip -r "${DIR}/build/snippets/web-s3-docker-kitchen-sink-${VERSION}.zip" web-s3-docker-kitchen-sink/*.tf
+  )
 }
 
 function task_clean {
   rm -rf "${DIR}/build"
 }
+
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+
+  echo "setting version: ${version}"
+  terraform_replace_module_version "${DIR}/snippets/web-s3-docker-kitchen-sink/main.tf" ${version}
+}
+
 
 arg=${1:-}
 shift || true
@@ -86,7 +105,7 @@ case ${arg} in
   test-ssh) task_test_ssh "$@" ;;
   test) task_test "$@" ;;
   release-artifacts) ;;
-  release-prepare) ;;
+  release-prepare) task_release_prepare "$@" ;;
   release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

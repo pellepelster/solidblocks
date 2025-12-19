@@ -40,7 +40,7 @@ function task_build {
     zip -r "${DIR}/build/blcks-cloud-init-${VERSION}.zip" *
 
     local checksum="$(sha256sum "${DIR}/build/blcks-cloud-init-${VERSION}.zip" | cut -f 1 -d " ")"
-
+    echo "checksum for '${DIR}/build/blcks-cloud-init-${VERSION}.zip' is '${checksum}'"
     cat "${DIR}/templates/cloud-init-header.template" > "${DIR}/modules/cloud-init/cloud-init-header.sh"
 
     echo_include "solidblocks-shell/lib/text-include.sh" > "${DIR}/build/blcks-cloud-init-bootstrap.sh"
@@ -59,7 +59,8 @@ function task_build {
     cp "${DIR}/build/blcks-cloud-init-bootstrap.sh" "${DIR}/modules/cloud-init/blcks-cloud-init-bootstrap.sh"
 
     mkdir -p "${DIR}/build/snippets"
-    cp "${DIR}/build/blcks-cloud-init-bootstrap.sh" "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
+    cat "${DIR}/templates/cloud-init-header.template" > "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
+    cat "${DIR}/build/blcks-cloud-init-bootstrap.sh" >> "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
     chmod +x "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
   )
 

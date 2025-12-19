@@ -290,7 +290,6 @@ jobs:
           path: |
             solidblocks-cloud-init/build/blcks-cloud-init-*.zip
             solidblocks-cloud-init/build/blcks-terraform-null-cloud-init-*.zip
-            solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh
             solidblocks-cloud-init/build/snippets/blcks-cloud-init-bootstrap-*.sh
 
   solidblocks-rds-postgresql-hetzner:
@@ -311,6 +310,23 @@ jobs:
           path: |
             solidblocks-rds-postgresql-hetzner/build/snippets/*
             solidblocks-rds-postgresql-hetzner/build/blcks-terraform-rds-postgresql-hetzner-*.zip
+
+  solidblocks-web-s3-docker-hetzner:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v4
+      - name: Build
+        run: solidblocks-web-s3-docker-hetzner/do build
+      - name: Archive Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: solidblocks-web-s3-docker-hetzner
+          path: |
+            solidblocks-web-s3-docker-hetzner/build/snippets/*
+            solidblocks-web-s3-docker-hetzner/build/terraform-hcloud-blcks-web-s3-docker-*.zip
 
   solidblocks-rds-postgresql-hetzner-test:
     runs-on: ubuntu-24.04
