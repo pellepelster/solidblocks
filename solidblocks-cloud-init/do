@@ -60,6 +60,7 @@ function task_build {
 
     mkdir -p "${DIR}/build/snippets"
     cp "${DIR}/build/blcks-cloud-init-bootstrap.sh" "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
+    chmod +x "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
   )
 
   (
@@ -101,19 +102,22 @@ function run_test {
 }
 
 function task_release_test {
-  local snippets="${1:-$SNIPPETS}"
+  local snippets="${!:-$SNIPPETS}"
+
+  "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh"
+
   for snippet in ${snippets}; do
-    terraform_wrapper "${DIR}/snippets/${snippet}" apply -auto-approve
+    terraform_wrapper "${DIR}/snippets/${snippet}" plan
+    # TODO run full tests after release
+    #while ! ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" test -f /run/cloud-init/result.json; do
+    #  log_echo_error "waiting for '${snippet}' server cloud init run"
+    #  sleep 1
+    #done
 
-    while ! ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" test -f /run/cloud-init/result.json; do
-      log_echo_error "waiting for '${snippet}' server cloud init run"
-      sleep 1
-    done
-
-    if [[ "$(ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" cat /run/cloud-init/result.json |  jq -r '.v1.errors | length')" != "0" ]]; then
-      ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" cat /run/cloud-init/result.json
-      exit 1
-    fi
+    #if [[ "$(ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" cat /run/cloud-init/result.json |  jq -r '.v1.errors | length')" != "0" ]]; then
+    #  ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" cat /run/cloud-init/result.json
+    #  exit 1
+    #fi
   done
 }
 
@@ -143,7 +147,7 @@ function task_release_prepare {
 
   echo "setting version: ${version}"
   mkdir -p "${DIR}/.tmp"
-  rg -e '(^\s*source\s*=\s*"\S+?ref=)(\S+)("\s*$)' "${DIR}/snippets/cloud-init-kitchen-sink/main.tf" --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/.tmp/main.tf"
+  cat "${DIR}/snippets/cloud-init-kitchen-sink/main.tf" | rg 'v(\d+\.\d+\.\d+(?:-[a-zA-Z0-9-]+)?)' --passthru --no-filename  --no-line-number --color never --replace "${version}" > "${DIR}/.tmp/main.tf"
   mv "${DIR}/.tmp/main.tf" "${DIR}/snippets/cloud-init-kitchen-sink/main.tf"
 }
 

@@ -5,7 +5,9 @@ export SOLIDBLOCKS_BASE_URL="${SOLIDBLOCKS_BASE_URL:-https://github.com}"
 
 function solidblocks_bootstrap_cloud_init() {
   package_update_repositories
+  package_ensure_package "curl"
   package_ensure_package "unzip"
+  package_ensure_package "ca-certificates"
 
   groupadd solidblocks
   useradd solidblocks -g solidblocks
@@ -22,7 +24,7 @@ function solidblocks_bootstrap_cloud_init() {
   chmod -R 700 ${SOLIDBLOCKS_DIR}/secrets
 
   local temp_file="$(mktemp)"
-  curl_wrapper "${SOLIDBLOCKS_BASE_URL}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/solidblocks-cloud-init-${SOLIDBLOCKS_VERSION}.zip" > "${temp_file}"
+  curl_wrapper "${SOLIDBLOCKS_BASE_URL}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/blcks-cloud-init-${SOLIDBLOCKS_VERSION}.zip" > "${temp_file}"
   echo "${SOLIDBLOCKS_CLOUD_INIT_CHECKSUM}  ${temp_file}" | sha256sum -c
 
   (
