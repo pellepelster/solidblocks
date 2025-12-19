@@ -66,6 +66,9 @@ function task_test_snippets_ssh {
 }
 
 function task_test_snippets_local () {
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-local-backup/storage"
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-local-backup/instance"
+
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" init -upgrade
 
@@ -85,6 +88,9 @@ function task_test_snippets_local () {
 }
 
 function task_test_snippets_s3 () {
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-s3-backup/storage"
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-s3-backup/instance"
+
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" init -upgrade
 
@@ -118,6 +124,9 @@ function snippets_wait_for_cloud_init () {
 }
 
 function task_test_snippets_private_network () {
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-private-network/storage"
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-private-network/instance"
+
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" init -upgrade
 
@@ -128,7 +137,7 @@ function task_test_snippets_private_network () {
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
 }
 
-function task_release_test () {
+function task_release_test  {
   echo "================================================================================"
   echo "snippets_private_network"
   echo "================================================================================"
