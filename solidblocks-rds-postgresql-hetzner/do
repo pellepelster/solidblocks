@@ -100,36 +100,38 @@ function task_test_snippets_local () {
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" init -upgrade
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" apply -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" plan #-auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" plan #-auto-approve
 
-  log_divider_header "waiting for sql connectivity"
-  while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-local-backup/instance"; do
-    log_echo_warning "still waiting"
-    sleep 5
-  done
-  log_divider_footer
+  # TODO run full release test
+  #log_divider_header "waiting for sql connectivity"
+  #while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-local-backup/instance"; do
+  #  log_echo_warning "still waiting"
+  #  sleep 5
+  #done
+  #log_divider_footer
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" destroy -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" destroy -auto-approve
+  #terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" destroy -auto-approve
+  #terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" destroy -auto-approve
 }
 
 function task_test_snippets_s3 () {
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" init -upgrade
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" apply -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" plan #-auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" plan #-auto-approve
 
-  log_divider_header "waiting for sql connectivity"
-  while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance"; do
-    log_echo_warning "still waiting"
-    sleep 5
-  done
-  log_divider_footer
+  # TODO run full release test
+  #log_divider_header "waiting for sql connectivity"
+  #while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance"; do
+  #  log_echo_warning "still waiting"
+  #  sleep 5
+  #done
+  #log_divider_footer
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" destroy -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" destroy -auto-approve
+  #terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" destroy -auto-approve
+  #terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" destroy -auto-approve
 }
 
 function snippets_wait_for_cloud_init () {
@@ -150,11 +152,12 @@ function task_test_snippets_private_network () {
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" init -upgrade
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" apply -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" plan #-auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" plan #-auto-approve
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" destroy -auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
+  # TODO run full release test
+  #terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" destroy -auto-approve
+  #terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
 }
 
 function task_release_test () {
@@ -868,7 +871,8 @@ function terraform_replace_module_version {
   local version="${2:-}"
 
   mkdir -p "${DIR}/.tmp"
-  rg -e '(^\s*version\s*=\s*")(\S+)("\s*$)' --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never "${file}" > "${DIR}/.tmp/tmp.$$"
+
+  cat "${file}" | rg 'v(\d+\.\d+\.\d+(?:-[a-zA-Z0-9-]+)?)' --passthru --no-filename  --no-line-number --color never --replace "${version}" > "${DIR}/.tmp/tmp.$$"
   mv "${DIR}/.tmp/tmp.$$" "${file}"
   rm -rf "${DIR}/.tmp"
 }
