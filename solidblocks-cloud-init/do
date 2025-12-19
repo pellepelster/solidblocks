@@ -105,7 +105,9 @@ function run_test {
 function task_release_test {
   local snippets="${!:-$SNIPPETS}"
 
-  docker run -ti -v "${DIR}/build/snippets/blcks-cloud-init-bootstrap-${VERSION}.sh:/blcks-cloud-init-bootstrap.sh" debian:bookworm /bin/bash -c /blcks-cloud-init-bootstrap.sh
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${VERSION}/blcks-cloud-init-bootstrap-${VERSION}.sh" -o "/tmp/blcks-cloud-init-bootstrap-${VERSION}.sh"
+  chmod +x "/tmp/blcks-cloud-init-bootstrap-${VERSION}.sh"
+  docker run -ti -v "/tmp/blcks-cloud-init-bootstrap-${VERSION}.sh:/blcks-cloud-init-bootstrap.sh" debian:bookworm /bin/bash -c /blcks-cloud-init-bootstrap.sh
 
   for snippet in ${snippets}; do
     terraform_wrapper "${DIR}/snippets/${snippet}" plan

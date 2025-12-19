@@ -53,37 +53,6 @@ function task_lint {
   find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
 }
 
-function terraform_wrapper {
-  local module=${1:-}
-  shift || true
-
-  (
-    cd "${DIR}/${module}"
-
-    if [[ ! -d ".terraform" ]]; then
-      terraform init -upgrade
-    fi
-
-    export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-    export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/test/dns_api_token)}"
-
-    export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
-
-    export TF_VAR_hetzner_s3_access_key="${SOLIDBLOCKS_HETZNER_TEST_S3_ACCESS_KEY_ID:-$(pass solidblocks/hetzner/test/s3_access_key_id)}"
-    export TF_VAR_hetzner_s3_secret_key="${SOLIDBLOCKS_HETZNER_TEST_S3_SECRET_KEY:-$(pass solidblocks/hetzner/test/s3_secret_key)}"
-
-    export AWS_DEFAULT_REGION="eu-central-1"
-    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key_id)}" #
-    export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
-
-    export TF_VAR_backup_s3_access_key="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/test/access_key_id)}" #
-    export TF_VAR_backup_s3_secret_key="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/test/secret_access_key)}"
-    export TF_VAR_solidblocks_version=${VERSION}
-
-    terraform ${@}
-  )
-}
-
 function task_test_snippets_psql_wrapper() {
   local module="${1:-}"
   PGPASSWORD=password1 psql --host "$(terraform_wrapper "${module}" output -raw ipv4_address)" --user "user1" database1
@@ -100,8 +69,8 @@ function task_test_snippets_local () {
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" init -upgrade
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" plan #-auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" plan #-auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" apply -auto-approve
 
   # TODO run full release test
   #log_divider_header "waiting for sql connectivity"
@@ -111,16 +80,16 @@ function task_test_snippets_local () {
   #done
   #log_divider_footer
 
-  #terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" destroy -auto-approve
-  #terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" destroy -auto-approve
 }
 
 function task_test_snippets_s3 () {
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" init -upgrade
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" plan #-auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" plan #-auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" apply -auto-approve
 
   # TODO run full release test
   #log_divider_header "waiting for sql connectivity"
@@ -130,8 +99,8 @@ function task_test_snippets_s3 () {
   #done
   #log_divider_footer
 
-  #terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" destroy -auto-approve
-  #terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" destroy -auto-approve
 }
 
 function snippets_wait_for_cloud_init () {
@@ -152,17 +121,29 @@ function task_test_snippets_private_network () {
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" init -upgrade
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" init -upgrade
 
-  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" plan #-auto-approve
-  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" plan #-auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" apply -auto-approve
 
-  # TODO run full release test
-  #terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" destroy -auto-approve
-  #terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
 }
 
 function task_release_test () {
+  # TODO remove
+  exit 0
+  echo "================================================================================"
+  echo "snippets_private_network"
+  echo "================================================================================"
   task_test_snippets_private_network
+
+  echo "================================================================================"
+  echo "snippets_local"
+  echo "================================================================================"
   task_test_snippets_local
+
+  echo "================================================================================"
+  echo "snippets_s3"
+  echo "================================================================================"
   task_test_snippets_s3
 }
 

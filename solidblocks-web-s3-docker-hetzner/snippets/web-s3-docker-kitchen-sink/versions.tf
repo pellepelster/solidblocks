@@ -6,7 +6,7 @@ terraform {
     }
     hcloud = {
       source  = "hetznercloud/hcloud"
-      version = "1.44.1"
+      version = "1.56.0"
     }
   }
 }

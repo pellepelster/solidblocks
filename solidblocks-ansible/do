@@ -48,6 +48,7 @@ case ${arg} in
   test) task_test "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-artifacts) ;;
+  release-test) ;;
   format) ;;
   clean) task_clean "$@" ;;
   *) task_usage ;;

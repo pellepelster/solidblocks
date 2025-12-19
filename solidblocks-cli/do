@@ -297,6 +297,7 @@ case ${arg} in
   init-testbed) task_init_testbed "$@" ;;
   release-prepare) ;;
   release-artifacts) ;;
+  release-test) ;;
   format) ;;
   clean) task_clean "$@" ;;
   *) task_usage ;;

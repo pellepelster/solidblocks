@@ -62,7 +62,9 @@ function task_release_prepare {
 
   for component in ${COMPONENTS}; do
     (
+      echo "================================================================================="
       echo "running release-prepare for '${component}'"
+      echo "================================================================================="
       cd "${DIR}/${component}"
       "./do" release-prepare "${VERSION}"
     )
@@ -76,7 +78,9 @@ function task_release_prepare {
 function task_release_test {
   for component in ${COMPONENTS}; do
     (
+      echo "================================================================================="
       echo "running release-test for '${component}'"
+      echo "================================================================================="
       cd "${DIR}/${component}"
       "./do" release-test
     )

@@ -1,46 +1,27 @@
-resource "hcloud_volume" "example" {
-  name     = "example"
-  size     = 16
-  format   = "ext4"
-  location = var.location
+resource "hcloud_ssh_key" "ssh_key1" {
+  name       = "ssh-key1"
+  public_key = "<some_key>"
 }
 
-resource "hcloud_volume_attachment" "example" {
-  server_id = hcloud_server.example.id
-  volume_id = hcloud_volume.example.id
-}
+module "web-s3-docker" {
+  source   = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.8-rc10/terraform-hcloud-blcks-web-s3-docker-v0.4.8-rc10.zip"
+  name     = "server1"
+  dns_zone = "blcks-test.de"
 
-module "example" {
-  source  = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.8-rc9/terraform-hcloud-blcks-web-s3-docker-v0.4.8-rc9.zip"
+  ssh_keys = [hcloud_ssh_key.ssh_key1.id]
 
-  storage = [
-    { linux_device = hcloud_volume.example.linux_device, mount_path = "/data1" },
+  s3_buckets = [
+    {
+      name                     = "bucket1",
+      web_access_public_enable = true,
+      web_access_domains       = ["blcks-test.de", "www.blcks-test.de"]
+    },
+    {
+      name             = "bucket2",
+      owner_key_id     = "cbeebb7f1fa4de50025a5c95",
+      owner_secret_key = "f775d527e821ab035b5a874e6326f20c135b2d2fc903112fe768a17681f54043"
+    },
   ]
 
-  acme_ssl = {
-    path         = "/data1/ssl"
-    email        = "contact@blcks.de"
-    domains      = ["example.blcks.de"]
-    acme_server  = "https://acme-staging-v02.api.letsencrypt.org/directory"
-    dns_provider = "hetzner"
-    variables = {
-      HETZNER_API_KEY : var.hetzner_dns_api_token
-      HETZNER_HTTP_TIMEOUT : "30"
-      HETZNER_PROPAGATION_TIMEOUT : "300"
-    }
-  }
 }
 
-resource "hcloud_server" "example" {
-  name        = "test"
-  image       = "debian-11"
-  server_type = "cx23"
-  location    = var.location
-  ssh_keys    = [hcloud_ssh_key.ssh_key.id]
-  user_data   = <<EOT
-${module.example.user_data}
-
-# do something with the generated certificate
-ls -lsa /data1/ssl/certificates/example.blcks.de.crt
-EOT
-}

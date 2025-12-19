@@ -64,7 +64,7 @@ function task_build {
 
   (
     cd "${DIR}/modules/web-s3-docker"
-    zip "${DIR}/build/terraform-hcloud-blcks-web-s3-docker-${VERSION}.zip" *.tf *.sh
+    zip "${DIR}/build/terraform-hcloud-blcks-web-s3-docker-${VERSION}.zip" *.tf *.sh *.py
   )
   if which terraform-docs; then
     terraform-docs markdown table "${DIR}/modules/web-s3-docker" --hide modules --output-file "${DIR}/../doc/content/hetzner/web-s3-docker/_index.md"
@@ -94,6 +94,10 @@ function task_release_prepare {
   terraform_replace_module_version "${DIR}/snippets/web-s3-docker-kitchen-sink/main.tf" ${version}
 }
 
+function task_release_test () {
+  terraform_wrapper "snippets/web-s3-docker-kitchen-sink" init -upgrade
+  terraform_wrapper "snippets/web-s3-docker-kitchen-sink" apply -auto-approve
+}
 
 arg=${1:-}
 shift || true
