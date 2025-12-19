@@ -46,12 +46,33 @@ function terraform_replace_module_version {
   rm -rf "${DIR}/.tmp"
 }
 
+function terraform_wrapper_clean {
+  local module=${1:-}
+  shift || true
+
+  (
+    cd "${module}"
+
+    if [[ -d ".terraform" ]]; then
+      rm -rf .terraform
+    fi
+
+    if [[ -f ".terraform.lock.hcl" ]]; then
+      rm -rf ".terraform.lock.hcl"
+    fi
+
+    if [[ -f ".terraform.lock.hcl" ]]; then
+      rm -rf ".terraform.lock.hcl"
+    fi
+  )
+}
+
 function terraform_wrapper {
   local module=${1:-}
   shift || true
 
   (
-    cd "${DIR}/${module}"
+    cd "${module}"
 
     if [[ ! -d ".terraform" ]]; then
       terraform init -upgrade

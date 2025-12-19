@@ -110,6 +110,7 @@ function task_release_test {
   docker run -ti -v "/tmp/blcks-cloud-init-bootstrap-${VERSION}.sh:/blcks-cloud-init-bootstrap.sh" debian:bookworm /bin/bash -c /blcks-cloud-init-bootstrap.sh
 
   for snippet in ${snippets}; do
+    terraform_wrapper_clean "${DIR}/snippets/${snippet}"
     terraform_wrapper "${DIR}/snippets/${snippet}" plan
     # TODO run full tests after release
     #while ! ssh -F "${DIR}/snippets/${snippet}/ssh_config" "test" test -f /run/cloud-init/result.json; do

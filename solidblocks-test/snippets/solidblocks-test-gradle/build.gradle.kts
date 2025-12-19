@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.22"
+    id("org.jetbrains.kotlin.jvm") version "2.2.10"
 }
 
 repositories {
@@ -9,7 +9,7 @@ repositories {
 dependencies {
     implementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     implementation("org.junit.jupiter:junit-jupiter-engine:5.11.0")
-    implementation("de.solidblocks:infra-test:v0.4.8-rc10")
+    implementation("de.solidblocks:infra-test:v0.4.8-rc11")
 }
 
 tasks.named<Test>("test") {

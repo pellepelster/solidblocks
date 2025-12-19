@@ -129,8 +129,6 @@ function task_test_snippets_private_network () {
 }
 
 function task_release_test () {
-  # TODO remove
-  exit 0
   echo "================================================================================"
   echo "snippets_private_network"
   echo "================================================================================"

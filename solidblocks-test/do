@@ -71,6 +71,12 @@ function task_release_prepare {
   mv "${DIR}/.tmp/build.gradle.kts" "${DIR}/snippets/solidblocks-test-gradle/build.gradle.kts"
 }
 
+function task_release_test {
+  (
+    cd "${DIR}/snippets/solidblocks-test-gradle"
+    ./gradlew check
+  )
+}
 
 function task_usage {
   echo "Usage: $0 ..."
@@ -86,7 +92,7 @@ case ${arg} in
   format) task_format "$@" ;;
   test-prepare) task_test_prepare "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
-  release-artifacts) task_release_artifacts;;
-  release-test) ;;
+  release-artifacts) task_release_artifacts ;;
+  release-test) task_release_test ;;
   *) task_usage ;;
 esac
