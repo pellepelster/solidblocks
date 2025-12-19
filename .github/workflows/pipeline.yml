@@ -291,6 +291,7 @@ jobs:
             solidblocks-cloud-init/build/blcks-cloud-init-*.zip
             solidblocks-cloud-init/build/blcks-terraform-null-cloud-init-*.zip
             solidblocks-cloud-init/build/snippets/blcks-cloud-init-bootstrap-*.sh
+            solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh
 
   solidblocks-rds-postgresql-hetzner:
     runs-on: ubuntu-24.04
@@ -487,6 +488,7 @@ jobs:
       - solidblocks-rds-postgresql-ansible
       - solidblocks-k3s-ansible
       - solidblocks-ansible
+      - solidblocks-web-s3-docker-hetzner
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -532,6 +534,9 @@ jobs:
             solidblocks-rds-postgresql-ansible/blcks-rds*
             solidblocks-k3s-ansible/blcks-k3s-*
             solidblocks-ansible/blcks-*
+            solidblocks-web-s3-docker-hetzner/snippets/*
+            solidblocks-web-s3-docker-hetzner/terraform-hcloud-blcks-web-s3-docker-*.zip
+
 
   documentation:
     needs:

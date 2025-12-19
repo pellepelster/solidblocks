@@ -34,3 +34,14 @@ function version_ensure() {
       exit 1
     fi
 }
+
+function terraform_replace_module_version {
+  local file="${1:-}"
+  local version="${2:-}"
+
+  mkdir -p "${DIR}/.tmp"
+
+  cat "${file}" | rg 'v(\d+\.\d+\.\d+(?:-[a-zA-Z0-9-]+)?)' --passthru --no-filename  --no-line-number --color never --replace "${version}" > "${DIR}/.tmp/tmp.$$"
+  mv "${DIR}/.tmp/tmp.$$" "${file}"
+  rm -rf "${DIR}/.tmp"
+}
