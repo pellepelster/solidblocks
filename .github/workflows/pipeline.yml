@@ -115,13 +115,11 @@ jobs:
       - name: Rename blcks
         shell: bash
         run: |
-          
-          find ./ -name "*cli*"
           if [[ "${BUILD_FAST:-}" == "true" ]]; then
             exit 0
           fi
 
-          find ./blcks-cli-${{ matrix.job.target }} -name "blcks-cli-*.zip" -exec unzip {} \;
+          find ./solidblocks-cli-${{ matrix.job.target }} -name "blcks-cli-*.zip" -exec unzip {} \;
           chmod +x ./blcks
           cp ./blcks ./solidblocks-cli/blcks
       - name: Test Integration
@@ -409,8 +407,8 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      #- name: Build
-      #  run: solidblocks-rds-postgresql-docker/do build
+      - name: Build
+        run: solidblocks-rds-postgresql-docker/do build
       - name: Save cached layers
         id: cache-primes-save
         uses: actions/cache/save@v4
