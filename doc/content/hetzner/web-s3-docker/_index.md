@@ -20,28 +20,7 @@ the [Hetzner Cloud API](https://www.hetzner.com/news/dns-beta/).
 # Usage Example
 
 ```terraform
-module "web_s3_docker" {
-  source  = "pellepelster/solidblocks-web-s3-docker/hcloud"
-  version = "{{% env "SOLIDBLOCKS_VERSION" %}}"
-  
-  name     = "server1"
-  dns_zone = "blcks-test.de"
-
-  ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
-
-  s3_buckets = [
-    {
-      name                     = "bucket1",
-      web_access_public_enable = true,
-      web_access_domains = ["blcks-test.de", "www.blcks-test.de"]
-    },
-    {
-      name             = "bucket2",
-      owner_key_id     = "cbeebb7f1fa4de50025a5c95",
-      owner_secret_key = "f775d527e821ab035b5a874e6326f20c135b2d2fc903112fe768a17681f54043"
-    },
-  ]
-}
+{{% include "/snippets/web-s3-docker-kitchen-sink/main.tf" %}}
 ```
 
 # Configuration
@@ -146,6 +125,17 @@ The created web endpoints again can be retrieved via the `s3_buckets` output.
   }
 ]
 ```    
+
+
+{{% notice tip %}}
+When uploading content to be served it is important to use the correct mime-types, when using  s3cmd to upload content this can be achieved like this
+
+
+`s3cmd sync --no-mime-magic --guess-mime-type --skip-existing ./contnt/* s3://<bucket_name>`
+
+{{% /notice %}}
+
+
 
 ## Docker
 
