@@ -12,25 +12,25 @@ data class CertificatesListWrapper(
     override val meta: MetaResponse,
 ) : ListResponse<CertificatesResponse> {
 
-  override val list: List<CertificatesResponse>
-    get() = certificates
+    override val list: List<CertificatesResponse>
+        get() = certificates
 }
 
 @Serializable
 data class CertificatesResponse(override val id: Long, override val name: String) :
-    HetznerNamedResource
+    HetznerNamedResource<Long>
 
 class HetznerCertificatesApi(private val api: HetznerApi) :
-    HetznerDeleteResourceApi<CertificatesResponse> {
+    HetznerDeleteResourceApi<Long, CertificatesResponse> {
 
-  override suspend fun listPaged(
-      page: Int,
-      perPage: Int,
-      filter: Map<String, FilterValue>,
-      labelSelectors: Map<String, LabelSelectorValue>,
-  ): CertificatesListWrapper =
-      api.get("v1/certificates?${listQuery(page, perPage, filter, labelSelectors)}")
-          ?: throw RuntimeException("failed to list certificates")
+    override suspend fun listPaged(
+        page: Int,
+        perPage: Int,
+        filter: Map<String, FilterValue>,
+        labelSelectors: Map<String, LabelSelectorValue>,
+    ): CertificatesListWrapper =
+        api.get("v1/certificates?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list certificates")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/certificates/$id")
+    override suspend fun delete(id: Long) = api.simpleDelete("v1/certificates/$id")
 }

@@ -1,53 +1,62 @@
 package de.solidblocks.hetzner.cloud.model
 
 import de.solidblocks.hetzner.cloud.pascalCaseToWhiteSpace
-import kotlin.reflect.KClass
 import kotlinx.serialization.Serializable
+import kotlin.reflect.KClass
 
-interface HetznerProtectedResource : HetznerNamedResource {
-  val protection: HetznerProtectionResponse
+interface HetznerDeleteProtectedResource<ID> : HetznerNamedResource<ID> {
+    val protection: HetznerDeleteProtectionResponse
 }
 
-interface HetznerAssignedResource : HetznerNamedResource {
-  val isAssigned: Boolean
+interface HetznerChangeProtectedResource<ID> : HetznerNamedResource<ID> {
+    val protection: HetznerChangeProtectionResponse
 }
 
-interface HetznerNamedResource : HetznerResource {
-  val name: String?
+interface HetznerAssignedResource<ID> : HetznerNamedResource<ID> {
+    val isAssigned: Boolean
 }
 
-interface HetznerResource {
-  val id: Long
+interface HetznerNamedResource<ID> : HetznerResource<ID> {
+    val name: String?
+}
+
+interface HetznerResource<ID> {
+    val id: ID
 }
 
 @Serializable
-data class HetznerProtectionResponse(
+data class HetznerDeleteProtectionResponse(
     val delete: Boolean,
 )
 
+@Serializable
+data class HetznerChangeProtectionResponse(
+    val change: Boolean,
+)
+
 sealed class LabelSelectorValue {
-  data class Equals(val value: String) : LabelSelectorValue() {
-    override fun query(key: String) = "$key==$value"
-  }
+    data class Equals(val value: String) : LabelSelectorValue() {
+        override fun query(key: String) = "$key==$value"
+    }
 
-  data class NotEquals(val value: String) : LabelSelectorValue() {
-    override fun query(key: String) = "$key!=$value"
-  }
+    data class NotEquals(val value: String) : LabelSelectorValue() {
+        override fun query(key: String) = "$key!=$value"
+    }
 
-  abstract fun query(key: String): String
+    abstract fun query(key: String): String
 }
 
 sealed class FilterValue {
-  data class Equals(val value: String) : FilterValue() {
-    override val query: String
-      get() = value
-  }
+    data class Equals(val value: String) : FilterValue() {
+        override val query: String
+            get() = value
+    }
 
-  abstract val query: String
+    abstract val query: String
 }
 
-fun KClass<out HetznerNamedResource>.pascalCaseToWhiteSpace() =
+fun KClass<out HetznerNamedResource<*>>.pascalCaseToWhiteSpace() =
     this.simpleName!!.removeSuffix("Response").pascalCaseToWhiteSpace().lowercase()
 
-fun HetznerNamedResource.logText() =
+fun HetznerNamedResource<*>.logText() =
     "${this::class.pascalCaseToWhiteSpace()} '${name ?: "<no name>"}' ($id)"

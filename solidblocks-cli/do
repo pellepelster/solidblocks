@@ -279,6 +279,14 @@ function task_clean {
   rm -rf "${DIR}/blcks"
 }
 
+function task_format() {
+  ${DIR}/../gradlew :solidblocks-test:spotlessApply
+  (
+    cd ${DIR}
+    terraform fmt -recursive
+  )
+}
+
 arg=${1:-}
 shift || true
 case ${arg} in
@@ -298,7 +306,7 @@ case ${arg} in
   release-prepare) ;;
   release-artifacts) ;;
   release-test) ;;
-  format) ;;
+  format) task_format ;;
   clean) task_clean "$@" ;;
   *) task_usage ;;
 esac

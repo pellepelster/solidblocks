@@ -89,7 +89,7 @@ public class HetznerApi(hcloudToken: String) {
     val placementGroups = HetznerPlacementGroupsApi(this)
     val images = HetznerImagesApi(this)
 
-    fun dnsRRSets(dnsZoneReference: String) = HetznerDnsRRSetsApi(this, dnsZoneReference)
+    fun dnsRrSets(dnsZoneReference: String) = HetznerDnsRRSetsApi(this, dnsZoneReference)
 
     internal val client =
         createHttpClient(
@@ -183,7 +183,7 @@ public class HetznerApi(hcloudToken: String) {
         throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
 
-    fun waitFor(
+    fun waitForAction(
         action: suspend () -> ActionResponseWrapper,
         getAction: suspend (Long) -> ActionResponseWrapper,
     ) = runBlocking {

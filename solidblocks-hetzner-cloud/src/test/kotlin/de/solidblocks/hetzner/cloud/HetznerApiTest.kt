@@ -6,8 +6,10 @@ import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.resources.*
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.maps.shouldContain
 import io.kotest.matchers.maps.shouldHaveSize
@@ -227,12 +229,12 @@ class HetznerApiTest {
     }
 
     @Test
-    fun testWaitFor() {
+    fun testWaitForAction() {
         runBlocking {
             val volume = api.volumes.list().first()
 
             val result =
-                api.waitFor({ api.volumes.changeProtection(volume.id, true) }, { api.volumes.action(it) })
+                api.waitForAction({ api.volumes.changeDeleteProtection(volume.id, true) }, { api.volumes.action(it) })
 
             assertTrue(result)
         }
@@ -294,13 +296,34 @@ class HetznerApiTest {
     }
 
     @Test
-    fun testListDnsRRSets() {
+    fun testListDnsRrSets() {
         runBlocking {
             val dnsZones = api.dnsZones.list()
             dnsZones shouldHaveSize 1
 
-            val rrSets = api.dnsRRSets(dnsZones[0].name)
-            rrSets.list() shouldHaveAtLeastSize 1
+            val rrSetsApi = api.dnsRrSets(dnsZones[0].name)
+            rrSetsApi.list() shouldHaveAtLeastSize 1
         }
     }
+
+    @Test
+    fun testDnsRRSetFlow() {
+        runBlocking {
+            val dnsZones = api.dnsZones.list()
+            dnsZones shouldHaveSize 1
+
+            val rrSetsApi = api.dnsRrSets(dnsZones[0].name)
+
+            val name = UUID.randomUUID().toString()
+            val response = rrSetsApi.create(DnsRRSetsCreateRequest(name, RRType.A, listOf(DnsRRSetRecord("127.0.0.1"))))
+            response?.rrset?.name shouldBe name
+
+            rrSetsApi.list().map { it.name } shouldContain name
+
+            rrSetsApi.delete(response!!.rrset.name, response.rrset.type) shouldBe true
+
+            rrSetsApi.list().map { it.name } shouldNotContain name
+        }
+    }
+
 }

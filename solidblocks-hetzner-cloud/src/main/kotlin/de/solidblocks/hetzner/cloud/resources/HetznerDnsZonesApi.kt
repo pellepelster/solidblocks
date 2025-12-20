@@ -2,8 +2,6 @@ package de.solidblocks.hetzner.cloud.resources
 
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerBaseResourceApi
-import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
-import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
 import de.solidblocks.hetzner.cloud.model.*
 import kotlinx.serialization.Serializable
@@ -22,8 +20,8 @@ data class DnsZoneListResponseWrapper(
 data class DnsZone(
     override val id: Long,
     override val name: String,
-    override val protection: HetznerProtectionResponse,
-) : HetznerProtectedResource
+    override val protection: HetznerDeleteProtectionResponse,
+) : HetznerDeleteProtectedResource<Long>
 
 class HetznerDnsZonesApi(private val api: HetznerApi) :
     HetznerBaseResourceApi<DnsZone> {

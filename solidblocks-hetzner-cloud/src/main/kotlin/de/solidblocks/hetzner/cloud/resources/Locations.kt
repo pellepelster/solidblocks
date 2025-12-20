@@ -22,7 +22,7 @@ data class LocationResponseWrapper(
 
 @Serializable
 data class LocationResponse(override val id: Long, override val name: String) :
-    HetznerNamedResource
+    HetznerNamedResource<Long>
 
 class HetznerLocationsApi(private val api: HetznerApi) : HetznerBaseResourceApi<LocationResponse> {
 
