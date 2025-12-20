@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.8
+
+* add S3 based static [web-hosting](https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/index.html) and Docker repository solution to
+* support DNS entry deletion for [Hetzner nuke](https://pellepelster.github.io/solidblocks/cli/nuke/index.html)
+
 ## v0.4.7
 
 * add version upgrade support to [RDS PostgreSQL Ansible role](https://pellepelster.github.io/solidblocks/rds/ansible/)
