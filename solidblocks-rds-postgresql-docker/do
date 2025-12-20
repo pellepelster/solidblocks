@@ -77,7 +77,8 @@ function task_build {
     if [[ "${BUILD_FAST:-}" == "true" ]]; then
       cp "${DIR}/install/fast-locale.gen" "${TEMP_DIR}/locale.gen"
     else
-      cp "${DIR}/install/all-locale.gen" "${TEMP_DIR}/locale.gen"
+      cp "${DIR}/install/fast-locale.gen" "${TEMP_DIR}/locale.gen"
+      #cp "${DIR}/install/all-locale.gen" "${TEMP_DIR}/locale.gen"
     fi
 
     for postgres_version in ${POSTGRES_VERSIONS}; do
