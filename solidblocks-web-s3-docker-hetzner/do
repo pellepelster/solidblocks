@@ -98,7 +98,7 @@ function task_release_test () {
   terraform_wrapper_clean "snippets/web-s3-docker-kitchen-sink"
   terraform_wrapper "snippets/web-s3-docker-kitchen-sink" init -upgrade
   terraform_wrapper "snippets/web-s3-docker-kitchen-sink" apply -auto-approve
-  terraform_wrapper "snippets/web-s3-docker-kitchen-sink" destroy -auto-approve
+  #terraform_wrapper "snippets/web-s3-docker-kitchen-sink" destroy -auto-approve
 }
 
 arg=${1:-}
