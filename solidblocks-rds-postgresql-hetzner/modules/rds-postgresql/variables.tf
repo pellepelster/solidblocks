@@ -294,12 +294,6 @@ variable "solidblocks_base_url" {
   description = "override base url for testing purposes"
 }
 
-variable "solidblocks_cloud_init_version" {
-  type        = string
-  description = "Solidblocks cloud-init version to use"
-  default     = "v0.4.8" #solidblocks_cloud_init_version
-}
-
 variable "solidblocks_rds_version" {
   type        = string
   description = "Solidblocks rds-postgresql version to use"

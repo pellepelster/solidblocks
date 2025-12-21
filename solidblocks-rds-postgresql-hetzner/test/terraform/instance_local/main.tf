@@ -17,9 +17,8 @@ module "rds-postgresql-1" {
   data_volume   = hcloud_volume.data.id
   backup_volume = data.hcloud_volume.backup.id
 
-  solidblocks_base_url           = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
-  solidblocks_cloud_init_version = var.solidblocks_version
-  solidblocks_rds_version        = "${var.solidblocks_version}-rc"
+  solidblocks_base_url    = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
+  solidblocks_rds_version = var.solidblocks_rds_version
 
   backup_local_retention_full_type = "count"
   backup_local_retention_full      = 6

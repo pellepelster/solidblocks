@@ -7,6 +7,7 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
+export TF_VAR_solidblocks_version="${VERSION}"
 
 TEMP_DIR="${DIR}/.test_$$"
 
@@ -19,13 +20,17 @@ trap clean_temp_dir EXIT
 source "${DIR}/../solidblocks-shell/lib/log.sh"
 source "${DIR}/../solidblocks-shell/lib/python.sh"
 
-function task_build {
-  if [[ -n "${CI:-}" ]]; then
-    cp ${DIR}/../solidblocks-cloud-init/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
-  else
-    cp ${DIR}/../solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
-  fi
+function ensure_prerequisites {
+    if [[ -n "${CI:-}" ]]; then
+      cp ${DIR}/../solidblocks-cloud-init/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+    else
+      cp ${DIR}/../solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+    fi
+}
 
+ensure_prerequisites
+
+function task_build {
 
   mkdir -p "${DIR}/build/snippets"
   (
@@ -61,8 +66,8 @@ function task_test_snippets_psql_wrapper() {
 function task_test_snippets_ssh {
   local module="${1:-}"
   #ssh -F "${DIR}/${module}/ssh_config" $(terraform_wrapper "${module}" output -raw ipv4_address) ${@}
-  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address
-  ssh -F "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/ssh_config" $(terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address) ${@}
+  #terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address
+  #ssh -F "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/ssh_config" $(terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address) ${@}
 }
 
 function task_test_snippets_local () {
@@ -304,7 +309,7 @@ function task_test_ssl () {
     sleep 10
   done
 
-  #"${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
+  #"${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
 
   log_divider_header "waiting for sql connectivity"
   while ! echo "SELECT 1;" | psql_wrapper_ssl; do
@@ -333,6 +338,7 @@ function task_test_restore_from_local_deploy() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_local" apply -auto-approve
 }
@@ -345,7 +351,7 @@ function task_test_restore_from_local_run() {
 
   test_wait_for_ssh
   test_wait_for_sql
-  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
 
   # wait for timer backup backup run
   local counter=0
@@ -367,7 +373,7 @@ function task_test_restore_from_local_run() {
 
   test_wait_for_ssh
   test_wait_for_sql
-  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
 }
 
 function task_test_restore_from_local_destroy() {
@@ -460,7 +466,7 @@ function task_test_encryption() {
   log_divider_footer
 
   python_ensure_venv "${DIR}"
-  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_encryption.py"
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_encryption.py"
 
   log_divider_header "destroy instance"
   terraform_wrapper "test/terraform/instance_encryption" destroy -auto-approve
@@ -496,7 +502,7 @@ function task_test_restore_from_s3() {
 
   python_ensure_venv "${DIR}"
   test_wait_for_sql
-  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
   test_wait_for_docker
   test_wait_for_sql
 
@@ -611,7 +617,7 @@ function task_test_restore_from_hetzner_s3() {
 
   python_ensure_venv "${DIR}"
   test_wait_for_sql
-  "${DIR}/venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
   test_wait_for_docker
   test_wait_for_sql
 

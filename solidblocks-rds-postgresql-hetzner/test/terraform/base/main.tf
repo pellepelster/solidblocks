@@ -76,7 +76,7 @@ locals {
 
 resource "aws_s3_object" "bootstrap_zip" {
   bucket     = aws_s3_bucket.bootstrap.id
-  key        = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/solidblocks-cloud-init-${var.solidblocks_version}.zip"
+  key        = "pellepelster/solidblocks/releases/download/${var.solidblocks_version}/blcks-cloud-init-${var.solidblocks_version}.zip"
   source     = "${local.base_path}/${local.bootstrap_zip}"
   etag       = filemd5("${local.base_path}/${local.bootstrap_zip}")
   depends_on = [aws_s3_bucket_acl.bootstrap]
