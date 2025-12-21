@@ -23,5 +23,5 @@ All functions are tested on the following distributions
 ## Kitchen Sink Usage Example
 
 ```shell
-{{% includef "/snippets/shell-kitchen-sink-%s.sh" %}}
+{{% includef "/snippets/blcks-shell-kitchen-sink-%s.sh" %}}
 ```
