@@ -131,7 +131,7 @@ The created web endpoints again can be retrieved via the `s3_buckets` output.
 When uploading content to be served it is important to use the correct mime-types, when using  s3cmd to upload content this can be achieved like this
 
 
-`s3cmd sync --no-mime-magic --guess-mime-type --skip-existing ./contnt/* s3://<bucket_name>`
+`s3cmd sync --no-mime-magic --guess-mime-type ./contnt/* s3://<bucket_name>`
 
 {{% /notice %}}
 
