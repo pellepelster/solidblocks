@@ -139,6 +139,12 @@ function task_format {
   )
 }
 
+function task_release_test {
+    for postgres_version in ${POSTGRES_VERSIONS}; do
+      docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}"
+    done
+}
+
 arg=${1:-}
 shift || true
 case ${arg} in
@@ -148,7 +154,7 @@ case ${arg} in
   clean) task_clean "$@" ;;
   release-artifacts) task_release_artifacts "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
-  release-test);;
+  release-test) task_release_test "$@" ;;
   dev-build) DOCKER_OPTIONS=" "  DOCKER_PLATFORM="linux/amd64" task_build;;
   *) task_usage ;;
 esac
