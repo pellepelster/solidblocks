@@ -386,6 +386,16 @@ jobs:
             **/build/reports/tests
 
   solidblocks-rds-postgresql-docker:
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        job:
+          - { version: 14 }
+          - { version: 15 }
+          - { version: 16 }
+          - { version: 17 }
+          - { version: 18 }
     runs-on: ubuntu-24.04
     steps:
       - name: Login to GitHub Container Registry
@@ -408,7 +418,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build
-        run: solidblocks-rds-postgresql-docker/do build
+        run: solidblocks-rds-postgresql-docker/do build ${{ matrix.job.version }}
       - name: Save cached layers
         id: cache-primes-save
         uses: actions/cache/save@v4

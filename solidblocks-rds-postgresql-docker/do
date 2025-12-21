@@ -70,6 +70,8 @@ function task_test {
 }
 
 function task_build {
+  local versions_to_build=${1:-$POSTGRES_VERSIONS}
+
   (
     cd "${DIR}"
     mkdir -p "${DIR}/build"
@@ -80,7 +82,7 @@ function task_build {
       cp "${DIR}/install/all-locale.gen" "${TEMP_DIR}/locale.gen"
     fi
 
-    for postgres_version in ${POSTGRES_VERSIONS}; do
+    for postgres_version in ${versions_to_build}; do
       local postgres_previous_version=$((postgres_version-1))
       local postgres_previous_version_path=${postgres_previous_version}
 
