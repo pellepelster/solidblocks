@@ -15,7 +15,6 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds/) for
 | Name | Version |
 |------|---------|
 | <a name="provider_hcloud"></a> [hcloud](#provider\_hcloud) | >=1.48.0 |
-| <a name="provider_http"></a> [http](#provider\_http) | >= 3.3.0 |
 
 ## Resources
 
@@ -26,7 +25,6 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds/) for
 | [hcloud_volume_attachment.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/volume_attachment) | resource |
 | [hcloud_volume.backup](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
 | [hcloud_volume.data](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/data-sources/volume) | data source |
-| [http_http.cloud_init_bootstrap_solidblocks](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
 
 ## Inputs
 
@@ -71,8 +69,7 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/rds/) for
 | <a name="input_restore_pitr"></a> [restore\_pitr](#input\_restore\_pitr) | Point in time to recover to, using the recovery type `time` as defined in https://pgbackrest.org/command.html#command-restore. Format should be `YYYY-MM-dd HH:mm:ssz` Please be aware that the server hosting the database might be in a different timezone, so always include the timezone when specifying PITR times `date +"%Y-%m-%d %H:%M:%S%z"` | `string` | `null` | no |
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | Hetzner cloud server type, supports x86 and ARM architectures | `string` | `"cx23"` | no |
 | <a name="input_solidblocks_base_url"></a> [solidblocks\_base\_url](#input\_solidblocks\_base\_url) | override base url for testing purposes | `string` | `"https://github.com"` | no |
-| <a name="input_solidblocks_cloud_init_version"></a> [solidblocks\_cloud\_init\_version](#input\_solidblocks\_cloud\_init\_version) | Solidblocks cloud-init version to use | `string` | `"v0.4.8"` | no |
-| <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | Solidblocks rds-postgresql version to use | `string` | `"v0.4.8"` | no |
+| <a name="input_solidblocks_rds_version"></a> [solidblocks\_rds\_version](#input\_solidblocks\_rds\_version) | Solidblocks rds-postgresql version to use | `string` | `"v0.4.9"` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys to provision for instance access | `list(number)` | n/a | yes |
 | <a name="input_ssl_acme_server"></a> [ssl\_acme\_server](#input\_ssl\_acme\_server) | The URL of the ACME Server to use. Defaults to Let's Encrypt production environment. | `string` | `"https://acme-v02.api.letsencrypt.org/directory"` | no |
 | <a name="input_ssl_dns_provider"></a> [ssl\_dns\_provider](#input\_ssl\_dns\_provider) | provider type to use for LetsEncrypt DNS challenge, see https://go-acme.github.io/lego/dns/ for available options | `string` | `""` | no |

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.9
+
+* fix usage examples and documentation
+* add shell installer for [s3cmd](https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_s3cmd)
+
 ## v0.4.8
 
 * add S3 based static [web-hosting](https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/index.html) and Docker repository solution to

@@ -97,6 +97,12 @@ function task_clean {
   rm -rf "${DIR}/build"
 }
 
+function task_release_test {
+  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${VERSION}/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" -o "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
+  source "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
+  bootstrap_solidblocks
+}
+
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -114,6 +120,6 @@ case ${arg} in
   test-integration) task_test_integration "$@" ;;
   release-artifacts) ;;
   release-prepare) task_release_prepare "$@" ;;
-  release-test);;
+  release-test)task_release_test "$@" ;;
   *) task_usage ;;
 esac

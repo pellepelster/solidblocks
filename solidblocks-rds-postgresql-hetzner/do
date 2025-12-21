@@ -855,7 +855,6 @@ function task_release_prepare {
   terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" ${version}
   terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" ${version}
   terraform_replace_variable_default 'solidblocks_rds_version' "${DIR}/modules/rds-postgresql/variables.tf" ${version}
-  terraform_replace_variable_default 'solidblocks_cloud_init_version' "${DIR}/modules/rds-postgresql/variables.tf" ${version}
 }
 
 function terraform_replace_variable_default {

@@ -56,6 +56,9 @@ Installs [Hugo](https://gohugo.io/) static site generator version {{% env "HUGO_
 ### `software_ensure_shellcheck(version = {{% env "SHELLCHECK_VERSION" %}}, checksum)` {#software_ensure_shellcheck}
 Installs [ShellCheck](https://www.shellcheck.net/) shell script analysis tool version {{% env "SHELLCHECK_VERSION" %}}
 
+### `software_ensure_shellcheck(version = {{% env "S3CMD_VERSION" %}}, checksum)` {#software_ensure_s3cmd}
+Installs [s3cmd](https://s3tools.org/s3cmd) s3 cli {{% env "S3CMD_VERSION" %}}
+
 ### `software_ensure_semver(version = {{% env "SEMVER_VERSION" %}}, checksum)`  {#software_ensure_semver}
 Installs [semver](https://github.com/maykonlf/semver-cli) a semantic versioning tool in version {{% env "SEMVER_VERSION" %}}
 

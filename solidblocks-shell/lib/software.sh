@@ -34,6 +34,26 @@ function software_ensure_shellcheck() {
   touch "${BIN_DIR}/shellcheck-${version}/export.path"
 }
 
+
+###########################################
+#                s3cmd                    #
+###########################################
+
+S3CMD_VERSION="2.4.0"
+S3CMD_CHECKSUM="2df6c0797637fe23b392bdbe865be81643f200333b4dc73d3da737a4c6a1a338"
+
+# see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_s3cmd
+function software_ensure_s3cmd() {
+  local version=${1:-$S3CMD_VERSION}
+  local checksum=${2:-$S3CMD_CHECKSUM}
+
+  software_ensure_dirs
+
+  download_and_verify_checksum "https://github.com/s3tools/s3cmd/releases/download/v${version}/s3cmd-${version}.zip" "${CACHE_DIR}/s3cmd-${version}.zip" ${checksum}
+  file_extract_to_directory "${CACHE_DIR}/s3cmd-${version}.zip" "${BIN_DIR}"
+  touch "${BIN_DIR}/s3cmd-${version}/export.path"
+}
+
 ###########################################
 #                semver                   #
 ###########################################

@@ -110,6 +110,24 @@ public class SoftwareTest {
   }
 
   @Test
+  fun testEnsureS3Cmd() {
+    val result =
+        testLocal()
+            .script()
+            .sources(workingDir().resolve("lib"))
+            .includes(workingDir().resolve("lib").resolve("software.sh"))
+            .step("software_ensure_s3cmd")
+            .step("software_set_export_path")
+            .step("s3cmd --version")
+            .run()
+
+    assertSoftly(result) {
+      it shouldHaveExitCode 0
+      it stdoutShouldMatch ".*s3cmd version 2.4.0.*"
+    }
+  }
+
+  @Test
   fun testEnsureHugo() {
     val result =
         testLocal()
