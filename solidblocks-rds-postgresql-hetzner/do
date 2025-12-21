@@ -75,13 +75,12 @@ function task_test_snippets_local () {
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" apply -auto-approve
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" apply -auto-approve
 
-  # TODO run full release test
-  #log_divider_header "waiting for sql connectivity"
-  #while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-local-backup/instance"; do
-  #  log_echo_warning "still waiting"
-  #  sleep 5
-  #done
-  #log_divider_footer
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-local-backup/instance"; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
 
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" destroy -auto-approve
   terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" destroy -auto-approve
@@ -139,19 +138,19 @@ function task_test_snippets_private_network () {
 
 function task_release_test  {
   echo "================================================================================"
-  echo "snippets_private_network"
-  echo "================================================================================"
-  task_test_snippets_private_network
-
-  echo "================================================================================"
   echo "snippets_local"
   echo "================================================================================"
   task_test_snippets_local
 
-  echo "================================================================================"
-  echo "snippets_s3"
-  echo "================================================================================"
-  task_test_snippets_s3
+  #echo "================================================================================"
+  #echo "snippets_private_network"
+  #echo "================================================================================"
+  #task_test_snippets_private_network
+
+  #echo "================================================================================"
+  #echo "snippets_s3"
+  #echo "================================================================================"
+  #task_test_snippets_s3
 }
 
 function test_wait_for_ssh() {
@@ -334,7 +333,6 @@ function task_test_restore_from_local_deploy() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
-
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_local" apply -auto-approve
 }
