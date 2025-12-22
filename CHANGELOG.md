@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.10
+
+* add support for custom SSH host keys to S3 based static [web-hosting](https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/index.html)
+
 ## v0.4.9
 
 * fix usage examples and documentation

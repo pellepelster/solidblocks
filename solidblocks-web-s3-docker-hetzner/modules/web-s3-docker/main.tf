@@ -84,6 +84,14 @@ locals {
       docker_registry_private_fqdn = local.docker_registry_private_fqdn
       docker_registry_public_fqdn  = local.docker_registry_public_fqdn
       blcks_storage_device_data    = hcloud_volume.data.linux_device
+      ssh_host_key_ed25519         = var.ssh_host_key_ed25519
+      ssh_host_cert_ed25519        = var.ssh_host_cert_ed25519
+
+      ssh_host_key_rsa  = var.ssh_host_key_rsa
+      ssh_host_cert_rsa = var.ssh_host_cert_rsa
+
+      ssh_host_key_ecdsa  = var.ssh_host_key_ecdsa
+      ssh_host_cert_ecdsa = var.ssh_host_cert_ecdsa
     })
 
     s3_buckets       = local.s3_buckets

@@ -12,6 +12,8 @@ ${garage_lib}
 ${docker_registry_lib}
 ${user_data_lib}
 
+ssh_setup
+
 echo "${s3_buckets_json_base64}" | base64 -d > /root/s3_buckets.json
 echo "${garage_py_base64}" | base64 -d > /root/garage.py
 echo "${requirements_txt_base64}" | base64 -d > /root/requirements.txt

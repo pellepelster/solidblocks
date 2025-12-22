@@ -61,6 +61,12 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/web-s3-do
 | <a name="input_name"></a> [name](#input\_name) | Unique name for the server instance | `string` | n/a | yes |
 | <a name="input_s3_buckets"></a> [s3\_buckets](#input\_s3\_buckets) | S3 buckets to provision, see https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/#s3-buckets for details | <pre>list(object({<br/>    name                     = string<br/>    owner_key_id             = optional(string)<br/>    owner_secret_key         = optional(string)<br/>    ro_key_id                = optional(string)<br/>    ro_secret_key            = optional(string)<br/>    rw_key_id                = optional(string)<br/>    rw_secret_key            = optional(string)<br/>    web_access_public_enable = optional(bool, false)<br/>    web_access_domains       = optional(list(string))<br/>  }))</pre> | `[]` | no |
 | <a name="input_server_type"></a> [server\_type](#input\_server\_type) | Hetzner cloud server type, supports x86 and ARM architectures | `string` | `"cx23"` | no |
+| <a name="input_ssh_host_cert_ecdsa"></a> [ssh\_host\_cert\_ecdsa](#input\_ssh\_host\_cert\_ecdsa) | override generated ssh host ed25519 certificate, must be set alongside with 'ssh\_host\_key\_ecdsa' | `string` | `""` | no |
+| <a name="input_ssh_host_cert_ed25519"></a> [ssh\_host\_cert\_ed25519](#input\_ssh\_host\_cert\_ed25519) | override generated ssh host ed25519 certificate, must be set alongside with 'ssh\_host\_key\_ed25519' | `string` | `""` | no |
+| <a name="input_ssh_host_cert_rsa"></a> [ssh\_host\_cert\_rsa](#input\_ssh\_host\_cert\_rsa) | override generated ssh host ed25519 certificate, must be set alongside with 'ssh\_host\_key\_rsa' | `string` | `""` | no |
+| <a name="input_ssh_host_key_ecdsa"></a> [ssh\_host\_key\_ecdsa](#input\_ssh\_host\_key\_ecdsa) | override generated ssh host ed25519 key, must be set alongside with 'ssh\_host\_cert\_ecdsa' | `string` | `""` | no |
+| <a name="input_ssh_host_key_ed25519"></a> [ssh\_host\_key\_ed25519](#input\_ssh\_host\_key\_ed25519) | override generated ssh host ed25519 key, must be set alongside with 'ssh\_host\_cert\_ed25519' | `string` | `""` | no |
+| <a name="input_ssh_host_key_rsa"></a> [ssh\_host\_key\_rsa](#input\_ssh\_host\_key\_rsa) | override generated ssh host ed25519 key, must be set alongside with 'ssh\_host\_cert\_rsa' | `string` | `""` | no |
 | <a name="input_ssh_keys"></a> [ssh\_keys](#input\_ssh\_keys) | ssh keys to provision for instance access | `list(number)` | n/a | yes |
 
 ## Outputs

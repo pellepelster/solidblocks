@@ -95,3 +95,39 @@ variable "docker_ro_users" {
   default     = []
   description = "Docker read-write users to provision. If no users is given a user will be auto.created, see https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/#docker for details"
 }
+
+variable "ssh_host_key_ed25519" {
+  type        = string
+  description = "override generated ssh host ed25519 key, must be set alongside with 'ssh_host_cert_ed25519'"
+  default     = ""
+}
+
+variable "ssh_host_cert_ed25519" {
+  type        = string
+  description = "override generated ssh host ed25519 certificate, must be set alongside with 'ssh_host_key_ed25519'"
+  default     = ""
+}
+
+variable "ssh_host_key_rsa" {
+  type        = string
+  description = "override generated ssh host ed25519 key, must be set alongside with 'ssh_host_cert_rsa'"
+  default     = ""
+}
+
+variable "ssh_host_cert_rsa" {
+  type        = string
+  description = "override generated ssh host ed25519 certificate, must be set alongside with 'ssh_host_key_rsa'"
+  default     = ""
+}
+
+variable "ssh_host_key_ecdsa" {
+  type        = string
+  description = "override generated ssh host ed25519 key, must be set alongside with 'ssh_host_cert_ecdsa'"
+  default     = ""
+}
+
+variable "ssh_host_cert_ecdsa" {
+  type        = string
+  description = "override generated ssh host ed25519 certificate, must be set alongside with 'ssh_host_key_ecdsa'"
+  default     = ""
+}
