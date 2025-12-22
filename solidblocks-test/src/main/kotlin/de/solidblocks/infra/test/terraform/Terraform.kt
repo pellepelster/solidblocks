@@ -40,6 +40,8 @@ class TerraformTestContext(
 
   fun apply() = terraform.apply()
 
+  fun destroy() = terraform.destroy()
+
   fun version() = terraform.version()
 
   fun init() = terraform.init()
@@ -168,6 +170,10 @@ class Terraform(
 
   fun apply() {
     run(listOf("apply", "-auto-approve", "-input=false"))
+  }
+
+  fun destroy() {
+    run(listOf("destroy", "-auto-approve"))
   }
 
   fun init() {

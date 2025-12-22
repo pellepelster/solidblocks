@@ -8,11 +8,7 @@ import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.deleteRecursively
 import kotlinx.serialization.Serializable
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -20,13 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(SolidblocksTest::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TerraformTest {
-
-  @OptIn(ExperimentalPathApi::class)
-  @BeforeAll
-  fun setup(context: SolidblocksTestContext) {
-    Paths.get("").resolve(".cache").toAbsolutePath().deleteRecursively()
-    Paths.get("").resolve(".bin").toAbsolutePath().deleteRecursively()
-  }
 
   @Test
   fun testTerraformDirDoesNotExist(context: SolidblocksTestContext) {
@@ -37,7 +26,7 @@ public class TerraformTest {
   @Serializable data class TestOutputType(val name: String)
 
   @Test
-  fun testInitApplyOutput(context: SolidblocksTestContext) {
+  fun testInitApplyOutputDestroy(context: SolidblocksTestContext) {
     val terraform1 = TerraformTest::class.java.getResource("/terraform1").path
     val terraform = context.terraform(Path.of(terraform1))
     terraform.init()
@@ -64,7 +53,7 @@ public class TerraformTest {
     assertSoftly(output.getObject("json1", TestOutputType::class)) { it.name shouldBe "foo" }
 
     terraform.apply()
-    terraform.deleteLocalState()
+    terraform.destroy()
   }
 
   @Test
