@@ -247,7 +247,7 @@ function task_build {
   local dir="${1:-${DIR}/..}"
   (
     cd ${dir}
-    ./gradlew --stacktrace :solidblocks-cli:nativeCompile
+    ./gradlew :solidblocks-cli:nativeCompile
     rm -rf ${DIR}/blcks
     cp solidblocks-cli/build/native/nativeCompile/blcks* ${DIR}/blcks
     chmod +x ${DIR}/blcks

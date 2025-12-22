@@ -1,7 +1,6 @@
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
     id("org.graalvm.buildtools.native") version "0.11.0"
-    id("com.gradleup.shadow") version "9.1.0"
     application
 }
 
@@ -21,6 +20,24 @@ dependencies {
     implementation("aws.sdk.kotlin:s3:1.5.26")
     testImplementation("org.reflections:reflections:0.10.2")
 }
+
+val generateTask = tasks.register<Test>("generate") {
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("generate")
+    }
+
+    outputs.upToDateWhen { false }
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+tasks.getAt("generateResourcesConfigFile").dependsOn(generateTask)
 
 graalvmNative {
     binaries {

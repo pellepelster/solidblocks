@@ -2,11 +2,14 @@ package de.solidblocks.cli
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
 import java.lang.reflect.Modifier
+import kotlin.io.path.Path
+import kotlin.io.path.writeText
 
 @Serializable
 data class SerializationConfig(
@@ -24,7 +27,7 @@ data class SerializationConfigMethod(
     val parameterTypes: List<String> = emptyList(),
 )
 
-class SerializationTest {
+class SerializationConfigGenerator {
 
     fun findSerializableClasses(packageName: String): Set<Class<*>> {
         val reflections =
@@ -38,8 +41,8 @@ class SerializationTest {
             .toSet()
     }
 
-    // TODO automate during build (prepare-release)
     @Test
+    @Tag("generate")
     fun generateConfig() {
         val config =
             findSerializableClasses("de.solidblocks").flatMap {
@@ -59,6 +62,9 @@ class SerializationTest {
                 )
             }
 
-        println(Json.encodeToString(config))
+        val reflectConfigFile = Path("").resolve("src/main/resources/META-INF/native-image/reflect-config.json")
+
+        println("writing reflect config to '$reflectConfigFile'")
+        reflectConfigFile.writeText(Json.encodeToString(config))
     }
 }
