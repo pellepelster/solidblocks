@@ -52,6 +52,15 @@ object Versions {
 
 dependencies {
     api("io.kotest:kotest-assertions-core:5.9.1")
+
+    testImplementation("org.awaitility:awaitility:4.2.0")
+    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+
+    implementation("org.apache.sshd:sshd-core:2.16.0")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcprov-ext-jdk18on:1.78.1")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
