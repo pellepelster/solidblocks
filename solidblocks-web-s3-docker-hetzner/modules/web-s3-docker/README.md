@@ -51,6 +51,7 @@ See [documentation](https://pellepelster.github.io/solidblocks/hetzner/web-s3-do
 |------|-------------|------|---------|:--------:|
 | <a name="input_data_volume_size"></a> [data\_volume\_size](#input\_data\_volume\_size) | data volume size in GB | `number` | `64` | no |
 | <a name="input_datacenter"></a> [datacenter](#input\_datacenter) | n/a | `string` | `"nbg1-dc3"` | no |
+| <a name="input_disable_volume_delete_protection"></a> [disable\_volume\_delete\_protection](#input\_disable\_volume\_delete\_protection) | n/a | `bool` | `false` | no |
 | <a name="input_dns_zone"></a> [dns\_zone](#input\_dns\_zone) | DNS zone to use for hostname and DNs entries | `string` | n/a | yes |
 | <a name="input_docker_enable"></a> [docker\_enable](#input\_docker\_enable) | Enable Docker registry | `bool` | `false` | no |
 | <a name="input_docker_public_enable"></a> [docker\_public\_enable](#input\_docker\_public\_enable) | Enable public anonymous access to Docker registry, see https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/#docker for details | `bool` | `false` | no |
