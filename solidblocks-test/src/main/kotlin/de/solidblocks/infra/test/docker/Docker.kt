@@ -16,7 +16,7 @@ import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.createDockerClient
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.log
-import de.solidblocks.infra.test.output.OutputLine
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import java.io.BufferedWriter
 import java.io.Closeable
 import java.io.OutputStreamWriter
@@ -127,7 +127,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
           envs: Map<String, String>,
           inheritEnv: Boolean,
           stdin: Channel<String>,
-          output: (entry: OutputLine) -> Unit,
+          output: (entry: TimestampedOutputLine) -> Unit,
       ) =
           withContext(Dispatchers.IO) {
             async {
@@ -262,4 +262,4 @@ class DockerTestContext(private val image: DockerTestImage) :
   }
 }
 
-fun testDocker(image: DockerTestImage) = DockerTestContext(image)
+fun dockerTestContext(image: DockerTestImage) = DockerTestContext(image)

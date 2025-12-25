@@ -1,10 +1,11 @@
 package de.solidblocks.infra.test.script
 
+import de.solidblocks.infra.test.command.CommandResult
 import de.solidblocks.infra.test.command.CommandRunAssertion
-import de.solidblocks.infra.test.command.CommandRunResult
 import de.solidblocks.infra.test.files.DirectoryBuilder
 import de.solidblocks.infra.test.files.file
 import de.solidblocks.infra.test.files.tempDir
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
@@ -104,5 +105,5 @@ abstract class ScriptBuilder : Closeable {
     resources.forEach { it.close() }
   }
 
-  abstract fun run(): CommandRunResult
+  abstract fun run(): CommandResult<TimestampedOutputLine>
 }

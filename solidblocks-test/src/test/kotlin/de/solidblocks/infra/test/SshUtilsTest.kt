@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test
 
 class SshUtilsTest {
 
-    val privateKeyOpensshEd25519 = """
+  val privateKeyOpensshEd25519 =
+      """
 -----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz
 c2gtZWQyNTUxOQAAACBXBwhdauwPrBhr/qOmL3BO4+0QH+ix7qImiUw9vjzjbwAA
@@ -15,15 +16,19 @@ AIh6c26senNurAAAAAtzc2gtZWQyNTUxOQAAACBXBwhdauwPrBhr/qOmL3BO4+0Q
 H+ix7qImiUw9vjzjbwAAAEAZ9Z5VRUkYFSWWL6l8ECH9QEMSjltl5JSoaQ4zaccl
 gFcHCF1q7A+sGGv+o6YvcE7j7RAf6LHuoiaJTD2+PONvAAAAAAECAwQF
 -----END OPENSSH PRIVATE KEY-----
-""".trimIndent()
+    """
+          .trimIndent()
 
-    val privateKeyPemEd25519 = """
+  val privateKeyPemEd25519 =
+      """
 -----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEIBn1nlVFSRgVJZYvqXwQIf1AQxKOW2XklKhpDjNpxyWA
 -----END PRIVATE KEY-----
-""".trimIndent()
+    """
+          .trimIndent()
 
-    val privateKeyOpensshRsa = """
+  val privateKeyOpensshRsa =
+      """
 -----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdz
 c2gtcnNhAAAAAwEAAQAAAQEA1aqOBDfzcJ+hquvudhIiEwEO4U0g2fEhJdLTSoTD
@@ -53,9 +58,11 @@ gH1YCP2sc00yLnMa82wRxg3smXkNnho50K2M/OSRBMA7C+3p/xgg2eJV0V32Vj7a
 UeklHikO5Ue86Cq33o8DWCZioxcsMoB+R+CNlZLtEgb1zsEdSHog316d3CX7zctd
 qo6Vd7y9ZvTL3nrJGGONniC+OZZTab47AAAAAAEC
 -----END OPENSSH PRIVATE KEY-----
-""".trimIndent()
+    """
+          .trimIndent()
 
-    val privateKeyPemRsa = """
+  val privateKeyPemRsa =
+      """
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEA1aqOBDfzcJ+hquvudhIiEwEO4U0g2fEhJdLTSoTDeqmLk+ti
 4HKoJ4SFhsEw+IdkCVJGPI+c5nTIa7hy05lRW9kmJ9+/aQAjDqZdLGmRtHjTF2SS
@@ -83,62 +90,63 @@ yXW2rwKBgQC+vsie+ZrH5hveuFIz7OllIs+sH6CUu9XXivA2yj1g5OWZl0kvSsJ8
 gMOJwVma2JLApAOxtGwcyAr0EINnUtKBq8kWOBAFs7HQy69JCHsR11K5EXuGCqsM
 f9S03Kvu7LqFVokuYMy0Y4ItdpRGZsSUXRcEKOE8TBSsfhLrdlUlCA==
 -----END RSA PRIVATE KEY-----
-""".trimIndent()
+    """
+          .trimIndent()
 
-    val privateKeyPemEcdsa = """
+  val privateKeyPemEcdsa =
+      """
 -----BEGIN EC PRIVATE KEY-----
 MGgCAQEEHC33+i3UhUSvGmXdjiqLZlMvUGkrAXSI8RggUIygBwYFK4EEACGhPAM6
 AASSGnk6tyVQ5V6TBKFlx14RfOUmjxcOIK5MwO95BXGTBeNvh3mpLbDZ4wWlVOih
 j6XcX3qqd0aVDA==
 -----END EC PRIVATE KEY-----
-""".trimIndent()
+    """
+          .trimIndent()
 
-    @Test
-    fun testLoadED25519KeyPairFromPem() {
-        SshUtils.loadEd25519KeyPairFromPem("invalid") shouldBe null
-        assertSoftly(SshUtils.loadEd25519KeyPairFromPem(privateKeyPemEd25519)) {
-            it?.private?.algorithm shouldBe "Ed25519"
-        }
+  @Test
+  fun testLoadED25519KeyPairFromPem() {
+    SshUtils.loadEd25519KeyPairFromPem("invalid") shouldBe null
+    assertSoftly(SshUtils.loadEd25519KeyPairFromPem(privateKeyPemEd25519)) {
+      it?.private?.algorithm shouldBe "Ed25519"
     }
+  }
 
-    @Test
-    fun testLoadED25519KeyPairFromOpenSSH() {
-        SshUtils.loadEd25519KeyPairFromOpenSSH("invalid") shouldBe null
-        assertSoftly(SshUtils.loadEd25519KeyPairFromOpenSSH(privateKeyOpensshEd25519)!!) {
-            it.private?.algorithm shouldBe "Ed25519"
-        }
+  @Test
+  fun testLoadED25519KeyPairFromOpenSSH() {
+    SshUtils.loadEd25519KeyPairFromOpenSSH("invalid") shouldBe null
+    assertSoftly(SshUtils.loadEd25519KeyPairFromOpenSSH(privateKeyOpensshEd25519)!!) {
+      it.private?.algorithm shouldBe "Ed25519"
     }
+  }
 
-    @Test
-    fun testLoadRSAKeyPairFromPem() {
-        SshUtils.loadRSAKeyPairFromPem("invalid") shouldBe null
-        assertSoftly(SshUtils.loadRSAKeyPairFromPem(privateKeyPemRsa)) {
-            it?.private?.algorithm shouldBe "RSA"
-        }
+  @Test
+  fun testLoadRSAKeyPairFromPem() {
+    SshUtils.loadRSAKeyPairFromPem("invalid") shouldBe null
+    assertSoftly(SshUtils.loadRSAKeyPairFromPem(privateKeyPemRsa)) {
+      it?.private?.algorithm shouldBe "RSA"
     }
+  }
 
-    @Test
-    fun testLoadRSAKeyPairFromOpenSSH() {
-        SshUtils.loadRSAKeyPairFromOpenSSH("invalid") shouldBe null
-        assertSoftly(SshUtils.loadRSAKeyPairFromOpenSSH(privateKeyOpensshRsa)!!) {
-            it.private?.algorithm shouldBe "RSA"
-        }
+  @Test
+  fun testLoadRSAKeyPairFromOpenSSH() {
+    SshUtils.loadRSAKeyPairFromOpenSSH("invalid") shouldBe null
+    assertSoftly(SshUtils.loadRSAKeyPairFromOpenSSH(privateKeyOpensshRsa)!!) {
+      it.private?.algorithm shouldBe "RSA"
     }
+  }
 
-    @Test
-    fun testLoadECDSAKeyPairFromPem() {
-        SshUtils.loadECDSAKeyPairFromPem("invalid") shouldBe null
-        assertSoftly(SshUtils.loadECDSAKeyPairFromPem(privateKeyPemEcdsa)) {
-            it?.private?.algorithm shouldBe "ECDSA"
-        }
+  @Test
+  fun testLoadECDSAKeyPairFromPem() {
+    SshUtils.loadECDSAKeyPairFromPem("invalid") shouldBe null
+    assertSoftly(SshUtils.loadECDSAKeyPairFromPem(privateKeyPemEcdsa)) {
+      it?.private?.algorithm shouldBe "ECDSA"
     }
+  }
 
-    @Test
-    fun testTryLoadKey() {
-        assertSoftly(SshUtils.tryLoadKey(privateKeyOpensshEd25519)!!) {
-            it.private?.algorithm shouldBe "Ed25519"
-        }
+  @Test
+  fun testTryLoadKey() {
+    assertSoftly(SshUtils.tryLoadKey(privateKeyOpensshEd25519)!!) {
+      it.private?.algorithm shouldBe "Ed25519"
     }
-
+  }
 }
-

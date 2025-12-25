@@ -1,40 +1,74 @@
 package de.solidblocks.infra.test
 
+import de.solidblocks.infra.test.cloudinit.CloudInitTestContext
+import de.solidblocks.infra.test.cloudinit.cloudInitTestContext
 import de.solidblocks.infra.test.docker.DockerTestImage
-import de.solidblocks.infra.test.docker.testDocker
+import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.host.hostTestContext
 import de.solidblocks.infra.test.ssh.SshUtils
 import de.solidblocks.infra.test.ssh.sshTestContext
+import de.solidblocks.infra.test.terraform.TerraformTestContext
 import de.solidblocks.infra.test.terraform.terraformTestContext
-import testLocal
 import java.io.Closeable
 import java.nio.file.Path
 import java.security.KeyPair
+import localTestContext
 
 class SolidblocksTestContext {
 
-    private val tempDirs = mutableListOf<Closeable>()
+  private var cleanupAfterTest: Boolean = true
 
-    fun createTempDir() = tempDir().apply { tempDirs.add(this) }
+  private var failed: Boolean = false
 
-    fun local() = testLocal().apply { tempDirs.add(this) }
+  private val tempDirs = mutableListOf<Closeable>()
 
-    fun docker(image: DockerTestImage) = testDocker(image).apply { tempDirs.add(this) }
+  private val terraformContexts = mutableListOf<TerraformTestContext>()
 
-    fun terraform(dir: Path, version: String? = null) = terraformTestContext(dir, version)
+  private val cloudInitContexts = mutableListOf<CloudInitTestContext>()
 
-    fun terraform(dir: String, version: String? = null) = terraformTestContext(Path.of(dir), version)
+  fun createTempDir() = tempDir().apply { tempDirs.add(this) }
 
-    fun ssh(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-        sshTestContext(host, SshUtils.tryLoadKey(privateKey), username, port)
+  fun local() = localTestContext().apply { tempDirs.add(this) }
 
-    fun ssh(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
-        sshTestContext(host, keyPair, username, port)
+  fun docker(image: DockerTestImage) = dockerTestContext(image).apply { tempDirs.add(this) }
 
-    fun host(host: String) = hostTestContext(host)
+  fun terraform(dir: Path, version: String? = null) =
+      terraformTestContext(dir, version).also { terraformContexts.add(it) }
 
-    fun close() {
-        tempDirs.forEach { it.close() }
+  fun terraform(dir: String, version: String? = null) =
+      terraformTestContext(Path.of(dir), version).also { terraformContexts.add(it) }
+
+  fun ssh(host: String, privateKey: String, username: String = "root", port: Int = 22) =
+      sshTestContext(host, SshUtils.tryLoadKey(privateKey), username, port)
+
+  fun ssh(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
+      sshTestContext(host, keyPair, username, port)
+
+  fun host(host: String) = hostTestContext(host)
+
+  fun cloudInit(host: String, privateKey: String, username: String = "root", port: Int = 22) =
+      cloudInitTestContext(host, privateKey, username, port).also { cloudInitContexts.add(it) }
+
+  fun afterAll() {
+    cloudInitContexts.forEach { it.afterAll() }
+  }
+
+  fun cleanup() {
+    if (!cleanupAfterTest) {
+      log("skipping cleanup")
+      return
     }
+
+    tempDirs.forEach { it.close() }
+    terraformContexts.forEach { it.destroy() }
+  }
+
+  fun cleanupAfterTestFailure(cleanup: Boolean) {
+    this.cleanupAfterTest = cleanup
+  }
+
+  fun markFailed() {
+    failed = true
+  }
 }

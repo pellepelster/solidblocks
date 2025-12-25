@@ -1,7 +1,7 @@
 package de.solidblocks.infra.test.command
 
-import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputMatcher
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.infra.test.output.waitForOutputMatcher
 import java.io.Closeable
 import kotlin.time.Duration
@@ -10,15 +10,11 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 
-data class CommandRunResult(
-    val result: CommandResult,
-)
-
 class CommandRunAssertion(
     private val start: TimeSource.Monotonic.ValueTimeMark,
     private val commandRunner: CommandRunner,
     private val stdin: Channel<String>,
-    private val output: List<OutputLine>,
+    private val output: List<TimestampedOutputLine>,
     private val defaultWaitForOutput: Duration,
 ) {
   fun waitForOutput(
@@ -37,7 +33,7 @@ class CommandRunAssertion(
   }
 
   fun sha256sum(file: String) = runBlocking {
-    val output = mutableListOf<OutputLine>()
+    val output = mutableListOf<TimestampedOutputLine>()
     val result = commandRunner.runCommand(arrayOf("sha256sum", file)) { output.add(it) }
 
     result.await()
@@ -52,7 +48,7 @@ interface CommandRunner : Closeable {
       envs: Map<String, String> = emptyMap(),
       inheritEnv: Boolean = true,
       stdin: Channel<String> = Channel(),
-      output: (entry: OutputLine) -> Unit,
+      output: (entry: TimestampedOutputLine) -> Unit,
   ): Deferred<ProcessResult>
 }
 
@@ -61,7 +57,7 @@ class CommandRun(
     private val commandRunner: CommandRunner,
     private val stdin: Channel<String>,
     private val result: Deferred<ProcessResult>,
-    private val output: List<OutputLine>,
+    private val output: List<TimestampedOutputLine>,
     private val assertionsResult: Deferred<List<Unit>>,
     private val defaultWaitForOutput: Duration,
 ) {
@@ -71,9 +67,7 @@ class CommandRun(
     val processResult = result.await()
     commandRunner.close()
 
-    CommandRunResult(
-        CommandResult(processResult.exitCode, processResult.runtime, output),
-    )
+    CommandResult(processResult.exitCode, processResult.runtime, output)
   }
 
   fun waitForOutput(

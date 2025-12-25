@@ -18,20 +18,22 @@ object Constants {
 enum class LogType {
   STDOUT,
   STDERR,
-  TEST,
+  INFO,
+  ERROR,
+  CLOUDINIT,
 }
 
 val logTypeMaxLength = LogType.entries.maxOf { it.name.length }
 
-fun log(start: TimeSource.Monotonic.ValueTimeMark, message: String, type: LogType = LogType.TEST) =
+fun log(start: TimeSource.Monotonic.ValueTimeMark, message: String, type: LogType = LogType.INFO) =
     log(TimeSource.Monotonic.markNow() - start, message, type)
 
-fun log(duration: Duration, message: String, type: LogType = LogType.TEST) {
+fun log(duration: Duration, message: String, type: LogType = LogType.INFO) {
   val logType = type.name.padStart(logTypeMaxLength)
   println("${durationFormat.format(duration.inWholeMilliseconds / 1000f)}s [$logType] $message")
 }
 
-fun log(message: String, type: LogType = LogType.TEST) {
+fun log(message: String, type: LogType = LogType.INFO) {
   val logType = type.name.padStart(logTypeMaxLength)
   println("[$logType] $message")
 }

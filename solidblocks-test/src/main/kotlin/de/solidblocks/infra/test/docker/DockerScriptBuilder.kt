@@ -1,14 +1,15 @@
 package de.solidblocks.infra.test.docker
 
-import de.solidblocks.infra.test.command.CommandRunResult
+import de.solidblocks.infra.test.command.CommandResult
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.infra.test.script.ScriptBuilder
 
 class DockerScriptBuilder(private val image: DockerTestImage) : ScriptBuilder() {
 
-  override fun run(): CommandRunResult {
+  override fun run(): CommandResult<TimestampedOutputLine> {
     val buildScript = buildScript()
     val command =
-        testDocker(image)
+        dockerTestContext(image)
             .command(*buildScript.second.toTypedArray())
             .sourceDir(buildScript.first)
             .workingDir(buildScript.first)

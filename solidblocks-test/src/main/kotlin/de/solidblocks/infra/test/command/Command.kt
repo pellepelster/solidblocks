@@ -4,11 +4,10 @@ import de.solidblocks.infra.test.LogType
 import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import java.io.Closeable
 import java.nio.file.Path
-import java.util.Collections
-import java.util.LinkedList
-import java.util.Queue
+import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
@@ -18,10 +17,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
-data class CommandResult(
+data class CommandResult<O : OutputLine>(
     val exitCode: Int,
     val runtime: Duration,
-    private val internalOutput: List<OutputLine>,
+    private val internalOutput: List<O>,
 ) {
   val stdout: String
     get() =
@@ -72,7 +71,7 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
 
   suspend fun run() =
       withContext(Dispatchers.IO) {
-        val output = Collections.synchronizedList(mutableListOf<OutputLine>())
+        val output = Collections.synchronizedList(mutableListOf<TimestampedOutputLine>())
         val stdin = Channel<String>()
         val start = TimeSource.Monotonic.markNow()
 

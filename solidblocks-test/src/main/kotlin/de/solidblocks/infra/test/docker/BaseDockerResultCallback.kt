@@ -5,14 +5,14 @@ import com.github.dockerjava.api.model.Frame
 import com.github.dockerjava.api.model.StreamType
 import de.solidblocks.infra.test.LogType
 import de.solidblocks.infra.test.log
-import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import java.io.Closeable
 import kotlin.time.TimeSource
 
 abstract class BaseDockerResultCallback(
     private val start: TimeSource.Monotonic.ValueTimeMark,
-    private val output: (entry: OutputLine) -> Unit,
+    private val output: (entry: TimestampedOutputLine) -> Unit,
 ) : ResultCallback<Frame> {
 
   override fun close() {}
@@ -38,7 +38,7 @@ abstract class BaseDockerResultCallback(
         .dropLastWhile { it.isEmpty() }
         .forEach {
           output.invoke(
-              OutputLine(
+              TimestampedOutputLine(
                   TimeSource.Monotonic.markNow() - start,
                   it,
                   when (frame.streamType) {

@@ -12,10 +12,10 @@ class SSHTestContext(
     val host: String,
     val keyPair: KeyPair,
     val username: String = "root",
-    val port: Int = 22
+    val port: Int = 22,
 ) {
 
-    private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, username, port)
+  private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, username, port)
 
-    fun command(command: String) = commandManager.sshCommand(command)
+  fun command(command: String) = commandManager.sshCommand(command)
 }

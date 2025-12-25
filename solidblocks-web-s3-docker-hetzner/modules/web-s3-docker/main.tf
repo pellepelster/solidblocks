@@ -121,7 +121,7 @@ resource "hcloud_volume" "data" {
   size              = var.data_volume_size
   location          = var.location
   format            = "ext4"
-  delete_protection = true
+  delete_protection = !var.disable_volume_delete_protection
 }
 
 resource "hcloud_volume_attachment" "data" {

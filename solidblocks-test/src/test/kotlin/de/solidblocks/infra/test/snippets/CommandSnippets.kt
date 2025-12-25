@@ -2,13 +2,13 @@ package de.solidblocks.infra.test.snippets
 
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
-import de.solidblocks.infra.test.command.runtimeShouldBeLessThan
-import de.solidblocks.infra.test.command.shouldHaveExitCode
+import de.solidblocks.infra.test.assertions.outputShouldMatch
+import de.solidblocks.infra.test.assertions.runtimeShouldBeLessThan
+import de.solidblocks.infra.test.assertions.shouldHaveExitCode
+import de.solidblocks.infra.test.assertions.stderrShouldBeEmpty
+import de.solidblocks.infra.test.assertions.stdoutShouldMatch
 import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.files.file
-import de.solidblocks.infra.test.output.outputShouldMatch
-import de.solidblocks.infra.test.output.stderrShouldBeEmpty
-import de.solidblocks.infra.test.output.stdoutShouldMatch
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

@@ -28,5 +28,6 @@ module "web-s3-docker" {
     },
   ]
 
+  disable_volume_delete_protection = true
 }
 

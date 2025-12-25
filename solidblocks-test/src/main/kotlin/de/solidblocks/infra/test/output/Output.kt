@@ -13,7 +13,10 @@ enum class OutputType {
   STDERR,
 }
 
-data class OutputLine(val timestamp: Duration, val line: String, val type: OutputType)
+open class OutputLine(val line: String, val type: OutputType)
+
+class TimestampedOutputLine(val timestamp: Duration, line: String, type: OutputType) :
+    OutputLine(line, type)
 
 data class OutputMatcher(val regex: Regex, val timeout: Duration, val answer: (() -> String)?)
 
@@ -22,7 +25,7 @@ data class OutputMatcherResult(val regex: Regex, val matched: Boolean)
 suspend fun waitForOutputMatcher(
     start: TimeSource.Monotonic.ValueTimeMark,
     outputMatcher: OutputMatcher,
-    output: List<OutputLine>,
+    output: List<TimestampedOutputLine>,
     stdin: SendChannel<String>,
 ) {
   log(

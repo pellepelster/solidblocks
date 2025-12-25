@@ -131,3 +131,9 @@ variable "ssh_host_cert_ecdsa" {
   description = "override generated ssh host ed25519 certificate, must be set alongside with 'ssh_host_key_ecdsa'"
   default     = ""
 }
+
+
+variable "disable_volume_delete_protection" {
+  type    = bool
+  default = false
+}

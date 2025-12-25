@@ -1,16 +1,17 @@
 package de.solidblocks.infra.test.local
 
-import de.solidblocks.infra.test.command.CommandRunResult
+import de.solidblocks.infra.test.command.CommandResult
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.infra.test.script.ScriptBuilder
 import kotlinx.coroutines.runBlocking
-import testLocal
+import localTestContext
 
 class LocalScriptBuilder : ScriptBuilder() {
 
-  override fun run(): CommandRunResult = runBlocking {
+  override fun run(): CommandResult<TimestampedOutputLine> = runBlocking {
     val buildScript = buildScript()
     val command =
-        testLocal()
+        localTestContext()
             .command(*buildScript.second.toTypedArray())
             .workingDir(buildScript.first)
             .env(envs)

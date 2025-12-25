@@ -4,8 +4,8 @@ import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.local.LocalScriptBuilder
 import de.solidblocks.infra.test.log
-import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
+import de.solidblocks.infra.test.output.TimestampedOutputLine
 import java.io.Closeable
 import java.lang.Thread.sleep
 import java.nio.charset.Charset
@@ -44,7 +44,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
             envs: Map<String, String>,
             inheritEnv: Boolean,
             stdin: Channel<String>,
-            output: (entry: OutputLine) -> Unit,
+            output: (entry: TimestampedOutputLine) -> Unit,
         ) =
             withContext(Dispatchers.IO) {
               async {
@@ -87,7 +87,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                         )
                         .collect {
                           val timestamp = TimeSource.Monotonic.markNow() - start
-                          val entry = OutputLine(timestamp, it, OutputType.STDOUT)
+                          val entry = TimestampedOutputLine(timestamp, it, OutputType.STDOUT)
                           output.invoke(entry)
                         }
                   }
@@ -102,7 +102,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                         )
                         .collect {
                           val timestamp = TimeSource.Monotonic.markNow() - start
-                          val entry = OutputLine(timestamp, it, OutputType.STDERR)
+                          val entry = TimestampedOutputLine(timestamp, it, OutputType.STDERR)
                           output.invoke(entry)
                         }
                   }
@@ -159,17 +159,4 @@ class LocalTestContext : CommandTestContext<LocalCommandBuilder, LocalScriptBuil
   }
 }
 
-fun testLocal() = LocalTestContext()
-
-/*
-suspend fun executeShellCommand(
-    command: String,
-    vararg args: String
-): CommandResult =
-    executeCommand(
-        Path.of("/bin/sh"),
-        "-c",
-        (listOf(command) + args)
-            .joinToString(" ")
-    )
-*/
+fun localTestContext() = LocalTestContext()

@@ -1,12 +1,9 @@
 package de.solidblocks.infra.test
 
+import de.solidblocks.infra.test.assertions.*
 import de.solidblocks.infra.test.command.CommandBuilder
-import de.solidblocks.infra.test.command.runtimeShouldBeGreaterThan
-import de.solidblocks.infra.test.command.runtimeShouldBeLessThan
-import de.solidblocks.infra.test.command.shouldHaveExitCode
 import de.solidblocks.infra.test.docker.DockerTestImage
-import de.solidblocks.infra.test.docker.testDocker
-import de.solidblocks.infra.test.output.*
+import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.script.ScriptBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.assertions.assertSoftly
@@ -18,13 +15,13 @@ import kotlin.io.path.absolutePathString
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 import kotlinx.coroutines.runBlocking
+import localTestContext
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.FieldSource
-import testLocal
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CommandTest {
@@ -37,7 +34,7 @@ public class CommandTest {
   private val docker = createDockerClient()
 
   companion object {
-    val contexts = listOf(testLocal(), testDocker(DockerTestImage.UBUNTU_24))
+    val contexts = listOf(localTestContext(), dockerTestContext(DockerTestImage.UBUNTU_24))
   }
 
   @BeforeEach
