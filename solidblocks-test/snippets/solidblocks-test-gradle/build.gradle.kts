@@ -7,9 +7,10 @@ repositories {
 }
 
 dependencies {
-    implementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
-    implementation("org.junit.jupiter:junit-jupiter-engine:5.11.0")
-    implementation("de.solidblocks:infra-test:v0.4.10-rc1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.11.0")
+    testImplementation("de.solidblocks:infra-test:v0.4.10-rc1")
+    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
 
 tasks.named<Test>("test") {

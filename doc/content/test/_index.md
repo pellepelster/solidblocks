@@ -7,7 +7,7 @@ faIcon = "fa-brands fa-java"
 +++
 
 
-Solidblocks `infra-test` is an infrastructure testing library for writing unit tests in Java/Kotlin to test actual the state of your servers.
+Solidblocks `infra-test` is an infrastructure testing library for writing unit tests in Java/Kotlin to test the state of your servers and other resources.
 
 ## Usage
 
@@ -18,7 +18,7 @@ To use `solidblocks-test` just add the dependency to your Gradle or Maven build
 {{% include "/snippets/solidblocks-test-gradle/build.gradle.kts" %}}
 ```
 
-Depending on your use case you can either inject the test context using the `SolidblocksTest` extension
+Depending on your use case, you can either inject the test context using the `SolidblocksTest` test extension
 
 ### extension usage
 ```kotlin
@@ -32,11 +32,12 @@ or use the factory methods to create the test context directly
 {{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/FactoryMethodUsage.kt" %}}
 ```
 
-The extension automatically manages the lifecycle of created resources and cleans up everything when the test is finished.
+> [!INFO]
+> When used from the extension, all created resources are automatically managed and cleaned up when the tests are finished.
 
 ## Logging
 
-All produced log output is marked with its origin, to make it easy to distinguish it from other logs during a test run. The following snippets contains an example log with some log statements form the library itself `[INFO]`, logs from forked commands `[STDOUT]` and logs from a cloud-init run `[CLOUDINIT]`
+All produced log output is marked with its origin, to make it easy to distinguish it from other logs during a test run. The following snippets contains an example log with some log statements form the library itself `[INFO]`, logs from forked commands `[STDOUT]` and logs from a cloud-init run `[CLOUDINIT]` of a provisioned server.
 
 ```shell
 [     INFO] Terraform checksums already downloaded at '/home/pelle/git/solidblocks/solidblocks-test/.cache/terraform_1.14.2_SHA256SUMS'
@@ -81,11 +82,11 @@ All produced log output is marked with its origin, to make it easy to distinguis
 
 ## Test Contexts
 
-Test contexts can be used to test and assert different infrastructure related properties and behaviors.
+Different test functions and assertions are grouped logically in test contexts, and can assert different infrastructure related properties and behaviors.
 
 ### Local and docker command context
 
-The local and docker command contexts allow to run commands and scrips on the machine executing the Junit tests and asserts the outcomes.
+The local and docker command contexts allow to run commands and scrips on the machine executing the Junit tests and verify the outcomes.
 
 #### Run command or script
 ```kotlin
@@ -157,7 +158,7 @@ The host context allows to verify properties of remote hosts.
 
 ### SSH
 
-The host ssh context allows assertions to run on remote hosts. Prerequisites are a running SSH server o the host provided by `<ssh_host>` along with a matching `<private_key>`. The private key can be an `pem` or `openssh` encoded `rsa`, `ed25519` or `ecdsa` key.
+The SSH context allows assertions to run on remote hosts. Prerequisites are a running SSH server on the host provided by `<ssh_host>` along with a matching `<private_key>`. The private key can be an `pem` or `openssh` encoded `rsa`, `ed25519` or `ecdsa` key.
 
 ```kotlin
 {{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/ssh/SSHContext.kt" %}}
@@ -176,3 +177,12 @@ The cloud-init context allows assertions based on the artifacts generated after 
 {{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/cloudinit/CloudInitContext.kt" %}}
 ```
 
+> [!NOTE]
+> By enabling `CloudInitTestContext.printOutputLogOnTestFailure` the output from `/var/log/cloud-init-output.log`
+> will be printed if a test fails, please be aware that this might leak credentials. that are processed in a cloud-init script. 
+
+#### Assertions
+
+```kotlin
+{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/cloudinit/CloudInitAssertions.kt" %}}
+```

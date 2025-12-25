@@ -6,25 +6,25 @@ plugins {
 }
 
 sourceSets {
-    create("smokeTest") {
+    create("releaseTest") {
         compileClasspath += sourceSets.main.get().output
         runtimeClasspath += sourceSets.main.get().output
     }
 }
 
-val smokeTestImplementation by configurations.getting {
+val releaseTestImplementation by configurations.getting {
     extendsFrom(configurations.implementation.get())
 }
-val smokeTestRuntimeOnly by configurations.getting
+val releaseTestRuntimeOnly by configurations.getting
 
-configurations.create("smokeTest").extendsFrom(configurations.runtimeOnly.get())
+configurations.create("releaseTest").extendsFrom(configurations.runtimeOnly.get())
 
-val integrationTest = tasks.register<Test>("smokeTest") {
-    description = "Runs smoke tests."
+val integrationTest = tasks.register<Test>("releaseTest") {
+    description = "Runs release tests."
     group = "verification"
 
-    testClassesDirs = sourceSets["smokeTest"].output.classesDirs
-    classpath = sourceSets["smokeTest"].runtimeClasspath
+    testClassesDirs = sourceSets["releaseTest"].output.classesDirs
+    classpath = sourceSets["releaseTest"].runtimeClasspath
 
     useJUnitPlatform()
 

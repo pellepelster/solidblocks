@@ -19,6 +19,10 @@ public class TerraformOptions {
         // environment variable 'TF_VAR_variable1'
         terraform.addVariable("variable1", "foo-bar")
 
+        /// set environment variable for the terraform process, can be
+        // used to pass credentials to the terraform providers
+        terraform.addEnvironmentVariable("PROVIDER_TOKEN", "foo-bar")
+
         // do not clean up any resources when the test run fails,
         // e.g. destroy will not be executed after test run is finished
         context.cleanupAfterTestFailure(false)
