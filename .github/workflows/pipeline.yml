@@ -387,7 +387,7 @@ jobs:
 
   solidblocks-rds-postgresql-docker:
     strategy:
-      max-parallel: 1
+      max-parallel: 10
       fail-fast: false
       matrix:
         job:
