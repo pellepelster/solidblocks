@@ -30,10 +30,6 @@ function task_test_prepare {
 }
 
 function task_test {
-  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
-    exit 0
-  fi
-
   ${DIR}/../gradlew :solidblocks-test:test
 }
 

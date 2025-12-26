@@ -14,6 +14,7 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(SolidblocksTest::class)
@@ -63,6 +64,7 @@ public class CloudInitTest {
   }
 
   @Test
+  @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
   fun testCloudInitSuccess(context: SolidblocksTestContext) {
     val terraform1 = CloudInitTest::class.java.getResource("/terraformCloudInitTestBed1").path
 

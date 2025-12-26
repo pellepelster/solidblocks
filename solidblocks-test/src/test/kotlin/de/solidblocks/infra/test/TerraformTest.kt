@@ -59,7 +59,7 @@ public class TerraformTest {
 
   @Test
   fun testMultipleVersions(context: SolidblocksTestContext) {
-    val terraform1 = TerraformTest::class.java.getResource("/terraformCloudInitTestBed1").path
+    val terraform1 = TerraformTest::class.java.getResource("/terraformTestBed1").path
 
     val terraformDefaultVersion = context.terraform(Path.of(terraform1))
     terraformDefaultVersion.version() shouldContain "Terraform v1.14.2"
@@ -70,7 +70,7 @@ public class TerraformTest {
 
   @Test
   fun testMultipleInstances(context: SolidblocksTestContext) {
-    val terraform1 = TerraformTest::class.java.getResource("/terraformCloudInitTestBed1").path
+    val terraform1 = TerraformTest::class.java.getResource("/terraformTestBed1").path
 
     val instance1 = context.terraform(Path.of(terraform1))
     instance1.version() shouldContain "Terraform v1.14.2"

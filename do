@@ -164,12 +164,12 @@ function task_clean {
 }
 
 function task_test {
-    if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
-      exit 0
-    fi
-
     for component in ${COMPONENTS}; do
       (
+        echo "================================================================================="
+        echo "running test for '${component}'"
+        echo "================================================================================="
+
         cd "${DIR}/${component}"
         VERSION=${VERSION} "./do" test
       )
