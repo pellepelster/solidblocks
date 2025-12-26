@@ -10,11 +10,9 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
 import org.awaitility.kotlin.withPollInterval
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(SolidblocksTest::class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ReleaseTest {
 
   @Test
@@ -22,10 +20,12 @@ public class ReleaseTest {
     val terraform = context.terraform(Path.of("").resolve("snippets/web-s3-docker-kitchen-sink"))
 
     terraform.addEnvironmentVariable("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN"))
+
     terraform.init()
     terraform.apply()
 
     val output = terraform.output()
+
     val ipv4Address = output.getString("ipv4_address")
     val privateKey = output.getString("private_key")
 
