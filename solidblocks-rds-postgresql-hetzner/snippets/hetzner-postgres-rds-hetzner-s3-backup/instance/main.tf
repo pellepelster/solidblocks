@@ -13,7 +13,7 @@ resource "hcloud_ssh_key" "ssh_key" {
 }
 
 module "rds-postgresql" {
-  source = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.10-rc1/blcks-terraform-rds-postgresql-hetzner-v0.4.10-rc1.zip"
+  source = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.10/blcks-terraform-rds-postgresql-hetzner-v0.4.10.zip"
 
   name     = "rds-postgresql"
   location = var.hetzner_location

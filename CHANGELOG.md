@@ -3,6 +3,7 @@
 ## v0.4.10
 
 * add support for custom SSH host keys to S3 based static [web-hosting](https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/index.html)
+* add Terraform and cloud-init test facilities to [infra-test](https://pellepelster.github.io/solidblocks/test/index.html) library
 
 ## v0.4.9
 
