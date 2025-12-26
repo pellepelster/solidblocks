@@ -91,6 +91,6 @@ class DirectoryBuilder(
   }
 }
 
-fun tempDir() = DirectoryBuilder(createTempDirectory("test"))
+fun tempDir(prefix: String = "test") = DirectoryBuilder(createTempDirectory(prefix))
 
 fun workingDir() = Paths.get("").toAbsolutePath()

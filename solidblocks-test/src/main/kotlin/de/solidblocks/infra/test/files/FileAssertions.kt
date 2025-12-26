@@ -4,6 +4,7 @@ import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.file.shouldExist
 import io.kotest.matchers.should
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -12,6 +13,11 @@ import kotlin.io.path.readText
 
 infix fun DirectoryBuilder.shouldContainNFiles(fileCount: Int): DirectoryBuilder {
   this.files() shouldHaveSize fileCount
+  return this
+}
+
+infix fun DirectoryBuilder.shouldContainFile(file: String): DirectoryBuilder {
+  this.path.resolve(file).toFile().shouldExist()
   return this
 }
 

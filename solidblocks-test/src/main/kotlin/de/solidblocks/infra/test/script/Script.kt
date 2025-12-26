@@ -8,7 +8,9 @@ import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.output.TimestampedOutputLine
 import java.io.Closeable
 import java.io.File
+import java.net.URI
 import java.nio.file.Path
+import java.security.MessageDigest
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.readBytes
 import kotlin.time.Duration
@@ -18,7 +20,7 @@ class ScriptStep(val step: String, val assertion: ((CommandRunAssertion) -> Unit
 
 abstract class ScriptBuilder : Closeable {
 
-  val tempDir = tempDir()
+  val workingDir = tempDir()
 
   internal val includes: MutableList<Path> = mutableListOf()
 
@@ -48,6 +50,17 @@ abstract class ScriptBuilder : Closeable {
 
   fun includes(vararg includes: Path) = apply { this.includes.addAll(includes) }
 
+  fun String.hashedWithSha256() =
+      MessageDigest.getInstance("SHA-256").digest(toByteArray()).toHexString()
+
+  fun includes(vararg includes: URI) = apply {
+    for (include in includes) {
+      val hashedURI = include.toString().hashedWithSha256()
+      val includedURIFile = workingDir.file(hashedURI).content(include.toURL().readBytes()).create()
+      this.includes.add(includedURIFile)
+    }
+  }
+
   fun inheritEnv(inheritEnv: Boolean) = apply { this.inheritEnv = inheritEnv }
 
   fun sources(sources: DirectoryBuilder) = this.sources(sources.path)
@@ -59,14 +72,14 @@ abstract class ScriptBuilder : Closeable {
   }
 
   protected fun buildScript(): Pair<Path, List<String>> {
-    resources.add(tempDir)
+    resources.add(workingDir)
 
-    this.sources.forEach { tempDir.copyFromDir(it) }
+    this.sources.forEach { workingDir.copyFromDir(it) }
 
     val sourceMappings =
         this.includes.map { source ->
           source to
-              tempDir.path.resolve(
+              workingDir.path.resolve(
                   source
                       .absolutePathString()
                       .removePrefix(File.separator)
@@ -75,7 +88,7 @@ abstract class ScriptBuilder : Closeable {
         }
 
     sourceMappings.forEach { sourceMapping ->
-      tempDir
+      workingDir
           .file(sourceMapping.second.absolutePathString())
           .content(sourceMapping.first.readBytes())
           .create()
@@ -95,9 +108,9 @@ abstract class ScriptBuilder : Closeable {
       script.appendLine("read")
     }
 
-    val scriptFile = tempDir.file("script.sh").executable().content(script.toString()).create()
+    val scriptFile = workingDir.file("script.sh").executable().content(script.toString()).create()
 
-    return tempDir.path to listOf(scriptFile.absolutePathString())
+    return workingDir.path to listOf(scriptFile.absolutePathString())
   }
 
   fun env(env: Pair<String, String>) = apply { this.envs[env.first] = env.second }
