@@ -14,7 +14,7 @@ function task_usage {
 }
 
 function task_test {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -41,7 +41,7 @@ function task_init_testbed() {
 }
 
 function task_test_hetzner_asg {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -59,7 +59,7 @@ function task_test_hetzner_asg {
 }
 
 function task_test_hetzner_nuke {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -86,7 +86,7 @@ function task_test_hetzner_nuke {
 }
 
 function task_test_terraform {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -183,7 +183,7 @@ function task_test_workflow {
 }
 
 function task_test_integration {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 

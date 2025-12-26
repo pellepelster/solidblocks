@@ -12,7 +12,7 @@ public class PackageTest {
   @Test
   fun testEnsurePackage() {
     val result =
-        dockerTestContext(DockerTestImage.DEBIAN_10)
+        dockerTestContext(DockerTestImage.DEBIAN_12)
             .script()
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("package.sh"))

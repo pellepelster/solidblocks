@@ -19,7 +19,7 @@ function s3cmd_wrapper() {
 }
 
 function task_test() {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -44,8 +44,7 @@ function task_test_ssh {
 }
 
 function task_test_provision() {
-
-    if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+    if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
       exit 0
     fi
 

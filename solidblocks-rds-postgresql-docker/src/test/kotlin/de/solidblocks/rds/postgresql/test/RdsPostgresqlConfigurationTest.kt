@@ -10,9 +10,11 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(RdsTestBedExtension::class)
+@DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
 class RdsPostgresqlConfigurationTest {
 
   val expectedExtensions =

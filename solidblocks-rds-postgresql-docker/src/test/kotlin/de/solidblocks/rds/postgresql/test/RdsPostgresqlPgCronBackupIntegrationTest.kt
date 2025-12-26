@@ -1,11 +1,13 @@
 package de.solidblocks.rds.postgresql.test
 
 import de.solidblocks.rds.postgresql.test.extensions.*
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 @ExtendWith(RdsTestBedExtension::class)
+@DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
 class RdsPostgresqlPgCronBackupIntegrationTest {
 
   @ParameterizedTest

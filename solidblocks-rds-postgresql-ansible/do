@@ -331,7 +331,7 @@ function task_format {
 }
 
 function task_test_cluster() {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -367,7 +367,7 @@ function task_test_cluster() {
 }
 
 function task_test_standalone() {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 

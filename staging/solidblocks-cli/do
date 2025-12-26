@@ -16,7 +16,7 @@ function task_usage {
 }
 
 function task_test {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -24,7 +24,7 @@ function task_test {
 }
 
 function task_test_integration {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 

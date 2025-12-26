@@ -10,6 +10,7 @@ import org.junit.Assert.assertThrows
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.ContainerLaunchException
 import org.testcontainers.containers.GenericContainer
@@ -17,6 +18,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.images.PullPolicy
 
 @ExtendWith(RdsTestBedExtension::class)
+@DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
 class RdsPostgresqlInvalidConfigIntegrationTest {
 
   companion object {

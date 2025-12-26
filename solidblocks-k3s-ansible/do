@@ -42,7 +42,7 @@ function task_usage {
 }
 
 function task_test_terraform {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -54,7 +54,7 @@ function task_test_terraform {
 }
 
 function task_test_ansible {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -74,7 +74,7 @@ function task_test_ansible {
 }
 
 function task_test_dual_terraform {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -86,7 +86,7 @@ function task_test_dual_terraform {
 }
 
 function task_test_dual_ansible {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -112,7 +112,7 @@ function task_test_dual_ansible {
 }
 
 function test_helm {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -159,7 +159,7 @@ function task_test_dual {
 }
 
 function task_test_helm {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 

@@ -4,10 +4,12 @@ import de.solidblocks.rds.postgresql.test.extensions.*
 import java.util.*
 import kotlin.io.encoding.Base64
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(RdsTestBedExtension::class)
 @ExtendWith(GcsTestBedExtension::class)
+@DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
 class RdsPostgresqlGcsBackupIntegrationTest {
 
   companion object {

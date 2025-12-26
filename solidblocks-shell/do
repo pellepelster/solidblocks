@@ -46,7 +46,7 @@ function task_lint {
 }
 
 function task_test_integration {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
 
@@ -58,10 +58,6 @@ function task_test_integration {
 }
 
 function task_test {
-  if [[ "${SKIP_TESTS:-}" == "true" ]]; then
-    exit 0
-  fi
-
   ${DIR}/../gradlew :solidblocks-shell:test
 }
 
