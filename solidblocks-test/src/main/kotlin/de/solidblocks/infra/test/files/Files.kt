@@ -24,6 +24,8 @@ class FileBuilder(
 
   fun content(content: ByteArray) = apply { this.content = content }
 
+  fun toFile() = this.path.resolve(name)
+
   fun create(): Path {
     val file = this.path.resolve(name)
     File(file.toFile().absolutePath).writeBytes(content)

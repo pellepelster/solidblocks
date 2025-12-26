@@ -18,6 +18,8 @@ class ScriptStep(val step: String, val assertion: ((CommandRunAssertion) -> Unit
 
 abstract class ScriptBuilder : Closeable {
 
+  val tempDir = tempDir()
+
   internal val includes: MutableList<Path> = mutableListOf()
 
   protected val steps: MutableList<ScriptStep> = mutableListOf()
@@ -57,7 +59,6 @@ abstract class ScriptBuilder : Closeable {
   }
 
   protected fun buildScript(): Pair<Path, List<String>> {
-    val tempDir = tempDir()
     resources.add(tempDir)
 
     this.sources.forEach { tempDir.copyFromDir(it) }

@@ -1,5 +1,4 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.gradle.kotlin.dsl.register
 
 plugins {
     id("org.jetbrains.kotlin.jvm")
@@ -55,4 +54,9 @@ val integrationTest = tasks.register<Test>("releaseTest") {
             }.get()
         )
     )
+}
+
+dependencies {
+    releaseTestImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    releaseTestRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

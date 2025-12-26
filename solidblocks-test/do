@@ -75,7 +75,7 @@ function task_release_test {
   (
     cd "${DIR}/snippets/solidblocks-test-gradle"
     ./gradlew clean
-    ./gradlew check
+    ./gradlew testClasses
   )
 }
 

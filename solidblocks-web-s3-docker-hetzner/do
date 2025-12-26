@@ -95,7 +95,7 @@ function task_release_prepare {
 }
 
 function task_release_test () {
-  ${DIR}/../gradlew :solidblocks-web-s3-docker-hetzner:smokeTest
+  ${DIR}/../gradlew :solidblocks-web-s3-docker-hetzner:releaseTest
 }
 
 arg=${1:-}

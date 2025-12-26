@@ -12,8 +12,6 @@ dependencies {
     testImplementation("org.awaitility:awaitility:4.2.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
-    releaseTestImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
-    releaseTestRuntimeOnly("org.junit.platform:junit-platform-launcher")
     releaseTestImplementation(project(":solidblocks-test"))
     releaseTestImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }

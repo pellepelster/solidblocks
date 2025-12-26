@@ -98,9 +98,11 @@ function task_clean {
 }
 
 function task_release_test {
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${VERSION}/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" -o "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
-  source "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
-  bootstrap_solidblocks
+  ${DIR}/../gradlew :solidblocks-shell:releaseTest
+
+  #curl -L "https://github.com/pellepelster/solidblocks/releases/download/${VERSION}/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" -o "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
+  #source "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
+  #bootstrap_solidblocks
 }
 
 function task_usage {
@@ -120,6 +122,6 @@ case ${arg} in
   test-integration) task_test_integration "$@" ;;
   release-artifacts) ;;
   release-prepare) task_release_prepare "$@" ;;
-  release-test)task_release_test "$@" ;;
+  release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

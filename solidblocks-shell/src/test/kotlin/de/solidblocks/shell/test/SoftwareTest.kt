@@ -1,4 +1,4 @@
-package de.solidblocks.webs3docker.test
+package de.solidblocks.shell.test
 
 import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.assertions.stdoutShouldMatch
