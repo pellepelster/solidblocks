@@ -1,11 +1,11 @@
-package de.solidblocks.infra.test
+package de.solidblocks.ssh.test
 
-import de.solidblocks.infra.test.ssh.SshUtils
+import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class SshUtilsTest {
+class SSHKeyUtilsTest {
 
   val privateKeyOpensshEd25519 =
       """
@@ -105,47 +105,47 @@ j6XcX3qqd0aVDA==
 
   @Test
   fun testLoadED25519KeyPairFromPem() {
-    SshUtils.loadEd25519KeyPairFromPem("invalid") shouldBe null
-    assertSoftly(SshUtils.loadEd25519KeyPairFromPem(privateKeyPemEd25519)) {
+    SSHKeyUtils.loadEd25519KeyPairFromPem("invalid") shouldBe null
+    assertSoftly(SSHKeyUtils.loadEd25519KeyPairFromPem(privateKeyPemEd25519)) {
       it?.private?.algorithm shouldBe "Ed25519"
     }
   }
 
   @Test
   fun testLoadED25519KeyPairFromOpenSSH() {
-    SshUtils.loadEd25519KeyPairFromOpenSSH("invalid") shouldBe null
-    assertSoftly(SshUtils.loadEd25519KeyPairFromOpenSSH(privateKeyOpensshEd25519)!!) {
+    SSHKeyUtils.loadEd25519KeyPairFromOpenSSH("invalid") shouldBe null
+    assertSoftly(SSHKeyUtils.loadEd25519KeyPairFromOpenSSH(privateKeyOpensshEd25519)!!) {
       it.private?.algorithm shouldBe "Ed25519"
     }
   }
 
   @Test
   fun testLoadRSAKeyPairFromPem() {
-    SshUtils.loadRSAKeyPairFromPem("invalid") shouldBe null
-    assertSoftly(SshUtils.loadRSAKeyPairFromPem(privateKeyPemRsa)) {
+    SSHKeyUtils.loadRSAKeyPairFromPem("invalid") shouldBe null
+    assertSoftly(SSHKeyUtils.loadRSAKeyPairFromPem(privateKeyPemRsa)) {
       it?.private?.algorithm shouldBe "RSA"
     }
   }
 
   @Test
   fun testLoadRSAKeyPairFromOpenSSH() {
-    SshUtils.loadRSAKeyPairFromOpenSSH("invalid") shouldBe null
-    assertSoftly(SshUtils.loadRSAKeyPairFromOpenSSH(privateKeyOpensshRsa)!!) {
+    SSHKeyUtils.loadRSAKeyPairFromOpenSSH("invalid") shouldBe null
+    assertSoftly(SSHKeyUtils.loadRSAKeyPairFromOpenSSH(privateKeyOpensshRsa)!!) {
       it.private?.algorithm shouldBe "RSA"
     }
   }
 
   @Test
   fun testLoadECDSAKeyPairFromPem() {
-    SshUtils.loadECDSAKeyPairFromPem("invalid") shouldBe null
-    assertSoftly(SshUtils.loadECDSAKeyPairFromPem(privateKeyPemEcdsa)) {
+    SSHKeyUtils.loadECDSAKeyPairFromPem("invalid") shouldBe null
+    assertSoftly(SSHKeyUtils.loadECDSAKeyPairFromPem(privateKeyPemEcdsa)) {
       it?.private?.algorithm shouldBe "ECDSA"
     }
   }
 
   @Test
   fun testTryLoadKey() {
-    assertSoftly(SshUtils.tryLoadKey(privateKeyOpensshEd25519)!!) {
+    assertSoftly(SSHKeyUtils.tryLoadKey(privateKeyOpensshEd25519)!!) {
       it.private?.algorithm shouldBe "Ed25519"
     }
   }

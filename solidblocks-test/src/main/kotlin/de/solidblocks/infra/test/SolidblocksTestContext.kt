@@ -6,10 +6,10 @@ import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.host.hostTestContext
-import de.solidblocks.infra.test.ssh.SshUtils
 import de.solidblocks.infra.test.ssh.sshTestContext
 import de.solidblocks.infra.test.terraform.TerraformTestContext
 import de.solidblocks.infra.test.terraform.terraformTestContext
+import de.solidblocks.ssh.SSHKeyUtils
 import java.io.Closeable
 import java.nio.file.Path
 import java.security.KeyPair
@@ -40,7 +40,7 @@ class SolidblocksTestContext {
       terraformTestContext(Path.of(dir), version).also { terraformContexts.add(it) }
 
   fun ssh(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-      sshTestContext(host, SshUtils.tryLoadKey(privateKey), username, port)
+      sshTestContext(host, SSHKeyUtils.tryLoadKey(privateKey), username, port)
 
   fun ssh(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
       sshTestContext(host, keyPair, username, port)

@@ -22,7 +22,7 @@ solidblocks-k3s-ansible \
 solidblocks-shell \
 solidblocks-cloud-init \
 solidblocks-debug-container \
-solidblocks-sshd \
+solidblocks-ssh \
 solidblocks-rds-postgresql-docker \
 solidblocks-rds-postgresql-ansible \
 solidblocks-do-python \

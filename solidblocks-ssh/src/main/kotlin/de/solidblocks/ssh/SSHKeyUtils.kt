@@ -1,4 +1,4 @@
-package de.solidblocks.infra.test.ssh
+package de.solidblocks.ssh
 
 import java.io.StringReader
 import java.security.KeyFactory
@@ -20,8 +20,9 @@ import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.PEMParser
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
 import org.bouncycastle.util.io.pem.PemReader
+import kotlin.jvm.javaClass
 
-object SshUtils {
+object SSHKeyUtils {
   init {
     Security.addProvider(BouncyCastleProvider())
   }

@@ -10,7 +10,7 @@ source "${DIR}/../solidblocks-shell/lib/docker.sh"
 function task_build {
   (
     cd "${DIR}"
-    docker build ${DOCKER_OPTIONS} -t "solidblocks-sshd-test" .
+    docker build ${DOCKER_OPTIONS} -t "solidblocks-ssh-test" .
   )
 }
 
@@ -25,17 +25,17 @@ function task_test {
   (
     cd "${DIR}"
 
-    docker_ensure_network "solidblocks-sshd-test"
-    docker run --rm -d --network solidblocks-sshd-test --name solidblocks-sshd-test  solidblocks-sshd-test
-    docker run -it --network solidblocks-sshd-test  positronsecurity/ssh-audit solidblocks-sshd-test
+    docker_ensure_network "solidblocks-ssh-test"
+    docker run --rm -d --network solidblocks-ssh-test --name solidblocks-ssh-test  solidblocks-ssh-test
+    docker run -it --network solidblocks-ssh-test  positronsecurity/ssh-audit solidblocks-ssh-test
   )
 }
 
 function task_clean {
-  if docker ps | grep "solidblocks-sshd-test"; then
-    docker logs "solidblocks-sshd-test" || true
-    docker rm -f "solidblocks-sshd-test" || true
-    docker_remove_network "solidblocks-sshd-test"
+  if docker ps | grep "solidblocks-ssh-test"; then
+    docker logs "solidblocks-ssh-test" || true
+    docker rm -f "solidblocks-ssh-test" || true
+    docker_remove_network "solidblocks-ssh-test"
   fi
 }
 

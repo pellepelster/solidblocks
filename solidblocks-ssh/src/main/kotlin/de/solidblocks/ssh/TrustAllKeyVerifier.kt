@@ -1,4 +1,4 @@
-package de.solidblocks.infra.test.ssh
+package de.solidblocks.ssh
 
 import java.net.SocketAddress
 import java.security.PublicKey
