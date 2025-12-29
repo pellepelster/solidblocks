@@ -21,5 +21,7 @@ include(
     "solidblocks-debug-container",
     "solidblocks-cli",
     "solidblocks-ssh",
+    "solidblocks-systemd",
+    "solidblocks-cloud-init",
     "solidblocks-web-s3-docker-hetzner"
 )

@@ -289,7 +289,6 @@ jobs:
           name: solidblocks-cloud-init
           path: |
             solidblocks-cloud-init/build/blcks-cloud-init-*.zip
-            solidblocks-cloud-init/build/blcks-terraform-null-cloud-init-*.zip
             solidblocks-cloud-init/build/snippets/blcks-cloud-init-bootstrap-*.sh
             solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh
 
@@ -535,7 +534,6 @@ jobs:
             solidblocks-shell/blcks-shell-*.zip
             solidblocks-shell/snippets/*
             solidblocks-cloud-init/blcks-cloud-init-*.zip
-            solidblocks-cloud-init/blcks-terraform-null-cloud-init-*.zip
             solidblocks-cloud-init/snippets/*
             solidblocks-rds-postgresql-hetzner/snippets/*.zip
             solidblocks-rds-postgresql-hetzner/blcks-terraform-rds-postgresql-hetzner-*.zip

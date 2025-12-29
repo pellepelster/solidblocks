@@ -16,28 +16,9 @@ DOCKER_REPOSITORY="pellepelster"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
 function task_build {
-  (
-    docker run  -v ${DIR}:/src hairyhenderson/gomplate:stable -d "vendors=https://raw.githubusercontent.com/watson/ci-info/master/vendors.json?type=application/array+json" -f /src/lib-templates/ci.sh.template > "${DIR}/lib/ci.sh"
-
-    mkdir -p "${DIR}/build/blcks-shell"
-    cp -rv ${DIR}/lib/* "${DIR}/build/blcks-shell/"
-    cd "${DIR}/build"
-    echo "creating distribution '${DIR}/build/blcks-shell-${VERSION}.zip'"
-    zip -r "${DIR}/build/blcks-shell-${VERSION}.zip" blcks-shell/*.sh
-
-    mkdir -p "${DIR}/build/snippets"
-
-    local checksum="$(sha256sum "${DIR}/build/blcks-shell-${VERSION}.zip" | cut -f 1 -d " ")"
-    sed \
-      --expression="s/__SOLIDBLOCKS_VERSION__/${VERSION}/g" \
-      --expression="s/__SOLIDBLOCKS_SHELL_CHECKSUM__/${checksum}/g" < "${DIR}/templates/snippets/blcks-shell-bootstrap-solidblocks.sh.template" > "${DIR}/build/snippets/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
-
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" "${DIR}/templates/snippets/blcks-shell-minimal-skeleton-do.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/blcks-shell-minimal-skeleton-${VERSION}.sh"
-    chmod +x "${DIR}/build/snippets/blcks-shell-minimal-skeleton-${VERSION}.sh"
-
-    sed "/__BOOTSTRAP_SOLIDBLOCKS_SHELL__/e cat ${DIR}/build/snippets/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" "${DIR}/templates/snippets/blcks-shell-kitchen-sink.sh.template" | grep -v "__BOOTSTRAP_SOLIDBLOCKS_SHELL__" > "${DIR}/build/snippets/blcks-shell-kitchen-sink-${VERSION}.sh"
-    chmod +x "${DIR}/build/snippets/blcks-shell-kitchen-sink-${VERSION}.sh"
-  )
+  #TODO move to gradle build generate task
+  docker run  -v ${DIR}:/src hairyhenderson/gomplate:stable -d "vendors=https://raw.githubusercontent.com/watson/ci-info/master/vendors.json?type=application/array+json" -f /src/lib-templates/ci.sh.template > "${DIR}/lib/ci.sh"
+  ${DIR}/../gradlew :solidblocks-shell:assemble
 }
 
 function task_lint {
@@ -95,10 +76,6 @@ function task_clean {
 
 function task_release_test {
   ${DIR}/../gradlew :solidblocks-shell:releaseTest
-
-  #curl -L "https://github.com/pellepelster/solidblocks/releases/download/${VERSION}/blcks-shell-bootstrap-solidblocks-${VERSION}.sh" -o "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
-  #source "/tmp/blcks-shell-bootstrap-solidblocks-${VERSION}.sh"
-  #bootstrap_solidblocks
 }
 
 function task_usage {

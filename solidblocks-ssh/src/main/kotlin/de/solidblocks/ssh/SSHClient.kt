@@ -2,8 +2,8 @@ package de.solidblocks.ssh
 
 import org.apache.sshd.client.SshClient
 import org.apache.sshd.client.channel.ClientChannelEvent
-import org.apache.sshd.common.keyprovider.KeyIdentityProvider
 import java.io.ByteArrayOutputStream
+import java.io.Closeable
 import java.security.KeyPair
 import java.time.Duration
 import java.util.*
@@ -16,61 +16,55 @@ class SSHClient(
     val keyPair: KeyPair,
     val username: String = "root",
     val port: Int = 22,
-) {
+) : Closeable {
 
     data class SSHCommandResult(val stdOut: String, val stdErr: String, val exitCode: Int)
+
+    val client = SshClient.setUpDefaultClient().also { it.start() }
+
+    val timeout = Duration.ofSeconds(10)
+
+    val session = client.connect(username, host, port).verify(timeout).session.also {
+        it.addPublicKeyIdentity(keyPair)
+        it.auth().verify(timeout)
+    }
 
     @OptIn(ExperimentalTime::class)
     fun sshCommand(
         command: String,
     ): SSHCommandResult {
-        val timeout = Duration.ofSeconds(10)
+        ByteArrayOutputStream().use { stdErr ->
+            ByteArrayOutputStream().use { stdOut ->
+                session.createExecChannel(command).use { channel ->
+                    val start = Clock.System.now()
+                    channel.out = stdOut
+                    channel.err = stdErr
+                    channel.open().verify(timeout)
 
-        try {
-            // TODO use verified host keys
-            SshClient.setUpDefaultClient().use {
-                it.serverKeyVerifier = TrustAllKeyVerifier()
-                it.keyIdentityProvider = KeyIdentityProvider.wrapKeyPairs(keyPair)
-                it.start()
+                    /*
+                    responseStream.reset()
+                    channel.invertedIn.use { pipedIn ->
+                        pipedIn.write(command.toByteArray())
+                        pipedIn.flush()
+                    }*/
 
-                it.connect(username, host, port).verify(timeout).session.use { session ->
-                    session.addPublicKeyIdentity(keyPair)
-                    session.auth().verify(timeout)
+                    channel.waitFor(
+                        EnumSet.of(ClientChannelEvent.CLOSED),
+                        TimeUnit.SECONDS.toMillis(10),
+                    )
 
-                    ByteArrayOutputStream().use { stdErr ->
-                        ByteArrayOutputStream().use { stdOut ->
-                            session.createExecChannel(command).use { channel ->
-                                val start = Clock.System.now()
-                                channel.out = stdOut
-                                channel.err = stdErr
-                                channel.open().verify(timeout)
-
-                                /*
-                                responseStream.reset()
-                                channel.invertedIn.use { pipedIn ->
-                                    pipedIn.write(command.toByteArray())
-                                    pipedIn.flush()
-                                }*/
-
-                                channel.waitFor(
-                                    EnumSet.of(ClientChannelEvent.CLOSED),
-                                    TimeUnit.SECONDS.toMillis(10),
-                                )
-
-                                val end = Clock.System.now()
-
-                                return SSHCommandResult(
-                                    stdOut.toString("UTF-8"),
-                                    stdErr.toString("UTF-8"),
-                                    channel.exitStatus
-                                )
-                            }
-                        }
-                    }
+                    return SSHCommandResult(
+                        stdOut.toString("UTF-8"),
+                        stdErr.toString("UTF-8"),
+                        channel.exitStatus
+                    )
                 }
             }
-        } catch (e: Exception) {
-            throw e
         }
+    }
+
+    override fun close() {
+        session.close()
+        client.close()
     }
 }

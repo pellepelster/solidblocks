@@ -1,3 +1,0 @@
-%{ for key, value in variables }
-export ${key}="${value}"
-%{ endfor ~}

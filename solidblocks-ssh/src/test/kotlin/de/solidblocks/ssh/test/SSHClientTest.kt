@@ -2,7 +2,10 @@ package de.solidblocks.ssh.test
 
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldEndWith
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
@@ -20,13 +23,41 @@ class SSHClientTest {
     }
 
     @Test
-    fun testSSHCommand() {
-
+    fun testSSHCommandSuccess() {
         val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
         val key = SSHKeyUtils.tryLoadKey(ed25519Key)
-
         val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
-        client.sshCommand("whoami") shouldBe "root\n"
+
+        assertSoftly(client.sshCommand("whoami")) {
+            it.exitCode shouldBe 0
+            it.stdOut shouldBe "root\n"
+            it.stdErr shouldBe ""
+        }
+    }
+
+    @Test
+    fun testSSHCommandFailure() {
+        val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
+        val key = SSHKeyUtils.tryLoadKey(ed25519Key)
+        val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+
+        assertSoftly(client.sshCommand("invalid")) {
+            it.exitCode shouldBe 127
+            it.stdOut shouldBe ""
+            it.stdErr shouldContain "not found"
+        }
+    }
+
+    @Test
+    fun yolo() {
+        val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
+        val key = SSHKeyUtils.tryLoadKey(ed25519Key)
+        val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+
+        assertSoftly(client.sshCommand("echo foo-bar")) {
+            it.exitCode shouldBe 0
+            it.stdOut shouldBe "foo-bar"
+        }
     }
 
 }

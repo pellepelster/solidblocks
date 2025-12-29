@@ -1,6 +1,0 @@
-%{ if acme_ssl != null }
-%{ for key, value in acme_ssl.variables }
-export ${key}="${value}"
-%{ endfor ~}
-lego_setup_dns "${acme_ssl.path}" "${acme_ssl.email}" "${join(",", acme_ssl.domains) }" "${acme_ssl.dns_provider}" "/bin/true" %{ if acme_ssl.acme_server != null }${acme_ssl.acme_server}%{ else ~}https://acme-v02.api.letsencrypt.org/directory%{ endif ~}
-%{ endif }

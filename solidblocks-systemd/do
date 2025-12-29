@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
+
+source "${DIR}/../solidblocks-shell/lib/docker.sh"
+
+function task_build {
+  (
+    cd "${DIR}"
+    docker build ${DOCKER_OPTIONS} -t "solidblocks-ssh-test" .
+  )
+}
+
+function task_test {
+
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  trap task_clean EXIT
+
+  (
+    cd "${DIR}"
+
+    docker_ensure_network "solidblocks-ssh-test"
+    docker run --rm -d --network solidblocks-ssh-test --name solidblocks-ssh-test  solidblocks-ssh-test
+    docker run -it --network solidblocks-ssh-test  positronsecurity/ssh-audit solidblocks-ssh-test
+  )
+}
+
+function task_clean {
+  if docker ps | grep "solidblocks-ssh-test"; then
+    docker logs "solidblocks-ssh-test" || true
+    docker rm -f "solidblocks-ssh-test" || true
+    docker_remove_network "solidblocks-ssh-test"
+  fi
+}
+
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+  echo "setting version: ${version}"
+}
+
+function task_format {
+  echo "<not implemented>"
+}
+
+function task_usage {
+  echo "Usage: $0 ..."
+  exit 1
+}
+
+arg=${1:-}
+shift || true
+case ${arg} in
+  build) task_build "$@" ;;
+  test) task_test "$@" ;;
+  format) task_format "$@" ;;
+  clean) task_clean "$@" ;;
+  release-artifacts) ;;
+  release-prepare) task_release_prepare "$@" ;;
+  release-test);;
+  *) task_usage ;;
+esac

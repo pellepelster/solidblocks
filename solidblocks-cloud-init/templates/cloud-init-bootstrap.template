@@ -1,7 +1,15 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+
 export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
 export SOLIDBLOCKS_VERSION="__SOLIDBLOCKS_VERSION__"
 export SOLIDBLOCKS_CLOUD_INIT_CHECKSUM="__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__"
 export SOLIDBLOCKS_BASE_URL="${SOLIDBLOCKS_BASE_URL:-https://github.com}"
+
+__CLOUD_INIT_BOOTSTRAP_INCLUDES__
 
 function solidblocks_bootstrap_cloud_init() {
   package_update_repositories
