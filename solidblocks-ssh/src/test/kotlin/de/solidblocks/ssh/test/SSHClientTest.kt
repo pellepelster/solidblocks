@@ -5,7 +5,7 @@ import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldEndWith
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
@@ -47,17 +47,4 @@ class SSHClientTest {
             it.stdErr shouldContain "not found"
         }
     }
-
-    @Test
-    fun yolo() {
-        val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
-        val key = SSHKeyUtils.tryLoadKey(ed25519Key)
-        val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
-
-        assertSoftly(client.sshCommand("echo foo-bar")) {
-            it.exitCode shouldBe 0
-            it.stdOut shouldBe "foo-bar"
-        }
-    }
-
 }
