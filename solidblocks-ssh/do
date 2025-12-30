@@ -32,6 +32,11 @@ function task_test {
   ${DIR}/../gradlew :solidblocks-ssh:test
 }
 
+function task_format() {
+  ${DIR}/../gradlew :solidblocks-ssh:spotlessApply
+  terraform fmt -recursive
+}
+
 function task_clean {
   if docker ps | grep "solidblocks-ssh-test"; then
     docker logs "solidblocks-ssh-test" || true
@@ -48,10 +53,6 @@ function task_release_prepare {
     exit 1
   fi
   echo "setting version: ${version}"
-}
-
-function task_format {
-  echo "<not implemented>"
 }
 
 function task_usage {

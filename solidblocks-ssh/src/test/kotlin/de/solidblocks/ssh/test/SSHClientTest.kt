@@ -5,46 +5,47 @@ import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 
 class SSHClientTest {
 
-    val sshServer = GenericContainer(
-        ImageFromDockerfile()
-            .withFileFromClasspath("Dockerfile", "Dockerfile")
-            .withFileFromClasspath("test_ed25519.key.pub", "test_ed25519.key.pub")
-            .withFileFromClasspath("sshd_config", "sshd_config")
-    ).also {
-        it.addExposedPort(22)
-        it.start()
+  val sshServer =
+      GenericContainer(
+              ImageFromDockerfile()
+                  .withFileFromClasspath("Dockerfile", "Dockerfile")
+                  .withFileFromClasspath("test_ed25519.key.pub", "test_ed25519.key.pub")
+                  .withFileFromClasspath("sshd_config", "sshd_config"),
+          )
+          .also {
+            it.addExposedPort(22)
+            it.start()
+          }
+
+  @Test
+  fun testSSHCommandSuccess() {
+    val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
+    val key = SSHKeyUtils.tryLoadKey(ed25519Key)
+    val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+
+    assertSoftly(client.sshCommand("whoami")) {
+      it.exitCode shouldBe 0
+      it.stdOut shouldBe "root\n"
+      it.stdErr shouldBe ""
     }
+  }
 
-    @Test
-    fun testSSHCommandSuccess() {
-        val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
-        val key = SSHKeyUtils.tryLoadKey(ed25519Key)
-        val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+  @Test
+  fun testSSHCommandFailure() {
+    val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
+    val key = SSHKeyUtils.tryLoadKey(ed25519Key)
+    val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
 
-        assertSoftly(client.sshCommand("whoami")) {
-            it.exitCode shouldBe 0
-            it.stdOut shouldBe "root\n"
-            it.stdErr shouldBe ""
-        }
+    assertSoftly(client.sshCommand("invalid")) {
+      it.exitCode shouldBe 127
+      it.stdOut shouldBe ""
+      it.stdErr shouldContain "not found"
     }
-
-    @Test
-    fun testSSHCommandFailure() {
-        val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
-        val key = SSHKeyUtils.tryLoadKey(ed25519Key)
-        val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
-
-        assertSoftly(client.sshCommand("invalid")) {
-            it.exitCode shouldBe 127
-            it.stdOut shouldBe ""
-            it.stdErr shouldContain "not found"
-        }
-    }
+  }
 }
