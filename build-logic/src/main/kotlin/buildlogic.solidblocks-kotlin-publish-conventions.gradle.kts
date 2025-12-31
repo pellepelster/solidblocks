@@ -10,11 +10,11 @@ publishing {
 
             credentials(AwsCredentials::class) {
                 accessKey = providers.of(PassSecretValueSource::class) {
-                    this.parameters.path = "solidblocks/aws/admin/access_key_id"
+                    this.parameters.path = "solidblocks/aws/test/access_key_id"
                 }.get()
 
                 secretKey = providers.of(PassSecretValueSource::class) {
-                    this.parameters.path = "solidblocks/aws/admin/secret_access_key"
+                    this.parameters.path = "solidblocks/aws/test/secret_access_key"
                 }.get()
             }
         }
