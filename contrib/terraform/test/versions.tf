@@ -10,7 +10,7 @@ terraform {
 terraform {
   backend "s3" {
     region         = "eu-central-1"
-    bucket         = "solidblocks-test"
+    bucket         = "test-blcks-terraform"
     key            = "test"
   }
 }

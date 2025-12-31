@@ -5,9 +5,9 @@ set -eu -o pipefail
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 
 export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
-export SOLIDBLOCKS_VERSION="__SOLIDBLOCKS_VERSION__"
-export SOLIDBLOCKS_CLOUD_INIT_CHECKSUM="__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__"
-export SOLIDBLOCKS_BASE_URL="${SOLIDBLOCKS_BASE_URL:-https://github.com}"
+export SOLIDBLOCKS_VERSION="${SOLIDBLOCKS_VERSION:-__SOLIDBLOCKS_VERSION__}"
+export SOLIDBLOCKS_CLOUD_INIT_CHECKSUM="${SOLIDBLOCKS_CLOUD_INIT_CHECKSUM:-__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__}"
+export SOLIDBLOCKS_CLOUD_INIT_URL="${SOLIDBLOCKS_CLOUD_INIT_URL:-https://github.com/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/blcks-cloud-init-${SOLIDBLOCKS_VERSION}.zip}"
 
 __CLOUD_INIT_BOOTSTRAP_INCLUDES__
 
@@ -32,7 +32,7 @@ function solidblocks_bootstrap_cloud_init() {
   chmod -R 700 ${SOLIDBLOCKS_DIR}/secrets
 
   local temp_file="$(mktemp)"
-  curl_wrapper "${SOLIDBLOCKS_BASE_URL}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/blcks-cloud-init-${SOLIDBLOCKS_VERSION}.zip" > "${temp_file}"
+  curl_wrapper "${SOLIDBLOCKS_CLOUD_INIT_URL}" > "${temp_file}"
   echo "${SOLIDBLOCKS_CLOUD_INIT_CHECKSUM}  ${temp_file}" | sha256sum -c
 
   (

@@ -34,17 +34,24 @@ data class FilePermission(
 
 data class File(val content: ByteArray, val path: String, val permissions: FilePermission = FilePermission())
 
-data class CloudInit(var environmentVariables: Map<String, String> = mutableMapOf()) {
+data class CloudInitScript(var environmentVariables: Map<String, String> = mutableMapOf()) {
     val mounts = ArrayList<Mount>()
     val files = ArrayList<File>()
 
     fun render(): String {
         val sw = StringWriter()
 
+        sw.appendLine("""
+            #!/usr/bin/env bash
+            set -eu -o pipefail
+            DIR="$(cd "$(dirname "$0")" ; pwd -P)"
+            
+        """.trimIndent())
+
         for (file in files) {
             sw.appendLine("touch ${file.path}")
             sw.appendLine("chmod ${file.permissions.renderChmod()} ${file.path}")
-            sw.appendLine("echo \"${Base64.encode(file.content)}\" > ${file.path}")
+            sw.appendLine("echo \"${Base64.encode(file.content)}\" | base64 -d > ${file.path}")
         }
 
         return sw.toString()

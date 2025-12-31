@@ -18,42 +18,48 @@ class CloudInitTestContext(
     val username: String = "root",
     val port: Int = 22,
 ) {
-  companion object {
-    val json = Json { this.ignoreUnknownKeys = true }
-  }
-
-  val ssh = sshTestContext(host, privateKey, username, port)
-
-  fun isFinished(): Boolean =
-      ssh.command("test -f /var/lib/cloud/instance/boot-finished").exitCode == 0
-
-  fun result(): CloudInitResultWrapper? =
-      ssh.command("cat /var/lib/cloud/data/status.json").stdout.let {
-        try {
-          json.decodeFromString(it)
-        } catch (e: Exception) {
-          log("failed to deserialize cloud-init status", LogType.ERROR)
-          null
-        }
-      }
-
-  fun outputLog() = ssh.command("cat /var/log/cloud-init-output.log").stdout
-
-  fun printOutputLog() {
-    outputLog().lines().forEach { log(it, LogType.CLOUDINIT) }
-  }
-
-  fun fileExists(file: String) = ssh.command("test -f $file").exitCode == 0
-
-  var printOutputLogOnTestFailure = false
-
-  fun printOutputLogOnTestFailure() {
-    this.printOutputLogOnTestFailure = true
-  }
-
-  fun afterAll() {
-    if (printOutputLogOnTestFailure) {
-      printOutputLog()
+    companion object {
+        val json = Json { this.ignoreUnknownKeys = true }
     }
-  }
+
+    val ssh = sshTestContext(host, privateKey, username, port)
+
+    fun isFinished() =
+        try {
+            log("checking for existence of '/var/lib/cloud/instance/boot-finished' on host '$host'")
+            ssh.command("test -f /var/lib/cloud/instance/boot-finished").exitCode == 0
+        } catch (e: Exception) {
+            log("failed to retrieve cloud init finished marker", LogType.WARNING)
+            false
+        }
+
+    fun result(): CloudInitResultWrapper? =
+        ssh.command("cat /var/lib/cloud/data/status.json").stdout.let {
+            try {
+                json.decodeFromString(it)
+            } catch (e: Exception) {
+                log("failed to deserialize cloud-init status", LogType.ERROR)
+                null
+            }
+        }
+
+    fun outputLog() = ssh.command("cat /var/log/cloud-init-output.log").stdout
+
+    fun printOutputLog() {
+        outputLog().lines().forEach { log(it, LogType.CLOUDINIT) }
+    }
+
+    fun fileExists(file: String) = ssh.command("test -f $file").exitCode == 0
+
+    var printOutputLogOnTestFailure = false
+
+    fun printOutputLogOnTestFailure() {
+        this.printOutputLogOnTestFailure = true
+    }
+
+    fun afterAll() {
+        if (printOutputLogOnTestFailure) {
+            printOutputLog()
+        }
+    }
 }

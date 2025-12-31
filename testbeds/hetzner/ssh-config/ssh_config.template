@@ -4,4 +4,3 @@ Host test
     IdentityFile ${identity_file}
     StrictHostKeyChecking no
     UserKnownHostsFile /dev/null
-

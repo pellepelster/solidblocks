@@ -24,6 +24,12 @@ data class NetworkResponseWrapper(val network: NetworkResponse)
 data class PrivateNetworkResponse(val network: Long, val ip: String)
 
 @Serializable
+data class PublicNetworkIPResponse(val ip: String)
+
+@Serializable
+data class PublicNetworkResponse(val ipv4: PublicNetworkIPResponse?)
+
+@Serializable
 data class NetworkResponse(
     override val id: Long,
     override val name: String,

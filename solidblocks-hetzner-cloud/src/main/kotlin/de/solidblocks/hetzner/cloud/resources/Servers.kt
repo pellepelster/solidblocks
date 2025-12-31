@@ -18,12 +18,12 @@ data class ServerCreateRequest(
     val name: String,
     val location: String,
     @SerialName("server_type") val type: String,
-    @SerialName("placement_group") val placementGroup: String? = null,
     val image: String,
-    @SerialName("ssh_keys") val sshKeys: List<String>? = null,
+    @SerialName("placement_group") val placementGroup: String? = null,
+    @SerialName("ssh_keys") val sshKeys: List<Long>? = null,
     val networks: List<String>? = null,
     val firewall: List<String>? = null,
-    @SerialName("user_data") val userData: String,
+    @SerialName("user_data") val userData: String? = null,
     val labels: Map<String, String>? = null,
     @SerialName("public_net") val publicNet: PublicNet? = null,
 )
@@ -55,6 +55,7 @@ constructor(
     override val protection: HetznerDeleteProtectionResponse,
     val labels: Map<String, String> = emptyMap(),
     @SerialName("private_net") val privateNetwork: List<PrivateNetworkResponse> = emptyList(),
+    @SerialName("public_net") val publicNetwork: PublicNetworkResponse? = null,
     @Serializable(with = InstantSerializer::class) val created: Instant,
 ) : HetznerDeleteProtectedResource<Long>
 

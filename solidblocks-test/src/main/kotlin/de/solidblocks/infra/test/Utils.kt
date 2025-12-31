@@ -20,6 +20,7 @@ enum class LogType {
   STDERR,
   INFO,
   ERROR,
+  WARNING,
   CLOUDINIT,
 }
 

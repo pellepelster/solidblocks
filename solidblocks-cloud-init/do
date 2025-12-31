@@ -24,11 +24,7 @@ function task_test {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     exit 0
   fi
-
-  local tests="${1:-$TESTS}"
-  for test in ${tests}; do
-    run_test "${test}"
-  done
+  ${DIR}/../gradlew :solidblocks-cloud-init:test
 }
 
 function task_release_test {
@@ -52,6 +48,11 @@ function task_usage {
   exit 1
 }
 
+function task_format() {
+  ${DIR}/../gradlew :solidblocks-ssh:spotlessApply
+  terraform fmt -recursive
+}
+
 arg=${1:-}
 shift || true
 case ${arg} in
@@ -59,7 +60,7 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
-  format) ;;
+  format) task_format "$@" ;;
   release-artifacts) ;;
   test-ssh) task_test_ssh "$@" ;;
   release-prepare) ;;

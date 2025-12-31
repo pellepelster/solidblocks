@@ -5,6 +5,7 @@ import de.solidblocks.infra.test.cloudinit.cloudInitTestContext
 import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.files.tempDir
+import de.solidblocks.infra.test.hetzner.hetznerTestContext
 import de.solidblocks.infra.test.host.hostTestContext
 import de.solidblocks.infra.test.ssh.sshTestContext
 import de.solidblocks.infra.test.terraform.TerraformTestContext
@@ -15,7 +16,7 @@ import java.nio.file.Path
 import java.security.KeyPair
 import localTestContext
 
-class SolidblocksTestContext {
+class SolidblocksTestContext(val testId: String) {
 
   private var cleanupAfterTest: Boolean = true
 
@@ -46,6 +47,8 @@ class SolidblocksTestContext {
       sshTestContext(host, keyPair, username, port)
 
   fun host(host: String) = hostTestContext(host)
+
+  fun hetzner(hcloudToken: String) = hetznerTestContext(hcloudToken, testId)
 
   fun cloudInit(host: String, privateKey: String, username: String = "root", port: Int = 22) =
       cloudInitTestContext(host, privateKey, username, port).also { cloudInitContexts.add(it) }

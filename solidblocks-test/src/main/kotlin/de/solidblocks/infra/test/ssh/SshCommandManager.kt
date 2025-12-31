@@ -22,7 +22,7 @@ class SshCommandManager(
       command: String,
   ): CommandResult<OutputLine> {
     val start = Clock.System.now()
-    val result = sshClient.sshCommand(command)
+    val result = sshClient.command(command)
     val end = Clock.System.now()
 
     val output =
@@ -35,4 +35,6 @@ class SshCommandManager(
         output,
     )
   }
+
+    fun download(file: String) = sshClient.download(file)
 }

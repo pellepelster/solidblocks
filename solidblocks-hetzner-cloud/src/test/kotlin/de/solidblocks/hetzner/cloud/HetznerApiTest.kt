@@ -121,8 +121,8 @@ class HetznerApiTest {
                         "nbg1",
                         "cx22",
                         image = "debian-12",
-                        labels = mapOf("test" to "true"),
                         userData = "",
+                        labels = mapOf("test" to "true"),
                     ),
                 )
 

@@ -2,16 +2,17 @@
 presets:
   defaults:
     filters:
-      S3Object:
-        - "solidblocks-test"
+      S3Bucket:
+        - "s3://test-blcks-terraform"
+        - "s3://test-blcks-bootstrap"
       IAMUser:
         - "admin"
-        - "solidblocks-test"
+        - "test-blcks"
       IAMUserPolicyAttachment:
         - "admin -> AdministratorAccess"
       IAMUserAccessKey:
         - "admin -> AKIA5VENMCB5IINZHWEO"
-        - "solidblocks-test -> AKIA5VENMCB5MTY25IZJ"
+        - "test-blcks -> AKIA5VENMCB5G27HDC6O"
 
 regions:
   - "eu-central-1"

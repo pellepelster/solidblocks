@@ -57,6 +57,7 @@ dependencies {
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
     implementation(project(":solidblocks-ssh"))
+    implementation(project(":solidblocks-hetzner-cloud"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
