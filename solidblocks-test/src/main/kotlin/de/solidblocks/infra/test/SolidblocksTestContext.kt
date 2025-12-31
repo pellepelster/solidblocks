@@ -14,15 +14,13 @@ import java.nio.file.Path
 import java.security.KeyPair
 import localTestContext
 
-class SolidblocksTestContext(val testId: String) {
+class SolidblocksTestContext(val testId: String) : TestContext() {
 
   private var cleanupAfterTest: Boolean = true
 
   private var failed: Boolean = false
 
   private val tempDirs = mutableListOf<Closeable>()
-
-  private val testContexts = mutableListOf<TestContext>()
 
   fun createTempDir() = tempDir().apply { tempDirs.add(this) }
 
@@ -50,22 +48,14 @@ class SolidblocksTestContext(val testId: String) {
   fun cloudInit(host: String, privateKey: String, username: String = "root", port: Int = 22) =
       cloudInitTestContext(host, privateKey, username, port).also { testContexts.add(it) }
 
-  fun afterAll() {
-    testContexts.forEach { it.afterAll() }
-  }
-
-  fun beforeAll() {
-    testContexts.forEach { it.beforeAll() }
-  }
-
-  fun cleanup() {
+  override fun afterAll() {
     if (!cleanupAfterTest) {
       log("skipping cleanup")
       return
     }
 
     tempDirs.forEach { it.close() }
-    testContexts.forEach { it.cleanup() }
+    super.afterAll()
   }
 
   fun cleanupAfterTestFailure(cleanup: Boolean) {

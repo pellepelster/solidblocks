@@ -44,7 +44,6 @@ public class SolidblocksTest : ParameterResolver, BeforeAllCallback, AfterAllCal
 
   override fun afterAll(context: ExtensionContext) {
     contexts.forEach { it.value.afterAll() }
-    contexts.forEach { it.value.cleanup() }
   }
 
   override fun beforeAll(context: ExtensionContext) {

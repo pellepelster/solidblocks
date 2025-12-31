@@ -1,9 +1,14 @@
 package de.solidblocks.infra.test
 
-interface TestContext {
-  fun beforeAll() {}
+open class TestContext {
 
-  fun afterAll() {}
+  val testContexts = mutableListOf<TestContext>()
 
-  fun cleanup() {}
+  open fun beforeAll() {
+    testContexts.forEach { it.beforeAll() }
+  }
+
+  open fun afterAll() {
+    testContexts.forEach { it.afterAll() }
+  }
 }

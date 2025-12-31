@@ -13,7 +13,7 @@ class TerraformTestContext(
     val dir: Path,
     version: String? = null,
     val environment: Map<String, String> = emptyMap(),
-) : TestContext {
+) : TestContext() {
 
   val terraform = Terraform(dir, version, environment)
 
@@ -41,7 +41,8 @@ class TerraformTestContext(
   fun addEnvironmentVariable(name: String, value: Any) =
       terraform.addEnvironmentVariable(name, value)
 
-  override fun cleanup() {
+  override fun afterAll() {
     destroy()
+    super.afterAll()
   }
 }

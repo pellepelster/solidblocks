@@ -482,10 +482,21 @@ function task_test_standalone() {
   task_test_standalone_ansible 17
 }
 
+function task_test {
+
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  task_test_standalone
+}
+
+
 arg=${1:-}
 shift || true
 case ${arg} in
   build) task_build "$@" ;;
+  test) task_test ;;
   test-standalone) task_test_standalone ;;
   test-standalone-terraform) task_test_standalone_terraform ;;
   test-standalone-ansible) task_test_standalone_ansible "$@" ;;

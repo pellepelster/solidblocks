@@ -18,7 +18,8 @@ class CloudInitTestContext(
     val privateKey: String,
     val username: String = "root",
     val port: Int = 22,
-) : TestContext {
+) : TestContext() {
+
   companion object {
     val json = Json { this.ignoreUnknownKeys = true }
   }
@@ -62,5 +63,7 @@ class CloudInitTestContext(
     if (printOutputLogOnTestFailure) {
       printOutputLog()
     }
+
+    super.testContexts
   }
 }

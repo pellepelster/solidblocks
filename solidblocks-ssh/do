@@ -16,18 +16,9 @@ function task_build {
 
 function task_test {
 
-  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+  if [[ "${SKIP_TESTS:-}" =~ .*unit.* ]]; then
     exit 0
   fi
-
-  #trap task_clean EXIT
-  #(
-  #    cd "${DIR}"
-  #
-  #  docker_ensure_network "solidblocks-ssh-test"
-  #  docker run --rm -d --network solidblocks-ssh-test --name solidblocks-ssh-test  solidblocks-ssh-test
-  #  docker run -it --network solidblocks-ssh-test  positronsecurity/ssh-audit solidblocks-ssh-test
-  #)
 
   ${DIR}/../gradlew :solidblocks-ssh:test
 }

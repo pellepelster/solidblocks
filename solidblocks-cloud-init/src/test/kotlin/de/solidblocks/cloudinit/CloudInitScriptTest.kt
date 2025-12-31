@@ -1,9 +1,13 @@
 package de.solidblocks.cloudinit
 
 import de.solidblocks.cloudinit.model.*
+import de.solidblocks.cloudinit.model.CloudInitScript.Companion.SCRIPT_PLACEHOLDER
+import de.solidblocks.cloudinit.model.CloudInitScript.Companion.VARIABLES_PLACEHOLDER
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -32,8 +36,9 @@ class CloudInitScriptTest {
         }
 
         val cloudInitContext = serverTestContext.cloudInit()
+        cloudInitContext.printOutputLogOnTestFailure()
 
-        await().atMost(3, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
+        await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
             cloudInitContext.isFinished()
         }
 
@@ -49,6 +54,20 @@ class CloudInitScriptTest {
     @Test
     fun testDefaultFilePermission() {
         FilePermission().renderChmod() shouldBe "u=rw-,g=---,o=---"
+    }
+
+    @Test
+    fun testPlaceHolders() {
+        val template = CloudInit1::class.java.getResource("/blcks-cloud-init-bootstrap.sh.template").readText()
+        template shouldContain "__CLOUD_INIT_VARIABLES__"
+        template shouldContain "__CLOUD_INIT_SCRIPT__"
+    }
+
+    @Test
+    fun testRender() {
+        val rendered = CloudInitScript().render()
+        rendered shouldNotContain VARIABLES_PLACEHOLDER
+        rendered shouldNotContain SCRIPT_PLACEHOLDER
     }
 
     @Test

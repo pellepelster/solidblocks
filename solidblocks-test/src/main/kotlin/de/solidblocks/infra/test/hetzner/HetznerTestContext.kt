@@ -16,10 +16,10 @@ import kotlinx.coroutines.runBlocking
 fun hetznerTestContext(hcloudToken: String, testId: String) =
     HetznerTestContext(hcloudToken, testId)
 
-class HetznerServerTestContext(val host: String, val privateKey: String) {
+class HetznerServerTestContext(val host: String, val privateKey: String) : TestContext() {
 
   fun cloudInit(username: String = "root", port: Int = 22) =
-      cloudInitTestContext(host, privateKey, username, port)
+      cloudInitTestContext(host, privateKey, username, port).also { testContexts.add(it) }
 
   fun ssh(username: String = "root", port: Int = 22) =
       sshTestContext(host, privateKey, username, port)
@@ -27,7 +27,7 @@ class HetznerServerTestContext(val host: String, val privateKey: String) {
   fun host() = hostTestContext(host)
 }
 
-class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext {
+class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext() {
 
   val api = HetznerApi(hcloudToken)
 
@@ -86,7 +86,11 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext 
     }
 
     log("created server '$resourceName' with ip '${newServer.server.publicNetwork!!.ipv4!!.ip}'")
-    HetznerServerTestContext(newServer.server.publicNetwork!!.ipv4!!.ip, testSSHhKey.privateKey)
+    HetznerServerTestContext(
+            newServer.server.publicNetwork!!.ipv4!!.ip,
+            testSSHhKey.privateKey,
+        )
+        .also { testContexts.add(it) }
   }
 
   private suspend fun createSSHKey(resourceName: String): SSHKeyResponseWrapper {
@@ -104,9 +108,15 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext 
 
   override fun beforeAll() {
     cleanup()
+    super.beforeAll()
   }
 
-  override fun cleanup() {
+  override fun afterAll() {
+    cleanup()
+    super.afterAll()
+  }
+
+  fun cleanup() {
     runBlocking {
       api.sshKeys
           .list(

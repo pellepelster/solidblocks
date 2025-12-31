@@ -1,5 +1,6 @@
 package de.solidblocks.cloudinit.model
 
+import de.solidblocks.cloudinit.CloudInit1
 import java.io.StringWriter
 import kotlin.io.encoding.Base64
 
@@ -38,15 +39,16 @@ data class CloudInitScript(var environmentVariables: Map<String, String> = mutab
     val mounts = ArrayList<Mount>()
     val files = ArrayList<File>()
 
-    fun render(): String {
-        val sw = StringWriter()
+    companion object {
+        val SCRIPT_PLACEHOLDER: String = "__CLOUD_INIT_SCRIPT__"
 
-        sw.appendLine("""
-            #!/usr/bin/env bash
-            set -eu -o pipefail
-            DIR="$(cd "$(dirname "$0")" ; pwd -P)"
-            
-        """.trimIndent())
+        val VARIABLES_PLACEHOLDER: String = "__CLOUD_INIT_VARIABLES__"
+    }
+
+    fun render(): String {
+        val template = CloudInit1::class.java.getResource("/blcks-cloud-init-bootstrap.sh.template").readText()
+
+        val sw = StringWriter()
 
         for (file in files) {
             sw.appendLine("touch ${file.path}")
@@ -54,6 +56,9 @@ data class CloudInitScript(var environmentVariables: Map<String, String> = mutab
             sw.appendLine("echo \"${Base64.encode(file.content)}\" | base64 -d > ${file.path}")
         }
 
-        return sw.toString()
+        val variables = mapOf("SOLIDBLOCKS_CLOUD_INIT_URL" to "https://test-blcks-bootstrap.s3.eu-central-1.amazonaws.com/solidblocks/solidblocks-cloud-init/v0.0.0/solidblocks-cloud-init-v0.0.0.zip")
+        return template.replace(VARIABLES_PLACEHOLDER, variables.entries.map {
+            "export ${it.key}='${it.value}'"
+        }.joinToString("\n")).replace(SCRIPT_PLACEHOLDER, sw.toString())
     }
 }

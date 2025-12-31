@@ -1,3 +1,4 @@
+import java.io.StringWriter
 import java.security.MessageDigest
 
 plugins {
@@ -50,28 +51,67 @@ val generate = tasks.register("generate") {
 
         val sha256256Sum = cloudInitZip.get().asFile.readBytes().hashedWithSha256()
 
-        val bootstrapTemplateContent =
-            layout.projectDirectory.file("templates/cloud-init-bootstrap.template").asFile.readText()
+        val bootstrapHeaderTemplateContent =
+            layout.projectDirectory.file("templates/cloud-init-bootstrap.header.template").asFile.readText()
 
-        val replacedContent = bootstrapTemplateContent
+        val bootstrapBodyTemplateContent =
+            layout.projectDirectory.file("templates/cloud-init-bootstrap.body.template").asFile.readText()
+
+        val replacedBootstrapBodyTemplateContent = bootstrapBodyTemplateContent
             .replace("__SOLIDBLOCKS_CLOUD_INIT_CHECKSUM__", sha256256Sum)
             .replace("__SOLIDBLOCKS_VERSION__", version.toString())
-            .replace("__CLOUD_INIT_BOOTSTRAP_INCLUDES__", includes.joinToString { it.readText() })
+
+
+        val bootstrapSh = StringWriter()
+        bootstrapSh.appendLine(bootstrapHeaderTemplateContent)
+        bootstrapSh.appendLine()
+        includes.forEach {
+            bootstrapSh.appendLine("################################################################")
+            bootstrapSh.appendLine("# ${it.toPath().fileName}")
+            bootstrapSh.appendLine("################################################################")
+            bootstrapSh.appendLine(it.readText())
+        }
+        bootstrapSh.appendLine()
+        bootstrapSh.appendLine(replacedBootstrapBodyTemplateContent)
+
+        val bootstrapTemplateSh = StringWriter()
+        bootstrapTemplateSh.appendLine(bootstrapHeaderTemplateContent)
+        bootstrapTemplateSh.appendLine()
+        bootstrapTemplateSh.appendLine("__CLOUD_INIT_VARIABLES__")
+        bootstrapTemplateSh.appendLine()
+        includes.forEach {
+            bootstrapTemplateSh.appendLine("################################################################")
+            bootstrapTemplateSh.appendLine("# ${it.toPath().fileName}")
+            bootstrapTemplateSh.appendLine("################################################################")
+            bootstrapTemplateSh.appendLine(it.readText())
+        }
+        bootstrapTemplateSh.appendLine()
+        bootstrapTemplateSh.appendLine(replacedBootstrapBodyTemplateContent)
+        bootstrapTemplateSh.appendLine()
+        bootstrapTemplateSh.appendLine("__CLOUD_INIT_SCRIPT__")
 
         layout.buildDirectory.file("blcks-cloud-init-bootstrap.sh").get().asFile.also {
-            it.writeText(replacedContent)
+            it.writeText(bootstrapSh.toString())
             it.setExecutable(true)
         }
         val snippetsDir = project.layout.buildDirectory.dir("snippets").get().asFile
         snippetsDir.mkdirs()
 
         snippetsDir.resolve("blcks-cloud-init-bootstrap-${version}.sh").also {
-            it.writeText(replacedContent)
+            it.writeText(bootstrapSh.toString())
+            it.setExecutable(true)
+        }
+
+        val resourcesDir = project.layout.projectDirectory.dir("src/main/resources").asFile
+
+        resourcesDir.resolve("blcks-cloud-init-bootstrap.sh.template").also {
+            it.writeText(bootstrapTemplateSh.toString())
             it.setExecutable(true)
         }
     }
 }.get()
 
+tasks.getByName("jar").dependsOn(generate)
 tasks.getByName("assemble").dependsOn(generate)
 generate.dependsOn(zip)
 
