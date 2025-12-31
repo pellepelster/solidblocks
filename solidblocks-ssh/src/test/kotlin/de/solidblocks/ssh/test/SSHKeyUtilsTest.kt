@@ -183,29 +183,32 @@ f9S03Kvu7LqFVokuYMy0Y4ItdpRGZsSUXRcEKOE8TBSsfhLrdlUlCA==
   }
 
   @Test
-  fun testGeneratedKeyWithOpenSSH() {
-    val sshKey = SSHKeyUtils.RSA.generate()
-    val publicKeyFile =
-        Files.createTempFile("rsa_public", ".key").also {
-          it.writeText(SSHKeyUtils.RSA.publicKeyToOpenSsh(sshKey.publicKey))
-        }
+  fun testGeneratedKeysWithOpenSSH() {
+    val factories = listOf(SSHKeyUtils.ED25519, SSHKeyUtils.RSA)
+    factories.forEach { factory ->
+      val sshKey = factory.generate()
+      val publicKeyFile =
+          Files.createTempFile("rsa_public", ".key").also {
+            it.writeText(factory.publicKeyToOpenSsh(sshKey.publicKey))
+          }
 
-    val sshServer =
-        GenericContainer(
-                ImageFromDockerfile()
-                    .withFileFromClasspath("Dockerfile", "Dockerfile")
-                    .withFileFromFile("authorized_keys", publicKeyFile.toFile()),
-            )
-            .also {
-              it.addExposedPort(22)
-              it.start()
-            }
+      val sshServer =
+          GenericContainer(
+                  ImageFromDockerfile()
+                      .withFileFromClasspath("Dockerfile", "Dockerfile")
+                      .withFileFromFile("authorized_keys", publicKeyFile.toFile()),
+              )
+              .also {
+                it.addExposedPort(22)
+                it.start()
+              }
 
-    val key = SSHKeyUtils.tryLoadKey(sshKey.privateKey)
-    val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+      val key = tryLoadKey(sshKey.privateKey)
+      val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
 
-    assertSoftly(client.sshCommand("whoami")) { it.exitCode shouldBe 0 }
+      assertSoftly(client.sshCommand("whoami")) { it.exitCode shouldBe 0 }
 
-    sshServer.stop()
+      sshServer.stop()
+    }
   }
 }

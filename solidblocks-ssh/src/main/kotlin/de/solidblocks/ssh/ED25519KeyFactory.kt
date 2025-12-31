@@ -1,10 +1,7 @@
 package de.solidblocks.ssh
 
 import java.io.StringReader
-import java.security.KeyFactory
-import java.security.KeyPair
-import java.security.PrivateKey
-import java.security.SecureRandom
+import java.security.*
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
@@ -12,8 +9,6 @@ import org.bouncycastle.asn1.edec.EdECObjectIdentifiers
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
-import org.bouncycastle.crypto.generators.Ed25519KeyPairGenerator
-import org.bouncycastle.crypto.params.Ed25519KeyGenerationParameters
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import org.bouncycastle.crypto.util.OpenSSHPublicKeyUtil
@@ -25,15 +20,18 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
 import org.bouncycastle.util.io.pem.PemReader
 
 object ED25519KeyFactory : SSHKeyFactory {
+
   override fun generate(): KeyPairRaw {
-    val generator =
-        Ed25519KeyPairGenerator().apply { init(Ed25519KeyGenerationParameters(SecureRandom())) }
-
+    val generator = KeyPairGenerator.getInstance("Ed25519")
     val keyPair = generator.generateKeyPair()
-    val privateKey = keyPair.private as Ed25519PrivateKeyParameters
-    val publicKey = keyPair.public as Ed25519PublicKeyParameters
 
-    return KeyPairRaw(privateKey.toPem(), publicKey.toPem())
+    val privateKey = keyPair.private
+    val publicKey = keyPair.public
+
+    return KeyPairRaw(
+        toPemString("PRIVATE KEY", privateKey.encoded),
+        toPemString("PUBLIC KEY", publicKey.encoded),
+    )
   }
 
   override fun publicKeyToOpenSsh(key: String): String {
