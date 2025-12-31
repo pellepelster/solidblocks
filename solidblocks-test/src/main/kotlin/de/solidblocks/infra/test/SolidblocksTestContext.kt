@@ -1,6 +1,5 @@
 package de.solidblocks.infra.test
 
-import de.solidblocks.infra.test.cloudinit.CloudInitTestContext
 import de.solidblocks.infra.test.cloudinit.cloudInitTestContext
 import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.dockerTestContext
@@ -8,7 +7,6 @@ import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.hetzner.hetznerTestContext
 import de.solidblocks.infra.test.host.hostTestContext
 import de.solidblocks.infra.test.ssh.sshTestContext
-import de.solidblocks.infra.test.terraform.TerraformTestContext
 import de.solidblocks.infra.test.terraform.terraformTestContext
 import de.solidblocks.ssh.SSHKeyUtils
 import java.io.Closeable
@@ -24,9 +22,7 @@ class SolidblocksTestContext(val testId: String) {
 
   private val tempDirs = mutableListOf<Closeable>()
 
-  private val terraformContexts = mutableListOf<TerraformTestContext>()
-
-  private val cloudInitContexts = mutableListOf<CloudInitTestContext>()
+  private val testContexts = mutableListOf<TestContext>()
 
   fun createTempDir() = tempDir().apply { tempDirs.add(this) }
 
@@ -35,10 +31,10 @@ class SolidblocksTestContext(val testId: String) {
   fun docker(image: DockerTestImage) = dockerTestContext(image).apply { tempDirs.add(this) }
 
   fun terraform(dir: Path, version: String? = null) =
-      terraformTestContext(dir, version).also { terraformContexts.add(it) }
+      terraformTestContext(dir, version).also { testContexts.add(it) }
 
   fun terraform(dir: String, version: String? = null) =
-      terraformTestContext(Path.of(dir), version).also { terraformContexts.add(it) }
+      terraformTestContext(Path.of(dir), version).also { testContexts.add(it) }
 
   fun ssh(host: String, privateKey: String, username: String = "root", port: Int = 22) =
       sshTestContext(host, SSHKeyUtils.tryLoadKey(privateKey), username, port)
@@ -48,13 +44,18 @@ class SolidblocksTestContext(val testId: String) {
 
   fun host(host: String) = hostTestContext(host)
 
-  fun hetzner(hcloudToken: String) = hetznerTestContext(hcloudToken, testId)
+  fun hetzner(hcloudToken: String) =
+      hetznerTestContext(hcloudToken, testId).also { testContexts.add(it) }
 
   fun cloudInit(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-      cloudInitTestContext(host, privateKey, username, port).also { cloudInitContexts.add(it) }
+      cloudInitTestContext(host, privateKey, username, port).also { testContexts.add(it) }
 
   fun afterAll() {
-    cloudInitContexts.forEach { it.afterAll() }
+    testContexts.forEach { it.afterAll() }
+  }
+
+  fun beforeAll() {
+    testContexts.forEach { it.beforeAll() }
   }
 
   fun cleanup() {
@@ -64,7 +65,7 @@ class SolidblocksTestContext(val testId: String) {
     }
 
     tempDirs.forEach { it.close() }
-    terraformContexts.forEach { it.destroy() }
+    testContexts.forEach { it.cleanup() }
   }
 
   fun cleanupAfterTestFailure(cleanup: Boolean) {

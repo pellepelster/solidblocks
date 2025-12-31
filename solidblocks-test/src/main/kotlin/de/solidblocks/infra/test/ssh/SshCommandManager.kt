@@ -36,5 +36,5 @@ class SshCommandManager(
     )
   }
 
-    fun download(file: String) = sshClient.download(file)
+  fun download(file: String) = sshClient.download(file)
 }

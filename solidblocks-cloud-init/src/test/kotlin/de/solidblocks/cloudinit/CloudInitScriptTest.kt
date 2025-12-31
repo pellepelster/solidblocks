@@ -34,11 +34,7 @@ class CloudInitScriptTest {
         val cloudInitContext = serverTestContext.cloudInit()
 
         await().atMost(3, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
-            try {
-                cloudInitContext.isFinished()
-            } catch (e: Exception) {
-                false
-            }
+            cloudInitContext.isFinished()
         }
 
         cloudInitContext.result()?.hasErrors shouldBe false

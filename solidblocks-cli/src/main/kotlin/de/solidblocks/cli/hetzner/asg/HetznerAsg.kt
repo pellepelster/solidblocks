@@ -387,7 +387,7 @@ class HetznerAsg(hcloudToken: String) {
                         serverTypeRef.reference,
                         imageRef.reference,
                         placementGroupRef?.reference,
-                        sshKeyRefs.map { it.reference },
+                        sshKeyRefs.map { it.reference.toLong() },
                         networks.map { it.id.toString() } + networkRefs.map { it.reference },
                         firewallRefs.map { it.reference },
                         userData,

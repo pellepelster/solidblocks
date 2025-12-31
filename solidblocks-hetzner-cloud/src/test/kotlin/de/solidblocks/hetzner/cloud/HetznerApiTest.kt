@@ -3,6 +3,7 @@ package de.solidblocks.hetzner.cloud
 import de.solidblocks.hetzner.cloud.model.FilterValue
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue.Equals
 import de.solidblocks.hetzner.cloud.resources.*
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
@@ -34,7 +35,7 @@ class HetznerApiTest {
         runBlocking {
             mapOf("type" to LabelSelectorValue.NotEquals(ImageType.SNAPSHOT.name.lowercase()))
             api.servers
-                .list(labelSelectors = mapOf("test" to LabelSelectorValue.Equals("true")))
+                .list(labelSelectors = mapOf("test" to Equals("true")))
                 .forEach {
                     val delete = api.servers.delete(it.id)
                     api.servers.waitForAction(delete) shouldBe true
@@ -112,7 +113,7 @@ class HetznerApiTest {
             val name = UUID.randomUUID().toString()
             val oldServerCount = api.servers.list().size
             val oldServerCountFiltered =
-                api.servers.list(labelSelectors = mapOf("test" to LabelSelectorValue.Equals("true"))).size
+                api.servers.list(labelSelectors = mapOf("test" to Equals("true"))).size
 
             val createdServer =
                 api.servers.create(
@@ -140,7 +141,7 @@ class HetznerApiTest {
 
             api.servers.list().size shouldBe oldServerCount + 1
             api.servers
-                .list(labelSelectors = mapOf("test" to LabelSelectorValue.Equals("true")))
+                .list(labelSelectors = mapOf("test" to Equals("true")))
                 .size shouldBe oldServerCountFiltered + 1
             api.servers.waitForAction(createdServer.action.id) shouldBe true
 
@@ -259,11 +260,21 @@ class HetznerApiTest {
             keys shouldHaveAtLeastSize 1
             keys[0].labels.shouldBeEmpty()
 
-            api.sshKeys.update(keys[0].id, SSHKeysUpdateRequest(labels = mapOf("foo" to "bar")))
+            api.sshKeys.update(keys[0].id, SSHKeysUpdateRequest(labels = mapOf("label1" to "foo", "label2" to "bar")))
 
             val byId = api.sshKeys.get(keys[0].id)!!
-            byId.labels shouldHaveSize 1
-            byId.labels shouldContain ("foo" to "bar")
+            byId.labels shouldHaveSize 2
+            byId.labels shouldContain ("label1" to "foo")
+            byId.labels shouldContain ("label2" to "bar")
+
+            api.sshKeys.list(labelSelectors = mapOf("label1" to Equals("foo"))) shouldHaveSize 1
+            api.sshKeys.list(labelSelectors = mapOf("label1" to Equals("invalid"))) shouldHaveSize 0
+            api.sshKeys.list(
+                labelSelectors = mapOf(
+                    "label1" to Equals("foo"),
+                    "label2" to Equals("bar")
+                )
+            ) shouldHaveSize 1
 
             val byName = api.sshKeys.get(keys[0].name)!!
             byId.name shouldBe byName.name

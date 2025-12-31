@@ -177,7 +177,6 @@ public class HetznerApi(hcloudToken: String) {
 
         if (this.status.isBadRequest()) {
             val error: HetznerApiErrorWrapper = this.body()
-            println(error)
             throw HetznerApiException(error.error, this.request.url)
         }
 
