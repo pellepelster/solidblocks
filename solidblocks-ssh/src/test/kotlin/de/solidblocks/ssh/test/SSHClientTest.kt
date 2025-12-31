@@ -22,13 +22,25 @@ class SSHClientTest {
             it.start()
           }
 
-  @Test
-  fun testSSHCommandSuccess() {
-    val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
-    val key = SSHKeyUtils.tryLoadKey(ed25519Key)
-    val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+  val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
+  val key = SSHKeyUtils.tryLoadKey(ed25519Key)
+  val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
 
-    assertSoftly(client.sshCommand("whoami")) {
+  @Test
+  fun testDownload() {
+    val file = client.download("/root/.ssh/authorized_keys")
+    val ed25519KeyPublic = SSHClientTest::class.java.getResource("/test_ed25519.key.pub").readText()
+    file shouldBe ed25519KeyPublic.toByteArray()
+  }
+
+  @Test
+  fun testInvalidDownload() {
+    client.download("invalid") shouldBe ByteArray(0)
+  }
+
+  @Test
+  fun testCommandSuccess() {
+    assertSoftly(client.command("whoami")) {
       it.exitCode shouldBe 0
       it.stdOut shouldBe "root\n"
       it.stdErr shouldBe ""
@@ -36,12 +48,8 @@ class SSHClientTest {
   }
 
   @Test
-  fun testSSHCommandFailure() {
-    val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
-    val key = SSHKeyUtils.tryLoadKey(ed25519Key)
-    val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
-
-    assertSoftly(client.sshCommand("invalid")) {
+  fun testCommandFailure() {
+    assertSoftly(client.command("invalid")) {
       it.exitCode shouldBe 127
       it.stdOut shouldBe ""
       it.stdErr shouldContain "not found"

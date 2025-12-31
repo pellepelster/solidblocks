@@ -206,7 +206,7 @@ f9S03Kvu7LqFVokuYMy0Y4ItdpRGZsSUXRcEKOE8TBSsfhLrdlUlCA==
       val key = tryLoadKey(sshKey.privateKey)
       val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
 
-      assertSoftly(client.sshCommand("whoami")) { it.exitCode shouldBe 0 }
+      assertSoftly(client.command("whoami")) { it.exitCode shouldBe 0 }
 
       sshServer.stop()
     }

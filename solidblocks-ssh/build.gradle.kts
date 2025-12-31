@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation("org.apache.sshd:sshd-core:2.16.0")
+    implementation("org.apache.sshd:sshd-scp:2.16.0")
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
     implementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
     implementation("org.bouncycastle:bcprov-ext-jdk18on:1.78.1")

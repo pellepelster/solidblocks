@@ -11,6 +11,7 @@ import kotlin.time.ExperimentalTime
 import org.apache.sshd.client.SshClient
 import org.apache.sshd.client.channel.ClientChannelEvent
 import org.apache.sshd.common.keyprovider.KeyIdentityProvider
+import org.apache.sshd.scp.client.ScpClientCreator
 
 class SSHClient(
     val host: String,
@@ -36,8 +37,16 @@ class SSHClient(
         it.auth().verify(timeout)
       }
 
+  fun download(
+      file: String,
+  ): ByteArray? {
+    val creator = ScpClientCreator.instance()
+    val scpClient = creator.createScpClient(session)
+    return scpClient.downloadBytes(file)
+  }
+
   @OptIn(ExperimentalTime::class)
-  fun sshCommand(
+  fun command(
       command: String,
   ): SSHCommandResult {
     ByteArrayOutputStream().use { stdErr ->
