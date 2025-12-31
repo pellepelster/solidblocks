@@ -15,8 +15,7 @@ class SSHClientTest {
       GenericContainer(
               ImageFromDockerfile()
                   .withFileFromClasspath("Dockerfile", "Dockerfile")
-                  .withFileFromClasspath("test_ed25519.key.pub", "test_ed25519.key.pub")
-                  .withFileFromClasspath("sshd_config", "sshd_config"),
+                  .withFileFromClasspath("authorized_keys", "test_ed25519.key.pub"),
           )
           .also {
             it.addExposedPort(22)

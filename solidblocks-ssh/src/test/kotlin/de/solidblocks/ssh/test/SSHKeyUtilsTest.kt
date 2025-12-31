@@ -1,5 +1,6 @@
 package de.solidblocks.ssh.test
 
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.SSHKeyUtils.tryLoadKey
 import io.kotest.assertions.assertSoftly
@@ -7,7 +8,11 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldEndWith
 import io.kotest.matchers.string.shouldStartWith
+import java.nio.file.Files
+import kotlin.io.path.writeText
 import org.junit.jupiter.api.Test
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.images.builder.ImageFromDockerfile
 
 class SSHKeyUtilsTest {
 
@@ -135,16 +140,6 @@ f9S03Kvu7LqFVokuYMy0Y4ItdpRGZsSUXRcEKOE8TBSsfhLrdlUlCA==
     """
           .trimIndent()
 
-  val privateKeyPemEcdsa =
-      """
------BEGIN EC PRIVATE KEY-----
-MGgCAQEEHC33+i3UhUSvGmXdjiqLZlMvUGkrAXSI8RggUIygBwYFK4EEACGhPAM6
-AASSGnk6tyVQ5V6TBKFlx14RfOUmjxcOIK5MwO95BXGTBeNvh3mpLbDZ4wWlVOih
-j6XcX3qqd0aVDA==
------END EC PRIVATE KEY-----
-    """
-          .trimIndent()
-
   @Test
   fun testLoadED25519KeyPairFromPem() {
     SSHKeyUtils.ED25519.loadFromPem("invalid") shouldBe null
@@ -178,9 +173,39 @@ j6XcX3qqd0aVDA==
   }
 
   @Test
-  fun testTryLoadKey() {
-    assertSoftly(SSHKeyUtils.tryLoadKey(privateKeyOpensshEd25519)) {
-      it.private?.algorithm shouldBe "Ed25519"
-    }
+  fun testTryLoadKeyED25519() {
+    assertSoftly(tryLoadKey(privateKeyOpensshEd25519)) { it.private?.algorithm shouldBe "Ed25519" }
+  }
+
+  @Test
+  fun testTryLoadKeyRSA() {
+    assertSoftly(tryLoadKey(privateKeyOpensshRsa)) { it.private?.algorithm shouldBe "RSA" }
+  }
+
+  @Test
+  fun testGeneratedKeyWithOpenSSH() {
+    val sshKey = SSHKeyUtils.RSA.generate()
+    val publicKeyFile =
+        Files.createTempFile("rsa_public", ".key").also {
+          it.writeText(SSHKeyUtils.RSA.publicKeyToOpenSsh(sshKey.publicKey))
+        }
+
+    val sshServer =
+        GenericContainer(
+                ImageFromDockerfile()
+                    .withFileFromClasspath("Dockerfile", "Dockerfile")
+                    .withFileFromFile("authorized_keys", publicKeyFile.toFile()),
+            )
+            .also {
+              it.addExposedPort(22)
+              it.start()
+            }
+
+    val key = SSHKeyUtils.tryLoadKey(sshKey.privateKey)
+    val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+
+    assertSoftly(client.sshCommand("whoami")) { it.exitCode shouldBe 0 }
+
+    sshServer.stop()
   }
 }
