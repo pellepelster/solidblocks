@@ -9,6 +9,7 @@ import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.util.Calendar
 
 @ExtendWith(SolidblocksTest::class)
 public class LogTest {
@@ -29,11 +30,11 @@ public class LogTest {
                 .run()
 
         assertSoftly(result) {
-            it stderrShouldMatch ".*2025-.* UTC \\[  success\\] some success.*"
-            it stderrShouldMatch ".*2025-.* UTC \\[  warning\\] some warning.*"
-            it stderrShouldMatch ".*2025-.* UTC \\[    debug\\] some debug.*"
-            it stderrShouldMatch ".*2025-.* UTC \\[    error\\] some error.*"
-            it stderrShouldMatch ".*2025-.* UTC \\[     info\\] some info.*"
+            it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[  success\\] some success.*"
+            it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[  warning\\] some warning.*"
+            it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[    debug\\] some debug.*"
+            it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[    error\\] some error.*"
+            it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[     info\\] some info.*"
         }
     }
 
@@ -51,7 +52,7 @@ public class LogTest {
 
         assertSoftly(result) {
             it shouldHaveExitCode 4
-            it stderrShouldMatch ".*2025-.* UTC \\[emergency\\] fatal message.*"
+            it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[emergency\\] fatal message.*"
         }
     }
 }
