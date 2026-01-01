@@ -71,6 +71,7 @@ public class CloudInitTest {
     context.cleanupAfterTestFailure(false)
 
     val terraform = context.terraform(terraform1)
+    terraform.deleteLocalState()
     terraform.init()
     terraform.apply()
     val output = terraform.output()

@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.path
-import de.solidblocks.cli.utils.logInfo
+import de.solidblocks.utils.logInfoBlcks
 import kotlin.io.path.writeText
 import kotlinx.coroutines.runBlocking
 
@@ -81,10 +81,10 @@ class BackendsS3Command(val type: TYPE) : CliktCommand("s3") {
             .trimIndent()
 
     if (file != null) {
-      logInfo("writing state configuration for created S3 bucket to '$file'")
+      logInfoBlcks("writing state configuration for created S3 bucket to '$file'")
       file!!.writeText(config)
     } else {
-      logInfo("state configuration for created S3 bucket")
+      logInfoBlcks("state configuration for created S3 bucket")
       println("---")
       println(config)
       println("---")

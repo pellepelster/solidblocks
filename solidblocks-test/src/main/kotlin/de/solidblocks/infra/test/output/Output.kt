@@ -1,6 +1,6 @@
 package de.solidblocks.infra.test.output
 
-import de.solidblocks.infra.test.log
+import de.solidblocks.utils.logInfo
 import kotlin.time.Duration
 import kotlin.time.TimeSource
 import kotlinx.coroutines.TimeoutCancellationException
@@ -28,9 +28,9 @@ suspend fun waitForOutputMatcher(
     output: List<TimestampedOutputLine>,
     stdin: SendChannel<String>,
 ) {
-  log(
-      TimeSource.Monotonic.markNow() - start,
+  logInfo(
       "waiting for log line '${outputMatcher.regex}' with a timeout of ${outputMatcher.timeout}",
+      start = start,
   )
 
   try {
@@ -54,9 +54,9 @@ suspend fun waitForOutputMatcher(
   } catch (e: TimeoutCancellationException) {
     val message =
         "timeout of ${outputMatcher.timeout} exceeded waiting for log line '${outputMatcher.regex}'"
-    log(
-        TimeSource.Monotonic.markNow() - start,
+    logInfo(
         message,
+        start = start,
     )
 
     throw RuntimeException(message)

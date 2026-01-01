@@ -15,13 +15,9 @@ import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.createDockerClient
 import de.solidblocks.infra.test.files.tempDir
-import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.TimestampedOutputLine
-import java.io.BufferedWriter
-import java.io.Closeable
-import java.io.OutputStreamWriter
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
+import de.solidblocks.utils.logInfo
+import java.io.*
 import java.lang.Thread.sleep
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -30,16 +26,8 @@ import kotlin.io.path.exists
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeSource
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
 
 enum class DockerTestImage {
   DEBIAN_10 {
@@ -144,7 +132,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                       .withAttachStdin(true)
                       .withTty(false)
                       .exec()
-              log(start - start, "starting command '${command.joinToString(" ")}'")
+              logInfo("starting command '${command.joinToString(" ")}'", duration = start - start)
 
               launch {
                 while (!stdin.isClosedForReceive) {
@@ -183,7 +171,10 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                   )
                 }
               } catch (e: TimeoutCancellationException) {
-                log(start, "timeout for command exceeded ($timeout)")
+                logInfo(
+                    "timeout for command exceeded ($timeout)",
+                    start = start,
+                )
                 dockerClient.killContainerCmd(createContainer.id).exec()
 
                 ProcessResult(
@@ -214,7 +205,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
       start: TimeSource.Monotonic.ValueTimeMark,
       dockerClient: DockerClient,
   ) {
-    log(start, "pulling docker image '$image")
+    logInfo("pulling docker image '$image", start = start)
     dockerClient
         .pullImageCmd(image.toString())
         .exec(

@@ -9,6 +9,7 @@ version = System.getenv("VERSION") ?: "0.0.0"
 
 dependencies {
     implementation(project(":solidblocks-hetzner-cloud"))
+    implementation(project(":solidblocks-utils"))
     implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("io.ktor:ktor-client-java:3.1.2")

@@ -1,10 +1,10 @@
 package de.solidblocks.infra.test.command
 
-import de.solidblocks.infra.test.LogType
-import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
+import de.solidblocks.utils.LogSource
+import de.solidblocks.utils.logInfo
 import java.io.Closeable
 import java.nio.file.Path
 import java.util.*
@@ -88,13 +88,13 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
         val result =
             commandRunner.runCommand(command, envs, inheritEnv, stdin) {
               output.add(it)
-              log(
-                  start,
+              logInfo(
                   it.line,
                   when (it.type) {
-                    OutputType.STDOUT -> LogType.STDOUT
-                    OutputType.STDERR -> LogType.STDERR
+                    OutputType.STDOUT -> LogSource.STDOUT
+                    OutputType.STDERR -> LogSource.STDERR
                   },
+                  start,
               )
             }
 

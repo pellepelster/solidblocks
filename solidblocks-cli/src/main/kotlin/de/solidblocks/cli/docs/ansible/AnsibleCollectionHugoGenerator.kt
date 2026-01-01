@@ -2,6 +2,9 @@ package de.solidblocks.cli.docs.ansible
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cli.utils.*
+import de.solidblocks.utils.logErrorBlcks
+import de.solidblocks.utils.logInfoBlcks
+import de.solidblocks.utils.logWarningBlcks
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -18,10 +21,10 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
 
     val descriptionLong =
         if (docsReadme.exists()) {
-          logInfo("found collection readme at '$docsReadme'")
+          logInfoBlcks("found collection readme at '$docsReadme'")
           docsReadme.readText()
         } else {
-          logWarning("collection readme '$docsReadme' not found")
+          logWarningBlcks("collection readme '$docsReadme' not found")
           galaxy.description
         }
 
@@ -60,12 +63,12 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
     targetDir.createDirectories()
 
     val collectionIndex = targetDir.resolve("_index.md")
-    logInfo("writing collection index to '$collectionIndex'")
+    logInfoBlcks("writing collection index to '$collectionIndex'")
     collectionIndex.writeText(collectionIndexHugo)
 
     roles.forEach { role ->
       val roleIndex = targetDir.resolve("${role.name}.md")
-      logInfo("writing role index to '$roleIndex'")
+      logInfoBlcks("writing role index to '$roleIndex'")
 
       val roleIndexHugo =
           """
@@ -91,12 +94,12 @@ ${role.tableRows().toMarkdownTableRow()}
 
   private fun verifyInput(): Boolean {
     if (!collectionDir.exists()) {
-      logError("collection directory '$collectionDir' not found")
+      logErrorBlcks("collection directory '$collectionDir' not found")
       return false
     }
 
     if (!collectionDir.isDirectory()) {
-      logError("collection directory '$collectionDir' is not a directory")
+      logErrorBlcks("collection directory '$collectionDir' is not a directory")
       return false
     }
 
@@ -105,7 +108,7 @@ ${role.tableRows().toMarkdownTableRow()}
     }
 
     if (!targetDir.isDirectory()) {
-      logError("target directory '$collectionDir' is not a directory")
+      logErrorBlcks("target directory '$collectionDir' is not a directory")
       return false
     }
 
@@ -114,7 +117,7 @@ ${role.tableRows().toMarkdownTableRow()}
 
   private fun parseRoleVariables(mainYmlFile: Path): List<Variable>? {
     if (!mainYmlFile.exists()) {
-      logInfo("file '$mainYmlFile' does not exist")
+      logInfoBlcks("file '$mainYmlFile' does not exist")
       return null
     }
 
@@ -125,7 +128,7 @@ ${role.tableRows().toMarkdownTableRow()}
         parseVariables(yml.data)
       }
       else -> {
-        logError("failed to parse '$mainYmlFile'")
+        logErrorBlcks("failed to parse '$mainYmlFile'")
         return null
       }
     }
@@ -134,18 +137,18 @@ ${role.tableRows().toMarkdownTableRow()}
   private fun parseGalaxy(data: YamlNode): Galaxy? {
     val version = data.getMapString("version")
     if (version == null) {
-      logError("collection version not found")
+      logErrorBlcks("collection version not found")
       return null
     }
     val namespace = data.getMapString("namespace")
     if (namespace == null) {
-      logError("collection namespace not found")
+      logErrorBlcks("collection namespace not found")
       return null
     }
 
     val name = data.getMapString("name")
     if (name == null) {
-      logError("collection name not found")
+      logErrorBlcks("collection name not found")
       return null
     }
 
@@ -183,7 +186,7 @@ ${role.tableRows().toMarkdownTableRow()}
       when (val ymlKeys = data.getKeys()) {
         is Success -> ymlKeys.data
         else -> {
-          logError("invalid format")
+          logErrorBlcks("invalid format")
           null
         }
       }?.map { key -> Variable(key, data.getMapString(key)) }
@@ -191,24 +194,24 @@ ${role.tableRows().toMarkdownTableRow()}
   fun loadGalaxyYml(): Galaxy? {
     val galaxyYmlFile = collectionDir.resolve("galaxy.yml")
     if (!galaxyYmlFile.exists()) {
-      logWarning("expected metadata '$galaxyYmlFile' not found")
+      logWarningBlcks("expected metadata '$galaxyYmlFile' not found")
       return null
     }
 
-    logInfo("loading metadata from '$galaxyYmlFile'")
+    logInfoBlcks("loading metadata from '$galaxyYmlFile'")
     val galaxyYml = yamlParse(galaxyYmlFile.readText())
 
     return when (galaxyYml) {
       is Success -> {
         val galaxy = parseGalaxy(galaxyYml.data)
         if (galaxy == null) {
-          logError("failed to parse metadata from '$galaxyYmlFile'")
+          logErrorBlcks("failed to parse metadata from '$galaxyYmlFile'")
           return null
         }
         galaxy
       }
       else -> {
-        logError("failed to parse metadata from '$galaxyYmlFile'")
+        logErrorBlcks("failed to parse metadata from '$galaxyYmlFile'")
         return null
       }
     }
@@ -218,24 +221,24 @@ ${role.tableRows().toMarkdownTableRow()}
     val metaYmlFile =
         collectionDir.resolve("roles").resolve(roleName).resolve("meta").resolve("main.yml")
     if (!metaYmlFile.exists()) {
-      logWarning("role metadata '$metaYmlFile' not found")
+      logWarningBlcks("role metadata '$metaYmlFile' not found")
       return null
     }
 
-    logInfo("loading role metadata from '$metaYmlFile'")
+    logInfoBlcks("loading role metadata from '$metaYmlFile'")
     val metaYml = yamlParse(metaYmlFile.readText())
 
     return when (metaYml) {
       is Success -> {
         val roleMetaData = parseRoleMetadata(metaYml.data)
         if (roleMetaData == null) {
-          logError("failed to parse role metadata from '$metaYmlFile'")
+          logErrorBlcks("failed to parse role metadata from '$metaYmlFile'")
           return null
         }
         roleMetaData
       }
       else -> {
-        logError("failed to parse role metadata from '$metaYmlFile'")
+        logErrorBlcks("failed to parse role metadata from '$metaYmlFile'")
         return null
       }
     }

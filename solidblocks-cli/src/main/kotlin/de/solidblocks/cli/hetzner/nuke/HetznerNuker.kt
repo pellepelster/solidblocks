@@ -1,7 +1,7 @@
 package de.solidblocks.cli.hetzner.nuke
 
-import de.solidblocks.cli.utils.logError
-import de.solidblocks.cli.utils.logInfo
+import de.solidblocks.utils.logErrorBlcks
+import de.solidblocks.utils.logInfoBlcks
 import de.solidblocks.hetzner.cloud.*
 import de.solidblocks.hetzner.cloud.model.*
 import de.solidblocks.hetzner.cloud.resources.*
@@ -32,7 +32,7 @@ class HetznerNuker(hcloudToken: String) {
                         resourceApi.list().flatMap { zone ->
                             api.dnsRrSets(zone.name).list().filter { it.type != RRType.SOA && it.type != RRType.NS }
                                 .map { set ->
-                                    logInfo("would delete ${set.logText()} from ${zone.logText()}")
+                                    logInfoBlcks("would delete ${set.logText()} from ${zone.logText()}")
                                     1
                                 }
                         }.sum()
@@ -49,7 +49,7 @@ class HetznerNuker(hcloudToken: String) {
                         resourceApi
                             .list(filter)
                             .map {
-                                logInfo("would delete ${it.logText()}")
+                                logInfoBlcks("would delete ${it.logText()}")
                                 1
                             }
                             .sum()
@@ -64,7 +64,7 @@ class HetznerNuker(hcloudToken: String) {
             val rrSetsApi = api.dnsRrSets(zone.name)
             rrSetsApi.list().filter { it.type != RRType.SOA && it.type != RRType.NS }
                 .map { set ->
-                    logInfo("deleting ${set.logText()} from ${zone.logText()}")
+                    logInfoBlcks("deleting ${set.logText()} from ${zone.logText()}")
                     rrSetsApi.delete(set.name, set.type)
                 }
         }
@@ -94,7 +94,7 @@ class HetznerNuker(hcloudToken: String) {
                     if (it is VolumeResponse && it.server != null) {
                         api.waitForAction(
                             {
-                                logInfo("detaching volume ${it.logText()} from server ${it.server}")
+                                logInfoBlcks("detaching volume ${it.logText()} from server ${it.server}")
                                 api.volumes.detach(it.id)
                             },
                             { api.volumes.action(it) },
@@ -107,7 +107,7 @@ class HetznerNuker(hcloudToken: String) {
                     ) {
                         api.waitForAction(
                             {
-                                logInfo("disabling protection for ${it.logText()}")
+                                logInfoBlcks("disabling protection for ${it.logText()}")
                                 resourceApi.changeDeleteProtection(it.id, false)
                             },
                             { resourceApi.action(it) },
@@ -120,7 +120,7 @@ class HetznerNuker(hcloudToken: String) {
                             if (actionResponse != null) {
                                 api.waitForAction(
                                     {
-                                        logInfo("unassigning ${it.logText()}")
+                                        logInfoBlcks("unassigning ${it.logText()}")
                                         actionResponse
                                     },
                                     { resourceApi.action(it) },
@@ -130,10 +130,10 @@ class HetznerNuker(hcloudToken: String) {
                     }
 
                     if (resourceApi is HetznerDeleteResourceApi<*, *>) {
-                        logInfo("deleting ${it.logText()}")
+                        logInfoBlcks("deleting ${it.logText()}")
                         try {
                             if (!resourceApi.delete(it.id)) {
-                                logError("deleting ${it.logText()} failed")
+                                logErrorBlcks("deleting ${it.logText()} failed")
                             }
                         } catch (e: HetznerApiException) {
                             if (e.error.code != HetznerApiErrorType.NOT_FOUND) {
@@ -143,7 +143,7 @@ class HetznerNuker(hcloudToken: String) {
                     }
 
                     if (resourceApi is HetznerDeleteWithActionResourceApi<*, *>) {
-                        logInfo("deleting ${it.logText()}")
+                        logInfoBlcks("deleting ${it.logText()}")
                         api.waitForAction({ resourceApi.delete(it.id) }, { resourceApi.action(it) })
                     }
                 }

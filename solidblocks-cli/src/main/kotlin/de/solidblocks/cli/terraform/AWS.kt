@@ -3,8 +3,8 @@ package de.solidblocks.cli.terraform
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.*
-import de.solidblocks.cli.utils.logError
-import de.solidblocks.cli.utils.logInfo
+import de.solidblocks.utils.logErrorBlcks
+import de.solidblocks.utils.logInfoBlcks
 
 class AWS(
     private val accessKeyId: String,
@@ -14,9 +14,9 @@ class AWS(
   suspend fun ensureBucket(name: String) {
     s3Client().use {
       if (it.hasBucket(name)) {
-        logInfo("S3 bucket '$name' already exists")
+        logInfoBlcks("S3 bucket '$name' already exists")
       } else {
-        logInfo("creating S3 bucket '$name'")
+        logInfoBlcks("creating S3 bucket '$name'")
         it.createNewBucket(name)
       }
 
@@ -31,7 +31,7 @@ class AWS(
           !currentPublicAccessBlock.blockPublicPolicy!! ||
           !currentPublicAccessBlock.restrictPublicBuckets!! ||
           !currentPublicAccessBlock.ignorePublicAcls!!) {
-        logInfo("disabling public access for S3 bucket '$name'")
+        logInfoBlcks("disabling public access for S3 bucket '$name'")
 
         it.putPublicAccessBlock(
             PutPublicAccessBlockRequest {
@@ -45,7 +45,7 @@ class AWS(
             },
         )
       } else {
-        logInfo("public access for S3 bucket '$name' already disabled")
+        logInfoBlcks("public access for S3 bucket '$name' already disabled")
       }
 
       val versioning =
@@ -54,7 +54,7 @@ class AWS(
           )
 
       if (versioning.status != BucketVersioningStatus.Enabled) {
-        logInfo("enabling versioning for bucket '$name'")
+        logInfoBlcks("enabling versioning for bucket '$name'")
 
         it.putBucketVersioning(
             PutBucketVersioningRequest {
@@ -65,7 +65,7 @@ class AWS(
             },
         )
       } else {
-        logInfo("bucket '$name' versioning is already enabled")
+        logInfoBlcks("bucket '$name' versioning is already enabled")
       }
     }
   }
@@ -97,7 +97,7 @@ class AWS(
     } catch (e: NotFound) {
       return false
     } catch (e: Exception) {
-      logError(e.message.orEmpty())
+      logErrorBlcks(e.message.orEmpty())
       return false
     }
 

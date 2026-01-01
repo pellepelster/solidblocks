@@ -5,9 +5,9 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import de.solidblocks.cli.utils.logError
-import de.solidblocks.cli.utils.logInfo
-import de.solidblocks.cli.utils.logWarning
+import de.solidblocks.utils.logErrorBlcks
+import de.solidblocks.utils.logInfoBlcks
+import de.solidblocks.utils.logWarningBlcks
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -38,31 +38,31 @@ class HetznerNukeCommand : CliktCommand(name = "nuke") {
 
       try {
         if (doNuke) {
-          logError("nuking all resources, running simulation...")
+          logErrorBlcks("nuking all resources, running simulation...")
 
           val result = nuker.simulate()
           if (result == 0) {
-            logInfo("no resources found to delete")
+            logInfoBlcks("no resources found to delete")
             return@runBlocking
           }
 
-          logInfo("will delete $result resources")
+          logInfoBlcks("will delete $result resources")
 
           var count = 15
           while (count > 0) {
-            logWarning("waiting before starting deletion, $count seconds left...")
+            logWarningBlcks("waiting before starting deletion, $count seconds left...")
             delay(1000L)
             count--
           }
 
           nuker.nuke()
         } else {
-          logInfo("running a simulated nuke, add '--do-nuke' to actually delete resources")
+          logInfoBlcks("running a simulated nuke, add '--do-nuke' to actually delete resources")
           val result = nuker.simulate()
-          logInfo("found $result resources to delete")
+          logInfoBlcks("found $result resources to delete")
         }
       } catch (e: HetznerApiException) {
-        logError("nuke failed error: ${e.error.message} (${e.error.code}) at '${e.url}'")
+        logErrorBlcks("nuke failed error: ${e.error.message} (${e.error.code}) at '${e.url}'")
       }
     }
   }

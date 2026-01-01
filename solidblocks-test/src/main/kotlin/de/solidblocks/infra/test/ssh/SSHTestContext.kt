@@ -1,7 +1,7 @@
 package de.solidblocks.infra.test.ssh
 
-import de.solidblocks.infra.test.log
 import de.solidblocks.ssh.SSHKeyUtils
+import de.solidblocks.utils.logInfo
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -21,21 +21,21 @@ class SSHTestContext(
     val port: Int = 22,
 ) {
 
-    init {
-        val openSSHKey = SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
+  init {
+    val openSSHKey = SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
 
-        val openSSHKeyFile = File.createTempFile("identity", ".key")
-        log("writing open ssh test key for host '$host' to '${openSSHKeyFile.absolutePath}'")
-        openSSHKeyFile.writeText(openSSHKey)
-        Files.setPosixFilePermissions(
-            openSSHKeyFile.toPath(),
-            PosixFilePermissions.fromString("rw-------"),
-        )
+    val openSSHKeyFile = File.createTempFile("identity", ".key")
+    logInfo("writing open ssh test key for host '$host' to '${openSSHKeyFile.absolutePath}'")
+    openSSHKeyFile.writeText(openSSHKey)
+    Files.setPosixFilePermissions(
+        openSSHKeyFile.toPath(),
+        PosixFilePermissions.fromString("rw-------"),
+    )
 
-        val openSSHConfigFile = File.createTempFile("ssh", ".config")
-        log("writing open ssh config for host '$host' to '${openSSHConfigFile.absolutePath}'")
-        val sshConfig =
-            """
+    val openSSHConfigFile = File.createTempFile("ssh", ".config")
+    logInfo("writing open ssh config for host '$host' to '${openSSHConfigFile.absolutePath}'")
+    val sshConfig =
+        """
             Host $host
                 HostName $host
                 User root
@@ -43,22 +43,22 @@ class SSHTestContext(
                 StrictHostKeyChecking no
                 UserKnownHostsFile /dev/null
         """
-                .trimIndent()
-        openSSHConfigFile.writeText(sshConfig)
+            .trimIndent()
+    openSSHConfigFile.writeText(sshConfig)
 
-        log("run \"ssh -F '${openSSHConfigFile.absolutePath}' $username@${host}\" to access host")
-    }
+    logInfo("run 'ssh -F ${openSSHConfigFile.absolutePath} $username@$host' to access host")
+  }
 
-    private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, username, port)
+  private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, username, port)
 
-    fun command(command: String) = commandManager.sshCommand(command)
+  fun command(command: String) = commandManager.sshCommand(command)
 
-    fun fileExists(file: String) = commandManager.sshCommand("test -f $file").exitCode == 0
+  fun fileExists(file: String) = commandManager.sshCommand("test -f $file").exitCode == 0
 
-    fun filePermissions(file: String) =
-        commandManager.sshCommand("ls -ld $file | awk '{ print \$1; }'").stdout.trim()
+  fun filePermissions(file: String) =
+      commandManager.sshCommand("ls -ld $file | awk '{ print \$1; }'").stdout.trim()
 
-    fun download(file: String) = commandManager.download(file)
+  fun download(file: String) = commandManager.download(file)
 
-    fun upload(localFile: Path, remoteFile: String) = commandManager.upload(localFile, remoteFile)
+  fun upload(localFile: Path, remoteFile: String) = commandManager.upload(localFile, remoteFile)
 }

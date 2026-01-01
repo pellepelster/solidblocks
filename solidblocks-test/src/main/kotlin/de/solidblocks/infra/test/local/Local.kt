@@ -3,9 +3,9 @@ import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.local.LocalScriptBuilder
-import de.solidblocks.infra.test.log
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
+import de.solidblocks.utils.logInfo
 import java.io.Closeable
 import java.lang.Thread.sleep
 import java.nio.charset.Charset
@@ -13,14 +13,10 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.time.TimeSource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 
 class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
 
@@ -60,7 +56,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                 val process = processBuilder.start()
                 val stdinWriter = process.outputWriter()
 
-                log(start - start, "starting command '${command.joinToString(" ")}'")
+                logInfo("starting command '${command.joinToString(" ")}'", duration = start - start)
 
                 launch {
                   while (process.isAlive && !stdin.isClosedForReceive) {
@@ -108,7 +104,10 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                   }
 
                   if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
-                    log(start, "timeout for command exceeded ($timeout)")
+                    logInfo(
+                        "timeout for command exceeded ($timeout)",
+                        start = start,
+                    )
                   }
 
                   /*

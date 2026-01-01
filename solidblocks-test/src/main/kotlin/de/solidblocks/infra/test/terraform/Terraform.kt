@@ -1,8 +1,8 @@
 package de.solidblocks.infra.test.terraform
 
-import de.solidblocks.infra.test.LogType
 import de.solidblocks.infra.test.detectGolangPlatform
-import de.solidblocks.infra.test.log
+import de.solidblocks.utils.LogSource
+import de.solidblocks.utils.logInfo
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -69,18 +69,18 @@ class Terraform(
     val checksumFile = cacheDir.resolve("terraform_${version}_SHA256SUMS").toFile()
 
     if (checksumFile.exists()) {
-      log("Terraform checksums already downloaded at '$checksumFile'")
+      logInfo("Terraform checksums already downloaded at '$checksumFile'")
     } else {
       val checksumsUrl = "$baseUrl/terraform_${version}_SHA256SUMS"
-      log("downloading Terraform checksums from '$checksumsUrl' to '$checksumFile")
+      logInfo("downloading Terraform checksums from '$checksumsUrl' to '$checksumFile")
       downloadFile(checksumsUrl, checksumFile)
     }
 
     if (!checksumMatches(checksumFile, zipFile)) {
-      log("downloading Terraform '$version' for '${platform.os}/${platform.arch}'")
+      logInfo("downloading Terraform '$version' for '${platform.os}/${platform.arch}'")
       downloadFile("$baseUrl/$filename", zipFile)
     } else {
-      log("Terraform already downloaded at '$zipFile'")
+      logInfo("Terraform already downloaded at '$zipFile'")
     }
 
     if (!checksumMatches(checksumFile, zipFile)) {
@@ -90,7 +90,7 @@ class Terraform(
     }
 
     val terraformBinary = extractTerraform(zipFile, terraformBinary.toFile())
-    log("Terraform installed at '${terraformBinary.absolutePath}'")
+    logInfo("Terraform installed at '${terraformBinary.absolutePath}'")
 
     return terraformBinary
   }
@@ -130,7 +130,7 @@ class Terraform(
       var entry = zip.nextEntry
       while (entry != null) {
         if (entry.name == terraformBinaryFileName) {
-          log("Extracting Terraform binary to '$targetFile'")
+          logInfo("Extracting Terraform binary to '$targetFile'")
           targetFile.outputStream().use { output -> zip.copyTo(output) }
           targetFile.setExecutable(true)
           return targetFile
@@ -171,7 +171,7 @@ class Terraform(
       command: List<String>,
       streamLog: Boolean = true,
   ): Result = runBlocking {
-    log(
+    logInfo(
         "running '$terraformBinary ${command.joinToString(" ")}' in '$dir'",
     )
 
@@ -193,7 +193,7 @@ class Terraform(
           BufferedReader(InputStreamReader(process.inputStream)).use { reader ->
             reader.lineSequence().forEach {
               if (streamLog) {
-                log(it, LogType.STDOUT)
+                logInfo(it, LogSource.STDOUT)
               }
               stdOut.append(it)
             }
@@ -205,7 +205,7 @@ class Terraform(
           BufferedReader(InputStreamReader(process.errorStream)).use { reader ->
             reader.lineSequence().forEach {
               if (streamLog) {
-                log(it, LogType.STDERR)
+                logInfo(it, LogSource.STDERR)
               }
               stdErr.append(it)
             }
@@ -233,7 +233,7 @@ class Terraform(
   fun deleteLocalState() {
     val stateFile = dir.resolve("terraform.tfstate")
     if (stateFile.exists()) {
-      log("removing Terraform state '$stateFile'")
+      logInfo("removing Terraform state '$stateFile'")
       if (!stateFile.toFile().delete()) {
         throw RuntimeException("failed to remove Terraform state '$stateFile'")
       }

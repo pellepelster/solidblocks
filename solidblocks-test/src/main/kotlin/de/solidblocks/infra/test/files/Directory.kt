@@ -1,22 +1,11 @@
 package de.solidblocks.infra.test.files
 
-import de.solidblocks.infra.test.log
+import de.solidblocks.utils.logInfo
 import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.copyToRecursively
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.exists
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.name
-import kotlin.io.path.readBytes
+import kotlin.io.path.*
 import kotlin.time.TimeSource
 
 @OptIn(ExperimentalPathApi::class)
@@ -26,7 +15,7 @@ class DirectoryBuilder(
 ) : Closeable {
 
   init {
-    log(start, "created directory '$path'")
+    logInfo("created directory '$path'", start = start)
   }
 
   fun files() = Files.walk(path).filter { it.isRegularFile() }.toList()
@@ -51,13 +40,13 @@ class DirectoryBuilder(
 
   /** Deletes the content of the directory including all regular files and subdirectories. */
   fun clean() {
-    log(start, "deleting content of directory '$path'")
+    logInfo("deleting content of directory '$path'", start = start)
     Files.walk(path)
         .filter {
           it.toAbsolutePath() != path.toAbsolutePath() && (it.isRegularFile() || it.isDirectory())
         }
         .forEach {
-          log(start, "deleting  '$it'")
+          logInfo("deleting  '$it'", start = start)
           it.deleteRecursively()
         }
   }
@@ -86,7 +75,7 @@ class DirectoryBuilder(
       }
 
   override fun close() {
-    log(start, "deleting directory '$path'")
+    logInfo("deleting directory '$path'", start = start)
     path.deleteRecursively()
   }
 }

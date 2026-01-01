@@ -1,6 +1,6 @@
 package de.solidblocks.infra.test.files
 
-import de.solidblocks.infra.test.log
+import de.solidblocks.utils.logInfo
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -30,7 +30,10 @@ class FileBuilder(
     val file = this.path.resolve(name)
     File(file.toFile().absolutePath).writeBytes(content)
 
-    log(start, "created file '${file.toFile().absolutePath}' with size ${content.size}")
+    logInfo(
+        "created file '${file.toFile().absolutePath}' with size ${content.size}",
+        start = start,
+    )
 
     val permissions = Files.getPosixFilePermissions(file)
     permissions.add(PosixFilePermission.OWNER_EXECUTE)
@@ -69,11 +72,11 @@ class ZipFileBuilder(
       zipOut.close()
     }
 
-    log(
-        start,
+    logInfo(
         "created '${zipFile.toFile().absolutePath}' with ${entries.size} entries (${
                 entries.map { it.key }.joinToString(", ")
             })",
+        start = start,
     )
 
     return ZipFile(zipFile)
