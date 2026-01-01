@@ -40,7 +40,7 @@ class CloudInitScriptTest {
 
         val serverTestContext =
             hetznerTestContext.createServer(cloudInitScript.render(), sshKey, volumes = listOf(volume.id))
-        waitForSuccessfullProvisioning(serverTestContext)
+        waitForSuccessfulProvisioning(serverTestContext)
         var sshContext = serverTestContext.ssh()
 
         sshContext.fileExists("/tmp/foo-bar") shouldBe true
@@ -51,17 +51,18 @@ class CloudInitScriptTest {
 
         val randomFile = Files.createTempFile("random", ".txt").also { it.writeText(randomUUID) }
         sshContext.upload(randomFile.toAbsolutePath(), "/storage/data/${randomUUID}.txt")
+        sshContext.download("/storage/data/${randomUUID}.txt") shouldBe randomUUID.toByteArray()
         hetznerTestContext.destroyServer(serverTestContext)
 
         val recreatedServerTestContext =
             hetznerTestContext.createServer(cloudInitScript.render(), sshKey, volumes = listOf(volume.id))
-        waitForSuccessfullProvisioning(recreatedServerTestContext)
+        waitForSuccessfulProvisioning(recreatedServerTestContext)
 
         sshContext = recreatedServerTestContext.ssh()
         sshContext.download("/storage/data/${randomUUID}.txt") shouldBe randomUUID.toByteArray()
     }
 
-    private fun waitForSuccessfullProvisioning(serverTestContext: HetznerServerTestContext) {
+    private fun waitForSuccessfulProvisioning(serverTestContext: HetznerServerTestContext) {
         val hostTestContext = serverTestContext.host()
 
         await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(5)).until {

@@ -104,6 +104,9 @@ class HetznerServersApi(private val api: HetznerApi) :
         logCallback: ((String) -> Unit)? = null,
     ) = waitForAction(action.action, logCallback)
 
+    suspend fun shutdown(id: Long): ActionResponseWrapper =
+        api.post("v1/servers/$id/actions/shutdown") ?: throw RuntimeException("failed to shutdown server")
+
     suspend fun waitForAction(action: ActionResponse, logCallback: ((String) -> Unit)? = null) =
         waitForAction(action.id, logCallback)
 }

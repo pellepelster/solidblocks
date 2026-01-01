@@ -10,59 +10,63 @@ import de.solidblocks.infra.test.ssh.sshTestContext
 import de.solidblocks.infra.test.terraform.terraformTestContext
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.logInfo
+import localTestContext
 import java.io.Closeable
 import java.nio.file.Path
 import java.security.KeyPair
-import localTestContext
 
 class SolidblocksTestContext(val testId: String) : TestContext() {
 
-  private var cleanupAfterTest: Boolean = true
+    private var cleanupAfterTest: Boolean = true
 
-  private var failed: Boolean = false
+    private var failed: Boolean = false
 
-  private val tempDirs = mutableListOf<Closeable>()
+    private val tempDirs = mutableListOf<Closeable>()
 
-  fun createTempDir() = tempDir().apply { tempDirs.add(this) }
+    fun createTempDir() = tempDir().apply { tempDirs.add(this) }
 
-  fun local() = localTestContext().apply { tempDirs.add(this) }
+    fun local() = localTestContext().apply { tempDirs.add(this) }
 
-  fun docker(image: DockerTestImage) = dockerTestContext(image).apply { tempDirs.add(this) }
+    fun docker(image: DockerTestImage) = dockerTestContext(image).apply { tempDirs.add(this) }
 
-  fun terraform(dir: Path, version: String? = null) =
-      terraformTestContext(dir, version).also { testContexts.add(it) }
+    fun terraform(dir: Path, version: String? = null) =
+        terraformTestContext(dir, version).also { testContexts.add(it) }
 
-  fun terraform(dir: String, version: String? = null) =
-      terraformTestContext(Path.of(dir), version).also { testContexts.add(it) }
+    fun terraform(dir: String, version: String? = null) =
+        terraformTestContext(Path.of(dir), version).also { testContexts.add(it) }
 
-  fun ssh(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-      sshTestContext(host, SSHKeyUtils.tryLoadKey(privateKey), username, port)
+    fun ssh(host: String, privateKey: String, username: String = "root", port: Int = 22) =
+        sshTestContext(host, SSHKeyUtils.tryLoadKey(privateKey), username, port).also {
+            testContexts.add(it)
+        }
 
-  fun ssh(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
-      sshTestContext(host, keyPair, username, port)
+    fun ssh(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
+        sshTestContext(host, keyPair, username, port).also {
+            testContexts.add(it)
+        }
 
-  fun host(host: String) = hostTestContext(host)
+    fun host(host: String) = hostTestContext(host)
 
-  fun hetzner(hcloudToken: String) =
-      hetznerTestContext(hcloudToken, testId).also { testContexts.add(it) }
+    fun hetzner(hcloudToken: String) =
+        hetznerTestContext(hcloudToken, testId).also { testContexts.add(it) }
 
-  fun cloudInit(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-      cloudInitTestContext(host, privateKey, username, port).also { testContexts.add(it) }
+    fun cloudInit(host: String, privateKey: String, username: String = "root", port: Int = 22) =
+        cloudInitTestContext(host, privateKey, username, port).also { testContexts.add(it) }
 
-  override fun afterAll() {
-    if (!cleanupAfterTest) {
-      logInfo("skipping cleanup")
-      return
+    override fun afterAll() {
+        if (!cleanupAfterTest) {
+            logInfo("skipping cleanup")
+            return
+        }
+
+        tempDirs.forEach { it.close() }
     }
 
-    tempDirs.forEach { it.close() }
-  }
+    fun cleanupAfterTestFailure(cleanup: Boolean) {
+        this.cleanupAfterTest = cleanup
+    }
 
-  fun cleanupAfterTestFailure(cleanup: Boolean) {
-    this.cleanupAfterTest = cleanup
-  }
-
-  fun markFailed() {
-    failed = true
-  }
+    fun markFailed() {
+        failed = true
+    }
 }

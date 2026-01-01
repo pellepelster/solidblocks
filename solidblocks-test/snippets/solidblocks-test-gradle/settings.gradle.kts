@@ -4,8 +4,10 @@ plugins {
 
 rootProject.name = "solidblocks-test-gradle"
 
+/*
 includeBuild("../../../") {
     dependencySubstitution {
         substitute(module("de.solidblocks:infra-test")).using(project(":solidblocks-test"))
     }
 }
+*/
