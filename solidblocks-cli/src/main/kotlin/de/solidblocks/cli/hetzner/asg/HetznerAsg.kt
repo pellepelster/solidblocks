@@ -390,6 +390,7 @@ class HetznerAsg(hcloudToken: String) {
                         sshKeyRefs.map { it.reference.toLong() },
                         networks.map { it.id.toString() } + networkRefs.map { it.reference },
                         firewallRefs.map { it.reference },
+                        emptyList(),
                         userData,
                         labels.rawLabels(),
                         PublicNet(enableIpv4, enableIpv6),

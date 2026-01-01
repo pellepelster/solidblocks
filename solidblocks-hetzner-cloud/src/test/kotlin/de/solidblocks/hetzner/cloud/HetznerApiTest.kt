@@ -4,6 +4,7 @@ import de.solidblocks.hetzner.cloud.model.FilterValue
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue.Equals
+import de.solidblocks.hetzner.cloud.model.toLabelSelectors
 import de.solidblocks.hetzner.cloud.resources.*
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
@@ -17,6 +18,7 @@ import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
@@ -30,17 +32,36 @@ class HetznerApiTest {
     val hcloudToken = System.getenv("HCLOUD_TOKEN").toString()
     val api = HetznerApi(hcloudToken)
 
-    @BeforeAll
-    fun beforeAll() {
+    val testLabels = mapOf("blcks.de/managed-by" to "test")
+
+    fun cleanup() {
         runBlocking {
             mapOf("type" to LabelSelectorValue.NotEquals(ImageType.SNAPSHOT.name.lowercase()))
             api.servers
-                .list(labelSelectors = mapOf("test" to Equals("true")))
+                .list(labelSelectors = testLabels.toLabelSelectors())
                 .forEach {
                     val delete = api.servers.delete(it.id)
                     api.servers.waitForAction(delete) shouldBe true
                 }
+
+            api.sshKeys.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
+                api.sshKeys.delete(it.id)
+            }
+
+            api.volumes.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
+                api.volumes.delete(it.id)
+            }
         }
+    }
+
+    @BeforeAll
+    fun beforeAll() {
+        cleanup()
+    }
+
+    @AfterAll
+    fun afterAll() {
+        cleanup()
     }
 
     @Test
@@ -60,6 +81,7 @@ class HetznerApiTest {
                             "",
                             "",
                             "",
+                            emptyList(),
                             emptyList(),
                             emptyList(),
                             emptyList(),
@@ -220,13 +242,14 @@ class HetznerApiTest {
     }
 
     @Test
-    fun testListVolumesPaged() {
-        runBlocking { assertEquals(13, api.volumes.listPaged().volumes.size) }
-    }
-
-    @Test
-    fun testListVolumes() {
-        runBlocking { assertEquals(13, api.volumes.list().size) }
+    fun testVolumeFlow() {
+        runBlocking {
+            api.volumes.list() shouldHaveSize 0
+            val result = api.volumes.create(VolumeCreateRequest("volume1", 16, "nbg1", labels = testLabels, format = VolumeFormat.ext4))
+            result!!.volume.linuxDevice shouldNotBe null
+            result.volume.format shouldBe VolumeFormat.ext4
+            api.volumes.list() shouldHaveSize 1
+        }
     }
 
     @Test
@@ -336,5 +359,4 @@ class HetznerApiTest {
             rrSetsApi.list().map { it.name } shouldNotContain name
         }
     }
-
 }

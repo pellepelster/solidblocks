@@ -5,12 +5,35 @@ import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
 import de.solidblocks.hetzner.cloud.model.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+enum class VolumeFormat {
+    ext4, xfs
+}
+
+@Serializable
+data class VolumeCreateRequest(
+    val name: String,
+    val size: Int,
+    val location: String,
+    @SerialName("format") val format: VolumeFormat,
+    val automount: Boolean = false,
+    val labels: Map<String, String>? = null,
+)
+
+@Serializable
+data class VolumeResponseWrapper(
+    @SerialName("volume") val volume: VolumeResponse,
+)
 
 @Serializable
 data class VolumeResponse(
     override val id: Long,
     override val name: String,
+    @SerialName("format") val format: VolumeFormat,
+    @SerialName("linux_device")
+    val linuxDevice: String,
     override val protection: HetznerDeleteProtectionResponse,
     val server: Int?,
 ) : HetznerDeleteProtectedResource<Long>
@@ -41,6 +64,10 @@ class HetznerVolumesApi(private val api: HetznerApi) :
         api.get("v1/volumes/actions/$id") ?: throw RuntimeException("failed to get volume action")
 
     override suspend fun delete(id: Long) = api.simpleDelete("v1/volumes/$id")
+
+    suspend fun create(request: VolumeCreateRequest) =
+        api.post<VolumeResponseWrapper>("v1/volumes", request)
+
 }
 
 @Serializable

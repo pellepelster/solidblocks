@@ -18,17 +18,23 @@ import java.util.concurrent.TimeUnit
 @ExtendWith(SolidblocksTest::class)
 class CloudInitScriptTest {
 
+    init {
+        System.setProperty("BLCKS_DEBUG", "1")
+    }
+
     @Test
     fun testIntegration(testContext: SolidblocksTestContext) {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
+        val volume = hetznerTestContext.createVolume()
+
         val content = UUID.randomUUID().toString()
         val cloudInitScript = CloudInitScript()
-        //cloudInitScript.mounts.add(Mount("dd", "dd"))
+        cloudInitScript.mounts.add(Mount(volume.linuxDevice, "/storage/data"))
 
         cloudInitScript.files.add(File(content.toByteArray(), "/tmp/foo-bar"))
 
-        val serverTestContext = hetznerTestContext.createServer(cloudInitScript.render())
+        val serverTestContext = hetznerTestContext.createServer(cloudInitScript.render(), volumes = listOf(volume.id))
         val hostTestContext = serverTestContext.host()
 
         await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(5)).until {
@@ -65,9 +71,15 @@ class CloudInitScriptTest {
 
     @Test
     fun testRender() {
-        val rendered = CloudInitScript().render()
+        val rendered = CloudInitScript().also {
+            it.mounts.add(Mount("/dev/device1", "/mount/mount1"))
+        }.render()
         rendered shouldNotContain VARIABLES_PLACEHOLDER
         rendered shouldNotContain SCRIPT_PLACEHOLDER
+
+        println("=======================================================================")
+        println(rendered)
+        println("=======================================================================")
     }
 
     @Test

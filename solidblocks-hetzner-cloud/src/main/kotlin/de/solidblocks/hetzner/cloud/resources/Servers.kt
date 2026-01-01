@@ -23,6 +23,7 @@ data class ServerCreateRequest(
     @SerialName("ssh_keys") val sshKeys: List<Long>? = null,
     val networks: List<String>? = null,
     val firewall: List<String>? = null,
+    val volumes: List<Long>? = null,
     @SerialName("user_data") val userData: String? = null,
     val labels: Map<String, String>? = null,
     @SerialName("public_net") val publicNet: PublicNet? = null,

@@ -160,6 +160,10 @@ public class HetznerApi(hcloudToken: String) {
 
         if (this.status.isBadRequest()) {
             val error: HetznerApiErrorWrapper = this.body()
+            if (isDebug()) {
+                println("=== api error ===")
+                println(error)
+            }
             throw HetznerApiException(error.error, this.request.url)
         }
 
@@ -177,11 +181,17 @@ public class HetznerApi(hcloudToken: String) {
 
         if (this.status.isBadRequest()) {
             val error: HetznerApiErrorWrapper = this.body()
+            if (isDebug()) {
+                println("=== api error ===")
+                println(error)
+            }
             throw HetznerApiException(error.error, this.request.url)
         }
 
         throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
+
+    private fun isDebug() = System.getProperty("BLCKS_DEBUG") != null
 
     fun waitForAction(
         action: suspend () -> ActionResponseWrapper,

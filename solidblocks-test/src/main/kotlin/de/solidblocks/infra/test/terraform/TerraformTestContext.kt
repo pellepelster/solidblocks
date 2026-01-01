@@ -43,6 +43,5 @@ class TerraformTestContext(
 
   override fun afterAll() {
     destroy()
-    super.afterAll()
   }
 }

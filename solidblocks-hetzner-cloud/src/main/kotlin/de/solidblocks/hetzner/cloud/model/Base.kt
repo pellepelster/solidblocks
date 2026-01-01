@@ -46,6 +46,9 @@ sealed class LabelSelectorValue {
     abstract fun query(key: String): String
 }
 
+fun Map<String, String>.toLabelSelectors() = this.entries.associate { it.key to LabelSelectorValue.Equals(it.value) }
+
+
 sealed class FilterValue {
     data class Equals(val value: String) : FilterValue() {
         override val query: String

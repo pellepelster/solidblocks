@@ -56,6 +56,11 @@ data class CloudInitScript(var environmentVariables: Map<String, String> = mutab
             sw.appendLine("echo \"${Base64.encode(file.content)}\" | base64 -d > ${file.path}")
         }
 
+        sw.appendLine()
+        mounts.forEach {
+            sw.appendLine("storage_mount ${it.storageDevice} ${it.storageDir} ${it.filesystem.name}")
+        }
+
         val variables = mapOf("SOLIDBLOCKS_CLOUD_INIT_URL" to "https://test-blcks-bootstrap.s3.eu-central-1.amazonaws.com/solidblocks/solidblocks-cloud-init/v0.0.0/solidblocks-cloud-init-v0.0.0.zip")
         return template.replace(VARIABLES_PLACEHOLDER, variables.entries.map {
             "export ${it.key}='${it.value}'"
