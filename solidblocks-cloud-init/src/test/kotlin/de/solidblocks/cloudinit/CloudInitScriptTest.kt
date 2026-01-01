@@ -5,15 +5,18 @@ import de.solidblocks.cloudinit.model.CloudInitScript.Companion.SCRIPT_PLACEHOLD
 import de.solidblocks.cloudinit.model.CloudInitScript.Companion.VARIABLES_PLACEHOLDER
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
+import de.solidblocks.infra.test.hetzner.HetznerServerTestContext
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.nio.file.Files
 import java.time.Duration.ofSeconds
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.writeText
 
 @ExtendWith(SolidblocksTest::class)
 class CloudInitScriptTest {
@@ -27,14 +30,38 @@ class CloudInitScriptTest {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val volume = hetznerTestContext.createVolume()
+        val sshKey = hetznerTestContext.createSSHKey()
+
 
         val content = UUID.randomUUID().toString()
         val cloudInitScript = CloudInitScript()
         cloudInitScript.mounts.add(Mount(volume.linuxDevice, "/storage/data"))
-
         cloudInitScript.files.add(File(content.toByteArray(), "/tmp/foo-bar"))
 
-        val serverTestContext = hetznerTestContext.createServer(cloudInitScript.render(), volumes = listOf(volume.id))
+        val serverTestContext =
+            hetznerTestContext.createServer(cloudInitScript.render(), sshKey, volumes = listOf(volume.id))
+        waitForSuccessfullProvisioning(serverTestContext)
+        var sshContext = serverTestContext.ssh()
+
+        sshContext.fileExists("/tmp/foo-bar") shouldBe true
+        sshContext.filePermissions("/tmp/foo-bar") shouldBe "-rw-------"
+        sshContext.download("/tmp/foo-bar") shouldBe content.toByteArray()
+
+        val randomUUID = UUID.randomUUID().toString()
+
+        val randomFile = Files.createTempFile("random", ".txt").also { it.writeText(randomUUID) }
+        sshContext.upload(randomFile.toAbsolutePath(), "/storage/data/${randomUUID}.txt")
+        hetznerTestContext.destroyServer(serverTestContext)
+
+        val recreatedServerTestContext =
+            hetznerTestContext.createServer(cloudInitScript.render(), sshKey, volumes = listOf(volume.id))
+        waitForSuccessfullProvisioning(recreatedServerTestContext)
+
+        sshContext = recreatedServerTestContext.ssh()
+        sshContext.download("/storage/data/${randomUUID}.txt") shouldBe randomUUID.toByteArray()
+    }
+
+    private fun waitForSuccessfullProvisioning(serverTestContext: HetznerServerTestContext) {
         val hostTestContext = serverTestContext.host()
 
         await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(5)).until {
@@ -47,14 +74,7 @@ class CloudInitScriptTest {
         await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
             cloudInitContext.isFinished()
         }
-
         cloudInitContext.result()?.hasErrors shouldBe false
-
-        val sshContext = serverTestContext.ssh()
-
-        sshContext.fileExists("/tmp/foo-bar") shouldBe true
-        sshContext.filePermissions("/tmp/foo-bar") shouldBe "-rw-------"
-        sshContext.download("/tmp/foo-bar") shouldBe content.toByteArray()
     }
 
     @Test

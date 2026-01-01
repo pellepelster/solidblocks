@@ -2,7 +2,10 @@ package de.solidblocks.infra.test.hetzner
 
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.model.toLabelSelectors
-import de.solidblocks.hetzner.cloud.resources.*
+import de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest
+import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
+import de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest
+import de.solidblocks.hetzner.cloud.resources.VolumeFormat
 import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.cloudinit.cloudInitTestContext
 import de.solidblocks.infra.test.host.hostTestContext
@@ -14,7 +17,7 @@ import kotlinx.coroutines.runBlocking
 fun hetznerTestContext(hcloudToken: String, testId: String) =
     HetznerTestContext(hcloudToken, testId)
 
-class HetznerServerTestContext(val host: String, val privateKey: String) : TestContext() {
+class HetznerServerTestContext(val id: Long, val host: String, val privateKey: String) : TestContext() {
 
     fun cloudInit(username: String = "root", port: Int = 22) =
         cloudInitTestContext(host, privateKey, username, port).also { testContexts.add(it) }
@@ -47,6 +50,7 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
 
     fun createServer(
         userData: String,
+        sshKey: Long,
         location: String? = null,
         type: String = "cx23",
         image: String = "debian-13",
@@ -55,15 +59,13 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
     ): HetznerServerTestContext = runBlocking {
         val resourceName = name ?: testId
 
-        val newSSHKey = createSSHKey(resourceName)
-
         val request =
             ServerCreateRequest(
                 resourceName,
                 location ?: DEFAULT_LOCATION,
                 type,
                 image,
-                sshKeys = listOf(newSSHKey.sshKey.id),
+                sshKeys = listOf(sshKey),
                 userData = userData,
                 labels = defaultLabels,
                 volumes = volumes
@@ -89,23 +91,27 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
 
         log("created server '$resourceName' with ip '${newServer.server.publicNetwork!!.ipv4!!.ip}'")
         HetznerServerTestContext(
+            newServer.server.id,
             newServer.server.publicNetwork!!.ipv4!!.ip,
             testSSHhKey.privateKey,
         )
             .also { testContexts.add(it) }
     }
 
-    private suspend fun createSSHKey(resourceName: String): SSHKeyResponseWrapper {
-        log("creating ssh-key '$resourceName'")
-        val newSSHKey =
-            api.sshKeys.create(
-                SSHKeysCreateRequest(
-                    testId,
-                    SSHKeyUtils.ED25519.publicKeyToOpenSsh(testSSHhKey.publicKey),
-                    defaultLabels,
-                ),
-            ) ?: throw RuntimeException("failed to create ssh-key '$testId'")
-        return newSSHKey
+    fun createSSHKey(name: String? = null): Long {
+        return runBlocking {
+            val resourceName = name ?: testId
+            log("creating ssh-key '$resourceName'")
+            val newSSHKey =
+                api.sshKeys.create(
+                    SSHKeysCreateRequest(
+                        testId,
+                        SSHKeyUtils.ED25519.publicKeyToOpenSsh(testSSHhKey.publicKey),
+                        defaultLabels,
+                    ),
+                ) ?: throw RuntimeException("failed to create ssh-key '$testId'")
+            newSSHKey.sshKey.id
+        }
     }
 
     override fun beforeAll() {
@@ -177,6 +183,21 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
             )!!.volume.let {
                 Volume(it.id, it.linuxDevice)
             }
+        }
+    }
+
+    fun destroyServer(server: HetznerServerTestContext) {
+        runBlocking {
+            api.waitForAction(
+                {
+                    log("deleting server '${server.id}'")
+                    api.servers.delete(server.id)
+                },
+                {
+                    log("waiting for server '${server.id}' deletion")
+                    api.servers.action(it)
+                },
+            )
         }
     }
 }
