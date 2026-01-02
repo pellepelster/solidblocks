@@ -1,9 +1,12 @@
 FROM debian:bookworm AS base
 
+ENV POSTGRES_KEY_CHECKSUM="0144068502a1eddd2a0280ede10ef607d1ec592ce819940991203941564e8e76"
+
 RUN apt-get update && \
     apt-get -y install curl ca-certificates locales && \
     install -d /usr/share/postgresql-common/pgdg && \
     curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
+    echo "${POSTGRES_KEY_CHECKSUM}  /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc" | sha256sum -c && \
     . /etc/os-release && \
     echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
