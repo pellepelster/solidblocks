@@ -12,6 +12,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     testImplementation("de.solidblocks:infra-test:v0.4.11-rc2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
 }
 
 tasks.named<Test>("test") {

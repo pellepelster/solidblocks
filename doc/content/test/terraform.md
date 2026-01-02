@@ -25,6 +25,8 @@ The resources described in this file can be created using the Terraform test con
 
 ##### Options
 
+The following options can be set to configure the Terraform process
+
 ```kotlin
 {{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/terraform/TerraformOptions.kt" %}}
 ```

@@ -83,8 +83,9 @@ All produced log output is marked with its origin, to make it easy to distinguis
 
 ## Test Contexts
 
-Different test functions and assertions are grouped logically in test contexts, and can assert different infrastructure related properties and behaviors. Tests contexts can also be derived from other test contexts, for example the 
+Different test functions and assertions are grouped logically in test contexts, and can assert different infrastructure related properties and behaviors. Tests contexts can also be derived from other test contexts, for example a `CloudInitTestContext` ❶ can directly be derived from the `SSHTestcontext` because it also uses SSH under the hood.
 
+Resources created from the different test contexts are cleaned up when all tests are run, except when the `cleanupAfterTestFailure` is set to `false` which then leaves everything in place for debugging purposes.  
 
 ```kotlin
 {{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/TestContexts.kt" %}}

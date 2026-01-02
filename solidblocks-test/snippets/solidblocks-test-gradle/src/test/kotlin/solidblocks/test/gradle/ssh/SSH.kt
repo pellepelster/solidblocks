@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(SolidblocksTest::class)
-public class SSHContext {
+public class SSH {
 
     @Test
     fun terraformExtension(context: SolidblocksTestContext) {

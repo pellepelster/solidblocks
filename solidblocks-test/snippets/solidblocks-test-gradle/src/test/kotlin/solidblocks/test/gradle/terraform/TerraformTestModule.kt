@@ -8,7 +8,7 @@ public class TerraformTestModule {
 
     @Test
     fun testTerraformContext() {
-        val terraform1 = TerraformTestModule::class.java.getResource("/module1").path
+        val terraform1 = TerraformTestModule::javaClass.getResource("/module1").path
 
         val terraform = terraformTestContext(terraform1)
         terraform.init()
