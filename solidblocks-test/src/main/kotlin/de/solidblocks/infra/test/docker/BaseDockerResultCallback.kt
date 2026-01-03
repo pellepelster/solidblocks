@@ -21,17 +21,6 @@ abstract class BaseDockerResultCallback(
 
   override fun onNext(frame: Frame) {
     val payload = frame.payload.decodeToString()
-    logInfo(
-        payload,
-        when (frame.streamType) {
-          StreamType.STDOUT -> LogSource.STDOUT
-          StreamType.STDERR -> LogSource.STDERR
-          else -> {
-            throw RuntimeException("unsupported docker log stream type: ${frame.streamType}")
-          }
-        },
-        TimeSource.Monotonic.markNow() - start,
-    )
 
     payload
         .lines()
