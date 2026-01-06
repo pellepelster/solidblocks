@@ -28,6 +28,8 @@ module "web_s3_docker" {
 
   docker_ro_users = []
 
+  disable_volume_delete_protection = var.disable_volume_delete_protection
+
   s3_buckets = [
     { name                     = var.bucket1_name,
       web_access_public_enable = true,

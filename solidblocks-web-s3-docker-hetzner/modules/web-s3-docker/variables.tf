@@ -132,7 +132,6 @@ variable "ssh_host_cert_ecdsa" {
   default     = ""
 }
 
-
 variable "disable_volume_delete_protection" {
   type    = bool
   default = false

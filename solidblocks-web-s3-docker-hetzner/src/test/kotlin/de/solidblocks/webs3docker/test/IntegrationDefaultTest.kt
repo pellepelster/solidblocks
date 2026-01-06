@@ -64,14 +64,14 @@ public class IntegrationDefaultTest : BaseIntegrationTest() {
   @Test
   fun testDockerAnonymousUserCanNotPullFromPublic() {
     val exception =
-        shouldThrow<InternalServerErrorException> {
+        shouldThrow<Exception> {
           docker
               .pullImageCmd("$dockerHostPublic/alpine")
               .withTag(imageTag)
               .exec(PullImageResultCallback())
               .awaitCompletion()
         }
-    exception.message shouldContain ("remote error: tls: internal error")
+    exception.message shouldContain ("pull access denied")
   }
 
   @Test

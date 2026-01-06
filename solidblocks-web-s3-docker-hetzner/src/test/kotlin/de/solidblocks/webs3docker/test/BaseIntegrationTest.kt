@@ -24,7 +24,7 @@ open class BaseIntegrationTest {
   lateinit var s3Buckets: List<S3Bucket>
   lateinit var s3Host: String
   lateinit var dockerHostPrivate: String
-  lateinit var dockerHostPublic: String
+  var dockerHostPublic: String? = null
   lateinit var dockerRwUsers: List<DockerUser>
 
   fun init(context: SolidblocksTestContext, dockerEnable: Boolean, dockerPublicEnable: Boolean) {
@@ -37,6 +37,7 @@ open class BaseIntegrationTest {
     terraform.addVariable("test_id", baseOutput.getString("test_id"))
     terraform.addVariable("docker_enable", dockerEnable)
     terraform.addVariable("docker_public_enable", dockerPublicEnable)
+    terraform.addVariable("disable_volume_delete_protection", true)
 
     terraform.init()
     terraform.apply()
@@ -49,11 +50,11 @@ open class BaseIntegrationTest {
     dockerHostPrivate = output.getString("docker_host_private")
     println("dockerHostPrivate: $dockerHostPrivate")
 
-    dockerHostPublic = output.getString("docker_host_public")
+    dockerHostPublic = output.getOptionalString("docker_host_public")
     println("dockerHostPublic: $dockerHostPublic")
 
-    _root_ide_package_.de.solidblocks.webs3docker.test.waitForUrl("https://$dockerHostPrivate")
-    _root_ide_package_.de.solidblocks.webs3docker.test.waitForUrl("https://$s3Host")
+    waitForUrl("https://$dockerHostPrivate")
+    waitForUrl("https://$s3Host")
 
     println("pushing docker image '$dockerHostPrivate/alpine'")
     dockerRwUsers = output.getList("docker_rw_users", DockerUser::class)

@@ -19,3 +19,7 @@ variable "docker_public_enable" {
 variable "docker_enable" {
   type = bool
 }
+
+variable "disable_volume_delete_protection" {
+  type = bool
+}
