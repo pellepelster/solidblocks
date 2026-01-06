@@ -41,7 +41,7 @@ class TerraformTestContext(
   fun addEnvironmentVariable(name: String, value: Any) =
       terraform.addEnvironmentVariable(name, value)
 
-  override fun afterAll() {
+  override fun cleanUp() {
     destroy()
   }
 }

@@ -48,7 +48,7 @@ public class SolidblocksTest : ParameterResolver, BeforeAllCallback, AfterAllCal
 
     contexts.values.forEach { allContexts(allContexts, it) }
 
-    return allContexts.sortedBy { it.priority }.toList()
+    return allContexts.sortedByDescending { it.order }.toList()
   }
 
   fun allContexts(allContexts: MutableList<TestContext>, context: TestContext) {
@@ -62,6 +62,7 @@ public class SolidblocksTest : ParameterResolver, BeforeAllCallback, AfterAllCal
 
   override fun afterAll(context: ExtensionContext) {
     allContexts().forEach { it.afterAll() }
+    allContexts().forEach { it.cleanUp() }
   }
 
   override fun beforeAll(context: ExtensionContext) {

@@ -17,32 +17,32 @@ class SshCommandManager(
     val port: Int = 22,
 ) : Closeable {
 
-    val sshClient = SSHClient(host, keyPair, username, port)
+  val sshClient = SSHClient(host, keyPair, username, port)
 
-    @OptIn(ExperimentalTime::class)
-    fun sshCommand(
-        command: String,
-    ): CommandResult<OutputLine> {
-        val start = Clock.System.now()
-        val result = sshClient.command(command)
-        val end = Clock.System.now()
+  @OptIn(ExperimentalTime::class)
+  fun sshCommand(
+      command: String,
+  ): CommandResult<OutputLine> {
+    val start = Clock.System.now()
+    val result = sshClient.command(command)
+    val end = Clock.System.now()
 
-        val output =
-            result.stdOut.lines().map { line -> OutputLine(line, OutputType.STDOUT) } +
-                    result.stdErr.lines().map { line -> OutputLine(line, OutputType.STDERR) }
+    val output =
+        result.stdOut.lines().map { line -> OutputLine(line, OutputType.STDOUT) } +
+            result.stdErr.lines().map { line -> OutputLine(line, OutputType.STDERR) }
 
-        return CommandResult(
-            result.exitCode,
-            end.minus(start),
-            output,
-        )
-    }
+    return CommandResult(
+        result.exitCode,
+        end.minus(start),
+        output,
+    )
+  }
 
-    fun download(file: String) = sshClient.download(file)
+  fun download(file: String) = sshClient.download(file)
 
-    fun upload(localFile: Path, remoteFile: String) = sshClient.upload(localFile, remoteFile)
+  fun upload(localFile: Path, remoteFile: String) = sshClient.upload(localFile, remoteFile)
 
-    override fun close() {
-        sshClient.close()
-    }
+  override fun close() {
+    sshClient.close()
+  }
 }

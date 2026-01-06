@@ -5,8 +5,6 @@ import com.github.dockerjava.api.model.Frame
 import com.github.dockerjava.api.model.StreamType
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
-import de.solidblocks.utils.LogSource
-import de.solidblocks.utils.logInfo
 import java.io.Closeable
 import kotlin.time.TimeSource
 
