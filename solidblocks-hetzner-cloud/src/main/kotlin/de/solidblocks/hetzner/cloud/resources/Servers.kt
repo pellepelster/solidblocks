@@ -42,10 +42,20 @@ data class ServerResponseWrapper(
 )
 
 @Serializable
+data class ServerUpdateRequest(
+    val name: String? = null,
+    val labels: Map<String, String>? = null,
+)
+
+@Serializable
 data class ServerCreateResponseWrapper(
     @SerialName("server") val server: ServerResponse,
     @SerialName("action") val action: ActionResponse,
 )
+
+enum class ServerStatus {
+    initializing, starting, stopping, off, deleting, migrating, rebuilding, unknown
+}
 
 @Serializable
 data class ServerResponse
@@ -54,6 +64,8 @@ constructor(
     override val id: Long,
     override val name: String,
     override val protection: HetznerDeleteProtectionResponse,
+    val status: ServerStatus,
+    val volumes: List<Long>,
     val labels: Map<String, String> = emptyMap(),
     @SerialName("private_net") val privateNetwork: List<PrivateNetworkResponse> = emptyList(),
     @SerialName("public_net") val publicNetwork: PublicNetworkResponse? = null,
@@ -96,16 +108,19 @@ class HetznerServersApi(private val api: HetznerApi) :
     suspend fun create(request: ServerCreateRequest) =
         api.post<ServerCreateResponseWrapper>("v1/servers", request)
 
+    suspend fun update(id: Long, request: ServerUpdateRequest) =
+        api.put<ServerResponseWrapper>("v1/servers/${id}", request)
+
     suspend fun waitForAction(id: Long, logCallback: ((String) -> Unit)? = null) =
         api.waitForAction(id, logCallback, { api.servers.action(it) })
+
+    suspend fun shutdown(id: Long): ActionResponseWrapper =
+        api.post("v1/servers/$id/actions/shutdown") ?: throw RuntimeException("failed to shutdown server")
 
     suspend fun waitForAction(
         action: ActionResponseWrapper,
         logCallback: ((String) -> Unit)? = null,
     ) = waitForAction(action.action, logCallback)
-
-    suspend fun shutdown(id: Long): ActionResponseWrapper =
-        api.post("v1/servers/$id/actions/shutdown") ?: throw RuntimeException("failed to shutdown server")
 
     suspend fun waitForAction(action: ActionResponse, logCallback: ((String) -> Unit)? = null) =
         waitForAction(action.id, logCallback)

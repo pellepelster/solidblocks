@@ -49,6 +49,8 @@ class HetznerApiTest {
             }
 
             api.volumes.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
+                val result = api.volumes.changeDeleteProtection(it.id, false)
+                api.volumes.waitForAction(result) shouldBe true
                 api.volumes.delete(it.id)
             }
         }
@@ -142,7 +144,7 @@ class HetznerApiTest {
                     ServerCreateRequest(
                         name,
                         "nbg1",
-                        "cx22",
+                        "cx23",
                         image = "debian-12",
                         userData = "",
                         labels = mapOf("test" to "true"),
@@ -153,9 +155,9 @@ class HetznerApiTest {
             createdServer!!.server.name shouldBe name
 
             createdServer.action shouldNotBe null
-            createdServer.action!!.command shouldBe "create_server"
+            createdServer.action.command shouldBe "create_server"
 
-            assertSoftly(api.servers.actions(createdServer.server.id)!!) {
+            assertSoftly(api.servers.actions(createdServer.server.id)) {
                 it.actions shouldHaveSize 2
                 it.actions.count { it.command == "create_server" } shouldBe 1
                 it.actions.count { it.command == "start_server" } shouldBe 1
@@ -167,11 +169,16 @@ class HetznerApiTest {
                 .size shouldBe oldServerCountFiltered + 1
             api.servers.waitForAction(createdServer.action.id) shouldBe true
 
-            val serverByName = api.servers.get(createdServer.server.name)
-            val serverById = api.servers.get(createdServer.server.id)
+            val byName = api.servers.get(createdServer.server.name)!!
+            val byId = api.servers.get(createdServer.server.id)!!
 
-            serverById?.name shouldBe createdServer.server.name
-            serverByName?.name shouldBe createdServer.server.name
+            byId.name shouldBe createdServer.server.name
+            byName.name shouldBe createdServer.server.name
+
+            api.servers.update(byId.id, ServerUpdateRequest(labels = mapOf("test" to "true", "foo" to "bar")))
+            api.servers
+                .list(labelSelectors = mapOf("foo" to Equals("bar")))
+                .size shouldBe oldServerCountFiltered + 1
 
             val delete = api.servers.delete(createdServer.server.id)
             api.servers.waitForAction(delete) shouldBe true
@@ -244,11 +251,39 @@ class HetznerApiTest {
     @Test
     fun testVolumeFlow() {
         runBlocking {
-            api.volumes.list() shouldHaveSize 0
-            val result = api.volumes.create(VolumeCreateRequest("volume1", 16, "nbg1", labels = testLabels, format = VolumeFormat.ext4))
+            api.volumes.list(labelSelectors = testLabels.toLabelSelectors()) shouldHaveSize 0
+            val result = api.volumes.create(
+                VolumeCreateRequest(
+                    "volume1",
+                    16,
+                    "nbg1",
+                    labels = testLabels,
+                    format = VolumeFormat.ext4
+                )
+            )
             result!!.volume.linuxDevice shouldNotBe null
             result.volume.format shouldBe VolumeFormat.ext4
             api.volumes.list() shouldHaveSize 1
+
+            val byName = api.volumes.get(result.volume.name)!!
+            val byId = api.volumes.get(result.volume.id)!!
+
+            byId.name shouldBe result.volume.name
+            byName.name shouldBe result.volume.name
+
+            val random = UUID.randomUUID().toString()
+            api.volumes.update(byId.id, VolumeUpdateRequest(labels = mapOf("test" to "true", "foo" to random)))
+            api.volumes
+                .list(labelSelectors = mapOf("foo" to Equals(random)))
+                .size shouldBe 1
+
+            val enableDeleteProtection = api.volumes.changeDeleteProtection(byId.id, true)
+            api.volumes.waitForAction(enableDeleteProtection)
+
+            val disableDeleteProtection = api.volumes.changeDeleteProtection(byId.id, false)
+            api.volumes.waitForAction(disableDeleteProtection)
+
+            api.volumes.delete(byId.id) shouldBe true
         }
     }
 

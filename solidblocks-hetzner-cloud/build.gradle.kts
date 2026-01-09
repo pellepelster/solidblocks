@@ -47,9 +47,12 @@ mavenPublishing {
 }
 
 dependencies {
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     implementation("io.ktor:ktor-client-resources:3.1.2")
     implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("io.ktor:ktor-client-java:3.1.2")
     implementation("io.ktor:ktor-client-logging:3.1.2")
+
+    testImplementation("org.slf4j:slf4j-simple:2.0.13")
 }

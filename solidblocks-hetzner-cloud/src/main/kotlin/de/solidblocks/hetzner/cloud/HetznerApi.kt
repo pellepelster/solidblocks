@@ -3,6 +3,7 @@ package de.solidblocks.hetzner.cloud
 import de.solidblocks.hetzner.cloud.Constants.defaultPageSize
 import de.solidblocks.hetzner.cloud.model.*
 import de.solidblocks.hetzner.cloud.resources.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.java.*
@@ -160,15 +161,14 @@ public class HetznerApi(hcloudToken: String) {
 
         if (this.status.isBadRequest()) {
             val error: HetznerApiErrorWrapper = this.body()
-            if (isDebug()) {
-                println("=== api error ===")
-                println(error)
-            }
+            logger.error { error }
             throw HetznerApiException(error.error, this.request.url)
         }
 
         throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
+
+    private val logger = KotlinLogging.logger {}
 
     internal suspend inline fun <reified T> HttpResponse.handle(): T? {
         if (this.status.isSuccess()) {
@@ -181,17 +181,12 @@ public class HetznerApi(hcloudToken: String) {
 
         if (this.status.isBadRequest()) {
             val error: HetznerApiErrorWrapper = this.body()
-            if (isDebug()) {
-                println("=== api error ===")
-                println(error)
-            }
+            logger.error { error }
             throw HetznerApiException(error.error, this.request.url)
         }
 
         throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
     }
-
-    private fun isDebug() = System.getProperty("BLCKS_DEBUG") != null
 
     fun waitForAction(
         action: suspend () -> ActionResponseWrapper,

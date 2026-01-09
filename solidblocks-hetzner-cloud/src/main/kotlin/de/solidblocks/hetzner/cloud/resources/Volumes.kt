@@ -12,6 +12,13 @@ enum class VolumeFormat {
     ext4, xfs
 }
 
+
+@Serializable
+data class VolumeUpdateRequest(
+    val name: String? = null,
+    val labels: Map<String, String>? = null,
+)
+
 @Serializable
 data class VolumeCreateRequest(
     val name: String,
@@ -65,8 +72,26 @@ class HetznerVolumesApi(private val api: HetznerApi) :
 
     override suspend fun delete(id: Long) = api.simpleDelete("v1/volumes/$id")
 
+    suspend fun get(id: Long) = api.get< VolumeResponseWrapper>("v1/volumes/$id")?.volume
+
+    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+
     suspend fun create(request: VolumeCreateRequest) =
         api.post<VolumeResponseWrapper>("v1/volumes", request)
+
+    suspend fun update(id: Long, request: VolumeUpdateRequest) =
+        api.put<VolumeResponseWrapper>("v1/volumes/${id}", request)
+
+    suspend fun waitForAction(
+        action: ActionResponseWrapper,
+        logCallback: ((String) -> Unit)? = null,
+    ) = waitForAction(action.action, logCallback)
+
+    suspend fun waitForAction(action: ActionResponse, logCallback: ((String) -> Unit)? = null) =
+        waitForAction(action.id, logCallback)
+
+    suspend fun waitForAction(id: Long, logCallback: ((String) -> Unit)? = null) =
+        api.waitForAction(id, logCallback, { api.volumes.action(it) })
 
 }
 
