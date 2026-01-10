@@ -2,10 +2,13 @@ package de.solidblocks.hetzner.cloud.resources
 
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
+import de.solidblocks.hetzner.cloud.InstantSerializer
 import de.solidblocks.hetzner.cloud.listQuery
 import de.solidblocks.hetzner.cloud.model.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @Serializable
 data class SSHKeysCreateRequest(
@@ -34,10 +37,13 @@ data class SSHKeysListResponseWrapper(
 data class SSHKeyResponseWrapper(@SerialName("ssh_key") val sshKey: SshKeyResponse)
 
 @Serializable
-data class SshKeyResponse(
+data class SshKeyResponse @OptIn(ExperimentalTime::class) constructor(
     override val id: Long,
     override val name: String,
+    val fingerprint: String,
+    @SerialName("public_key") val publicKey: String,
     val labels: Map<String, String>,
+    @Serializable(with = InstantSerializer::class) val created: Instant,
 ) : HetznerNamedResource<Long>
 
 class HetznerSSHKeysApi(private val api: HetznerApi) : HetznerDeleteResourceApi<Long, SshKeyResponse> {

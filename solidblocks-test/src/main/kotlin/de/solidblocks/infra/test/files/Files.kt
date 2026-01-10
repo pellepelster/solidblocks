@@ -1,5 +1,6 @@
 package de.solidblocks.infra.test.files
 
+import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logInfo
 import java.io.File
 import java.io.FileOutputStream
@@ -8,12 +9,10 @@ import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import kotlin.time.TimeSource
 
 class FileBuilder(
     private val path: Path,
     private val name: String,
-    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow(),
 ) {
 
   private var content = byteArrayOf()
@@ -32,7 +31,6 @@ class FileBuilder(
 
     logInfo(
         "created file '${file.toFile().absolutePath}' with size ${content.size}",
-        start = start,
     )
 
     val permissions = Files.getPosixFilePermissions(file)
@@ -50,7 +48,7 @@ data class ZipFile(val file: Path)
 class ZipFileBuilder(
     private val path: Path,
     private val name: String,
-    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow(),
+    private val context: LogContext = LogContext.withTiming(),
 ) {
 
   private val entries = mutableMapOf<String, ByteArray>()
@@ -76,7 +74,7 @@ class ZipFileBuilder(
         "created '${zipFile.toFile().absolutePath}' with ${entries.size} entries (${
                 entries.map { it.key }.joinToString(", ")
             })",
-        start = start,
+        context = context,
     )
 
     return ZipFile(zipFile)

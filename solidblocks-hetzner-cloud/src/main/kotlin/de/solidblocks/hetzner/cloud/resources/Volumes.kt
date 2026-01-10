@@ -1,12 +1,11 @@
 package de.solidblocks.hetzner.cloud.resources
 
-import de.solidblocks.hetzner.cloud.HetznerApi
-import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
-import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
-import de.solidblocks.hetzner.cloud.listQuery
+import de.solidblocks.hetzner.cloud.*
 import de.solidblocks.hetzner.cloud.model.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 enum class VolumeFormat {
     ext4, xfs
@@ -34,16 +33,25 @@ data class VolumeResponseWrapper(
     @SerialName("volume") val volume: VolumeResponse,
 )
 
+enum class VolumeStatus {
+    available, creating
+}
+
 @Serializable
-data class VolumeResponse(
+data class VolumeResponse @OptIn(ExperimentalTime::class) constructor(
     override val id: Long,
     override val name: String,
     @SerialName("format") val format: VolumeFormat,
     @SerialName("linux_device")
     val linuxDevice: String,
+    val size: Int,
     override val protection: HetznerDeleteProtectionResponse,
-    val server: Int?,
+    val server: Long?,
+    val status: VolumeStatus,
+    @Serializable(with = InstantSerializer::class) val created: Instant,
+    val labels: Map<String, String>,
 ) : HetznerDeleteProtectedResource<Long>
+
 
 @Serializable
 data class ChangeVolumeProtectionRequest(val delete: Boolean, val rebuild: Boolean? = null)
@@ -72,7 +80,7 @@ class HetznerVolumesApi(private val api: HetznerApi) :
 
     override suspend fun delete(id: Long) = api.simpleDelete("v1/volumes/$id")
 
-    suspend fun get(id: Long) = api.get< VolumeResponseWrapper>("v1/volumes/$id")?.volume
+    suspend fun get(id: Long) = api.get<VolumeResponseWrapper>("v1/volumes/$id")?.volume
 
     suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 

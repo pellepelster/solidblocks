@@ -5,11 +5,12 @@ import com.github.dockerjava.api.model.Frame
 import com.github.dockerjava.api.model.StreamType
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
+import de.solidblocks.utils.LogContext
 import java.io.Closeable
 import kotlin.time.TimeSource
 
 abstract class BaseDockerResultCallback(
-    private val start: TimeSource.Monotonic.ValueTimeMark,
+    private val context: LogContext,
     private val output: (entry: TimestampedOutputLine) -> Unit,
 ) : ResultCallback<Frame> {
 
@@ -26,7 +27,7 @@ abstract class BaseDockerResultCallback(
         .forEach {
           output.invoke(
               TimestampedOutputLine(
-                  TimeSource.Monotonic.markNow() - start,
+                  TimeSource.Monotonic.markNow(),
                   it,
                   when (frame.streamType) {
                     StreamType.STDOUT -> OutputType.STDOUT

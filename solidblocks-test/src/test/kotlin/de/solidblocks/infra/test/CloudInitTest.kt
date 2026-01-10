@@ -25,36 +25,36 @@ public class CloudInitTest {
   fun testCloudInitSerialization() {
     val statusJson =
         """
-            {
-             "v1": {
-              "datasource": "DataSourceHetzner",
-              "init": {
-               "errors": [],
-               "finished": 9.23,
-               "recoverable_errors": {},
-               "start": 8.37
-              },
-              "init-local": {
-               "errors": [],
-               "finished": 7.97,
-               "recoverable_errors": {},
-               "start": 6.76
-              },
-              "modules-config": {
-               "errors": [],
-               "finished": 9.5,
-               "recoverable_errors": {},
-               "start": 9.35
-              },
-              "modules-final": {
-               "errors": [],
-               "finished": 43.29,
-               "recoverable_errors": {},
-               "start": 9.55
-              },
-              "stage": null
-             }
-            }
+        {
+         "v1": {
+          "datasource": "DataSourceHetzner",
+          "init": {
+           "errors": [],
+           "finished": 9.23,
+           "recoverable_errors": {},
+           "start": 8.37
+          },
+          "init-local": {
+           "errors": [],
+           "finished": 7.97,
+           "recoverable_errors": {},
+           "start": 6.76
+          },
+          "modules-config": {
+           "errors": [],
+           "finished": 9.5,
+           "recoverable_errors": {},
+           "start": 9.35
+          },
+          "modules-final": {
+           "errors": [],
+           "finished": 43.29,
+           "recoverable_errors": {},
+           "start": 9.55
+          },
+          "stage": null
+         }
+        }
         """
             .trimIndent()
 

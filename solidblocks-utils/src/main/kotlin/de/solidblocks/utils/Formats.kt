@@ -34,6 +34,14 @@ fun escape(text: String, vararg formats: FORMATS) =
 
 fun bold(text: String) = escape(text, FORMATS.BOLD)
 
+fun dim(text: String) = escape(text, FORMATS.DIM)
+
+fun underline(text: String) = escape(text, FORMATS.UNDERLINE)
+
+fun strikethrough(text: String) = escape(text, FORMATS.STRIKETHROUGH)
+
+fun italic(text: String) = escape(text, FORMATS.ITALIC)
+
 fun code(text: String) = escape(color(text, COLORS.CYAN), FORMATS.BOLD)
 
 fun command(text: String) = text

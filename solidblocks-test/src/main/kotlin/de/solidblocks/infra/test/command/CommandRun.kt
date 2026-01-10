@@ -3,15 +3,15 @@ package de.solidblocks.infra.test.command
 import de.solidblocks.infra.test.output.OutputMatcher
 import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.infra.test.output.waitForOutputMatcher
+import de.solidblocks.utils.LogContext
 import java.io.Closeable
 import kotlin.time.Duration
-import kotlin.time.TimeSource
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
 
 class CommandRunAssertion(
-    private val start: TimeSource.Monotonic.ValueTimeMark,
+    private val context: LogContext,
     private val commandRunner: CommandRunner,
     private val stdin: Channel<String>,
     private val output: List<TimestampedOutputLine>,
@@ -22,7 +22,7 @@ class CommandRunAssertion(
       timeout: Duration = defaultWaitForOutput,
       answer: (() -> String)? = null,
   ) = runBlocking {
-    waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
+    waitForOutputMatcher(context, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
   }
 
   fun fileExists(file: String) = runBlocking {
@@ -53,7 +53,7 @@ interface CommandRunner : Closeable {
 }
 
 class CommandRun(
-    private val start: TimeSource.Monotonic.ValueTimeMark,
+    private val context: LogContext,
     private val commandRunner: CommandRunner,
     private val stdin: Channel<String>,
     private val result: Deferred<ProcessResult>,
@@ -75,6 +75,6 @@ class CommandRun(
       timeout: Duration = defaultWaitForOutput,
       answer: (() -> String)? = null,
   ) = runBlocking {
-    waitForOutputMatcher(start, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
+    waitForOutputMatcher(context, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
   }
 }

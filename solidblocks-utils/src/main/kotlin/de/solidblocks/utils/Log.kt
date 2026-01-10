@@ -27,44 +27,80 @@ public enum class LogLevel {
 
 val logLevelMaxLength = LogLevel.entries.maxOf { it.name.length }
 
-fun logInfoBlcks(message: String, source: LogSource? = LogSource.BLCKS, duration: Duration? = null) =
-    log(message, LogLevel.INFO, source, duration)
+fun logInfoBlcks(
+    message: String,
+    source: LogSource? = LogSource.BLCKS,
+    duration: Duration? = null,
+    context: LogContext? = null
+) =
+    log(message, LogLevel.INFO, source, duration, context)
 
-fun logInfoBlcks(message: String, source: LogSource? = LogSource.BLCKS, start: ValueTimeMark?) =
-    log(message, LogLevel.INFO, source, start?.let { TimeSource.Monotonic.markNow() - it })
+fun logInfoBlcks(
+    message: String,
+    source: LogSource? = LogSource.BLCKS,
+    start: ValueTimeMark?,
+    context: LogContext? = null
+) =
+    log(message, LogLevel.INFO, source, start?.let { TimeSource.Monotonic.markNow() - it }, context)
 
-fun logInfo(message: String, source: LogSource? = null, duration: Duration? = null) =
-    log(message, LogLevel.INFO, source, duration)
+fun logInfo(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) =
+    log(message, LogLevel.INFO, source, duration, context)
 
 
-fun logInfo(message: String, source: LogSource? = null, start: ValueTimeMark?) =
-    log(message, LogLevel.INFO, source, start?.let { TimeSource.Monotonic.markNow() - it })
+fun logInfo(message: String, source: LogSource? = null, context: LogContext? = null) {
+    val duration = when (context) {
+        is TimingLogContext -> TimeSource.Monotonic.markNow() - context.start
+        else -> null
+    }
 
-fun logErrorBlcks(message: String, source: LogSource? = LogSource.BLCKS, duration: Duration? = null) =
-    log(message, LogLevel.ERROR, source, duration)
+    log(message, LogLevel.INFO, source, duration, context)
+}
 
-fun logError(message: String, source: LogSource? = null, duration: Duration? = null) =
-    log(message, LogLevel.ERROR, source, duration)
+fun logErrorBlcks(
+    message: String,
+    source: LogSource? = LogSource.BLCKS,
+    duration: Duration? = null,
+    context: LogContext? = null
+) =
+    log(message, LogLevel.ERROR, source, duration, context)
 
-fun logSuccessBlcks(message: String, source: LogSource = LogSource.BLCKS, duration: Duration? = null) =
-    log(message, LogLevel.SUCCESS, source, duration)
+fun logError(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) =
+    log(message, LogLevel.ERROR, source, duration, context)
 
-fun logSuccess(message: String, source: LogSource? = null, duration: Duration? = null) =
-    log(message, LogLevel.SUCCESS, source, duration)
+fun logSuccessBlcks(
+    message: String,
+    source: LogSource = LogSource.BLCKS,
+    duration: Duration? = null,
+    context: LogContext? = null
+) =
+    log(message, LogLevel.SUCCESS, source, duration, context)
 
-fun logWarningBlcks(message: String, source: LogSource = LogSource.BLCKS, duration: Duration? = null) =
-    log(message, LogLevel.WARNING, source, duration)
+fun logSuccess(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) =
+    log(message, LogLevel.SUCCESS, source, duration, context)
 
-fun logWarning(message: String, source: LogSource? = null, duration: Duration? = null) =
-    log(message, LogLevel.WARNING, source, duration)
+fun logWarningBlcks(
+    message: String,
+    source: LogSource = LogSource.BLCKS,
+    duration: Duration? = null,
+    context: LogContext? = null
+) =
+    log(message, LogLevel.WARNING, source, duration, context)
 
-fun logDebugBlcks(message: String, source: LogSource = LogSource.BLCKS, duration: Duration? = null) =
-    log(message, LogLevel.DEBUG, source, duration)
+fun logWarning(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) =
+    log(message, LogLevel.WARNING, source, duration, context)
 
-fun logDebug(message: String, source: LogSource? = null, duration: Duration? = null) =
-    log(message, LogLevel.DEBUG, source, duration)
+fun logDebugBlcks(
+    message: String,
+    source: LogSource = LogSource.BLCKS,
+    duration: Duration? = null,
+    context: LogContext? = null
+) =
+    log(message, LogLevel.DEBUG, source, duration, context)
 
-fun log(message: String, level: LogLevel, source: LogSource?, duration: Duration? = null) {
+fun logDebug(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) =
+    log(message, LogLevel.DEBUG, source, duration, context)
+
+fun log(message: String, level: LogLevel, source: LogSource?, duration: Duration? = null, context: LogContext? = null) {
     val color: COLORS? = when (level) {
         LogLevel.INFO -> null
         LogLevel.DEBUG -> COLORS.BRIGHT_BLUE
@@ -91,8 +127,8 @@ fun log(message: String, level: LogLevel, source: LogSource?, duration: Duration
         "[${durationFormatter.format(duration.inWholeMilliseconds / 1000f)}s]"
     }
 
-    val formattedParts = listOf(formattedSource, formattedDuration, formattedMessage).filterNotNull().joinToString(" ")
+    val formattedParts = listOfNotNull(formattedSource, formattedDuration, formattedMessage).joinToString(" ")
 
-    println("[${level.name.padStart(logLevelMaxLength)}] ${formattedParts}")
+    println("[${level.name.padStart(logLevelMaxLength)}] ${"  ".repeat(context?.indent ?: 0)}$formattedParts")
 }
 

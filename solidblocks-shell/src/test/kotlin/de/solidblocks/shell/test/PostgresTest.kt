@@ -10,13 +10,10 @@ import org.junit.jupiter.api.Test
 
 public class PostgresTest {
     @Test
-    fun testAddRepository() {
-        val tempDir = tempDir()
-
+    fun testDockerInstall() {
         val result =
             dockerTestContext(DockerTestImage.DEBIAN_12)
                 .script()
-                .sources(tempDir)
                 .sources(workingDir().resolve("lib"))
                 .includes(workingDir().resolve("lib").resolve("curl.sh"))
                 .includes(workingDir().resolve("lib").resolve("postgres.sh"))

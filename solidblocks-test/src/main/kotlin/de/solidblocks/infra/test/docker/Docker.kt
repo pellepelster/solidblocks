@@ -16,6 +16,7 @@ import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.createDockerClient
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.output.TimestampedOutputLine
+import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logInfo
 import java.io.*
 import java.lang.Thread.sleep
@@ -59,19 +60,17 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
 
   private var tempDirs = mutableListOf<Closeable>()
 
-  fun dockerPullTimout(timeout: Duration) = apply { this.dockerPullTimout = timeout }
+  fun dockerPullTimeout(timeout: Duration) = apply { this.dockerPullTimout = timeout }
 
   fun sourceDir(sourceDir: Path) = apply { this.sourceDir = sourceDir }
 
   @OptIn(DelicateCoroutinesApi::class)
-  override suspend fun createCommandRunner(
-      start: TimeSource.Monotonic.ValueTimeMark,
-  ): CommandRunner {
+  override suspend fun createCommandRunner(): CommandRunner {
     val dockerClient = createDockerClient()
 
     var end = TimeSource.Monotonic.markNow()
 
-    pullDockerImage(start, dockerClient)
+    pullDockerImage(dockerClient)
 
     val mountDir =
         if (sourceDir == null) {
@@ -132,7 +131,9 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                       .withAttachStdin(true)
                       .withTty(false)
                       .exec()
-              logInfo("starting command '${command.joinToString(" ")}'", duration = start - start)
+
+              val context = LogContext.withTiming()
+              logInfo("starting command '${command.joinToString(" ")}'")
 
               launch {
                 while (!stdin.isClosedForReceive) {
@@ -154,7 +155,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                       .execStartCmd(exec.id)
                       .withStdIn(stdinStream)
                       .exec(
-                          object : BaseDockerResultCallback(start, output) {
+                          object : BaseDockerResultCallback(context, output) {
                             override fun onError(throwable: Throwable?) {
                               cancel("reading output failed", throwable)
                             }
@@ -167,19 +168,19 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
 
                   ProcessResult(
                       waitForExitCode(dockerClient, exec.id).exitCodeLong.toInt(),
-                      end - start,
+                      end.minus(context.start),
                   )
                 }
               } catch (e: TimeoutCancellationException) {
                 logInfo(
                     "timeout for command exceeded ($timeout)",
-                    start = start,
+                    context = context,
                 )
                 dockerClient.killContainerCmd(createContainer.id).exec()
 
                 ProcessResult(
                     waitForExitCode(dockerClient, exec.id).exitCodeLong.toInt(),
-                    end - start,
+                    end.minus(context.start),
                 )
               } finally {
                 stdin.close()
@@ -202,10 +203,9 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
   }
 
   private fun pullDockerImage(
-      start: TimeSource.Monotonic.ValueTimeMark,
       dockerClient: DockerClient,
   ) {
-    logInfo("pulling docker image '$image", start = start)
+    logInfo("pulling docker image '$image")
     dockerClient
         .pullImageCmd(image.toString())
         .exec(

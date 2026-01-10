@@ -1,5 +1,6 @@
 package de.solidblocks.infra.test.output
 
+import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logInfo
 import kotlin.time.Duration
 import kotlin.time.TimeSource
@@ -15,22 +16,24 @@ enum class OutputType {
 
 open class OutputLine(val line: String, val type: OutputType)
 
-class TimestampedOutputLine(val timestamp: Duration, line: String, type: OutputType) :
-    OutputLine(line, type)
+class TimestampedOutputLine(
+    val timestamp: TimeSource.Monotonic.ValueTimeMark,
+    line: String,
+    type: OutputType,
+) : OutputLine(line, type)
 
 data class OutputMatcher(val regex: Regex, val timeout: Duration, val answer: (() -> String)?)
 
 data class OutputMatcherResult(val regex: Regex, val matched: Boolean)
 
 suspend fun waitForOutputMatcher(
-    start: TimeSource.Monotonic.ValueTimeMark,
+    context: LogContext,
     outputMatcher: OutputMatcher,
     output: List<TimestampedOutputLine>,
     stdin: SendChannel<String>,
 ) {
   logInfo(
       "waiting for log line '${outputMatcher.regex}' with a timeout of ${outputMatcher.timeout}",
-      start = start,
   )
 
   try {
@@ -56,7 +59,7 @@ suspend fun waitForOutputMatcher(
         "timeout of ${outputMatcher.timeout} exceeded waiting for log line '${outputMatcher.regex}'"
     logInfo(
         message,
-        start = start,
+        context = context,
     )
 
     throw RuntimeException(message)

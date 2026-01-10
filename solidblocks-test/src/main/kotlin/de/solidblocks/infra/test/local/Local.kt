@@ -5,6 +5,7 @@ import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.local.LocalScriptBuilder
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
+import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logInfo
 import java.io.Closeable
 import java.lang.Thread.sleep
@@ -13,6 +14,7 @@ import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.time.TimeSource
+import kotlin.time.TimeSource.Monotonic.markNow
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
@@ -33,7 +35,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
     }
   }
 
-  override suspend fun createCommandRunner(start: TimeSource.Monotonic.ValueTimeMark) =
+  override suspend fun createCommandRunner() =
       object : CommandRunner {
         override suspend fun runCommand(
             command: Array<String>,
@@ -56,7 +58,8 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                 val process = processBuilder.start()
                 val stdinWriter = process.outputWriter()
 
-                logInfo("starting command '${command.joinToString(" ")}'", duration = start - start)
+                val context = LogContext.withTiming()
+                logInfo("starting command '${command.joinToString(" ")}'")
 
                 launch {
                   while (process.isAlive && !stdin.isClosedForReceive) {
@@ -82,8 +85,12 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                             Dispatchers.IO,
                         )
                         .collect {
-                          val timestamp = TimeSource.Monotonic.markNow() - start
-                          val entry = TimestampedOutputLine(timestamp, it, OutputType.STDOUT)
+                          val entry =
+                              TimestampedOutputLine(
+                                  TimeSource.Monotonic.markNow(),
+                                  it,
+                                  OutputType.STDOUT,
+                              )
                           output.invoke(entry)
                         }
                   }
@@ -97,8 +104,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                             Dispatchers.IO,
                         )
                         .collect {
-                          val timestamp = TimeSource.Monotonic.markNow() - start
-                          val entry = TimestampedOutputLine(timestamp, it, OutputType.STDERR)
+                          val entry = TimestampedOutputLine(markNow(), it, OutputType.STDERR)
                           output.invoke(entry)
                         }
                   }
@@ -106,7 +112,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                   if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
                     logInfo(
                         "timeout for command exceeded ($timeout)",
-                        start = start,
+                        context = context,
                     )
                   }
 
@@ -121,7 +127,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
 
                   ProcessResult(
                       exitCode = process.exitValue(),
-                      runtime = end.minus(start),
+                      runtime = end.minus(context.start),
                   )
                 } finally {
                   killProcessAndWait(process)

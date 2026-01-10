@@ -6,16 +6,14 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.*
-import kotlin.time.TimeSource
 
 @OptIn(ExperimentalPathApi::class)
 class DirectoryBuilder(
     val path: Path,
-    private val start: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow(),
 ) : Closeable {
 
   init {
-    logInfo("created directory '$path'", start = start)
+    logInfo("created directory '$path'")
   }
 
   fun files() = Files.walk(path).filter { it.isRegularFile() }.toList()
@@ -40,13 +38,13 @@ class DirectoryBuilder(
 
   /** Deletes the content of the directory including all regular files and subdirectories. */
   fun clean() {
-    logInfo("deleting content of directory '$path'", start = start)
+    logInfo("deleting content of directory '$path'")
     Files.walk(path)
         .filter {
           it.toAbsolutePath() != path.toAbsolutePath() && (it.isRegularFile() || it.isDirectory())
         }
         .forEach {
-          logInfo("deleting  '$it'", start = start)
+          logInfo("deleting  '$it'")
           it.deleteRecursively()
         }
   }
@@ -75,7 +73,7 @@ class DirectoryBuilder(
       }
 
   override fun close() {
-    logInfo("deleting directory '$path'", start = start)
+    logInfo("deleting directory '$path'")
     path.deleteRecursively()
   }
 }

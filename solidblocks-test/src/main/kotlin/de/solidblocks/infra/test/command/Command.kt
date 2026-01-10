@@ -3,6 +3,7 @@ package de.solidblocks.infra.test.command
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
+import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.LogSource
 import de.solidblocks.utils.logInfo
 import java.io.Closeable
@@ -10,7 +11,6 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.TimeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -73,14 +73,14 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
       withContext(Dispatchers.IO) {
         val output = Collections.synchronizedList(mutableListOf<TimestampedOutputLine>())
         val stdin = Channel<String>()
-        val start = TimeSource.Monotonic.markNow()
 
-        val commandRunner = createCommandRunner(start)
+        val commandRunner = createCommandRunner()
 
+        val context = LogContext.withTiming()
         val assertionsResult = async {
           assertions.map {
             it.invoke(
-                CommandRunAssertion(start, commandRunner, stdin, output, defaultWaitForOutput),
+                CommandRunAssertion(context, commandRunner, stdin, output, defaultWaitForOutput),
             )
           }
         }
@@ -94,12 +94,12 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
                     OutputType.STDOUT -> LogSource.STDOUT
                     OutputType.STDERR -> LogSource.STDERR
                   },
-                  start,
+                  context,
               )
             }
 
         CommandRun(
-            start,
+            context,
             commandRunner,
             stdin,
             result,
@@ -109,9 +109,7 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
         )
       }
 
-  abstract suspend fun createCommandRunner(
-      start: TimeSource.Monotonic.ValueTimeMark,
-  ): CommandRunner
+  abstract suspend fun createCommandRunner(): CommandRunner
 
   fun assert(assertion: (CommandRunAssertion) -> Unit) = apply { this.assertions.add(assertion) }
 }

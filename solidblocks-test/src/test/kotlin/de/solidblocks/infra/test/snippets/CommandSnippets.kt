@@ -23,7 +23,7 @@ public class CommandSnippets {
         """
         #!/usr/bin/env bash
         set -eu -o pipefail
-        
+
         sleep 2
         echo "something has happened"
 
@@ -59,7 +59,7 @@ public class CommandSnippets {
         """
         #!/usr/bin/env bash
         set -eu -o pipefail
-        
+
         echo "please enter name"
         read
 
@@ -88,7 +88,7 @@ public class CommandSnippets {
         """
         #!/usr/bin/env bash
         set -eu -o pipefail
-        
+
         sleep 2
         echo "something has happened"
 
