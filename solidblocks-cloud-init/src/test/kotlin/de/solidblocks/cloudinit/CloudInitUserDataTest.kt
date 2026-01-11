@@ -1,8 +1,8 @@
 package de.solidblocks.cloudinit
 
 import de.solidblocks.cloudinit.model.*
-import de.solidblocks.cloudinit.model.CloudInitScript.Companion.SCRIPT_PLACEHOLDER
-import de.solidblocks.cloudinit.model.CloudInitScript.Companion.VARIABLES_PLACEHOLDER
+import de.solidblocks.cloudinit.model.CloudInitUserData.Companion.SCRIPT_PLACEHOLDER
+import de.solidblocks.cloudinit.model.CloudInitUserData.Companion.VARIABLES_PLACEHOLDER
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.hetzner.HetznerServerTestContext
@@ -19,11 +19,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.writeText
 
 @ExtendWith(SolidblocksTest::class)
-class CloudInitScriptTest {
-
-    init {
-        System.setProperty("BLCKS_DEBUG", "1")
-    }
+class CloudInitUserDataTest {
 
     @Test
     fun testIntegration(testContext: SolidblocksTestContext) {
@@ -33,19 +29,20 @@ class CloudInitScriptTest {
         val sshKey = hetznerTestContext.createSSHKey()
 
 
-        val content = UUID.randomUUID().toString()
-        val cloudInitScript = CloudInitScript()
-        cloudInitScript.mounts.add(Mount(volume.linuxDevice, "/storage/data"))
-        cloudInitScript.files.add(File(content.toByteArray(), "/tmp/foo-bar"))
+        val randomContent = UUID.randomUUID().toString()
+
+        val cloudInitUserData = CloudInitUserData()
+        cloudInitUserData.addCommand(Mount(volume.linuxDevice, "/storage/data"))
+        cloudInitUserData.addCommand(File(randomContent.toByteArray(), "/tmp/foo-bar"))
 
         val serverTestContext =
-            hetznerTestContext.createServer(cloudInitScript.render(), sshKey, volumes = listOf(volume.id))
+            hetznerTestContext.createServer(cloudInitUserData.render(), sshKey, volumes = listOf(volume.id))
         waitForSuccessfulProvisioning(serverTestContext)
         var sshContext = serverTestContext.ssh()
 
         sshContext.fileExists("/tmp/foo-bar") shouldBe true
         sshContext.filePermissions("/tmp/foo-bar") shouldBe "-rw-------"
-        sshContext.download("/tmp/foo-bar") shouldBe content.toByteArray()
+        sshContext.download("/tmp/foo-bar") shouldBe randomContent.toByteArray()
 
         val randomUUID = UUID.randomUUID().toString()
 
@@ -55,7 +52,7 @@ class CloudInitScriptTest {
         hetznerTestContext.destroyServer(serverTestContext)
 
         val recreatedServerTestContext =
-            hetznerTestContext.createServer(cloudInitScript.render(), sshKey, volumes = listOf(volume.id))
+            hetznerTestContext.createServer(cloudInitUserData.render(), sshKey, volumes = listOf(volume.id))
         waitForSuccessfulProvisioning(recreatedServerTestContext)
 
         sshContext = recreatedServerTestContext.ssh()
@@ -92,8 +89,8 @@ class CloudInitScriptTest {
 
     @Test
     fun testRender() {
-        val rendered = CloudInitScript().also {
-            it.mounts.add(Mount("/dev/device1", "/mount/mount1"))
+        val rendered = CloudInitUserData().also {
+            it.addCommand(Mount("/dev/device1", "/mount/mount1"))
         }.render()
         rendered shouldNotContain VARIABLES_PLACEHOLDER
         rendered shouldNotContain SCRIPT_PLACEHOLDER

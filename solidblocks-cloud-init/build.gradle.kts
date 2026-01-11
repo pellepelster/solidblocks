@@ -1,9 +1,11 @@
+import com.mgd.core.gradle.S3Upload
 import java.io.StringWriter
 import java.security.MessageDigest
 
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
     id("com.vanniktech.maven.publish") version "0.29.0"
+    id("com.mgd.core.gradle.s3") version "3.0.2"
 }
 
 version = System.getenv("VERSION") ?: "v0.0.0"
@@ -145,4 +147,19 @@ val cloudInitZipArtifact = artifacts.add("cloud-init", cloudInitZip.get().asFile
 
 mavenPublishing {
     coordinates("de.solidblocks", "cloud-init", "${version}")
+}
+
+tasks.register("uploadToTestBucket", S3Upload::class) {
+    System.setProperty("aws.accessKeyId", providers.of(PassSecretValueSource::class) {
+        this.parameters.path = "solidblocks/aws/test/access_key_id"
+    }.get())
+    System.setProperty("aws.secretAccessKey", providers.of(PassSecretValueSource::class) {
+        this.parameters.path = "solidblocks/aws/test/secret_access_key"
+    }.get())
+
+    region = "eu-central-1"
+    bucket = "test-blcks-bootstrap"
+    key = "blcks-cloud-init-${version}.zip"
+    file = cloudInitZip.get().asFile.absolutePath
+    overwrite = true
 }
