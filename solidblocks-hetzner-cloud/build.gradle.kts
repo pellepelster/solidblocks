@@ -1,13 +1,9 @@
 import com.vanniktech.maven.publish.SonatypeHost
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
     id("com.vanniktech.maven.publish") version "0.29.0"
 }
-
-group = "de.solidblocks"
-version = System.getenv("VERSION") ?: "0.0.0"
 
 mavenPublishing {
     coordinates("de.solidblocks", "hetzner-cloud", "${version}")
@@ -43,7 +39,9 @@ mavenPublishing {
     }
 
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
+    if (!project.gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") }) {
+        signAllPublications()
+    }
 }
 
 dependencies {

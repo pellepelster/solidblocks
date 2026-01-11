@@ -3,7 +3,7 @@ import java.security.MessageDigest
 
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
-    id("buildlogic.solidblocks-kotlin-publish-conventions")
+    id("com.vanniktech.maven.publish") version "0.29.0"
 }
 
 version = System.getenv("VERSION") ?: "v0.0.0"
@@ -20,6 +20,13 @@ dependencies {
 
 val cloudInitBaseName = "blcks-cloud-init"
 val cloudInitZip = layout.buildDirectory.file("${cloudInitBaseName}-${version}.zip")
+
+tasks.jar {
+    from(layout.projectDirectory.dir("lib")) {
+        include("*.sh")
+        into("lib")
+    }
+}
 
 val zip = tasks.register<Zip>("zip") {
     archiveBaseName = cloudInitBaseName
@@ -136,10 +143,6 @@ val cloudInitZipArtifact = artifacts.add("cloud-init", cloudInitZip.get().asFile
     builtBy("zip")
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifact(cloudInitZipArtifact)
-        }
-    }
+mavenPublishing {
+    coordinates("de.solidblocks", "cloud-init", "${version}")
 }

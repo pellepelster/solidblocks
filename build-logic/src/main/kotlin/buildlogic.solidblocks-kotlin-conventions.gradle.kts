@@ -10,6 +10,9 @@ repositories {
     mavenCentral()
 }
 
+group = "de.solidblocks"
+version = (System.getenv("VERSION") ?: "0.0.0").removePrefix("v")
+
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")

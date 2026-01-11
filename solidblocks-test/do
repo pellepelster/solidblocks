@@ -7,6 +7,7 @@ DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
+export VERSION="${VERSION#"v"}"
 
 TESTCONTAINER_IMAGES="debian-10 debian-11 debian-12 ubuntu-20.04 ubuntu-22.04 ubuntu-24.04"
 
@@ -55,7 +56,7 @@ function task_clean {
 
 function task_release_prepare {
   local version="${1:-}"
-
+  version="${version#"v"}"
   if [[ -z "${version}" ]]; then
     echo "no version set"
     exit 1

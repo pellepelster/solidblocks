@@ -14,14 +14,13 @@ source "${DIR}/lib/utils.sh"
 export VERSION="$(version)"
 
 TEMP_DIR="${DIR}/.temp"
-COMPONENTS="solidblocks-cli \
+COMPONENTS="solidblocks-test \
+solidblocks-cli \
 solidblocks-ansible \
-solidblocks-test \
 solidblocks-ansible \
 solidblocks-k3s-ansible \
 solidblocks-shell \
 solidblocks-cloud-init \
-solidblocks-debug-container \
 solidblocks-ssh \
 solidblocks-rds-postgresql-docker \
 solidblocks-rds-postgresql-ansible \

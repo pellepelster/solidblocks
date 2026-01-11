@@ -4,9 +4,6 @@ plugins {
     application
 }
 
-group = "de.solidblocks"
-version = System.getenv("VERSION") ?: "0.0.0"
-
 dependencies {
     implementation(project(":solidblocks-hetzner-cloud"))
     implementation(project(":solidblocks-utils"))

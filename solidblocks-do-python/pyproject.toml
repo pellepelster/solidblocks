@@ -1,6 +1,6 @@
 [project]
 name = "blcks_do"
-version= "0.4.11-rc3"
+version= "0.4.11-rc4"
 description = "Reusable Python functions for infrastructure automation and developer experience"
 authors = [
     { name = "Christian 'Pelle' Pelster", email = "pelle@pelle.io" }

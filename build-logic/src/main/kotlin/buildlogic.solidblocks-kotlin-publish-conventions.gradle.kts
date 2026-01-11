@@ -20,4 +20,3 @@ publishing {
         }
     }
 }
-

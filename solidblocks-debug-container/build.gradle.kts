@@ -6,9 +6,6 @@ plugins {
     kotlin("plugin.spring") version "2.0.20"
 }
 
-group = "de.solidblocks"
-version = System.getenv("VERSION") ?: "SNAPSHOT"
-
 repositories {
     mavenCentral()
 }

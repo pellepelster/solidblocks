@@ -5,14 +5,10 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.29.0"
 }
 
-group = "de.solidblocks"
-version = System.getenv("VERSION") ?: "0.0.0"
-
 mavenPublishing {
     coordinates("de.solidblocks", "infra-test", "${version}")
 
     pom {
-
         name.set("Solidblocks Test")
         description.set("Solidblocks is a library of reusable components for infrastructure operation, automation and developer experience")
         inceptionYear.set("2019")
@@ -42,7 +38,9 @@ mavenPublishing {
     }
 
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-    signAllPublications()
+    if (!project.gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") }) {
+        signAllPublications()
+    }
 }
 
 
