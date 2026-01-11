@@ -54,7 +54,7 @@ data class ServerCreateResponseWrapper(
 )
 
 enum class ServerStatus {
-    initializing, starting, stopping, off, deleting, migrating, rebuilding, unknown
+    running, initializing, starting, stopping, off, deleting, migrating, rebuilding, unknown
 }
 
 @Serializable
