@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 function python_hash_requirements() {
   local dir="${1:-.}"
   sha256sum < "${dir}/requirements.txt" | cut -f 1 -d " "

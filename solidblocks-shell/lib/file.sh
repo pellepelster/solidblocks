@@ -1,9 +1,6 @@
-#!/usr/bin/env bash
-
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${_DIR}/utils.sh"
-
 
 # see https://pellepelster.github.io/solidblocks/shell/file/#file_extract_to_directory
 function file_extract_to_directory {

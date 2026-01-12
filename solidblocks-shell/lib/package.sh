@@ -1,7 +1,21 @@
-#!/usr/bin/env bash
-
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${_DIR}/apt.sh"
-source "${_DIR}/package-include.sh"
 
+function package_update_system() {
+  if which apt >/dev/null 2>&1; then
+    apt_update_system
+  fi
+}
+
+function package_update_repositories() {
+  if which apt >/dev/null 2>&1; then
+    apt_update_repositories
+  fi
+}
+
+function package_ensure_package() {
+  if which apt >/dev/null 2>&1; then
+    apt_ensure_package $@
+  fi
+}

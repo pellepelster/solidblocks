@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 function apt_update_repositories {
   apt-get update
 }

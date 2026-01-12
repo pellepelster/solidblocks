@@ -50,12 +50,12 @@ val generate = tasks.register("generate") {
         val shellLibDir = project.rootProject.project(":solidblocks-shell").layout.projectDirectory.dir("lib").asFile
 
         val includes = listOf(
-            shellLibDir.resolve("text-include.sh"),
-            shellLibDir.resolve("utils-include.sh"),
-            shellLibDir.resolve("log-include.sh"),
-            shellLibDir.resolve("curl-include.sh"),
+            shellLibDir.resolve("text.sh"),
+            shellLibDir.resolve("utils.sh"),
+            shellLibDir.resolve("log.sh"),
+            shellLibDir.resolve("curl.sh"),
             shellLibDir.resolve("apt.sh"),
-            shellLibDir.resolve("package-include.sh")
+            shellLibDir.resolve("package.sh")
         )
 
         val sha256256Sum = cloudInitZip.get().asFile.readBytes().hashedWithSha256()
@@ -78,7 +78,7 @@ val generate = tasks.register("generate") {
             bootstrapSh.appendLine("################################################################")
             bootstrapSh.appendLine("# ${it.toPath().fileName}")
             bootstrapSh.appendLine("################################################################")
-            bootstrapSh.appendLine(it.readText())
+            bootstrapSh.appendLine(it.readText().lines().filter { !it.startsWith("source \"\${_DIR}/") }.joinToString("\n"))
         }
         bootstrapSh.appendLine()
         bootstrapSh.appendLine(replacedBootstrapBodyTemplateContent)
