@@ -45,6 +45,16 @@ fun ByteArray.hashedWithSha256() =
         .digest(this)
         .toHexString()
 
+fun List<File>.processIncludes(sw: StringWriter) {
+    this.forEach {
+        println("adding include '${it.absolutePath}'")
+        sw.appendLine("################################################################")
+        sw.appendLine("# ${it.toPath().fileName}")
+        sw.appendLine("################################################################")
+        sw.appendLine(it.readText().lines().filter { !it.startsWith("source") }.joinToString("\n"))
+    }
+}
+
 val generate = tasks.register("generate") {
     doLast {
         val shellLibDir = project.rootProject.project(":solidblocks-shell").layout.projectDirectory.dir("lib").asFile
@@ -74,12 +84,7 @@ val generate = tasks.register("generate") {
         val bootstrapSh = StringWriter()
         bootstrapSh.appendLine(bootstrapHeaderTemplateContent)
         bootstrapSh.appendLine()
-        includes.forEach {
-            bootstrapSh.appendLine("################################################################")
-            bootstrapSh.appendLine("# ${it.toPath().fileName}")
-            bootstrapSh.appendLine("################################################################")
-            bootstrapSh.appendLine(it.readText().lines().filter { !it.startsWith("source \"\${_DIR}/") }.joinToString("\n"))
-        }
+        includes.processIncludes(bootstrapSh)
         bootstrapSh.appendLine()
         bootstrapSh.appendLine(replacedBootstrapBodyTemplateContent)
 
@@ -88,12 +93,7 @@ val generate = tasks.register("generate") {
         bootstrapTemplateSh.appendLine()
         bootstrapTemplateSh.appendLine("__CLOUD_INIT_VARIABLES__")
         bootstrapTemplateSh.appendLine()
-        includes.forEach {
-            bootstrapTemplateSh.appendLine("################################################################")
-            bootstrapTemplateSh.appendLine("# ${it.toPath().fileName}")
-            bootstrapTemplateSh.appendLine("################################################################")
-            bootstrapTemplateSh.appendLine(it.readText())
-        }
+        includes.processIncludes(bootstrapTemplateSh)
         bootstrapTemplateSh.appendLine()
         bootstrapTemplateSh.appendLine(replacedBootstrapBodyTemplateContent)
         bootstrapTemplateSh.appendLine()
