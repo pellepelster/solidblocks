@@ -21,7 +21,9 @@ class UserPermission(read: Boolean = true, write: Boolean = true, execute: Boole
     Permission(read, write, execute) {
     companion object {
         val RWX = UserPermission(true, true, true)
+        val RW_ = UserPermission(true, true, false)
         val R__ = UserPermission(true, false, false)
+        val NONE = UserPermission(false, false, false)
     }
 }
 
@@ -29,7 +31,9 @@ class GroupPermission(read: Boolean = false, write: Boolean = false, execute: Bo
     Permission(read, write, execute) {
     companion object {
         val RWX = GroupPermission(true, true, true)
+        val RW_ = GroupPermission(true, true, false)
         val R__ = GroupPermission(true, false, false)
+        val NONE = GroupPermission(false, false, false)
     }
 }
 
@@ -37,7 +41,9 @@ class OtherPermission(read: Boolean = false, write: Boolean = false, execute: Bo
     Permission(read, write, execute) {
     companion object {
         val RWX = OtherPermission(true, true, true)
+        val RW_ = OtherPermission(true, true, false)
         val R__ = OtherPermission(true, false, false)
+        val NONE = OtherPermission(false, false, false)
     }
 }
 
@@ -48,5 +54,18 @@ data class FilePermissions(
 ) {
     fun renderChmod(): String {
         return "u=${user.renderChmod()},g=${group.renderChmod()},o=${other.renderChmod()}"
+    }
+
+    companion object {
+        val RW_______ = FilePermissions(
+            UserPermission.RW_,
+            GroupPermission.NONE,
+            OtherPermission.NONE,
+        )
+        val RW_R__R__ = FilePermissions(
+            UserPermission.RW_,
+            GroupPermission.R__,
+            OtherPermission.R__,
+        )
     }
 }

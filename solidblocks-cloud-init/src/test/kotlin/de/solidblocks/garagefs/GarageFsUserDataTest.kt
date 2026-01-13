@@ -7,6 +7,7 @@ import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration.ofSeconds
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @ExtendWith(SolidblocksTest::class)
@@ -19,7 +20,13 @@ class GarageFsUserDataTest {
         val volume = hetznerTestContext.createVolume()
         val sshKey = hetznerTestContext.createSSHKey()
 
-        val userData = GarageFsUserData(volume.linuxDevice)
+        val userData = GarageFsUserData(
+            volume.linuxDevice,
+            UUID.randomUUID().toString(),
+            UUID.randomUUID().toString(),
+            UUID.randomUUID().toString(),
+            "yolo.de"
+        )
 
         val serverTestContext =
             hetznerTestContext.createServer(userData.render(), sshKey, volumes = listOf(volume.id))
@@ -33,6 +40,14 @@ class GarageFsUserDataTest {
 
     @Test
     fun testRender() {
-        println(GarageFsUserData("/dev/sdb").render())
+        println(
+            GarageFsUserData(
+                "/dev/sdb",
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                "yolo.de"
+            ).render()
+        )
     }
 }

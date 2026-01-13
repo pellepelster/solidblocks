@@ -2,10 +2,21 @@ package de.solidblocks.garagefs
 
 import de.solidblocks.caddy.*
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.model.*
+import de.solidblocks.cloudinit.model.CloudInitUserData1
+import de.solidblocks.cloudinit.model.File
+import de.solidblocks.cloudinit.model.FilePermissions
 import de.solidblocks.shell.*
+import de.solidblocks.systemd.Service
+import de.solidblocks.systemd.SystemdConfig
+import de.solidblocks.systemd.Unit
 
-class GarageFsUserData(val linuxDevice: String) : ServiceUserData {
+class GarageFsUserData(
+    val linuxDevice: String,
+    val baseDomainFqdn: String,
+    val rpcSecret: String,
+    val adminToken: String,
+    val metricsToken: String,
+) : ServiceUserData {
     override fun render(): String {
 
         val storageMount = "/storage/data"
@@ -36,14 +47,51 @@ class GarageFsUserData(val linuxDevice: String) : ServiceUserData {
         userData.addCommand(CaddyLibrary.Install())
         userData.addCommand(
             File(
-                caddyConfig.render().toByteArray(), "/etc/caddy/Caddyfile", FilePermissions(
-                    UserPermission.RWX,
-                    GroupPermission.R__,
-                    OtherPermission.R__,
-                )
+                caddyConfig.render().toByteArray(), "/etc/caddy/Caddyfile", FilePermissions.RW_R__R__
             )
         )
-        userData.addCommand(SystemdRestartService("caddy"))
+        userData.addCommand(SystemDLibrary.SystemdRestartService("caddy"))
+
+        val garageFsConfig = GarageFsConfig(
+            storageMount,
+            rpcSecret,
+            adminToken,
+            metricsToken,
+            "s3.$baseDomainFqdn",
+            "s3-web.$baseDomainFqdn",
+        )
+
+        val garageFsSystemdConfig =
+            SystemdConfig(
+                Unit("Garage Data Store"),
+                Service(
+                    listOf("/usr/local/bin/garage", "server"),
+                    environment = mapOf("RUST_LOG" to "garage=info", "RUST_BACKTRACE" to "1"),
+                    limitNOFILE = 42000,
+                    stateDirectory = "garage"
+                )
+            )
+
+
+        userData.addSources(GarageLibrary.source())
+        userData.addCommand(GarageLibrary.Install())
+        userData.addCommand(
+            File(
+                garageFsConfig.render().toByteArray(), "/etc/garage.toml", FilePermissions.RW_R__R__
+            )
+        )
+        userData.addCommand(
+            File(
+                garageFsSystemdConfig.render().toByteArray(),
+                "/etc/systemd/system/garage.service",
+                FilePermissions.RW_R__R__
+            )
+        )
+        userData.addCommand(SystemDLibrary.SystemdDaemonReload())
+        userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
+
+        userData.addCommand(StorageLibrary.MkDir(garageFsConfig.dataDir))
+        userData.addCommand(StorageLibrary.MkDir(garageFsConfig.metaDataDir))
 
         return userData.render()
     }
