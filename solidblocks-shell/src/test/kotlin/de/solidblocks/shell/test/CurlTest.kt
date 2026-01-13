@@ -7,7 +7,10 @@ import com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED
 import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.assertions.stdoutShouldMatch
 import de.solidblocks.infra.test.files.workingDir
+import de.solidblocks.shell.CaddyLibrary
+import de.solidblocks.shell.CurlLibrary
 import io.kotest.assertions.assertSoftly
+import io.kotest.matchers.string.shouldContain
 import localTestContext
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -58,4 +61,10 @@ public class CurlTest {
             it stdoutShouldMatch ".*response=$reponse.*"
         }
     }
+
+    @Test
+    fun testLibrarySource() {
+        CurlLibrary.source() shouldContain "curl_wrapper"
+    }
+
 }

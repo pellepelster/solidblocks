@@ -5,11 +5,13 @@ import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.assertions.stderrShouldMatch
 import de.solidblocks.infra.test.files.workingDir
+import de.solidblocks.shell.LogLibrary
 import io.kotest.assertions.assertSoftly
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.util.Calendar
+import java.util.*
 
 @ExtendWith(SolidblocksTest::class)
 public class LogTest {
@@ -36,6 +38,11 @@ public class LogTest {
             it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[    error\\] some error.*"
             it stderrShouldMatch ".*${Calendar.getInstance().get(Calendar.YEAR)}-.* UTC \\[     info\\] some info.*"
         }
+    }
+
+    @Test
+    fun testLibrarySource() {
+        LogLibrary.source() shouldContain "log_success"
     }
 
     @Test

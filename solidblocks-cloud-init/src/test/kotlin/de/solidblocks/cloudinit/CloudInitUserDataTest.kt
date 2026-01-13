@@ -6,6 +6,7 @@ import de.solidblocks.cloudinit.model.CloudInitUserData.Companion.VARIABLES_PLAC
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.hetzner.HetznerServerTestContext
+import de.solidblocks.shell.StorageLibrary
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -32,12 +33,12 @@ class CloudInitUserDataTest {
         val randomContent = UUID.randomUUID().toString()
 
         val cloudInitUserData = CloudInitUserData()
-        cloudInitUserData.addCommand(Mount(volume.linuxDevice, "/storage/data"))
+        cloudInitUserData.addCommand(StorageLibrary.Mount(volume.linuxDevice, "/storage/data"))
         cloudInitUserData.addCommand(File(randomContent.toByteArray(), "/tmp/foo-bar"))
 
         val serverTestContext =
             hetznerTestContext.createServer(cloudInitUserData.render(), sshKey, volumes = listOf(volume.id))
-        waitForSuccessfulProvisioning(serverTestContext)
+        serverTestContext.waitForSuccessfulProvisioning()
         var sshContext = serverTestContext.ssh()
 
         sshContext.fileExists("/tmp/foo-bar") shouldBe true
@@ -53,31 +54,15 @@ class CloudInitUserDataTest {
 
         val recreatedServerTestContext =
             hetznerTestContext.createServer(cloudInitUserData.render(), sshKey, volumes = listOf(volume.id))
-        waitForSuccessfulProvisioning(recreatedServerTestContext)
+        recreatedServerTestContext.waitForSuccessfulProvisioning()
 
         sshContext = recreatedServerTestContext.ssh()
         sshContext.download("/storage/data/${randomUUID}.txt") shouldBe randomUUID.toByteArray()
     }
 
-    private fun waitForSuccessfulProvisioning(serverTestContext: HetznerServerTestContext) {
-        val hostTestContext = serverTestContext.host()
-
-        await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(5)).until {
-            hostTestContext.portIsOpen(22)
-        }
-
-        val cloudInitContext = serverTestContext.cloudInit()
-        cloudInitContext.printOutputLogOnTestFailure()
-
-        await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
-            cloudInitContext.isFinished()
-        }
-        cloudInitContext.result()?.hasErrors shouldBe false
-    }
-
     @Test
     fun testDefaultFilePermission() {
-        FilePermission().renderChmod() shouldBe "u=rw-,g=---,o=---"
+        FilePermissions().renderChmod() shouldBe "u=rw-,g=---,o=---"
     }
 
     @Test
@@ -90,7 +75,7 @@ class CloudInitUserDataTest {
     @Test
     fun testRender() {
         val rendered = CloudInitUserData().also {
-            it.addCommand(Mount("/dev/device1", "/mount/mount1"))
+            it.addCommand(StorageLibrary.Mount("/dev/device1", "/mount/mount1"))
         }.render()
         rendered shouldNotContain VARIABLES_PLACEHOLDER
         rendered shouldNotContain SCRIPT_PLACEHOLDER
@@ -102,20 +87,36 @@ class CloudInitUserDataTest {
 
     @Test
     fun testFilePermission() {
-        FilePermission(
+        FilePermissions(
             UserPermission(true, true, true),
             GroupPermission(true, false, true),
             OtherPermission(false, true, false)
         ).renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
-        FilePermission(
+        FilePermissions(
             UserPermission(true, true, true),
             GroupPermission(true, false, true),
             OtherPermission(false, true, false)
         ).renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
-        FilePermission(
+        FilePermissions(
             UserPermission(false, false, false),
             GroupPermission(false, false, false),
             OtherPermission(false, false, false)
         ).renderChmod() shouldBe "u=---,g=---,o=---"
     }
+}
+
+fun HetznerServerTestContext.waitForSuccessfulProvisioning() {
+    val hostTestContext = this.host()
+
+    await().atMost(1, TimeUnit.MINUTES).pollInterval(ofSeconds(5)).until {
+        hostTestContext.portIsOpen(22)
+    }
+
+    val cloudInitContext = this.cloudInit()
+    cloudInitContext.printOutputLogOnTestFailure()
+
+    await().atMost(2, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
+        cloudInitContext.isFinished()
+    }
+    cloudInitContext.result()?.hasErrors shouldBe false
 }

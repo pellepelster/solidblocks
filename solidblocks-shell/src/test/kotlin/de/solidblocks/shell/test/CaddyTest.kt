@@ -4,8 +4,11 @@ import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.files.workingDir
+import de.solidblocks.shell.CaddyLibrary
+import de.solidblocks.shell.LogLibrary
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 
 public class CaddyTest {
@@ -17,9 +20,15 @@ public class CaddyTest {
             .sources(workingDir().resolve("lib"))
             .includes(workingDir().resolve("lib").resolve("curl.sh"))
             .includes(workingDir().resolve("lib").resolve("caddy.sh"))
-            .step("caddy_setup_debian") { it.fileExists("/usr/bin/caddy") shouldBe true }
+            .step("caddy_install") { it.fileExists("/usr/bin/caddy") shouldBe true }
             .run()
 
     assertSoftly(result) { it shouldHaveExitCode 0 }
   }
+
+    @Test
+    fun testLibrarySource() {
+        CaddyLibrary.source() shouldContain "caddy_install"
+    }
+
 }

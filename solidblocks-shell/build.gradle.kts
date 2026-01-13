@@ -7,6 +7,19 @@ plugins {
 
 version = System.getenv("VERSION") ?: "v0.0.0"
 
+sourceSets {
+    main {
+        resources {
+            setSrcDirs(listOf("src/main/resources", "lib"))
+        }
+    }
+    test {
+        resources {
+            setSrcDirs(listOf("src/test/resources", "lib"))
+        }
+    }
+}
+
 dependencies {
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.wiremock:wiremock:3.9.1")

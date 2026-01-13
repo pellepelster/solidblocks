@@ -1,7 +1,7 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "${_DIR}/log.sh"
-source "${_DIR}/utils.sh"
+test -f "${_DIR}/log.sh" && source "${_DIR}/log.sh"
+test -f "${_DIR}/utils.sh" && source "${_DIR}/utils.sh"
 
 CURL_WRAPPER_RETRY_DELAY=${CURL_WRAPPER_RETRY_DELAY:-5}
 CURL_WRAPPER_RETRIES=${CURL_WRAPPER_RETRIES:-10}

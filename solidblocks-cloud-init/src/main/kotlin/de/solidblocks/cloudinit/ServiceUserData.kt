@@ -1,5 +1,5 @@
 package de.solidblocks.cloudinit
 
 interface ServiceUserData {
-    fun getUserData(): String
+    fun render(): String
 }

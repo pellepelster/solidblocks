@@ -1,6 +1,6 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "${_DIR}/utils.sh"
+test -f "${_DIR}/utils.sh" && source "${_DIR}/utils.sh"
 
 # see https://pellepelster.github.io/solidblocks/shell/network/#network_wait_for_port_open
 function network_wait_for_port_open() {

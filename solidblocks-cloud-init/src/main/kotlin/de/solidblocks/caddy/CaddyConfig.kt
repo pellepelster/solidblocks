@@ -6,7 +6,15 @@ data class Site(val address: String)
 
 data class FileSystemStorage(val root: String)
 
-data class GlobalOptions(val storage: FileSystemStorage? = null, val email: String? = null)
+enum class AutoHttps {
+    off, disable_redirects, ignore_loaded_certsm, disable_certs
+}
+
+data class GlobalOptions(
+    val storage: FileSystemStorage? = null,
+    val email: String? = null,
+    val autoHttps: AutoHttps? = null
+)
 
 data class CaddyConfig(val globalOptions: GlobalOptions, val sites: List<Site> = emptyList()) {
 
@@ -21,6 +29,9 @@ data class CaddyConfig(val globalOptions: GlobalOptions, val sites: List<Site> =
         }
         globalOptions.email?.let {
             sw.appendLine("  email ${it}")
+        }
+        globalOptions.autoHttps?.let {
+            sw.appendLine("  auto_https ${it.name}")
         }
         sw.appendLine("}")
         sw.appendLine()

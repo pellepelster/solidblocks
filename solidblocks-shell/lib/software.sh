@@ -2,8 +2,8 @@ shopt -s globstar
 
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "${_DIR}/download.sh"
-source "${_DIR}/file.sh"
+test -f "${_DIR}/file.sh" && source "${_DIR}/file.sh"
+test -f "${_DIR}/download.sh" && source "${_DIR}/download.sh"
 
 BIN_DIR="${BIN_DIR:-$_DIR/.bin}"
 CACHE_DIR="${CACHE_DIR:-$_DIR/.cache}"

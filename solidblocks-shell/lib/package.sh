@@ -1,6 +1,6 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "${_DIR}/apt.sh"
+test -f "${_DIR}/apt.sh" && source "${_DIR}/apt.sh"
 
 function package_update_system() {
   if which apt >/dev/null 2>&1; then

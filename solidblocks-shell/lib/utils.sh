@@ -1,6 +1,6 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "${_DIR}/log.sh"
+test -f "${_DIR}/log.sh" && source "${_DIR}/log.sh"
 
 function ensure_command() {
     local command=${1:-}

@@ -1,6 +1,6 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-source "${_DIR}/utils.sh"
+test -f "${_DIR}/utils.sh" && source "${_DIR}/utils.sh"
 
 function docker_mapped_tcp_port() {
   ensure_command "jq"

@@ -1,11 +1,10 @@
 package de.solidblocks.cloudinit.model
 
-import de.solidblocks.cloudinit.CloudInit1
 import de.solidblocks.shell.LibraryCommand
 import java.io.StringWriter
 
 
-data class CloudInitUserData(var environmentVariables: Map<String, String> = mutableMapOf()) {
+data class CloudInitUserData1(var environmentVariables: Map<String, String> = mutableMapOf()) {
     val commands = ArrayList<LibraryCommand>()
     val sources = mutableListOf<String>()
 
@@ -15,9 +14,16 @@ data class CloudInitUserData(var environmentVariables: Map<String, String> = mut
     }
 
     fun render(): String {
-        val template = CloudInit1::class.java.getResource("/blcks-cloud-init-bootstrap.sh.template").readText()
-
         val sw = StringWriter()
+        sw.appendLine(
+            """
+            #!/usr/bin/env bash
+
+            set -eu -o pipefail
+        """.trimIndent()
+        )
+
+        sources.forEach { sw.appendLine(it) }
 
         commands.forEach {
             it.toShell().forEach { shell ->
@@ -25,11 +31,7 @@ data class CloudInitUserData(var environmentVariables: Map<String, String> = mut
             }
         }
 
-        val variables =
-            mapOf("SOLIDBLOCKS_CLOUD_INIT_URL" to "https://test-blcks-bootstrap.s3.eu-central-1.amazonaws.com/blcks-cloud-init-v0.0.0.zip")
-        return template.replace(VARIABLES_PLACEHOLDER, variables.entries.map {
-            "export ${it.key}='${it.value}'"
-        }.joinToString("\n")).replace(SCRIPT_PLACEHOLDER, sw.toString())
+        return sw.toString()
     }
 
     /**
