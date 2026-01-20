@@ -1,5 +1,7 @@
 package de.solidblocks.ssh.test
 
+import de.solidblocks.infra.test.SolidblocksTest
+import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
@@ -9,9 +11,11 @@ import java.nio.file.Files
 import java.util.*
 import kotlin.io.path.writeText
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 
+@ExtendWith(SolidblocksTest::class)
 class SSHClientTest {
 
   val sshServer =
@@ -26,7 +30,7 @@ class SSHClientTest {
           }
 
   val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
-  val key = SSHKeyUtils.tryLoadKey(ed25519Key)
+  val key = SSHKeyUtils.loadKey(ed25519Key)
   val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
 
   @Test
@@ -50,6 +54,12 @@ class SSHClientTest {
   @Test
   fun testInvalidDownload() {
     client.download("invalid") shouldBe ByteArray(0)
+  }
+
+  @Test
+  fun testPortForwarding(testContext: SolidblocksTestContext) {
+    client.portForward(22, 1234) { testContext.host("localhost").portIsOpen(it) shouldBe true }
+    client.portForward(22) { testContext.host("localhost").portIsOpen(it) shouldBe true }
   }
 
   @Test

@@ -1,48 +1,53 @@
 package de.solidblocks.ssh
 
-import java.io.StringReader
-import java.security.KeyFactory
-import java.security.KeyPairGenerator
-import java.security.spec.X509EncodedKeySpec
-import java.util.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.bouncycastle.crypto.util.OpenSSHPublicKeyUtil
 import org.bouncycastle.crypto.util.PublicKeyFactory
 import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
 import org.bouncycastle.util.io.pem.PemReader
+import java.io.StringReader
+import java.security.KeyFactory
+import java.security.KeyPairGenerator
+import java.security.spec.X509EncodedKeySpec
+import java.util.*
 
-object RSAKeyFactory : SSHKeyFactory {
-  override fun generate(): KeyPairRaw {
-    val generator = KeyPairGenerator.getInstance("RSA", "BC").also { it.initialize(4096) }
+object RSAKeyFactory : SSHKeyFactory() {
 
-    val keyPair = generator.generateKeyPair()
-    return KeyPairRaw(keyPair.private.toPem(), keyPair.public.toPem())
-  }
+    private val logger = KotlinLogging.logger {}
 
-  override fun publicKeyToOpenSsh(key: String): String {
-    val factory = KeyFactory.getInstance("RSA", "BC")
+    override fun generate(): KeyPairRaw {
+        val generator = KeyPairGenerator.getInstance("RSA", "BC").also { it.initialize(4096) }
 
-    val pemReader = PemReader(StringReader(key))
-    val pemObject = pemReader.readPemObject()
+        val keyPair = generator.generateKeyPair()
+        return KeyPairRaw(keyPair.private.toPem(), keyPair.public.toPem())
+    }
 
-    val pubKeySpec = X509EncodedKeySpec(pemObject.content)
-    val publicKey = factory.generatePublic(pubKeySpec)
+    override fun publicKeyToOpenSsh(key: String): String {
+        val factory = KeyFactory.getInstance("RSA", "BC")
 
-    val bpuv = PublicKeyFactory.createKey(publicKey.encoded)
+        val pemReader = PemReader(StringReader(key))
+        val pemObject = pemReader.readPemObject()
 
-    return "ssh-rsa " +
-        Base64.getEncoder().encodeToString(OpenSSHPublicKeyUtil.encodePublicKey(bpuv))
-  }
+        val pubKeySpec = X509EncodedKeySpec(pemObject.content)
+        val publicKey = factory.generatePublic(pubKeySpec)
 
-  override fun loadFromPem(key: String) =
-      try {
-        val converter = JcaPEMKeyConverter()
+        val bpuv = PublicKeyFactory.createKey(publicKey.encoded)
 
-        when (val pemObject = key.readObject()) {
-          is PEMKeyPair -> converter.getKeyPair(pemObject)
-          else -> null
+        return "ssh-rsa " +
+                Base64.getEncoder().encodeToString(OpenSSHPublicKeyUtil.encodePublicKey(bpuv))
+    }
+
+    override fun loadFromPem(key: String) =
+        try {
+            val converter = JcaPEMKeyConverter()
+
+            when (val pemObject = key.readObject()) {
+                is PEMKeyPair -> converter.getKeyPair(pemObject)
+                else -> null
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "could not load rsa key" }
+            null
         }
-      } catch (e: Exception) {
-        null
-      }
 }

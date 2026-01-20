@@ -2,6 +2,7 @@ package de.solidblocks.ssh
 
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
+import java.net.ServerSocket
 import java.nio.file.Path
 import java.security.KeyPair
 import java.time.Duration
@@ -12,6 +13,7 @@ import kotlin.time.ExperimentalTime
 import org.apache.sshd.client.SshClient
 import org.apache.sshd.client.channel.ClientChannelEvent
 import org.apache.sshd.common.keyprovider.KeyIdentityProvider
+import org.apache.sshd.common.util.net.SshdSocketAddress
 import org.apache.sshd.scp.client.ScpClientCreator
 
 class SSHClient(
@@ -67,13 +69,6 @@ class SSHClient(
           channel.err = stdErr
           channel.open().verify(timeout)
 
-          /*
-          responseStream.reset()
-          channel.invertedIn.use { pipedIn ->
-              pipedIn.write(command.toByteArray())
-              pipedIn.flush()
-          }*/
-
           channel.waitFor(
               EnumSet.of(ClientChannelEvent.CLOSED),
               TimeUnit.SECONDS.toMillis(10),
@@ -86,6 +81,20 @@ class SSHClient(
           )
         }
       }
+    }
+  }
+
+  fun findAvailablePort(): Int {
+    ServerSocket(0).use { socket ->
+      return socket.localPort
+    }
+  }
+
+  fun portForward(remotePort: Int, localPort: Int? = null, block: (Int) -> Unit) {
+    val port = localPort ?: findAvailablePort()
+
+    session.createLocalPortForwardingTracker(port, SshdSocketAddress("localhost", remotePort)).use {
+      block.invoke(port)
     }
   }
 
