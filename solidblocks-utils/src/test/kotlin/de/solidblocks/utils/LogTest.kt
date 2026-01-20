@@ -90,6 +90,9 @@ class LogTest {
     fun testLogContextTiming() {
         val context = LogContext.withTiming()
         logInfo("some info message with start 1", context = context)
+        logDebug("some debug message with start 1", context = context)
+        logError("some error message with start 1", context = context)
+        logWarning("some warning message with start 1", context = context)
         sleep(250)
         logInfo("some info message with start 2", context = context)
         sleep(250)

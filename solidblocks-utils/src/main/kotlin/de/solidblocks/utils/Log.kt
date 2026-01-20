@@ -47,14 +47,9 @@ fun logInfo(message: String, source: LogSource? = null, duration: Duration? = nu
     log(message, LogLevel.INFO, source, duration, context)
 
 
-fun logInfo(message: String, source: LogSource? = null, context: LogContext? = null) {
-    val duration = when (context) {
-        is TimingLogContext -> TimeSource.Monotonic.markNow() - context.start
-        else -> null
-    }
+fun logInfo(message: String, source: LogSource? = null, context: LogContext? = null) =
+    log(message, LogLevel.INFO, source, null, context)
 
-    log(message, LogLevel.INFO, source, duration, context)
-}
 
 fun logErrorBlcks(
     message: String,
@@ -121,10 +116,16 @@ fun log(message: String, level: LogLevel, source: LogSource?, duration: Duration
         "[${source}]"
     }
 
-    val formattedDuration = if (duration == null) {
+    val d = duration
+        ?: when (context) {
+            is TimingLogContext -> TimeSource.Monotonic.markNow() - context.start
+            else -> null
+        }
+
+    val formattedDuration = if (d == null) {
         null
     } else {
-        "[${durationFormatter.format(duration.inWholeMilliseconds / 1000f)}s]"
+        "[${durationFormatter.format(d.inWholeMilliseconds / 1000f)}s]"
     }
 
     val formattedParts = listOfNotNull(formattedSource, formattedDuration, formattedMessage).joinToString(" ")
