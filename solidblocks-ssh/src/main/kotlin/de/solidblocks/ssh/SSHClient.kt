@@ -90,11 +90,14 @@ class SSHClient(
     }
   }
 
-  fun portForward(remotePort: Int, localPort: Int? = null, block: (Int) -> Unit) {
+  suspend fun <T> portForward(
+      remotePort: Int,
+      localPort: Int? = null,
+      block: suspend (Int) -> T,
+  ): T {
     val port = localPort ?: findAvailablePort()
-
     session.createLocalPortForwardingTracker(port, SshdSocketAddress("localhost", remotePort)).use {
-      block.invoke(port)
+      return block.invoke(port)
     }
   }
 

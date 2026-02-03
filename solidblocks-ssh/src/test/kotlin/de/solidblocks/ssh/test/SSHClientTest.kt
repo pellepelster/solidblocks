@@ -5,6 +5,7 @@ import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
+import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
@@ -58,8 +59,10 @@ class SSHClientTest {
 
   @Test
   fun testPortForwarding(testContext: SolidblocksTestContext) {
-    client.portForward(22, 1234) { testContext.host("localhost").portIsOpen(it) shouldBe true }
-    client.portForward(22) { testContext.host("localhost").portIsOpen(it) shouldBe true }
+    runBlocking {
+      client.portForward(22, 1234) { testContext.host("localhost").portIsOpen(it) shouldBe true }
+      client.portForward(22) { testContext.host("localhost").portIsOpen(it) shouldBe true }
+    }
   }
 
   @Test
