@@ -1,10 +1,12 @@
 package de.solidblocks.cli.hetzner.nuke
 
-import de.solidblocks.utils.logErrorBlcks
-import de.solidblocks.utils.logInfoBlcks
 import de.solidblocks.hetzner.cloud.*
 import de.solidblocks.hetzner.cloud.model.*
 import de.solidblocks.hetzner.cloud.resources.*
+import de.solidblocks.utils.logErrorBlcks
+import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.logInfoBlcks
+import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
 
 class HetznerNuker(hcloudToken: String) {
@@ -69,6 +71,18 @@ class HetznerNuker(hcloudToken: String) {
                 }
         }
 
+        api.servers.list().forEach { server ->
+            if (server.status == ServerStatus.running) {
+                runBlocking {
+                    logInfoBlcks("stopping server ${server.logText()}")
+                    val delete = api.servers.shutdown(server.id)
+                    api.servers.waitForAction(delete) {
+                        logInfo("waiting for shutdown of server ${server.logText()}")
+                    }
+                }
+            }
+        }
+
         listOf(
             api.volumes,
             api.servers,
@@ -92,13 +106,19 @@ class HetznerNuker(hcloudToken: String) {
 
                 resourceApi.list(filter).forEach {
                     if (it is VolumeResponse && it.server != null) {
-                        api.waitForAction(
-                            {
-                                logInfoBlcks("detaching volume ${it.logText()} from server ${it.server}")
-                                api.volumes.detach(it.id)
-                            },
-                            { api.volumes.action(it) },
-                        )
+                        try {
+                            api.waitForAction(
+                                {
+                                    logInfoBlcks("detaching volume ${it.logText()} from server ${it.server}")
+                                    api.volumes.detach(it.id)
+                                },
+                                { api.volumes.action(it) },
+                            )
+                        } catch (e: HetznerApiException) {
+                            if (e.error.code == HetznerApiErrorType.LOCKED) {
+                                logWarning("skipping locked volume ${it.logText()}")
+                            }
+                        }
                     }
 
                     if (resourceApi is HetznerProtectedResourceApi<*, *> &&
