@@ -173,6 +173,8 @@ class HetznerApiTest {
             val byId = api.servers.get(createdServer.server.id)!!
 
             byId.name shouldBe createdServer.server.name
+            byId.type.name shouldBe "cx23"
+            byId.image.name shouldBe "debian-12"
             byName.name shouldBe createdServer.server.name
 
             api.servers.update(byId.id, ServerUpdateRequest(labels = mapOf("test" to "true", "foo" to "bar")))

@@ -65,6 +65,9 @@ constructor(
     override val name: String,
     override val protection: HetznerDeleteProtectionResponse,
     val status: ServerStatus,
+    @SerialName("server_type")
+    val type: ServerTypeResponse,
+    val image: ImageResponse,
     val volumes: List<Long>,
     val labels: Map<String, String> = emptyMap(),
     @SerialName("private_net") val privateNetwork: List<PrivateNetworkResponse> = emptyList(),
