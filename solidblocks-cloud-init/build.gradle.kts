@@ -8,7 +8,7 @@ plugins {
     id("com.mgd.core.gradle.s3") version "3.0.2"
 }
 
-version = System.getenv("VERSION") ?: "v0.0.0"
+version = System.getenv("VERSION") ?: "0.0.0"
 
 dependencies {
     implementation(project(":solidblocks-shell"))

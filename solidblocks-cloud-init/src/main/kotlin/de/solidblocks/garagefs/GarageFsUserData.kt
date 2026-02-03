@@ -87,11 +87,12 @@ class GarageFsUserData(
                 FilePermissions.RW_R__R__
             )
         )
-        userData.addCommand(SystemDLibrary.SystemdDaemonReload())
-        userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
-
         userData.addCommand(StorageLibrary.MkDir(garageFsConfig.dataDir))
         userData.addCommand(StorageLibrary.MkDir(garageFsConfig.metaDataDir))
+        userData.addCommand(SystemDLibrary.SystemdDaemonReload())
+
+        userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
+        userData.addCommand(GarageLibrary.ApplyLayout(4))
 
         return userData.render()
     }

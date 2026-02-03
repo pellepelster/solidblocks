@@ -13,6 +13,13 @@ import java.util.concurrent.TimeUnit
 @ExtendWith(SolidblocksTest::class)
 class GarageFsUserDataTest {
 
+    fun getRandomString(length: Int): String {
+        val allowedChars = ('a'..'f') + ('0'..'9')
+        return (1..length)
+            .map { allowedChars.random() }
+            .joinToString("")
+    }
+
     @Test
     fun testIntegration(testContext: SolidblocksTestContext) {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
@@ -20,11 +27,14 @@ class GarageFsUserDataTest {
         val volume = hetznerTestContext.createVolume()
         val sshKey = hetznerTestContext.createSSHKey()
 
+        val rpcSecret = getRandomString(64)
+        val adminToken = getRandomString(64)
+        val metricsToken = getRandomString(64)
         val userData = GarageFsUserData(
             volume.linuxDevice,
-            UUID.randomUUID().toString(),
-            UUID.randomUUID().toString(),
-            UUID.randomUUID().toString(),
+            rpcSecret,
+            adminToken,
+            metricsToken,
             "yolo.de"
         )
 
