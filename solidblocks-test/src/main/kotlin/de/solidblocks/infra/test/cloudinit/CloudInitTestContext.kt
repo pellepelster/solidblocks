@@ -15,7 +15,7 @@ fun cloudInitTestContext(
     privateKey: String,
     username: String = "root",
     port: Int = 22,
-) = CloudInitTestContext(host, SSHKeyUtils.tryLoadKey(privateKey), username, port)
+) = CloudInitTestContext(host, SSHKeyUtils.loadKey(privateKey), username, port)
 
 fun cloudInitTestContext(
     host: String,

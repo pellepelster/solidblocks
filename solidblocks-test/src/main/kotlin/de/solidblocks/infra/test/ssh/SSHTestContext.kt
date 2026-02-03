@@ -11,7 +11,7 @@ import java.nio.file.attribute.PosixFilePermissions
 import java.security.KeyPair
 
 fun sshTestContext(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-    SSHTestContext(host, SSHKeyUtils.tryLoadKey(privateKey), username, port)
+    SSHTestContext(host, SSHKeyUtils.loadKey(privateKey), username, port)
 
 fun sshTestContext(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
     SSHTestContext(host, keyPair, username, port)

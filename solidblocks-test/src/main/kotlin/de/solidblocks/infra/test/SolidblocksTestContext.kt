@@ -36,7 +36,7 @@ class SolidblocksTestContext(val testId: String) : TestContext() {
       terraformTestContext(Path.of(dir), version).also { testContexts.add(it) }
 
   fun ssh(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-      sshTestContext(host, SSHKeyUtils.tryLoadKey(privateKey), username, port).also {
+      sshTestContext(host, SSHKeyUtils.loadKey(privateKey), username, port).also {
         testContexts.add(it)
       }
 
