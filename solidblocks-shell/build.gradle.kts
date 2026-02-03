@@ -3,9 +3,10 @@ import java.security.MessageDigest
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
     id("buildlogic.solidblocks-releasetest-conventions")
+    id("com.vanniktech.maven.publish") version "0.29.0"
 }
 
-version = System.getenv("VERSION") ?: "v0.0.0"
+version = System.getenv("VERSION") ?: "0.0.0"
 
 sourceSets {
     main {
@@ -76,4 +77,8 @@ generate.dependsOn(zip)
 
 artifacts {
     archives(zip)
+}
+
+mavenPublishing {
+    coordinates("de.solidblocks", "shell", "${version}")
 }
