@@ -17,7 +17,7 @@ module "ssh-config" {
 
 resource "hcloud_server" "server" {
   name        = var.name
-  image       = "debian-11"
+  image       = "debian-13"
   server_type = var.server_type
   ssh_keys    = [hcloud_ssh_key.ssh_key.id]
   location    = var.location

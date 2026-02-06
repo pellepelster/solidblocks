@@ -18,7 +18,7 @@ module "rds-postgresql-1" {
   db_backup_gcs_service_key = var.db_backup_gcs_service_key
 
   solidblocks_base_url    = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
-  solidblocks_rds_version = "${var.solidblocks_version}-rc"
+  solidblocks_rds_version = var.solidblocks_version
 
   backup_s3_retention_full_type = "count"
   backup_s3_retention_full      = 6

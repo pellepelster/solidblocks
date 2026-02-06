@@ -19,7 +19,7 @@ resource "hcloud_network_subnet" "subnet" {
 
 resource "hcloud_server" "database2_green" {
   name        = "${var.environment}-${var.name}-database2-green"
-  image       = "debian-11"
+  image       = "debian-13"
   server_type = "cx23"
   ssh_keys    = [module.ssh_hetzner.root_ssh_key_id]
   location    = var.location
@@ -35,7 +35,7 @@ resource "hcloud_volume_attachment" "database2_green_data" {
 
 resource "hcloud_server" "database2_blue" {
   name        = "${var.environment}-${var.name}-database2-blue"
-  image       = "debian-11"
+  image       = "debian-13"
   server_type = "cx23"
   ssh_keys    = [module.ssh_hetzner.root_ssh_key_id]
   location    = var.location

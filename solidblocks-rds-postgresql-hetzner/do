@@ -234,6 +234,7 @@ function task_test_private_network () {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
@@ -266,6 +267,7 @@ function task_test_arm () {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_arm" apply -auto-approve
@@ -295,6 +297,7 @@ function task_test_ssl () {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_ssl" apply -auto-approve
@@ -348,6 +351,7 @@ function task_test_restore_from_local_run() {
 
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   test_wait_for_ssh
   test_wait_for_sql
@@ -379,6 +383,7 @@ function task_test_restore_from_local_run() {
 function task_test_restore_from_local_destroy() {
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
   terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
@@ -395,6 +400,7 @@ function task_test_migration() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
 
@@ -445,6 +451,7 @@ function task_test_encryption() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
   terraform_wrapper "test/terraform/instance_encryption" apply -auto-approve
@@ -496,6 +503,7 @@ function task_test_restore_from_s3() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
   test_wait_for_cloud_init
@@ -611,6 +619,7 @@ function task_test_restore_from_hetzner_s3() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/instance_hetzner_s3" apply -auto-approve
   test_wait_for_cloud_init
@@ -727,6 +736,7 @@ function task_test_restore_from_gcp() {
   terraform_wrapper "test/terraform/base" apply -auto-approve
   export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
   export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
 
   terraform_wrapper "test/terraform/instance_gcp" apply -auto-approve
   test_wait_for_cloud_init

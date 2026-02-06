@@ -19,7 +19,7 @@ resource "hcloud_network_subnet" "subnet1" {
 
 resource "hcloud_server" "jumphost" {
   name        = "jumphost-${var.test_id}"
-  image       = "debian-11"
+  image       = "debian-13"
   server_type = "cx23"
 
   ssh_keys = [data.hcloud_ssh_key.ssh_key.id]
@@ -47,7 +47,7 @@ module "rds-postgresql-1" {
   backup_volume = data.hcloud_volume.backup.id
 
   solidblocks_base_url    = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
-  solidblocks_rds_version = "${var.solidblocks_version}-rc"
+  solidblocks_rds_version = var.solidblocks_version
 
   network_id = hcloud_network.network1.id
   network_ip = "10.0.1.4"

@@ -26,7 +26,7 @@ module "rds-postgresql-1" {
   ssl_acme_server = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
   solidblocks_base_url    = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
-  solidblocks_rds_version = "${var.solidblocks_version}-rc"
+  solidblocks_rds_version = var.solidblocks_version
 
   databases = [
     { id : "database1", user : "user1", password : "password1" }

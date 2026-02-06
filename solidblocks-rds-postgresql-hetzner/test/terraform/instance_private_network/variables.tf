@@ -17,3 +17,7 @@ variable "backup_s3_access_key" {
 variable "backup_s3_secret_key" {
   type = string
 }
+
+variable "solidblocks_rds_version" {
+  type = string
+}

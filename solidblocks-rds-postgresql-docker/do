@@ -99,6 +99,9 @@ function task_build {
       echo "previous_version_pgaudit_branch: ${previous_version_pgaudit_branch}"
       echo "docker platform: ${DOCKER_PLATFORM}"
       echo "docker options: ${DOCKER_OPTIONS}"
+      echo "docker tags:"
+      echo "  - ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-snapshot"
+      echo "  - ${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-snapshot"
       echo "========================================================================"
 
       docker buildx build \

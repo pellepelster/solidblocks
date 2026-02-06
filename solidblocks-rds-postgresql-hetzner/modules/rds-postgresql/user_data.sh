@@ -33,10 +33,29 @@ STORAGE_DEVICE_BACKUP="${storage_device_backup}"
 ${solidblocks_cloud_init_bootstrap}
 
 function install_prerequisites {
+  apt-get update
+  apt install  --no-install-recommends -qq -y ca-certificates curl
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  echo "1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570 /etc/apt/keyrings/docker.asc" | sha256sum -c
+  chmod a+r /etc/apt/keyrings/docker.asc
+
+  tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+  apt-get update
+
   apt-get install --no-install-recommends -qq -y \
     apparmor \
-    docker.io \
-    docker-compose \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-compose-plugin \
     ufw \
     uuid \
     unattended-upgrades \
@@ -58,7 +77,7 @@ Description=full backup for %i
 [Service]
 Type=oneshot
 WorkingDirectory=/opt/dockerfiles/%i
-ExecStart=/usr/bin/docker-compose exec -T ${db_instance_name} /rds/bin/backup-$${backup_type}.sh
+ExecStart=/usr/bin/docker compose exec -T ${db_instance_name} /rds/bin/backup-$${backup_type}.sh
 EOF
 }
 
@@ -91,15 +110,15 @@ Restart=always
 RestartSec=10s
 
 WorkingDirectory=/opt/dockerfiles/%i
-ExecStartPre=/usr/bin/docker-compose down -v
-ExecStartPre=/usr/bin/docker-compose rm -fv
-ExecStartPre=/usr/bin/docker-compose pull
+ExecStartPre=/usr/bin/docker compose down -v
+ExecStartPre=/usr/bin/docker compose rm -fv
+ExecStartPre=/usr/bin/docker compose pull
 
 # Compose up
-ExecStart=/usr/bin/docker-compose up
+ExecStart=/usr/bin/docker compose up
 
 # Compose down, remove containers and volumes
-ExecStop=/usr/bin/docker-compose down -v
+ExecStop=/usr/bin/docker compose down -v
 
 [Install]
 WantedBy=multi-user.target
@@ -122,7 +141,6 @@ EOF
 
 function docker_compose_config {
 cat <<-EOF
-version: "3"
 services:
   ${db_instance_name}:
     image: ghcr.io/pellepelster/solidblocks-rds-postgresql:${postgres_major_version}-${solidblocks_rds_version}

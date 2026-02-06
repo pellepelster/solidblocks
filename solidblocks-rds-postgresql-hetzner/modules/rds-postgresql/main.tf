@@ -58,7 +58,7 @@ locals {
 
 resource "hcloud_server" "rds" {
   name        = var.name
-  image       = "debian-11"
+  image       = "debian-13"
   server_type = var.server_type
   ssh_keys    = var.ssh_keys
   location    = var.location
