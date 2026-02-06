@@ -42,6 +42,7 @@ RUN apt-get install -y libkrb5-dev && \
 
 FROM build_base AS builder_previous
 ARG POSTGRES_PREVIOUS_VERSION=""
+ARG PREVIOUS_VERSION_PGAUDIT_BRANCH=""
 
 #############
 # pg_remote #
@@ -50,13 +51,12 @@ RUN apt-get install -y postgresql-server-dev-${POSTGRES_PREVIOUS_VERSION}
 RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg_remote_exec && make install
 
 ###########
-# pgaudit #
+# pgaudit    #
 ###########
 RUN apt-get install -y libkrb5-dev && \
     git clone https://github.com/pgaudit/pgaudit.git && \
     cd pgaudit &&  \
-    if [[ ${POSTGRES_PREVIOUS_VERSION} -gt 14 ]]; then export BRANCH=REL_${POSTGRES_PREVIOUS_VERSION}_STABLE; else export BRANCH=unsupported/REL_${POSTGRES_PREVIOUS_VERSION}_STABLE; fi && \
-    git checkout ${BRANCH} && \
+    git checkout ${PREVIOUS_VERSION_PGAUDIT_BRANCH} && \
     make install USE_PGXS=1
 
 FROM base
