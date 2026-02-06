@@ -39,6 +39,11 @@ data class DnsRRSetsCreateResponseWrapper(
     @SerialName("action") val action: ActionResponse,
 )
 
+@Serializable
+data class DnsRRSetsResponseWrapper(
+    @SerialName("rrset") val rrset: DnsRrSetResponse,
+)
+
 
 @Serializable
 data class DnsRrSetResponse(
@@ -46,6 +51,7 @@ data class DnsRrSetResponse(
     override val name: String,
     val type: RRType,
     override val protection: HetznerChangeProtectionResponse,
+    val records: List<DnsRRSetRecord>,
 ) : HetznerChangeProtectedResource<String>
 
 class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: String) :
@@ -62,6 +68,10 @@ class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: Str
 
     suspend fun create(request: DnsRRSetsCreateRequest) =
         api.post<DnsRRSetsCreateResponseWrapper>("v1/zones/${dnsZoneReference}/rrsets", request)
+
+    suspend fun get(name: String, type: RRType) =
+        api.get<DnsRRSetsResponseWrapper>("v1/zones/${dnsZoneReference}/rrsets/${name}/${type}")
+
 
     suspend fun delete(rrName: String, rrType: RRType) =
         api.simpleDelete("v1/zones/${dnsZoneReference}/rrsets/${rrName}/${rrType}")

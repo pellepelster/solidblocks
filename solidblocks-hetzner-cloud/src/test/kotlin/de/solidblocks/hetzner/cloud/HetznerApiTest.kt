@@ -358,8 +358,21 @@ class HetznerApiTest {
     }
 
     @Test
-    fun testListDnsZones() {
+    fun testDnsZones() {
         runBlocking {
+
+            api.dnsZones.get("invalid") shouldBe null
+
+            val byName = api.dnsZones.get("blcks-test.de")!!
+
+            assertSoftly(byName) {
+                it.zone.name shouldBe "blcks-test.de"
+            }
+
+            assertSoftly(api.dnsZones.get(byName.zone.id)!!) {
+                it.zone.name shouldBe "blcks-test.de"
+            }
+
             val dnsZones = api.dnsZones.list()
             dnsZones shouldHaveSize 1
             dnsZones[0].name shouldBe "blcks-test.de"
@@ -386,8 +399,15 @@ class HetznerApiTest {
             val rrSetsApi = api.dnsRrSets(dnsZones[0].name)
 
             val name = UUID.randomUUID().toString()
+
+            rrSetsApi.get(name, RRType.TXT) shouldBe null
             val response = rrSetsApi.create(DnsRRSetsCreateRequest(name, RRType.A, listOf(DnsRRSetRecord("127.0.0.1"))))
             response?.rrset?.name shouldBe name
+
+            rrSetsApi.get(name, RRType.TXT) shouldBe null
+            assertSoftly(rrSetsApi.get(name, RRType.A)!!) {
+                it.rrset.name shouldBe name
+            }
 
             rrSetsApi.list().map { it.name } shouldContain name
 

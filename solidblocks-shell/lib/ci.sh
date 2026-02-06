@@ -23,6 +23,12 @@ function ci_detected {
     fi
     
     
+    if [[ -n "${ALPIC_HOST:-}" ]]; then
+      echo "true"
+      return
+    fi
+    
+    
     if [[ -n "${AC_APPCIRCLE:-}" ]]; then
       echo "true"
       return
