@@ -17,7 +17,7 @@ data "hcloud_volume" "backup" {
 }
 
 module "rds-postgresql" {
-  source = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.11-rc5/blcks-terraform-rds-postgresql-hetzner-v0.4.11-rc5.zip"
+  source = "https://github.com/pellepelster/solidblocks/releases/download/v0.4.11/blcks-terraform-rds-postgresql-hetzner-v0.4.11.zip"
 
   name     = "rds-postgresql"
   location = var.hetzner_location

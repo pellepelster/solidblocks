@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.11
+
+* upgrade Hetzner RDS PostgreSQL base system to Debian 13
+
 ## v0.4.10
 
 * add support for custom SSH host keys to S3 based static [web-hosting](https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/index.html)
