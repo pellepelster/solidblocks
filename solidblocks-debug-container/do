@@ -39,7 +39,7 @@ function task_build {
 
     echo "building '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}'"
     docker buildx build \
-      --build-arg VERSION=${VERSION} \
+      --build-arg VERSION=${VERSION#v} \
       --platform linux/amd64 \
       ${DOCKER_OPTIONS} \
       --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-snapshot" \
