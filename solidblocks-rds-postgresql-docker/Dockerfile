@@ -55,7 +55,8 @@ RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg
 RUN apt-get install -y libkrb5-dev && \
     git clone https://github.com/pgaudit/pgaudit.git && \
     cd pgaudit &&  \
-    git checkout REL_${POSTGRES_PREVIOUS_VERSION}_STABLE && \
+    if [[ ${POSTGRES_PREVIOUS_VERSION} -gt 14 ]]; then export BRANCH=REL_${POSTGRES_PREVIOUS_VERSION}_STABLE; else export BRANCH=unsupported/REL_${POSTGRES_PREVIOUS_VERSION}_STABLE; fi && \
+    git checkout ${BRANCH} && \
     make install USE_PGXS=1
 
 FROM base

@@ -18,7 +18,7 @@ POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-14 15 16 17 18}"
 if [[ "${BUILD_FAST:-}" == "true" ]]; then
   echo "running fast build"
   DOCKER_PLATFORM="linux/amd64"
-  POSTGRES_VERSIONS="18"
+  POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-18}"
 fi
 
 if [[ "${BUILD_LOCAL:-}" == "true" ]]; then
