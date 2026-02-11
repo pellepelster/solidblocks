@@ -10,24 +10,42 @@ import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemdConfig
 import de.solidblocks.systemd.Unit
 
+data class GarageFsBucket(val name: String, val publicDomains: List<String>)
+
 class GarageFsUserData(
     val linuxDevice: String,
     val baseDomainFqdn: String,
     val rpcSecret: String,
     val adminToken: String,
     val metricsToken: String,
+    val buckets: List<GarageFsBucket>,
+    val enableHttps: Boolean = false
 ) : ServiceUserData {
     override fun render(): String {
 
         val storageMount = "/storage/data"
+        val caddyStorageDir = "${storageMount}/www"
         val caddyConfig =
             CaddyConfig(
                 GlobalOptions(
-                    FileSystemStorage("${storageMount}/www"),
-                    "info@yolo.de",
-                    AutoHttps.off
+                    FileSystemStorage(caddyStorageDir),
+                    "info@${baseDomainFqdn}",
+                    if (enableHttps) {
+                        null
+                    } else {
+                        AutoHttps.off
+                    }
                 ),
-                listOf(Site(":80"))
+                buckets.flatMap {
+                    listOf(
+                        Site("${it.name}.s3.${baseDomainFqdn}", ReverseProxy("http://localhost:3900")),
+                        Site("${it.name}.s3-web.${baseDomainFqdn}", ReverseProxy("http://localhost:3902")),
+                    ) + it.publicDomains.map {
+                        Site(it, ReverseProxy("http://localhost:3902"))
+                    }
+                } + listOf(
+                    Site("s3-admin.${baseDomainFqdn}", ReverseProxy("http://localhost:3903")),
+                )
             )
 
 
@@ -45,6 +63,7 @@ class GarageFsUserData(
 
         userData.addSources(CaddyLibrary.source())
         userData.addCommand(CaddyLibrary.Install())
+        userData.addCommand(StorageLibrary.MkDir(caddyStorageDir, "caddy"))
         userData.addCommand(
             File(
                 caddyConfig.render().toByteArray(), "/etc/caddy/Caddyfile", FilePermissions.RW_R__R__
