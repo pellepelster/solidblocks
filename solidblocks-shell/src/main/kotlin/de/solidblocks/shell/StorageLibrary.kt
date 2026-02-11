@@ -18,8 +18,9 @@ object StorageLibrary {
         override fun toShell() = listOf("storage_mount ${storageDevice} ${storageDir} ${filesystem.name}")
     }
 
-    data class MkDir(val dir: String) :
+    data class MkDir(val dir: String, val owner: String? = null) :
         LibraryCommand {
-        override fun toShell() = listOf("mkdir -p ${dir}")
+        override fun toShell() =
+            listOf("mkdir -p ${dir}") + if (owner != null) listOf("chown $owner ${dir}") else emptyList()
     }
 }
