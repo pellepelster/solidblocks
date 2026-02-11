@@ -1,0 +1,18 @@
+[tools]
+graalvm = "24.0.2"
+
+[tasks.build]
+run = """
+  #!/usr/bin/env bash
+  BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
+  export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+  ${CONFIG_ROOT}/gradlew :solidblocks-cli:nativeCompile
+
+  rm -rf blcks
+  cp build/native/nativeCompile/blcks* blcks
+  chmod +x blcks
+  zip --junk-paths "build/blcks-cli-${BUILD_TARGET}-${VERSION}.zip" blcks
+"""
+
+[tasks.clean]
+run = "rm -rf build"

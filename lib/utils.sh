@@ -97,3 +97,25 @@ function terraform_wrapper {
     terraform ${@}
   )
 }
+
+function documentation_prepare_files {
+    local snippet_dir="${CONFIG_ROOT}/doc/content/snippets"
+    rm -rf "${snippet_dir}"
+    mkdir -p "${snippet_dir}"
+
+    if [[ -n "${CI:-}" ]]; then
+      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/snippets/* "${snippet_dir}"
+    else
+      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/build/snippets/* "${snippet_dir}"
+    fi
+}
+
+function documentation_prepare_env {
+  local versions="$(grep  'VERSION=\".*\"' "${CONFIG_ROOT}/solidblocks-shell/lib/software.sh")"
+  for version in ${versions}; do
+    eval "export ${version}"
+  done
+  export SOLIDBLOCKS_VERSION="$VERSION"
+  export SOLIDBLOCKS_VERSION_RAW="${VERSION#"v"}"
+}

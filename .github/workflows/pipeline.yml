@@ -13,7 +13,7 @@ on:
 env:
   #SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#skip-tests') || contains(github.event.ref, '-pre') }}
   SKIP_TESTS: "integration"
-  BUILD_FAST: ${{ (github.ref == 'refs/heads/main' || contains(github.ref, '-rc')) && 'true' || 'false' }}
+  BUILD_FAST: ${{ (github.ref == 'refs/heads/main' || contains(github.ref, '-rc') || contains(github.ref, 'mise')) && 'true' || 'false' }}
   HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
   AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
@@ -253,17 +253,15 @@ jobs:
   solidblocks-test:
     runs-on: ubuntu-24.04
     steps:
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: jdx/mise-action@v3
         with:
-          java-version: '21'
-          distribution: 'corretto'
+          experimental: true
       - name: Checkout
         uses: actions/checkout@v4
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - name: Test
-        run: solidblocks-test/do test
+        run: mise test
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -558,7 +556,7 @@ jobs:
       - solidblocks-rds-postgresql-hetzner
       - solidblocks-rds-postgresql-hetzner-test
       - solidblocks-debug-container
-      - solidblocks-shell-test
+      - solidblocks-test
       - solidblocks-do-python
     environment:
       name: github-pages
