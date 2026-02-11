@@ -1,6 +1,4 @@
-# RDS PostgreSQL
-
-See [documentation](https://pellepelster.github.io/solidblocks/hetzner/web-s3-docker/) for more details and usage examples.
+# Web S3 Docker Hetzner
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
