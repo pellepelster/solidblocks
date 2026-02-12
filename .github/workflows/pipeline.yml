@@ -14,6 +14,10 @@ env:
   #SKIP_TESTS: ${{ contains(github.event.head_commit.message, '#skip-tests') || contains(github.event.ref, '-pre') }}
   SKIP_TESTS: "integration"
   BUILD_FAST: ${{ (github.ref == 'refs/heads/main' || contains(github.ref, '-rc') || contains(github.ref, 'next')) && 'true' || 'false' }}
+
+  VERSION: ${{ (github.ref == 'refs/heads/main') && 'v0.0.0' || github.ref }}
+  VERSION_RAW: ${{ (github.ref == 'refs/heads/main') && '0.0.0' || github.ref }}
+
   HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
   AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
