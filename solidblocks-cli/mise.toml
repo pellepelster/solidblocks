@@ -11,7 +11,7 @@ run = """
   #!/usr/bin/env bash
   BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
 
-  if  [[ BUILD_TARGET == "windows-amd64" ]]; then
+  if  [[ ${BUILD_TARGET} == "windows-amd64" ]]; then
     choco install zip
   else
     export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
@@ -24,6 +24,22 @@ run = """
   cp build/native/nativeCompile/blcks* blcks
   chmod +x blcks
   zip --junk-paths "build/blcks-cli-${BUILD_TARGET}-${VERSION}.zip" blcks
+"""
+
+[tasks.build-jvm-all]
+run = """
+#!/usr/bin/env bash
+${CONFIG_ROOT}/gradlew :solidblocks-cli:distZip :solidblocks-cli:distTar
+rm -rf "build/blcks" || true
+mkdir -p "build/blcks"
+(
+    cd "build/blcks"
+    tar -xvf "../distributions/blcks-${VERSION#v}.tar" --strip-components=1
+)
+(
+  cd "build"
+  zip -vr "blcks-cli-jvm-all-${VERSION}.zip" ./blcks
+)
 """
 
 [tasks.clean]

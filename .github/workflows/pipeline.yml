@@ -76,17 +76,22 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           experimental: true
-      - name: Build
-        shell: bash
-        working-directory: solidblocks-cli/
-        run: mise :build-native ${{ matrix.job.target }}
       - uses: graalvm/setup-graalvm@v1
         if: ${{ env.BUILD_TARGET == 'windows-amd64' }}
         with:
           java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          native-image-job-reports: 'false'
+      - name: Build
+        if: ${{ env.BUILD_TARGET != 'jvm-all' }}
+        shell: bash
+        working-directory: solidblocks-cli/
+        run: mise :build-native ${{ matrix.job.target }}
+      - name: Build
+        if: ${{ env.BUILD_TARGET == 'jvm-all' }}
+        shell: bash
+        working-directory: solidblocks-cli/
+        run: mise :build-jvm-all
       #- name: Test
       #  shell: bash
       #  working-directory: solidblocks-cli/
