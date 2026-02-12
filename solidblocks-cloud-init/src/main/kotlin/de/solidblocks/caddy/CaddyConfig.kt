@@ -2,7 +2,9 @@ package de.solidblocks.caddy
 
 import java.io.StringWriter
 
-data class Site(val address: String)
+data class ReverseProxy(val target: String)
+
+data class Site(val address: String, val reverseProxy: ReverseProxy? = null)
 
 data class FileSystemStorage(val root: String)
 
@@ -37,6 +39,9 @@ data class CaddyConfig(val globalOptions: GlobalOptions, val sites: List<Site> =
         sw.appendLine()
         sites.forEach {
             sw.appendLine("${it.address} {")
+            if (it.reverseProxy != null) {
+                sw.appendLine("  reverse_proxy ${it.reverseProxy.target}")
+            }
             sw.appendLine("}")
         }
         return sw.toString()

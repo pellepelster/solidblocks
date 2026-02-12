@@ -50,21 +50,11 @@ software_ensure_terraform "0.13.4" "a92df4a151d390144040de5d18351301e597d3fae367
 ### `software_ensure_terraform(version = {{% env "TERRAFORM_VERSION" %}}, checksum)` {#software_ensure_terraform}
 Installs [HashiCorp Terraform](https://www.terraform.io/) version {{% env "TERRAFORM_VERSION" %}}
 
-### `software_ensure_hugo(version = {{% env "HUGO_VERSION" %}}, checksum)` {#software_ensure_hugo}
-Installs [Hugo](https://gohugo.io/) static site generator version {{% env "HUGO_VERSION" %}}
-
 ### `software_ensure_shellcheck(version = {{% env "SHELLCHECK_VERSION" %}}, checksum)` {#software_ensure_shellcheck}
 Installs [ShellCheck](https://www.shellcheck.net/) shell script analysis tool version {{% env "SHELLCHECK_VERSION" %}}
 
 ### `software_ensure_shellcheck(version = {{% env "S3CMD_VERSION" %}}, checksum)` {#software_ensure_s3cmd}
 Installs [s3cmd](https://s3tools.org/s3cmd) s3 cli {{% env "S3CMD_VERSION" %}}
-
-### `software_ensure_semver(version = {{% env "SEMVER_VERSION" %}}, checksum)`  {#software_ensure_semver}
-Installs [semver](https://github.com/maykonlf/semver-cli) a semantic versioning tool in version {{% env "SEMVER_VERSION" %}}
-
-### `software_ensure_terragrunt(version = {{% env "TERRAGRUNT_VERSION" %}}, checksum)`  {#software_ensure_terragrunt}
-Installs [terragrunt](https://terragrunt.gruntwork.io/) a semantic versioning tool in version {{% env "TERRAGRUNT_VERSION" %}}
-
 
 ### `software_hashicorp_ensure(product, version, checksum)` {#software_hashicorp_ensure}
 Generic wrapper for downloading HashiCorp tools built around the convention that product distributions are available at https://releases.hashicorp.com/${product}/${version}/${product}_${product}_linux_amd64.zip and the downloaded
@@ -105,7 +95,7 @@ Updates `$PATH` to include all software downloaded with `software_ensure_*`
 ```shell
 source "software.sh"
 
-software_ensure_hugo
+software_ensure_restic
 
 software_set_export_path
 

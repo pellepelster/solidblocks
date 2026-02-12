@@ -6,9 +6,8 @@ import org.junit.jupiter.api.Test
 
 public class UtilsTest {
 
-    @Test
-    fun testLibrarySource() {
-        UtilsLibrary.source() shouldContain "ensure_command"
-    }
+  @Test
+  fun testLibrarySource() {
+    UtilsLibrary.source() shouldContain "ensure_command"
+  }
 }
-

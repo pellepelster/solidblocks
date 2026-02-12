@@ -1,0 +1,46 @@
+experimental_monorepo_root = true
+
+[monorepo]
+config_roots = [
+    "*",
+]
+
+[tools]
+hugo = "latest"
+terraform="1.14.5"
+terraform-docs="0.21.0"
+rg="15.1.0"
+java="25.0.0"
+
+[env]
+CONFIG_ROOT="{{config_root}}"
+ROOT_PROJECT="{{config_root}}"
+VERSION = "{% if os() == 'windows' %}{{ get_env(name='VERSION', default='0.0.0') }}{% else %}{{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}{% endif %}"
+
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
+
+[tasks.documentation-build]
+dir = "build/documentation"
+run = """
+    #!/usr/bin/env bash
+    source {{config_root}}/lib/utils.sh
+    documentation_prepare_files
+    documentation_prepare_env
+    hugo --minify --gc
+"""
+
+[tasks.documentation-serve]
+dir = "build/documentation"
+run = """
+    #!/usr/bin/env bash
+    source {{config_root}}/lib/utils.sh
+    documentation_prepare_files
+    documentation_prepare_env
+    hugo serve --baseURL /
+"""
+
+[tasks.info]
+run = """
+  echo "version: '${VERSION}'"
+"""

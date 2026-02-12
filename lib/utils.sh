@@ -6,16 +6,15 @@ function version() {
   if [[ -z ${VERSION:-} ]]; then
     if [[ "${CI:-}" == "true" ]]; then
       if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
-        echo "${GITHUB_REF_NAME:-}"
+        echo "${GITHUB_REF_NAME#v}"
       else
-        echo "v0.0.0"
+        echo "0.0.0"
       fi
     else
-      echo "v0.0.0"
-      #echo "$(version_current)"
+      echo "0.0.0"
     fi
   else
-    echo "${VERSION}"
+    echo "${VERSION#v}"
   fi
 }
 
@@ -27,7 +26,7 @@ function version_ensure() {
       exit 1
     fi
 
-    if [[ "${version}" =~ ^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-rc[0-9]{1,2})?$ ]]; then
+    if [[ "${version}" =~ ^[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-rc[0-9]{1,2})?$ ]]; then
       echo "version: '${version}'"
     else
       echo "invalid version '${version}'"
@@ -96,4 +95,26 @@ function terraform_wrapper {
 
     terraform ${@}
   )
+}
+
+function documentation_prepare_files {
+    local snippet_dir="${CONFIG_ROOT}/doc/content/snippets"
+    rm -rf "${snippet_dir}"
+    mkdir -p "${snippet_dir}"
+
+    if [[ -n "${CI:-}" ]]; then
+      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/snippets/* "${snippet_dir}"
+    else
+      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/build/snippets/* "${snippet_dir}"
+    fi
+}
+
+function documentation_prepare_env {
+  local versions="$(grep  'VERSION=\".*\"' "${CONFIG_ROOT}/solidblocks-shell/lib/software.sh")"
+  for version in ${versions}; do
+    eval "export ${version}"
+  done
+  export SOLIDBLOCKS_VERSION="$VERSION"
+  export SOLIDBLOCKS_VERSION_RAW="${VERSION#"v"}"
 }

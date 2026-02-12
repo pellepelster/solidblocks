@@ -8,7 +8,10 @@ class CaddyConfigTest {
     @Test
     fun testRender() {
         val config =
-            CaddyConfig(GlobalOptions(FileSystemStorage("/data/storage/www"), "info@yolo.de"), listOf(Site("yolo.de")))
+            CaddyConfig(
+                GlobalOptions(FileSystemStorage("/data/storage/www"), "info@yolo.de"),
+                listOf(Site("yolo.de", ReverseProxy("http://localhost:3903")))
+            )
 
         config.render() shouldBe """
         {
@@ -19,6 +22,7 @@ class CaddyConfigTest {
         }
         
         yolo.de {
+          reverse_proxy http://localhost:3903
         }
 
         """.trimIndent()

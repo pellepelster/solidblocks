@@ -53,42 +53,6 @@ function software_ensure_s3cmd() {
 }
 
 ###########################################
-#                semver                   #
-###########################################
-
-SEMVER_VERSION="v1.1.0"
-SEMVER_CHECKSUM="03c3ad1dfb84c0671e537a6b91d48167eabc50dbd7a7c26c3fadee1c92079f46"
-
-# see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_semver
-function software_ensure_semver() {
-  local version=${1:-$SEMVER_VERSION}
-  local checksum=${2:-$SEMVER_CHECKSUM}
-
-  software_ensure_dirs
-
-  download_and_verify_checksum "https://github.com/maykonlf/semver-cli/releases/download/${version}/semver-linux-amd64.zip" "${CACHE_DIR}/semver-linux-amd64_${version}.zip" ${checksum}
-  file_extract_to_directory "${CACHE_DIR}/semver-linux-amd64_${version}.zip" "${BIN_DIR}"
-}
-
-###########################################
-#                 hugo                    #
-###########################################
-
-HUGO_VERSION="0.145.0"
-HUGO_CHECKSUM="5be7b7d5026d01515685a8aad1ca015133c0569688819f139ae9fb21e33fd9aa"
-
-# see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_hugo
-function software_ensure_hugo() {
-  local version=${1:-$HUGO_VERSION}
-  local checksum=${2:-$HUGO_CHECKSUM}
-
-  software_ensure_dirs
-
-  download_and_verify_checksum "https://github.com/gohugoio/hugo/releases/download/v${version}/hugo_${version}_Linux-64bit.tar.gz" "${CACHE_DIR}/hugo_${version}_Linux-64bit.tar.gz" ${checksum}
-  file_extract_to_directory "${CACHE_DIR}/hugo_${version}_Linux-64bit.tar.gz" "${BIN_DIR}"
-}
-
-###########################################
 #              hashicorp                  #
 ###########################################
 
@@ -139,23 +103,6 @@ function software_github_ensure_bin {
 
     download_and_verify_checksum "${url}" "${target_file}" "${checksum}"
     chmod +x "${target_file}"
-}
-
-###########################################
-#              terragrunt                 #
-###########################################
-
-TERRAGRUNT_VERSION="0.43.0"
-TERRAGRUNT_CHECKSUM="e5ceb5ff1b0871a5836cd4877793828cd2baeec0b89bbd3b5c1b0e5150c0f017"
-
-# see https://pellepelster.github.io/solidblocks/shell/software/#software_ensure_terragrunt
-function software_ensure_terragrunt {
-  local version=${1:-$TERRAGRUNT_VERSION}
-  local checksum=${2:-$TERRAGRUNT_CHECKSUM}
-
-  software_ensure_dirs
-
-  software_github_ensure_bin "gruntwork-io" "terragrunt" "${version}" "terragrunt" "${checksum}"
 }
 
 ###########################################

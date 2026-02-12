@@ -4,9 +4,8 @@ import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.assertions.stdoutShouldMatch
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
-import java.util.UUID
-import org.junit.jupiter.api.Test
 import localTestContext
+import org.junit.jupiter.api.Test
 
 public class SoftwareTest {
   @Test

@@ -35,11 +35,6 @@ function clean_temp_dir {
 }
 trap clean_temp_dir EXIT
 
-function ensure_environment {
-  software_ensure_hugo
-  software_set_export_path
-}
-
 function task_build {
     version_ensure "${VERSION}"
 
@@ -194,7 +189,6 @@ function prepare_documentation_env {
 }
 
 function task_build_documentation {
-    ensure_environment
 
     local snippet_dir="${DIR}/doc/content/snippets"
     rm -rf "${snippet_dir}"
@@ -217,7 +211,6 @@ function task_build_documentation {
 }
 
 function task_serve_documentation {
-    ensure_environment
     (
       cd "${DIR}/doc"
 
@@ -305,12 +298,6 @@ function task_renovate {
     renovate/renovate:35.14.4
 }
 
-function task_info {
-  echo "================================================================="
-  echo "version: ${VERSION}"
-  echo "================================================================="
-}
-
 function task_release_tf_module {
   local module="${1:-}"
   local version="${2:-}"
@@ -344,11 +331,6 @@ function task_usage {
 ARG=${1:-}
 shift || true
 
-case "${ARG}" in
-  bootstrap) ;;
-  *) ensure_environment ;;
-esac
-
 case ${ARG} in
   build) task_build "$@" ;;
   clean) task_clean "$@" ;;
@@ -369,6 +351,5 @@ case ${ARG} in
   release-test) task_release_test "$@" ;;
   bootstrap) task_bootstrap "$@" ;;
   renovate) task_renovate "$@" ;;
-  info) task_info "$@" ;;
   *) task_usage ;;
 esac

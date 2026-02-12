@@ -5,7 +5,6 @@ import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.files.workingDir
 import de.solidblocks.shell.CaddyLibrary
-import de.solidblocks.shell.LogLibrary
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -26,9 +25,8 @@ public class CaddyTest {
     assertSoftly(result) { it shouldHaveExitCode 0 }
   }
 
-    @Test
-    fun testLibrarySource() {
-        CaddyLibrary.source() shouldContain "caddy_install"
-    }
-
+  @Test
+  fun testLibrarySource() {
+    CaddyLibrary.source() shouldContain "caddy_install"
+  }
 }

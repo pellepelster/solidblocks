@@ -1,0 +1,34 @@
+[tools]
+
+[tasks.build]
+run = """
+  #!/usr/bin/env bash
+  terraform-docs markdown table "modules/web-s3-docker" --hide modules --output-file "README.md"
+  terraform-docs markdown table "modules/web-s3-docker" --hide modules --output-file "${ROOT_PROJECT}/doc/content/hetzner/web-s3-docker/_index.md"
+
+  mkdir -p "build"
+  (
+    cd modules/web-s3-docker
+    zip "../../build/terraform-hcloud-blcks-web-s3-docker-${VERSION}.zip" *.tf *.sh *.py *.txt
+  )
+
+  mkdir -p "build/snippets"
+  (
+    cd "snippets"
+    zip -r "../build/snippets/web-s3-docker-kitchen-sink-${VERSION}.zip" web-s3-docker-kitchen-sink/*.tf
+  )
+"""
+
+[tasks.clean]
+run = "rm -rf build"
+
+[tasks.format]
+run = """
+  ${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply
+  terraform fmt -recursive
+"""
+
+[tasks.test]
+run = """
+  ${ROOT_PROJECT}/gradlew :$(basename $PWD):check
+"""
