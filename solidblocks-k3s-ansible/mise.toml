@@ -10,7 +10,6 @@ run = """
 set -eu -o pipefail
 
 pip install -r requirements.txt
-
 mkdir -p "${MISE_CONFIG_ROOT}/build"
 
 for module in "network-hetzner" "network-loadbalancer-hetzner" "nodes-hetzner" "nodes-ssh-hetzner" "output-ansible" "output-ansible-hetzner" "output-ssh-config"; do

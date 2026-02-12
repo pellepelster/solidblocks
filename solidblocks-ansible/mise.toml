@@ -9,6 +9,7 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
+pip install -r requirements.txt
 mkdir -p "${MISE_CONFIG_ROOT}/build"
 
 ".venv/bin/ansible-galaxy" \
