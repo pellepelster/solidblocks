@@ -77,6 +77,7 @@ jobs:
         with:
           experimental: true
       - uses: graalvm/setup-graalvm@v1
+        # mise currently does not support setting up graalvm on windows
         if: ${{ env.BUILD_TARGET == 'windows-amd64' }}
         with:
           java-version: '24'
@@ -85,7 +86,8 @@ jobs:
       - name: Build
         if: ${{ env.BUILD_TARGET != 'jvm-all' }}
         env:
-          GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
+          #GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
+          GRADLE_OPTS: "-Djava.io.tmpdir=-Djava.io.tmpdir=D:/a/_temp"
         run: |
           mise //solidblocks-cli:build-native ${{ matrix.job.target }}
       - name: Build
