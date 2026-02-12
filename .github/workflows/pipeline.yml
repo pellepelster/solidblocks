@@ -254,13 +254,18 @@ jobs:
 
   solidblocks-rds-postgresql-ansible:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-rds-postgresql-ansible
     steps:
-      - name: Install terraform
-        uses: hashicorp/setup-terraform@v3
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Build
-        run: ./solidblocks-rds-postgresql-ansible/do build
+        run: mise :build
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
