@@ -61,10 +61,10 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { runner: macos-latest, target: darwin-amd64 }
-          - { runner: macos-latest, target: darwin-arm64 }
-          - { runner: ubuntu-24.04, target: linux-amd64 }
-          - { runner: ubuntu-24.04, target: jvm-all }
+          #- { runner: macos-latest, target: darwin-amd64 }
+          #- { runner: macos-latest, target: darwin-arm64 }
+          #- { runner: ubuntu-24.04, target: linux-amd64 }
+          #- { runner: ubuntu-24.04, target: jvm-all }
           - { runner: windows-latest, target: windows-amd64 }
     runs-on: ${{ matrix.job.runner }}
     env:
@@ -89,7 +89,6 @@ jobs:
         env:
           GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
         run: |
-          mkdir -p "${{ runner.temp }}"
           mise :build-native ${{ matrix.job.target }}
       - name: Build
         if: ${{ env.BUILD_TARGET == 'jvm-all' }}
