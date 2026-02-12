@@ -88,6 +88,7 @@ jobs:
         working-directory: solidblocks-cli/
         env:
           GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
+          RUNNER_TEMP: "${{ runner.temp }}"
         run: |
           mise :build-native ${{ matrix.job.target }}
       - name: Build
