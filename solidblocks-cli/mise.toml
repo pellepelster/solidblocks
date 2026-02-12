@@ -12,11 +12,10 @@ run = """
   BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
   GRADLE_OPTIONS=""
   if  [[ ${BUILD_TARGET} == "windows-amd64" ]]; then
+    pwd
+    env
     choco install zip
     GRADLE_OPTIONS="--stacktrace"
-    mkdir -p "${RUNNER_TEMP}"
-    echo "${RUNNER_TEMP}"
-    ls -lsa d:
   else
     export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
   fi
