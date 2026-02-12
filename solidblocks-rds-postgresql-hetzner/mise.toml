@@ -1,0 +1,33 @@
+[tasks.clean]
+run = "rm -rf build"
+
+[tasks.build]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+if [[ -n "${CI:-}" ]]; then
+  cp ${MISE_CONFIG_ROOT}/../solidblocks-cloud-init/blcks-cloud-init-bootstrap.sh "${MISE_CONFIG_ROOT}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+else
+  cp ${MISE_CONFIG_ROOT}/../solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh "${MISE_CONFIG_ROOT}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+fi
+
+
+mkdir -p "${MISE_CONFIG_ROOT}/build/snippets"
+(
+    cd "${MISE_CONFIG_ROOT}/snippets"
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-local-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-private-network-${VERSION}.zip" hetzner-postgres-rds-private-network/**/*.tf
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
+)
+
+terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hide modules --output-file "${MISE_CONFIG_ROOT}/modules/rds-postgresql/README.md"
+terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hide modules --output-file "${MISE_CONFIG_ROOT}/../doc/content/hetzner/rds/_index.md"
+
+(
+  cd "${MISE_CONFIG_ROOT}/modules/rds-postgresql"
+  zip -r "${MISE_CONFIG_ROOT}/build/blcks-terraform-rds-postgresql-hetzner-${VERSION}.zip" *
+)
+"""
+

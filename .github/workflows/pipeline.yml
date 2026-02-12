@@ -323,15 +323,22 @@ jobs:
 
   solidblocks-rds-postgresql-hetzner:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-rds-postgresql-hetzner
     needs:
       - solidblocks-cloud-init
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - name: Build
-        run: solidblocks-rds-postgresql-hetzner/do build
+        run: mise :build
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
