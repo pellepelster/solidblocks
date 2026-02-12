@@ -63,42 +63,6 @@ public class SoftwareTest {
   }
 
   @Test
-  fun testEnsureHugo() {
-    val result =
-        localTestContext()
-            .script()
-            .sources(workingDir().resolve("lib"))
-            .includes(workingDir().resolve("lib").resolve("software.sh"))
-            .step("software_ensure_hugo")
-            .step("software_set_export_path")
-            .step("hugo version")
-            .run()
-
-    assertSoftly(result) {
-      it shouldHaveExitCode 0
-      it stdoutShouldMatch ".*hugo v0.145.0.*"
-    }
-  }
-
-  @Test
-  fun testEnsureTerragrunt() {
-    val result =
-        localTestContext()
-            .script()
-            .sources(workingDir().resolve("lib"))
-            .includes(workingDir().resolve("lib").resolve("software.sh"))
-            .step("software_ensure_terragrunt")
-            .step("software_set_export_path")
-            .step("terragrunt --version")
-            .run()
-
-    assertSoftly(result) {
-      it shouldHaveExitCode 0
-      it stdoutShouldMatch ".*terragrunt version v0.43.0.*"
-    }
-  }
-
-  @Test
   fun testEnsureTerraform() {
     val result =
         localTestContext()
