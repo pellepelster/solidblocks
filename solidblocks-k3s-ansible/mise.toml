@@ -30,7 +30,7 @@ done
 
 """
 
-[tasks.test]
+[tasks.test-integration]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail

@@ -208,15 +208,20 @@ jobs:
 
   solidblocks-k3s-ansible:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-k3s-ansible
     steps:
-      - name: install python3-pip
-        run: sudo apt-get install -y python3-pip
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Build
-        run: ./solidblocks-k3s-ansible/do build
+        run: mise :build
       - name: Test Integration
-        run: ./solidblocks-k3s-ansible/do test
+        run: mise :test-integration
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -226,15 +231,20 @@ jobs:
 
   solidblocks-ansible:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-ansible
     steps:
-      - name: install python3-pip
-        run: sudo apt-get install -y python3-pip
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Build
-        run: ./solidblocks-ansible/do build
-      - name: Test Integration
-        run: ./solidblocks-ansible/do test
+        run: mise :build
+      - name: Test
+        run: mise :test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:

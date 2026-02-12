@@ -1,0 +1,30 @@
+[tools]
+python="3.11"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.build]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+mkdir -p "${MISE_CONFIG_ROOT}/build"
+
+".venv/bin/ansible-galaxy" \
+    collection build \
+    --output-path "${MISE_CONFIG_ROOT}/build" \
+    --force \
+    --verbose \
+    "${MISE_CONFIG_ROOT}/blcks/utils"
+"""
+
+[tasks.release-prepare]
+run="""
+blcks docs ansible --collection "${MISE_CONFIG_ROOT}/blcks/utils" --target "${CONFIG_ROOT}/doc/content/ansible/utils"
+"""
+
+[tasks.test]
+run=""
+
+
