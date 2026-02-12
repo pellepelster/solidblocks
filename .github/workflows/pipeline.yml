@@ -68,8 +68,8 @@ jobs:
           - { runner: windows-latest, target: windows-amd64 }
     runs-on: ${{ matrix.job.runner }}
     env:
-      BUILD_TARGET: ${{ matrix.job.target }}
-      GRADLE_OPTS: -Djava.io.tmpdir=${{ runner.temp }}
+      BUILD_TARGET: "${{ matrix.job.target }}"
+      GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
