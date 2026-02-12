@@ -1,0 +1,38 @@
+[tools]
+python="3.11"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[tasks.build]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+pip install -r requirements.txt
+
+mkdir -p "${MISE_CONFIG_ROOT}/build"
+
+for module in "network-hetzner" "network-loadbalancer-hetzner" "nodes-hetzner" "nodes-ssh-hetzner" "output-ansible" "output-ansible-hetzner" "output-ssh-config"; do
+    (
+      cd "${MISE_CONFIG_ROOT}/terraform/${module}"
+      tar -czf "${MISE_CONFIG_ROOT}/build/blcks-k3s-terraform-${module}-${VERSION}.tar.gz" .
+    )
+    terraform-docs markdown table --hide modules --output-mode inject --output-file "${MISE_CONFIG_ROOT}/../doc/content/k3s/terraform/${module}.md" "${MISE_CONFIG_ROOT}/terraform/${module}"
+done
+
+".venv/bin/ansible-galaxy" \
+    collection build \
+    --output-path "${MISE_CONFIG_ROOT}/build" \
+    --force \
+    --verbose \
+    "${MISE_CONFIG_ROOT}/ansible/blcks/k3s"
+
+"""
+
+[tasks.test]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+"""
+

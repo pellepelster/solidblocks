@@ -3,21 +3,25 @@ poetry="2.3.2"
 
 [tasks.build]
 run = """
-    #!/usr/bin/env bash
-    poetry version "${VERSION}"
-    poetry install
-    poetry build -vvv --clean --output=build
-    mv build/blcks_do-*.tar.gz build/blcks_do-v${VERSION}.tar.gz
-    mv build/blcks_do-*-py3-none-any.whl build/blcks_do-v${VERSION}-py3-none-any.whl
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+poetry version "${VERSION}"
+poetry install
+poetry build -vvv --clean --output=build
+mv build/blcks_do-*.tar.gz build/blcks_do-v${VERSION}.tar.gz
+mv build/blcks_do-*-py3-none-any.whl build/blcks_do-v${VERSION}-py3-none-any.whl
 """
 
 [tasks.test]
 run = """
-    #!/usr/bin/env bash
-    export NON_EXISTING_OVERRIDE="non_existing_override"
-    export CUSTOM_ENV_NAME="custom_env_name"
-    export OVERRIDE_PASSWORD="override_password"
+#!/usr/bin/env bash
+set -eu -o pipefail
 
-    poetry run pytest -s
+export NON_EXISTING_OVERRIDE="non_existing_override"
+export CUSTOM_ENV_NAME="custom_env_name"
+export OVERRIDE_PASSWORD="override_password"
+
+poetry run pytest -s
 """
 

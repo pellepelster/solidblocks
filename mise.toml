@@ -23,21 +23,25 @@ DOCKER_REPOSITORY="pellepelster"
 [tasks.documentation-build]
 dir = "build/documentation"
 run = """
-    #!/usr/bin/env bash
-    source {{config_root}}/lib/utils.sh
-    documentation_prepare_files
-    documentation_prepare_env
-    hugo --minify --gc
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source {{config_root}}/lib/utils.sh
+documentation_prepare_files
+documentation_prepare_env
+hugo --minify --gc
 """
 
 [tasks.documentation-serve]
 dir = "build/documentation"
 run = """
-    #!/usr/bin/env bash
-    source {{config_root}}/lib/utils.sh
-    documentation_prepare_files
-    documentation_prepare_env
-    hugo serve --baseURL /
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source {{config_root}}/lib/utils.sh
+documentation_prepare_files
+documentation_prepare_env
+hugo serve --baseURL /
 """
 
 [tasks.info]

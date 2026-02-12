@@ -8,29 +8,32 @@ arg "<target>" help="target platform" {
 }
 '''
 run = """
-  #!/usr/bin/env bash
-  BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
-  GRADLE_OPTIONS=""
-  if  [[ ${BUILD_TARGET} == "windows-amd64" ]]; then
-    pwd
-    env
-    choco install zip
-    GRADLE_OPTIONS="--stacktrace"
-  else
-    export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
-  fi
+#!/usr/bin/env bash
+set -eu -o pipefail
 
-  ${CONFIG_ROOT}/gradlew ${GRADLE_OPTIONS} :solidblocks-cli:nativeCompile
+BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
+GRADLE_OPTIONS=""
 
-  rm -rf blcks
-  cp build/native/nativeCompile/blcks* blcks
-  chmod +x blcks
-  zip --junk-paths "build/blcks-cli-${BUILD_TARGET}-${VERSION}.zip" blcks
+if  [[ ${BUILD_TARGET} == "windows-amd64" ]]; then
+  choco install zip
+  GRADLE_OPTIONS="--stacktrace"
+else
+  export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+fi
+
+${CONFIG_ROOT}/gradlew ${GRADLE_OPTIONS} :solidblocks-cli:nativeCompile
+
+rm -rf blcks
+cp build/native/nativeCompile/blcks* blcks
+chmod +x blcks
+zip --junk-paths "build/blcks-cli-${BUILD_TARGET}-${VERSION}.zip" blcks
 """
 
 [tasks.build-jvm-all]
 run = """
 #!/usr/bin/env bash
+set -eu -o pipefail
+
 ${CONFIG_ROOT}/gradlew :$(basename $PWD):distZip :$(basename $PWD):distTar
 rm -rf "build/blcks" || true
 mkdir -p "build/blcks"

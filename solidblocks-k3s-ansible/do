@@ -23,9 +23,7 @@ function task_build() {
       cd "${DIR}/terraform/${module}"
       tar -czf "${DIR}/build/blcks-k3s-terraform-${module}-${VERSION}.tar.gz" .
     )
-    if which terraform-docs; then
-      terraform-docs markdown table --hide modules --output-mode inject --output-file "${DIR}/../doc/content/k3s/terraform/${module}.md" "${DIR}/terraform/${module}"
-    fi
+    terraform-docs markdown table --hide modules --output-mode inject --output-file "${DIR}/../doc/content/k3s/terraform/${module}.md" "${DIR}/terraform/${module}"
   done
 
   "${VENV_DIR}/bin/ansible-galaxy" \
