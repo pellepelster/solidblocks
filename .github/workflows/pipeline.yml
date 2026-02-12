@@ -100,10 +100,6 @@ jobs:
         shell: bash
         working-directory: solidblocks-cli/
         run: mise :build-jvm-all
-      #- name: Test
-      #  shell: bash
-      #  working-directory: solidblocks-cli/
-      #  run: ./do test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         if: always()
@@ -132,6 +128,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - name: Install terraform
@@ -149,7 +149,7 @@ jobs:
       - name: Test Integration
         shell: bash
         working-directory: solidblocks-cli/
-        run: ./do test-integration
+        run: mise run :test-integration
 
   solidblocks-shell:
     runs-on: ubuntu-24.04

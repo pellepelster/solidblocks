@@ -31,7 +31,7 @@ run = """
 [tasks.build-jvm-all]
 run = """
 #!/usr/bin/env bash
-${CONFIG_ROOT}/gradlew :solidblocks-cli:distZip :solidblocks-cli:distTar
+${CONFIG_ROOT}/gradlew :$(basename $PWD):distZip :$(basename $PWD):distTar
 rm -rf "build/blcks" || true
 mkdir -p "build/blcks"
 (

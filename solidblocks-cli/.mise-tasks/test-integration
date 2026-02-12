@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+exit 0
+fi
+
+./blcks --help
