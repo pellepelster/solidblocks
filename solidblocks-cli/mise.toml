@@ -10,8 +10,15 @@ arg "<target>" help="target platform" {
 run = """
   #!/usr/bin/env bash
   BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
-  export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+
+  if  [[ BUILD_TARGET == "windows-amd64" ]]; then
+    choco install zip
+  else
+    export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+  fi
+
   ${CONFIG_ROOT}/gradlew :solidblocks-cli:nativeCompile
+
 
   rm -rf blcks
   cp build/native/nativeCompile/blcks* blcks
