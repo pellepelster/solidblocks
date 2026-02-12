@@ -130,6 +130,9 @@ jobs:
   solidblocks-shell:
     runs-on: ubuntu-24.04
     steps:
+      - uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: install bzip2
         run: sudo apt-get install -y bzip2
       - name: Login to GitHub Container Registry
@@ -141,9 +144,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        run: solidblocks-shell/do build
-      - name: Test Integration
-        run: solidblocks-shell/do test-integration
+        run: mise //solidblocks-shell:build
+      - name: Build
+        run: mise //solidblocks-shell:test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
