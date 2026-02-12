@@ -178,18 +178,16 @@ jobs:
   solidblocks-do-python:
     runs-on: ubuntu-24.04
     steps:
-      - name: install python3-pip
-        run: sudo apt-get install -y python3-pip
-      - name: install poetry
-        run: pip install poetry
-      - name: Install terraform
-        uses: hashicorp/setup-terraform@v3
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Build
-        run: ./solidblocks-do-python/do build
-      - name: Test Integration
-        run: ./solidblocks-do-python/do test
+        run: mise :build
+      - name: Test
+        run: mise :test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:

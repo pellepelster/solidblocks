@@ -13,13 +13,12 @@ run = """
   GRADLE_OPTIONS=""
   if  [[ ${BUILD_TARGET} == "windows-amd64" ]]; then
     choco install zip
-    GRADLE_OPTIONS="--debug"
+    GRADLE_OPTIONS="--stacktrace"
   else
     export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
   fi
 
   ${CONFIG_ROOT}/gradlew ${GRADLE_OPTIONS} :solidblocks-cli:nativeCompile
-
 
   rm -rf blcks
   cp build/native/nativeCompile/blcks* blcks
