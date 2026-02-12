@@ -6,16 +6,15 @@ function version() {
   if [[ -z ${VERSION:-} ]]; then
     if [[ "${CI:-}" == "true" ]]; then
       if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
-        echo "${GITHUB_REF_NAME:-}"
+        echo "${GITHUB_REF_NAME#v}"
       else
-        echo "v0.0.0"
+        echo "0.0.0"
       fi
     else
-      echo "v0.0.0"
-      #echo "$(version_current)"
+      echo "0.0.0"
     fi
   else
-    echo "${VERSION}"
+    echo "${VERSION#v}"
   fi
 }
 
@@ -27,7 +26,7 @@ function version_ensure() {
       exit 1
     fi
 
-    if [[ "${version}" =~ ^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-rc[0-9]{1,2})?$ ]]; then
+    if [[ "${version}" =~ ^[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-rc[0-9]{1,2})?$ ]]; then
       echo "version: '${version}'"
     else
       echo "invalid version '${version}'"
