@@ -61,10 +61,10 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          #- { runner: macos-latest, target: darwin-amd64 }
-          #- { runner: macos-latest, target: darwin-arm64 }
-          #- { runner: ubuntu-24.04, target: linux-amd64 }
-          #- { runner: ubuntu-24.04, target: jvm-all }
+          - { runner: macos-latest, target: darwin-amd64 }
+          - { runner: macos-latest, target: darwin-arm64 }
+          - { runner: ubuntu-24.04, target: linux-amd64 }
+          - { runner: ubuntu-24.04, target: jvm-all }
           - { runner: windows-latest, target: windows-amd64 }
     runs-on: ${{ matrix.job.runner }}
     env:
@@ -83,14 +83,19 @@ jobs:
           java-version: '24'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build
-        if: ${{ env.BUILD_TARGET != 'jvm-all' }}
+      - name: Build Windows
+        if: ${{ env.BUILD_TARGET != 'jvm-all' && env.BUILD_TARGET == 'windows-amd64' }}
         env:
+          # workaround https://github.com/graalvm/native-build-tools/issues/754#issuecomment-3450913085
           #GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
           GRADLE_OPTS: "-Djava.io.tmpdir=D:/a/_temp"
         run: |
           mise //solidblocks-cli:build-native ${{ matrix.job.target }}
-      - name: Build
+      - name: Build Non-Windows
+        if: ${{ env.BUILD_TARGET != 'jvm-all' && env.BUILD_TARGET != 'windows-amd64' }}
+        run: |
+          mise //solidblocks-cli:build-native ${{ matrix.job.target }}
+      - name: Build JVM
         if: ${{ env.BUILD_TARGET == 'jvm-all' }}
         shell: bash
         working-directory: solidblocks-cli/
