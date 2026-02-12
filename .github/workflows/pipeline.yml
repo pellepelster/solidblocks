@@ -79,16 +79,14 @@ jobs:
       - uses: graalvm/setup-graalvm@v1
         if: ${{ env.BUILD_TARGET == 'windows-amd64' }}
         with:
-          java-version: '21'
+          java-version: '24'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
         if: ${{ env.BUILD_TARGET != 'jvm-all' }}
-        shell: bash
         working-directory: solidblocks-cli/
         env:
           GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
-          RUNNER_TEMP: "${{ runner.temp }}"
         run: |
           mise :build-native ${{ matrix.job.target }}
       - name: Build
