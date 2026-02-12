@@ -6,8 +6,8 @@ import de.solidblocks.infra.test.files.file
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
-import org.junit.jupiter.api.Test
 import localTestContext
+import org.junit.jupiter.api.Test
 
 public class PythonTest {
   @Test

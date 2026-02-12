@@ -4,8 +4,8 @@ import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
 import kotlin.io.path.Path
-import org.junit.jupiter.api.Test
 import localTestContext
+import org.junit.jupiter.api.Test
 
 public class TextTest {
   private fun getCommandPath(path: String) =

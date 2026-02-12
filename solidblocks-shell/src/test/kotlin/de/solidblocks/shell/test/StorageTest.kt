@@ -6,9 +6,8 @@ import org.junit.jupiter.api.Test
 
 public class StorageTest {
 
-    @Test
-    fun testLibrarySource() {
-        StorageLibrary.source() shouldContain "storage_mount"
-    }
+  @Test
+  fun testLibrarySource() {
+    StorageLibrary.source() shouldContain "storage_mount"
+  }
 }
-
