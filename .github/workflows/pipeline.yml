@@ -69,7 +69,6 @@ jobs:
     runs-on: ${{ matrix.job.runner }}
     env:
       BUILD_TARGET: "${{ matrix.job.target }}"
-      GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -88,6 +87,8 @@ jobs:
         shell: bash
         working-directory: solidblocks-cli/
         run: mise :build-native ${{ matrix.job.target }}
+        env:
+          GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
       - name: Build
         if: ${{ env.BUILD_TARGET == 'jvm-all' }}
         shell: bash
