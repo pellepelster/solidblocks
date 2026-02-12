@@ -1,0 +1,12 @@
+[tasks.clean]
+run = "rm -rf build"
+
+[tasks.build]
+run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):assemble"
+
+[tasks.format]
+run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
+
+[tasks.test]
+run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
+

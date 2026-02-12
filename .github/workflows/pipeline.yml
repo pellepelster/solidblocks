@@ -304,12 +304,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Build
-        run: solidblocks-cloud-init/do build
+        run: mise :build
       - name: Test
-        run: solidblocks-cloud-init/do test
+        run: mise :test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
