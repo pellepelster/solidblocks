@@ -87,7 +87,7 @@ jobs:
         if: ${{ env.BUILD_TARGET != 'jvm-all' }}
         env:
           #GRADLE_OPTS: "-Djava.io.tmpdir=${{ runner.temp }}"
-          GRADLE_OPTS: "-Djava.io.tmpdir=-Djava.io.tmpdir=D:/a/_temp"
+          GRADLE_OPTS: "-Djava.io.tmpdir=D:/a/_temp"
         run: |
           mise //solidblocks-cli:build-native ${{ matrix.job.target }}
       - name: Build
