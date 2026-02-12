@@ -47,8 +47,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: dump info
-        run: ./do info
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
+      - name: Info
+        run: mise :info
+
 
   solidblocks-cli:
     strategy:
@@ -75,6 +80,13 @@ jobs:
         shell: bash
         working-directory: solidblocks-cli/
         run: mise :build-native ${{ matrix.job.target }}
+      - uses: graalvm/setup-graalvm@v1
+        if: ${{ env.BUILD_TARGET == 'windows-amd64' }}
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'false'
       #- name: Test
       #  shell: bash
       #  working-directory: solidblocks-cli/
