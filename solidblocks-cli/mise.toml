@@ -1,7 +1,12 @@
 [tools]
 graalvm = "24.0.2"
 
-[tasks.build]
+[tasks.build-native]
+usage = '''
+arg "<target>" help="target platform" {
+  choices "linux-amd64" "darwin-amd64" "darwin-arm64" "windows-amd64"
+}
+'''
 run = """
   #!/usr/bin/env bash
   BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"

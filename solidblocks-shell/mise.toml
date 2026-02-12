@@ -16,35 +16,3 @@ run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
 [tasks.test]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
-
-[tasks.test-prepare]
-run = """
-#!/usr/bin/env bash
-for image in ${TESTCONTAINER_IMAGES}
-do
-(
-  cd "docker/${image}"
-  docker build ${DOCKER_OPTIONS} -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}" -f "Dockerfile" .
-  docker push "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-test-${image}"
-)
-done
-"""
-
-[tasks.release-prepare]
-run = """
-#!/usr/bin/env bash
-echo "setting version: ${VERSION_RAW}"
-mkdir -p ".tmp"
-rg -e '^(.*testImplementation\\("de\\.solidblocks:infra-test:)(.*)("\\)).*$' "snippets/solidblocks-test-gradle/build.gradle.kts" --replace "\\${1}${VERSION_RAW}\\${3}" --passthru --no-filename  --no-line-number --color never > ".tmp/build.gradle.kts"
-mv ".tmp/build.gradle.kts" "snippets/solidblocks-test-gradle/build.gradle.kts"
-"""
-
-[tasks.release-artifacts]
-run = """
-#!/usr/bin/env bash
-export ORG_GRADLE_PROJECT_signingInMemoryKey="${ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY:-$(pass solidblocks/signing_key)}"
-export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="${ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD:-$(pass solidblocks/signing_key_password)}"
-export ORG_GRADLE_PROJECT_mavenCentralUsername="${ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME:-$(pass maven/central-portal/user-token/username)}"
-export ORG_GRADLE_PROJECT_mavenCentralPassword="${ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD:-$(pass maven/central-portal/user-token/password)}"
-${ROOT_PROJECT}/gradlew :$(basename $PWD):publishAllPublicationsToMavenCentralRepository
-"""

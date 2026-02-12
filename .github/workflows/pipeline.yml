@@ -66,20 +66,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: graalvm/setup-graalvm@v1
+      - name: Mise setup
+        uses: jdx/mise-action@v3
         with:
-          java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          native-image-job-reports: 'true'
+          experimental: true
       - name: Build
         shell: bash
         working-directory: solidblocks-cli/
-        run: ./do build-${{ matrix.job.target }}
-      - name: Test
-        shell: bash
-        working-directory: solidblocks-cli/
-        run: ./do test
+        run: mise :build-native ${{ matrix.job.target }}
+      #- name: Test
+      #  shell: bash
+      #  working-directory: solidblocks-cli/
+      #  run: ./do test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         if: always()
@@ -129,8 +127,14 @@ jobs:
 
   solidblocks-shell:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-shell
     steps:
-      - uses: jdx/mise-action@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
         with:
           experimental: true
       - name: install bzip2
@@ -141,12 +145,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Build
-        run: mise //solidblocks-shell:build
-      - name: Build
-        run: mise //solidblocks-shell:test
+        run: mise :build
+      - name: Test
+        run: mise :test
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -255,18 +257,22 @@ jobs:
 
   solidblocks-test:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-test
     steps:
-      - uses: jdx/mise-action@v3
-        with:
-          experimental: true
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - name: Build
-        run: mise //solidblocks-test:build
+        run: mise :build
       - name: Test
-        run: mise //solidblocks-test:test
+        run: mise :test
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
