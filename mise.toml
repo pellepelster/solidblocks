@@ -15,11 +15,21 @@ java="25.0.0"
 [env]
 CONFIG_ROOT="{{config_root}}"
 ROOT_PROJECT="{{config_root}}"
-#VERSION="{{ exec(command='lib/version.sh') }}"
-#VERSION_RAW="{{ exec(command='lib/version_raw.sh') }}"
 
-VERSION_RAW = "{{ get_env(name='VERSION_RAW', default=exec(command='./lib/version_raw.sh')) }}"
-VERSION = "{{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}"
+VERSION = """
+{% if os() == 'windows' %}
+    {{ get_env(name='VERSION', default='0.0.0') }}
+{% else %}
+    {{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}
+{% endif %}
+"""
+VERSION_RAW = """
+{% if os() == 'windows' %}
+    {{ get_env(name='VERSION', default='0.0.0') }}
+{% else %}
+    {{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}
+{% endif %}
+"""
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
