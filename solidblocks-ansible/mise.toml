@@ -4,6 +4,14 @@ python="3.11"
 [env]
 _.python.venv = { path = ".venv", create = true }
 
+[tasks.clean]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+rm -rf "${MISE_CONFIG_ROOT}/.venv"
+"""
+
 [tasks.build]
 run = """
 #!/usr/bin/env bash
@@ -26,6 +34,4 @@ blcks docs ansible --collection "${MISE_CONFIG_ROOT}/blcks/utils" --target "${CO
 """
 
 [tasks.test]
-run=""
-
-
+run="#TODO"
