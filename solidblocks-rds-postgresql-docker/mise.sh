@@ -7,6 +7,7 @@ function task_build {
 
   (
     mkdir -p "build"
+    mkdir -p "${TEMP_DIR}"
 
     if [[ "${BUILD_FAST:-}" == "true" ]]; then
       cp "install/fast-locale.gen" "${TEMP_DIR}/locale.gen"

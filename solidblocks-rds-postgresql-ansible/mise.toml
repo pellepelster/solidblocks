@@ -216,8 +216,8 @@ set -eu -o pipefail
 
 rg -e '^(version: )(.*)$' "ansible/blcks/rds_postgresql/galaxy.yml" --replace "\\${1}"${VERSION}"\\${3}" --passthru --no-filename  --no-line-number --color never > "ansible/blcks/rds_postgresql/galaxy.yml.tmp"
 mv "ansible/blcks/rds_postgresql/galaxy.yml.tmp" "ansible/blcks/rds_postgresql/galaxy.yml"
-blcks docs ansible --collection "ansible/blcks/rds_postgresql" --target "${BLCKS_ROOT}/doc/content/rds/ansible/rds_postgresql"
-rm "${BLCKS_ROOT}/doc/content/rds/ansible/rds_postgresql/cluster.md"
+blcks docs ansible --collection "ansible/blcks/rds_postgresql" --target "${ROOT_PROJECT}/doc/content/rds/ansible/rds_postgresql"
+rm "${ROOT_PROJECT}/doc/content/rds/ansible/rds_postgresql/cluster.md"
 """
 
 [tasks.preflight-check]

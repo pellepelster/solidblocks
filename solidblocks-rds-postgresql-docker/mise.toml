@@ -1,0 +1,109 @@
+[settings]
+env_shell_expand = true
+
+[tools]
+
+[env]
+TEMP_DIR=".temp"
+DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
+POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-14 15 16 17 18}"
+#DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
+#DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
+DOCKER_OPTIONS="--push"
+DOCKER_PLATFORM="linux/amd64,linux/arm64"
+CACHE_DIR=".cache"
+
+[tasks.build-14]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+task_build 14
+"""
+
+[tasks.build-15]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+task_build 15
+"""
+
+[tasks.build-16]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+task_build 16
+"""
+
+[tasks.build-17]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+task_build 17
+"""
+
+[tasks.build-18]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+task_build 18
+"""
+
+[tasks.test]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+task_test
+"""
+
+[tasks.clean]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+rm -rf build
+rm -rf test/terraform/.terraform
+rm -rf test/terraform/*.tfstate
+rm -rf test/terraform/*.tfstate.backup
+rm -rf test/terraform/*.lock.hcl
+"""
+
+[tasks.release-artifacts]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+for postgres_version in ${POSTGRES_VERSIONS}; do
+    docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-snapshot"
+done
+"""
+
+[tasks.release-test]
+usage = """
+arg "<version>"
+"""
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+for postgres_version in ${POSTGRES_VERSIONS}; do
+  docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${usage_version}"
+done
+"""
+
+
+[tasks.build]
+run = [
+    { tasks = [ "build-14", "build-15", "build-16", "build-17", "build-18" ] }
+]

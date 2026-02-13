@@ -14,7 +14,6 @@ java="25.0.0"
 
 [env]
 CONFIG_ROOT="{{config_root}}"
-BLCKS_ROOT="{{config_root}}"
 ROOT_PROJECT="{{config_root}}"
 VERSION = "{% if os() == 'windows' %}{{ get_env(name='VERSION', default='0.0.0') }}{% else %}{{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}{% endif %}"
 

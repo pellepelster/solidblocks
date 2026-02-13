@@ -30,7 +30,7 @@ mkdir -p "build"
 
 [tasks.release-prepare]
 run="""
-blcks docs ansible --collection "blcks/utils" --target "${BLCKS_ROOT}/doc/content/ansible/utils"
+blcks docs ansible --collection "blcks/utils" --target "${ROOT_PROJECT}/doc/content/ansible/utils"
 """
 
 [tasks.test]
