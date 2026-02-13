@@ -11,6 +11,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 
 class HetznerAsgTest {
 
@@ -52,6 +53,7 @@ class HetznerAsgTest {
   }
 
   @Test
+  @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
   fun testAsg1() {
     runBlocking {
       val unmanagedServer = api.servers.get("hcloud-server1")!!
@@ -119,6 +121,7 @@ class HetznerAsgTest {
   }
 
   @Test
+  @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
   fun testAsg1Timeout() {
     HetznerAsg(hcloudToken)
         .rotate(
@@ -133,6 +136,7 @@ class HetznerAsgTest {
   }
 
   @Test
+  @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
   fun testAsg2() {
     HetznerAsg(hcloudToken)
         .rotate(

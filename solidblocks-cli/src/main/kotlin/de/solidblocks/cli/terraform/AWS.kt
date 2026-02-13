@@ -26,11 +26,13 @@ class AWS(
               )
               .publicAccessBlockConfiguration
 
-      if (currentPublicAccessBlock == null ||
-          !currentPublicAccessBlock.blockPublicAcls!! ||
-          !currentPublicAccessBlock.blockPublicPolicy!! ||
-          !currentPublicAccessBlock.restrictPublicBuckets!! ||
-          !currentPublicAccessBlock.ignorePublicAcls!!) {
+      if (
+          currentPublicAccessBlock == null ||
+              !currentPublicAccessBlock.blockPublicAcls!! ||
+              !currentPublicAccessBlock.blockPublicPolicy!! ||
+              !currentPublicAccessBlock.restrictPublicBuckets!! ||
+              !currentPublicAccessBlock.ignorePublicAcls!!
+      ) {
         logInfoBlcks("disabling public access for S3 bucket '$name'")
 
         it.putPublicAccessBlock(

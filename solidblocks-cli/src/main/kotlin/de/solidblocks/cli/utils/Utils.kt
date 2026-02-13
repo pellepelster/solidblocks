@@ -23,4 +23,3 @@ public fun List<String>.indentWithYamlObjectMarker() =
         "  ${it.value}"
       }
     }
-

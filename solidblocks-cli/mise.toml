@@ -3,7 +3,7 @@ graalvm = "24.0.2"
 
 [tasks.build-native]
 usage = '''
-arg "<target>" help="target platform" {
+arg "<target>" help="target platform" default="linux-amd64" {
   choices "linux-amd64" "darwin-amd64" "darwin-arm64" "windows-amd64"
 }
 '''
@@ -48,4 +48,50 @@ mkdir -p "build/blcks"
 """
 
 [tasks.clean]
-run = "rm -rf build"
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+rm -rf build
+rm -rf blcks
+"""
+
+[tasks.install-local]
+depends = ["build-native"]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+cp blcks ~/bin/blcks
+"""
+
+[tasks.test-integration-prepare]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
+
+cd "test/terraform"
+terraform init -upgrade
+terraform apply -auto-approve
+"""
+
+[tasks.test-integration]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+fi
+
+source mise.sh
+task_test_hetzner_nuke
+"""
+
+[tasks.test]
+run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
+
+[tasks.format]
+run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"

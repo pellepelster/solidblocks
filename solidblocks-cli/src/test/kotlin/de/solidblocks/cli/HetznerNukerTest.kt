@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test
 
 class HetznerNukerTest {
 
-    val hcloudToken = System.getenv("HCLOUD_TOKEN").toString()
-    val api = HetznerApi(hcloudToken)
+  val hcloudToken = System.getenv("HCLOUD_TOKEN").toString()
+  val api = HetznerApi(hcloudToken)
 
-    @Test
-    fun testNuke() {
-        HetznerNuker(hcloudToken).nuke()
-    }
+  @Test
+  fun testNuke() {
+    HetznerNuker(hcloudToken).nuke()
+  }
 }

@@ -13,9 +13,9 @@ class YamlTest {
   fun testParse() {
     val rawYaml =
         """
-            root-key1:
-              - command: ping
-              - file: /some/file
+        root-key1:
+          - command: ping
+          - file: /some/file
         """
             .trimIndent()
 
@@ -27,7 +27,7 @@ class YamlTest {
   fun testValueForKeywordShorthand() {
     val rawYaml =
         """
-            command: ping
+        command: ping
         """
             .trimIndent()
 
@@ -40,8 +40,8 @@ class YamlTest {
   fun testValueForKeywordExtended() {
     val rawYaml =
         """
-            command:
-            name: ping
+        command:
+        name: ping
         """
             .trimIndent()
 
@@ -63,7 +63,7 @@ class YamlTest {
   fun testValueForKeywordNotFound() {
     val rawYaml =
         """
-            command: ping
+        command: ping
         """
             .trimIndent()
 
@@ -77,7 +77,7 @@ class YamlTest {
   fun testValueForKeywordWithFallback() {
     val rawYaml =
         """
-            command: ping
+        command: ping
         """
             .trimIndent()
 
@@ -95,7 +95,7 @@ class YamlTest {
   fun testParseError() {
     val rawYaml =
         """
-            %§${'$'}"%"§${'$'}%§"
+        %§${'$'}"%"§${'$'}%§"
         """
             .trimIndent()
 
@@ -107,9 +107,9 @@ class YamlTest {
   fun testGetList() {
     val rawYaml =
         """
-            key1:
-              - item1: string1
-              - item2: string2
+        key1:
+          - item1: string1
+          - item2: string2
         """
             .trimIndent()
 
@@ -123,9 +123,9 @@ class YamlTest {
   fun testGetListError() {
     val rawYaml =
         """
-            key1:
-              item1: string1
-              item2: string2
+        key1:
+          item1: string1
+          item2: string2
         """
             .trimIndent()
 
@@ -138,8 +138,8 @@ class YamlTest {
   fun testGetKeys() {
     val rawYaml =
         """
-              item1: string1
-              item2: string2
+        item1: string1
+        item2: string2
         """
             .trimIndent()
 

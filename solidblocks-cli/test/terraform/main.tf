@@ -198,7 +198,7 @@ resource "hcloud_load_balancer_target" "application2_labels" {
 
 resource "hcloud_server" "hcloud_server1" {
   name               = "hcloud-server1"
-  server_type        = "cx22"
+  server_type        = "cx23"
   image              = "debian-12"
   location           = "nbg1"
   ssh_keys           = [hcloud_ssh_key.hcloud_ssh_key1.id]
@@ -211,7 +211,7 @@ resource "hcloud_server" "hcloud_server1" {
 
 resource "hcloud_server" "hcloud_server2" {
   name        = "hcloud-server2"
-  server_type = "cx22"
+  server_type = "cx23"
   image       = "debian-12"
   location    = "nbg1"
   ssh_keys    = [hcloud_ssh_key.hcloud_ssh_key1.id]
@@ -221,7 +221,7 @@ resource "hcloud_server" "hcloud_server2" {
 
 resource "hcloud_server" "hcloud_server3" {
   name        = "hcloud-server3"
-  server_type = "cx22"
+  server_type = "cx23"
   image       = "debian-12"
   location    = "nbg1"
   ssh_keys    = [hcloud_ssh_key.hcloud_ssh_key1.id]
