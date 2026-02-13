@@ -12,7 +12,7 @@ export VERSION="$(version)"
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_IMAGE_NAME="solidblocks-debug-container"
-DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
+DOCKER_OPTIONS="${DOCKER_OPTIONS:--push}"
 
 if [[ "${BUILD_LOCAL:-}" == "true" ]]; then
   echo "running local build"

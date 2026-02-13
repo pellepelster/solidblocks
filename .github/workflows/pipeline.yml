@@ -398,6 +398,9 @@ jobs:
   solidblocks-debug-container:
     name: solidblocks-debug-container
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-debug-container
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -405,21 +408,20 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'corretto'
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build
-        run: solidblocks-debug-container/do build
+        run: mise :build
       - name: Test
-        run: solidblocks-debug-container/do test
+        run: mise :test
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4

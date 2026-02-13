@@ -10,26 +10,6 @@ repositories {
     mavenCentral()
 }
 
-sourceSets {
-    create("integrationTest") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
-}
-
-val integrationTest = task<Test>("integrationTest") {
-    description = "Task to run integration tests"
-    group = "verification"
-
-    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
-    classpath = sourceSets["integrationTest"].runtimeClasspath
-}
-
-val integrationTestImplementation: Configuration by configurations.getting {
-    extendsFrom(configurations.implementation.get())
-}
-
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -41,10 +21,6 @@ dependencies {
     implementation("org.webjars.npm:htmx.org:1.8.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-
-    integrationTestImplementation("org.junit.jupiter:junit-jupiter-api")
-    integrationTestImplementation("org.junit.jupiter:junit-jupiter-engine")
-    integrationTestImplementation("org.testcontainers:testcontainers:1.17.5")
-    integrationTestImplementation("org.testcontainers:junit-jupiter:1.17.5")
-    integrationTestImplementation("io.rest-assured:kotlin-extensions:5.2.0")
+    testImplementation("io.rest-assured:kotlin-extensions:5.2.0")
+    testImplementation("org.junit.platform:junit-platform-engine:1.12.2")
 }
