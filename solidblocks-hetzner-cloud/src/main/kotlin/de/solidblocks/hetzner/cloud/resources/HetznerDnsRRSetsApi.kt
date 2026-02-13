@@ -13,16 +13,30 @@ data class DnsRRSetsListResponseWrapper(
     override val meta: MetaResponse,
 ) : ListResponse<DnsRrSetResponse> {
 
-    override val list: List<DnsRrSetResponse>
-        get() = rrsets
+  override val list: List<DnsRrSetResponse>
+    get() = rrsets
 }
 
 enum class RRType {
-    A, AAAA, CAA, CNAME, DS, HINFO, HTTPS, MX, NS, PTR, RP, SOA, SRV, SVCB, TLSA, TXT
+  A,
+  AAAA,
+  CAA,
+  CNAME,
+  DS,
+  HINFO,
+  HTTPS,
+  MX,
+  NS,
+  PTR,
+  RP,
+  SOA,
+  SRV,
+  SVCB,
+  TLSA,
+  TXT,
 }
 
-@Serializable
-data class DnsRRSetRecord(val value: String, val comment: String? = null)
+@Serializable data class DnsRRSetRecord(val value: String, val comment: String? = null)
 
 @Serializable
 data class DnsRRSetsCreateRequest(
@@ -30,7 +44,7 @@ data class DnsRRSetsCreateRequest(
     val type: RRType,
     val records: List<DnsRRSetRecord>,
     val ttl: Int = 3600,
-    val labels: Map<String, String> = emptyMap()
+    val labels: Map<String, String> = emptyMap(),
 )
 
 @Serializable
@@ -44,7 +58,6 @@ data class DnsRRSetsResponseWrapper(
     @SerialName("rrset") val rrset: DnsRrSetResponse,
 )
 
-
 @Serializable
 data class DnsRrSetResponse(
     override val id: String,
@@ -57,23 +70,22 @@ data class DnsRrSetResponse(
 class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: String) :
     HetznerBaseResourceApi<DnsRrSetResponse> {
 
-    override suspend fun listPaged(
-        page: Int,
-        perPage: Int,
-        filter: Map<String, FilterValue>,
-        labelSelectors: Map<String, LabelSelectorValue>,
-    ): DnsRRSetsListResponseWrapper =
-        api.get("v1/zones/${dnsZoneReference}/rrsets?${listQuery(page, perPage, filter, labelSelectors)}")
-            ?: throw RuntimeException("failed to list dns rr sets")
+  override suspend fun listPaged(
+      page: Int,
+      perPage: Int,
+      filter: Map<String, FilterValue>,
+      labelSelectors: Map<String, LabelSelectorValue>,
+  ): DnsRRSetsListResponseWrapper =
+      api.get(
+          "v1/zones/$dnsZoneReference/rrsets?${listQuery(page, perPage, filter, labelSelectors)}",
+      ) ?: throw RuntimeException("failed to list dns rr sets")
 
-    suspend fun create(request: DnsRRSetsCreateRequest) =
-        api.post<DnsRRSetsCreateResponseWrapper>("v1/zones/${dnsZoneReference}/rrsets", request)
+  suspend fun create(request: DnsRRSetsCreateRequest) =
+      api.post<DnsRRSetsCreateResponseWrapper>("v1/zones/$dnsZoneReference/rrsets", request)
 
-    suspend fun get(name: String, type: RRType) =
-        api.get<DnsRRSetsResponseWrapper>("v1/zones/${dnsZoneReference}/rrsets/${name}/${type}")
+  suspend fun get(name: String, type: RRType) =
+      api.get<DnsRRSetsResponseWrapper>("v1/zones/$dnsZoneReference/rrsets/$name/$type")
 
-
-    suspend fun delete(rrName: String, rrType: RRType) =
-        api.simpleDelete("v1/zones/${dnsZoneReference}/rrsets/${rrName}/${rrType}")
-
+  suspend fun delete(rrName: String, rrType: RRType) =
+      api.simpleDelete("v1/zones/$dnsZoneReference/rrsets/$rrName/$rrType")
 }

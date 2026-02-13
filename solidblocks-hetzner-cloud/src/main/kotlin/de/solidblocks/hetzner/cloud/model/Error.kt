@@ -41,6 +41,7 @@ data class HetznerApiError(
 @Serializable
 data class HetznerApiErrorDetails(val fields: List<HetznerApiErrorDetailsField>? = null)
 
-@Serializable data class HetznerApiErrorDetailsField(val name: String, val messages: List<String>? = null)
+@Serializable
+data class HetznerApiErrorDetailsField(val name: String, val messages: List<String>? = null)
 
 class HetznerApiException(val error: HetznerApiError, val url: Url) : RuntimeException()

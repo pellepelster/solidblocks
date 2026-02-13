@@ -13,8 +13,8 @@ data class PlacementGroupsListWrapper(
     override val meta: MetaResponse,
 ) : ListResponse<PlacementGroupResponse> {
 
-    override val list: List<PlacementGroupResponse>
-        get() = placementGroups
+  override val list: List<PlacementGroupResponse>
+    get() = placementGroups
 }
 
 @Serializable
@@ -24,14 +24,14 @@ data class PlacementGroupResponse(override val id: Long, override val name: Stri
 class HetznerPlacementGroupsApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<Long, PlacementGroupResponse> {
 
-    override suspend fun listPaged(
-        page: Int,
-        perPage: Int,
-        filter: Map<String, FilterValue>,
-        labelSelectors: Map<String, LabelSelectorValue>,
-    ): PlacementGroupsListWrapper =
-        api.get("v1/placement_groups?${listQuery(page, perPage, filter, labelSelectors)}")
-            ?: throw RuntimeException("failed to list placement groups")
+  override suspend fun listPaged(
+      page: Int,
+      perPage: Int,
+      filter: Map<String, FilterValue>,
+      labelSelectors: Map<String, LabelSelectorValue>,
+  ): PlacementGroupsListWrapper =
+      api.get("v1/placement_groups?${listQuery(page, perPage, filter, labelSelectors)}")
+          ?: throw RuntimeException("failed to list placement groups")
 
-    override suspend fun delete(id: Long) = api.simpleDelete("v1/placement_groups/$id")
+  override suspend fun delete(id: Long) = api.simpleDelete("v1/placement_groups/$id")
 }

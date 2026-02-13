@@ -12,8 +12,8 @@ data class DnsZoneListResponseWrapper(
     override val meta: MetaResponse,
 ) : ListResponse<DnsZone> {
 
-    override val list: List<DnsZone>
-        get() = zones
+  override val list: List<DnsZone>
+    get() = zones
 }
 
 @Serializable
@@ -28,22 +28,18 @@ data class DnsZone(
     override val protection: HetznerDeleteProtectionResponse,
 ) : HetznerDeleteProtectedResource<Long>
 
-class HetznerDnsZonesApi(private val api: HetznerApi) :
-    HetznerBaseResourceApi<DnsZone> {
+class HetznerDnsZonesApi(private val api: HetznerApi) : HetznerBaseResourceApi<DnsZone> {
 
-    suspend fun get(name: String) =
-        api.get<DnsZoneResponseWrapper>("v1/zones/$name")
+  suspend fun get(name: String) = api.get<DnsZoneResponseWrapper>("v1/zones/$name")
 
-    suspend fun get(id: Long) =
-        api.get<DnsZoneResponseWrapper>("v1/zones/$id")
+  suspend fun get(id: Long) = api.get<DnsZoneResponseWrapper>("v1/zones/$id")
 
-    override suspend fun listPaged(
-        page: Int,
-        perPage: Int,
-        filter: Map<String, FilterValue>,
-        labelSelectors: Map<String, LabelSelectorValue>,
-    ): DnsZoneListResponseWrapper =
-        api.get("v1/zones?${listQuery(page, perPage, filter, labelSelectors)}")
-            ?: throw RuntimeException("failed to list dns zones")
-
+  override suspend fun listPaged(
+      page: Int,
+      perPage: Int,
+      filter: Map<String, FilterValue>,
+      labelSelectors: Map<String, LabelSelectorValue>,
+  ): DnsZoneListResponseWrapper =
+      api.get("v1/zones?${listQuery(page, perPage, filter, labelSelectors)}")
+          ?: throw RuntimeException("failed to list dns zones")
 }
