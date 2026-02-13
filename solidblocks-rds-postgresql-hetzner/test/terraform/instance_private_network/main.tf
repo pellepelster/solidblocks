@@ -47,7 +47,7 @@ module "rds-postgresql-1" {
   backup_volume = data.hcloud_volume.backup.id
 
   solidblocks_base_url    = "https://${data.aws_s3_bucket.bootstrap.bucket_domain_name}"
-  solidblocks_rds_version = var.solidblocks_version
+  solidblocks_rds_version = var.solidblocks_rds_version
 
   network_id = hcloud_network.network1.id
   network_ip = "10.0.1.4"

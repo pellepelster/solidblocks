@@ -31,3 +31,120 @@ terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hid
 )
 """
 
+
+[tasks.test-restore-local-deploy]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_restore_from_local_deploy
+"""
+
+[tasks.test-restore-local-run]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_restore_from_local_run
+"""
+
+[tasks.test-restore-local-destroy]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_restore_from_local_destroy
+"""
+
+[tasks.test-restore-local]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_restore_from_local
+"""
+
+[tasks.test-restore-s3]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_restore_from_s3
+"""
+
+[tasks.test-restore-gcp]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_restore_from_gcp
+"""
+
+[tasks.test-private-network]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_private_network
+"""
+
+[tasks.test-migration]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_migration
+"""
+
+[tasks.test-encryption]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_encryption
+"""
+
+[tasks.test-arm]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_arm
+"""
+
+[tasks.test-ssl]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_ssl
+"""
+
+[tasks.test-ssh]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_ssh
+"""
+
+[tasks.test-jumphost-ssh]
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${MISE_CONFIG_ROOT}/mise.sh
+task_test_jumphost_ssh
+"""

@@ -1,0 +1,892 @@
+#!/usr/bin/env bash
+
+set -eu
+
+DIR="${MISE_CONFIG_ROOT}"
+
+source "${DIR}/../lib/utils.sh"
+
+export TF_VAR_solidblocks_version="${VERSION}"
+
+TEMP_DIR="${DIR}/.test_$$"
+
+function clean_temp_dir {
+  rm -rf "${TEMP_DIR}"
+}
+
+trap clean_temp_dir EXIT
+
+source "${DIR}/../solidblocks-shell/lib/log.sh"
+source "${DIR}/../solidblocks-shell/lib/python.sh"
+
+function ensure_prerequisites {
+    if [[ -n "${CI:-}" ]]; then
+      cp ${DIR}/../solidblocks-cloud-init/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+    else
+      cp ${DIR}/../solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh "${DIR}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+    fi
+}
+
+ensure_prerequisites
+
+function task_build {
+
+  mkdir -p "${DIR}/build/snippets"
+  (
+    cd "${DIR}/snippets"
+    zip -r "${DIR}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-local-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${DIR}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-private-network-${VERSION}.zip" hetzner-postgres-rds-private-network/**/*.tf
+    zip -r "${DIR}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
+  )
+
+  if which terraform-docs; then
+    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/modules/rds-postgresql/README.md"
+    terraform-docs markdown table "${DIR}/modules/rds-postgresql" --hide modules --output-file "${DIR}/../doc/content/hetzner/rds/_index.md"
+  fi
+
+  (
+    cd "${DIR}/modules/rds-postgresql"
+    zip -r "${DIR}/build/blcks-terraform-rds-postgresql-hetzner-${VERSION}.zip" *
+  )
+
+}
+
+function task_lint {
+  ensure_environment
+  find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
+}
+
+function task_test_snippets_psql_wrapper() {
+  local module="${1:-}"
+  PGPASSWORD=password1 psql --host "$(terraform_wrapper "${module}" output -raw ipv4_address)" --user "user1" database1
+}
+
+function task_test_snippets_ssh {
+  local module="${1:-}"
+  #ssh -F "${DIR}/${module}/ssh_config" $(terraform_wrapper "${module}" output -raw ipv4_address) ${@}
+  #terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address
+  #ssh -F "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/ssh_config" $(terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" output -raw ipv4_address) ${@}
+}
+
+function task_test_snippets_local () {
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-local-backup/storage"
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-local-backup/instance"
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" init -upgrade
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" init -upgrade
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" apply -auto-approve
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-local-backup/instance"; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-local-backup/storage" destroy -auto-approve
+}
+
+function task_test_snippets_s3 () {
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-s3-backup/storage"
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-s3-backup/instance"
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" init -upgrade
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" init -upgrade
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" apply -auto-approve
+
+  # TODO run full release test
+  #log_divider_header "waiting for sql connectivity"
+  #while ! echo "SELECT 1;" | task_test_snippets_psql_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance"; do
+  #  log_echo_warning "still waiting"
+  #  sleep 5
+  #done
+  #log_divider_footer
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-s3-backup/storage" destroy -auto-approve
+}
+
+function snippets_wait_for_cloud_init () {
+  local snippet="${1:-}"
+
+  while ! ssh -F "${DIR}/snippets/${snippet}/instance/ssh_config" test test -f /run/cloud-init/result.json; do
+    log_echo_error "waiting for '${snippet}' server cloud init run"
+    sleep 1
+  done
+
+  if [[ "$(ssh -F "${DIR}/snippets/${snippet}/instance/ssh_config" test cat /run/cloud-init/result.json |  jq -r '.v1.errors | length')" != "0" ]]; then
+    ssh -F "${DIR}/snippets/${snippet}/instance/ssh_config" test cat /run/cloud-init/result.json
+    exit 1
+  fi
+}
+
+function task_test_snippets_private_network () {
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-private-network/storage"
+  terraform_wrapper_clean "snippets/hetzner-postgres-rds-private-network/instance"
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" init -upgrade
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" init -upgrade
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" apply -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" apply -auto-approve
+
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/instance" destroy -auto-approve
+  terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
+}
+
+function task_release_test  {
+  echo "================================================================================"
+  echo "snippets_local"
+  echo "================================================================================"
+  task_test_snippets_local
+
+  #echo "================================================================================"
+  #echo "snippets_private_network"
+  #echo "================================================================================"
+  #task_test_snippets_private_network
+
+  #echo "================================================================================"
+  #echo "snippets_s3"
+  #echo "================================================================================"
+  #task_test_snippets_s3
+}
+
+function test_wait_for_ssh() {
+  local counter=0
+  while ! task_test_ssh whoami && [[ ${counter} -lt 21 ]];  do
+    log_echo_warning "waiting for ssh"
+    counter=$((counter+1))
+    sleep 10
+  done
+}
+
+function test_wait_for_cloud_init() {
+  local counter=0
+  while ! task_test_ssh test -f /run/cloud-init/result.json && [[ ${counter} -lt 21 ]]; do
+    log_echo_warning "waiting for cloud init to finish"
+    counter=$((counter+1))
+    sleep 10
+  done
+
+  if [[ -n ${CI:-} ]] && [[ "$(task_test_ssh cat /run/cloud-init/result.json | jq '.v1.errors | length')" != "0" ]]; then
+    task_test_ssh cat /var/log/cloud-init-output.log
+  fi
+}
+
+function create_table {
+  cat <<-EOF
+CREATE TABLE dogs (
+	id serial PRIMARY KEY,
+	name VARCHAR ( 50 ) UNIQUE NOT NULL
+);
+EOF
+}
+
+function insert_dog {
+  local dog="${1:-}"
+  cat <<-EOF
+INSERT into dogs (name) VALUES ('${dog}');
+EOF
+}
+
+function test_ip_address() {
+  cat "${DIR}/test/terraform/ipv4_address"
+}
+
+function test_jumphost_ip_address() {
+  cat "${DIR}/test/terraform/jumphost_ipv4_address"
+}
+
+function psql_wrapper() {
+  PGPASSWORD=password1 psql --host "$(test_ip_address)" --tuples-only --user "user1" database1
+}
+
+function psql_wrapper_ssl() {
+  PGPASSWORD=password1 psql --set=sslmode=required --host "$(test_ip_address)" --user "user1" database1
+}
+
+function psql_wrapper_jumphost() {
+  task_test_jumphost_ssh PGPASSWORD=password1 psql --host 10.0.1.4 --user "user1" database1
+}
+
+
+function ensure_gcp_env() {
+  mkdir -p "${TEMP_DIR}"
+  export GCP_SERVICE_ACCOUNT_KEY="${GCP_SERVICE_ACCOUNT_KEY:-$(pass solidblocks/gcp/test/service_account_key)}"
+  echo "${GCP_SERVICE_ACCOUNT_KEY}" > "${TEMP_DIR}/service-key.json"
+  export GOOGLE_APPLICATION_CREDENTIALS="${TEMP_DIR}/service-key.json"
+  export TF_VAR_db_backup_gcs_service_key="$(cat ${TEMP_DIR}/service-key.json)"
+}
+
+function task_test_private_network () {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_private_network" apply -auto-approve
+
+  test_wait_for_cloud_init
+
+  while ! task_test_jumphost_ssh whoami; do
+    log_echo_warning "waiting for ssh"
+    sleep 10
+  done
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | psql_wrapper_jumphost; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+
+  terraform_wrapper "test/terraform/instance_private_network" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
+  terraform_wrapper "test/terraform/base" destroy -auto-approve || true
+}
+
+function task_test_arm () {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_arm" apply -auto-approve
+
+  test_wait_for_cloud_init
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | psql_wrapper; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+
+  terraform_wrapper "test/terraform/instance_arm" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
+  terraform_wrapper "test/terraform/base" destroy -auto-approve || true
+}
+
+function task_test_ssl () {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_ssl" apply -auto-approve
+
+  test_wait_for_cloud_init
+  test_wait_for_sql
+
+  local counter=0
+  while ! task_test_ssh test -f /storage/data/ssl/certificates/test3.blcks.de.crt && [[ ${counter} -lt 21 ]]; do
+    log_echo_warning "waiting 'test3.blcks.de.crt'"
+    counter=$((counter+1))
+    sleep 10
+  done
+
+  #"${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_ssl.py"
+
+  log_divider_header "waiting for sql connectivity"
+  while ! echo "SELECT 1;" | psql_wrapper_ssl; do
+    log_echo_warning "still waiting"
+    sleep 5
+  done
+  log_divider_footer
+
+  terraform_wrapper "test/terraform/instance_arm" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
+  terraform_wrapper "test/terraform/base" destroy -auto-approve || true
+}
+
+function task_test_restore_from_local() {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  task_test_restore_from_local_deploy
+  task_test_restore_from_local_run
+  task_test_restore_from_local_destroy
+}
+
+function task_test_restore_from_local_deploy() {
+  ensure_gcp_env
+
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_local" apply -auto-approve
+}
+
+function task_test_restore_from_local_run() {
+  ensure_gcp_env
+
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  test_wait_for_ssh
+  test_wait_for_sql
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
+
+  # wait for timer backup backup run
+  local counter=0
+  while ! task_test_ssh journalctl -u rds-backup-full@rds-postgresql-${TEST_ID}.service | grep "rds-backup-full@rds-postgresql-${TEST_ID}.service: Succeeded" && [[ ${counter} -lt 21 ]];  do
+    log_echo_warning "waiting for timer backup backup run"
+    counter=$((counter+1))
+    sleep 10
+  done
+
+  test_wait_for_ssh
+
+  log_divider_header "destroy instance"
+  terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
+  log_divider_footer
+
+  log_divider_header "re-create instance"
+  terraform_wrapper "test/terraform/instance_local" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_ssh
+  test_wait_for_sql
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_local.py"
+}
+
+function task_test_restore_from_local_destroy() {
+  ensure_gcp_env
+
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/instance_local" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
+  terraform_wrapper "test/terraform/base" destroy -auto-approve || true
+}
+
+function task_test_migration() {
+
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+
+  log_divider_header "create instance with postgresql version 14"
+  export TF_VAR_postgres_major_version="14"
+  terraform_wrapper "test/terraform/instance_migration" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_cloud_init
+
+  test_wait_for_docker
+  test_wait_for_sql
+
+  echo "SELECT version();" | psql_wrapper | grep "PostgreSQL 14"
+
+  log_divider_header "create test table"
+  create_table | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "add test data"
+  insert_dog "rudi" | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "re-create instance with postgresql version 15"
+  export TF_VAR_postgres_major_version="15"
+  terraform_wrapper "test/terraform/instance_migration" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  test_wait_for_sql
+
+  echo "SELECT version();" | psql_wrapper | grep "PostgreSQL 15"
+
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
+
+  terraform_wrapper "test/terraform/instance_migration" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve
+  terraform_wrapper "test/terraform/base" destroy -auto-approve
+}
+
+function task_test_encryption() {
+
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/backup_storage" apply -auto-approve
+  terraform_wrapper "test/terraform/instance_encryption" apply -auto-approve
+
+  test_wait_for_cloud_init
+  test_wait_for_docker
+  test_wait_for_sql
+
+  log_divider_header "create test table"
+  create_table | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "add test data"
+  insert_dog "rudi" | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "trigger full backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
+  log_divider_footer
+
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_encryption.py"
+
+  log_divider_header "destroy instance"
+  terraform_wrapper "test/terraform/instance_encryption" destroy -auto-approve
+  log_divider_footer
+
+  log_divider_header "re-create instance"
+  terraform_wrapper "test/terraform/instance_encryption" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  test_wait_for_sql
+
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "rudi"
+  echo 'SELECT * FROM "pg_settings" ORDER BY "name";' | psql_wrapper | grep ".*checkpoint_timeout.*399.*"
+
+  terraform_wrapper "test/terraform/instance_encryption" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve || true
+  terraform_wrapper "test/terraform/base" destroy -auto-approve || true
+}
+
+function task_test_restore_from_s3() {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+  terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
+  test_wait_for_cloud_init
+
+  test_wait_for_sql
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
+  test_wait_for_docker
+  test_wait_for_sql
+
+  log_divider_header "create test table"
+  create_table | psql_wrapper
+  log_divider_footer
+
+  local dog="$(uuidgen)"
+  log_divider_header "add initial dog '${dog}'"
+  insert_dog "${dog}" | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "trigger full backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
+  log_divider_footer
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  log_divider_header "destroy instance"
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  log_divider_footer
+
+  log_divider_header "re-create instance"
+  terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  test_wait_for_docker_logline "restoring database from backup (latest)"
+  test_wait_for_sql
+
+  log_divider_header "checking for old dog '${dog}'"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${dog}"
+  log_divider_footer
+
+  local new_dog="$(uuidgen)"
+  log_divider_header "inserting new dog '${new_dog}'"
+  insert_dog "${new_dog}" | psql_wrapper
+  log_divider_footer
+
+  #sleep 5
+  #echo "SELECT * FROM dogs;" | psql_wrapper
+
+  log_divider_header "checking for new dog '${new_dog}'"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${new_dog}"
+  log_divider_footer
+
+  local restore_pitr="$(date +"%Y-%m-%d %H:%M:%S%z")"
+
+
+  local checkpoint_wait=45
+  echo "waiting for checkpoint (${checkpoint_wait}s)"
+  sleep ${checkpoint_wait}
+
+  log_divider_header "trigger incr backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+  log_divider_footer
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  log_divider_header "insert another random dog"
+  insert_dog "$(uuidgen)" | psql_wrapper
+  log_divider_footer
+
+  echo "waiting for checkpoint (${checkpoint_wait}s)"
+  sleep ${checkpoint_wait}
+
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  log_divider_header "destroy instance (again)"
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  log_divider_footer
+
+  export TF_VAR_restore_pitr="${restore_pitr}"
+
+  log_divider_header "re-create instance (again)"
+  terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  #test_wait_for_docker_logline "restoring database from backup (latest)"
+  test_wait_for_sql
+
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${dog}"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep -v "${dog}"
+
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve
+  terraform_wrapper "test/terraform/base" destroy -auto-approve
+}
+
+function task_test_restore_from_hetzner_s3() {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/instance_hetzner_s3" apply -auto-approve
+  test_wait_for_cloud_init
+
+  test_wait_for_sql
+  "${DIR}/.venv/bin/pytest" -rP --ssh-config=${DIR}/test/terraform/ssh_config --hosts=$(test_ip_address) "${DIR}/test/test_s3.py"
+  test_wait_for_docker
+  test_wait_for_sql
+
+  log_divider_header "create test table"
+  create_table | psql_wrapper
+  log_divider_footer
+
+  local dog="$(uuidgen)"
+  log_divider_header "add initial dog '${dog}'"
+  insert_dog "${dog}" | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "trigger full backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
+  log_divider_footer
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  log_divider_header "destroy instance"
+  terraform_wrapper "test/terraform/instance_hetzner_s3" destroy -auto-approve
+  log_divider_footer
+
+  log_divider_header "re-create instance"
+  terraform_wrapper "test/terraform/instance_hetzner_s3" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  test_wait_for_docker_logline "restoring database from backup (latest)"
+  test_wait_for_sql
+
+  log_divider_header "checking for old dog '${dog}'"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${dog}"
+  log_divider_footer
+
+  local new_dog="$(uuidgen)"
+  log_divider_header "inserting new dog '${new_dog}'"
+  insert_dog "${new_dog}" | psql_wrapper
+  log_divider_footer
+
+  #sleep 5
+  #echo "SELECT * FROM dogs;" | psql_wrapper
+
+  log_divider_header "checking for new dog '${new_dog}'"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${new_dog}"
+  log_divider_footer
+
+  local restore_pitr="$(date +"%Y-%m-%d %H:%M:%S%z")"
+
+
+  local checkpoint_wait=45
+  echo "waiting for checkpoint (${checkpoint_wait}s)"
+  sleep ${checkpoint_wait}
+
+  log_divider_header "trigger incr backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+  log_divider_footer
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  log_divider_header "insert another random dog"
+  insert_dog "$(uuidgen)" | psql_wrapper
+  log_divider_footer
+
+  echo "waiting for checkpoint (${checkpoint_wait}s)"
+  sleep ${checkpoint_wait}
+
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-incr.sh
+
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  log_divider_header "destroy instance (again)"
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  log_divider_footer
+
+  export TF_VAR_restore_pitr="${restore_pitr}"
+
+  log_divider_header "re-create instance (again)"
+  terraform_wrapper "test/terraform/instance_s3" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  #test_wait_for_docker_logline "restoring database from backup (latest)"
+  test_wait_for_sql
+
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${dog}"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep -v "${dog}"
+
+  terraform_wrapper "test/terraform/instance_s3" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve
+  terraform_wrapper "test/terraform/base" destroy -auto-approve
+}
+
+function task_test_restore_from_gcp() {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+
+  terraform_wrapper "test/terraform/base" apply -auto-approve
+  export TEST_ID="$(terraform_wrapper "test/terraform/base" output -raw test_id)"
+  export TF_VAR_test_id="${TEST_ID}"
+  export TF_VAR_solidblocks_rds_version="${VERSION}-snapshot"
+
+  terraform_wrapper "test/terraform/instance_gcp" apply -auto-approve
+  test_wait_for_cloud_init
+
+  test_wait_for_docker
+  test_wait_for_sql
+
+  sleep 10
+
+  test_wait_for_sql
+
+  log_divider_header "create test table"
+  create_table | psql_wrapper
+  log_divider_footer
+
+  local dog="$(uuidgen)"
+  log_divider_header "add initial dog '${dog}'"
+  insert_dog "${dog}" | psql_wrapper
+  log_divider_footer
+
+  log_divider_header "trigger full backup"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-full.sh
+  log_divider_footer
+
+  log_divider_header "show backup-info"
+  task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" /rds/bin/backup-info.sh
+  log_divider_footer
+
+  log_divider_header "destroy instance"
+  terraform_wrapper "test/terraform/instance_gcp" destroy -auto-approve
+  log_divider_footer
+
+  log_divider_header "re-create instance"
+  terraform_wrapper "test/terraform/instance_gcp" apply -auto-approve
+  log_divider_footer
+
+  test_wait_for_docker
+  test_wait_for_docker_logline "restoring database from backup (latest)"
+  test_wait_for_sql
+
+  log_divider_header "checking for old dog '${dog}'"
+  echo "SELECT * FROM dogs;" | psql_wrapper | grep "${dog}"
+  log_divider_footer
+
+  terraform_wrapper "test/terraform/instance_gcp" destroy -auto-approve
+  terraform_wrapper "test/terraform/backup_storage" destroy -auto-approve
+  terraform_wrapper "test/terraform/base" destroy -auto-approve
+}
+
+function test_wait_for_docker() {
+  log_divider_header "waiting for rds docker instance"
+  local counter=0
+
+  while ! task_test_ssh docker exec "rds-postgresql-${TEST_ID}_postgresql" whoami && [[ ${counter} -lt 21 ]]; do
+    log_echo_warning "still waiting for docker"
+    counter=$((counter+1))
+    sleep 5
+  done
+  log_divider_footer
+}
+
+function test_wait_for_docker_logline() {
+  local logline="${1:-}"
+  log_divider_header "waiting for '${logline}'"
+  local counter=0
+
+  while ! task_test_ssh docker logs "rds-postgresql-${TEST_ID}_postgresql" | grep "${logline}" && [[ ${counter} -lt 21 ]]; do
+    log_echo_warning "still waiting for '${logline}'"
+    counter=$((counter+1))
+    sleep 5
+  done
+  log_divider_footer
+}
+
+function test_wait_for_sql() {
+  log_divider_header "waiting for sql connectivity"
+  local counter=0
+
+  while ! echo "SELECT 1;" | psql_wrapper && [[ ${counter} -lt 31 ]]; do
+    log_echo_warning "waiting for sql connectivity"
+    counter=$((counter+1))
+    sleep 5
+  done
+
+  if ! echo "SELECT 1;" | psql_wrapper; then
+    task_test_ssh journalctl -u rds@rds-postgresql-${TEST_ID}.service --no-pager
+  fi
+
+  log_divider_footer
+}
+
+function task_test {
+  if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    exit 0
+  fi
+
+  ensure_gcp_env
+  echo "starting test: task_test_private_network"
+  task_test_private_network
+
+  echo "starting test: test_restore_from_local"
+  task_test_restore_from_local
+
+  echo "starting test: task_test_restore_from_s3"
+  task_test_restore_from_s3
+
+  echo "starting test: task_test_arm"
+  task_test_arm
+
+  echo "starting test: task_test_ssl"
+  task_test_ssl
+}
+
+function task_release_prepare {
+  local version="${1:-}"
+
+  if [[ -z "${version}" ]]; then
+    echo "no version set"
+    exit 1
+  fi
+
+  echo "setting version: ${version}"
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/main.tf" ${version}
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-private-network/instance/main.tf" ${version}
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" ${version}
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" ${version}
+  terraform_replace_variable_default 'solidblocks_rds_version' "${DIR}/modules/rds-postgresql/variables.tf" ${version}
+}
+
+function terraform_replace_variable_default {
+  local marker="${1:-}"
+  local file="${2:-}"
+  local version="${3:-}"
+
+  mkdir -p "${DIR}/.tmp"
+  rg -e "(^\s*default\s*=\s*\")(\S+)(\"\s*#${marker}\s*$)" --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never "${file}" > "${DIR}/.tmp/tmp.$$"
+  mv "${DIR}/.tmp/tmp.$$" "${file}"
+  rm -rf "${DIR}/.tmp"
+}
+
+
+function task_test_ssh {
+  ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
+}
+
+function task_test_jumphost_ssh {
+  ssh -F ${DIR}/test/terraform/ssh_config $(test_jumphost_ip_address) ${@}
+}
+
+function task_clean {
+  rm -rf "${DIR}/build" || true
+  find "${DIR}/test" -name ".terraform" -exec rm -rf {} \; || true
+  find "${DIR}/test" -name ".terraform.lock.hcl" -exec rm -rf {} \; || true
+  find "${DIR}/test" -name "terraform.tfstate*" -exec rm -rf {} \; || true
+}

@@ -267,7 +267,7 @@ function task_build_jvm_all {
     rm -rf ${DIR}/blcks
     mkdir -p "${DIR}/blcks/blcks"
     cd "${DIR}/blcks/blcks"
-    tar -xvf "${DIR}/build/distributions/blcks-${VERSION#v}.tar" --strip-components=1
+    tar -xvf "${DIR}/build/distributions/blcks-${VERSION}.tar" --strip-components=1
     cd "${DIR}/blcks"
     mkdir -p "${DIR}/build"
     zip -vr "${DIR}/build/blcks-cli-jvm-all-${VERSION}.zip" ./

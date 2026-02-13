@@ -1,4 +1,4 @@
-variable "solidblocks_version" {
+variable "solidblocks_rds_version" {
 }
 
 variable "location" {

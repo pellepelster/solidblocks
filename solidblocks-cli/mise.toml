@@ -39,7 +39,7 @@ rm -rf "build/blcks" || true
 mkdir -p "build/blcks"
 (
     cd "build/blcks"
-    tar -xvf "../distributions/blcks-${VERSION#v}.tar" --strip-components=1
+    tar -xvf "../distributions/blcks-${VERSION}.tar" --strip-components=1
 )
 (
   cd "build"

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eu -o pipefail
 
 if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
 exit 0
