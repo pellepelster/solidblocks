@@ -20,9 +20,211 @@ mkdir -p "${MISE_CONFIG_ROOT}/build"
     "${MISE_CONFIG_ROOT}/ansible/blcks/rds_postgresql"
 """
 
-[tasks.test-integration]
+[tasks.test-standalone]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone
 """
 
+[tasks.test-cluster]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_cluster
+"""
+
+[tasks.test-standalone-terraform]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_terraform
+"""
+
+[tasks.test-standalone-ansible]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_ansible
+"""
+
+[tasks.test-standalone-after-bootstrap]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_after_bootstrap
+"""
+
+[tasks.test-standalone-destroy-instances]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_destroy_instances
+"""
+
+[tasks.test-standalone-after-instance-rebuild]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_after_instance_rebuild
+"""
+
+[tasks.test-standalone-destroy-storage]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_destroy_storage
+"""
+
+[tasks.test-standalone-after-storage-rebuild]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_after_storage_rebuild
+"""
+
+[tasks.test-standalone-after-upgrade]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_standalone_after_upgrade
+"""
+
+[tasks.test-standalone-full-backup]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_full_backup_standalone
+"""
+
+[tasks.test-cluster-terraform]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_cluster_terraform
+"""
+
+[tasks.test-cluster-ansible]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_cluster_ansible
+"""
+
+[tasks.test-cluster-after-bootstrap]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_cluster_after_bootstrap
+"""
+
+[tasks.test-cluster-failover]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_cluster_failover
+"""
+
+[tasks.test-cluster-after-failover]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_cluster_after_failover
+"""
+
+
+[tasks.test-cluster-ansible-after-failover]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_test_cluster_ansible_after_failover
+"""
+
+[tasks.clean]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_clean
+"""
+
+[tasks.format]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+terraform fmt -recursive
+"""
+
+[tasks.release-prepare]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+rg -e '^(version: )(.*)$' "ansible/blcks/rds_postgresql/galaxy.yml" --replace "\\${1}"${VERSION}"\\${3}" --passthru --no-filename  --no-line-number --color never > "ansible/blcks/rds_postgresql/galaxy.yml.tmp"
+mv "ansible/blcks/rds_postgresql/galaxy.yml.tmp" "ansible/blcks/rds_postgresql/galaxy.yml"
+blcks docs ansible --collection "ansible/blcks/rds_postgresql" --target "${BLCKS_ROOT}/doc/content/rds/ansible/rds_postgresql"
+rm "${BLCKS_ROOT}/doc/content/rds/ansible/rds_postgresql/cluster.md"
+"""
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test-standalone" },
+    { task = "test-cluster" },
+]

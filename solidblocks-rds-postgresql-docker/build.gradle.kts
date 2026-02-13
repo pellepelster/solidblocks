@@ -1,9 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-object Versions {
-    const val testContainersVersion = "1.21.3"
-}
-
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
 }
@@ -13,9 +9,10 @@ repositories {
 }
 
 dependencies {
+    testImplementation("org.testcontainers:testcontainers:2.0.2")
+
     testImplementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
     testImplementation("org.assertj:assertj-core:3.22.0")
-    testImplementation("org.testcontainers:testcontainers:${Versions.testContainersVersion}")
 
     testImplementation("com.github.docker-java:docker-java:3.5.1")
     testImplementation("com.github.docker-java:docker-java-transport-zerodep:3.5.1")

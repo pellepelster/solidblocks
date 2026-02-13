@@ -25,3 +25,32 @@ export OVERRIDE_PASSWORD="override_password"
 poetry run pytest -s
 """
 
+[tasks.format]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+terraform fmt -recursive
+"""
+
+[tasks.clean]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+rm -rf build
+rm -rf tests/terraform/*.terraform*
+rm -rf tests/terraform/*.tfstate*
+rm -rf tests/tofu/.terraform*
+rm -rf tests/tofu/.tfstate*
+"""
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test" },
+]
+
+

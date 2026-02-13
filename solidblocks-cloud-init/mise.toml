@@ -23,3 +23,11 @@ curl -L "https://github.com/pellepelster/solidblocks/releases/download/${usage_v
 chmod +x "/tmp/blcks-cloud-init-bootstrap-${usage_version}.sh"
 docker run -ti -v "/tmp/blcks-cloud-init-bootstrap-${usage_version}.sh:/blcks-cloud-init-bootstrap.sh" debian:bookworm /bin/bash -c /blcks-cloud-init-bootstrap.sh
 """
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test" },
+]

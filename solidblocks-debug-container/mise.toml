@@ -42,3 +42,23 @@ set -eu -o pipefail
 
 docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-snapshot"
 """
+
+[tasks.release-test]
+usage = """
+arg "<version>"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${usage_version}"
+"""
+
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test" },
+]

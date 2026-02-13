@@ -47,6 +47,7 @@ function task_test_hetzner_nuke {
 
 function task_test_hetzner_asg {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -65,6 +66,7 @@ function task_test_hetzner_asg {
 
 function task_test_terraform {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 

@@ -70,6 +70,11 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
+if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipped integration tests"
+    exit 0
+fi
+
 export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
 
 cd "test/terraform"
@@ -83,6 +88,7 @@ run = """
 set -eu -o pipefail
 
 if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipped integration tests"
     exit 0
 fi
 
@@ -93,5 +99,32 @@ task_test_hetzner_nuke
 [tasks.test]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
 
+[tasks.build]
+depends=["build-jvm-all", "build-native"]
+
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
+
+[tasks.release-test]
+usage = """
+arg "<version>"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+curl -L "https://github.com/pellepelster/solidblocks/releases/download/${usage_version}/blcks-cli-linux-amd64-${usage_version}.zip" -o "/tmp/blcks-cli-linux-amd64-${usage_version}.zip"
+cd /tmp
+unzip -o blcks-cli-linux-amd64-${usage_version}.zip
+./blcks --help
+"""
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test" },
+    { task = "test-integration-prepare" },
+    { task = "test-integration" },
+]

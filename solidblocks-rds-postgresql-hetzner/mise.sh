@@ -226,6 +226,7 @@ function ensure_gcp_env() {
 
 function task_test_private_network () {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -259,6 +260,7 @@ function task_test_private_network () {
 
 function task_test_arm () {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -287,6 +289,7 @@ function task_test_arm () {
 
 function task_test_ssl () {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -326,6 +329,7 @@ function task_test_ssl () {
 
 function task_test_restore_from_local() {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -395,6 +399,7 @@ function task_test_restore_from_local_destroy() {
 function task_test_migration() {
 
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -446,6 +451,7 @@ function task_test_migration() {
 function task_test_encryption() {
 
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -497,6 +503,7 @@ function task_test_encryption() {
 
 function task_test_restore_from_s3() {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -611,6 +618,7 @@ function task_test_restore_from_s3() {
 
 function task_test_restore_from_hetzner_s3() {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -726,6 +734,7 @@ function task_test_restore_from_hetzner_s3() {
 
 function task_test_restore_from_gcp() {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 
@@ -828,6 +837,7 @@ function test_wait_for_sql() {
 
 function task_test {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
+    echo "skipping integration tests"
     exit 0
   fi
 

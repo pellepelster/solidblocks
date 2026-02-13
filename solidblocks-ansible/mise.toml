@@ -9,7 +9,7 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-rm -rf "${MISE_CONFIG_ROOT}/.venv"
+rm -rf "build"
 """
 
 [tasks.build]
@@ -18,20 +18,32 @@ run = """
 set -eu -o pipefail
 
 pip install -r requirements.txt
-mkdir -p "${MISE_CONFIG_ROOT}/build"
+mkdir -p "build"
 
 ".venv/bin/ansible-galaxy" \
     collection build \
-    --output-path "${MISE_CONFIG_ROOT}/build" \
+    --output-path "build" \
     --force \
     --verbose \
-    "${MISE_CONFIG_ROOT}/blcks/utils"
+    "blcks/utils"
 """
 
 [tasks.release-prepare]
 run="""
-blcks docs ansible --collection "${MISE_CONFIG_ROOT}/blcks/utils" --target "${CONFIG_ROOT}/doc/content/ansible/utils"
+blcks docs ansible --collection "blcks/utils" --target "${BLCKS_ROOT}/doc/content/ansible/utils"
 """
 
 [tasks.test]
 run="#TODO"
+
+[tasks.format]
+run="#TODO"
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test" },
+]
+
