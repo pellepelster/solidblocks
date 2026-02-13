@@ -11,10 +11,6 @@ source "${DIR}/../lib/utils.sh"
 
 export VERSION="$(version)"
 
-function task_build {
-  ${DIR}/../gradlew :solidblocks-cloud-init:assemble
-}
-
 function task_lint {
   ensure_environment
   find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
@@ -58,7 +54,6 @@ shift || true
 case ${arg} in
   lint) task_lint "$@" ;;
   clean) task_clean "$@" ;;
-  build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   release-artifacts) ;;

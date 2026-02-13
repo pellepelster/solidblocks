@@ -5,11 +5,6 @@ set -eu
 DIR="$(cd "$(dirname "$0")" ; pwd -P)"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
-function task_build {
-  (
-  )
-}
-
 function task_test {
 
   if [[ "${SKIP_TESTS:-}" =~ .*unit.* ]]; then
@@ -42,7 +37,6 @@ function task_usage {
 arg=${1:-}
 shift || true
 case ${arg} in
-  build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;

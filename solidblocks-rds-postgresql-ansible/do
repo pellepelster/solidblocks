@@ -260,17 +260,6 @@ function task_test_cluster_ansible_after_failover {
     "${DIR}/test/ansible/cluster/site.yml" "$@"
 }
 
-function task_build {
-  python_ensure_venv "${DIR}"
-  mkdir -p "${DIR}/build"
-  "${VENV_DIR}/bin/ansible-galaxy" \
-    collection build \
-    --output-path "${DIR}/build" \
-    --force \
-    --verbose \
-    "${DIR}/ansible/blcks/rds_postgresql"
-}
-
 function task_release_prepare {
   local version="${1:-}"
   rg -e '^(version: )(.*)$' "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml" --replace "\${1}"${VERSION#"v"}"\${3}" --passthru --no-filename  --no-line-number --color never > "${DIR}/ansible/blcks/rds_postgresql/galaxy.yml.tmp"
@@ -495,7 +484,6 @@ function task_test {
 arg=${1:-}
 shift || true
 case ${arg} in
-  build) task_build "$@" ;;
   test) task_test ;;
   test-standalone) task_test_standalone ;;
   test-standalone-terraform) task_test_standalone_terraform ;;

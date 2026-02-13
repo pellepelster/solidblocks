@@ -15,10 +15,6 @@ DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
-function task_build {
-  ${DIR}/../gradlew :solidblocks-test:assemble
-}
-
 function task_test_prepare {
     for image in ${TESTCONTAINER_IMAGES}
     do
@@ -85,7 +81,6 @@ arg=${1:-}
 shift || true
 case ${arg} in
   clean) task_clean "$@" ;;
-  build) task_build "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
   test-prepare) task_test_prepare "$@" ;;

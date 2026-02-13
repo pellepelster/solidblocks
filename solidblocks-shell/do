@@ -15,12 +15,6 @@ DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_OPTIONS="${DOCKER_OPTIONS:-}"
 
-function task_build {
-  #TODO move to gradle build generate task
-  docker run  -v ${DIR}:/src hairyhenderson/gomplate:stable -d "vendors=https://raw.githubusercontent.com/watson/ci-info/master/vendors.json?type=application/array+json" -f /src/lib-templates/ci.sh.template > "${DIR}/lib/ci.sh"
-  ${DIR}/../gradlew :solidblocks-shell:assemble
-}
-
 function task_lint {
   ensure_environment
   find "${DIR}/lib" -name "*.sh" -exec shellcheck {} \;
@@ -88,7 +82,6 @@ shift || true
 case ${arg} in
   lint) task_lint "$@" ;;
   clean) task_clean "$@" ;;
-  build) task_build "$@" ;;
   format) task_format "$@" ;;
   demo) task_demo"$@" ;;
   test) task_test "$@" ;;

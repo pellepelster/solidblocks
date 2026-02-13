@@ -204,74 +204,9 @@ function divider_footer() {
   echo ""
 }
 
-function task_build_darwin_arm64 {
-  if [[ "${BUILD_FAST:-}" == "true" ]]; then
-    exit 0
-  fi
-
-  export BUILD_TARGET="darwin-arm64"
-  task_build
-}
-
-function task_build_darwin_amd64 {
-  if [[ "${BUILD_FAST:-}" == "true" ]]; then
-    exit 0
-  fi
-
-  export BUILD_TARGET="darwin-amd64"
-  task_build
-}
-
-function task_build_linux_amd64 {
-  export BUILD_TARGET="linux-amd64"
-  task_build
-}
-
-function task_build_windows_amd64 {
-  if [[ "${BUILD_FAST:-}" == "true" ]]; then
-    exit 0
-  fi
-
-  export BUILD_TARGET="windows-amd64"
-  choco install zip
-  # graalvm native image build fails when the vm and the sources are on different drives
-  (
-    mkdir -p "/c/solidblocks"
-    cp -r ${DIR}/../ "/c/solidblocks"
-  )
-  task_build "/c/solidblocks"
-}
-
-function task_build {
-  BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
-  local dir="${1:-${DIR}/..}"
-  (
-    cd ${dir}
-    ./gradlew :solidblocks-cli:nativeCompile
-    rm -rf ${DIR}/blcks
-    cp solidblocks-cli/build/native/nativeCompile/blcks* ${DIR}/blcks
-    chmod +x ${DIR}/blcks
-    mkdir -p "${DIR}/build"
-    zip --junk-paths "${DIR}/build/blcks-cli-${BUILD_TARGET}-${VERSION}.zip" ${DIR}/blcks
-  )
-}
-
 function task_install_local {
   task_build_linux_amd64
   cp ${DIR}/blcks ~/bin/blcks
-}
-
-function task_build_jvm_all {
-  ${DIR}/../gradlew distZip distTar
-  (
-    rm -rf ${DIR}/blcks
-    mkdir -p "${DIR}/blcks/blcks"
-    cd "${DIR}/blcks/blcks"
-    tar -xvf "${DIR}/build/distributions/blcks-${VERSION}.tar" --strip-components=1
-    cd "${DIR}/blcks"
-    mkdir -p "${DIR}/build"
-    zip -vr "${DIR}/build/blcks-cli-jvm-all-${VERSION}.zip" ./
-  )
 }
 
 function task_clean {
@@ -290,13 +225,7 @@ function task_format() {
 arg=${1:-}
 shift || true
 case ${arg} in
-  build) task_build "$@" ;;
   install-local) task_install_local "$@" ;;
-  build-jvm-all) task_build_jvm_all "$@" ;;
-  build-darwin-arm64) task_build_darwin_arm64 "$@" ;;
-  build-darwin-amd64) task_build_darwin_amd64 "$@" ;;
-  build-linux-amd64) task_build_linux_amd64 "$@" ;;
-  build-windows-amd64) task_build_windows_amd64 "$@" ;;
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;
   test-hetzner-nuke) task_test_hetzner_nuke "$@" ;;
