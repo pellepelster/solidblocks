@@ -301,6 +301,9 @@ jobs:
 
   solidblocks-cloud-init:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-cloud-init
     steps:
       - name: Checkout
         uses: actions/checkout@v4
