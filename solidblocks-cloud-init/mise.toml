@@ -10,3 +10,16 @@ run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 [tasks.test]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
 
+
+[tasks.release-test]
+usage = """
+arg "<version>"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+curl -L "https://github.com/pellepelster/solidblocks/releases/download/${usage_version}/blcks-cloud-init-bootstrap-${usage_version}.sh" -o "/tmp/blcks-cloud-init-bootstrap-${usage_version}.sh"
+chmod +x "/tmp/blcks-cloud-init-bootstrap-${usage_version}.sh"
+docker run -ti -v "/tmp/blcks-cloud-init-bootstrap-${usage_version}.sh:/blcks-cloud-init-bootstrap.sh" debian:bookworm /bin/bash -c /blcks-cloud-init-bootstrap.sh
+"""
