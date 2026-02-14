@@ -19,16 +19,6 @@ function task_format() {
   terraform fmt -recursive
 }
 
-function task_release_prepare {
-  local version="${1:-}"
-
-  if [[ -z "${version}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
-  echo "setting version: ${version}"
-}
-
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -41,7 +31,6 @@ case ${arg} in
   format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-artifacts) ;;
-  release-prepare) task_release_prepare "$@" ;;
   release-test);;
   *) task_usage ;;
 esac

@@ -861,22 +861,6 @@ function task_test {
   task_test_ssl
 }
 
-function task_release_prepare {
-  local version="${1:-}"
-
-  if [[ -z "${version}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
-
-  echo "setting version: ${version}"
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/main.tf" ${version}
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-private-network/instance/main.tf" ${version}
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" ${version}
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" ${version}
-  terraform_replace_variable_default 'solidblocks_rds_version' "${DIR}/modules/rds-postgresql/variables.tf" ${version}
-}
-
 function terraform_replace_variable_default {
   local marker="${1:-}"
   local file="${2:-}"
@@ -942,7 +926,6 @@ case ${arg} in
   test-snippets) task_test_snippets "$@" ;;
   test-snippet-ssh) task_test_snippets_ssh "$@" ;;
   release-artifacts) ;;
-  release-prepare) task_release_prepare "$@" ;;
   release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

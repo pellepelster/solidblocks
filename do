@@ -219,12 +219,6 @@ function task_serve_documentation {
     )
 }
 
-function task_bootstrap() {
-  git submodule update --init --recursive
-  software_ensure_shellcheck
-  software_ensure_hugo
-}
-
 function task_release_check() {
   local previous_tag="$(git --no-pager tag | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -1)"
   local previous_version="${previous_tag#v}"
@@ -349,7 +343,6 @@ case ${ARG} in
   release-check) task_release_check "$@" ;;
   release-tf-modules) task_release_tf_modules "$@" ;;
   release-test) task_release_test "$@" ;;
-  bootstrap) task_bootstrap "$@" ;;
   renovate) task_renovate "$@" ;;
   *) task_usage ;;
 esac

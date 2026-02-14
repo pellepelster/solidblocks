@@ -38,11 +38,11 @@ function terraform_replace_module_version {
   local file="${1:-}"
   local version="${2:-}"
 
-  mkdir -p "${DIR}/.tmp"
+  mkdir -p ".tmp"
 
-  cat "${file}" | rg 'v(\d+\.\d+\.\d+(?:-[a-zA-Z0-9-]+)?)' --passthru --no-filename  --no-line-number --color never --replace "${version}" > "${DIR}/.tmp/tmp.$$"
-  mv "${DIR}/.tmp/tmp.$$" "${file}"
-  rm -rf "${DIR}/.tmp"
+  cat "${file}" | rg 'v(\d+\.\d+\.\d+(?:-[a-zA-Z0-9-]+)?)' --passthru --no-filename  --no-line-number --color never --replace "${version}" > ".tmp/tmp.$$"
+  mv ".tmp/tmp.$$" "${file}"
+  rm -rf ".tmp"
 }
 
 function terraform_wrapper_clean {

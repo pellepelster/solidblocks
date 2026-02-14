@@ -37,16 +37,6 @@ function task_test {
   ${DIR}/../gradlew :solidblocks-shell:test
 }
 
-function task_release_prepare {
-  local version="${1:-}"
-
-  if [[ -z "${version}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
-  echo "setting version: ${version}"
-}
-
 function task_format {
   terraform fmt -recursive
 }
@@ -88,7 +78,6 @@ case ${arg} in
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;
   release-artifacts) ;;
-  release-prepare) task_release_prepare "$@" ;;
   release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

@@ -64,18 +64,6 @@ function task_clean {
   rm -rf "${DIR}/build"
 }
 
-function task_release_prepare {
-  local version="${1:-}"
-
-  if [[ -z "${version}" ]]; then
-    echo "no version set"
-    exit 1
-  fi
-
-  echo "setting version: ${version}"
-  terraform_replace_module_version "${DIR}/snippets/web-s3-docker-kitchen-sink/main.tf" ${version}
-}
-
 function task_release_test () {
   ${DIR}/../gradlew :solidblocks-web-s3-docker-hetzner:releaseTest
 }
@@ -89,7 +77,6 @@ case ${arg} in
   test-ssh) task_test_ssh "$@" ;;
   test) task_test "$@" ;;
   release-artifacts) ;;
-  release-prepare) task_release_prepare "$@" ;;
   release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

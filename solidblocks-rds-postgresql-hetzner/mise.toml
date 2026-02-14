@@ -148,3 +148,21 @@ set -eu -o pipefail
 source ${MISE_CONFIG_ROOT}/mise.sh
 task_test_jumphost_ssh
 """
+
+[tasks.release-prepare]
+usage = """
+arg "<version>"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${ROOT_PROJECT}/lib/utils.sh
+
+echo "setting version: ${usage_version}"
+terraform_replace_module_version "snippets/hetzner-postgres-rds-local-backup/instance/main.tf" ${usage_version}
+terraform_replace_module_version "snippets/hetzner-postgres-rds-private-network/instance/main.tf" ${usage_version}
+terraform_replace_module_version "snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" ${usage_version}
+terraform_replace_module_version "snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" ${usage_version}
+terraform_replace_variable_default 'solidblocks_rds_version' "modules/rds-postgresql/variables.tf" ${usage_version}
+"""

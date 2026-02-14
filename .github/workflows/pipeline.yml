@@ -555,6 +555,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Checkout
         uses: actions/checkout@v4
       - name: Download all workflow run artifacts
@@ -570,7 +574,7 @@ jobs:
           ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD }}
           ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
           ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
-        run: ./do release-artifacts
+        run: mise //...:release-artifacts
       - name: Release Artifacts
         uses: softprops/action-gh-release@v1
         with:
@@ -614,12 +618,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
-      - name: Bootstrap
-        run: ./do bootstrap
       - name: Build Documentation
-        run: ./do build-documentation
+        run: mise documentation:build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact

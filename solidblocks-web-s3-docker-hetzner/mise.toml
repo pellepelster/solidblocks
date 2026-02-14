@@ -34,3 +34,17 @@ run = """
 run = """
   ${ROOT_PROJECT}/gradlew :$(basename $PWD):check
 """
+
+[tasks.release-prepare]
+usage = """
+arg "<version>"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${ROOT_PROJECT}/lib/utils.sh
+
+echo "setting version: ${usage_version}"
+terraform_replace_module_version "snippets/web-s3-docker-kitchen-sink/main.tf" ${usage_version}
+"""
