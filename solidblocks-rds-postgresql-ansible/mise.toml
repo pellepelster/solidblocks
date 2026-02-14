@@ -198,7 +198,7 @@ set -eu -o pipefail
 
 source mise.sh
 
-task_clean
+task_clean || true
 """
 
 [tasks.format]

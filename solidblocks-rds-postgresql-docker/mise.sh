@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-export DOCKER_API_VERSION=1.52
-
 function task_build {
   local versions_to_build=${1:-$POSTGRES_VERSIONS}
 

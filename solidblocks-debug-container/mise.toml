@@ -54,7 +54,6 @@ set -eu -o pipefail
 docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${usage_version}"
 """
 
-
 [tasks.preflight-check]
 run = [
     { task = "clean" },

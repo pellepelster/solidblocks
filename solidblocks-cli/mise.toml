@@ -113,10 +113,30 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-curl -L "https://github.com/pellepelster/solidblocks/releases/download/${usage_version}/blcks-cli-linux-amd64-${usage_version}.zip" -o "/tmp/blcks-cli-linux-amd64-${usage_version}.zip"
-cd /tmp
-unzip -o blcks-cli-linux-amd64-${usage_version}.zip
-./blcks --help
+TEMP_DIR=".release_test"
+rm -rf ${TEMP_DIR}
+
+for arch in linux-amd64 darwin-amd64 darwin-arm64 windows-amd64 jvm-all; do
+    rm -rf "${TEMP_DIR}/${arch}"
+    mkdir -p "${TEMP_DIR}/${arch}"
+    (
+        cd "${TEMP_DIR}/${arch}"
+        curl -L "https://github.com/pellepelster/solidblocks/releases/download/${usage_version}/blcks-cli-${arch}-${usage_version}.zip" -o "blcks-cli-${arch}-${usage_version}.zip"
+        unzip -o blcks-cli-${arch}-${usage_version}.zip
+
+        if [[ "${arch}" == "linux-amd64" ]]; then
+            ./blcks --help
+        fi
+
+        if [[ "${arch}" == "jvm-all" ]]; then
+            ./blcks/bin/blcks
+        else
+            test -f ./blcks
+        fi
+    )
+done
+
+#rm -rf ${TEMP_DIR}
 """
 
 [tasks.preflight-check]

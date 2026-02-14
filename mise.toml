@@ -16,6 +16,7 @@ java="25.0.0"
 CONFIG_ROOT="{{config_root}}"
 ROOT_PROJECT="{{config_root}}"
 VERSION = "{% if os() == 'windows' %}{{ get_env(name='VERSION', default='0.0.0') }}{% else %}{{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}{% endif %}"
+DOCKER_API_VERSION = "1.52"
 
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
