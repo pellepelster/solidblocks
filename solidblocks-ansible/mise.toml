@@ -29,6 +29,9 @@ mkdir -p "build"
 """
 
 [tasks.release-prepare]
+usage = """
+arg "<version>"
+"""
 run="""
 blcks docs ansible --collection "blcks/utils" --target "${ROOT_PROJECT}/doc/content/ansible/utils"
 """

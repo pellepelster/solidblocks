@@ -6,7 +6,7 @@ plugins {
     id("com.vanniktech.maven.publish") version "0.29.0"
 }
 
-version = System.getenv("VERSION") ?: "0.0.0"
+version = "v${System.getenv("VERSION") ?: "0.0.0"}"
 
 sourceSets {
     main {

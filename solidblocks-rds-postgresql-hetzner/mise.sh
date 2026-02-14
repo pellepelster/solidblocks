@@ -867,11 +867,11 @@ function task_release_prepare {
   fi
 
   echo "setting version: ${version}"
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/main.tf" ${version}
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-private-network/instance/main.tf" ${version}
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" ${version}
-  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" ${version}
-  terraform_replace_variable_default 'solidblocks_rds_version' "${DIR}/modules/rds-postgresql/variables.tf" ${version}
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-local-backup/instance/main.tf" v${version}
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-private-network/instance/main.tf" v${version}
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" v${version}
+  terraform_replace_module_version "${DIR}/snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" v${version}
+  terraform_replace_variable_default 'solidblocks_rds_version' "${DIR}/modules/rds-postgresql/variables.tf" v${version}
 }
 
 function terraform_replace_variable_default {

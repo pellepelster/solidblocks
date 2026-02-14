@@ -34,12 +34,23 @@ function version_ensure() {
     fi
 }
 
+function terraform_replace_variable_default {
+  local marker="${1:-}"
+  local file="${2:-}"
+  local version="${3:-}"
+
+  mkdir -p ".tmp"
+  rg -e "(^\s*default\s*=\s*\")(\S+)(\"\s*#${marker}\s*$)" --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never "${file}" > ".tmp/tmp.$$"
+  mv ".tmp/tmp.$$" "${file}"
+  rm -rf ".tmp"
+}
+
+
 function terraform_replace_module_version {
   local file="${1:-}"
   local version="${2:-}"
 
   mkdir -p ".tmp"
-
   cat "${file}" | rg 'v(\d+\.\d+\.\d+(?:-[a-zA-Z0-9-]+)?)' --passthru --no-filename  --no-line-number --color never --replace "${version}" > ".tmp/tmp.$$"
   mv ".tmp/tmp.$$" "${file}"
   rm -rf ".tmp"

@@ -370,7 +370,7 @@ jobs:
           name: solidblocks-web-s3-docker-hetzner
           path: |
             solidblocks-web-s3-docker-hetzner/build/snippets/*
-            solidblocks-web-s3-docker-hetzner/build/terraform-hcloud-blcks-web-s3-docker-*.zip
+            solidblocks-web-s3-docker-hetzner/build/blcks-terraform-hcloud-web-s3-docker-*.zip
 
   solidblocks-rds-postgresql-hetzner-test:
     runs-on: ubuntu-24.04

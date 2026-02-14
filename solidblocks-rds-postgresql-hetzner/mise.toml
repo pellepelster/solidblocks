@@ -7,19 +7,19 @@ run = """
 set -eu -o pipefail
 
 if [[ -n "${CI:-}" ]]; then
-  cp ${MISE_CONFIG_ROOT}/../solidblocks-cloud-init/blcks-cloud-init-bootstrap.sh "${MISE_CONFIG_ROOT}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+  cp ${MISE_CONFIG_ROOT}/../solidblocks-cloud-init/blcks-cloud-init-bootstrap.sh "${MISE_CONFIG_ROOT}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { echo "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
 else
-  cp ${MISE_CONFIG_ROOT}/../solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh "${MISE_CONFIG_ROOT}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { log_die "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
+  cp ${MISE_CONFIG_ROOT}/../solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh "${MISE_CONFIG_ROOT}/modules/rds-postgresql/blcks-cloud-init-bootstrap.sh" ||  { echo "required artifacts not found, please build solidblocks-cloud-init first"; exit 1; }
 fi
 
 
 mkdir -p "${MISE_CONFIG_ROOT}/build/snippets"
 (
     cd "${MISE_CONFIG_ROOT}/snippets"
-    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
-    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-local-backup-${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
-    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-private-network-${VERSION}.zip" hetzner-postgres-rds-private-network/**/*.tf
-    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-v${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-local-backup-v${VERSION}.zip" hetzner-postgres-rds-s3-backup/**/*.tf
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-private-network-v${VERSION}.zip" hetzner-postgres-rds-private-network/**/*.tf
+    zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-v${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
 )
 
 terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hide modules --output-file "${MISE_CONFIG_ROOT}/modules/rds-postgresql/README.md"
@@ -27,7 +27,7 @@ terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hid
 
 (
   cd "${MISE_CONFIG_ROOT}/modules/rds-postgresql"
-  zip -r "${MISE_CONFIG_ROOT}/build/blcks-terraform-rds-postgresql-hetzner-${VERSION}.zip" *
+  zip -r "${MISE_CONFIG_ROOT}/build/blcks-terraform-rds-postgresql-hetzner-v${VERSION}.zip" *
 )
 """
 
@@ -156,13 +156,12 @@ arg "<version>"
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
-
 source ${ROOT_PROJECT}/lib/utils.sh
 
 echo "setting version: ${usage_version}"
-terraform_replace_module_version "snippets/hetzner-postgres-rds-local-backup/instance/main.tf" ${usage_version}
-terraform_replace_module_version "snippets/hetzner-postgres-rds-private-network/instance/main.tf" ${usage_version}
-terraform_replace_module_version "snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" ${usage_version}
-terraform_replace_module_version "snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" ${usage_version}
-terraform_replace_variable_default 'solidblocks_rds_version' "modules/rds-postgresql/variables.tf" ${usage_version}
+terraform_replace_module_version "snippets/hetzner-postgres-rds-local-backup/instance/main.tf" v${usage_version}
+terraform_replace_module_version "snippets/hetzner-postgres-rds-private-network/instance/main.tf" v${usage_version}
+terraform_replace_module_version "snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" v${usage_version}
+terraform_replace_module_version "snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" v${usage_version}
+terraform_replace_variable_default 'solidblocks_rds_version' "modules/rds-postgresql/variables.tf" v${usage_version}
 """

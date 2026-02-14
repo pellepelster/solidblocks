@@ -11,13 +11,13 @@ terraform-docs markdown table "modules/web-s3-docker" --hide modules --output-fi
 mkdir -p "build"
 (
     cd modules/web-s3-docker
-    zip "../../build/terraform-hcloud-blcks-web-s3-docker-${VERSION}.zip" *.tf *.sh *.py *.txt
+    zip "../../build/blcks-terraform-hcloud-web-s3-docker-v${VERSION}.zip" *.tf *.sh *.py *.txt
 )
 
 mkdir -p "build/snippets"
 (
     cd "snippets"
-    zip -r "../build/snippets/web-s3-docker-kitchen-sink-${VERSION}.zip" web-s3-docker-kitchen-sink/*.tf
+    zip -r "../build/snippets/blcks-terraform-hcloud-web-s3-docker-kitchen-sink-v${VERSION}.zip" web-s3-docker-kitchen-sink/*.tf
 )
 """
 
@@ -46,5 +46,5 @@ set -eu -o pipefail
 source ${ROOT_PROJECT}/lib/utils.sh
 
 echo "setting version: ${usage_version}"
-terraform_replace_module_version "snippets/web-s3-docker-kitchen-sink/main.tf" ${usage_version}
+terraform_replace_module_version "snippets/web-s3-docker-kitchen-sink/main.tf" v${usage_version}
 """

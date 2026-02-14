@@ -26,7 +26,7 @@ ${CONFIG_ROOT}/gradlew ${GRADLE_OPTIONS} :solidblocks-cli:nativeCompile
 rm -rf blcks
 cp build/native/nativeCompile/blcks* blcks
 chmod +x blcks
-zip --junk-paths "build/blcks-cli-${BUILD_TARGET}-${VERSION}.zip" blcks
+zip --junk-paths "build/blcks-cli-${BUILD_TARGET}-v${VERSION}.zip" blcks
 """
 
 [tasks.build-jvm-all]
@@ -43,7 +43,7 @@ mkdir -p "build/blcks"
 )
 (
   cd "build"
-  zip -vr "blcks-cli-jvm-all-${VERSION}.zip" ./blcks
+  zip -vr "blcks-cli-jvm-all-v${VERSION}.zip" ./blcks
 )
 """
 
@@ -121,8 +121,8 @@ for arch in linux-amd64 darwin-amd64 darwin-arm64 windows-amd64 jvm-all; do
     mkdir -p "${TEMP_DIR}/${arch}"
     (
         cd "${TEMP_DIR}/${arch}"
-        curl -L "https://github.com/pellepelster/solidblocks/releases/download/${usage_version}/blcks-cli-${arch}-${usage_version}.zip" -o "blcks-cli-${arch}-${usage_version}.zip"
-        unzip -o blcks-cli-${arch}-${usage_version}.zip
+        curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${usage_version}/blcks-cli-${arch}-v${usage_version}.zip" -o "blcks-cli-${arch}-v${usage_version}.zip"
+        unzip -o blcks-cli-${arch}-v${usage_version}.zip
 
         if [[ "${arch}" == "linux-amd64" ]]; then
             ./blcks --help

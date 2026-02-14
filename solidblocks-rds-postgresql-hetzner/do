@@ -861,18 +861,6 @@ function task_test {
   task_test_ssl
 }
 
-function terraform_replace_variable_default {
-  local marker="${1:-}"
-  local file="${2:-}"
-  local version="${3:-}"
-
-  mkdir -p "${DIR}/.tmp"
-  rg -e "(^\s*default\s*=\s*\")(\S+)(\"\s*#${marker}\s*$)" --replace "\${1}${version}\${3}" --passthru --no-filename  --no-line-number --color never "${file}" > "${DIR}/.tmp/tmp.$$"
-  mv "${DIR}/.tmp/tmp.$$" "${file}"
-  rm -rf "${DIR}/.tmp"
-}
-
-
 function task_test_ssh {
   ssh -F ${DIR}/test/terraform/ssh_config $(test_ip_address) ${@}
 }
