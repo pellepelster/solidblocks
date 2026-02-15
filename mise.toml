@@ -36,7 +36,7 @@ VERSION = """
     {%- if github_ref is starting_with("refs/tags/") -%}
         {{ github_ref | trim_start_matches(pat="refs/tags/v") }}
     {%- else -%}
-        0.0.0-{{ get_env(name='GITHUB_REF_NAME', default='none') }}
+        0.0.0
     {%- endif -%}
 {%- endif -%}
 """

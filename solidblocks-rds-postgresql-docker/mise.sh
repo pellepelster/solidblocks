@@ -13,7 +13,6 @@ function task_build {
     mkdir -p "${TEMP_DIR}"
 
     if [[ "${BUILD_FAST:-}" == "true" ]]; then
-      DOCKER_OPTIONS=""
       DOCKER_PLATFORM="linux/amd64"
       cp "install/fast-locale.gen" "${TEMP_DIR}/locale.gen"
     else

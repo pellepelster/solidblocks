@@ -79,6 +79,7 @@ rm -rf test/terraform/*.lock.hcl
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
+set -x
 
 for postgres_version in ${POSTGRES_VERSIONS}; do
     docker buildx imagetools create --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-snapshot"
