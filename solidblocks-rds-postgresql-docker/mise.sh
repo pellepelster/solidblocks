@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 function task_build {
-  local versions_to_build=${1:-$POSTGRES_VERSIONS}
+  local version=${1:-0.0.0}
+  local versions_to_build=${2:-$POSTGRES_VERSIONS}
 
   DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
   DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
@@ -30,7 +31,7 @@ function task_build {
       fi
 
       echo "========================================================================"
-      echo "version: ${VERSION}"
+      echo "version: ${version}"
       echo "postgres_version: ${postgres_version}"
       echo "postgres_previous_version: ${postgres_previous_version}"
       echo "previous_version_pgaudit_branch: ${previous_version_pgaudit_branch}"
@@ -49,7 +50,7 @@ function task_build {
         --build-arg POSTGRES_VERSION=${postgres_version} \
         --build-arg POSTGRES_PREVIOUS_VERSION=${postgres_previous_version} \
         --build-arg PREVIOUS_VERSION_PGAUDIT_BRANCH=${previous_version_pgaudit_branch} \
-        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-snapshot" \
+        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${version}-snapshot" \
         --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-snapshot" \
         .
     done

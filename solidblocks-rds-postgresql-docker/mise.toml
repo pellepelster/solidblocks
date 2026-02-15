@@ -15,7 +15,7 @@ run = """
 set -eu -o pipefail
 
 source mise.sh
-task_build 14
+task_build ${VERSION} 14
 """
 
 [tasks.build-15]
@@ -24,7 +24,7 @@ run = """
 set -eu -o pipefail
 
 source mise.sh
-task_build 15
+task_build ${VERSION} 15
 """
 
 [tasks.build-16]
@@ -33,7 +33,7 @@ run = """
 set -eu -o pipefail
 
 source mise.sh
-task_build 16
+task_build ${VERSION} 16
 """
 
 [tasks.build-17]
@@ -42,7 +42,7 @@ run = """
 set -eu -o pipefail
 
 source mise.sh
-task_build 17
+task_build ${VERSION} 17
 """
 
 [tasks.build-18]
@@ -51,7 +51,7 @@ run = """
 set -eu -o pipefail
 
 source mise.sh
-task_build 18
+task_build ${VERSION} 18
 """
 
 [tasks.test]
