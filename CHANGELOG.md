@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.16
+
+* migrate build tooling to mise
+
 ## v0.4.11
 
 * upgrade Hetzner RDS PostgreSQL base system to Debian 13

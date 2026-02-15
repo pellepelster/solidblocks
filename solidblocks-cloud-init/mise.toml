@@ -21,7 +21,7 @@ set -eu -o pipefail
 
 curl -L "https://github.com/pellepelster/solidblocks/releases/download/v${usage_version}/blcks-cloud-init-bootstrap-v${usage_version}.sh" -o "/tmp/blcks-cloud-init-bootstrap-v${usage_version}.sh"
 chmod +x "/tmp/blcks-cloud-init-bootstrap-v${usage_version}.sh"
-docker run -ti -v "/tmp/blcks-cloud-init-bootstrap-v${usage_version}.sh:/blcks-cloud-init-bootstrap.sh" debian:bookworm /bin/bash -c /blcks-cloud-init-bootstrap.sh
+docker run -v "/tmp/blcks-cloud-init-bootstrap-v${usage_version}.sh:/blcks-cloud-init-bootstrap.sh" debian:bookworm /bin/bash -c /blcks-cloud-init-bootstrap.sh
 """
 
 [tasks.preflight-check]
