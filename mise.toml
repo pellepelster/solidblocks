@@ -52,11 +52,13 @@ run = """
 set -eu -o pipefail
 
 source ${ROOT_PROJECT}/lib/utils.sh
+mkdir -p ${ROOT_PROJECT}/build/documentation/
 documentation_prepare_files
 documentation_prepare_env
 (
     cd doc
     hugo --minify --gc
+    cp -rv public ${ROOT_PROJECT}/build/documentation/
 )
 """
 

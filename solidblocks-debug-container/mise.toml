@@ -51,7 +51,7 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${usage_version}"
+docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:v${usage_version}"
 """
 
 [tasks.preflight-check]

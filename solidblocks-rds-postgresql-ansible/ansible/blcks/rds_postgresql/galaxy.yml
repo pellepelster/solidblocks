@@ -1,7 +1,7 @@
 namespace: blcks
 name: rds_postgresql
 
-version: 0.4.12-rc5
+version: 0.4.12-rc6
 
 readme: README.md
 
