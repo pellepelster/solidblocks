@@ -93,6 +93,7 @@ arg "<version>"
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
+set -x
 
 for postgres_version in ${POSTGRES_VERSIONS}; do
   docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${usage_version}"
