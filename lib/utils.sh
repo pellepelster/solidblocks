@@ -90,20 +90,20 @@ function terraform_wrapper {
 }
 
 function documentation_prepare_files {
-    local snippet_dir="${CONFIG_ROOT}/doc/content/snippets"
+    local snippet_dir="${ROOT_PROJECT}/doc/content/snippets"
     rm -rf "${snippet_dir}"
     mkdir -p "${snippet_dir}"
 
     if [[ -n "${CI:-}" ]]; then
-      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${ROOT_PROJECT}/rsync_exclude ${ROOT_PROJECT}/*/snippets/* "${snippet_dir}"
     else
-      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/snippets/* "${snippet_dir}"
-      rsync -rv --exclude-from ${CONFIG_ROOT}/rsync_exclude ${CONFIG_ROOT}/*/build/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${ROOT_PROJECT}/rsync_exclude ${ROOT_PROJECT}/*/snippets/* "${snippet_dir}"
+      rsync -rv --exclude-from ${ROOT_PROJECT}/rsync_exclude ${ROOT_PROJECT}/*/build/snippets/* "${snippet_dir}"
     fi
 }
 
 function documentation_prepare_env {
-  local versions="$(grep  'VERSION=\".*\"' "${CONFIG_ROOT}/solidblocks-shell/lib/software.sh")"
+  local versions="$(grep  'VERSION=\".*\"' "${ROOT_PROJECT}/solidblocks-shell/lib/software.sh")"
   for version in ${versions}; do
     eval "export ${version}"
   done

@@ -50,7 +50,7 @@ function task_build {
         --build-arg POSTGRES_VERSION=${postgres_version} \
         --build-arg POSTGRES_PREVIOUS_VERSION=${postgres_previous_version} \
         --build-arg PREVIOUS_VERSION_PGAUDIT_BRANCH=${previous_version_pgaudit_branch} \
-        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${version}-snapshot" \
+        --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-v${version}-snapshot" \
         --tag "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-snapshot" \
         .
     done

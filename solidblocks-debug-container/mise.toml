@@ -40,7 +40,7 @@ run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${VERSION}-snapshot"
+docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:v${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:v${VERSION}-snapshot"
 """
 
 [tasks.release-test]

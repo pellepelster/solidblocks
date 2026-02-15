@@ -11,7 +11,7 @@ docker run \
     -e DB_DATABASE_db1=database1 \
     -e DB_USERNAME_db1=user1 \
     -e DB_PASSWORD_db1=password1 \
-    ghcr.io/pellepelster//solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}} 
+    ghcr.io/pellepelster//solidblocks-rds-postgresql:14-v{{% env "SOLIDBLOCKS_VERSION" %}} 
 
 [solidblocks-rds-postgresql] either 'DB_BACKUP_S3' or 'DB_BACKUP_LOCAL' has to be activated
 ```
@@ -26,7 +26,7 @@ docker run \
     -e DB_PASSWORD_db1=password1 \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_data:/storage/data" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}}
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-v{{% env "SOLIDBLOCKS_VERSION" %}}
 
 [solidblocks-rds-postgresql] local backup dir '/storage/backup' not mounted
 
@@ -37,7 +37,7 @@ docker run \
     -e DB_PASSWORD_db1=password1 \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}}
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-v{{% env "SOLIDBLOCKS_VERSION" %}}
 
 [solidblocks-rds-postgresql] data dir '/storage/data' not mounted
 ```
@@ -63,7 +63,7 @@ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}}
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:v14-v{{% env "SOLIDBLOCKS_VERSION" %}}
 
 [solidblocks-rds-postgresql] data dir is empty
 [solidblocks-rds-postgresql] initializing database instance
@@ -184,7 +184,7 @@ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}}
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-v{{% env "SOLIDBLOCKS_VERSION" %}}
 ``` 
 {{% notice warning %}}
 Backups need to be triggered from outside the of docker container, because Solidblocks adheres to the convention that each docker container should run a single, isolated process, and thus does not contain a cron scheduler.
@@ -232,6 +232,6 @@ docker run \
     -e DB_BACKUP_LOCAL=1 \
     -v "$(pwd)/postgres_backup:/storage/backup" \
     -v "$(pwd)/postgres_data:/storage/data" \
-    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-{{% env "SOLIDBLOCKS_VERSION" %}} \
+    ghcr.io/pellepelster/solidblocks-rds-postgresql:14-v{{% env "SOLIDBLOCKS_VERSION" %}} \
     maintenance
 ```

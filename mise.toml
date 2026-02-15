@@ -47,20 +47,6 @@ DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 
 [tasks.documentation-build]
-dir = "build/documentation"
-run = """
-#!/usr/bin/env bash
-set -eu -o pipefail
-set -x
-
-source {{config_root}}/lib/utils.sh
-documentation_prepare_files
-documentation_prepare_env
-hugo --minify --gc
-"""
-
-[tasks.documentation-serve]
-dir = "build/documentation"
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -68,7 +54,24 @@ set -eu -o pipefail
 source ${ROOT_PROJECT}/lib/utils.sh
 documentation_prepare_files
 documentation_prepare_env
+(
+    cd doc
+    hugo --minify --gc
+)
+"""
+
+[tasks.documentation-serve]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source ${ROOT_PROJECT}/lib/utils.sh
+documentation_prepare_files
+documentation_prepare_env
+(
+    cd doc
 hugo serve --baseURL /
+)
 """
 
 [tasks.info]
