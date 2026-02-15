@@ -72,7 +72,9 @@ hugo serve --baseURL /
 
 [tasks.info]
 run = """
-  echo "version: '${VERSION}'"
+echo "   VERSION: '${VERSION}'"
+echo "SKIP_TESTS: '${SKIP_TESTS}'"
+echo "BUILD_FAST: '${BUILD_FAST}'"
 """
 
 [tasks.release-check]
