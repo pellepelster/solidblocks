@@ -246,7 +246,7 @@ jobs:
         with:
           name: solidblocks-ansible
           path: |
-            solidblocks-ansible/build/blcks-
+            solidblocks-ansible/build/blcks-*
 
   solidblocks-rds-postgresql-ansible:
     runs-on: ubuntu-24.04
