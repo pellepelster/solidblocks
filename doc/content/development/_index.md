@@ -7,29 +7,28 @@ weight = 200
 
 ## Repository Structure
 
-Solidblocks uses a mono-repository approach where each component resides in a separate folder. Each component has a `do` file that allows each component to be built and tested locally as well as in the CI. The `do` file in the repository root orchestrates the overall build process and includes component-agnostic tasks like generation of the documentation
+Solidblocks uses a mono-repository approach where each component resides in a separate folder. The build orchestration and environment setup is done by [mise](https://mise.jdx.dev/), where each component has a `mise.toml` file that allows each component to be built and tested locally as well as in the CI. The root `mise.toml` file in the repository root orchestrates the overall build process and includes component-agnostic tasks like generation of the documentation
 etc.
 
 ```shell
-/do build
-/solidblocks-shell/do test
-/solidblocks-rds-postgresql/do clean
+mise //...:build
+mise //solidblocks-shell:test
 [...]
 ```
 
-Common for all `do` files are the following tasks:
+Common for all `mise.toml` files are the following tasks:
 
-* `./do build` Build the component
-* `./do test` Run all tests for the component
-* `./do clean` Clean up ephemeral resources like local files and cloud resources
-* `./do format` Apply formatters and linters to all sourcecode of the component
-* `./do release-prepare` prepare a release, commonly used to insert correct version numbers into documentation and code snippets  
-* `./do release-test` run tests against released artifacts, commonly used to verify that the code snippets work  
-* `./do release-artifacts` releases additional artifacts, e.g. a tested docker image without the `-rc` version postfix
+* `mise :build` Build the component
+* `mise :test` Run all tests for the component
+* `mise :clean` Clean up ephemeral resources like local files and cloud resources
+* `mise :format` Apply formatters and linters to all sourcecode of the component
+* `mise :release-prepare` prepare a release, commonly used to insert correct version numbers into documentation and code snippets  
+* `mise :release-test` run tests against released artifacts, commonly used to verify that the code snippets work  
+* `mise :release-artifacts` releases additional artifacts, e.g. a tested docker image without the `-rc` version postfix
 
 ## Documentation
 
-The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after running `./do build-documentation` they can be included like this:
+The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after running `mise :documentation-build` they can be included like this:
 
 ```shell
 {{%/* include "/snippets/shell-bootstrap-solidblocks.sh" */%}}
@@ -39,27 +38,22 @@ Snippets should always be tested if feasible to ensure the documentation is corr
 
 ## Versioning
 
-Versions are derived from the current git context, and default to snapshot if no information is available or injected from CI environment variables. 
+Solidblocks uses semver compliant versioning, where the release version is derived from the git tag. The tag version is prefix with a `v` eg. `v1.2.3`. The version is stored in the environment variable `VERSION` and is automatically populated from the git context and defaults to `0.0.0` on non-tag references. In the environment variable `VERSION` and through the whole build system the variable is stored without the `v` prefix. The prefix is only added before the artifacts are written to the `build` directory (except for Python artifacts since they have to comply with the PEP 440 versioning standard).
 
-```shell
-VERSION="${GITHUB_REF_NAME:-snapshot}"
-```
 
 ### Docker Artifacts
 
-To pass docker artifacts between build steps without accidentally releasing an untested docker image, freshly built and not yet tested images are tagged with a `-rc` postfix in the tag, e.g. `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}-rc` and re-tagged during the release process after all tests are run to `ghcr.io/pellepelster/solidblocks-rds-postgresql:${VERSION}`
+To pass docker artifacts between build steps without accidentally releasing an untested docker image, freshly built and not yet tested images are tagged with a `-snapshot` postfix in the tag, e.g. `ghcr.io/pellepelster/solidblocks-rds-postgresql:v${VERSION}-snapshot` and re-tagged during the release process after all tests are run to `ghcr.io/pellepelster/solidblocks-rds-postgresql:v${VERSION}`
 
 ## Tests
 
-Especially the infrastructure heavy components of Solidblocks rely on downloading released code from Github releases. To be able to mimic this behaviour during integration tests, all code using released code from Github should provide the ability to override the release server to allow for injecting of development code during integration tests:
+Especially the infrastructure heavy components of Solidblocks rely on downloading released code from Github releases. To be able to mimic this behavior during integration tests, all code using released code from Github should provide the ability to override the release server to allow for injecting of development code during integration tests:
 
 ```shell
 curl -L "${SOLIDBLOCKS_BASE_URL:-https://github.com}/pellepelster/[...]"
 ```
 
-For code where it is not feasible to inject a local webserver (e.g. code running on a cloud provider in cloud-init) AWS S3 is used as a webserver because it is easily scriptable.
-Tests that make uses of cloud VM instances are expected to create a temporary `ssh_config` for a host named `test` that can be used to log into the created machine of the currently running test via `ssh -F <path>/ssh_config test`, see for example `testbeds/hetzner/ssh-config/ssh_config.template`
-
+For code where it is not feasible to inject a local webserver (e.g. code running on a cloud provider in cloud-init) AWS S3 is used as a webserver because it is easily scriptable. Tests that make uses of cloud VM instances are expected to create a temporary `ssh_config` for a host named `test` that can be used to log into the created machine of the currently running test via `ssh -F <path>/ssh_config test`, see for example `testbeds/hetzner/ssh-config/ssh_config.template`
 
 ## Secrets
 
