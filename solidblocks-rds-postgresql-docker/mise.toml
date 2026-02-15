@@ -1,8 +1,6 @@
 [settings]
 env_shell_expand = true
 
-[tools]
-
 [env]
 TEMP_DIR=".temp"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
@@ -79,7 +77,6 @@ rm -rf test/terraform/*.lock.hcl
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
-set -x
 
 for postgres_version in ${POSTGRES_VERSIONS}; do
     echo "releasing '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}-snapshot' as '"${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${VERSION}"'"
@@ -94,13 +91,11 @@ arg "<version>"
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
-set -x
 
 for postgres_version in ${POSTGRES_VERSIONS}; do
   docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:${postgres_version}-${usage_version}"
 done
 """
-
 
 [tasks.build]
 run = [
