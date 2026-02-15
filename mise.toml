@@ -17,17 +17,26 @@ go="1.26.0"
 CONFIG_ROOT="{{config_root}}"
 ROOT_PROJECT="{{config_root}}"
 VERSION = """
-{%- if os() == 'windows' -%}
-    {%- if get_env(name='VERSION', default='none') == 'none' -%}
-        "0.0.0"
+{%- if get_env(name='GITHUB_REF', default='none') == 'none' -%}
+    {%- if os() == 'windows' -%}
+        {%- if get_env(name='VERSION', default='none') == 'none' -%}
+            "0.0.0"
+        {%- else -%}
+            {{ get_env(name='VERSION') }}
+        {%- endif -%}
     {%- else -%}
-        {{ get_env(name='VERSION') }}
+        {%- if get_env(name='VERSION', default='none') == 'none' -%}
+            {{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}
+        {%- else -%}
+            {{ get_env(name='VERSION') }}
+        {%- endif -%}
     {%- endif -%}
 {%- else -%}
-    {%- if get_env(name='VERSION', default='none') == 'none' -%}
-        {{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}
+    {%- set github_ref = get_env(name='GITHUB_REF') -%}
+    {%- if github_ref is starting_with("refs/tags/") -%}
+        {{ github_ref | trim_start_matches(pat="refs/tags/v") }}
     {%- else -%}
-        {{ get_env(name='VERSION') }}
+        0.0.0-{{ get_env(name='GITHUB_REF_NAME', default='none') }}
     {%- endif -%}
 {%- endif -%}
 """
