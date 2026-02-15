@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.16
+## v0.4.12
 
 * migrate build tooling to mise
 
