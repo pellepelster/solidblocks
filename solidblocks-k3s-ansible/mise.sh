@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/test/dns_api_token)}"
 export TF_VAR_hcloud_token="${HCLOUD_TOKEN}"
 
 function task_test_terraform {

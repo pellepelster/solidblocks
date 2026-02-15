@@ -73,9 +73,6 @@ function terraform_wrapper {
     fi
 
     export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-    export HETZNER_DNS_API_TOKEN="${HETZNER_DNS_API_TOKEN:-$(pass solidblocks/hetzner/test/dns_api_token)}"
-
-    export TF_VAR_hetzner_dns_api_token="${HETZNER_DNS_API_TOKEN}"
 
     export TF_VAR_hetzner_s3_access_key="${SOLIDBLOCKS_HETZNER_TEST_S3_ACCESS_KEY_ID:-$(pass solidblocks/hetzner/test/s3_access_key_id)}"
     export TF_VAR_hetzner_s3_secret_key="${SOLIDBLOCKS_HETZNER_TEST_S3_SECRET_KEY:-$(pass solidblocks/hetzner/test/s3_secret_key)}"

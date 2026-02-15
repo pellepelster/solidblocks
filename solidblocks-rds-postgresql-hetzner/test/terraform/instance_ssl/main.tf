@@ -21,7 +21,7 @@ module "rds-postgresql-1" {
   ssl_domains      = ["test3.blcks.de"]
   ssl_dns_provider = "hetzner"
   ssl_dns_provider_config = {
-    HETZNER_API_KEY = var.hetzner_dns_api_token
+    HETZNER_API_KEY = var.hetzner_api_token
   }
   ssl_acme_server = "https://acme-staging-v02.api.letsencrypt.org/directory"
 

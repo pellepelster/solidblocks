@@ -151,7 +151,7 @@ task_test_jumphost_ssh
 
 [tasks.release-prepare]
 usage = """
-arg "<version>"
+arg "<version>" env="VERSION"
 """
 run = """
 #!/usr/bin/env bash

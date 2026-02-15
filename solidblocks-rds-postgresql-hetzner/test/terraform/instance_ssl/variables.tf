@@ -18,7 +18,7 @@ variable "backup_s3_secret_key" {
   type = string
 }
 
-variable "hetzner_dns_api_token" {
+variable "hetzner_api_token" {
   type = string
 }
 
