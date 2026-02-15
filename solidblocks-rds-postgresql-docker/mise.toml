@@ -6,7 +6,7 @@ env_shell_expand = true
 [env]
 TEMP_DIR=".temp"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
-POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-14 15 16 17 18}"
+POSTGRES_VERSIONS="14 15 16 17 18"
 CACHE_DIR=".cache"
 
 [tasks.build-14]
