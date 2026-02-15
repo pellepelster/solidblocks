@@ -7,10 +7,6 @@ env_shell_expand = true
 TEMP_DIR=".temp"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
 POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-14 15 16 17 18}"
-#DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
-#DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
-DOCKER_OPTIONS="--push"
-DOCKER_PLATFORM="linux/amd64,linux/arm64"
 CACHE_DIR=".cache"
 
 [tasks.build-14]

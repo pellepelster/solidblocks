@@ -16,7 +16,22 @@ go="1.26.0"
 [env]
 CONFIG_ROOT="{{config_root}}"
 ROOT_PROJECT="{{config_root}}"
-VERSION = "{% if os() == 'windows' %}{{ get_env(name='VERSION', default='0.0.0') }}{% else %}{{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}{% endif %}"
+VERSION = """
+{%- if os() == 'windows' -%}
+    {%- if get_env(name='VERSION', default='none') == 'none' -%}
+        "0.0.0"
+    {%- else -%}
+        {{ get_env(name='VERSION') }}
+    {%- endif -%}
+{%- else -%}
+    {%- if get_env(name='VERSION', default='none') == 'none' -%}
+        {{ get_env(name='VERSION', default=exec(command='./lib/version.sh')) }}
+    {%- else -%}
+        {{ get_env(name='VERSION') }}
+    {%- endif -%}
+{%- endif -%}
+"""
+
 DOCKER_API_VERSION = "1.52"
 
 DOCKER_REGISTRY="ghcr.io"
@@ -49,4 +64,31 @@ hugo serve --baseURL /
 [tasks.info]
 run = """
   echo "version: '${VERSION}'"
+"""
+
+[tasks.release-check]
+usage = """
+arg "<version>"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+echo "checking version: ${usage_version}"
+task_release_check ${usage_version}
+"""
+
+[tasks.release]
+usage = """
+arg "<version>"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_release ${usage_version}
 """

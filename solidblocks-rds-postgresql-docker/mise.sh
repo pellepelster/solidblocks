@@ -3,11 +3,18 @@
 function task_build {
   local versions_to_build=${1:-$POSTGRES_VERSIONS}
 
+  DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
+  DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
+  DOCKER_OPTIONS="--push"
+  DOCKER_PLATFORM="linux/amd64,linux/arm64"
+
   (
     mkdir -p "build"
     mkdir -p "${TEMP_DIR}"
 
     if [[ "${BUILD_FAST:-}" == "true" ]]; then
+      DOCKER_OPTIONS=""
+      DOCKER_PLATFORM="linux/amd64"
       cp "install/fast-locale.gen" "${TEMP_DIR}/locale.gen"
     else
       cp "install/all-locale.gen" "${TEMP_DIR}/locale.gen"

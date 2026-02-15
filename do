@@ -63,37 +63,6 @@ function task_format {
     done
 }
 
-function task_release_prepare {
-  export VERSION="${1:-}"
-  version_ensure "${VERSION}"
-
-  for component in ${COMPONENTS}; do
-    (
-      echo "================================================================================="
-      echo "running release-prepare for '${component}'"
-      echo "================================================================================="
-      cd "${DIR}/${component}"
-      "./do" release-prepare "${VERSION}"
-    )
-  done
-
-  task_build
-  task_build_documentation
-
-}
-
-function task_release_test {
-  for component in ${COMPONENTS}; do
-    (
-      echo "================================================================================="
-      echo "running release-test for '${component}'"
-      echo "================================================================================="
-      cd "${DIR}/${component}"
-      "./do" release-test
-    )
-  done
-}
-
 function task_clean_aws {
   aws-nuke run \
     --access-key-id "$(pass solidblocks/aws/admin/access_key_id)" \
@@ -170,15 +139,6 @@ function task_test {
     done
 }
 
-function task_release_artifacts {
-    for component in ${COMPONENTS}; do
-      (
-        cd "${DIR}/${component}"
-        VERSION=${VERSION} "./do" release-artifacts
-      )
-    done
-}
-
 function prepare_documentation_env {
   local versions="$(grep  'VERSION=\".*\"' "${DIR}/solidblocks-shell/lib/software.sh")"
   for version in ${versions}; do
@@ -186,76 +146,6 @@ function prepare_documentation_env {
   done
   export SOLIDBLOCKS_VERSION="$VERSION"
   export SOLIDBLOCKS_VERSION_RAW="${VERSION#"v"}"
-}
-
-function task_build_documentation {
-
-    local snippet_dir="${DIR}/doc/content/snippets"
-    rm -rf "${snippet_dir}"
-    mkdir -p "${snippet_dir}"
-
-    if [[ -n "${CI:-}" ]]; then
-      rsync -rv --exclude-from ${DIR}/rsync_exclude ${DIR}/*/snippets/* "${snippet_dir}"
-    else
-      rsync -rv --exclude-from ${DIR}/rsync_exclude ${DIR}/*/snippets/* "${snippet_dir}"
-      rsync -rv --exclude-from ${DIR}/rsync_exclude ${DIR}/*/build/snippets/* "${snippet_dir}"
-    fi
-
-    mkdir -p "${DIR}/build/documentation"
-    (
-      cd "${DIR}/build/documentation"
-      cp -r ${DIR}/doc/* ./
-      prepare_documentation_env
-      hugo
-    )
-}
-
-function task_serve_documentation {
-    (
-      cd "${DIR}/doc"
-
-      prepare_documentation_env
-      hugo serve --baseURL "/"
-    )
-}
-
-function task_release_check() {
-  local previous_tag="$(git --no-pager tag | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -1)"
-  local previous_version="${previous_tag#v}"
-
-  export VERSION="${1:-}"
-  version_ensure "${VERSION}"
-
-  echo "checking for release version '${VERSION}'"
-  task_build
-  task_build_documentation
-
-  local previous_version_escaped="${previous_version//\./\\.}"
-
-  if [[ "${VERSION}" == *"pre"* ]]; then
-    echo "skipping check for pre-version '${VERSION}'"
-  else
-    echo "checking for previous version '${previous_version}'"
-    if git --no-pager grep "${previous_version_escaped}" | grep -v "poetry.lock" | grep -v CHANGELOG.md | grep -v "doc/content/runbooks/paperback" | grep -v README.md; then
-      echo "previous version '${previous_version_escaped}' found in repository"
-      exit 1
-    fi
-  fi
-
-  if [[ "${VERSION}" == *"rc"* ]]; then
-    echo "skipping changelog check for pre-version '${VERSION}'"
-  else
-    echo "checking changelog for current version '${VERSION}'"
-    if ! grep "${VERSION}" "${DIR}/CHANGELOG.md"; then
-      echo "version '${VERSION}' not found in changelog"
-      exit 1
-    fi
-  fi
-
-  if [[ $(git diff --stat) != '' ]]; then
-    echo "repository '${DIR}' is dirty"
-    exit 1
-  fi
 }
 
 function task_release {
@@ -275,12 +165,6 @@ function clean_temp_dir {
   rm -rf "${TEMP_DIR}"
 }
 
-function task_release_tf_modules {
-  local version="${1:-}"
-  task_release_tf_module "terraform-null-blcks-cloud-init" "${version}"
-  task_release_tf_module "terraform-hcloud-blcks-rds-postgresql" "${version}"
-}
-
 function task_renovate {
   docker run --rm \
     -e RENOVATE_PLATFORM=github \
@@ -290,31 +174,6 @@ function task_renovate {
     -e RENOVATE_CONFIG_FILE=/renovate.json \
     -v $(pwd)/renovate.json:/renovate.json \
     renovate/renovate:35.14.4
-}
-
-function task_release_tf_module {
-  local module="${1:-}"
-  local version="${2:-}"
-
-  clean_temp_dir
-
-  mkdir -p "${TEMP_DIR}/${module}/git"
-  git clone "git@github.com:pellepelster/${module}.git" "${TEMP_DIR}/${module}/git"
-
-  mkdir -p "${TEMP_DIR}/${module}/sources"
-  curl -L "https://github.com/pellepelster/solidblocks/releases/download/${version}/${module}-${version}.zip" -o "${TEMP_DIR}/${module}/${module}.zip"
-  unzip "${TEMP_DIR}/${module}/${module}.zip" -d "${TEMP_DIR}/${module}/sources"
-  cp -rv ${TEMP_DIR}/${module}/sources/* "${TEMP_DIR}/${module}/git"
-  (
-    cd "${TEMP_DIR}/${module}/git"
-    git add -A
-    git commit -m "version ${version}" || true
-    git push
-
-    git tag -a "${version}" -m "${version}"
-    git push --tags
-  )
-  # git tag -d "v${VERSION}" && git push origin ":refs/tags/v${VERSION}" && git tag -a "v${VERSION}" -m "v${VERSION}" && git push --tags
 }
 
 function task_usage {
@@ -335,14 +194,9 @@ case ${ARG} in
   test-init-aws) task_test_init_aws "$@" ;;
   test) task_test "$@" ;;
   format) task_format "$@" ;;
-  build-documentation) task_build_documentation "$@" ;;
-  serve-documentation) task_serve_documentation "$@" ;;
   release) task_release "$@" ;;
-  release-artifacts) task_release_artifacts "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-check) task_release_check "$@" ;;
-  release-tf-modules) task_release_tf_modules "$@" ;;
-  release-test) task_release_test "$@" ;;
   renovate) task_renovate "$@" ;;
   *) task_usage ;;
 esac

@@ -18,22 +18,6 @@ function version() {
   fi
 }
 
-function version_ensure() {
-    local version="${1:-}"
-
-    if [[ -z "${version}" ]]; then
-      echo "no version set"
-      exit 1
-    fi
-
-    if [[ "${version}" =~ ^[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}(-rc[0-9]{1,2})?$ ]]; then
-      echo "version: '${version}'"
-    else
-      echo "invalid version '${version}'"
-      exit 1
-    fi
-}
-
 function terraform_replace_variable_default {
   local marker="${1:-}"
   local file="${2:-}"
