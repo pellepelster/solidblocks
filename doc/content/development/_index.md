@@ -26,6 +26,26 @@ Common for all `mise.toml` files are the following tasks:
 * `mise :release-test` run tests against released artifacts, commonly used to verify that the code snippets work  
 * `mise :release-artifacts` releases additional artifacts, e.g. a tested docker image without the `-rc` version postfix
 
+## Conventions
+
+The follwing environment variables can be used to influence the build if supported by the component.
+
+`BUILD_FAST` If set to `true` build are shortened, e.g. by leaving out variants or skipping optimizations. Release build should never uses this.
+
+`SKIP_TESTS` If set to `integration` resource heavy or time intensive integration tests are skipped, ideal for quick verification builds.
+
+`DOCKER_PLATFORM´ Target platform to build docker images for, defaults to `linux/amd64,linux/arm64`.
+
+To run a quick local build
+
+```shell
+export BUILD_FAST="true"
+export SKIP_TESTS="integration"
+export DOCKER_PLATFORM="linux/amd64"
+mise //...:build
+mise //...:test
+```
+
 ## Documentation
 
 The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after running `mise :documentation-build` they can be included like this:
