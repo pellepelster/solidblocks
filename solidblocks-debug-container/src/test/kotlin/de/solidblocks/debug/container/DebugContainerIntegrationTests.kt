@@ -3,13 +3,11 @@ package de.solidblocks.debug.container
 import io.restassured.RestAssured
 import io.restassured.RestAssured.given
 import org.hamcrest.Matchers.containsString
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.GenericContainer
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled
 class DebugContainerIntegrationTests {
 
   private val debugContainer =

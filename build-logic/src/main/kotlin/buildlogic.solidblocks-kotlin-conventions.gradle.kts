@@ -19,8 +19,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.14.3")
 
     testImplementation("org.testcontainers:testcontainers:2.0.2")
-
-    testImplementation("org.junit.platform:junit-platform-launcher:1.14.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.3")
 
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("io.kotest:kotest-assertions-json:5.9.1")
@@ -57,9 +56,10 @@ tasks.test {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(24)
     }
 }
+
 
 spotless {
     kotlin {

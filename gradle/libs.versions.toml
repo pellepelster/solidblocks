@@ -1,5 +1,5 @@
 [versions]
-kotlin-gradle-plugin = "2.2.10"
+kotlin-gradle-plugin = "2.3.10"
 junit = "5.7.1"
 
 [libraries]
