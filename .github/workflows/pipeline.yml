@@ -588,8 +588,8 @@ jobs:
             solidblocks-k3s-ansible/blcks-k3s-*
             solidblocks-ansible/blcks-*
             solidblocks-web-s3-docker-hetzner/snippets/*
-            solidblocks-web-s3-docker-hetzner/terraform-hcloud-blcks-web-s3-docker-*.zip
-
+            solidblocks-web-s3-docker-hetzner/blcks-terraform-hcloud-web-s3-docker-*.zip
+  
 
   documentation:
     needs:
