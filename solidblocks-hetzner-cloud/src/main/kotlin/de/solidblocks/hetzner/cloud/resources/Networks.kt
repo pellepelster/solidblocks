@@ -13,7 +13,6 @@ import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Suppress("ktlint:standard:enum-entry-name-case")
 enum class SubnetType {
   cloud,
   vswitch,

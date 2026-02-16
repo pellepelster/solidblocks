@@ -1,0 +1,3 @@
+package de.solidblocks.cloud.providers
+
+interface CloudResourceProviderConfiguration : ProviderConfiguration

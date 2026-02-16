@@ -12,7 +12,6 @@ object StorageLibrary {
           .bufferedReader(Charsets.UTF_8)
           .use(BufferedReader::readText)
 
-  @Suppress("ktlint:standard:enum-entry-name-case")
   enum class FileSystem {
     ext4,
   }

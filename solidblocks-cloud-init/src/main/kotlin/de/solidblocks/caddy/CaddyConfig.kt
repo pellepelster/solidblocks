@@ -8,7 +8,6 @@ data class Site(val address: String, val reverseProxy: ReverseProxy? = null)
 
 data class FileSystemStorage(val root: String)
 
-@Suppress("ktlint:standard:enum-entry-name-case")
 enum class AutoHttps {
   off,
   disable_redirects,

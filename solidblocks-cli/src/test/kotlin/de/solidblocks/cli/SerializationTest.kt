@@ -14,8 +14,12 @@ import org.reflections.util.ConfigurationBuilder
 @Serializable
 data class SerializationConfig(
     val name: String,
-    val fields: List<SerializationConfigField>,
-    val methods: List<SerializationConfigMethod>,
+    val fields: List<SerializationConfigField>?,
+    val methods: List<SerializationConfigMethod>?,
+    val allDeclaredConstructors: Boolean? = null,
+    val allPublicConstructors: Boolean? = null,
+    val allDeclaredMethods: Boolean? = null,
+    val allPublicMethods: Boolean? = null,
 )
 
 @Serializable data class SerializationConfigField(val name: String)
@@ -59,12 +63,63 @@ class SerializationConfigGenerator {
                   ),
               ),
           )
-        }
+        } +
+            listOf(
+                SerializationConfig(
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.KeyFactorySpi",
+                    null,
+                    null,
+                    true,
+                    true,
+                    true,
+                    true,
+                ),
+                SerializationConfig(
+                    "org.bouncycastle.jcajce.provider.asymmetric.RSA\$Mappings",
+                    null,
+                    null,
+                    true,
+                    true,
+                    true,
+                    true,
+                ),
+                SerializationConfig(
+                    "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$X448",
+                    null,
+                    null,
+                    true,
+                    true,
+                    true,
+                    true,
+                ),
+                SerializationConfig(
+                    "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$X25519",
+                    null,
+                    null,
+                    true,
+                    true,
+                    true,
+                    true,
+                ),
+                SerializationConfig(
+                    "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$X448",
+                    null,
+                    null,
+                    true,
+                    true,
+                    true,
+                    true,
+                ),
+            )
 
     val reflectConfigFile =
         Path("").resolve("src/main/resources/META-INF/native-image/reflect-config.json")
 
+    val json = Json {
+      prettyPrint = true
+      explicitNulls = false
+    }
     println("writing reflect config to '$reflectConfigFile'")
-    reflectConfigFile.writeText(Json.encodeToString(config))
+    reflectConfigFile.writeText(json.encodeToString(config))
   }
 }

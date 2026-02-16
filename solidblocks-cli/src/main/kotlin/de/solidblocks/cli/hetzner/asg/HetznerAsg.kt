@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:enum-entry-name-case")
-
 package de.solidblocks.cli.hetzner.asg
 
 import com.github.ajalt.clikt.core.CliktError

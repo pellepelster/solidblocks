@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:enum-entry-name-case")
-
 package de.solidblocks.hetzner.cloud.resources
 
 import de.solidblocks.hetzner.cloud.HetznerApi

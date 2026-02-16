@@ -7,7 +7,6 @@ import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Suppress("ktlint:standard:enum-entry-name-case")
 enum class VolumeFormat {
   ext4,
   xfs,
@@ -34,7 +33,6 @@ data class VolumeResponseWrapper(
     @SerialName("volume") val volume: VolumeResponse,
 )
 
-@Suppress("ktlint:standard:enum-entry-name-case")
 enum class VolumeStatus {
   available,
   creating,

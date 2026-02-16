@@ -2,6 +2,10 @@ package de.solidblocks.cli
 
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
+import de.solidblocks.cli.cloud.CloudApplyCommand
+import de.solidblocks.cli.cloud.CloudCommand
+import de.solidblocks.cli.cloud.CloudHelpCommand
+import de.solidblocks.cli.cloud.CloudPlanCommand
 import de.solidblocks.cli.commands.BlcksCommand
 import de.solidblocks.cli.docs.DocsCommand
 import de.solidblocks.cli.docs.ansible.AnsibleCommand
@@ -15,6 +19,11 @@ import de.solidblocks.cli.terraform.*
 
 fun main(args: Array<String>) {
   val root = BlcksCommand()
+
+  CloudCommand().also {
+    root.subcommands(it)
+    it.subcommands(CloudApplyCommand(), CloudPlanCommand(), CloudHelpCommand())
+  }
 
   HetznerCommand().also {
     root.subcommands(it)

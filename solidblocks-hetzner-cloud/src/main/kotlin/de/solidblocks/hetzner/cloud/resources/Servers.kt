@@ -53,7 +53,6 @@ data class ServerCreateResponseWrapper(
     @SerialName("action") val action: ActionResponse,
 )
 
-@Suppress("ktlint:standard:enum-entry-name-case")
 enum class ServerStatus {
   running,
   initializing,
