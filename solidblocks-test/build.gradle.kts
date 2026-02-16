@@ -49,19 +49,20 @@ object Versions {
 }
 
 dependencies {
-    api("io.kotest:kotest-assertions-core:5.9.1")
-
-    testImplementation("org.awaitility:awaitility:4.2.0")
-    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
-    testImplementation("org.slf4j:slf4j-simple:2.0.13")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation(project(":solidblocks-ssh"))
     implementation(project(":solidblocks-hetzner-cloud"))
     implementation(project(":solidblocks-utils"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     implementation("com.github.docker-java:docker-java:3.4.0")
     implementation("com.github.docker-java:docker-java-transport-zerodep:3.4.0")
+
+    api("io.kotest:kotest-assertions-core:5.9.1")
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    testImplementation("org.awaitility:awaitility:4.2.0")
+    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation("org.slf4j:slf4j-simple:2.0.13")
 }

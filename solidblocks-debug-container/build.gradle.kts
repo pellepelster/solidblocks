@@ -19,7 +19,6 @@ dependencies {
     implementation("org.webjars:webjars-locator:0.45")
     implementation("org.webjars.npm:htmx.org:1.8.2")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.rest-assured:kotlin-extensions:5.2.0")
     testImplementation("org.junit.platform:junit-platform-engine:1.12.2")
 }

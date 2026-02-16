@@ -10,9 +10,10 @@ repositories {
 
 dependencies {
     testImplementation("org.testcontainers:testcontainers:2.0.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
     testImplementation("io.github.microutils:kotlin-logging-jvm:2.0.6")
-    testImplementation("org.assertj:assertj-core:3.22.0")
+    testImplementation("org.assertj:assertj-core:3.27.7")
 
     testImplementation("com.github.docker-java:docker-java:3.5.1")
     testImplementation("com.github.docker-java:docker-java-transport-zerodep:3.5.1")
@@ -20,7 +21,7 @@ dependencies {
     testImplementation("org.eclipse:yasson:1.0.1")
     testImplementation("org.glassfish:javax.json:1.1.2")
 
-    testImplementation("io.minio:minio:8.5.17")
+    testImplementation("io.minio:minio:8.6.0")
     testImplementation("com.squareup.okhttp3:okhttp-tls:4.11.0")
     testImplementation("io.github.hakky54:sslcontext-kickstart-for-pem:7.4.5")
 
@@ -28,7 +29,7 @@ dependencies {
     testImplementation("org.awaitility:awaitility:4.2.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
-    testImplementation("ch.qos.logback:logback-classic:1.4.12")
+    testImplementation("ch.qos.logback:logback-classic:1.5.13")
     testImplementation("org.postgresql:postgresql:42.7.2")
     testImplementation("org.jdbi:jdbi3-core:3.32.0")
 

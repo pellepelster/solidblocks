@@ -11,17 +11,17 @@ repositories {
 }
 
 group = "de.solidblocks"
-version = (System.getenv("VERSION") ?: "0.0.0").removePrefix("v")
+version = System.getenv("VERSION") ?: "0.0.0"
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.12.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.2")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.13.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.14.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.14.3")
 
     testImplementation("org.testcontainers:testcontainers:2.0.2")
 
-    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+    testImplementation("org.junit.platform:junit-platform-launcher:1.14.3")
+
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("io.kotest:kotest-assertions-json:5.9.1")
     testImplementation("io.kotest:kotest-property:5.9.1")
