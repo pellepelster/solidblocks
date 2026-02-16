@@ -14,8 +14,8 @@ java="25.0.0"
 go="1.26.0"
 
 [env]
-CONFIG_ROOT="{{config_root}}"
 ROOT_PROJECT="{{config_root}}"
+GRADLE_OPTS="--enable-native-access=ALL-UNNAMED"
 VERSION = """
 {%- if get_env(name='GITHUB_REF', default='none') == 'none' -%}
     {%- if os() == 'windows' -%}
