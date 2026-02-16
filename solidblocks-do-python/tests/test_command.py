@@ -14,10 +14,7 @@ def test_command_ensure_exists():
     assert command_ensure_exists('invalid') is False
 
 
-@pytest.mark.skipif(
-    os.getenv("CI") is not None,
-    reason="ci"
-)
+@pytest.mark.skip("test needs a valid tty")
 def test_command_run_interactive():
     assert command_run_interactive(['ls']) is True
 

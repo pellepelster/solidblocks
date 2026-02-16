@@ -22,6 +22,7 @@ export NON_EXISTING_OVERRIDE="non_existing_override"
 export CUSTOM_ENV_NAME="custom_env_name"
 export OVERRIDE_PASSWORD="override_password"
 
+poetry install
 poetry run pytest -s
 """
 
