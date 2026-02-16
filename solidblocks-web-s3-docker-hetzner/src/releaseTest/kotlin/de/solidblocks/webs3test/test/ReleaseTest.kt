@@ -6,6 +6,9 @@ import de.solidblocks.infra.test.assertions.shouldBeSuccess
 import java.nio.file.Path
 import java.time.Duration.ofSeconds
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
+import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
 import org.awaitility.kotlin.withPollInterval
@@ -28,6 +31,9 @@ public class ReleaseTest {
 
     val ipv4Address = output.getString("ipv4_address")
     val privateKey = output.getString("private_key")
+
+    val host = context.host(ipv4Address)
+    await atMost (30.seconds.toJavaDuration()) until { host.portIsOpen(22) }
 
     val cloudInit = context.cloudInit(ipv4Address, privateKey)
     cloudInit.printOutputLogOnTestFailure()

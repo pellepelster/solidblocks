@@ -56,3 +56,7 @@ output "docker_rw_users" {
   value     = module.web_s3_docker.docker_rw_users
   sensitive = true
 }
+
+output "ipv4_address" {
+  value = module.web_s3_docker.ipv4_address
+}

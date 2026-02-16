@@ -1,5 +1,3 @@
-[tools]
-
 [tasks.build]
 run = """
 #!/usr/bin/env bash

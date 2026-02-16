@@ -1,1 +1,1 @@
-git+https://git.deuxfleurs.fr/garage-sdk/garage-admin-sdk-python
+git+https://git.deuxfleurs.fr/garage-sdk/garage-admin-sdk-python@781c47d85f127c6065701cbf99eb99eb673d24a5

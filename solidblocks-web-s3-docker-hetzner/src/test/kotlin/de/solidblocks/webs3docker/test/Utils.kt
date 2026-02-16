@@ -1,9 +1,11 @@
 package de.solidblocks.webs3docker.test
 
 import io.minio.MinioClient
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonIgnoreUnknownKeys
 data class S3Bucket(
@@ -18,6 +20,7 @@ data class S3Bucket(
     val web_access_public_enable: Boolean,
 )
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonIgnoreUnknownKeys
 data class DockerUser(

@@ -14,7 +14,11 @@ import java.net.URL
 import java.nio.file.Path
 import java.time.Duration
 import java.util.*
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
+import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
+import org.awaitility.kotlin.until
 
 open class BaseIntegrationTest {
 
@@ -32,6 +36,7 @@ open class BaseIntegrationTest {
     baseTerraform.init()
     baseTerraform.apply()
     val baseOutput = baseTerraform.output()
+    val privateKey = baseOutput.getString("private_key")
 
     val terraform = context.terraform(Path.of("./src/test/resources/terraform/web-s3-docker"))
     terraform.addVariable("test_id", baseOutput.getString("test_id"))
@@ -42,6 +47,14 @@ open class BaseIntegrationTest {
     terraform.init()
     terraform.apply()
     val output = terraform.output()
+
+    val ipv4Address = output.getString("ipv4_address")
+
+    val host = context.host(ipv4Address)
+    await atMost (30.seconds.toJavaDuration()) until { host.portIsOpen(22) }
+
+    val cloudInit = context.cloudInit(ipv4Address, privateKey)
+    cloudInit.printOutputLogOnTestFailure()
 
     s3Host = output.getString("s3_host")
     println("s3Host: $s3Host")
