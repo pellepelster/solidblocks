@@ -26,7 +26,6 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotContain
-import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.maps.shouldContain
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -57,6 +56,14 @@ class HetznerApiTest {
 
       api.sshKeys.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
         api.sshKeys.delete(it.id)
+      }
+
+      api.networks.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
+        api.networks.delete(it.id)
+      }
+
+      api.loadBalancers.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
+        api.loadBalancers.delete(it.id)
       }
 
       api.volumes.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
@@ -218,7 +225,9 @@ class HetznerApiTest {
   fun testNetworksFlow() {
     runBlocking {
       val name = UUID.randomUUID().toString()
-      api.networks.create(NetworkCreateRequest(name, "10.0.0.0/24")) shouldNotBe null
+      api.networks.create(
+          NetworkCreateRequest(name, "10.0.0.0/24", labels = testLabels),
+      ) shouldNotBe null
 
       val networkByName = api.networks.get(name)!!
       val networkById = api.networks.get(networkByName.id)!!
@@ -233,7 +242,7 @@ class HetznerApiTest {
     runBlocking {
       val name = UUID.randomUUID().toString()
       api.loadBalancers.create(
-          LoadBalancerCreateRequest(LoadBalancerType.lb11, name, "fsn1"),
+          LoadBalancerCreateRequest(LoadBalancerType.lb11, name, "fsn1", labels = testLabels),
       ) shouldNotBe null
       api.loadBalancers.list() shouldHaveAtLeastSize 1
 
@@ -248,9 +257,6 @@ class HetznerApiTest {
   @Test
   fun testVolumesFlow() {
     runBlocking {
-      api.volumes.list()
-
-      api.volumes.list(labelSelectors = testLabels.toLabelSelectors()) shouldHaveSize 0
       val result =
           api.volumes.create(
               VolumeCreateRequest(
@@ -263,7 +269,7 @@ class HetznerApiTest {
           )
       result!!.volume.linuxDevice shouldNotBe null
       result.volume.format shouldBe VolumeFormat.ext4
-      api.volumes.list(labelSelectors = testLabels.toLabelSelectors()) shouldHaveSize 1
+      api.volumes.list(labelSelectors = testLabels.toLabelSelectors()) shouldHaveAtLeastSize 1
 
       val byName = api.volumes.get(result.volume.name)!!
       val byId = api.volumes.get(result.volume.id)!!
@@ -274,9 +280,11 @@ class HetznerApiTest {
       val random = UUID.randomUUID().toString()
       api.volumes.update(
           byId.id,
-          VolumeUpdateRequest(labels = mapOf("test" to "true", "foo" to random)),
+          VolumeUpdateRequest(labels = testLabels + mapOf("foo" to random)),
       )
-      api.volumes.list(labelSelectors = mapOf("foo" to Equals(random))).size shouldBe 1
+      api.volumes.list(
+          labelSelectors = testLabels.toLabelSelectors() + mapOf("foo" to Equals(random)),
+      ) shouldHaveAtLeastSize 1
 
       val enableDeleteProtection = api.volumes.changeDeleteProtection(byId.id, true)
       api.volumes.waitForAction(enableDeleteProtection)
@@ -292,7 +300,10 @@ class HetznerApiTest {
   fun testWaitForAction() {
     runBlocking {
       val name = UUID.randomUUID().toString()
-      val volume = api.volumes.create(VolumeCreateRequest(name, 12, "nbg1", VolumeFormat.ext4))
+      val volume =
+          api.volumes.create(
+              VolumeCreateRequest(name, 12, "nbg1", VolumeFormat.ext4, labels = testLabels),
+          )
 
       val result =
           api.waitForAction(
@@ -307,21 +318,20 @@ class HetznerApiTest {
   @Test
   fun testSSHFlow() {
     runBlocking {
-      api.sshKeys.list().filter { it.name.startsWith("test") }.forEach { api.sshKeys.delete(it.id) }
-
-      api.sshKeys.list() shouldHaveAtLeastSize 0
-
       val name = "test" + UUID.randomUUID().toString()
       api.sshKeys.create(
           SSHKeysCreateRequest(
               name,
               "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMZI38/RuEdy9l4PAMREgeC4LpnIIW27Hd5J44t/yqVjWq7GxRGNimtIALncIb2HuVpoe0d4Ot9vNWzvPEYijaI= pelle@fry",
+              labels = testLabels,
           ),
       )
 
+      api.sshKeys.list(labelSelectors = testLabels.toLabelSelectors()) shouldHaveAtLeastSize 1
+
       val keys = api.sshKeys.list()
       keys shouldHaveAtLeastSize 1
-      keys[0].labels.shouldBeEmpty()
+      keys[0].labels shouldHaveSize 1
 
       api.sshKeys.update(
           keys[0].id,
@@ -405,7 +415,12 @@ class HetznerApiTest {
       rrSetsApi.get(name, RRType.TXT) shouldBe null
       val response =
           rrSetsApi.create(
-              DnsRRSetsCreateRequest(name, RRType.A, listOf(DnsRRSetRecord("127.0.0.1"))),
+              DnsRRSetsCreateRequest(
+                  name,
+                  RRType.A,
+                  listOf(DnsRRSetRecord("127.0.0.1")),
+                  labels = testLabels,
+              ),
           )
       response?.rrset?.name shouldBe name
 
