@@ -68,6 +68,11 @@ spotless {
     }
 }
 
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "24"
+    targetCompatibility = "24"
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.fromTarget("24")
