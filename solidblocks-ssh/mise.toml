@@ -12,3 +12,11 @@ run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
 [tasks.test]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test" },
+]
