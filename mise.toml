@@ -10,7 +10,7 @@ hugo = "latest"
 terraform="1.14.5"
 terraform-docs="0.21.0"
 rg="15.1.0"
-java="25.0.0"
+java="24.0.2"
 go="1.26.0"
 
 [env]

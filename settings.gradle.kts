@@ -23,5 +23,6 @@ include(
     "solidblocks-ssh",
     "solidblocks-cloud-init",
     "solidblocks-utils",
-    "solidblocks-web-s3-docker-hetzner"
+    "solidblocks-web-s3-docker-hetzner",
+    "solidblocks-fr-deuxfleurs-garagehq"
 )
