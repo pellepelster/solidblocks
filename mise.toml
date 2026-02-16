@@ -1,5 +1,8 @@
 experimental_monorepo_root = true
 
+[settings]
+env_shell_expand = true
+
 [monorepo]
 config_roots = [
     "*",
@@ -15,7 +18,7 @@ go="1.26.0"
 
 [env]
 ROOT_PROJECT="{{config_root}}"
-GRADLE_OPTS="--enable-native-access=ALL-UNNAMED"
+GRADLE_OPTS="${GRADLE_OPTS:-} --enable-native-access=ALL-UNNAMED"
 VERSION = """
 {%- if get_env(name='GITHUB_REF', default='none') == 'none' -%}
     {%- if os() == 'windows' -%}
@@ -78,9 +81,10 @@ hugo serve --baseURL /
 
 [tasks.info]
 run = """
-echo "   VERSION: '${VERSION}'"
-echo "SKIP_TESTS: '${SKIP_TESTS}'"
-echo "BUILD_FAST: '${BUILD_FAST}'"
+echo "    VERSION: '${VERSION}'"
+echo " SKIP_TESTS: '${SKIP_TESTS}'"
+echo " BUILD_FAST: '${BUILD_FAST}'"
+echo "GRADLE_OPTS: '${GRADLE_OPTS}'"
 """
 
 [tasks.release-check]
