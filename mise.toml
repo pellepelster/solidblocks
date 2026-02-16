@@ -109,3 +109,13 @@ source mise.sh
 
 task_release ${usage_version}
 """
+
+[tasks.clean-aws]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+task_clean_aws
+"""

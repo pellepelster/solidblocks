@@ -63,15 +63,6 @@ function task_format {
     done
 }
 
-function task_clean_aws {
-  aws-nuke run \
-    --access-key-id "$(pass solidblocks/aws/admin/access_key_id)" \
-    --secret-access-key "$(pass solidblocks/aws/admin/secret_access_key)" \
-    --config ${DIR}/contrib/aws-nuke.yaml \
-    --no-dry-run \
-    --force
-}
-
 function task_test_init_aws {
   (
     export AWS_REGION="eu-central-1"
