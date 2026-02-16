@@ -4,8 +4,44 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectedResource
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+@Suppress("ktlint:standard:enum-entry-name-case")
+enum class SubnetType {
+  cloud,
+  vswitch,
+}
+
+@Serializable
+data class NetworkCreateSubnetRequest(
+    val type: SubnetType,
+    @SerialName("ip_range") val ipRange: String,
+    @SerialName("network_zone") val networkZone: String,
+    @SerialName("vswitch_id") val vswitchId: String,
+)
+
+@Serializable
+data class NetworkCreateRouteRequest(
+    val destination: String,
+    val gateway: String,
+)
+
+@Serializable
+data class NetworkCreateRequest(
+    val name: String,
+    @SerialName("ip_range") val ipRange: String,
+    val labels: Map<String, String>? = null,
+    @SerialName("public_net") val publicNet: PublicNet? = null,
+    @SerialName("expose_routes_to_vswitch") val exposeRoutesToVswitch: Boolean = false,
+    val routes: List<NetworkCreateRouteRequest> = emptyList(),
+)
 
 @Serializable
 data class NetworksListResponseWrapper(
@@ -50,6 +86,9 @@ class HetznerNetworksApi(private val api: HetznerApi) :
   suspend fun get(id: Long) = api.get<NetworkResponseWrapper>("v1/networks/$id")?.network
 
   suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+
+  suspend fun create(request: NetworkCreateRequest) =
+      api.post<NetworkResponseWrapper>("v1/networks", request)
 
   override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper =
       api.post("v1/networks/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))

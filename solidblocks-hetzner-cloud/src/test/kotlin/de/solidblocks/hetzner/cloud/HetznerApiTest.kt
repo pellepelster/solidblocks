@@ -5,7 +5,21 @@ import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue.Equals
 import de.solidblocks.hetzner.cloud.model.toLabelSelectors
-import de.solidblocks.hetzner.cloud.resources.*
+import de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord
+import de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest
+import de.solidblocks.hetzner.cloud.resources.ImageType
+import de.solidblocks.hetzner.cloud.resources.LoadBalancerCreateRequest
+import de.solidblocks.hetzner.cloud.resources.LoadBalancerType
+import de.solidblocks.hetzner.cloud.resources.NetworkCreateRequest
+import de.solidblocks.hetzner.cloud.resources.PublicNet
+import de.solidblocks.hetzner.cloud.resources.RRType
+import de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest
+import de.solidblocks.hetzner.cloud.resources.SSHKeysUpdateRequest
+import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
+import de.solidblocks.hetzner.cloud.resources.ServerUpdateRequest
+import de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest
+import de.solidblocks.hetzner.cloud.resources.VolumeFormat
+import de.solidblocks.hetzner.cloud.resources.VolumeUpdateRequest
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContain
@@ -17,10 +31,9 @@ import io.kotest.matchers.maps.shouldContain
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.util.*
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -202,55 +215,38 @@ class HetznerApiTest {
   }
 
   @Test
-  fun testGetLoadBalancerByName() {
-    runBlocking { api.loadBalancers.get("application2")!!.name shouldBe "application2" }
-  }
-
-  @Test
-  fun testLoadBalancerAsg1() {
+  fun testNetworksFlow() {
     runBlocking {
-      val loadbalancer = api.loadBalancers.get("application1")!!
-      loadbalancer.privateNetworks shouldHaveSize 1
-    }
-  }
+      val name = UUID.randomUUID().toString()
+      api.networks.create(NetworkCreateRequest(name, "10.0.0.0/24")) shouldNotBe null
 
-  @Test
-  fun testGetNetwork() {
-    runBlocking {
-      val networkByName = api.networks.get("hcloud-network1")!!
+      val networkByName = api.networks.get(name)!!
       val networkById = api.networks.get(networkByName.id)!!
       networkById.name shouldBe networkByName.name
+
+      api.networks.delete(networkById.id) shouldBe true
     }
   }
 
   @Test
-  fun testLoadBalancerAsg2() {
+  fun testLoadBalancersFlow() {
     runBlocking {
-      val loadbalancer = api.loadBalancers.get("application2")!!
-      loadbalancer.privateNetworks shouldHaveSize 0
+      val name = UUID.randomUUID().toString()
+      api.loadBalancers.create(
+          LoadBalancerCreateRequest(LoadBalancerType.lb11, name, "fsn1"),
+      ) shouldNotBe null
+      api.loadBalancers.list() shouldHaveAtLeastSize 1
+
+      val byName = api.loadBalancers.get(name)!!
+      byName.name shouldBe name
+
+      val byId = api.loadBalancers.get(byName.id)!!
+      byId.name shouldBe name
     }
   }
 
   @Test
-  fun testListLoadBalancers() {
-    runBlocking {
-      val loadBalancers = api.loadBalancers.list()
-      assertEquals(3, loadBalancers.size)
-
-      val asg1 = api.loadBalancers.get(loadBalancers[0].id)!!
-      asg1.name shouldBe "application1"
-      asg1.targets shouldHaveAtLeastSize 1
-      asg1.targets[0].type shouldBe LoadBalancerTargetType.server
-      asg1.targets[0].labelSelector shouldBe null
-
-      val asg2 = api.loadBalancers.get(loadBalancers[1].id)!!
-      asg2.name shouldBe "application2"
-      asg2.targets shouldHaveAtLeastSize 1
-    }
-  }
-
-  @Test
-  fun testVolumeFlow() {
+  fun testVolumesFlow() {
     runBlocking {
       api.volumes.list()
 
@@ -295,11 +291,12 @@ class HetznerApiTest {
   @Test
   fun testWaitForAction() {
     runBlocking {
-      val volume = api.volumes.list().first()
+      val name = UUID.randomUUID().toString()
+      val volume = api.volumes.create(VolumeCreateRequest(name, 12, "nbg1", VolumeFormat.ext4))
 
       val result =
           api.waitForAction(
-              { api.volumes.changeDeleteProtection(volume.id, true) },
+              { api.volumes.changeDeleteProtection(volume!!.volume.id, true) },
               { api.volumes.action(it) },
           )
 
@@ -363,7 +360,7 @@ class HetznerApiTest {
       val byName = api.serverTypes.get(serverTypes[0].name)!!
       byId.name shouldBe byName.name
 
-      api.serverTypes.get("cx22") shouldNotBe null
+      api.serverTypes.get("cx23") shouldNotBe null
     }
   }
 

@@ -6,9 +6,20 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectedResource
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+@Serializable
+data class LoadBalancerCreateResponseWrapper(
+    @SerialName("load_balancer") val loadBalancer: LoadBalancerResponse,
+    @SerialName("action") val action: ActionResponse,
+)
 
 @Serializable
 data class LoadBalancersListWrapper(
@@ -23,6 +34,21 @@ data class LoadBalancersListWrapper(
 @Serializable
 data class LoadBalancerResponseWrapper(
     @SerialName("load_balancer") val loadbalancer: LoadBalancerResponse,
+)
+
+@Suppress("ktlint:standard:enum-entry-name-case")
+enum class LoadBalancerType {
+  lb11,
+  lb21,
+  lb31,
+}
+
+@Serializable
+data class LoadBalancerCreateRequest(
+    @SerialName("load_balancer_type") val loadBalancerType: LoadBalancerType,
+    val name: String,
+    val location: String,
+    val labels: Map<String, String>? = null,
 )
 
 enum class LoadBalancerHealthStatus {
@@ -137,6 +163,9 @@ class HetznerLoadBalancersApi(private val api: HetznerApi) :
   suspend fun actions(id: Long) =
       api.get<ActionsListResponseWrapper>("v1/load_balancers/$id/actions")
           ?: throw RuntimeException("failed to fetch balancers actions")
+
+  suspend fun create(request: LoadBalancerCreateRequest) =
+      api.post<LoadBalancerCreateResponseWrapper>("v1/load_balancers", request)
 
   suspend fun waitForAction(id: Long, logCallback: ((String) -> Unit)? = null) =
       api.waitForAction(id, logCallback, { api.loadBalancers.action(it) })
