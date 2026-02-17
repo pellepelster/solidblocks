@@ -151,6 +151,18 @@ run = [
     { task = "test-integration" },
 ]
 
+[tasks.preflight-check-native]
+run = [
+    { task = "build-native" },
+    { task = "preflight-check-native-run" },
+]
+
+[tasks.preflight-check-native-run]
+run="""
+export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
+./blcks cloud apply contrib/test1.yml
+"""
+
 [tasks.debug]
 run="""
 java --version

@@ -76,7 +76,6 @@ graalvmNative {
                     "--initialize-at-run-time=org.bouncycastle.jcajce.provider.drbg.DRBG\$NonceAndIV",
                     "--initialize-at-run-time=org.bouncycastle.jcajce.provider.drbg.DRBG\$Default",
                     "--initialize-at-run-time=org.apache.sshd.common.random.JceRandom\$Cache",
-                    "--initialize-at-run-time=de.solidblocks.cli.BCInitializer",
                     "-H:IncludeResources=logging.properties",
                     "-H:-AddAllFileSystemProviders",
                     "-H:+UnlockExperimentalVMOptions",

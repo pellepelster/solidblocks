@@ -47,3 +47,4 @@ solidblocks-cli/test/terraform/id_rsa
 /solidblocks-web-s3-docker-hetzner/src/test/resources/terraform/ipv4_address
 solidblocks-shell/.solidblocks-shell/
 solidblocks-cloud-init/modules/cloud-init/blcks-cloud-init-bootstrap.sh.template
+/solidblocks-cli/blcks.log
