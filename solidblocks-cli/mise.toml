@@ -161,11 +161,14 @@ run = [
 [tasks.preflight-check-native-run]
 run="""
 export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
+export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
 ./blcks cloud apply contrib/test1.yml
 """
 
-[tasks.debug1]
+[tasks.reachability-metadata-generate]
 run="""
+export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
 export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
 """
+

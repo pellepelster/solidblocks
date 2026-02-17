@@ -1,6 +1,9 @@
 {
   "reflection": [
     {
+      "type": "android.os.Build$VERSION"
+    },
+    {
       "type": "com.squareup.moshi.Json",
       "methods": [
         {
@@ -95,6 +98,74 @@
       ]
     },
     {
+      "type": "de.solidblocks.hetzner.cloud.resources.ActionResponseWrapper",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.ActionResponseWrapper$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.ChangeVolumeProtectionRequest",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.ChangeVolumeProtectionRequest$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateResponseWrapper",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateResponseWrapper$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsResponseWrapper",
       "fields": [
         {
@@ -129,6 +200,40 @@
       ]
     },
     {
+      "type": "de.solidblocks.hetzner.cloud.resources.SSHKeyResponseWrapper",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.SSHKeyResponseWrapper$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "de.solidblocks.hetzner.cloud.resources.SSHKeysListResponseWrapper",
       "fields": [
         {
@@ -146,6 +251,57 @@
       ]
     },
     {
+      "type": "de.solidblocks.hetzner.cloud.resources.SSHKeysUpdateRequest",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.SSHKeysUpdateRequest$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.ServerCreateRequest",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.ServerCreateRequest$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.ServerCreateResponseWrapper",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.ServerCreateResponseWrapper$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "de.solidblocks.hetzner.cloud.resources.ServersListWrapper",
       "fields": [
         {
@@ -155,6 +311,57 @@
     },
     {
       "type": "de.solidblocks.hetzner.cloud.resources.ServersListWrapper$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.VolumeResponseWrapper",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.VolumeResponseWrapper$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.VolumeUpdateRequest",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "de.solidblocks.hetzner.cloud.resources.VolumeUpdateRequest$Companion",
       "methods": [
         {
           "name": "serializer",
@@ -201,6 +408,24 @@
       "allDeclaredFields": true
     },
     {
+      "type": "fr.deuxfleurs.garagehq.model.CreateBucketLocalAlias",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "fr.deuxfleurs.garagehq.model.CreateBucketRequest",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "getGlobalAlias",
+          "parameterTypes": []
+        },
+        {
+          "name": "getLocalAlias",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "fr.deuxfleurs.garagehq.model.GetBucketInfoKey",
       "allDeclaredFields": true
     },
@@ -244,6 +469,38 @@
             "java.lang.String",
             "java.util.List"
           ]
+        }
+      ]
+    },
+    {
+      "type": "fr.deuxfleurs.garagehq.model.UpdateBucketRequestBody",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "getQuotas",
+          "parameterTypes": []
+        },
+        {
+          "name": "getWebsiteAccess",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "fr.deuxfleurs.garagehq.model.UpdateBucketWebsiteAccess",
+      "allDeclaredFields": true,
+      "methods": [
+        {
+          "name": "getEnabled",
+          "parameterTypes": []
+        },
+        {
+          "name": "getErrorDocument",
+          "parameterTypes": []
+        },
+        {
+          "name": "getIndexDocument",
+          "parameterTypes": []
         }
       ]
     },
@@ -367,7 +624,12 @@
       "type": "java.lang.Long"
     },
     {
-      "type": "java.lang.Object"
+      "type": "java.lang.Object",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
     },
     {
       "type": "java.lang.String"
@@ -756,6 +1018,14 @@
     },
     {
       "type": "kotlinx.coroutines.internal.StackTraceRecoveryKt"
+    },
+    {
+      "type": "kotlinx.coroutines.internal.ThreadSafeHeap",
+      "fields": [
+        {
+          "name": "_size$volatile"
+        }
+      ]
     },
     {
       "type": "kotlinx.coroutines.scheduling.CoroutineScheduler",
@@ -2059,6 +2329,15 @@
       ]
     },
     {
+      "type": "sun.security.provider.MD5",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "sun.security.provider.NativePRNG",
       "methods": [
         {
@@ -2385,6 +2664,9 @@
     },
     {
       "glob": "META-INF/services/java.nio.channels.spi.SelectorProvider"
+    },
+    {
+      "glob": "META-INF/services/java.time.zone.ZoneRulesProvider"
     },
     {
       "glob": "META-INF/services/kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoader"

@@ -16,9 +16,6 @@ import de.solidblocks.cli.hetzner.asg.HetznerAsgCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgRotateCommand
 import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
 import de.solidblocks.cli.terraform.*
-import de.solidblocks.ssh.SSHClient
-import de.solidblocks.ssh.SSHKeyUtils
-import java.io.File
 import java.security.Security
 import java.util.logging.Level
 import java.util.logging.LogManager
@@ -32,21 +29,10 @@ class LoggerInit
 class BouncyCastleFeature : Feature {
   public override fun afterRegistration(access: Feature.AfterRegistrationAccess?) {
     RuntimeClassInitialization.initializeAtBuildTime("org.bouncycastle")
-
     Security.addProvider(
         BouncyCastleProvider(),
     )
   }
-}
-
-fun main1(args: Array<String>) {
-  val key =
-      SSHKeyUtils.ED25519.loadFromOpenSSH(
-          File("/home/pelle/git/solidblocks/solidblocks-ssh/src/test/resources/test_ed25519.key")
-              .readText(),
-      )
-  println("Key: $key")
-  SSHClient("65.108.58.98", key!!).command("whoami")
 }
 
 fun main(args: Array<String>) {
