@@ -63,10 +63,12 @@ graalvmNative {
             imageName.set("blcks")
             buildArgs(
                 listOf(
+                    "--trace-object-instantiation=java.security.SecureRandom",
                     "-Os",
                     "--no-fallback",
                     "--initialize-at-build-time",
                     "--initialize-at-run-time=org.slf4j.LoggerFactory",
+                    "--initialize-at-run-time=org.apache.sshd.common.random.JceRandom\$Cache",
                     "-H:IncludeResources=logging.properties",
                     "-H:+UnlockExperimentalVMOptions",
                     "-H:-ReduceImplicitExceptionStackTraceInformation",

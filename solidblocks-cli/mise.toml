@@ -14,14 +14,13 @@ set -eu -o pipefail
 BUILD_TARGET="${BUILD_TARGET:-linux-amd64}"
 GRADLE_OPTIONS=""
 
-export JAVA_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
-export GRAAL_VM_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
-
 if  [[ ${BUILD_TARGET} == "windows-amd64" ]]; then
   choco install zip
   GRADLE_OPTIONS="--stacktrace"
 else
-  export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+  #export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+  #export GRAAL_VM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+  export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
 fi
 
 ${ROOT_PROJECT}/gradlew ${GRADLE_OPTIONS} :solidblocks-cli:nativeCompile
@@ -157,15 +156,15 @@ run="""
 java --version
 mkdir .tmp || true
 cd .tmp
-export JAVA_HOME=$GRAAL_HOME
-export JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=traces"
+#export JAVA_HOME=$GRAAL_HOME
+#export JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=traces"
 #unzip -o ../build/distributions/blcks-0.0.0.zip
 ./blcks-0.0.0/bin/blcks cloud apply ../contrib/test1.yml
 """
 
 [tasks.debug1]
 run="""
-export GRAAL_VM_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
-export JAVA_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
+#export GRAAL_VM_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
+#export JAVA_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
 """
