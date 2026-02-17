@@ -1,0 +1,20 @@
+---
+name: "cloud1"
+root_domain: blcks-test.de
+
+providers:
+  - type: pass
+  - type: ssh_key
+    private_key: "test_rsa.key"
+  - type: hcloud
+
+services:
+  - type: s3
+    name: s3
+    buckets:
+      - name: pelle.io
+        access_keys:
+          - name: "admin"
+            owner: true
+            read: true
+            write: true

@@ -1,0 +1,9 @@
+[
+  ["org.apache.sshd.common.session.SessionListener"],
+  ["org.apache.sshd.common.channel.ChannelListener"],
+  ["org.apache.sshd.common.io.IoServiceEventListener"],
+  ["org.apache.sshd.common.PortForwardingEventListener"],
+  ["org.apache.sshd.client.session.ClientSessionCreator"],
+  ["org.apache.sshd.common.session.UnknownChannelReferenceHandler"],
+  ["org.apache.sshd.common.forward.PortForwardingEventListener"]
+]

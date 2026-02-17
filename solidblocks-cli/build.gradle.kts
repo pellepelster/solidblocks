@@ -18,12 +18,18 @@ dependencies {
     implementation("com.github.ajalt.clikt:clikt:5.0.3")
     implementation("com.charleskorn.kaml:kaml:0.83.0")
 
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcprov-ext-jdk18on:1.78.1")
+
     implementation("aws.sdk.kotlin:s3-jvm:1.5.26")
     implementation("aws.sdk.kotlin:s3:1.5.26")
 
+    implementation("org.slf4j:slf4j-jdk14:2.0.17")
+
     /*
-    implementation("ch.qos.logback:logback-core:1.5.18")
     implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation("ch.qos.logback:logback-core:1.5.18")
     */
 
     testImplementation("org.reflections:reflections:0.10.2")
@@ -48,6 +54,10 @@ val generateTask = tasks.register<Test>("generate") {
 tasks.getAt("generateResourcesConfigFile").dependsOn(generateTask)
 
 graalvmNative {
+    agent {
+        enabled.set(true)
+    }
+
     binaries {
         named("main") {
             imageName.set("blcks")
@@ -56,7 +66,10 @@ graalvmNative {
                     "-Os",
                     "--no-fallback",
                     "--initialize-at-build-time",
+                    "--initialize-at-run-time=org.slf4j.LoggerFactory",
+                    "-H:IncludeResources=logging.properties",
                     "-H:+UnlockExperimentalVMOptions",
+                    "-H:-ReduceImplicitExceptionStackTraceInformation",
                     "-H:ReflectionConfigurationFiles=${projectDir}/src/main/resources/META-INF/native-image/reflect-config.json"
                 )
             )
