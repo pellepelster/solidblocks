@@ -70,6 +70,11 @@ class SerializationConfigGenerator {
                     null,
                     listOf(SerializationConfigMethod("<init>")),
                 ),
+                SerializationConfig(
+                    "java.security.KeyPairGenerator",
+                    null,
+                    listOf(SerializationConfigMethod("getInstance", listOf("java.lang.String", "java.lang.String"))),
+                ),
             ) +
             listOf(
                     "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$Ed25519",
@@ -98,7 +103,7 @@ class SerializationConfigGenerator {
                 }
 
     val reflectConfigFile =
-        Path("").resolve("src/main/resources/META-INF/native-image/reflect-config1.json")
+        Path("").resolve("src/main/resources/META-INF/native-image/reflect-config-generated.json")
 
     val json = Json {
       prettyPrint = true

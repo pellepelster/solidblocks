@@ -164,7 +164,7 @@ cd .tmp
 
 [tasks.debug1]
 run="""
-#export GRAAL_VM_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
-#export JAVA_HOME=/home/pelle/.local/share/mise/installs/graalvm/24.0.2/
+export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
 """
