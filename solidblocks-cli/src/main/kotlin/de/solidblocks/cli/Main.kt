@@ -16,11 +16,20 @@ import de.solidblocks.cli.hetzner.asg.HetznerAsgCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgRotateCommand
 import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
 import de.solidblocks.cli.terraform.*
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.security.Security
 import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 
+
 class LoggerInit
+
+object BCInitializer {
+    init {
+        Security.addProvider(BouncyCastleProvider())
+    }
+}
 
 fun main(args: Array<String>) {
   LogManager.getLogManager()
