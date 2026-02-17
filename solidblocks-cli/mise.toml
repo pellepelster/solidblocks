@@ -18,8 +18,6 @@ if  [[ ${BUILD_TARGET} == "windows-amd64" ]]; then
   choco install zip
   GRADLE_OPTIONS="--stacktrace"
 else
-  #export GRAALVM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
-  #export GRAAL_VM_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
   export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
 fi
 
@@ -99,7 +97,10 @@ task_test_hetzner_nuke
 """
 
 [tasks.test]
-run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
+run = """
+export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
+${ROOT_PROJECT}/gradlew :$(basename $PWD):test
+"""
 
 [tasks.build]
 depends=["build-jvm-all", "build-native"]
@@ -163,20 +164,8 @@ export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
 ./blcks cloud apply contrib/test1.yml
 """
 
-[tasks.debug]
-run="""
-java --version
-mkdir .tmp || true
-cd .tmp
-#export JAVA_HOME=$GRAAL_HOME
-#export JAVA_OPTS="-agentlib:native-image-agent=config-output-dir=traces"
-#unzip -o ../build/distributions/blcks-0.0.0.zip
-./blcks-0.0.0/bin/blcks cloud apply ../contrib/test1.yml
-"""
-
 [tasks.debug1]
 run="""
 export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
-
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
 """

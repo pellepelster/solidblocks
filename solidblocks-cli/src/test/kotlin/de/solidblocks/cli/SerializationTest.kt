@@ -73,7 +73,12 @@ class SerializationConfigGenerator {
                 SerializationConfig(
                     "java.security.KeyPairGenerator",
                     null,
-                    listOf(SerializationConfigMethod("getInstance", listOf("java.lang.String", "java.lang.String"))),
+                    listOf(
+                        SerializationConfigMethod(
+                            "getInstance",
+                            listOf("java.lang.String", "java.lang.String"),
+                        ),
+                    ),
                 ),
             ) +
             listOf(

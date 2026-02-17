@@ -1,0 +1,27 @@
+package de.solidblocks.cli
+
+import de.solidblocks.cloud.configuration.ConfigurationParser
+import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
+import de.solidblocks.cloud.utils.Success
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
+import org.junit.jupiter.api.Test
+
+class CloudFactoryTest {
+
+  @Test
+  fun testParseCloud() {
+    val rawYml =
+        """
+        name: foo-bar
+        """
+            .trimIndent()
+
+    val result =
+        ConfigurationParser(CloudConfigurationFactory(emptyList(), emptyList())).parse(rawYml)
+    val cloud = result.shouldBeTypeOf<Success<CloudConfiguration>>()
+
+    cloud.data.name shouldBe "foo-bar"
+  }
+}

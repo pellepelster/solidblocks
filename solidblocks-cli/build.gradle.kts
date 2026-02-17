@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":solidblocks-hetzner-cloud"))
     implementation(project(":solidblocks-utils"))
     implementation(project(":solidblocks-cloud"))
+    implementation(project(":solidblocks-ssh"))
 
     implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
@@ -27,16 +28,13 @@ dependencies {
     implementation("aws.sdk.kotlin:s3-jvm:1.5.26")
     implementation("aws.sdk.kotlin:s3:1.5.26")
 
-    implementation(project(":solidblocks-ssh"))
-
     implementation("org.slf4j:slf4j-jdk14:2.0.17")
 
-    /*
-    implementation("ch.qos.logback:logback-classic:1.5.18")
-    implementation("ch.qos.logback:logback-core:1.5.18")
-    */
-
+    testImplementation(project(":solidblocks-test"))
     testImplementation("org.reflections:reflections:0.10.2")
+    testImplementation(project(":solidblocks-fr-deuxfleurs-garagehq"))
+    testImplementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
+    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }
 
 val generateTask = tasks.register<Test>("generate") {
