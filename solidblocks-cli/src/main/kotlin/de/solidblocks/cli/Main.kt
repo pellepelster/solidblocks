@@ -16,8 +16,18 @@ import de.solidblocks.cli.hetzner.asg.HetznerAsgCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgRotateCommand
 import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
 import de.solidblocks.cli.terraform.*
+import java.util.logging.Level
+import java.util.logging.LogManager
+import java.util.logging.Logger
+
+class LoggerInit
 
 fun main(args: Array<String>) {
+  LogManager.getLogManager()
+      .readConfiguration(LoggerInit::class.java.getResourceAsStream("/logging.properties"))
+  val logger = Logger.getLogger(LoggerInit::class.java.getName())
+  logger.log(Level.INFO, "starting CLI")
+
   val root = BlcksCommand()
 
   CloudCommand().also {

@@ -15,10 +15,7 @@ data class LocationsListResponseWrapper(
     get() = locations
 }
 
-@Serializable
-data class LocationResponseWrapper(
-    val location: LocationResponse,
-)
+@Serializable data class LocationResponseWrapper(val location: LocationResponse)
 
 @Serializable
 data class LocationResponse(override val id: Long, override val name: String) :

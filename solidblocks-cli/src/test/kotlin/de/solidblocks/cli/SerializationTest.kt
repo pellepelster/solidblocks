@@ -66,54 +66,39 @@ class SerializationConfigGenerator {
         } +
             listOf(
                 SerializationConfig(
-                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.KeyFactorySpi",
+                    "java.util.logging.FileHandler",
                     null,
-                    null,
-                    true,
-                    true,
-                    true,
-                    true,
+                    listOf(SerializationConfigMethod("<init>")),
                 ),
-                SerializationConfig(
-                    "org.bouncycastle.jcajce.provider.asymmetric.RSA\$Mappings",
-                    null,
-                    null,
-                    true,
-                    true,
-                    true,
-                    true,
-                ),
-                SerializationConfig(
-                    "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$X448",
-                    null,
-                    null,
-                    true,
-                    true,
-                    true,
-                    true,
-                ),
-                SerializationConfig(
+            ) +
+            listOf(
+                    "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$Ed25519",
+                    "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$Ed448",
                     "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$X25519",
-                    null,
-                    null,
-                    true,
-                    true,
-                    true,
-                    true,
-                ),
-                SerializationConfig(
                     "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$X448",
-                    null,
-                    null,
-                    true,
-                    true,
-                    true,
-                    true,
-                ),
-            )
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.KeyFactorySpi",
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.RSAKeyPairGeneratorSpi",
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.SignatureSpi\$SHA256WithRSAEncryption",
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.SignatureSpi\$SHA512WithRSAEncryption",
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.SignatureSpi\$SHA1WithRSAEncryption",
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.CipherSpi\$NoPadding",
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.CipherSpi\$PKCS1v1_5Padding",
+                    "org.bouncycastle.jcajce.provider.asymmetric.rsa.CipherSpi\$OAEPPadding",
+                )
+                .map {
+                  SerializationConfig(
+                      it,
+                      null,
+                      null,
+                      true,
+                      true,
+                      true,
+                      true,
+                  )
+                }
 
     val reflectConfigFile =
-        Path("").resolve("src/main/resources/META-INF/native-image/reflect-config.json")
+        Path("").resolve("src/main/resources/META-INF/native-image/reflect-config1.json")
 
     val json = Json {
       prettyPrint = true

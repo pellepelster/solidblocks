@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.providers.sshkey
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.providers.ConfigurationContext
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfigurationManager
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -37,10 +38,11 @@ class LocalSSHKeyProviderManager :
 
   override fun validate(
       configuration: LocalSSHKeyProviderConfiguration,
-      context: LogContext,
+      log: LogContext,
+      context: ConfigurationContext,
   ): Result<LocalSSHKeyProviderRuntime> {
     val sshKey =
-        when (val result = tryFindKey(configuration)) {
+        when (val result = tryFindKey(configuration, context)) {
           is Error<*> -> return Error<LocalSSHKeyProviderRuntime>(result.error)
           is Success<Path> -> result.data
         }
@@ -65,15 +67,18 @@ class LocalSSHKeyProviderManager :
 
     logInfo(
         "found ssh private key at '$sshKey' with type '${sshKeyPair.private.algorithm.lowercase()}'",
-        context = context,
+        context = log,
     )
 
     return Success(LocalSSHKeyProviderRuntime(sshKeyPair))
   }
 
-  private fun tryFindKey(configuration: LocalSSHKeyProviderConfiguration): Result<Path> {
+  private fun tryFindKey(
+      configuration: LocalSSHKeyProviderConfiguration,
+      context: ConfigurationContext,
+  ): Result<Path> {
     if (configuration.privateKey != null) {
-      val sshKeyFile = Path(configuration.privateKey)
+      val sshKeyFile = context.configFilePath.toAbsolutePath().resolve(configuration.privateKey)
 
       return if (sshKeyFile.exists()) {
         Success(sshKeyFile)

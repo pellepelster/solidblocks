@@ -34,10 +34,7 @@ data class CommandResult<O : OutputLine>(
     get() = internalOutput.joinToString("") { "${it.line}\n" }
 }
 
-data class ProcessResult(
-    val exitCode: Int,
-    val runtime: Duration,
-)
+data class ProcessResult(val exitCode: Int, val runtime: Duration)
 
 abstract class CommandBuilder(protected var command: Array<String>) : Closeable {
 

@@ -5,9 +5,7 @@ import java.net.Socket
 
 fun hostTestContext(host: String) = HostTestContext(host)
 
-class HostTestContext(
-    val host: String,
-) {
+class HostTestContext(val host: String) {
 
   fun portIsOpen(port: Int, timeoutMs: Int = 5000) =
       try {

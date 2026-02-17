@@ -22,10 +22,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(
-      lookup: SSHKeyLookup,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun lookup(lookup: SSHKeyLookup, context: ProvisionerContext) =
       api.sshKeys.get(lookup.name)?.let {
         SSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
       }
@@ -65,10 +62,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
     return ApplyResult(lookup(resource.asLookup(), context))
   }
 
-  override suspend fun diff(
-      resource: SSHKey,
-      context: ProvisionerContext,
-  ): ResourceDiff? {
+  override suspend fun diff(resource: SSHKey, context: ProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     if (runtime == null) {

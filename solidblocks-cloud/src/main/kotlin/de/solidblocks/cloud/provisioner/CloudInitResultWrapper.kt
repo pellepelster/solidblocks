@@ -4,9 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CloudInitResultWrapper(
-    @SerialName("v1") val v1: CloudInitResult,
-) {
+data class CloudInitResultWrapper(@SerialName("v1") val v1: CloudInitResult) {
   val allErrors: List<String>
     get() =
         listOfNotNull(

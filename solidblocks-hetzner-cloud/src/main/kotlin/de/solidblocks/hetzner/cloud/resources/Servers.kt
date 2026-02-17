@@ -36,16 +36,10 @@ data class ServersListWrapper(val servers: List<ServerResponse>, override val me
     get() = servers
 }
 
-@Serializable
-data class ServerResponseWrapper(
-    @SerialName("server") val server: ServerResponse,
-)
+@Serializable data class ServerResponseWrapper(@SerialName("server") val server: ServerResponse)
 
 @Serializable
-data class ServerUpdateRequest(
-    val name: String? = null,
-    val labels: Map<String, String>? = null,
-)
+data class ServerUpdateRequest(val name: String? = null, val labels: Map<String, String>? = null)
 
 @Serializable
 data class ServerCreateResponseWrapper(

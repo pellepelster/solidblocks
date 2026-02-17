@@ -35,10 +35,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
     )
   }
 
-  override suspend fun diff(
-      resource: HetznerDnsRecord,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun diff(resource: HetznerDnsRecord, context: ProvisionerContext) =
       lookup(resource.asLookup(), context)?.let { runtime ->
         val changes = mutableListOf<ResourceDiffItem>()
 

@@ -20,17 +20,11 @@ class GarageFsAccessKeyProvisioner :
         GarageFsAccessKeyRuntime,
     > {
 
-  override suspend fun diff(
-      resource: GarageFsAccessKey,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun diff(resource: GarageFsAccessKey, context: ProvisionerContext) =
       lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
           ?: ResourceDiff(resource, missing)
 
-  override suspend fun lookup(
-      lookup: GarageFsAccessKeyLookup,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun lookup(lookup: GarageFsAccessKeyLookup, context: ProvisionerContext) =
       context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apiClients ->
         apiClients
             ?.accessKeyApi

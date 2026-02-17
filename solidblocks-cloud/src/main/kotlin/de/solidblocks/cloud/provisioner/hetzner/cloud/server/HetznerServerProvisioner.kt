@@ -24,10 +24,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
   val api = HetznerApi(hcloudToken)
 
-  override suspend fun lookup(
-      lookup: HetznerServerLookup,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) =
       api.servers.get(lookup.name)?.let {
         HetznerServerRuntime(
             it.id,
@@ -161,10 +158,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
     }
   }
 
-  override suspend fun diff(
-      resource: HetznerServer,
-      context: ProvisionerContext,
-  ): ResourceDiff? {
+  override suspend fun diff(resource: HetznerServer, context: ProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     return if (runtime != null) {

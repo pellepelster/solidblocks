@@ -40,27 +40,20 @@ class SSHClient(
         it.auth().verify(timeout)
       }
 
-  fun download(
-      file: String,
-  ): ByteArray? {
+  fun download(file: String): ByteArray? {
     val creator = ScpClientCreator.instance()
     val scpClient = creator.createScpClient(session)
     return scpClient.downloadBytes(file)
   }
 
-  fun upload(
-      localFile: Path,
-      remoteFile: String,
-  ) {
+  fun upload(localFile: Path, remoteFile: String) {
     val creator = ScpClientCreator.instance()
     val scpClient = creator.createScpClient(session)
     return scpClient.upload(localFile, remoteFile)
   }
 
   @OptIn(ExperimentalTime::class)
-  fun command(
-      command: String,
-  ): SSHCommandResult {
+  fun command(command: String): SSHCommandResult {
     ByteArrayOutputStream().use { stdErr ->
       ByteArrayOutputStream().use { stdOut ->
         session.createExecChannel(command).use { channel ->

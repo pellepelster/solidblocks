@@ -23,10 +23,7 @@ data class S3Bucket(
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonIgnoreUnknownKeys
-data class DockerUser(
-    val username: String,
-    val password: String,
-)
+data class DockerUser(val username: String, val password: String)
 
 fun S3Bucket.ownerS3Client(s3Host: String) =
     MinioClient.builder()

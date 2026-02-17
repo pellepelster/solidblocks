@@ -23,10 +23,7 @@ data class ImagesListResponseWrapper(
     get() = images
 }
 
-@Serializable
-data class ImageResponseWrapper(
-    val image: ImageResponse,
-)
+@Serializable data class ImageResponseWrapper(val image: ImageResponse)
 
 @Serializable
 data class ImageResponse(override val id: Long, override val name: String?, val type: ImageType) :

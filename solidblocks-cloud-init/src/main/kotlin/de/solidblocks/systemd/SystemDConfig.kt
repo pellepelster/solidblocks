@@ -10,11 +10,7 @@ enum class Target(var target: String) {
   override fun toString(): String = target
 }
 
-class SystemdConfig(
-    val unit: Unit,
-    val service: Service,
-    val install: Install = Install(),
-) {
+class SystemdConfig(val unit: Unit, val service: Service, val install: Install = Install()) {
   fun render(): String {
     val sw = StringWriter()
 
@@ -51,6 +47,4 @@ class Service(
     val limitNOFILE: Int? = null,
 )
 
-class Install(
-    val wantedBy: Target = Target.MULTI_USER,
-)
+class Install(val wantedBy: Target = Target.MULTI_USER)

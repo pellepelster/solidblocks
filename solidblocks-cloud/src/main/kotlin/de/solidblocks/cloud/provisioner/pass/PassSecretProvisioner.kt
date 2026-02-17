@@ -22,10 +22,7 @@ class PassSecretProvisioner(val path: String? = null) :
   fun secretName(resource: Resource, context: ProvisionerContext) =
       "${context.cloudName}/${context.environmentName}/${resource.name}"
 
-  override suspend fun diff(
-      resource: Secret,
-      context: ProvisionerContext,
-  ): ResourceDiff? {
+  override suspend fun diff(resource: Secret, context: ProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     return if (runtime != null) {
@@ -35,10 +32,7 @@ class PassSecretProvisioner(val path: String? = null) :
     }
   }
 
-  override suspend fun lookup(
-      lookup: SecretLookup,
-      context: ProvisionerContext,
-  ): SecretRuntime? {
+  override suspend fun lookup(lookup: SecretLookup, context: ProvisionerContext): SecretRuntime? {
     val result = runCommand(listOf("pass", "show", secretName(lookup, context)))
 
     if (result == null) {

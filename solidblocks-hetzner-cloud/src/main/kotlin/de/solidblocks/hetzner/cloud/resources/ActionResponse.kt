@@ -26,7 +26,4 @@ data class ActionResponse(
     val status: ActionStatus,
 )
 
-@Serializable
-data class ActionsListResponseWrapper(
-    val actions: List<ActionResponse>,
-)
+@Serializable data class ActionsListResponseWrapper(val actions: List<ActionResponse>)

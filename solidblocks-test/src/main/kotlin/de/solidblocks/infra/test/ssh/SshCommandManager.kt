@@ -20,9 +20,7 @@ class SshCommandManager(
   val sshClient = SSHClient(host, keyPair, username, port)
 
   @OptIn(ExperimentalTime::class)
-  fun sshCommand(
-      command: String,
-  ): CommandResult<OutputLine> {
+  fun sshCommand(command: String): CommandResult<OutputLine> {
     val start = Clock.System.now()
     val result = sshClient.command(command)
     val end = Clock.System.now()

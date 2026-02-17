@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceLookupProvider
@@ -36,12 +37,12 @@ class ProvisionersRegistry(
   }
 
   private fun <ResourceType : Resource> provisioner(
-      resource: ResourceType,
+      resource: ResourceType
   ): InfrastructureResourceProvisioner<ResourceType, *> =
       provisioner(resource::class.java) as InfrastructureResourceProvisioner<ResourceType, *>
 
   private fun <ResourceType : Resource> provisioner(
-      resourceType: Class<ResourceType>,
+      resourceType: Class<ResourceType>
   ): InfrastructureResourceProvisioner<ResourceType, *> {
     val provisioner =
         resourceProvisioners.singleOrNull {
@@ -65,7 +66,8 @@ class ProvisionersRegistry(
       resource: ResourceType,
       context: ProvisionerContext,
       log: LogContext,
-  ): RuntimeType? = provisioner(resource).apply(resource, context, log) as RuntimeType?
+  ): ApplyResult<RuntimeType> =
+      provisioner(resource).apply(resource, context, log) as ApplyResult<RuntimeType>
 
   suspend fun <ResourceType : Resource, RuntimeType : InfrastructureResourceRuntime> diff(
       resource: ResourceType,
@@ -79,6 +81,6 @@ class ProvisionersRegistry(
   ): Boolean = provisioner(resource).destroy(resource, context, logContext)
 
   suspend fun <ResourceType : Resource, RuntimeType : InfrastructureResourceRuntime> list(
-      resourceType: Class<ResourceType>,
+      resourceType: Class<ResourceType>
   ) = provisioner(resourceType).list() as List<RuntimeType>
 }

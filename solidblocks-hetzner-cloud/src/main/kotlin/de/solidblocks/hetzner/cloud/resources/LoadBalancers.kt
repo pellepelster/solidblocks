@@ -31,7 +31,7 @@ data class LoadBalancersListWrapper(
 
 @Serializable
 data class LoadBalancerResponseWrapper(
-    @SerialName("load_balancer") val loadbalancer: LoadBalancerResponse,
+    @SerialName("load_balancer") val loadbalancer: LoadBalancerResponse
 )
 
 @Suppress("ktlint:standard:enum-entry-name-case")
@@ -61,10 +61,7 @@ data class LoadBalancerHealthStatusResponse(
     val status: LoadBalancerHealthStatus,
 )
 
-@Serializable
-data class LoadBalancerTargetServerResponse(
-    val id: Long,
-)
+@Serializable data class LoadBalancerTargetServerResponse(val id: Long)
 
 @Serializable
 data class LoadBalancerTargetsResponse(
@@ -87,10 +84,7 @@ enum class LoadBalancerTargetType {
   ip,
 }
 
-@Serializable
-data class LoadBalancerAttachServerRequest(
-    val id: Long,
-)
+@Serializable data class LoadBalancerAttachServerRequest(val id: Long)
 
 @Serializable
 data class LoadBalancerAttachRequest(
@@ -102,7 +96,7 @@ data class LoadBalancerAttachRequest(
 
 @Serializable
 data class LoadBalancerServiceResponse(
-    @SerialName("health_check") val healthCheck: LoadBalancerHealthCheckResponse,
+    @SerialName("health_check") val healthCheck: LoadBalancerHealthCheckResponse
 )
 
 @Serializable data class LoadBalancerHealthCheckResponse(val interval: Int, val retries: Int)

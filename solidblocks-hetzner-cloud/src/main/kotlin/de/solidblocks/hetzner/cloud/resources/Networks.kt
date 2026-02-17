@@ -26,11 +26,7 @@ data class NetworkCreateSubnetRequest(
     @SerialName("vswitch_id") val vswitchId: String,
 )
 
-@Serializable
-data class NetworkCreateRouteRequest(
-    val destination: String,
-    val gateway: String,
-)
+@Serializable data class NetworkCreateRouteRequest(val destination: String, val gateway: String)
 
 @Serializable
 data class NetworkCreateRequest(

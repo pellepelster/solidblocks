@@ -18,10 +18,7 @@ data class SSHKeysCreateRequest(
 )
 
 @Serializable
-data class SSHKeysUpdateRequest(
-    val name: String? = null,
-    val labels: Map<String, String>? = null,
-)
+data class SSHKeysUpdateRequest(val name: String? = null, val labels: Map<String, String>? = null)
 
 @Serializable
 data class SSHKeysListResponseWrapper(

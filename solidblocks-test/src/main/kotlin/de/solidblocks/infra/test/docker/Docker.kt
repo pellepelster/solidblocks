@@ -202,9 +202,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
     tempDirs.forEach { it.close() }
   }
 
-  private fun pullDockerImage(
-      dockerClient: DockerClient,
-  ) {
+  private fun pullDockerImage(dockerClient: DockerClient) {
     logInfo("pulling docker image '$image")
     dockerClient
         .pullImageCmd(image.toString())

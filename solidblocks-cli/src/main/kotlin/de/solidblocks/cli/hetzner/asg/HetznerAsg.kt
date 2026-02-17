@@ -225,7 +225,9 @@ class HetznerAsg(hcloudToken: String) {
         .let {
           if (it.isNotEmpty()) {
             logInfoBlcks(
-                "found ${it.size} servers (${it.joinToString(", ") { "'${it.name}'" }}) on load balancer '${loadbalancer.name}' matching label selector '${it.first().selector ?: "<unknown>"}'",
+                "found ${it.size} servers (${it.joinToString(", ") {
+                            "'${it.name}'"
+                        }}) on load balancer '${loadbalancer.name}' matching label selector '${it.first().selector ?: "<unknown>"}'",
             )
           }
         }

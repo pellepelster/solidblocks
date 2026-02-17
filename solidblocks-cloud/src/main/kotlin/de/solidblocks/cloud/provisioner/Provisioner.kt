@@ -11,11 +11,7 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
 import de.solidblocks.cloud.utils.Waiter.Companion.defaultWaiter
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
-import de.solidblocks.utils.logError
-import de.solidblocks.utils.logInfo
-import de.solidblocks.utils.logWarning
+import de.solidblocks.utils.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -50,17 +46,16 @@ class Provisioner(
                   }
 
               diffs.forEach {
-                logDebug(
-                    "diff status for ${it.resource.logText()} is '${it.status}'",
-                    context = diffLogContext,
-                )
                 when (it.status) {
                   unknown ->
                       logInfo("unknown ${it.resource.logText()} TODO", context = diffLogContext)
+
                   missing ->
                       logInfo("will create ${it.resource.logText()}", context = diffLogContext)
+
                   up_to_date ->
                       logInfo("${it.resource.logText()} is up-to-date", context = diffLogContext)
+
                   has_changes -> {
                     if (it.needsRecreate()) {
                       logInfo(
@@ -122,7 +117,12 @@ class Provisioner(
             provisionersRegistry.diff<Resource, InfrastructureResourceRuntime>(resource, context)
                 ?: return@runBlocking Error("diff failed for ${resource.logText()}")
 
+        logDebug(
+            "diff status for ${diff.resource.logText()} is '${diff.status}'",
+            context = log,
+        )
         result.add(diff)
+
         logDebug("finished diff for ${resource.logText()}", context = log)
       } catch (e: Exception) {
         logger.error(e) { "diff failed for ${resource.logText()}" }
@@ -217,7 +217,7 @@ class Provisioner(
         for (resource in resourcesToApply) {
           logInfo("creating ${resource.logText()}", context = log)
 
-          val runtime =
+          val applyResult =
               try {
                 provisionersRegistry.apply<Resource, InfrastructureResourceRuntime>(
                     resource,
@@ -229,6 +229,7 @@ class Provisioner(
                 null
               }
 
+          val runtime = applyResult?.result
           if (runtime == null) {
             return@runBlocking Error("creating ${resource.logText()} failed")
           }

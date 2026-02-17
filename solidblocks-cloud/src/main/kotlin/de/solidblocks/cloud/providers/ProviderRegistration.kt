@@ -22,23 +22,19 @@ interface ProviderRegistration<
 }
 
 fun <C : ProviderConfiguration, R : ProviderRuntime> List<ProviderRegistration<*, *, *>>
-    .managerForConfiguration(
-    configuration: C,
-): ProviderConfigurationManager<C, R> =
+    .managerForConfiguration(configuration: C): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
         ?.createConfigurationManager() as ProviderConfigurationManager<C, R>?
         ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")
 
 fun <C : ProviderConfiguration, R : ProviderRuntime> List<ProviderRegistration<*, *, *>>
-    .managerForRuntime(
-    runtime: R,
-): ProviderConfigurationManager<C, R> =
+    .managerForRuntime(runtime: R): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedRuntime == runtime::class }?.createConfigurationManager()
         as ProviderConfigurationManager<C, R>?
         ?: throw RuntimeException("no manager found for '${runtime::class.qualifiedName}'")
 
 fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(
-    configuration: SSHKeyProviderConfiguration,
+    configuration: SSHKeyProviderConfiguration
 ): SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderRuntime> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
         ?.createConfigurationManager()

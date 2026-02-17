@@ -4,11 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PackageVersion(
-    val id: Long,
-    val name: String,
-    val metadata: Metadata? = null,
-)
+data class PackageVersion(val id: Long, val name: String, val metadata: Metadata? = null)
 
 @Serializable
 data class Metadata(
@@ -16,7 +12,4 @@ data class Metadata(
     @SerialName("container") val container: Container? = null,
 )
 
-@Serializable
-data class Container(
-    val tags: List<String> = emptyList(),
-)
+@Serializable data class Container(val tags: List<String> = emptyList())

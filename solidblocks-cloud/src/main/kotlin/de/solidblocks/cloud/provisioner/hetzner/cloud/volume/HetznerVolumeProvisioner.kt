@@ -22,10 +22,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(
-      lookup: VolumeLookup,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun lookup(lookup: VolumeLookup, context: ProvisionerContext) =
       api.volumes.get(lookup.name)?.let {
         VolumeRuntime(it.id, it.name, it.linuxDevice, it.server, it.labels, it.protection.delete)
       }
@@ -66,10 +63,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
     return ApplyResult(lookup(resource.asLookup(), context))
   }
 
-  override suspend fun diff(
-      resource: Volume,
-      context: ProvisionerContext,
-  ): ResourceDiff? {
+  override suspend fun diff(resource: Volume, context: ProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
     val deleteProtection =

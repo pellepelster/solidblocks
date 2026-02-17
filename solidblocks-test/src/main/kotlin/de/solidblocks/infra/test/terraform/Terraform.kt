@@ -167,10 +167,7 @@ class Terraform(
 
   private data class Result(val stdout: String, val stderr: String)
 
-  private fun run(
-      command: List<String>,
-      streamLog: Boolean = true,
-  ): Result = runBlocking {
+  private fun run(command: List<String>, streamLog: Boolean = true): Result = runBlocking {
     logInfo(
         "running '$terraformBinary ${command.joinToString(" ")}' in '$dir'",
     )

@@ -53,10 +53,7 @@ data class DnsRRSetsCreateResponseWrapper(
     @SerialName("action") val action: ActionResponse,
 )
 
-@Serializable
-data class DnsRRSetsResponseWrapper(
-    @SerialName("rrset") val rrset: DnsRrSetResponse,
-)
+@Serializable data class DnsRRSetsResponseWrapper(@SerialName("rrset") val rrset: DnsRrSetResponse)
 
 @Serializable
 data class DnsRrSetResponse(

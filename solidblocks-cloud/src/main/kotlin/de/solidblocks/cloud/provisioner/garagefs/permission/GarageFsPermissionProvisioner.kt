@@ -75,10 +75,7 @@ class GarageFsPermissionProvisioner :
     return ApplyResult(lookup(resource.asLookup(), context))
   }
 
-  override suspend fun diff(
-      resource: GarageFsPermission,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun diff(resource: GarageFsPermission, context: ProvisionerContext) =
       lookup(resource.asLookup(), context)?.let {
         val changes = mutableListOf<ResourceDiffItem>()
 

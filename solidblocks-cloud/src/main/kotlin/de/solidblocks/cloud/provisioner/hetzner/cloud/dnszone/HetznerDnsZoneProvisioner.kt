@@ -10,10 +10,7 @@ class HetznerDnsZoneProvisioner(hcloudToken: String) :
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(
-      lookup: DnsZoneLookup,
-      context: ProvisionerContext,
-  ): DnsZoneRuntime? {
+  override suspend fun lookup(lookup: DnsZoneLookup, context: ProvisionerContext): DnsZoneRuntime? {
     val zone = api.dnsZones.get(lookup.name) ?: return null
 
     return DnsZoneRuntime(

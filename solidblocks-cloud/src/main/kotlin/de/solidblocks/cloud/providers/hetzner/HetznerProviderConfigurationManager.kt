@@ -3,6 +3,7 @@ package de.solidblocks.cloud.providers.hetzner
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.providers.CloudResourceProviderConfigurationManager
+import de.solidblocks.cloud.providers.ConfigurationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
@@ -25,12 +26,13 @@ class HetznerProviderConfigurationManager :
 
   override fun validate(
       configuration: HetznerProviderConfiguration,
-      context: LogContext,
+      log: LogContext,
+      context: ConfigurationContext,
   ): Result<HetznerProviderRuntime> {
     if (System.getenv("HCLOUD_TOKEN") == null) {
       "environment variable 'HCLOUD_TOKEN' not set"
           .also {
-            logError(it, context = context)
+            logError(it, context = log)
             return Error<HetznerProviderRuntime>(it)
           }
     }
@@ -38,12 +40,12 @@ class HetznerProviderConfigurationManager :
     try {
       val api = HetznerApi(System.getenv("HCLOUD_TOKEN"))
       runBlocking { api.servers.list() }
-      logDebug("provided Hetzner cloud token is valid", context = context)
+      logDebug("provided Hetzner cloud token is valid", context = log)
       return Success<HetznerProviderRuntime>(HetznerProviderRuntime(System.getenv("HCLOUD_TOKEN")))
     } catch (e: Exception) {
       "provided Hetzner cloud token is not valid"
           .also {
-            logError(it, context = context)
+            logError(it, context = log)
             return Error<HetznerProviderRuntime>(it)
           }
     }

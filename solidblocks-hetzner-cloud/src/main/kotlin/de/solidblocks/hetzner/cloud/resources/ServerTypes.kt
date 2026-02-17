@@ -20,9 +20,7 @@ data class ServerTypeListResponseWrapper(
 }
 
 @Serializable
-data class ServerTypeResponseWrapper(
-    @SerialName("server_type") val serverType: ServerTypeResponse,
-)
+data class ServerTypeResponseWrapper(@SerialName("server_type") val serverType: ServerTypeResponse)
 
 @Serializable
 data class ServerTypeResponse(

@@ -13,11 +13,11 @@ data class ProvisionerContext(
   private val logger = KotlinLogging.logger {}
 
   fun <RuntimeType, ResourceLookupType : ResourceLookup<RuntimeType>> lookup(
-      lookup: ResourceLookupType,
+      lookup: ResourceLookupType
   ): RuntimeType? = registry.lookup(lookup, this)
 
   fun <RuntimeType, ResourceLookupType : ResourceLookup<RuntimeType>> ensureLookup(
-      lookup: ResourceLookupType,
+      lookup: ResourceLookupType
   ): RuntimeType =
       registry.lookup(lookup, this).let {
         if (it == null) {

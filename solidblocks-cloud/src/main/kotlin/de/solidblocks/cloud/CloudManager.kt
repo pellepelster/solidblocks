@@ -128,8 +128,9 @@ class CloudManager(val cloudConfigFile: File) {
               "validating configuration for '${provider.type}' provider '${provider.name}'",
               context = log,
           )
+          val context = ConfigurationContext(cloudConfigFile.parentFile.toPath().toAbsolutePath())
           val runtime =
-              when (val result = manager.validate(provider, log)) {
+              when (val result = manager.validate(provider, log, context)) {
                 is Error<ProviderRuntime> -> {
                   return Error<CloudRuntime>(result.error)
                 }

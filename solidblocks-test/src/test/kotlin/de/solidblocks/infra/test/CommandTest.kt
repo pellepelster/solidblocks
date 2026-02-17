@@ -198,7 +198,7 @@ public class CommandTest {
   @ParameterizedTest
   @FieldSource("contexts")
   fun testWaitForOutputRunResultNegative(
-      context: CommandTestContext<CommandBuilder, ScriptBuilder>,
+      context: CommandTestContext<CommandBuilder, ScriptBuilder>
   ) {
     val exception =
         shouldThrow<RuntimeException> {
@@ -244,7 +244,7 @@ public class CommandTest {
   @ParameterizedTest
   @FieldSource("contexts")
   fun testWaitForOutputNotMatchedRunResult(
-      context: CommandTestContext<CommandBuilder, ScriptBuilder>,
+      context: CommandTestContext<CommandBuilder, ScriptBuilder>
   ) {
     runBlocking {
       val run = context.command(getCommandPath("command-waitfor.sh")).run()

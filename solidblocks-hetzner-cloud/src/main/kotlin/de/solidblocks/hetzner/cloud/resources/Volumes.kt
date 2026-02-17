@@ -13,10 +13,7 @@ enum class VolumeFormat {
 }
 
 @Serializable
-data class VolumeUpdateRequest(
-    val name: String? = null,
-    val labels: Map<String, String>? = null,
-)
+data class VolumeUpdateRequest(val name: String? = null, val labels: Map<String, String>? = null)
 
 @Serializable
 data class VolumeCreateRequest(
@@ -28,10 +25,7 @@ data class VolumeCreateRequest(
     val labels: Map<String, String>? = null,
 )
 
-@Serializable
-data class VolumeResponseWrapper(
-    @SerialName("volume") val volume: VolumeResponse,
-)
+@Serializable data class VolumeResponseWrapper(@SerialName("volume") val volume: VolumeResponse)
 
 enum class VolumeStatus {
   available,

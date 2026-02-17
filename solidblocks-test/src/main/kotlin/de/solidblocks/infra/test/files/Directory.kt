@@ -8,9 +8,7 @@ import java.nio.file.Paths
 import kotlin.io.path.*
 
 @OptIn(ExperimentalPathApi::class)
-class DirectoryBuilder(
-    val path: Path,
-) : Closeable {
+class DirectoryBuilder(val path: Path) : Closeable {
 
   init {
     logInfo("created directory '$path'")

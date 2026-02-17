@@ -16,5 +16,5 @@ data class GarageFsBucket(
 
   fun asLookup() = GarageFsBucketLookup(name, server.asLookup(), adminToken)
 
-  override fun logText() = "S3 bucket '$name'"
+  override fun logText() = "S3 bucket '$name' on ${server.logText()}"
 }

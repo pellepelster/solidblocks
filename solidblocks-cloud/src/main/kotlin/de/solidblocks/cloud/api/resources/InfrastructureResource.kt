@@ -9,5 +9,5 @@ abstract class InfrastructureResource<ResourceType, RuntimeType> : Resource {
 }
 
 abstract class LabeledInfrastructureResource<ResourceType, RuntimeType>(
-    open val labels: Map<String, String>,
+    open val labels: Map<String, String>
 ) : InfrastructureResource<ResourceType, RuntimeType>()

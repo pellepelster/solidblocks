@@ -27,7 +27,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) 
     ServiceConfigurationManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
   override fun createResources(
-      runtime: S3ServiceConfigurationRuntime,
+      runtime: S3ServiceConfigurationRuntime
   ): List<InfrastructureResource<*, *>> {
     val volume = Volume(serverName(cloudConfiguration, runtime.name), "hel1", 32, emptyMap())
     val adminToken =

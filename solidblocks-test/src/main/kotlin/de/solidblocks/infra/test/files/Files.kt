@@ -10,10 +10,7 @@ import java.nio.file.attribute.PosixFilePermission
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-class FileBuilder(
-    private val path: Path,
-    private val name: String,
-) {
+class FileBuilder(private val path: Path, private val name: String) {
 
   private var content = byteArrayOf()
 

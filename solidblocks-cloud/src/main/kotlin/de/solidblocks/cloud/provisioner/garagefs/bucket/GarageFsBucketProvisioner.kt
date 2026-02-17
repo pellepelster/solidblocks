@@ -17,10 +17,7 @@ class GarageFsBucketProvisioner :
         GarageFsBucketRuntime,
     > {
 
-  override suspend fun diff(
-      resource: GarageFsBucket,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun diff(resource: GarageFsBucket, context: ProvisionerContext) =
       lookup(resource.asLookup(), context)?.let {
         val changes = mutableListOf<ResourceDiffItem>()
         if (resource.websiteAccess != it.websiteAccess) {
@@ -43,10 +40,7 @@ class GarageFsBucketProvisioner :
         }
       } ?: ResourceDiff(resource, missing)
 
-  override suspend fun lookup(
-      lookup: GarageFsBucketLookup,
-      context: ProvisionerContext,
-  ) =
+  override suspend fun lookup(lookup: GarageFsBucketLookup, context: ProvisionerContext) =
       context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
         apis
             ?.bucketApi

@@ -24,15 +24,9 @@ interface HetznerResource<ID> {
   val id: ID
 }
 
-@Serializable
-data class HetznerDeleteProtectionResponse(
-    val delete: Boolean,
-)
+@Serializable data class HetznerDeleteProtectionResponse(val delete: Boolean)
 
-@Serializable
-data class HetznerChangeProtectionResponse(
-    val change: Boolean,
-)
+@Serializable data class HetznerChangeProtectionResponse(val change: Boolean)
 
 sealed class LabelSelectorValue {
   data class Equals(val value: String) : LabelSelectorValue() {
