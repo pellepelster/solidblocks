@@ -15,6 +15,7 @@ class CloudFactoryTest {
     val rawYml =
         """
         name: foo-bar
+        root_domain: foo.bar
         """
             .trimIndent()
 

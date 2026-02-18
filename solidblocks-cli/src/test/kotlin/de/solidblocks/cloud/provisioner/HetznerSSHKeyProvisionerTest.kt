@@ -36,7 +36,7 @@ class HetznerSSHKeyProvisionerTest {
       }
 
       // create
-      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT) shouldBe true
+      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe name
       assertSoftly(provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
         it.fingerprint shouldBe "99:fc:9b:f4:04:69:2c:9d:30:d5:2c:d9:1e:ca:b2:76"
       }
@@ -77,9 +77,9 @@ class HetznerSSHKeyProvisionerTest {
         it.changes[0].missing shouldBe true
         it.changes[0].name shouldBe "label 'foo'"
       }
-      provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT) shouldBe
-          true
-      assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
+      provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe name
+
+        assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()
       }
@@ -102,7 +102,7 @@ class HetznerSSHKeyProvisionerTest {
           resourceWithUpdatedLabel,
           TEST_PROVISIONER_CONTEXT,
           TEST_LOG_CONTEXT,
-      ) shouldBe true
+      ).result?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()

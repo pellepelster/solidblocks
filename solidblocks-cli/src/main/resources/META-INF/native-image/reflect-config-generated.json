@@ -252,24 +252,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.hetzner.cloud.resources.ImageResponse",
         "fields": [
             {
@@ -280,6 +262,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ImageResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest$Companion",
         "fields": [],
         "methods": [
             {
@@ -720,24 +720,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.PrimaryIpResponse",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.PrimaryIpResponse$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.infra.test.cloudinit.CloudInitResultItem",
         "fields": [
             {
@@ -748,6 +730,24 @@
     },
     {
         "name": "de.solidblocks.infra.test.cloudinit.CloudInitResultItem$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.PrimaryIpResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.PrimaryIpResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -792,24 +792,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetResponse",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetResponse$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.cli.SerializationConfigMethod",
         "fields": [
             {
@@ -820,6 +802,24 @@
     },
     {
         "name": "de.solidblocks.cli.SerializationConfigMethod$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -846,24 +846,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.PlacementGroupResponse",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.PlacementGroupResponse$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.hetzner.cloud.resources.PublicNetworkResponse",
         "fields": [
             {
@@ -874,6 +856,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.PublicNetworkResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.PlacementGroupResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.PlacementGroupResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -1080,24 +1080,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsRrSetResponse",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsRrSetResponse$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeResponse",
         "fields": [
             {
@@ -1108,6 +1090,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRrSetResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRrSetResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -1548,24 +1548,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeResponseWrapper",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeResponseWrapper$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerAttachRequest",
         "fields": [
             {
@@ -1576,6 +1558,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerAttachRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeResponseWrapper",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeResponseWrapper$Companion",
         "fields": [],
         "methods": [
             {
@@ -1710,24 +1710,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.ActionResponse",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.ActionResponse$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.hetzner.cloud.model.HetznerChangeProtectionResponse",
         "fields": [
             {
@@ -1738,6 +1720,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.model.HetznerChangeProtectionResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.ActionResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.ActionResponse$Companion",
         "fields": [],
         "methods": [
             {

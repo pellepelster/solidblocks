@@ -149,6 +149,7 @@ class HetznerAsgTest {
   }
 
   @Test
+  @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
   fun testAsg3() {
     HetznerAsg(hcloudToken)
         .rotate(

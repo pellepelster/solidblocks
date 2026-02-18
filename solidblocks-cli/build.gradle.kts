@@ -57,7 +57,6 @@ tasks.getAt("generateResourcesConfigFile").dependsOn(generateTask)
 
 graalvmNative {
     agent {
-        enabled.set(true)
     }
 
     binaries {

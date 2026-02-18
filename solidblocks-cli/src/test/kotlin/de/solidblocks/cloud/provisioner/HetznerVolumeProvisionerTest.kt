@@ -23,14 +23,14 @@ class HetznerVolumeProvisionerTest {
 
     runBlocking {
       // before create
-      provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
+      provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)?.name shouldBe null
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.missing
         it.changes.shouldBeEmpty()
       }
 
       // create
-      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT) shouldBe true
+      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe name
       assertSoftly(provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
         it.deleteProtected shouldBe true
       }
@@ -42,13 +42,12 @@ class HetznerVolumeProvisionerTest {
       // create new label
       val resourceWithNewLabel = Volume(name, "hel1", 16, mapOf("foo" to "bar"))
       assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
+        it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1
         it.changes[0].missing shouldBe true
         it.changes[0].name shouldBe "label 'foo'"
       }
-      provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT) shouldBe
-          true
+      provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe name
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()
@@ -57,7 +56,7 @@ class HetznerVolumeProvisionerTest {
       // update delete protection
       val resourceWithNewDeleteProtection = Volume(name, "hel1", 16, mapOf("foo" to "bar"), false)
       assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
+        it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1
         it.changes[0].name shouldBe "delete protection"
         it.changes[0].expectedValue shouldBe "false"
@@ -67,7 +66,7 @@ class HetznerVolumeProvisionerTest {
           resourceWithNewDeleteProtection,
           TEST_PROVISIONER_CONTEXT,
           TEST_LOG_CONTEXT,
-      ) shouldBe true
+      ).result?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()
@@ -76,7 +75,7 @@ class HetznerVolumeProvisionerTest {
       // update labels
       val resourceWithUpdatedLabel = Volume(name, "hel1", 16, mapOf("foo" to "bar2"), false)
       assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
+        it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1
         it.changes[0].name shouldBe "label 'foo'"
         it.changes[0].expectedValue shouldBe "bar2"
@@ -86,7 +85,7 @@ class HetznerVolumeProvisionerTest {
           resourceWithUpdatedLabel,
           TEST_PROVISIONER_CONTEXT,
           TEST_LOG_CONTEXT,
-      ) shouldBe true
+      ).result?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()

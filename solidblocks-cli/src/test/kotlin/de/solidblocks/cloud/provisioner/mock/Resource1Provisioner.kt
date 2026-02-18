@@ -22,7 +22,7 @@ class Resource1Provisioner :
 
   override suspend fun lookup(lookup: Resource1Lookup, context: ProvisionerContext) =
       resources[lookup.name]?.let {
-        Resource1Runtime(lookup.name, listOf(Endpoint("localhost", 22, EndpointProtocol.ssh)))
+        Resource1Runtime(lookup.name, listOf())
       }
 
   override suspend fun diff(resource: Resource1, context: ProvisionerContext) =
