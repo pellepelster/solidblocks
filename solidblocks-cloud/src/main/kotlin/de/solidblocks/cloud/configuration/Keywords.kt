@@ -1,15 +1,7 @@
 package de.solidblocks.cloud.configuration
 
 import com.charleskorn.kaml.YamlNode
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.YamlEmpty
-import de.solidblocks.cloud.utils.getList
-import de.solidblocks.cloud.utils.getNonNullOrEmptyString
-import de.solidblocks.cloud.utils.getObject
-import de.solidblocks.cloud.utils.getOptionalString
-import de.solidblocks.cloud.utils.getPolymorphicList
+import de.solidblocks.cloud.utils.*
 
 enum class KeywordType {
   boolean,
@@ -131,26 +123,23 @@ data class OptionalStringKeyword(override val name: String, override val help: K
   override val type = KeywordType.string
 }
 
-/*
 data class OptionalBooleanKeyword(
     override val name: String,
-    override val help: KeywordHelp
-    val default: Boolean
+    override val help: KeywordHelp,
+    val default: Boolean,
 ) : SimpleKeyword<Boolean> {
 
-    fun parse(yaml: YamlNode): Result<Boolean> {
-        val bool = when (val result = yaml.getBoolean(name)) {
-            is Error<Boolean> -> return result
-            is Success<Boolean> -> {
-                result.data
-            }
-
-            is YamlEmpty<*> -> default
+  fun parse(yaml: YamlNode): Result<Boolean> {
+    val bool =
+        when (val result = yaml.getOptionalBoolean(name)) {
+          is Error<Boolean?> -> return Error(result.error)
+          is Success<Boolean?> -> {
+            result.data
+          }
         }
 
-        return Success(bool)
-    }
+    return Success(bool ?: default)
+  }
 
-    override val type = KeywordType.boolean
+  override val type = KeywordType.boolean
 }
-*/

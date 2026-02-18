@@ -7,18 +7,22 @@ import de.solidblocks.utils.LogContext
 import fr.deuxfleurs.garagehq.model.CreateBucketRequest
 import fr.deuxfleurs.garagehq.model.UpdateBucketRequestBody
 import fr.deuxfleurs.garagehq.model.UpdateBucketWebsiteAccess
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
 class GarageFsBucketProvisioner :
     BaseGarageFsProvisioner(),
     ResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>,
-    InfrastructureResourceProvisioner<
-        GarageFsBucket,
-        GarageFsBucketRuntime,
-    > {
+    InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime> {
+
+  private val logger = KotlinLogging.logger {}
 
   override suspend fun diff(resource: GarageFsBucket, context: ProvisionerContext) =
       lookup(resource.asLookup(), context)?.let {
+        logger.debug {
+          "creating diff for bucket '${resource.name}', (websiteAccess: ${resource.websiteAccess})"
+        }
+
         val changes = mutableListOf<ResourceDiffItem>()
         if (resource.websiteAccess != it.websiteAccess) {
           changes.add(

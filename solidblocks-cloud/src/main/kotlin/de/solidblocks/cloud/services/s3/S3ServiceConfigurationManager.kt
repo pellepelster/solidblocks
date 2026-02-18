@@ -80,7 +80,10 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) 
             listOf(server.asLookup()),
         )
 
-    val buckets = runtime.buckets.map { GarageFsBucket(it.name, server, adminToken) }
+    val buckets =
+        runtime.buckets.map {
+          GarageFsBucket(it.name, server, adminToken, websiteAccess = it.publicAccess)
+        }
 
     return listOf(server, volume, rootDomain, catchAllDomain, adminToken) + buckets
   }
@@ -101,7 +104,9 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) 
     return Success(
         S3ServiceConfigurationRuntime(
             configuration.name,
-            configuration.buckets.map { S3ServiceBucketConfigurationRuntime(it.name) },
+            configuration.buckets.map {
+              S3ServiceBucketConfigurationRuntime(it.name, it.publicAccess)
+            },
         ),
     )
   }

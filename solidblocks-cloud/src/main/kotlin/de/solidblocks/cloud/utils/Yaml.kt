@@ -150,7 +150,23 @@ fun YamlNode.getOptionalString(key: String): Result<String?> =
       is Success<String> -> Success(scalar.data)
     }
 
-fun YamlNode.getBoolean(key: String): YamlResult<Boolean?> =
+fun YamlNode.getOptionalBoolean(key: String): Result<Boolean?> =
+    when (val scalar = getScalar(key)) {
+      is YamlEmpty<String> -> Success<Boolean?>(null)
+      is Error<String> -> Error<Boolean?>(scalar.error)
+      is Success<String> ->
+          when (scalar.data) {
+            "true" -> Success(true)
+            "false" -> Success(false)
+            else -> {
+              Error(
+                  "expected 'true' or 'false' but got '${scalar.data}' at ${this.location.logMessage()}",
+              )
+            }
+          }
+    }
+
+fun YamlNode.getBoolean(key: String): YamlResult<Boolean> =
     when (val scalar = getNonNullOrEmptyString(key)) {
       is Error<String> -> Error(scalar.error)
       is Success<String> ->
@@ -185,9 +201,9 @@ fun YamlNode.getNumber(key: String, default: Number): Result<Number> =
 
 fun YamlNode.getBoolean(key: String, default: Boolean): Result<Boolean> =
     when (val result = getBoolean(key)) {
-      is YamlEmpty<Boolean?> -> Success(default)
-      is Error<Boolean?> -> Error(result.error)
-      is Success<Boolean?> -> Success(result.data ?: default)
+      is YamlEmpty<Boolean> -> Success(default)
+      is Error<Boolean> -> Error(result.error)
+      is Success<Boolean> -> Success(result.data ?: default)
     }
 
 fun <T> YamlNode.getList(key: String, factory: ConfigurationFactory<T>): YamlResult<List<T>> {

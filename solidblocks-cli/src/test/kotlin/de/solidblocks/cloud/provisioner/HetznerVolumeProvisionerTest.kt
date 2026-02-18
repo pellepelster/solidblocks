@@ -30,7 +30,8 @@ class HetznerVolumeProvisionerTest {
       }
 
       // create
-      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe name
+      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe
+          name
       assertSoftly(provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
         it.deleteProtected shouldBe true
       }
@@ -47,7 +48,10 @@ class HetznerVolumeProvisionerTest {
         it.changes[0].missing shouldBe true
         it.changes[0].name shouldBe "label 'foo'"
       }
-      provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe name
+      provisioner
+          .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+          .result
+          ?.name shouldBe name
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()
@@ -62,11 +66,14 @@ class HetznerVolumeProvisionerTest {
         it.changes[0].expectedValue shouldBe "false"
         it.changes[0].actualValue shouldBe "true"
       }
-      provisioner.apply(
-          resourceWithNewDeleteProtection,
-          TEST_PROVISIONER_CONTEXT,
-          TEST_LOG_CONTEXT,
-      ).result?.name shouldBe name
+      provisioner
+          .apply(
+              resourceWithNewDeleteProtection,
+              TEST_PROVISIONER_CONTEXT,
+              TEST_LOG_CONTEXT,
+          )
+          .result
+          ?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()
@@ -81,11 +88,14 @@ class HetznerVolumeProvisionerTest {
         it.changes[0].expectedValue shouldBe "bar2"
         it.changes[0].actualValue shouldBe "bar"
       }
-      provisioner.apply(
-          resourceWithUpdatedLabel,
-          TEST_PROVISIONER_CONTEXT,
-          TEST_LOG_CONTEXT,
-      ).result?.name shouldBe name
+      provisioner
+          .apply(
+              resourceWithUpdatedLabel,
+              TEST_PROVISIONER_CONTEXT,
+              TEST_LOG_CONTEXT,
+          )
+          .result
+          ?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
         it.changes.shouldBeEmpty()

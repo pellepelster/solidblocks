@@ -6,8 +6,6 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.api.endpoint.Endpoint
-import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -21,9 +19,7 @@ class Resource1Provisioner :
   val resources = mutableMapOf<String, Resource1>()
 
   override suspend fun lookup(lookup: Resource1Lookup, context: ProvisionerContext) =
-      resources[lookup.name]?.let {
-        Resource1Runtime(lookup.name, listOf())
-      }
+      resources[lookup.name]?.let { Resource1Runtime(lookup.name, listOf()) }
 
   override suspend fun diff(resource: Resource1, context: ProvisionerContext) =
       lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }

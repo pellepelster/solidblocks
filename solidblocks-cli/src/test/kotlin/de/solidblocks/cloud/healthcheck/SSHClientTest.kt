@@ -18,7 +18,7 @@ class SSHClientTest {
               ImageFromDockerfile()
                   .withFileFromClasspath("Dockerfile", "ssh/Dockerfile")
                   .withFileFromClasspath("authorized_keys", "test_ed25519.key.pub"),
-      )
+          )
           .also {
             it.addExposedPort(22)
             it.start()

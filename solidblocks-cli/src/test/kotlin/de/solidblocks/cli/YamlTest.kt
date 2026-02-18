@@ -6,18 +6,7 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.YamlEmpty
-import de.solidblocks.cloud.utils.getBoolean
-import de.solidblocks.cloud.utils.getList
-import de.solidblocks.cloud.utils.getMap
-import de.solidblocks.cloud.utils.getNonNullOrEmptyString
-import de.solidblocks.cloud.utils.getNumber
-import de.solidblocks.cloud.utils.getPolymorphicList
-import de.solidblocks.cloud.utils.getString
-import de.solidblocks.cloud.utils.yamlParse
+import de.solidblocks.cloud.utils.*
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -187,8 +176,11 @@ class YamlTest {
             .trimIndent()
 
     val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-    val string = result.data.getBoolean("key1").shouldBeTypeOf<Success<String?>>()
-    assertEquals(false, string.data)
+    val bool = result.data.getBoolean("key1").shouldBeTypeOf<Success<Boolean>>()
+    bool.data shouldBe false
+
+    val optionalBool = result.data.getOptionalBoolean("key1").shouldBeTypeOf<Success<Boolean?>>()
+    optionalBool.data shouldBe false
   }
 
   @Test
@@ -200,8 +192,11 @@ class YamlTest {
             .trimIndent()
 
     val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-    val string = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean?>>()
-    string.error shouldBe "key 'key1' is empty at line 1 colum 1"
+    val bool = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean>>()
+    bool.error shouldBe "key 'key1' is empty at line 1 colum 1"
+
+    val optionalBool = result.data.getOptionalBoolean("key1").shouldBeTypeOf<Success<Boolean?>>()
+    optionalBool.data shouldBe null
   }
 
   @Test

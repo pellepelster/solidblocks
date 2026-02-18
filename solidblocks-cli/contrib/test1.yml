@@ -13,6 +13,7 @@ services:
     name: s3
     buckets:
       - name: pelle.io
+        public_access: true
         access_keys:
           - name: "admin"
             owner: true

@@ -38,8 +38,8 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
 
     val b =
         when (val result = buckets.parse(yaml)) {
-          is Error<List<S3ServiceBucket>> -> return Error(result.error)
-          is Success<List<S3ServiceBucket>> -> result.data
+          is Error<List<S3ServiceBucketConfiguration>> -> return Error(result.error)
+          is Success<List<S3ServiceBucketConfiguration>> -> result.data
         }
 
     return Success(S3ServiceConfiguration(name, b))
