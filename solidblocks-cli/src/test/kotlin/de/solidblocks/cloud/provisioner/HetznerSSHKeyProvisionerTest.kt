@@ -4,7 +4,7 @@ import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
-import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.SSHKey
+import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -19,7 +19,7 @@ class HetznerSSHKeyProvisionerTest {
   fun testFlow() {
     val name = UUID.randomUUID().toString()
     val resource =
-        SSHKey(
+        HetznerSSHKey(
             name,
             "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPb pelle@fry",
             emptyMap(),
@@ -48,7 +48,7 @@ class HetznerSSHKeyProvisionerTest {
 
       // uploading the same ssh key with a different name should result in a duplicate error
       val resourceWithNewName =
-          SSHKey(
+          HetznerSSHKey(
               UUID.randomUUID().toString(),
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPb pelle@fry",
               mapOf(),
@@ -66,7 +66,7 @@ class HetznerSSHKeyProvisionerTest {
 
       // create new label
       val resourceWithNewLabel =
-          SSHKey(
+          HetznerSSHKey(
               name,
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPb pelle@fry",
               mapOf("foo" to "bar"),
@@ -90,7 +90,7 @@ class HetznerSSHKeyProvisionerTest {
 
       // update labels
       val resourceWithUpdatedLabel =
-          SSHKey(
+          HetznerSSHKey(
               name,
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPb pelle@fry",
               mapOf("foo" to "bar2"),

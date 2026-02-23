@@ -2,7 +2,7 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.ssh
 
 import de.solidblocks.cloud.api.resources.LabeledInfrastructureResourceRuntime
 
-data class SSHKeyRuntime(
+data class HetznerSSHKeyRuntime(
     val id: Long,
     val name: String,
     val fingerprint: String,

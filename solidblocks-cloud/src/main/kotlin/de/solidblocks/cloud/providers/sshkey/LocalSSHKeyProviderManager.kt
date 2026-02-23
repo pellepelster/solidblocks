@@ -76,7 +76,7 @@ class LocalSSHKeyProviderManager :
             return Error("permissions for ssh key '${sshKey.absolutePathString()}' are too open, should be owner r/w only")
         }
 
-        return Success(LocalSSHKeyProviderRuntime(sshKeyPair))
+        return Success(LocalSSHKeyProviderRuntime(sshKeyPair, sshKey.toAbsolutePath()))
     }
 
     private fun checkFilePermission(sshKey: Path): Boolean {

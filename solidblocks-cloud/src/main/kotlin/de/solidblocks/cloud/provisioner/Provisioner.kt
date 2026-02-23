@@ -5,11 +5,14 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.resources.InfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.Resource
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
 import de.solidblocks.cloud.utils.Waiter.Companion.defaultWaiter
+import de.solidblocks.hetzner.cloud.model.HetznerResource
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -22,6 +25,32 @@ class Provisioner(
 ) {
 
     private val logger = KotlinLogging.logger {}
+
+    suspend fun help(
+        resourceGroups: List<ResourceGroup>,
+        context: ProvisionerContext,
+        log: LogContext,
+    ): Result<List<InfrastructureResourceHelp>> {
+        val result = mutableListOf<InfrastructureResourceHelp>()
+
+        for (resourceGroup in resourceGroups) {
+            val resources = resourceGroup.hierarchicalResourceList().toSet()
+
+            for (resource in resources) {
+                try {
+                    val help =
+                        provisionersRegistry.help<Resource, InfrastructureResourceRuntime>(resource, context)
+                    result.addAll(help)
+
+                } catch (e: Exception) {
+                    logger.error(e) { "error creating help for ${resource.logText()}" }
+                }
+            }
+        }
+
+        return Success(result)
+    }
+
 
     suspend fun diff(
         resourceGroups: List<ResourceGroup>,

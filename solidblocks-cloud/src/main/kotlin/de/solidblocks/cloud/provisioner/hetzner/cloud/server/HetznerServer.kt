@@ -3,7 +3,7 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 import de.solidblocks.cloud.api.resources.InfrastructureResource
 import de.solidblocks.cloud.api.resources.LabeledInfrastructureResource
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.SubnetLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.SSHKeyLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.VolumeLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 
@@ -12,7 +12,7 @@ class HetznerServer(
     val userData: UserData,
     val location: String = "hel1",
     val volumes: Set<VolumeLookup> = emptySet(),
-    val sshKeys: Set<SSHKeyLookup> = emptySet(),
+    val sshKeys: Set<HetznerSSHKeyLookup> = emptySet(),
     val extraDependsOn: Set<InfrastructureResource<*, *>> = emptySet(),
     labels: Map<String, String> = emptyMap(),
     val type: String = "cx23",

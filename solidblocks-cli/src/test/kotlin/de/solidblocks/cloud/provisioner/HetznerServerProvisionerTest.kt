@@ -6,7 +6,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
-import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.SSHKey
+import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.Volume
 import de.solidblocks.cloud.provisioner.userdata.UserData
@@ -45,13 +45,13 @@ class HetznerServerProvisionerTest {
       val provisioner = Provisioner(registry)
 
       val sshKey1 =
-          SSHKey(
+          HetznerSSHKey(
               "test-key1",
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPb pelle@fry",
               emptyMap(),
           )
       val sshKey2 =
-          SSHKey(
+          HetznerSSHKey(
               "test-key2",
               "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPa pelle@fry",
               emptyMap(),

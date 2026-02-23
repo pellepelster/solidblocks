@@ -1,5 +1,6 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.cloud.api.InfrastructureResourceHelp
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
@@ -9,6 +10,7 @@ import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRegistration
 import de.solidblocks.cloud.providers.pass.PassProviderRegistration
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
+import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderRegistration
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.DnsZoneLookup
 import de.solidblocks.cloud.services.ServiceConfiguration
@@ -21,6 +23,7 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.*
 import java.io.File
+import kotlin.io.path.absolutePathString
 
 class CloudManager(val cloudConfigFile: File) {
 
@@ -199,6 +202,27 @@ class CloudManager(val cloudConfigFile: File) {
         val result = cloudProvisioner.apply(log)
 
         return result
+    }
+
+    fun help(runtime: CloudRuntime): Result<List<InfrastructureResourceHelp>> {
+        val log = LogContext.default()
+
+        val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
+        val result = cloudProvisioner.help(log)
+
+        val sshKeyRuntime = runtime.providers.filterIsInstance<SSHKeyProviderRuntime>().single()
+
+        return when (result) {
+            is Success<List<InfrastructureResourceHelp>> -> {
+                Success(result.data.map {
+                    InfrastructureResourceHelp(it.title, it.help.replace("<private_key_path>", sshKeyRuntime.privateKey.absolutePathString()))
+                })
+            }
+
+            else -> {
+                result
+            }
+        }
     }
 
     fun plan(runtime: CloudRuntime): Result<Map<ResourceGroup, List<ResourceDiff>>> {

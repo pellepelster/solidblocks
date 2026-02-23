@@ -9,7 +9,7 @@ import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisione
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.DnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
-import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.SSHKeyLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.Volume
 import de.solidblocks.cloud.provisioner.pass.Secret
 import de.solidblocks.cloud.provisioner.userdata.UserData
@@ -61,7 +61,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) 
             serverName(cloudConfiguration, runtime.name),
             userData = userData,
             location = "hel1",
-            sshKeys = setOf(SSHKeyLookup(sshKeyName(cloudConfiguration))),
+            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloudConfiguration))),
             volumes = setOf(volume.asLookup()),
             extraDependsOn = setOf(volume),
         )

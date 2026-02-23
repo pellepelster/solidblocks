@@ -17,26 +17,26 @@ import kotlin.reflect.KClass
 
 class HetznerSSHKeyProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    ResourceLookupProvider<SSHKeyLookup, SSHKeyRuntime>,
-    InfrastructureResourceProvisioner<SSHKey, SSHKeyRuntime> {
+    ResourceLookupProvider<HetznerSSHKeyLookup, HetznerSSHKeyRuntime>,
+    InfrastructureResourceProvisioner<HetznerSSHKey, HetznerSSHKeyRuntime> {
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: SSHKeyLookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: ProvisionerContext) =
       api.sshKeys.get(lookup.name)?.let {
-        SSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
+        HetznerSSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
       }
 
   suspend fun listAll() =
       api.sshKeys.list().map {
-        SSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
+        HetznerSSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
       }
 
   override suspend fun apply(
-      resource: SSHKey,
+      resource: HetznerSSHKey,
       context: ProvisionerContext,
       log: LogContext,
-  ): ApplyResult<SSHKeyRuntime> {
+  ): ApplyResult<HetznerSSHKeyRuntime> {
     val runtime = lookup(resource.asLookup(), context)
 
     val sshKey =
@@ -62,7 +62,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
     return ApplyResult(lookup(resource.asLookup(), context))
   }
 
-  override suspend fun diff(resource: SSHKey, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(resource: HetznerSSHKey, context: ProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     if (runtime == null) {
@@ -90,7 +90,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
   }
 
   override suspend fun destroy(
-      resource: SSHKey,
+      resource: HetznerSSHKey,
       context: ProvisionerContext,
       logContext: LogContext,
   ) = lookup(resource.asLookup(), context)?.let { api.sshKeys.delete(it.id) } ?: false
@@ -110,7 +110,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
     return digest.joinToString(":") { "%02x".format(it) }
   }
 
-  override val supportedLookupType: KClass<*> = SSHKeyLookup::class
+  override val supportedLookupType: KClass<*> = HetznerSSHKeyLookup::class
 
-  override val supportedResourceType: KClass<*> = SSHKey::class
+  override val supportedResourceType: KClass<*> = HetznerSSHKey::class
 }
