@@ -217,7 +217,7 @@ class Provisioner(
                         .hierarchicalResourceList()
 
                 for (resource in resourcesToApply) {
-                    logInfo("creating ${resource.logText()}", context = log)
+                    logInfo("applying ${resource.logText()}", context = log)
 
                     val applyResult =
                         try {
