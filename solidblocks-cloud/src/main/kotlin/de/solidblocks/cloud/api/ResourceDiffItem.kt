@@ -8,14 +8,14 @@ fun ResourceDiffItem.logText(): String {
   }
 
   if (missing) {
-    return "$name is missing"
+    return "${name} is missing"
   }
 
   if (changed) {
-    return "$name has changed"
+    return "${name} changed"
   }
 
-  return "$name"
+  return "${name} has no changes"
 }
 
 data class ResourceDiffItem(
