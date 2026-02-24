@@ -4,12 +4,12 @@ import de.solidblocks.cloud.api.resources.ResourceLookup
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyLookup
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
-import de.solidblocks.cloud.provisioner.pass.SecretLookup
+import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 
 data class GarageFsPermissionLookup(
     override val name: String,
     val bucket: GarageFsBucketLookup,
     val accessKey: GarageFsAccessKeyLookup,
     val server: HetznerServerLookup,
-    val adminToken: SecretLookup,
+    val adminToken: PassSecretLookup,
 ) : ResourceLookup<GarageFsPermissionRuntime>

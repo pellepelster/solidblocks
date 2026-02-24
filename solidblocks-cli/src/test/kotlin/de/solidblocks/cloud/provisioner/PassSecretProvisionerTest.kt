@@ -3,8 +3,8 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
-import de.solidblocks.cloud.provisioner.pass.Secret
 import de.solidblocks.cloud.utils.runCommand
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
@@ -17,7 +17,7 @@ class PassSecretProvisionerTest {
 
   @Test
   fun testFlow() {
-    val resource = Secret("some/extra/path/secret1", 13)
+    val resource = PassSecret("some/extra/path/secret1", 13)
     val provisioner = PassSecretProvisioner()
 
     runCommand(listOf("pass", "rm", "--force", "--recursive", "testCloudName"))
@@ -50,7 +50,7 @@ class PassSecretProvisionerTest {
 
       val secretAfterTaint =
           provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)!!
-      generatedSecret.secret shouldNotBe secretAfterTaint.result!!.secret
+      generatedSecret.secret shouldNotBe secretAfterTaint.runtime!!.secret
 
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
         it!!.status shouldBe ResourceDiffStatus.up_to_date

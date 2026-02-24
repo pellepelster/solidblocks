@@ -14,10 +14,10 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
+import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
-import de.solidblocks.cloud.provisioner.pass.Secret
-import de.solidblocks.cloud.provisioner.pass.SecretLookup
-import de.solidblocks.cloud.provisioner.pass.SecretRuntime
+import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
 import de.solidblocks.ssh.SSHKeyUtils
@@ -125,11 +125,11 @@ class GarageFsProvisionersTest {
 
     val secretProvisioner = mockk<PassSecretProvisioner>()
     coEvery { secretProvisioner.lookup(any(), any()) } returns
-        SecretRuntime(
+        PassSecretRuntime(
             "admin_token",
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         )
-    coEvery { secretProvisioner.supportedLookupType } returns SecretLookup::class
+    coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
 
     val server =
         HetznerServer(
@@ -162,7 +162,7 @@ class GarageFsProvisionersTest {
                 ),
         )
 
-    val adminToken = Secret("admin_token")
+    val adminToken = PassSecret("admin_token")
     val bucket = GarageFsBucket(UUID.randomUUID().toString(), server, adminToken)
     val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)
 
@@ -175,12 +175,12 @@ class GarageFsProvisionersTest {
       accessKeyProvisioner.lookup(accessKey.asLookup(), context) shouldBe null
       assertSoftly(accessKeyProvisioner.diff(accessKey, context)) { it.status shouldBe missing }
 
-      buckerProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).result!!.name shouldBe bucket.name
-      buckerProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).result!!.name shouldBe bucket.name
+      buckerProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe bucket.name
+      buckerProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe bucket.name
 
-      accessKeyProvisioner.apply(accessKey, context, TEST_LOG_CONTEXT).result!!.name shouldBe
+      accessKeyProvisioner.apply(accessKey, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe
           accessKey.name
-      accessKeyProvisioner.apply(accessKey, context, TEST_LOG_CONTEXT).result!!.name shouldBe
+      accessKeyProvisioner.apply(accessKey, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe
           accessKey.name
 
       // check created bucket
@@ -202,7 +202,7 @@ class GarageFsProvisionersTest {
               context,
               TEST_LOG_CONTEXT,
           )
-          .result!!
+          .runtime!!
           .name shouldBe bucket.name
       assertSoftly(buckerProvisioner.diff(bucket.copy(websiteAccess = true), context)) {
         it.status shouldBe up_to_date
@@ -219,7 +219,7 @@ class GarageFsProvisionersTest {
       val permission = GarageFsPermission(bucket, accessKey, server, adminToken, true, true, true)
 
       permissionProvisioner.lookup(permission.asLookup(), context) shouldBe null
-      permissionProvisioner.apply(permission, context, TEST_LOG_CONTEXT).result shouldNotBe null
+      permissionProvisioner.apply(permission, context, TEST_LOG_CONTEXT).runtime shouldNotBe null
 
       assertSoftly(permissionProvisioner.lookup(permission.asLookup(), context)!!) {
         it.name shouldBe "${bucket.name}.${accessKey.name}"
@@ -244,7 +244,7 @@ class GarageFsProvisionersTest {
               context,
               TEST_LOG_CONTEXT,
           )
-          .result shouldNotBe null
+          .runtime shouldNotBe null
       assertSoftly(permissionProvisioner.lookup(permission.asLookup(), context)!!) {
         it.name shouldBe "${bucket.name}.${accessKey.name}"
         it.owner shouldBe false
@@ -270,10 +270,10 @@ class GarageFsProvisionersTest {
               context,
               TEST_LOG_CONTEXT,
           )
-          .result shouldBe null
+          .runtime shouldBe null
       permissionProvisioner.lookup(permission.asLookup(), context) shouldBe null
 
-      permissionProvisioner.apply(permission, context, TEST_LOG_CONTEXT).result shouldNotBe null
+      permissionProvisioner.apply(permission, context, TEST_LOG_CONTEXT).runtime shouldNotBe null
       assertSoftly(permissionProvisioner.lookup(permission.asLookup(), context)!!) {
         it.name shouldBe "${bucket.name}.${accessKey.name}"
         it.owner shouldBe true

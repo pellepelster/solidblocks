@@ -4,7 +4,7 @@ import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
-data class ApplyResult<T>(val result: T?)
+data class ApplyResult<RuntimeType>(val runtime: RuntimeType?)
 
 data class InfrastructureResourceHelp(val title: String, val help: String)
 

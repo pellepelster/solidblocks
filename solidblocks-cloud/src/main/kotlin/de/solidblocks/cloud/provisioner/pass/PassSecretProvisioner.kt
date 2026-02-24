@@ -14,15 +14,15 @@ import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val path: String? = null) :
-    ResourceLookupProvider<SecretLookup, SecretRuntime>,
-    InfrastructureResourceProvisioner<Secret, SecretRuntime> {
+    ResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
+    InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime> {
 
   private val logger = KotlinLogging.logger {}
 
   fun secretName(resource: Resource, context: ProvisionerContext) =
       "${context.cloudName}/${context.environmentName}/${resource.name}"
 
-  override suspend fun diff(resource: Secret, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(resource: PassSecret, context: ProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     return if (runtime != null) {
@@ -32,7 +32,7 @@ class PassSecretProvisioner(val path: String? = null) :
     }
   }
 
-  override suspend fun lookup(lookup: SecretLookup, context: ProvisionerContext): SecretRuntime? {
+  override suspend fun lookup(lookup: PassSecretLookup, context: ProvisionerContext): PassSecretRuntime? {
     val result = runCommand(listOf("pass", "show", secretName(lookup, context)))
 
     if (result == null) {
@@ -41,7 +41,7 @@ class PassSecretProvisioner(val path: String? = null) :
     }
 
     if (result.exitCode == 0) {
-      return SecretRuntime(lookup.name, result.stdout)
+      return PassSecretRuntime(lookup.name, result.stdout)
     } else {
       if (result.stdout.contains("is not in the password store")) {
         return null
@@ -58,10 +58,10 @@ class PassSecretProvisioner(val path: String? = null) :
       (1..length).map { allowedChars.random() }.joinToString("")
 
   override suspend fun apply(
-      resource: Secret,
+      resource: PassSecret,
       context: ProvisionerContext,
       log: LogContext,
-  ): ApplyResult<SecretRuntime> {
+  ): ApplyResult<PassSecretRuntime> {
     val current = lookup(resource.asLookup(), context)
     if (current != null && !resource.tainted) {
       return ApplyResult(current)
@@ -82,7 +82,7 @@ class PassSecretProvisioner(val path: String? = null) :
     return ApplyResult(lookup(resource.asLookup(), context))
   }
 
-  override val supportedLookupType = SecretLookup::class
+  override val supportedLookupType = PassSecretLookup::class
 
-  override val supportedResourceType = Secret::class
+  override val supportedResourceType = PassSecret::class
 }

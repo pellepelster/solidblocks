@@ -1,33 +1,37 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
 
 @Suppress("ktlint:standard:property-naming")
 object Constants {
-  fun sshKeyName(configuration: CloudConfiguration) =
-      "${configuration.name}-${configuration.getDefaultEnvironment()}"
+    fun sshKeyName(configuration: CloudConfiguration) =
+        "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
-  fun serverName(configuration: CloudConfiguration, name: String) =
-      "${configuration.name}-${configuration.getDefaultEnvironment()}-$name"
+    fun serverName(configuration: CloudConfiguration, name: String) =
+        "${configuration.name}-${configuration.getDefaultEnvironment()}-$name"
 
-  const val namespace: String = "blcks.de"
+    fun secretPath(configuration: CloudConfiguration, runtime: S3ServiceConfigurationRuntime, segments: List<String>) =
+        "${configuration.name}/${configuration.getDefaultEnvironment()}/${runtime.name}/${segments.joinToString("/")}"
 
-  const val managedByLabel: String = "$namespace/managed-by"
+    const val namespace: String = "blcks.de"
 
-  const val versionLabel: String = "$namespace/version"
+    const val managedByLabel: String = "$namespace/managed-by"
 
-  const val cloudLabel: String = "$namespace/cloud"
+    const val versionLabel: String = "$namespace/version"
 
-  const val sshKeysLabel: String = "$namespace/ssh-keys"
+    const val cloudLabel: String = "$namespace/cloud"
 
-  const val userDataLabel: String = "$namespace/user-data"
+    const val sshKeysLabel: String = "$namespace/ssh-keys"
 
-  fun defaultLabels(cloud: String) =
-      mapOf(
-          managedByLabel to "blcks",
-          cloudLabel to cloud,
-          versionLabel to solidblocksVersion(),
-      )
+    const val userDataLabel: String = "$namespace/user-data"
 
-  fun solidblocksVersion() = "0.0.0"
+    fun defaultLabels(cloud: String) =
+        mapOf(
+            managedByLabel to "blcks",
+            cloudLabel to cloud,
+            versionLabel to solidblocksVersion(),
+        )
+
+    fun solidblocksVersion() = "0.0.0"
 }

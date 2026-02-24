@@ -3,8 +3,8 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
+import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -36,7 +36,7 @@ class HetznerSSHKeyProvisionerTest {
       }
 
       // create
-      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe
+      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe
           name
       assertSoftly(provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
         it.fingerprint shouldBe "99:fc:9b:f4:04:69:2c:9d:30:d5:2c:d9:1e:ca:b2:76"
@@ -80,7 +80,7 @@ class HetznerSSHKeyProvisionerTest {
       }
       provisioner
           .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-          .result
+          .runtime
           ?.name shouldBe name
 
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
@@ -108,7 +108,7 @@ class HetznerSSHKeyProvisionerTest {
               TEST_PROVISIONER_CONTEXT,
               TEST_LOG_CONTEXT,
           )
-          .result
+          .runtime
           ?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date

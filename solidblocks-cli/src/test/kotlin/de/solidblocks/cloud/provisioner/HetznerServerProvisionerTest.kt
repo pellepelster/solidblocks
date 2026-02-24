@@ -5,8 +5,8 @@ import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
-import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
+import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.Volume
 import de.solidblocks.cloud.provisioner.userdata.UserData

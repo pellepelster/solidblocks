@@ -1,8 +1,12 @@
 package de.solidblocks.cloud.provisioner.garagefs.bucket
 
+import de.solidblocks.cloud.api.resources.Resource
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
-import de.solidblocks.cloud.provisioner.pass.SecretLookup
+import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.SSHClient
 import fr.deuxfleurs.garagehq.api.AccessKeyApi
 import fr.deuxfleurs.garagehq.api.BucketApi
@@ -33,20 +37,22 @@ open class BaseGarageFsProvisioner {
 
   suspend fun <T> ProvisionerContext.withApiClients(
       server: HetznerServerLookup,
-      adminToken: SecretLookup,
-      block: suspend (ApiClients?) -> T,
+      adminToken: PassSecretLookup,
+      block: suspend (Result<ApiClients>) -> T,
   ): T {
-    val adminToken = this.ensureLookup(adminToken)
+    val adminToken = this.lookup(adminToken)
     return this.withPortForward(server) {
-      if (it == null) {
-        block.invoke(null)
+      if (it == null || adminToken == null) {
+        block.invoke(Error("no ssh client or admin token"))
       } else {
         ApiClient.accessToken = adminToken.secret
         block.invoke(
-            ApiClients(
-                BucketApi("http://localhost:$it", client = client),
-                AccessKeyApi("http://localhost:$it", client = client),
-                PermissionApi("http://localhost:$it", client = client),
+            Success(
+                ApiClients(
+                    BucketApi("http://localhost:$it", client = client),
+                    AccessKeyApi("http://localhost:$it", client = client),
+                    PermissionApi("http://localhost:$it", client = client),
+                )
             ),
         )
       }

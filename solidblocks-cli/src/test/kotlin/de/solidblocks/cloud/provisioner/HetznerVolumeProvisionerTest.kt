@@ -30,7 +30,7 @@ class HetznerVolumeProvisionerTest {
       }
 
       // create
-      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).result?.name shouldBe
+      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe
           name
       assertSoftly(provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
         it.deleteProtected shouldBe true
@@ -50,7 +50,7 @@ class HetznerVolumeProvisionerTest {
       }
       provisioner
           .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-          .result
+          .runtime
           ?.name shouldBe name
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
@@ -72,7 +72,7 @@ class HetznerVolumeProvisionerTest {
               TEST_PROVISIONER_CONTEXT,
               TEST_LOG_CONTEXT,
           )
-          .result
+          .runtime
           ?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date
@@ -94,7 +94,7 @@ class HetznerVolumeProvisionerTest {
               TEST_PROVISIONER_CONTEXT,
               TEST_LOG_CONTEXT,
           )
-          .result
+          .runtime
           ?.name shouldBe name
       assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.up_to_date

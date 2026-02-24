@@ -5,14 +5,11 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.resources.InfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.Resource
-import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
-import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
 import de.solidblocks.cloud.utils.Waiter.Companion.defaultWaiter
-import de.solidblocks.hetzner.cloud.model.HetznerResource
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -77,7 +74,7 @@ class Provisioner(
                     diffs.forEach {
                         when (it.status) {
                             unknown ->
-                                logInfo("unknown ${it.resource.logText()} TODO", context = diffLogContext)
+                                logInfo("could not determine stattus for ${it.resource.logText()}", context = diffLogContext)
 
                             missing ->
                                 logInfo("will create ${it.resource.logText()}", context = diffLogContext)
@@ -88,16 +85,13 @@ class Provisioner(
                             has_changes -> {
                                 if (it.needsRecreate()) {
                                     logInfo(
-                                        """${it.resource.logText()} has breaking changes and needs to be re-created
-                            ${
-                                            it.changes.joinToString("\n") {
-                                                "${it.name} should be '${it.expectedValue}' but was '${it.actualValue}'"
-                                            }
-                                        }
-                                """
-                                            .trimIndent(),
+                                        "${it.resource.logText()} has breaking changes and needs to be re-created",
                                         context = diffLogContext,
                                     )
+                                    it.changes.forEach {
+                                        logInfo("- ${it.logText()}", context = diffLogContext.indent())
+                                    }
+
                                 } else {
                                     logInfo(
                                         "${it.resource.logText()} has pending changes", context = diffLogContext
@@ -260,7 +254,7 @@ class Provisioner(
                             null
                         }
 
-                    val runtime = applyResult?.result
+                    val runtime = applyResult?.runtime
                     if (runtime == null) {
                         return@runBlocking Error("creating ${resource.logText()} failed")
                     }

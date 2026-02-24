@@ -178,7 +178,15 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                 )
             }
 
-            val userData = context.lookup(resource.userData) ?: return ResourceDiff(resource, up_to_date)
+            val userData = context.lookup(resource.userData) ?: return ResourceDiff(
+                resource, has_changes, changes = listOf(
+                    ResourceDiffItem(
+                        "user data checksum",
+                        triggersRecreate = true,
+                        changed = true,
+                    )
+                )
+            )
             val userDataHash =
                 labels.hashLabelMatches(
                     userDataLabel,
