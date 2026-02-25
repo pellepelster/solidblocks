@@ -2,7 +2,7 @@ package de.solidblocks.cloud.services
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.InfrastructureResource
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
@@ -21,7 +21,7 @@ interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfi
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>
     .forService(
     service: C,
-    cloudConfiguration: CloudConfiguration,
+    cloudConfiguration: CloudConfigurationRuntime,
 ): ServiceConfigurationManager<C, R> =
     this.single { it.supportedConfiguration == service::class }.createManager(cloudConfiguration)
         as ServiceConfigurationManager<C, R>?

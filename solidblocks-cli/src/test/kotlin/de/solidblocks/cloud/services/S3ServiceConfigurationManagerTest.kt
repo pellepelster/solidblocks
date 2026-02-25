@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.services
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.s3.S3ServiceConfigurationManager
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
@@ -16,7 +16,7 @@ class S3ServiceConfigurationManagerTest {
   fun testDuplicateBucketName() {
     val result =
         S3ServiceConfigurationManager(
-                CloudConfiguration(
+                CloudConfigurationRuntime(
                     "name1",
                     "blcks-test.de",
                     emptyList(),

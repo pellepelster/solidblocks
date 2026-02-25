@@ -32,6 +32,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                 it.status,
                 it.image.name ?: "unknown",
                 it.type.name,
+                it.location.name,
                 it.labels,
                 it.volumes.map { volume -> volume.toString() },
                 it.privateNetwork.firstOrNull()?.ip,
@@ -174,6 +175,18 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                         changed = true,
                         expectedValue = sshKeysHash.expectedValue,
                         actualValue = sshKeysHash.actualValue,
+                    ),
+                )
+            }
+
+            if (resource.location != runtime.location) {
+                changes.add(
+                    ResourceDiffItem(
+                        "location",
+                        triggersRecreate = true,
+                        changed = true,
+                        expectedValue = resource.location,
+                        actualValue = runtime.location,
                     ),
                 )
             }

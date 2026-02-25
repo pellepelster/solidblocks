@@ -3,7 +3,9 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.healthcheck.SSHClientTest
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
@@ -33,7 +35,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldHaveLength
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.util.*
+import java.util.UUID
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -115,6 +117,7 @@ class GarageFsProvisionersTest {
             ServerStatus.running,
             "debian12",
             "cx23",
+            "nbg1",
             emptyMap(),
             emptyList(),
             null,
@@ -135,6 +138,8 @@ class GarageFsProvisionersTest {
     val server =
         HetznerServer(
             "server1",
+            "nbg1",
+            "cx23",
             UserData(emptySet(), { "" }),
         )
 

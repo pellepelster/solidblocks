@@ -4,7 +4,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceHelp
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRegistration
@@ -37,7 +37,7 @@ class CloudManager(val cloudConfigFile: File) {
         )
 
     data class CloudRuntime(
-        val configuration: CloudConfiguration,
+        val configuration: CloudConfigurationRuntime,
         val providers: List<ProviderRuntime>,
         val services: List<ServiceConfigurationRuntime>,
     )
@@ -60,7 +60,7 @@ class CloudManager(val cloudConfigFile: File) {
                     return Error(result.error)
                 }
 
-                is Success<CloudConfiguration> -> result.data
+                is Success<CloudConfigurationRuntime> -> result.data
             }
 
         logInfo("parsed cloud configuration '${cloudConfiguration.name}'", context = log)

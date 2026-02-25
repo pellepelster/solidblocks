@@ -1,17 +1,17 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
 
 @Suppress("ktlint:standard:property-naming")
 object Constants {
-    fun sshKeyName(configuration: CloudConfiguration) =
+    fun sshKeyName(configuration: CloudConfigurationRuntime) =
         "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
-    fun serverName(configuration: CloudConfiguration, name: String) =
+    fun serverName(configuration: CloudConfigurationRuntime, name: String) =
         "${configuration.name}-${configuration.getDefaultEnvironment()}-$name"
 
-    fun secretPath(configuration: CloudConfiguration, runtime: S3ServiceConfigurationRuntime, segments: List<String>) =
+    fun secretPath(configuration: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, segments: List<String>) =
         "${configuration.name}/${configuration.getDefaultEnvironment()}/${runtime.name}/${segments.joinToString("/")}"
 
     const val namespace: String = "blcks.de"

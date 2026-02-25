@@ -23,7 +23,7 @@ class CloudConfigurationFactory(
             >,
         >,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
-) : ConfigurationFactory<CloudConfiguration> {
+) : ConfigurationFactory<CloudConfigurationRuntime> {
 
   val name =
       StringKeyword(
@@ -74,7 +74,7 @@ class CloudConfigurationFactory(
 
   override val keywords = listOf<Keyword<*>>(name, providers, services)
 
-  override fun parse(yaml: YamlNode): Result<CloudConfiguration> {
+  override fun parse(yaml: YamlNode): Result<CloudConfigurationRuntime> {
     val name =
         when (val name = name.parse(yaml)) {
           is Error<*> -> return Error(name.error)
@@ -99,6 +99,6 @@ class CloudConfigurationFactory(
           is Success<List<ServiceConfiguration>> -> services.data
         }
 
-    return Success(CloudConfiguration(name, rootDomain, providers, services))
+    return Success(CloudConfigurationRuntime(name, rootDomain, providers, services))
   }
 }

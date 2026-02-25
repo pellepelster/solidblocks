@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.services.s3
 
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationFactory
@@ -11,7 +11,7 @@ class S3ServiceRegistration :
   override val supportedConfiguration = S3ServiceConfiguration::class
   override val supportedRuntime = S3ServiceConfigurationRuntime::class
 
-  override fun createManager(cloudConfiguration: CloudConfiguration) =
+  override fun createManager(cloudConfiguration: CloudConfigurationRuntime) =
       S3ServiceConfigurationManager(cloudConfiguration)
 
   override fun createConfigurationFactory() = S3ServiceConfigurationFactory()

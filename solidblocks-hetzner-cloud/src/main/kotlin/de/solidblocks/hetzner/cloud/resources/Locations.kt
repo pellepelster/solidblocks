@@ -3,7 +3,12 @@ package de.solidblocks.hetzner.cloud.resources
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerBaseResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerNamedResource
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -18,8 +23,14 @@ data class LocationsListResponseWrapper(
 @Serializable data class LocationResponseWrapper(val location: LocationResponse)
 
 @Serializable
-data class LocationResponse(override val id: Long, override val name: String) :
-    HetznerNamedResource<Long>
+data class LocationResponse(
+    override val id: Long,
+    override val name: String,
+    val description: String,
+    val country: String,
+    val city: String,
+    @SerialName("network_zone") val networkZone: String,
+) : HetznerNamedResource<Long>
 
 class HetznerLocationsApi(private val api: HetznerApi) : HetznerBaseResourceApi<LocationResponse> {
 

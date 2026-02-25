@@ -9,13 +9,13 @@ import de.solidblocks.cloud.provisioner.userdata.UserData
 
 class HetznerServer(
     override val name: String,
+    val location: String,
+    val type: String,
     val userData: UserData,
-    val location: String = "hel1",
     val volumes: Set<VolumeLookup> = emptySet(),
     val sshKeys: Set<HetznerSSHKeyLookup> = emptySet(),
     val extraDependsOn: Set<InfrastructureResource<*, *>> = emptySet(),
     labels: Map<String, String> = emptyMap(),
-    val type: String = "cx23",
     val image: String = "debian-12",
     val subnet: SubnetLookup? = null,
 ) : LabeledInfrastructureResource<HetznerServer, HetznerServerRuntime>(labels) {

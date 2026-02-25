@@ -5,7 +5,7 @@ import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.InfrastructureResource
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
@@ -29,13 +29,13 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.garagefs.GarageFsUserData
 import de.solidblocks.utils.LogContext
 
-class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) :
+class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRuntime) :
     ServiceConfigurationManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
     override fun createResources(
         runtime: S3ServiceConfigurationRuntime
     ): List<InfrastructureResource<*, *>> {
-        val volume = Volume(serverName(cloudConfiguration, runtime.name), "hel1", 32, emptyMap())
+        val volume = Volume(serverName(cloudConfiguration, runtime.name), cloudConfiguration.hetznerProviderConfig().defaultLocation, 32, emptyMap())
         val adminToken =
             PassSecret(
                 secretPath(cloudConfiguration, runtime, listOf("garage", "admin_token")),
@@ -87,10 +87,11 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) 
             HetznerServer(
                 serverName(cloudConfiguration, runtime.name),
                 userData = userData,
-                location = "hel1",
+                location = cloudConfiguration.hetznerProviderConfig().defaultLocation,
                 sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloudConfiguration))),
                 volumes = setOf(volume.asLookup()),
                 extraDependsOn = setOf(volume),
+                type = cloudConfiguration.hetznerProviderConfig().defaultInstanceType
             )
 
         val zone = DnsZoneLookup(cloudConfiguration.rootDomain)

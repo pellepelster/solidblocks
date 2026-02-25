@@ -1,8 +1,8 @@
 package de.solidblocks.cli
 
 import de.solidblocks.cloud.configuration.ConfigurationParser
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Success
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -21,7 +21,7 @@ class CloudFactoryTest {
 
     val result =
         ConfigurationParser(CloudConfigurationFactory(emptyList(), emptyList())).parse(rawYml)
-    val cloud = result.shouldBeTypeOf<Success<CloudConfiguration>>()
+    val cloud = result.shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
 
     cloud.data.name shouldBe "foo-bar"
   }

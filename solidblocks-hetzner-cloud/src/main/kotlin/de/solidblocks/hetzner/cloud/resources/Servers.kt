@@ -70,6 +70,7 @@ constructor(
     @SerialName("server_type") val type: ServerTypeResponse,
     val image: ImageResponse,
     val volumes: List<Long>,
+    val location: LocationResponse,
     val labels: Map<String, String> = emptyMap(),
     @SerialName("private_net") val privateNetwork: List<PrivateNetworkResponse> = emptyList(),
     @SerialName("public_net") val publicNetwork: PublicNetworkResponse? = null,

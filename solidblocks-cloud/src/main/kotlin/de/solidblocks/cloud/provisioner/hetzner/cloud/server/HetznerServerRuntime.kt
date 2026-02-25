@@ -10,6 +10,7 @@ data class HetznerServerRuntime(
     val status: ServerStatus,
     val image: String,
     val type: String,
+    val location: String,
     override val labels: Map<String, String>,
     val volumes: List<String>,
     val privateIpv4: String?,

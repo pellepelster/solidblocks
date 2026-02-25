@@ -17,7 +17,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeTypeOf
-import java.util.*
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
@@ -71,10 +71,11 @@ class HetznerServerProvisionerTest {
       val server =
           HetznerServer(
               name,
+              "hel1",
+              "cx23",
               sshKeys = setOf(sshKey1.asLookup()),
               volumes = setOf(volume.asLookup()),
               userData = UserData(emptySet(), { "" }),
-              location = "hel1",
           )
 
       runBlocking {
@@ -93,10 +94,11 @@ class HetznerServerProvisionerTest {
             serverProvisioner.diff(
                 HetznerServer(
                     name,
+                    "hel1",
+                    "cx23",
                     sshKeys = setOf(sshKey1.asLookup()),
                     volumes = setOf(volume.asLookup()),
                     userData = UserData(emptySet(), { "" }),
-                    location = "hel1",
                     image = "debian-99",
                 ),
                 context,
@@ -114,10 +116,11 @@ class HetznerServerProvisionerTest {
             serverProvisioner.diff(
                 HetznerServer(
                     name,
+                    "hel1",
+                    "cx23",
                     sshKeys = setOf(sshKey1.asLookup(), sshKey2.asLookup()),
                     volumes = setOf(volume.asLookup()),
                     userData = UserData(emptySet(), { "" }),
-                    location = "hel1",
                 ),
                 context,
             )!!,
