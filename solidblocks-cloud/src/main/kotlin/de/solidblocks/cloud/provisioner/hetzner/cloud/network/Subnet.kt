@@ -5,8 +5,8 @@ import de.solidblocks.cloud.api.resources.InfrastructureResource
 data class Subnet(
     val subnet: String,
     val network: NetworkLookup,
-    val extraDependsOn: Set<InfrastructureResource<*, *>> = emptySet(),
-) : InfrastructureResource<Subnet, SubnetRuntime>() {
+    val extraDependsOn: Set<InfrastructureResource<*>> = emptySet(),
+) : InfrastructureResource<SubnetRuntime>() {
 
   override val name = subnet
 

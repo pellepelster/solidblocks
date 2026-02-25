@@ -19,8 +19,8 @@ interface Resource {
     return "$simpleName '${this.name}'"
   }
 
-  fun getInfrastructureDependsOn(): List<InfrastructureResource<*, *>> =
-      this.dependsOn.filterIsInstance<InfrastructureResource<*, *>>()
+  fun getInfrastructureDependsOn(): List<InfrastructureResource<*>> =
+      this.dependsOn.filterIsInstance<InfrastructureResource<*>>()
 }
 
 interface LabeledInfrastructureResourceRuntime : InfrastructureResourceRuntime {

@@ -8,7 +8,7 @@ import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
 interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
-  fun createResources(runtime: R): List<InfrastructureResource<*, *>>
+  fun createResources(runtime: R): List<InfrastructureResource<*>>
 
   fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 

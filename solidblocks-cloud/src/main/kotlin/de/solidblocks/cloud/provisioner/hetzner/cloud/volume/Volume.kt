@@ -8,6 +8,6 @@ class Volume(
     val size: Int,
     labels: Map<String, String> = emptyMap(),
     val protected: Boolean = true,
-) : LabeledInfrastructureResource<Volume, VolumeRuntime>(labels) {
+) : LabeledInfrastructureResource<VolumeRuntime>(labels) {
   fun asLookup() = VolumeLookup(name)
 }

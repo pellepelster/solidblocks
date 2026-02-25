@@ -9,7 +9,7 @@ open class BaseHetznerProvisioner(val hcloudToken: String) {
   val api = HetznerApi(hcloudToken)
 
   fun createLabelDiff(
-      resource: LabeledInfrastructureResource<*, *>,
+      resource: LabeledInfrastructureResource<*>,
       runtime: LabeledInfrastructureResourceRuntime,
   ): List<ResourceDiffItem> {
     val missingLabels =

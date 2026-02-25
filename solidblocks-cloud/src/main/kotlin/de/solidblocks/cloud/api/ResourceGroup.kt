@@ -28,7 +28,7 @@ fun ResourceGroup.logText() = "resource group '$name'"
 
 data class ResourceGroup(
     val name: String = UUID.randomUUID().toString(),
-    val resources: List<InfrastructureResource<*, *>> = ArrayList(),
+    val resources: List<InfrastructureResource<*>> = ArrayList(),
     val dependsOn: Set<ResourceGroup> = emptySet(),
     val readinessHealthChecks: List<HealthCheck> = emptyList(),
 ) {
@@ -38,31 +38,31 @@ data class ResourceGroup(
   override fun toString(): String = name
 }
 
-fun List<InfrastructureResource<*, *>>.hierarchicalResourceList():
-    List<InfrastructureResource<*, *>> {
+fun List<InfrastructureResource<*>>.hierarchicalResourceList():
+    List<InfrastructureResource<*>> {
   val graph = this.createResourceGraph()
   val orderIterator = TopologicalOrderIterator(graph)
 
-  val result = ArrayList<InfrastructureResource<*, *>>()
-  orderIterator.forEachRemaining { result.add(it as InfrastructureResource<*, *>) }
+  val result = ArrayList<InfrastructureResource<*>>()
+  orderIterator.forEachRemaining { result.add(it as InfrastructureResource<*>) }
 
   result.reverse()
   return result
 }
 
-private fun List<InfrastructureResource<*, *>>.createResourceGraph():
-    Graph<InfrastructureResource<*, *>, DefaultEdge> {
-  val graph: Graph<InfrastructureResource<*, *>, DefaultEdge> =
+private fun List<InfrastructureResource<*>>.createResourceGraph():
+    Graph<InfrastructureResource<*>, DefaultEdge> {
+  val graph: Graph<InfrastructureResource<*>, DefaultEdge> =
       DefaultDirectedGraph(DefaultEdge::class.java)
 
-  val allResources = ArrayList<InfrastructureResource<*, *>>()
+  val allResources = ArrayList<InfrastructureResource<*>>()
   flattenModels(allResources, this)
 
   allResources.forEach { graph.addVertex(it) }
 
   allResources.forEach { source ->
     source.getInfrastructureDependsOn().forEach { target ->
-      graph.addEdge(source, target as InfrastructureResource<*, *>?)
+      graph.addEdge(source, target as InfrastructureResource<*>?)
     }
   }
 
@@ -70,8 +70,8 @@ private fun List<InfrastructureResource<*, *>>.createResourceGraph():
 }
 
 private fun flattenModels(
-    allModels: ArrayList<InfrastructureResource<*, *>>,
-    models: List<InfrastructureResource<*, *>>,
+    allModels: ArrayList<InfrastructureResource<*>>,
+    models: List<InfrastructureResource<*>>,
 ) {
   models.forEach { model ->
     if (!allModels.contains(model)) {

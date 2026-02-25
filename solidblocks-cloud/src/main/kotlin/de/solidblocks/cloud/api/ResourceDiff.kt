@@ -37,7 +37,7 @@ enum class ResourceDiffStatus {
 }
 
 class ResourceDiff(
-    val resource: InfrastructureResource<*, *>,
+    val resource: InfrastructureResource<*>,
     val status: ResourceDiffStatus,
     val duplicateErrorMessage: String? = null,
     val changes: List<ResourceDiffItem> = emptyList(),

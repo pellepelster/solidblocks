@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.api.resources
 
-abstract class InfrastructureResource<ResourceType, RuntimeType> : Resource {
+abstract class InfrastructureResource<RuntimeType> : ResourceLookup<RuntimeType> {
   var tainted = false
 
   fun taint() {
@@ -8,6 +8,6 @@ abstract class InfrastructureResource<ResourceType, RuntimeType> : Resource {
   }
 }
 
-abstract class LabeledInfrastructureResource<ResourceType, RuntimeType>(
+abstract class LabeledInfrastructureResource<RuntimeType>(
     open val labels: Map<String, String>
-) : InfrastructureResource<ResourceType, RuntimeType>()
+) : InfrastructureResource<RuntimeType>()

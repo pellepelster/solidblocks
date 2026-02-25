@@ -10,7 +10,7 @@ data class PassSecret(
     val allowedChars: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9'),
     val secret: ((ProvisionerContext) -> String)? = null,
     override val dependsOn: Set<Resource> = emptySet(),
-) : InfrastructureResource<PassSecret, PassSecretRuntime>() {
+) : InfrastructureResource<PassSecretRuntime>() {
     fun asLookup() = PassSecretLookup(name)
 
     override fun logText() = "pass secret '$name'"

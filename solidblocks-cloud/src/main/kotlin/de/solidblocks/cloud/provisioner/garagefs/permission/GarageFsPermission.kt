@@ -14,7 +14,7 @@ data class GarageFsPermission(
     val owner: Boolean,
     val read: Boolean,
     val write: Boolean,
-) : InfrastructureResource<GarageFsPermission, GarageFsPermissionRuntime>() {
+) : InfrastructureResource<GarageFsPermissionRuntime>() {
 
     fun asLookup() =
         GarageFsPermissionLookup(
@@ -24,6 +24,8 @@ data class GarageFsPermission(
             server.asLookup(),
             adminToken.asLookup(),
         )
+
+    override val dependsOn = setOf(server)
 
     override val name = "${bucket.name}-${accessKey.name}"
 

@@ -9,7 +9,7 @@ data class HetznerDnsRecord(
     val zone: DnsZoneLookup,
     val values: List<HetznerServerLookup>,
     override val labels: Map<String, String> = emptyMap(),
-) : LabeledInfrastructureResource<HetznerDnsRecord, HetznerDnsRecordRuntime>(labels) {
+) : LabeledInfrastructureResource<HetznerDnsRecordRuntime>(labels) {
   fun asLookup() = HetznerDnsRecordLookup(name, zone)
 
   override fun logText() = "DNS record '$name.${zone.name}'"

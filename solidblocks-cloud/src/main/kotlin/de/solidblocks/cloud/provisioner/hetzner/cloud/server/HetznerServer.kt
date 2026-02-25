@@ -14,11 +14,11 @@ class HetznerServer(
     val userData: UserData,
     val volumes: Set<VolumeLookup> = emptySet(),
     val sshKeys: Set<HetznerSSHKeyLookup> = emptySet(),
-    val extraDependsOn: Set<InfrastructureResource<*, *>> = emptySet(),
+    val extraDependsOn: Set<InfrastructureResource<*>> = emptySet(),
     labels: Map<String, String> = emptyMap(),
     val image: String = "debian-12",
     val subnet: SubnetLookup? = null,
-) : LabeledInfrastructureResource<HetznerServer, HetznerServerRuntime>(labels) {
+) : LabeledInfrastructureResource<HetznerServerRuntime>(labels) {
 
   override val dependsOn =
       setOfNotNull(subnet, userData) + userData.dependsOn + sshKeys + extraDependsOn

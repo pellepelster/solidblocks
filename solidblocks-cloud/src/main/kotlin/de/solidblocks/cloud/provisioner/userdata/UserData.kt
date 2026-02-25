@@ -9,7 +9,7 @@ import java.util.*
 data class UserDataRuntime(val userData: String) : InfrastructureResourceRuntime
 
 data class UserData(
-    override val dependsOn: Set<InfrastructureResource<*, *>>,
+    override val dependsOn: Set<InfrastructureResource<*>>,
     val block: ((ProvisionerContext) -> String?),
 ) : ResourceLookup<UserDataRuntime> {
 

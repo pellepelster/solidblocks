@@ -34,7 +34,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
 
     override fun createResources(
         runtime: S3ServiceConfigurationRuntime
-    ): List<InfrastructureResource<*, *>> {
+    ): List<InfrastructureResource<*>> {
         val volume = Volume(serverName(cloudConfiguration, runtime.name), cloudConfiguration.hetznerProviderConfig().defaultLocation, 32, emptyMap())
         val adminToken =
             PassSecret(
@@ -108,7 +108,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
                 listOf(server.asLookup()),
             )
 
-        val bucketResources = mutableListOf<InfrastructureResource<*, *>>()
+        val bucketResources = mutableListOf<InfrastructureResource<*>>()
 
         runtime.buckets.forEach {
             val accessKey = GarageFsAccessKey(secretPath(cloudConfiguration, runtime, listOf("owner", "access_key")), server, adminToken)
