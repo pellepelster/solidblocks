@@ -10,6 +10,7 @@ data class GarageFsBucket(
     val server: HetznerServer,
     val adminToken: PassSecret,
     val websiteAccess: Boolean = false,
+    val websiteAccessDomains: List<String> = emptyList(),
 ) : InfrastructureResource<GarageFsBucket, GarageFsPermissionRuntime>() {
 
   override val dependsOn = setOf(server.asLookup())

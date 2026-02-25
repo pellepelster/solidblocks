@@ -5,49 +5,46 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
 import fr.deuxfleurs.garagehq.model.ApiBucketKeyPerm
 import fr.deuxfleurs.garagehq.model.BucketKeyPermChangeRequest
 import kotlin.reflect.KClass
 
-class GarageFsPermissionProvisioner :
-    BaseGarageFsProvisioner(),
-    ResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
-    InfrastructureResourceProvisioner<
-            GarageFsPermission,
-            GarageFsPermissionRuntime,
-            > {
-    override suspend fun lookup(
-        lookup: GarageFsPermissionLookup,
-        context: ProvisionerContext,
-    ): GarageFsPermissionRuntime? {
-        val bucket = context.lookup(lookup.bucket) ?: return null
-        val accessKey = context.lookup(lookup.accessKey) ?: return null
+class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
+    InfrastructureResourceProvisioner<GarageFsPermission, GarageFsPermissionRuntime> {
 
-        return context.withApiClients(lookup.server, lookup.adminToken) {
-            val apis = when (it) {
-                is Error<ApiClients> -> throw RuntimeException(it.error)
-                is Success<ApiClients> -> it.data
-            }
-
-            val permission =
-                apis.accessKeyApi.getKeyInfo(accessKey.id).buckets?.singleOrNull {
+    suspend fun lookupInternal(lookup: GarageFsPermissionLookup, context: ProvisionerContext): Result<GarageFsPermissionRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
+        when (apis) {
+            is Error<ApiClients> -> Error(apis.error)
+            is Success<ApiClients> -> {
+                val bucket = context.lookup(lookup.bucket) ?: return@withApiClients Success(null)
+                val accessKey = context.lookup(lookup.accessKey) ?: return@withApiClients Success(null)
+                val permission = apis.data.accessKeyApi.getKeyInfo(accessKey.id).buckets.singleOrNull {
                     it.globalAliases.contains(bucket.name)
                 }
 
-            if (permission != null) {
-                GarageFsPermissionRuntime(
-                    bucket,
-                    accessKey,
-                    permission.permissions.owner!!,
-                    permission.permissions.read!!,
-                    permission.permissions.write!!,
-                )
-            } else {
-                null
+                permission?.let {
+                    GarageFsPermissionRuntime(
+                        bucket,
+                        accessKey,
+                        permission.permissions.owner!!,
+                        permission.permissions.read!!,
+                        permission.permissions.write!!,
+                    )
+                }.let { Success(it) }
             }
         }
+    }
+
+
+    override suspend fun lookup(
+        lookup: GarageFsPermissionLookup,
+        context: ProvisionerContext,
+    ) = when (val result = lookupInternal(lookup, context)) {
+        is Error<GarageFsPermissionRuntime?> -> null
+        is Success<GarageFsPermissionRuntime?> -> result.data
     }
 
     override suspend fun apply(
@@ -83,55 +80,61 @@ class GarageFsPermissionProvisioner :
         return ApplyResult(lookup(resource.asLookup(), context))
     }
 
-    override suspend fun diff(resource: GarageFsPermission, context: ProvisionerContext) =
-        lookup(resource.asLookup(), context)?.let {
-            val changes = mutableListOf<ResourceDiffItem>()
-
-            if (it.owner != resource.owner) {
-                changes.add(
-                    ResourceDiffItem(
-                        "owner",
-                        true,
-                        false,
-                        false,
-                        resource.owner,
-                        it.owner,
-                    ),
-                )
-            }
-
-            if (it.read != resource.read) {
-                changes.add(
-                    ResourceDiffItem(
-                        "read",
-                        true,
-                        false,
-                        false,
-                        resource.read,
-                        it.read,
-                    ),
-                )
-            }
-
-            if (it.write != resource.write) {
-                changes.add(
-                    ResourceDiffItem(
-                        "owner",
-                        true,
-                        false,
-                        false,
-                        resource.write,
-                        it.write,
-                    ),
-                )
-            }
-
-            if (changes.isNotEmpty()) {
-                ResourceDiff(resource, has_changes, changes = changes)
+    override suspend fun diff(resource: GarageFsPermission, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
+        is Error<GarageFsPermissionRuntime?> -> ResourceDiff(resource, unknown)
+        is Success<GarageFsPermissionRuntime?> -> {
+            if (result.data == null) {
+                ResourceDiff(resource, missing)
             } else {
-                ResourceDiff(resource, up_to_date)
+                val changes = mutableListOf<ResourceDiffItem>()
+
+                if (result.data.owner != resource.owner) {
+                    changes.add(
+                        ResourceDiffItem(
+                            "owner",
+                            true,
+                            false,
+                            false,
+                            resource.owner,
+                            result.data.owner,
+                        ),
+                    )
+                }
+
+                if (result.data.read != resource.read) {
+                    changes.add(
+                        ResourceDiffItem(
+                            "read",
+                            true,
+                            false,
+                            false,
+                            resource.read,
+                            result.data.read,
+                        ),
+                    )
+                }
+
+                if (result.data.write != resource.write) {
+                    changes.add(
+                        ResourceDiffItem(
+                            "owner",
+                            true,
+                            false,
+                            false,
+                            resource.write,
+                            result.data.write,
+                        ),
+                    )
+                }
+
+                if (changes.isNotEmpty()) {
+                    ResourceDiff(resource, has_changes, changes = changes)
+                } else {
+                    ResourceDiff(resource, up_to_date)
+                }
             }
-        } ?: ResourceDiff(resource, missing)
+        }
+    }
 
     override val supportedLookupType: KClass<*> = GarageFsPermissionLookup::class
 

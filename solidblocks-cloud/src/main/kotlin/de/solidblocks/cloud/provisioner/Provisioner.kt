@@ -242,12 +242,14 @@ class Provisioner(
                 for (resource in resourcesToApply) {
                     logInfo("applying ${resource.logText()}", context = log)
 
+                    val applyLog = log.indent()
+
                     val applyResult =
                         try {
                             provisionersRegistry.apply<Resource, InfrastructureResourceRuntime>(
                                 resource,
                                 context,
-                                log.indent(),
+                                applyLog,
                             )
                         } catch (e: Exception) {
                             logger.error(e) { "creating ${resource.logText()} failed" }
@@ -267,7 +269,7 @@ class Provisioner(
                                         try {
                                             logInfo(
                                                 "waiting for SSH on endpoint '${it.address}:${it.port}'",
-                                                context = log,
+                                                context = applyLog,
                                             )
                                             SSHClient(it.address, context.sshKeyPair).command("whoami").exitCode == 0
                                         } catch (e: Exception) {
@@ -291,7 +293,7 @@ class Provisioner(
                                         try {
                                             logInfo(
                                                 "waiting for cloud-init to finish on '${it.address}:${it.port}'",
-                                                context = log,
+                                                context = applyLog,
                                             )
                                             sshClient
                                                 .command("test -f /var/lib/cloud/instance/boot-finished")

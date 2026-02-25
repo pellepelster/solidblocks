@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
+import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.healthcheck.SSHClientTest
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
@@ -137,7 +138,7 @@ class GarageFsProvisionersTest {
             UserData(emptySet(), { "" }),
         )
 
-    val buckerProvisioner = GarageFsBucketProvisioner()
+    val bucketProvisioner = GarageFsBucketProvisioner()
     val accessKeyProvisioner = GarageFsAccessKeyProvisioner()
     val permissionProvisioner = GarageFsPermissionProvisioner()
 
@@ -150,14 +151,14 @@ class GarageFsProvisionersTest {
                         secretProvisioner,
                         permissionProvisioner,
                         accessKeyProvisioner,
-                        buckerProvisioner,
+                        bucketProvisioner,
                     ),
                     listOf(
                         serverProvisioner,
                         secretProvisioner,
                         permissionProvisioner,
                         accessKeyProvisioner,
-                        buckerProvisioner,
+                        bucketProvisioner,
                     ),
                 ),
         )
@@ -168,15 +169,15 @@ class GarageFsProvisionersTest {
 
     runBlocking {
       // check non-existing bucket
-      buckerProvisioner.lookup(bucket.asLookup(), context) shouldBe null
-      assertSoftly(buckerProvisioner.diff(bucket, context)) { it.status shouldBe missing }
+      bucketProvisioner.lookup(bucket.asLookup(), context) shouldBe null
+      assertSoftly(bucketProvisioner.diff(bucket, context)) { it.status shouldBe missing }
 
       // check non-existing access key
       accessKeyProvisioner.lookup(accessKey.asLookup(), context) shouldBe null
       assertSoftly(accessKeyProvisioner.diff(accessKey, context)) { it.status shouldBe missing }
 
-      buckerProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe bucket.name
-      buckerProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe bucket.name
+      bucketProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe bucket.name
+      bucketProvisioner.apply(bucket, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe bucket.name
 
       accessKeyProvisioner.apply(accessKey, context, TEST_LOG_CONTEXT).runtime!!.name shouldBe
           accessKey.name
@@ -184,19 +185,19 @@ class GarageFsProvisionersTest {
           accessKey.name
 
       // check created bucket
-      assertSoftly(buckerProvisioner.lookup(bucket.asLookup(), context)!!) {
+      assertSoftly(bucketProvisioner.lookup(bucket.asLookup(), context)!!) {
         it.name shouldBe bucket.name
       }
-      assertSoftly(buckerProvisioner.diff(bucket, context)) { it.status shouldBe up_to_date }
+      assertSoftly(bucketProvisioner.diff(bucket, context)) { it.status shouldBe up_to_date }
 
-      assertSoftly(buckerProvisioner.diff(bucket.copy(websiteAccess = true), context)) {
+      assertSoftly(bucketProvisioner.diff(bucket.copy(websiteAccess = true), context)) {
         it.status shouldBe has_changes
         it.changes shouldHaveSize 1
         it.changes[0].expectedValue shouldBe true
         it.changes[0].actualValue shouldBe false
       }
 
-      buckerProvisioner
+      bucketProvisioner
           .apply(
               bucket.copy(websiteAccess = true),
               context,
@@ -204,8 +205,39 @@ class GarageFsProvisionersTest {
           )
           .runtime!!
           .name shouldBe bucket.name
-      assertSoftly(buckerProvisioner.diff(bucket.copy(websiteAccess = true), context)) {
+      assertSoftly(bucketProvisioner.diff(bucket.copy(websiteAccess = true), context)) {
         it.status shouldBe up_to_date
+      }
+
+      assertSoftly(
+          bucketProvisioner.diff(
+              bucket.copy(websiteAccess = true, websiteAccessDomains = listOf("yolo.de")),
+              context,
+          ),
+      ) {
+        it.status shouldBe has_changes
+        it.changes shouldHaveSize 1
+        it.changes[0].expectedValue shouldBe listOf("yolo.de")
+        it.changes[0].actualValue shouldBe emptyList<String>()
+      }
+
+      bucketProvisioner
+          .apply(
+              bucket.copy(websiteAccess = true, websiteAccessDomains = listOf("yolo.de")),
+              context,
+              TEST_LOG_CONTEXT,
+          )
+          .runtime!!
+          .name shouldBe bucket.name
+
+      assertSoftly(
+          bucketProvisioner.diff(
+              bucket.copy(websiteAccess = true, websiteAccessDomains = listOf("yolo.de")),
+              context,
+          ),
+      ) {
+        it.status shouldBe ResourceDiffStatus.up_to_date
+        it.changes shouldHaveSize 0
       }
 
       // check created access key

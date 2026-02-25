@@ -7,18 +7,15 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
-import fr.deuxfleurs.garagehq.model.CreateBucketRequest
-import fr.deuxfleurs.garagehq.model.UpdateBucketRequestBody
-import fr.deuxfleurs.garagehq.model.UpdateBucketWebsiteAccess
+import fr.deuxfleurs.garagehq.model.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
-class GarageFsBucketProvisioner :
-    BaseGarageFsProvisioner(),
-    ResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>,
-    InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime> {
+class GarageFsBucketProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>, InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime> {
 
     private val logger = KotlinLogging.logger {}
+
+    fun <T> equalsIgnoreOrder(list1: List<T>, list2: List<T>) = list1.size == list2.size && list1.toSet() == list2.toSet()
 
     override suspend fun diff(resource: GarageFsBucket, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsBucketRuntime?> -> ResourceDiff(resource, unknown)
@@ -28,6 +25,21 @@ class GarageFsBucketProvisioner :
                 ResourceDiff(resource, missing)
             } else {
                 val changes = mutableListOf<ResourceDiffItem>()
+
+                val globalAliasesWithOutOwnName = result.data.globalAliases.filter { it != resource.name }
+                if (!equalsIgnoreOrder(resource.websiteAccessDomains, globalAliasesWithOutOwnName)) {
+                    changes.add(
+                        ResourceDiffItem(
+                            "website access domains",
+                            true,
+                            false,
+                            false,
+                            resource.websiteAccessDomains,
+                            globalAliasesWithOutOwnName,
+                        ),
+                    )
+                }
+
                 if (resource.websiteAccess != result.data.websiteAccess) {
                     changes.add(
                         ResourceDiffItem(
@@ -55,19 +67,15 @@ class GarageFsBucketProvisioner :
         is Success<GarageFsBucketRuntime?> -> result.data
     }
 
-    private suspend fun lookupInternal(lookup: GarageFsBucketLookup, context: ProvisionerContext): Result<GarageFsBucketRuntime?> =
-        context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
-            when (apis) {
-                is Error<ApiClients> -> Error(apis.error)
-                is Success<ApiClients> -> apis.data.bucketApi.listBuckets()
-                    .firstOrNull { it.globalAliases.contains(lookup.name) }
-                    ?.let {
-                        val websiteAccess =
-                            apis.data.bucketApi.getBucketInfo(it.id).websiteAccess
-                        Success(GarageFsBucketRuntime(lookup.name, it.id, websiteAccess))
-                    } ?: Success(null)
-            }
+    private suspend fun lookupInternal(lookup: GarageFsBucketLookup, context: ProvisionerContext): Result<GarageFsBucketRuntime?> = context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
+        when (apis) {
+            is Error<ApiClients> -> Error(apis.error)
+            is Success<ApiClients> -> Success(apis.data.bucketApi.listBuckets().firstOrNull { it.globalAliases.contains(lookup.name) }?.let {
+                val bucketInfo = apis.data.bucketApi.getBucketInfo(it.id)
+                GarageFsBucketRuntime(lookup.name, it.id, bucketInfo.websiteAccess, bucketInfo.globalAliases)
+            })
         }
+    }
 
     override suspend fun apply(
         resource: GarageFsBucket,
@@ -82,26 +90,32 @@ class GarageFsBucketProvisioner :
                 is Success<ApiClients> -> it.data
             }
 
-            val id =
-                if (current == null) {
-                    apis.bucketApi.createBucket(CreateBucketRequest(resource.name)).id
-                } else {
-                    current.id
-                }
+            val bucketId = current?.id ?: apis.bucketApi.createBucket(CreateBucketRequest(resource.name)).id
+
+            val globalAliasesWithOutOwnName = current?.globalAliases?.filter { it != resource.name } ?: emptyList()
+
+            val globalAliasesToRemove = globalAliasesWithOutOwnName.filter { !resource.websiteAccessDomains.contains(it) }
+            val globalAliasesToAdd = resource.websiteAccessDomains.filter { !globalAliasesWithOutOwnName.contains(it) }
+
+            globalAliasesToRemove.forEach {
+                apis.bucketAliasApi.removeBucketAlias(RemoveBucketAliasRequest(bucketId = bucketId, globalAlias = it, accessKeyId = "", localAlias = ""))
+            }
+
+            globalAliasesToAdd.forEach {
+                apis.bucketAliasApi.addBucketAlias(AddBucketAliasRequest(bucketId = bucketId, globalAlias = it, accessKeyId = "", localAlias = ""))
+            }
 
             apis.bucketApi.updateBucket(
-                id,
+                bucketId,
                 UpdateBucketRequestBody(
-                    websiteAccess =
-                        UpdateBucketWebsiteAccess(
-                            indexDocument =
-                                if (resource.websiteAccess) {
-                                    "index.html"
-                                } else {
-                                    null
-                                },
-                            enabled = resource.websiteAccess,
-                        ),
+                    websiteAccess = UpdateBucketWebsiteAccess(
+                        indexDocument = if (resource.websiteAccess) {
+                            "index.html"
+                        } else {
+                            null
+                        },
+                        enabled = resource.websiteAccess,
+                    ),
                 ),
             )
         }

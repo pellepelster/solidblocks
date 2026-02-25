@@ -10,6 +10,8 @@ import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisioner
+import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermission
+import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.DnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -41,26 +43,43 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) 
                 allowedChars = ('a'..'f') + ('0'..'9'),
             )
 
+        val rpcSecret =
+            PassSecret(
+                secretPath(cloudConfiguration, runtime, listOf("garage", "rpc_secret")),
+                length = 64,
+                allowedChars = ('a'..'f') + ('0'..'9'),
+            )
+
+        val metricsToken =
+            PassSecret(
+                secretPath(cloudConfiguration, runtime, listOf("garage", "metrics_token")),
+                length = 64,
+                allowedChars = ('a'..'f') + ('0'..'9'),
+            )
+
+        var s3Host: String? = null
+
         val userData =
             UserData(
-                setOf(volume, adminToken),
-                {
-                    if (it.lookup(adminToken.asLookup()) == null) {
+                setOf(volume, adminToken, rpcSecret, metricsToken),
+                { context ->
+                    if (listOf(adminToken, rpcSecret, metricsToken).any { context.lookup(it.asLookup()) == null }) {
                         return@UserData null
                     }
 
                     GarageFsUserData(
-                        it.ensureLookup(volume.asLookup()).device,
+                        context.ensureLookup(volume.asLookup()).device,
                         "${serverName(cloudConfiguration, runtime.name)}.${cloudConfiguration.rootDomain}",
-                        it.ensureLookup(adminToken.asLookup()).secret,
-                        it.ensureLookup(adminToken.asLookup()).secret,
-                        it.ensureLookup(adminToken.asLookup()).secret,
+                        context.ensureLookup(rpcSecret.asLookup()).secret,
+                        context.ensureLookup(adminToken.asLookup()).secret,
+                        context.ensureLookup(metricsToken.asLookup()).secret,
                         runtime.buckets.map {
                             de.solidblocks.garagefs.GarageFsBucket(it.name, emptyList())
                         },
                         true,
-                    )
-                        .render()
+                    ).also {
+                        s3Host = it.s3Host
+                    }.render()
                 },
             )
 
@@ -88,21 +107,44 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfiguration) 
                 listOf(server.asLookup()),
             )
 
-        val buckets =
-            runtime.buckets.map {
-                GarageFsBucket(it.name, server, adminToken, websiteAccess = it.publicAccess)
-            }
+        val bucketResources = mutableListOf<InfrastructureResource<*, *>>()
 
-        val accessKeys =
-            runtime.buckets.map {
-                GarageFsAccessKey(secretPath(cloudConfiguration, runtime, listOf("owner", "access_key")), server, adminToken)
-            }
+        runtime.buckets.forEach {
+            val accessKey = GarageFsAccessKey(secretPath(cloudConfiguration, runtime, listOf("owner", "access_key")), server, adminToken)
+            bucketResources.add(accessKey)
 
-        return listOf(server, volume, rootDomain, catchAllDomain, adminToken) + buckets + accessKeys
+            bucketResources.add(PassSecret(secretPath(cloudConfiguration, runtime, listOf("owner", "secret_access_key")), secret = {
+                it.ensureLookup(accessKey.asLookup()).secretAccessKey
+            }, dependsOn = setOf(accessKey)))
+
+            bucketResources.add(PassSecret(secretPath(cloudConfiguration, runtime, listOf("owner", "access_key_id")), secret = {
+                it.ensureLookup(accessKey.asLookup()).id
+            }, dependsOn = setOf(accessKey)))
+
+            val bucket = GarageFsBucket(it.name, server, adminToken, websiteAccess = it.publicAccess)
+            bucketResources.add(bucket)
+
+            val permission = GarageFsPermission(
+                bucket,
+                accessKey,
+                server,
+                adminToken,
+                true,
+                true,
+                true
+            )
+            bucketResources.add(permission)
+        }
+
+        val s3HostSecret = PassSecret(secretPath(cloudConfiguration, runtime, listOf("endpoints", "s3_host")), secret = {
+            s3Host ?: "unknown_s3_host"
+        })
+
+        return listOf(server, volume, rootDomain, catchAllDomain, adminToken, rpcSecret, metricsToken) + bucketResources + listOf(s3HostSecret)
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) =
-        listOf<InfrastructureResourceProvisioner<*, *>>(GarageFsBucketProvisioner(), GarageFsAccessKeyProvisioner())
+        listOf<InfrastructureResourceProvisioner<*, *>>(GarageFsBucketProvisioner(), GarageFsAccessKeyProvisioner(), GarageFsPermissionProvisioner())
 
     override fun validatConfiguration(
         configuration: S3ServiceConfiguration,

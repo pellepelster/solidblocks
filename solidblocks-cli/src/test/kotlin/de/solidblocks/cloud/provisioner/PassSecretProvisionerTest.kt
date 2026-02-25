@@ -48,8 +48,7 @@ class PassSecretProvisionerTest {
         it!!.status shouldBe ResourceDiffStatus.up_to_date
       }
 
-      val secretAfterTaint =
-          provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)!!
+      val secretAfterTaint = provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
       generatedSecret.secret shouldNotBe secretAfterTaint.runtime!!.secret
 
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {

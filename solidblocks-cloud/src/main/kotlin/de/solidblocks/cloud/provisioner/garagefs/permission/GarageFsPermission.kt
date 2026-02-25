@@ -16,15 +16,17 @@ data class GarageFsPermission(
     val write: Boolean,
 ) : InfrastructureResource<GarageFsPermission, GarageFsPermissionRuntime>() {
 
-  fun asLookup() =
-      GarageFsPermissionLookup(
-          name,
-          bucket.asLookup(),
-          accessKey.asLookup(),
-          server.asLookup(),
-          adminToken.asLookup(),
-      )
+    fun asLookup() =
+        GarageFsPermissionLookup(
+            name,
+            bucket.asLookup(),
+            accessKey.asLookup(),
+            server.asLookup(),
+            adminToken.asLookup(),
+        )
 
-  override val name: String
-    get() = "${bucket.name}.${accessKey.name}"
+    override val name = "${bucket.name}-${accessKey.name}"
+
+    override fun logText() = "GarageFS permission '$name' on ${server.logText()}"
+
 }

@@ -21,9 +21,13 @@ class GarageFsUserData(
     val buckets: List<GarageFsBucket>,
     val enableHttps: Boolean = false,
 ) : ServiceUserData {
+
+  val s3Host = "s3.$baseDomainFqdn"
+
   override fun render(): String {
     val storageMount = "/storage/data"
     val caddyStorageDir = "$storageMount/www"
+
     val caddyConfig =
         CaddyConfig(
             GlobalOptions(
@@ -43,6 +47,7 @@ class GarageFsUserData(
             } +
                 listOf(
                     Site("s3-admin.$baseDomainFqdn", ReverseProxy("http://localhost:3903")),
+                    Site(s3Host, ReverseProxy("http://localhost:3900")),
                 ),
         )
 

@@ -9,6 +9,7 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.SSHClient
 import fr.deuxfleurs.garagehq.api.AccessKeyApi
+import fr.deuxfleurs.garagehq.api.BucketAliasApi
 import fr.deuxfleurs.garagehq.api.BucketApi
 import fr.deuxfleurs.garagehq.api.PermissionApi
 import java.util.concurrent.Executors
@@ -31,6 +32,7 @@ open class BaseGarageFsProvisioner {
 
   data class ApiClients(
       val bucketApi: BucketApi,
+      val bucketAliasApi: BucketAliasApi,
       val accessKeyApi: AccessKeyApi,
       val permissionApi: PermissionApi,
   )
@@ -50,6 +52,7 @@ open class BaseGarageFsProvisioner {
             Success(
                 ApiClients(
                     BucketApi("http://localhost:$it", client = client),
+                    BucketAliasApi("http://localhost:$it", client = client),
                     AccessKeyApi("http://localhost:$it", client = client),
                     PermissionApi("http://localhost:$it", client = client),
                 )
