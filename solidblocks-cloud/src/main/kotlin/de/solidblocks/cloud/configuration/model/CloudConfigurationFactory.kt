@@ -4,7 +4,7 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.KeywordHelp
-import de.solidblocks.cloud.configuration.OptionalStringKeyword
+import de.solidblocks.cloud.configuration.StringKeywordOptional
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.PolymorphicListKeyword
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAME
@@ -41,7 +41,7 @@ class CloudConfigurationFactory(
             )
 
         val rootDomain =
-            OptionalStringKeyword(
+            StringKeywordOptional(
                 "root_domain",
                 DOMAIN_NAME,
                 KeywordHelp(

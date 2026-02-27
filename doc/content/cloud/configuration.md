@@ -14,7 +14,7 @@ providers:
     #...
 
 services:
-  - type: <s3>
+  - type: <s3|postgresql|docker>
     #...
 
 ```
@@ -121,7 +121,7 @@ S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfl
 ```yaml
 type: s3
 name: <string>
-public_access: [boolean]
+size: [number]
 buckets:
   - name: <string>
     public_access: [boolean]
@@ -129,7 +129,7 @@ buckets:
       - name: <string>
         owner: [boolean]
         read: [boolean]
-        read: [boolean]
+        write: [boolean]
         #...
     #...
 
@@ -144,12 +144,12 @@ buckets:
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
 
-### public_access
-*type*: **boolean**,
+### size
+*type*: **number**,
 *optional*: **true**,
 *default*: **16**
 
-Size in GB for the data volume used for the S3 object data
+Size in GB for the data volume
 
 ### buckets
 
@@ -196,9 +196,123 @@ Grant owner permission to the access key
 
 Grant read permission to the access key
 
-##### read
+##### write
 *type*: **boolean**,
 *optional*: **true**,
 *default*: **false**
 
 Grant write permission to the access key
+
+## PostgreSQL
+
+Single node PostgreSQL database instance with pgBackRest powered backup.
+
+```yaml
+type: postgresql
+name: <string>
+size: [number]
+databases:
+  - name: <string>
+    users:
+      - name: <string>
+        admin: [boolean]
+        read: [boolean]
+        write: [boolean]
+        #...
+    #...
+
+```
+### Keywords
+### name
+*type*: **string**,
+*optional*: **false**,
+*min. length*: **2**,
+*max. length*: **63**,
+*default*: **\<none\>**
+
+Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### size
+*type*: **number**,
+*optional*: **true**,
+*default*: **16**
+
+Size in GB for the data volume
+
+### databases
+
+List of databases to create. Databases that are removed from this list will not be deleted automatically.
+
+#### name
+*type*: **string**,
+*optional*: **false**,
+*min. length*: **4**,
+*max. length*: **253**,
+*default*: **\<none\>**
+
+Unique name for the bucket. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+#### users
+
+Users to create for database access
+
+##### name
+*type*: **string**,
+*optional*: **false**,
+*default*: **\<none\>**
+
+Unique name for the access key
+
+##### admin
+*type*: **boolean**,
+*optional*: **true**,
+*default*: **false**
+
+Grant full DDL privileges to the user
+
+##### read
+*type*: **boolean**,
+*optional*: **true**,
+*default*: **false**
+
+Grant read permissions to the user
+
+##### write
+*type*: **boolean**,
+*optional*: **true**,
+*default*: **false**
+
+Grant update/insert and delete permissions to the user
+
+## Docker
+
+Deploys a docker service image containers and exposes its endpoints
+
+```yaml
+type: docker
+name: <string>
+endpoints:
+  - port: [number]
+    #...
+
+```
+### Keywords
+### name
+*type*: **string**,
+*optional*: **false**,
+*min. length*: **2**,
+*max. length*: **63**,
+*default*: **\<none\>**
+
+Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### endpoints
+
+Service endpoints to expose
+
+#### port
+*type*: **number**,
+*optional*: **true**,
+*default*: **\<none\>**
+
+Unique name for the endpoint

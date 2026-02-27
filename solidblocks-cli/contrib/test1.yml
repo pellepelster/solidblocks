@@ -7,8 +7,8 @@ providers:
   - type: ssh_key
     private_key: "test_ed25519.key"
   - type: hcloud
-    default-location: nbg1
-    default-instance-type: nbg1
+    #default-location: nbg1
+    #default-instance-type: nbg1
 
 services:
   - type: s3

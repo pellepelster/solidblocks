@@ -2,14 +2,13 @@ package de.solidblocks.cloud.providers.hetzner
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.KeywordHelp
-import de.solidblocks.cloud.configuration.OptionalStringKeywordWithDefault
+import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.HETZNER_INSTANCE_TYPE
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.HETZNER_LOCATIONS
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
+import de.solidblocks.cloud.providers.HETZNER_INSTANCE_TYPE
+import de.solidblocks.cloud.providers.HETZNER_LOCATIONS
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -18,7 +17,7 @@ class HetznerProviderConfigurationFactory :
     PolymorphicConfigurationFactory<HetznerProviderConfiguration>() {
 
     val name =
-        OptionalStringKeywordWithDefault(
+        StringKeywordOptionalWithDefault(
             "name",
             NONE,
             DEFAULT_NAME,
@@ -28,7 +27,7 @@ class HetznerProviderConfigurationFactory :
         )
 
     val defaultLocation =
-        OptionalStringKeywordWithDefault(
+        StringKeywordOptionalWithDefault(
             "default-location",
             HETZNER_LOCATIONS,
             HETZNER_LOCATIONS.options.first(),
@@ -38,7 +37,7 @@ class HetznerProviderConfigurationFactory :
         )
 
     val defaultInstanceType =
-        OptionalStringKeywordWithDefault(
+        StringKeywordOptionalWithDefault(
             "default-instance-type",
             HETZNER_INSTANCE_TYPE,
             HETZNER_INSTANCE_TYPE.options.first(),
