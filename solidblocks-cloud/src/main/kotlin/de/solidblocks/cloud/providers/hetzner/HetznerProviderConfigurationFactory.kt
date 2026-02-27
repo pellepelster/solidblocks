@@ -2,7 +2,11 @@ package de.solidblocks.cloud.providers.hetzner
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.KeywordHelp
+import de.solidblocks.cloud.configuration.OptionalStringKeywordWithDefault
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import de.solidblocks.cloud.configuration.StringConstraints.Companion.HETZNER_INSTANCE_TYPE
+import de.solidblocks.cloud.configuration.StringConstraints.Companion.HETZNER_LOCATIONS
+import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
@@ -14,31 +18,34 @@ class HetznerProviderConfigurationFactory :
     PolymorphicConfigurationFactory<HetznerProviderConfiguration>() {
 
     val name =
-        StringKeyword(
+        OptionalStringKeywordWithDefault(
             "name",
+            NONE,
+            DEFAULT_NAME,
             KeywordHelp(
-                "TODO",
                 "Name for the provider, can be omitted if only one provider of this specific type is configured",
             ),
-        ).optional(DEFAULT_NAME)
+        )
 
     val defaultLocation =
-        StringKeyword(
+        OptionalStringKeywordWithDefault(
             "default-location",
+            HETZNER_LOCATIONS,
+            HETZNER_LOCATIONS.options.first(),
             KeywordHelp(
-                "TODO",
                 "Default location for created infrastructure resources",
             ),
-        ).optional("nbg1")
+        )
 
     val defaultInstanceType =
-        StringKeyword(
+        OptionalStringKeywordWithDefault(
             "default-instance-type",
+            HETZNER_INSTANCE_TYPE,
+            HETZNER_INSTANCE_TYPE.options.first(),
             KeywordHelp(
-                "TODO",
                 "Default instance size for virtual machines",
             ),
-        ).optional("cx23")
+        )
 
     override val help = ConfigurationHelp("Hetzner", "Provides Hetzner Cloud based infrastructure resources. An API key with read/write access must be provided via the environment variable `HCLOUD_TOKEN`.")
 

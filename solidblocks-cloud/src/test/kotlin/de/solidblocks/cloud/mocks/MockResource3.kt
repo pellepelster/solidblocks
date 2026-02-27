@@ -1,4 +1,4 @@
-package de.solidblocks.cloud
+package de.solidblocks.cloud.mocks
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup

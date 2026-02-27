@@ -20,6 +20,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.ServiceConfigurationManager
+import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
@@ -157,9 +158,16 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
         configuration: S3ServiceConfiguration,
         context: LogContext,
     ): Result<S3ServiceConfigurationRuntime> {
+
         configuration.buckets.forEach { bucket ->
             if (configuration.buckets.count { bucket.name == it.name } > 1) {
-                return Error("duplicated configuration for bucket '${bucket.name}'")
+                return Error("duplicated configuration for bucket with name '${bucket.name}', ensure that the bucket names are unique")
+            }
+
+            bucket.accessKeys.forEach { accessKey ->
+                if (bucket.accessKeys.count { accessKey.name == it.name } > 1) {
+                    return Error("duplicated access key with name '${accessKey.name}' found for bucket '${bucket.name}', ensure that the access key names are unique")
+                }
             }
         }
 
@@ -167,7 +175,9 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
             S3ServiceConfigurationRuntime(
                 configuration.name,
                 configuration.buckets.map {
-                    S3ServiceBucketConfigurationRuntime(it.name, it.publicAccess)
+                    S3ServiceBucketConfigurationRuntime(it.name, it.publicAccess, it.accessKeys.map {
+                        S3ServiceBucketAccessKeyConfigurationRuntime(it.name)
+                    })
                 },
             ),
         )

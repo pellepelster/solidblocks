@@ -1,6 +1,10 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.api.hierarchicalResourceList
+import de.solidblocks.cloud.mocks.MockResource1
+import de.solidblocks.cloud.mocks.MockResource1Lookup
+import de.solidblocks.cloud.mocks.MockResource2
+import de.solidblocks.cloud.mocks.MockResource3
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

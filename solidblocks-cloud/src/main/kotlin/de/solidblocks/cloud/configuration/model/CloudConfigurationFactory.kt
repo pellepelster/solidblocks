@@ -1,7 +1,15 @@
 package de.solidblocks.cloud.configuration.model
 
 import com.charleskorn.kaml.YamlNode
-import de.solidblocks.cloud.configuration.*
+import de.solidblocks.cloud.configuration.ConfigurationFactory
+import de.solidblocks.cloud.configuration.Keyword
+import de.solidblocks.cloud.configuration.KeywordHelp
+import de.solidblocks.cloud.configuration.OptionalStringKeyword
+import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import de.solidblocks.cloud.configuration.PolymorphicListKeyword
+import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAME
+import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
+import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
@@ -26,20 +34,20 @@ class CloudConfigurationFactory(
         val name =
             StringKeyword(
                 "name",
+                RFC_1123_NAME,
                 KeywordHelp(
-                    "TODO",
-                    "Unique name for the cloud deployment. Can be up to 63 characters long and must adhere to [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files."
+                    "Unique name for the cloud deployment. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files."
                 ),
             )
 
         val rootDomain =
-            StringKeyword(
+            OptionalStringKeyword(
                 "root_domain",
+                DOMAIN_NAME,
                 KeywordHelp(
-                    "TODO",
                     "Root domain to use for addresses of created services, e.g. `<service_name>.<root_domain>`. If set the domain must be manageable by one of the configured providers.",
                 ),
-            ).optional()
+            )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -48,7 +56,7 @@ class CloudConfigurationFactory(
             "providers",
             providerRegistrations.associate { it.type to it.createConfigurationFactory() }
                     as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
-            KeywordHelp("TODO", "TODO"),
+            KeywordHelp("Provider list, if two providers of the same type are configured, unique names must be provided. For a minimal configuration at least a SSH, secret and cloud provider is needed."),
         )
 
     @Suppress("UNCHECKED_CAST")
@@ -57,7 +65,7 @@ class CloudConfigurationFactory(
             "services",
             serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
                     as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
-            KeywordHelp("TODO", "TODO"),
+            KeywordHelp("Services to create, service names must be unique across all services"),
         )
 
     override val help: ConfigurationHelp =

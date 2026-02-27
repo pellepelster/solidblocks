@@ -4,6 +4,7 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.KeywordHelp
 import de.solidblocks.cloud.configuration.OptionalStringKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.utils.Error
@@ -28,8 +29,8 @@ class LocalSSHKeyProviderConfigurationFactory :
     val privateKey =
         OptionalStringKeyword(
             "private_key",
+            NONE,
             KeywordHelp(
-                "",
                 "Path to the private key, if not set, the default SSH key paths will be tried (${
                     defaultSSHKeyNames.joinToString(", ") {
                         "'~/.ssh/$it'"

@@ -181,6 +181,19 @@ fun YamlNode.getBoolean(key: String): YamlResult<Boolean> =
           }
     }
 
+fun YamlNode.getOptionalNumber(key: String): Result<Int?> =
+    when (val scalar = getScalar(key)) {
+        is YamlEmpty<String> -> Success<Int?>(null)
+        is Error<String> -> Error<Int?>(scalar.error)
+        is Success<String> -> {
+            try {
+                Success(scalar.data.toInt())
+            } catch (e: YamlScalarFormatException) {
+                Error("expected number but got '${e.originalValue}' at ${this.location.logMessage()}")
+            }
+        }
+    }
+
 fun YamlNode.getNumber(key: String): YamlResult<Number?> =
     when (val scalar = getNonNullOrEmptyScalar(key)) {
       is Error<String> -> Error(scalar.error)

@@ -27,6 +27,10 @@ class Text(val text: Any) : Markdown() {
     override fun render(hugo: Boolean) = escape(text, hugo)
 }
 
+class HR() : Markdown() {
+    override fun render(hugo: Boolean) = "\n---\n"
+}
+
 class Bold(val text: Any) : Markdown() {
     override fun render(hugo: Boolean) = "**${escape(text, hugo)}**"
 }
@@ -45,7 +49,7 @@ $content
 }
 
 class Paragraph(val content: String) : Markdown() {
-    override fun render(hugo: Boolean) = "\n${escape(content, hugo)}\n"
+    override fun render(hugo: Boolean) = "\n${content}\n"
 }
 
 class MarkdownBuilder(val hugo: Boolean) {

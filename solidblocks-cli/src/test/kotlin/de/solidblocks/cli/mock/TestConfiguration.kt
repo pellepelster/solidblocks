@@ -17,14 +17,14 @@ class TestConfigurationFactory : ConfigurationFactory<TestConfiguration> {
   override val help: ConfigurationHelp
     get() = TODO("Not yet implemented")
 
-  val test1 = ListKeyword("test1", Test1ConfigurationFactory(), KeywordHelp("", ""))
+  val test1 = ListKeyword("test1", Test1ConfigurationFactory(), KeywordHelp("TODO"))
 
   /*
   val polymorphicList1 =
       PolymorphicListKeyword("polymorphic_list1", listOf(Test1ConfigurationFactory()), KeywordHelp("", ""))
    */
 
-  val test2 = ObjectKeyword("test2", Test2ConfigurationFactory(), KeywordHelp("", ""))
+  val test2 = ObjectKeyword("test2", Test2ConfigurationFactory(), KeywordHelp("TODO"))
 
   override val keywords = listOf(test1, test2)
 
