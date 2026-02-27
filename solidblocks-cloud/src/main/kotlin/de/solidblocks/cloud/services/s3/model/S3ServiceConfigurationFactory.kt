@@ -12,36 +12,35 @@ import de.solidblocks.cloud.utils.Success
 
 class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceConfiguration>() {
 
-  val name =
-      StringKeyword(
-          "name",
-          KeywordHelp(
-              "TODO",
-              "TODO",
-          ),
-      )
-
-  val buckets =
-      ListKeyword("buckets", S3ServiceBucketConfigurationFactory(), KeywordHelp("TODO", "TODO"))
-
-  override val help: ConfigurationHelp
-    get() = TODO("Not yet implemented")
-
-  override val keywords = listOf(name, buckets)
-
-  override fun parse(yaml: YamlNode): Result<S3ServiceConfiguration> {
     val name =
-        when (val name = name.parse(yaml)) {
-          is Error<*> -> return Error(name.error)
-          is Success<String> -> name.data
-        }
+        StringKeyword(
+            "name",
+            KeywordHelp(
+                "TODO",
+                "TODO",
+            ),
+        )
 
-    val b =
-        when (val result = buckets.parse(yaml)) {
-          is Error<List<S3ServiceBucketConfiguration>> -> return Error(result.error)
-          is Success<List<S3ServiceBucketConfiguration>> -> result.data
-        }
+    val buckets =
+        ListKeyword("buckets", S3ServiceBucketConfigurationFactory(), KeywordHelp("TODO", "TODO"))
 
-    return Success(S3ServiceConfiguration(name, b))
-  }
+    override val help = ConfigurationHelp("S3", "S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfleurs.fr/).")
+
+    override val keywords = listOf(name, buckets)
+
+    override fun parse(yaml: YamlNode): Result<S3ServiceConfiguration> {
+        val name =
+            when (val name = name.parse(yaml)) {
+                is Error<*> -> return Error(name.error)
+                is Success<String> -> name.data
+            }
+
+        val b =
+            when (val result = buckets.parse(yaml)) {
+                is Error<List<S3ServiceBucketConfiguration>> -> return Error(result.error)
+                is Success<List<S3ServiceBucketConfiguration>> -> result.data
+            }
+
+        return Success(S3ServiceConfiguration(name, b))
+    }
 }

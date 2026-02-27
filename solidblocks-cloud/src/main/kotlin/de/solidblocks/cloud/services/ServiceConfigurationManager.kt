@@ -1,14 +1,14 @@
 package de.solidblocks.cloud.services
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.resources.InfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
 interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
-  fun createResources(runtime: R): List<InfrastructureResource<*>>
+  fun createResources(runtime: R): List<BaseInfrastructureResource<*>>
 
   fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 

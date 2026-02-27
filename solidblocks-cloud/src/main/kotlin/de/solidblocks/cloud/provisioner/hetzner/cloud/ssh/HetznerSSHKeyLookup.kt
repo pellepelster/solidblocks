@@ -1,5 +1,5 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.ssh
 
-import de.solidblocks.cloud.api.resources.ResourceLookup
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 
-data class HetznerSSHKeyLookup(override val name: String) : ResourceLookup<HetznerSSHKeyRuntime>
+class HetznerSSHKeyLookup(name: String) : InfrastructureResourceLookup<HetznerSSHKeyRuntime>(name, emptySet())

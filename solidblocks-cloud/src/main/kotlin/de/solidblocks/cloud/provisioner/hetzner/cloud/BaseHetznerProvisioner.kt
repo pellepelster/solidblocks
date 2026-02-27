@@ -1,16 +1,16 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud
 
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.resources.LabeledInfrastructureResource
-import de.solidblocks.cloud.api.resources.LabeledInfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResourceRuntime
 import de.solidblocks.hetzner.cloud.HetznerApi
 
 open class BaseHetznerProvisioner(val hcloudToken: String) {
   val api = HetznerApi(hcloudToken)
 
   fun createLabelDiff(
-      resource: LabeledInfrastructureResource<*>,
-      runtime: LabeledInfrastructureResourceRuntime,
+      resource: BaseLabeledInfrastructureResource<*>,
+      runtime: BaseLabeledInfrastructureResourceRuntime,
   ): List<ResourceDiffItem> {
     val missingLabels =
         resource.labels

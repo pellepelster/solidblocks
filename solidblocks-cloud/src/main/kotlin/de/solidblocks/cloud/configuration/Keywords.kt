@@ -27,6 +27,8 @@ sealed interface Keyword<T> {
 
 sealed interface SimpleKeyword<T> : Keyword<T> {
     val help: KeywordHelp
+    val optional: Boolean
+    val default: T?
 }
 
 sealed interface ComplexKeyword<T> : Keyword<T> {
@@ -113,10 +115,12 @@ data class StringKeyword(override val name: String, override val help: KeywordHe
 
     fun optional() = OptionalStringKeyword(name, help)
 
+    override val optional = false
+    override val default = null
     override val type = KeywordType.string
 }
 
-data class OptionalStringKeywordWithDefault(override val name: String, val default: String, override val help: KeywordHelp) :
+data class OptionalStringKeywordWithDefault(override val name: String, override val default: String, override val help: KeywordHelp) :
     SimpleKeyword<String> {
 
     fun parse(yaml: YamlNode): Result<String> {
@@ -129,6 +133,7 @@ data class OptionalStringKeywordWithDefault(override val name: String, val defau
         return Success(string)
     }
 
+    override val optional = true
     override val type = KeywordType.string
 }
 
@@ -144,14 +149,15 @@ data class OptionalStringKeyword(override val name: String, override val help: K
 
         return Success(string)
     }
-
+    override val optional = true
+    override val default = null
     override val type = KeywordType.string
 }
 
 data class OptionalBooleanKeyword(
     override val name: String,
     override val help: KeywordHelp,
-    val default: Boolean,
+    override val default: Boolean,
 ) : SimpleKeyword<Boolean> {
 
     fun parse(yaml: YamlNode): Result<Boolean> {
@@ -166,5 +172,6 @@ data class OptionalBooleanKeyword(
         return Success(bool ?: default)
     }
 
+    override val optional = true
     override val type = KeywordType.boolean
 }

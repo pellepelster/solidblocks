@@ -15,90 +15,84 @@ import de.solidblocks.cloud.utils.Success
 
 class CloudConfigurationFactory(
     providerRegistrations:
-        List<
-            ProviderRegistration<
-                out ProviderConfiguration,
-                out ProviderRuntime,
-                out ProviderConfigurationManager<*, *>,
-            >,
-        >,
+    List<ProviderRegistration<
+            out ProviderConfiguration,
+            out ProviderRuntime,
+            out ProviderConfigurationManager<*, *>>>,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
 ) : ConfigurationFactory<CloudConfigurationRuntime> {
 
-  val name =
-      StringKeyword(
-          "name",
-          KeywordHelp(
-              "TODO",
-              """
-              Unique name for the cloud deployment. Can be up to 63 characters long and must adhere to [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If none is provided the name of the file containing the configuration will be used.
-              """
-                  .trimIndent(),
-          ),
-      )
+    companion object {
+        val name =
+            StringKeyword(
+                "name",
+                KeywordHelp(
+                    "TODO",
+                    "Unique name for the cloud deployment. Can be up to 63 characters long and must adhere to [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files."
+                ),
+            )
 
-  val rootDomain =
-      StringKeyword(
-          "root_domain",
-          KeywordHelp(
-              "TODO",
-              "TODO",
-          ),
-      )
+        val rootDomain =
+            StringKeyword(
+                "root_domain",
+                KeywordHelp(
+                    "TODO",
+                    "Root domain to use for addresses of created services, e.g. `<service_name>.<root_domain>`. If set the domain must be manageable by one of the configured providers.",
+                ),
+            ).optional()
+    }
 
-  val providers =
-      PolymorphicListKeyword(
-          "providers",
-          providerRegistrations.associate { it.type to it.createConfigurationFactory() }
-              as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
-          KeywordHelp("TODO", "TODO"),
-      )
-
-  val services =
-      PolymorphicListKeyword<ServiceConfiguration>(
-          "services",
-          serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
-              as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
-          KeywordHelp("TODO", "TODO"),
-      )
-
-  override val help: ConfigurationHelp =
-      ConfigurationHelp(
-          "Cloud",
-          """
-          A Solidblocks cloud is defined in YAML based configuration file with the following format
-
-          """
-              .trimIndent(),
-      )
-
-  override val keywords = listOf<Keyword<*>>(name, providers, services)
-
-  override fun parse(yaml: YamlNode): Result<CloudConfigurationRuntime> {
-    val name =
-        when (val name = name.parse(yaml)) {
-          is Error<*> -> return Error(name.error)
-          is Success<String> -> name.data
-        }
-
-    val rootDomain =
-        when (val rootDomain = rootDomain.parse(yaml)) {
-          is Error<*> -> return Error(rootDomain.error)
-          is Success<String> -> rootDomain.data
-        }
-
+    @Suppress("UNCHECKED_CAST")
     val providers =
-        when (val providers = providers.parse(yaml)) {
-          is Error<*> -> return Error(providers.error)
-          is Success<List<ProviderConfiguration>> -> providers.data
-        }
+        PolymorphicListKeyword(
+            "providers",
+            providerRegistrations.associate { it.type to it.createConfigurationFactory() }
+                    as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
+            KeywordHelp("TODO", "TODO"),
+        )
 
+    @Suppress("UNCHECKED_CAST")
     val services =
-        when (val services = services.parse(yaml)) {
-          is Error<*> -> return Error(services.error)
-          is Success<List<ServiceConfiguration>> -> services.data
-        }
+        PolymorphicListKeyword(
+            "services",
+            serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
+                    as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
+            KeywordHelp("TODO", "TODO"),
+        )
 
-    return Success(CloudConfigurationRuntime(name, rootDomain, providers, services))
-  }
+    override val help: ConfigurationHelp =
+        ConfigurationHelp(
+            "Configuration",
+            "A Solidblocks instance can be defined using a YAML based configuration file with the following format"
+        )
+
+    override val keywords = listOf<Keyword<*>>(name, rootDomain, providers, services)
+
+    override fun parse(yaml: YamlNode): Result<CloudConfigurationRuntime> {
+        val name =
+            when (val name = name.parse(yaml)) {
+                is Error<*> -> return Error(name.error)
+                is Success<String> -> name.data
+            }
+
+        val rootDomain =
+            when (val rootDomain = rootDomain.parse(yaml)) {
+                is Error<*> -> return Error(rootDomain.error)
+                is Success<String?> -> rootDomain.data
+            }
+
+        val providers =
+            when (val providers = providers.parse(yaml)) {
+                is Error<*> -> return Error(providers.error)
+                is Success<List<ProviderConfiguration>> -> providers.data
+            }
+
+        val services =
+            when (val services = services.parse(yaml)) {
+                is Error<*> -> return Error(services.error)
+                is Success<List<ServiceConfiguration>> -> services.data
+            }
+
+        return Success(CloudConfigurationRuntime(name, rootDomain, providers, services))
+    }
 }

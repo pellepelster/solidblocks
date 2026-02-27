@@ -1,7 +1,8 @@
 package de.solidblocks.cloud.provisioner.mock
 
-import de.solidblocks.cloud.api.resources.ResourceLookup
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 
-data class Resource2Lookup(override val name: String) : ResourceLookup<Resource2Runtime> {
+class Resource2Lookup(name: String) :
+    InfrastructureResourceLookup<Resource2Runtime>(name, emptySet()) {
   override fun logText() = "custom log text '$name'"
 }

@@ -6,18 +6,18 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class HetznerDnsZoneProvisioner(hcloudToken: String) :
-    BaseHetznerProvisioner(hcloudToken), ResourceLookupProvider<DnsZoneLookup, DnsZoneRuntime> {
+    BaseHetznerProvisioner(hcloudToken), ResourceLookupProvider<HetznerDnsZoneLookup, HetznerDnsZoneRuntime> {
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: DnsZoneLookup, context: ProvisionerContext): DnsZoneRuntime? {
+  override suspend fun lookup(lookup: HetznerDnsZoneLookup, context: ProvisionerContext): HetznerDnsZoneRuntime? {
     val zone = api.dnsZones.get(lookup.name) ?: return null
 
-    return DnsZoneRuntime(
+    return HetznerDnsZoneRuntime(
         zone.zone.id,
         zone.zone.name,
     )
   }
 
-  override val supportedLookupType = DnsZoneLookup::class
+  override val supportedLookupType = HetznerDnsZoneLookup::class
 }

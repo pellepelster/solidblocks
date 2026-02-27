@@ -7,9 +7,11 @@ import com.github.ajalt.clikt.core.installMordantMarkdown
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.mordant.markdown.Markdown
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.rendering.TextStyles.bold
 import com.github.ajalt.mordant.terminal.Terminal
+import de.solidblocks.cloud.CloudHelp
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.api.InfrastructureResourceHelp
 import de.solidblocks.cloud.utils.Error
@@ -25,9 +27,6 @@ class CloudHelpCommand : CliktCommand(name = "help") {
   }
 
   override fun help(context: Context) = "Solidblocks cloud configuration file documentation"
-
-  // + DocumentationGenerator(CloudConfigurationFactory(emptyList(),
-  // emptyList())).generateMarkdown()
 
   override fun run() {
     if (configFile != null) {
@@ -62,6 +61,11 @@ class CloudHelpCommand : CliktCommand(name = "help") {
           }
         }
       }
-    } else {}
+    } else {
+      val md = Markdown(CloudHelp().renderMarkdown(false), true, false)
+      // TODO workaround for testing inside gradle
+      val t = Terminal(AnsiLevel.TRUECOLOR)
+      t.println(md)
+    }
   }
 }

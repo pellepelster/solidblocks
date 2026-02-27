@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner.mock
 
-import de.solidblocks.cloud.api.resources.ResourceLookup
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 
-data class Resource1Lookup(override val name: String) : ResourceLookup<Resource1Runtime>
+class Resource1Lookup(name: String) :
+    InfrastructureResourceLookup<Resource1Runtime>(name, emptySet())

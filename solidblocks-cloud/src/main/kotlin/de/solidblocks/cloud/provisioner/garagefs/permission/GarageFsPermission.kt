@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.provisioner.garagefs.permission
 
-import de.solidblocks.cloud.api.resources.InfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -14,7 +14,7 @@ data class GarageFsPermission(
     val owner: Boolean,
     val read: Boolean,
     val write: Boolean,
-) : InfrastructureResource<GarageFsPermissionRuntime>() {
+) : BaseInfrastructureResource<GarageFsPermissionRuntime>("${bucket.name}-${accessKey.name}", setOf(server)) {
 
     fun asLookup() =
         GarageFsPermissionLookup(
@@ -25,10 +25,8 @@ data class GarageFsPermission(
             adminToken.asLookup(),
         )
 
-    override val dependsOn = setOf(server)
-
-    override val name = "${bucket.name}-${accessKey.name}"
-
     override fun logText() = "GarageFS permission '$name' on ${server.logText()}"
+
+    override val lookupType = GarageFsPermissionLookup::class
 
 }

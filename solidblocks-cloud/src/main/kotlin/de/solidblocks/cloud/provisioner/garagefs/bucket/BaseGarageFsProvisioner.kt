@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner.garagefs.bucket
 
-import de.solidblocks.cloud.api.resources.Resource
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup

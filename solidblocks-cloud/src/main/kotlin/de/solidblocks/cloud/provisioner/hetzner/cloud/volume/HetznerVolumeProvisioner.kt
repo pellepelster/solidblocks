@@ -17,21 +17,21 @@ import kotlin.reflect.KClass
 
 class HetznerVolumeProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    ResourceLookupProvider<VolumeLookup, VolumeRuntime>,
-    InfrastructureResourceProvisioner<Volume, VolumeRuntime> {
+    ResourceLookupProvider<HetznerVolumeLookup, HetznerVolumeRuntime>,
+    InfrastructureResourceProvisioner<HetznerVolume, HetznerVolumeRuntime> {
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: VolumeLookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: HetznerVolumeLookup, context: ProvisionerContext) =
       api.volumes.get(lookup.name)?.let {
-        VolumeRuntime(it.id, it.name, it.linuxDevice, it.server, it.labels, it.protection.delete)
+        HetznerVolumeRuntime(it.id, it.name, it.linuxDevice, it.server, it.labels, it.protection.delete)
       }
 
   override suspend fun apply(
-      resource: Volume,
+      resource: HetznerVolume,
       context: ProvisionerContext,
       log: LogContext,
-  ): ApplyResult<VolumeRuntime> {
+  ): ApplyResult<HetznerVolumeRuntime> {
     val runtime = lookup(resource.asLookup(), context)
 
     val volume =
@@ -63,7 +63,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
     return ApplyResult(lookup(resource.asLookup(), context))
   }
 
-  override suspend fun diff(resource: Volume, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(resource: HetznerVolume, context: ProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
     val deleteProtection =
@@ -97,12 +97,12 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
   }
 
   override suspend fun destroy(
-      resource: Volume,
+      resource: HetznerVolume,
       context: ProvisionerContext,
       logContext: LogContext,
   ) = lookup(resource.asLookup(), context)?.let { api.volumes.delete(it.id) } ?: false
 
-  override val supportedLookupType: KClass<*> = VolumeLookup::class
+  override val supportedLookupType: KClass<*> = HetznerVolumeLookup::class
 
-  override val supportedResourceType: KClass<*> = Volume::class
+  override val supportedResourceType: KClass<*> = HetznerVolume::class
 }

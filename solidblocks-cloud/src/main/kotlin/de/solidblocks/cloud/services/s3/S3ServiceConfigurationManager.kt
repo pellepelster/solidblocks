@@ -4,7 +4,7 @@ import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.resources.InfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
@@ -13,10 +13,10 @@ import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisione
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermission
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.DnsZoneLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.Volume
+import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.ServiceConfigurationManager
@@ -34,8 +34,8 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
 
     override fun createResources(
         runtime: S3ServiceConfigurationRuntime
-    ): List<InfrastructureResource<*>> {
-        val volume = Volume(serverName(cloudConfiguration, runtime.name), cloudConfiguration.hetznerProviderConfig().defaultLocation, 32, emptyMap())
+    ): List<BaseInfrastructureResource<*>> {
+        val volume = HetznerVolume(serverName(cloudConfiguration, runtime.name), cloudConfiguration.hetznerProviderConfig().defaultLocation, 32, emptyMap())
         val adminToken =
             PassSecret(
                 secretPath(cloudConfiguration, runtime, listOf("garage", "admin_token")),
@@ -90,25 +90,31 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
                 location = cloudConfiguration.hetznerProviderConfig().defaultLocation,
                 sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloudConfiguration))),
                 volumes = setOf(volume.asLookup()),
-                extraDependsOn = setOf(volume),
+                dependsOn = setOf(volume),
                 type = cloudConfiguration.hetznerProviderConfig().defaultInstanceType
             )
 
-        val zone = DnsZoneLookup(cloudConfiguration.rootDomain)
-        val rootDomain =
-            HetznerDnsRecord(
-                serverName(cloudConfiguration, runtime.name),
-                zone,
-                listOf(server.asLookup()),
-            )
-        val catchAllDomain =
-            HetznerDnsRecord(
-                "*.${serverName(cloudConfiguration, runtime.name)}",
-                zone,
-                listOf(server.asLookup()),
-            )
+        val domainResources = if (cloudConfiguration.rootDomain == null) {
+            emptyList()
+        } else {
+            val zone = HetznerDnsZoneLookup(cloudConfiguration.rootDomain)
+            val rootDomain =
+                HetznerDnsRecord(
+                    serverName(cloudConfiguration, runtime.name),
+                    zone,
+                    listOf(server.asLookup()),
+                )
+            val catchAllDomain =
+                HetznerDnsRecord(
+                    "*.${serverName(cloudConfiguration, runtime.name)}",
+                    zone,
+                    listOf(server.asLookup()),
+                )
 
-        val bucketResources = mutableListOf<InfrastructureResource<*>>()
+            listOf(rootDomain, catchAllDomain)
+        }
+
+        val bucketResources = mutableListOf<BaseInfrastructureResource<*>>()
 
         runtime.buckets.forEach {
             val accessKey = GarageFsAccessKey(secretPath(cloudConfiguration, runtime, listOf("owner", "access_key")), server, adminToken)
@@ -141,7 +147,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
             s3Host ?: "unknown_s3_host"
         })
 
-        return listOf(server, volume, rootDomain, catchAllDomain, adminToken, rpcSecret, metricsToken) + bucketResources + listOf(s3HostSecret)
+        return listOf(server, volume, adminToken, rpcSecret, metricsToken) + bucketResources + listOf(s3HostSecret) + domainResources
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) =

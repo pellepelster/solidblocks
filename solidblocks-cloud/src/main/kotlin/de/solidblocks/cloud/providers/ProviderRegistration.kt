@@ -21,18 +21,21 @@ interface ProviderRegistration<
   val type: String
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <C : ProviderConfiguration, R : ProviderRuntime> List<ProviderRegistration<*, *, *>>
     .managerForConfiguration(configuration: C): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
         ?.createConfigurationManager() as ProviderConfigurationManager<C, R>?
         ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")
 
+@Suppress("UNCHECKED_CAST")
 fun <C : ProviderConfiguration, R : ProviderRuntime> List<ProviderRegistration<*, *, *>>
     .managerForRuntime(runtime: R): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedRuntime == runtime::class }?.createConfigurationManager()
         as ProviderConfigurationManager<C, R>?
         ?: throw RuntimeException("no manager found for '${runtime::class.qualifiedName}'")
 
+@Suppress("UNCHECKED_CAST")
 fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(
     configuration: SSHKeyProviderConfiguration
 ): SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderRuntime> =

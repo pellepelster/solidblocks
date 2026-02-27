@@ -1,13 +1,18 @@
 package de.solidblocks.cloud.api.resources
 
-abstract class InfrastructureResource<RuntimeType> : ResourceLookup<RuntimeType> {
-  var tainted = false
+import kotlin.reflect.KClass
 
-  fun taint() {
-    tainted = true
-  }
+abstract class BaseInfrastructureResource<RuntimeType>(name: String, dependsOn: Set<BaseResource>) : BaseResource(name, dependsOn) {
+    var tainted: Boolean = false
+
+    fun taint() {
+        tainted = true
+    }
+
+    abstract val lookupType: KClass<*>
 }
 
-abstract class LabeledInfrastructureResource<RuntimeType>(
-    open val labels: Map<String, String>
-) : InfrastructureResource<RuntimeType>()
+abstract class BaseLabeledInfrastructureResource<RuntimeType>(
+    name: String, dependsOn: Set<BaseResource>,
+    val labels: Map<String, String>
+) : BaseInfrastructureResource<RuntimeType>(name, dependsOn)

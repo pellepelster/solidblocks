@@ -108,6 +108,11 @@ depends=["build-jvm-all", "build-native"]
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
+[tasks.release-prepare]
+run="""
+${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help-hugo ${ROOT_PROJECT}//doc/content/cloud/configuration.md"
+"""
+
 [tasks.release-test]
 usage = """
 arg "<version>"

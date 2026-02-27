@@ -9,6 +9,7 @@ data class ApplyResult<RuntimeType>(val runtime: RuntimeType?)
 data class InfrastructureResourceHelp(val title: String, val help: String)
 
 interface InfrastructureResourceProvisioner<ResourceType, RuntimeType> {
+
     suspend fun diff(resource: ResourceType, context: ProvisionerContext): ResourceDiff? =
         TODO("Not yet implemented")
 

@@ -7,7 +7,7 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 
 data class CloudConfigurationRuntime(
     val name: String,
-    val rootDomain: String,
+    val rootDomain: String?,
     val providers: List<ProviderConfiguration>,
     val services: List<ServiceConfiguration>,
 ) {

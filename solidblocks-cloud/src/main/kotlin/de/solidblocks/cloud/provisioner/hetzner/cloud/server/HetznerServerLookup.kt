@@ -1,5 +1,5 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
-import de.solidblocks.cloud.api.resources.ResourceLookup
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 
-data class HetznerServerLookup(override val name: String) : ResourceLookup<HetznerServerRuntime>
+class HetznerServerLookup(name: String) : InfrastructureResourceLookup<HetznerServerRuntime>(name, emptySet())

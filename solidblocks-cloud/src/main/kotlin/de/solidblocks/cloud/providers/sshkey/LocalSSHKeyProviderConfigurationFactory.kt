@@ -14,17 +14,31 @@ import de.solidblocks.cloud.utils.getOptionalString
 class LocalSSHKeyProviderConfigurationFactory :
     PolymorphicConfigurationFactory<LocalSSHKeyProviderConfiguration>() {
 
+    companion object {
+        val defaultSSHKeyNames =
+            listOf(
+                "id_rsa",
+                "id_ecdsa",
+                "id_ecdsa_sk",
+                "id_ed25519",
+                "id_ed25519_sk",
+            )
+    }
+
     val privateKey =
         OptionalStringKeyword(
             "private_key",
             KeywordHelp(
                 "",
-                "path to the private key, if not set, the default SSH key paths will be tried.",
-            ),
+                "Path to the private key, if not set, the default SSH key paths will be tried (${
+                    defaultSSHKeyNames.joinToString(", ") {
+                        "'~/.ssh/$it'"
+                    }
+                })"
+            )
         )
 
-    override val help: ConfigurationHelp
-        get() = TODO("Not yet implemented")
+    override val help = ConfigurationHelp("Local SSH", "A provider that loads local file based SSH keys. It supports passwordless PEM as well as OpenSSH encoded private keys.")
 
     override val keywords = listOf(privateKey)
 

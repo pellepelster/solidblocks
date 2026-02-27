@@ -1,9 +1,10 @@
 package de.solidblocks.cloud.provisioner.mock
 
-import de.solidblocks.cloud.api.resources.InfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 
-data class Resource1(override val name: String) :
-    InfrastructureResource<Resource1Runtime>() {
+class Resource1(name: String) : BaseInfrastructureResource<Resource1Runtime>(name, emptySet()) {
 
   fun asLookup() = Resource1Lookup(name)
+
+  override val lookupType = Resource1Lookup::class
 }

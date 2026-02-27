@@ -3,6 +3,7 @@ package de.solidblocks.cloud.providers.sshkey
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.providers.ConfigurationContext
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfigurationManager
+import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationFactory.Companion.defaultSSHKeyNames
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -26,15 +27,6 @@ class LocalSSHKeyProviderManager :
             > {
 
     private val logger = KotlinLogging.logger {}
-
-    val defaultSSHKeyNames =
-        listOf(
-            "id_rsa",
-            "id_ecdsa",
-            "id_ecdsa_sk",
-            "id_ed25519",
-            "id_ed25519_sk",
-        )
 
     val homeDir = Path(System.getProperty("user.home"))
 

@@ -1,5 +1,5 @@
 package de.solidblocks.cloud.provisioner.pass
 
-import de.solidblocks.cloud.api.resources.ResourceLookup
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 
-data class PassSecretLookup(override val name: String) : ResourceLookup<PassSecretRuntime>
+class PassSecretLookup(name: String) : InfrastructureResourceLookup<PassSecretRuntime>(name, emptySet())

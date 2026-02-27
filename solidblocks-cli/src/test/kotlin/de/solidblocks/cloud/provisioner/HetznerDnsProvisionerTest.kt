@@ -7,7 +7,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.DnsZone
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZone
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
@@ -62,7 +62,7 @@ class HetznerDnsProvisionerTest {
     coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
 
     runBlocking {
-      val name = UUID.randomUUID().toString()
+      val recordName = UUID.randomUUID().toString()
 
       val recordProvisioner = HetznerDnsRecordProvisioner(System.getenv("HCLOUD_TOKEN"))
       val zoneProvisioner = HetznerDnsZoneProvisioner(System.getenv("HCLOUD_TOKEN"))
@@ -76,27 +76,38 @@ class HetznerDnsProvisionerTest {
                   ),
           )
 
-      val zone = DnsZone("blcks-test.de")
+      val zone = HetznerDnsZone("blcks-test.de")
       assertSoftly(zoneProvisioner.lookup(zone.asLookup(), context)!!) {
         it.name shouldBe "blcks-test.de"
       }
-      zoneProvisioner.lookup(DnsZone("invalid").asLookup(), context) shouldBe null
+      zoneProvisioner.lookup(HetznerDnsZone("invalid").asLookup(), context) shouldBe null
 
       val record =
-          HetznerDnsRecord(name, DnsZone("blcks-test.de").asLookup(), listOf(serverLookup1))
+          HetznerDnsRecord(
+              recordName,
+              HetznerDnsZone("blcks-test.de").asLookup(),
+              listOf(serverLookup1),
+          )
       recordProvisioner.lookup(record.asLookup(), context) shouldBe null
       assertSoftly(recordProvisioner.diff(record, context)) { it.status shouldBe missing }
 
       recordProvisioner.apply(record, context, TEST_LOG_CONTEXT) shouldNotBe null
 
       assertSoftly(recordProvisioner.lookup(record.asLookup(), context)!!) {
-        it.name shouldBe name
+        it.name shouldBe recordName
         it.values shouldHaveSize 1
         it.values[0] shouldBe "127.0.0.1"
       }
       assertSoftly(recordProvisioner.diff(record, context)) { it.status shouldBe up_to_date }
 
-      assertSoftly(recordProvisioner.diff(record.copy(values = listOf(serverLookup2)), context)) {
+      val recordNewServer =
+          HetznerDnsRecord(
+              recordName,
+              HetznerDnsZone("blcks-test.de").asLookup(),
+              listOf(serverLookup2),
+          )
+
+      assertSoftly(recordProvisioner.diff(recordNewServer, context)) {
         it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1
         it.changes[0].name shouldBe "value"

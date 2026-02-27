@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 
-import de.solidblocks.cloud.api.resources.ResourceLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.DnsZoneLookup
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 
-data class HetznerDnsRecordLookup(override val name: String, val zone: DnsZoneLookup) :
-    ResourceLookup<HetznerDnsRecordRuntime>
+class HetznerDnsRecordLookup(name: String, val zone: HetznerDnsZoneLookup) :
+    InfrastructureResourceLookup<HetznerDnsRecordRuntime>(name, emptySet()) {}

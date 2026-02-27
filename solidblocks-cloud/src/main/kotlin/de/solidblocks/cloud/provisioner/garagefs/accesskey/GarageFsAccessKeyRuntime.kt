@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner.garagefs.accesskey
 
-import de.solidblocks.cloud.api.resources.InfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 
-data class GarageFsAccessKeyRuntime(val name: String, val id: String, val secretAccessKey: String) :
-    InfrastructureResourceRuntime
+class GarageFsAccessKeyRuntime(val name: String, val id: String, val secretAccessKey: String) : BaseInfrastructureResourceRuntime()

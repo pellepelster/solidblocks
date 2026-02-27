@@ -3,8 +3,9 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
-import de.solidblocks.cloud.api.resources.InfrastructureResourceRuntime
-import de.solidblocks.cloud.api.resources.Resource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -36,7 +37,7 @@ class Provisioner(
             for (resource in resources) {
                 try {
                     val help =
-                        provisionersRegistry.help<Resource, InfrastructureResourceRuntime>(resource, context)
+                        provisionersRegistry.help<BaseResource, BaseInfrastructureResourceRuntime>(resource, context)
                     result.addAll(help)
 
                 } catch (e: Exception) {
@@ -131,7 +132,7 @@ class Provisioner(
     ): Result<List<ResourceDiff>> = runBlocking {
         logger.info { "creating diff for ${resourceGroup.logText()}" }
 
-        val resources = resourceGroup.hierarchicalResourceList().toSet()
+        val resources = resourceGroup.hierarchicalResourceList().filterIsInstance<BaseInfrastructureResource<*>>()
         val result = mutableListOf<ResourceDiff>()
 
         for (resource in resources) {
@@ -139,7 +140,7 @@ class Provisioner(
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
                 val diff =
-                    provisionersRegistry.diff<Resource, InfrastructureResourceRuntime>(resource, context)
+                    provisionersRegistry.diff<BaseResource, BaseInfrastructureResourceRuntime>(resource, context)
                         ?: return@runBlocking Error("diff failed for ${resource.logText()}")
 
                 logDebug(
@@ -174,7 +175,7 @@ class Provisioner(
     }
 
     suspend fun apply(
-        resources: List<Resource>,
+        resources: List<BaseResource>,
         context: ProvisionerContext,
         log: LogContext,
     ): Result<Unit> {
@@ -183,7 +184,7 @@ class Provisioner(
                 .map { resource ->
                     val runtime =
                         try {
-                            provisionersRegistry.apply<Resource, InfrastructureResourceRuntime>(
+                            provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
                                 resource,
                                 context,
                                 log,
@@ -217,7 +218,7 @@ class Provisioner(
                     val resource = diffToDestroy.resource
                     logInfo("destroying ${resource.logText()}", context = log)
 
-                    val result = provisionersRegistry.destroy<Resource>(resource, context, log)
+                    val result = provisionersRegistry.destroy<BaseResource>(resource, context, log)
                     if (!result) {
                         return@runBlocking Error("destroying ${resource.logText()} failed")
                     }
@@ -246,7 +247,7 @@ class Provisioner(
 
                     val applyResult =
                         try {
-                            provisionersRegistry.apply<Resource, InfrastructureResourceRuntime>(
+                            provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
                                 resource,
                                 context,
                                 applyLog,
@@ -261,7 +262,7 @@ class Provisioner(
                         return@runBlocking Error("creating ${resource.logText()} failed")
                     }
 
-                    runtime.endpoints().forEach {
+                    runtime.endpoints.forEach {
                         when (it.protocol) {
                             EndpointProtocol.ssh -> {
                                 val sshPortOpen =

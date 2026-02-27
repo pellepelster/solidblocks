@@ -1,29 +1,28 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
-import de.solidblocks.cloud.api.resources.InfrastructureResource
-import de.solidblocks.cloud.api.resources.LabeledInfrastructureResource
-import de.solidblocks.cloud.provisioner.hetzner.cloud.network.SubnetLookup
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResource
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.VolumeLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 
 class HetznerServer(
-    override val name: String,
+    name: String,
     val location: String,
     val type: String,
     val userData: UserData,
-    val volumes: Set<VolumeLookup> = emptySet(),
+    val volumes: Set<HetznerVolumeLookup> = emptySet(),
     val sshKeys: Set<HetznerSSHKeyLookup> = emptySet(),
-    val extraDependsOn: Set<InfrastructureResource<*>> = emptySet(),
+    dependsOn: Set<BaseInfrastructureResource<*>> = emptySet(),
     labels: Map<String, String> = emptyMap(),
     val image: String = "debian-12",
-    val subnet: SubnetLookup? = null,
-) : LabeledInfrastructureResource<HetznerServerRuntime>(labels) {
+    val subnet: HetznerSubnetLookup? = null,
+) : BaseLabeledInfrastructureResource<HetznerServerRuntime>(name, setOfNotNull(subnet, userData) + userData.dependsOn + sshKeys + dependsOn, labels) {
 
-  override val dependsOn =
-      setOfNotNull(subnet, userData) + userData.dependsOn + sshKeys + extraDependsOn
+    fun asLookup() = HetznerServerLookup(name)
 
-  fun asLookup() = HetznerServerLookup(name)
+    override fun logText() = "server '$name'"
 
-  override fun logText() = "server '$name'"
+    override val lookupType = HetznerServerLookup::class
 }

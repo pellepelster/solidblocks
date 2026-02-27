@@ -4,20 +4,16 @@ import de.solidblocks.cloud.api.InfrastructureResourceHelp
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
-import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.*
-import de.solidblocks.cloud.providers.hetzner.HetznerProviderRegistration
-import de.solidblocks.cloud.providers.pass.PassProviderRegistration
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime
-import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderRegistration
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.DnsZoneLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationManager
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.forService
-import de.solidblocks.cloud.services.s3.S3ServiceRegistration
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -25,16 +21,7 @@ import de.solidblocks.utils.*
 import java.io.File
 import kotlin.io.path.absolutePathString
 
-class CloudManager(val cloudConfigFile: File) {
-
-    val serviceRegistrations = listOf(S3ServiceRegistration())
-
-    val providerRegistrations =
-        listOf(
-            HetznerProviderRegistration(),
-            PassProviderRegistration(),
-            LocalSSHKeyProviderRegistration(),
-        )
+class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
     data class CloudRuntime(
         val configuration: CloudConfigurationRuntime,
@@ -185,11 +172,14 @@ class CloudManager(val cloudConfigFile: File) {
         val runtime = CloudRuntime(cloudConfiguration, providers, services)
         val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
 
-        val rootDomain =
-            cloudProvisioner.provisionerContext.lookup(DnsZoneLookup(runtime.configuration.rootDomain))
+        if (runtime.configuration.rootDomain == null) {
+            logWarning("no configuration found for '${CloudConfigurationFactory.rootDomain.name}', created services will only be reachable via IP address. Depending on the service this may lead to limited functionality.")
+        } else {
+            cloudProvisioner.provisionerContext.lookup(HetznerDnsZoneLookup(runtime.configuration.rootDomain))
                 ?: return Error<CloudRuntime>(
                     "no zone found for root domain '${runtime.configuration.rootDomain}'",
                 )
+        }
 
         logSuccess("cloud configuration '${cloudConfiguration.name}' is valid", context = log)
         return Success(runtime)

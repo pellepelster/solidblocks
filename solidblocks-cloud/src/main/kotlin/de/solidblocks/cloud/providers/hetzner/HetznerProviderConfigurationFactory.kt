@@ -18,7 +18,7 @@ class HetznerProviderConfigurationFactory :
             "name",
             KeywordHelp(
                 "TODO",
-                "TODO",
+                "Name for the provider, can be omitted if only one provider of this specific type is configured",
             ),
         ).optional(DEFAULT_NAME)
 
@@ -27,7 +27,7 @@ class HetznerProviderConfigurationFactory :
             "default-location",
             KeywordHelp(
                 "TODO",
-                "TODO",
+                "Default location for created infrastructure resources",
             ),
         ).optional("nbg1")
 
@@ -36,12 +36,11 @@ class HetznerProviderConfigurationFactory :
             "default-instance-type",
             KeywordHelp(
                 "TODO",
-                "TODO",
+                "Default instance size for virtual machines",
             ),
         ).optional("cx23")
 
-    override val help: ConfigurationHelp
-        get() = TODO("Not yet implemented")
+    override val help = ConfigurationHelp("Hetzner", "Provides Hetzner Cloud based infrastructure resources. An API key with read/write access must be provided via the environment variable `HCLOUD_TOKEN`.")
 
     override val keywords = listOf(name, defaultLocation, defaultInstanceType)
 

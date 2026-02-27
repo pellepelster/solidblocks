@@ -1,9 +1,7 @@
 package de.solidblocks.cloud.provisioner.mock
 
 import de.solidblocks.cloud.api.endpoint.Endpoint
-import de.solidblocks.cloud.api.resources.InfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 
-data class Resource1Runtime(val name: String, val endpoints: List<Endpoint>) :
-    InfrastructureResourceRuntime {
-  override fun endpoints() = endpoints
-}
+class Resource1Runtime(val name: String, endpoints: List<Endpoint>) :
+    BaseInfrastructureResourceRuntime(endpoints)

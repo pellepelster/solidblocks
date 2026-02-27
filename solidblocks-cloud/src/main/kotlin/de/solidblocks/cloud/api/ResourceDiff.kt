@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.api
 
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.resources.InfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import java.io.StringWriter
 
 fun List<ResourceDiff>.logText(): String {
@@ -37,7 +37,7 @@ enum class ResourceDiffStatus {
 }
 
 class ResourceDiff(
-    val resource: InfrastructureResource<*>,
+    val resource: BaseInfrastructureResource<*>,
     val status: ResourceDiffStatus,
     val duplicateErrorMessage: String? = null,
     val changes: List<ResourceDiffItem> = emptyList(),

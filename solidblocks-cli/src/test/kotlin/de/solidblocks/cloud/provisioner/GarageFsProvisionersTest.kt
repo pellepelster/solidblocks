@@ -3,9 +3,7 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.healthcheck.SSHClientTest
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
@@ -35,7 +33,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldHaveLength
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.util.UUID
+import java.util.*
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -50,7 +48,7 @@ class GarageFsProvisionersTest {
 
   private val logger = LoggerFactory.getLogger(GarageFsProvisionersTest::class.java)
 
-  val garagefs =
+  val garageFsContainer =
       GenericContainer(
               ImageFromDockerfile()
                   .withFileFromClasspath("Dockerfile", "garagefs/Dockerfile")
@@ -69,24 +67,26 @@ class GarageFsProvisionersTest {
 
   @BeforeAll
   fun setup() {
-    await().until { garagefs.execInContainer("/garage", "status").exitCode == 0 }
+    await().until { garageFsContainer.execInContainer("/garage", "status").exitCode == 0 }
 
-    val stdout = garagefs.execInContainer("/garage", "status").stdout
+    val stdout = garageFsContainer.execInContainer("/garage", "status").stdout
     val nodeId = stdout.lines()[2].split(" ").first()
 
-    garagefs.execInContainer("/garage", "layout", "assign", "-z", "dc1", "-c", "1G", nodeId).also {
+    garageFsContainer
+        .execInContainer("/garage", "layout", "assign", "-z", "dc1", "-c", "1G", nodeId)
+        .also {
+          if (it.exitCode != 0) {
+            throw RuntimeException(it.stderr)
+          }
+        }
+
+    garageFsContainer.execInContainer("/garage", "layout", "show").also {
       if (it.exitCode != 0) {
         throw RuntimeException(it.stderr)
       }
     }
 
-    garagefs.execInContainer("/garage", "layout", "show").also {
-      if (it.exitCode != 0) {
-        throw RuntimeException(it.stderr)
-      }
-    }
-
-    garagefs.execInContainer("/garage", "layout", "apply", "--version", "1").also {
+    garageFsContainer.execInContainer("/garage", "layout", "apply", "--version", "1").also {
       if (it.exitCode != 0) {
         throw RuntimeException(it.stderr)
       }
@@ -94,7 +94,10 @@ class GarageFsProvisionersTest {
 
     runBlocking {
       System.getProperties()
-          .setProperty(ApiClient.baseUrlKey, "http://localhost:${garagefs.getMappedPort(3903)}")
+          .setProperty(
+              ApiClient.baseUrlKey,
+              "http://localhost:${garageFsContainer.getMappedPort(3903)}",
+          )
       ApiClient.accessToken = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       println(ClusterApi().getClusterHealth().status)
 
@@ -123,7 +126,7 @@ class GarageFsProvisionersTest {
             null,
             "127.0.0.1",
             emptyList(),
-            sshPort = garagefs.getMappedPort(22),
+            sshPort = garageFsContainer.getMappedPort(22),
         )
     coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
 
@@ -169,7 +172,8 @@ class GarageFsProvisionersTest {
         )
 
     val adminToken = PassSecret("admin_token")
-    val bucket = GarageFsBucket(UUID.randomUUID().toString(), server, adminToken)
+    val bucketName = UUID.randomUUID().toString()
+    val bucket = GarageFsBucket(bucketName, server, adminToken)
     val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)
 
     runBlocking {
@@ -195,7 +199,9 @@ class GarageFsProvisionersTest {
       }
       assertSoftly(bucketProvisioner.diff(bucket, context)) { it.status shouldBe up_to_date }
 
-      assertSoftly(bucketProvisioner.diff(bucket.copy(websiteAccess = true), context)) {
+      val bucketWithWebsiteAccess =
+          GarageFsBucket(bucketName, server, adminToken, websiteAccess = true)
+      assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
         it.status shouldBe has_changes
         it.changes shouldHaveSize 1
         it.changes[0].expectedValue shouldBe true
@@ -204,19 +210,28 @@ class GarageFsProvisionersTest {
 
       bucketProvisioner
           .apply(
-              bucket.copy(websiteAccess = true),
+              bucketWithWebsiteAccess,
               context,
               TEST_LOG_CONTEXT,
           )
           .runtime!!
           .name shouldBe bucket.name
-      assertSoftly(bucketProvisioner.diff(bucket.copy(websiteAccess = true), context)) {
+      assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
         it.status shouldBe up_to_date
       }
 
+      val bucketWithWebsiteAccessDomains =
+          GarageFsBucket(
+              bucketName,
+              server,
+              adminToken,
+              websiteAccess = true,
+              websiteAccessDomains = listOf("yolo.de"),
+          )
+
       assertSoftly(
           bucketProvisioner.diff(
-              bucket.copy(websiteAccess = true, websiteAccessDomains = listOf("yolo.de")),
+              bucketWithWebsiteAccessDomains,
               context,
           ),
       ) {
@@ -228,7 +243,7 @@ class GarageFsProvisionersTest {
 
       bucketProvisioner
           .apply(
-              bucket.copy(websiteAccess = true, websiteAccessDomains = listOf("yolo.de")),
+              bucketWithWebsiteAccessDomains,
               context,
               TEST_LOG_CONTEXT,
           )
@@ -237,7 +252,7 @@ class GarageFsProvisionersTest {
 
       assertSoftly(
           bucketProvisioner.diff(
-              bucket.copy(websiteAccess = true, websiteAccessDomains = listOf("yolo.de")),
+              bucketWithWebsiteAccessDomains,
               context,
           ),
       ) {
