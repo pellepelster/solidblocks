@@ -6,6 +6,8 @@ import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisioner
+import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayout
+import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayoutProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermission
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -17,10 +19,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.garagefs.ApplyClusterLayoutRequest
-import de.solidblocks.garagefs.ClusterLayoutNodeRequest
 import de.solidblocks.garagefs.GarageFsApi
-import de.solidblocks.garagefs.UpdateClusterLayoutRequest
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
 import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
@@ -67,30 +66,8 @@ class GarageFsProvisionersTest {
 
         runBlocking {
             val api = GarageFsApi("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "http://localhost:${garageFsContainer.getMappedPort(3903)}")
-
-            val status = api.getClusterStatus()
-
-            val layout = api.layoutApi.getClusterLayout()
-
-            /*
-            if (layout.stagedRoleChanges?.isNotEmpty()) {
-                api.revertClusterLayout()
-            }*/
-
-            val request = UpdateClusterLayoutRequest(
-                roles = status.nodes.map {
-                    ClusterLayoutNodeRequest(it.id, 4 * 1000 * 1000, emptyList(), "dc1")
-                }
-            )
-
-            val response = api.layoutApi.updateClusterLayout(request)
-            api.layoutApi.applyClusterLayout(ApplyClusterLayoutRequest(response.version!! + 1))
-
-            api.bucketApi.listBuckets().forEach {
-                println(it)
-            }
-
-
+            val status = api.clusterApi.getClusterStatus()
+            println(status)
         }
     }
 
@@ -133,6 +110,7 @@ class GarageFsProvisionersTest {
         val bucketProvisioner = GarageFsBucketProvisioner()
         val accessKeyProvisioner = GarageFsAccessKeyProvisioner()
         val permissionProvisioner = GarageFsPermissionProvisioner()
+        val layoutProvisioner = GarageFsLayoutProvisioner()
 
         val context =
             TEST_PROVISIONER_CONTEXT.copy(
@@ -161,6 +139,11 @@ class GarageFsProvisionersTest {
         val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)
 
         runBlocking {
+            val layout = GarageFsLayout(UUID.randomUUID().toString(), 1 * 1000 * 1000, server, adminToken)
+            layoutProvisioner.lookup(layout.asLookup(), context) shouldBe null
+            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+
             // check non-existing bucket
             bucketProvisioner.lookup(bucket.asLookup(), context) shouldBe null
             assertSoftly(bucketProvisioner.diff(bucket, context)) { it.status shouldBe ResourceDiffStatus.missing }

@@ -10,35 +10,13 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-
-@Serializable
-data class ClusterStatusNodeResponse(val id: String)
-
-@Serializable
-data class ClusterLayoutNodeResponse(
-    val capacity: Long,
-    val id: String,
-    val zone: String,
-    val tags: List<String>,
-)
-
-@Serializable
-data class ClusterLayoutNodeRequest(
-    val id: String,
-    val capacity: Long,
-    val tags: List<String> = emptyList(),
-    val zone: String,
-)
-
-@Serializable
-data class ClusterStatusResponse(val nodes: List<ClusterStatusNodeResponse>)
 
 
 class GarageFsApi(val apiToken: String, val baseAddress: String = "http://localhost:3903") {
 
-    val layoutApi = ClusterLayoutApi(this)
+    val clusterApi = ClusterApi(this)
+    val clusterLayoutApi = ClusterLayoutApi(this)
     val bucketApi = BucketApi(this)
     val bucketAliasApi = BucketAliasApi(this)
     val accessKeyApi = AccessKeyApi(this)
@@ -110,6 +88,5 @@ class GarageFsApi(val apiToken: String, val baseAddress: String = "http://localh
             }
             .handle<T>()
 
-    suspend fun getClusterStatus() = get<ClusterStatusResponse>("v2/GetClusterStatus")
 
 }
