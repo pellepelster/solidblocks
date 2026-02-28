@@ -7,9 +7,10 @@ import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.garagefs.BucketKeyPermChangeRequest
+import de.solidblocks.garagefs.BucketKeyPermRequest
+import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.utils.LogContext
-import fr.deuxfleurs.garagehq.model.ApiBucketKeyPerm
-import fr.deuxfleurs.garagehq.model.BucketKeyPermChangeRequest
 import kotlin.reflect.KClass
 
 class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
@@ -17,8 +18,8 @@ class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupP
 
     suspend fun lookupInternal(lookup: GarageFsPermissionLookup, context: ProvisionerContext): Result<GarageFsPermissionRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
-            is Error<ApiClients> -> Error(apis.error)
-            is Success<ApiClients> -> {
+            is Error<GarageFsApi> -> Error(apis.error)
+            is Success<GarageFsApi> -> {
                 val bucket = context.lookup(lookup.bucket) ?: return@withApiClients Success(null)
                 val accessKey = context.lookup(lookup.accessKey) ?: return@withApiClients Success(null)
                 val permission = apis.data.accessKeyApi.getKeyInfo(accessKey.id).buckets.singleOrNull {
@@ -57,22 +58,22 @@ class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupP
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
             val apis = when (it) {
-                is Error<ApiClients> -> throw RuntimeException(it.error)
-                is Success<ApiClients> -> it.data
+                is Error<GarageFsApi> -> throw RuntimeException(it.error)
+                is Success<GarageFsApi> -> it.data
             }
 
             apis.permissionApi.allowBucketKey(
                 BucketKeyPermChangeRequest(
                     accessKey.id,
                     bucket.id,
-                    ApiBucketKeyPerm(resource.owner, resource.read, resource.write),
+                    BucketKeyPermRequest(resource.owner, resource.read, resource.write),
                 ),
             )
             apis.permissionApi.denyBucketKey(
                 BucketKeyPermChangeRequest(
                     accessKey.id,
                     bucket.id,
-                    ApiBucketKeyPerm(!resource.owner, !resource.read, !resource.write),
+                    BucketKeyPermRequest(!resource.owner, !resource.read, !resource.write),
                 ),
             )
         }

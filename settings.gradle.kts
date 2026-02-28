@@ -25,5 +25,5 @@ include(
     "solidblocks-cloud",
     "solidblocks-utils",
     "solidblocks-web-s3-docker-hetzner",
-    "solidblocks-fr-deuxfleurs-garagehq"
+    "solidblocks-garagefs",
 )

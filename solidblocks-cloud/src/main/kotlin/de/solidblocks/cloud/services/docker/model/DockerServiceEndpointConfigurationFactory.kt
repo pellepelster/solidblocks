@@ -1,12 +1,8 @@
 package de.solidblocks.cloud.services.docker.model
 
 import com.charleskorn.kaml.YamlNode
-import de.solidblocks.cloud.configuration.ConfigurationFactory
-import de.solidblocks.cloud.configuration.KeywordHelp
+import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.NumberConstraints.Companion.IP_PORTS
-import de.solidblocks.cloud.configuration.NumberKeyword
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -22,14 +18,31 @@ class DockerServiceEndpointConfigurationFactory : ConfigurationFactory<DockerSer
             "port",
             IP_PORTS,
             KeywordHelp(
-                "Unique name for the endpoint",
+                "Service port on the docker container",
             ),
         )
+
+    val endpointTypes = StringConstraints(
+        options = listOf(
+            "http",
+        )
+    )
+
+    val type =
+        StringKeywordOptionalWithDefault(
+            "type",
+            endpointTypes,
+            endpointTypes.options.first(),
+            KeywordHelp(
+                "Type of the service endpoints. Endpoints with the type `http` are automatically terminated with TLS if a `root_domain` is set.",
+            )
+        )
+
 
     override val help: ConfigurationHelp
         get() = TODO("Not yet implemented")
 
-    override val keywords = listOf(port)
+    override val keywords = listOf(port, type)
 
     override fun parse(yaml: YamlNode): Result<DockerServiceEndpointConfiguration> {
         val port =

@@ -32,7 +32,6 @@ dependencies {
 
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.reflections:reflections:0.10.2")
-    testImplementation(project(":solidblocks-fr-deuxfleurs-garagehq"))
     testImplementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }

@@ -3,11 +3,16 @@ package de.solidblocks.cloud.provisioner.garagefs.bucket
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.garagefs.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.garagefs.BucketAliasRequest
+import de.solidblocks.garagefs.CreateBucketRequest
+import de.solidblocks.garagefs.GarageFsApi
+import de.solidblocks.garagefs.UpdateBucketRequest
+import de.solidblocks.garagefs.UpdateBucketWebsiteAccess
 import de.solidblocks.utils.LogContext
-import fr.deuxfleurs.garagehq.model.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -69,8 +74,8 @@ class GarageFsBucketProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvi
 
     private suspend fun lookupInternal(lookup: GarageFsBucketLookup, context: ProvisionerContext): Result<GarageFsBucketRuntime?> = context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
         when (apis) {
-            is Error<ApiClients> -> Error(apis.error)
-            is Success<ApiClients> -> Success(apis.data.bucketApi.listBuckets().firstOrNull { it.globalAliases.contains(lookup.name) }?.let {
+            is Error<GarageFsApi> -> Error(apis.error)
+            is Success<GarageFsApi> -> Success(apis.data.bucketApi.listBuckets().firstOrNull { it.globalAliases.contains(lookup.name) }?.let {
                 val bucketInfo = apis.data.bucketApi.getBucketInfo(it.id)
                 GarageFsBucketRuntime(lookup.name, it.id, bucketInfo.websiteAccess, bucketInfo.globalAliases)
             })
@@ -86,28 +91,27 @@ class GarageFsBucketProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvi
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
             val apis = when (it) {
-                is Error<ApiClients> -> throw RuntimeException(it.error)
-                is Success<ApiClients> -> it.data
+                is Error<GarageFsApi> -> throw RuntimeException(it.error)
+                is Success<GarageFsApi> -> it.data
             }
 
             val bucketId = current?.id ?: apis.bucketApi.createBucket(CreateBucketRequest(resource.name)).id
 
             val globalAliasesWithOutOwnName = current?.globalAliases?.filter { it != resource.name } ?: emptyList()
-
             val globalAliasesToRemove = globalAliasesWithOutOwnName.filter { !resource.websiteAccessDomains.contains(it) }
             val globalAliasesToAdd = resource.websiteAccessDomains.filter { !globalAliasesWithOutOwnName.contains(it) }
 
             globalAliasesToRemove.forEach {
-                apis.bucketAliasApi.removeBucketAlias(RemoveBucketAliasRequest(bucketId = bucketId, globalAlias = it, accessKeyId = "", localAlias = ""))
+                apis.bucketAliasApi.removeBucketAlias(BucketAliasRequest(bucketId = bucketId, globalAlias = it, accessKeyId = "", localAlias = ""))
             }
 
             globalAliasesToAdd.forEach {
-                apis.bucketAliasApi.addBucketAlias(AddBucketAliasRequest(bucketId = bucketId, globalAlias = it, accessKeyId = "", localAlias = ""))
+                apis.bucketAliasApi.addBucketAlias(BucketAliasRequest(bucketId = bucketId, globalAlias = it, accessKeyId = "", localAlias = ""))
             }
 
             apis.bucketApi.updateBucket(
                 bucketId,
-                UpdateBucketRequestBody(
+                UpdateBucketRequest(
                     websiteAccess = UpdateBucketWebsiteAccess(
                         indexDocument = if (resource.websiteAccess) {
                             "index.html"

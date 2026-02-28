@@ -35,7 +35,7 @@ class CloudInitUserDataTest {
 
     val cloudInitUserData = CloudInitUserData()
     cloudInitUserData.addCommand(StorageLibrary.Mount(volume.linuxDevice, "/storage/data"))
-    cloudInitUserData.addCommand(File(randomContent.toByteArray(), "/tmp/foo-bar"))
+    cloudInitUserData.addCommand(WriteFile(randomContent.toByteArray(), "/tmp/foo-bar"))
 
     val serverTestContext =
         hetznerTestContext.createServer(

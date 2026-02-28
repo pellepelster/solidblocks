@@ -3,16 +3,6 @@ package de.solidblocks.systemd
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-/**
- * [de.solidblocks.systemd.Unit] Description=Garage Data Store After=network-online.target
- * Wants=network-online.target
- *
- * [de.solidblocks.systemd.Service] Environment='RUST_LOG=garage=info' 'RUST_BACKTRACE=1'
- * ExecStart=/usr/local/bin/garage server
- * StateDirectory=garage #DynamicUser=true #ProtectHome=true #NoNewPrivileges=true LimitNOFILE=42000
- *
- * [Install] WantedBy=multi-user.target
- */
 class SystemDConfigTest {
 
   @Test
@@ -32,7 +22,7 @@ class SystemDConfigTest {
         [Unit]
         Description=foo-bar
         After=network-online.target
-        Wants=network-online.target
+        Requires=network-online.target
 
         [Service]
         Environment="foo=bar"

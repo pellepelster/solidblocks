@@ -6,12 +6,13 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.garagefs.CreateKeyRequest
+import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
-import fr.deuxfleurs.garagehq.model.UpdateKeyRequestBody
 import kotlin.reflect.KClass
 
 class GarageFsAccessKeyProvisioner :
@@ -39,8 +40,8 @@ class GarageFsAccessKeyProvisioner :
     suspend fun lookupInternal(lookup: GarageFsAccessKeyLookup, context: ProvisionerContext): Result<GarageFsAccessKeyRuntime?> =
         context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
             when (apis) {
-                is Error<ApiClients> -> Error(apis.error)
-                is Success<ApiClients> -> apis.data.accessKeyApi.listKeys().firstOrNull { it.name == lookup.name }
+                is Error<GarageFsApi> -> Error(apis.error)
+                is Success<GarageFsApi> -> apis.data.accessKeyApi.listKeys().firstOrNull { it.name == lookup.name }
                     ?.let {
                         val keyInfo = apis.data.accessKeyApi.getKeyInfo(it.id, showSecretKey = true)
 
@@ -66,11 +67,11 @@ class GarageFsAccessKeyProvisioner :
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
             val apis = when (it) {
-                is Error<ApiClients> -> throw RuntimeException(it.error)
-                is Success<ApiClients> -> it.data
+                is Error<GarageFsApi> -> throw RuntimeException(it.error)
+                is Success<GarageFsApi> -> it.data
             }
 
-            apis.accessKeyApi.createKey(UpdateKeyRequestBody(name = resource.name))
+            apis.accessKeyApi.createKey(CreateKeyRequest(name = resource.name))
         }
 
         return ApplyResult(lookup(resource.asLookup(), context))

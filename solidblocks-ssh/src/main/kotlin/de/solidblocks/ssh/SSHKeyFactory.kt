@@ -49,7 +49,7 @@ abstract class SSHKeyFactory {
         val privateKey = OpenSSHPrivateKeyUtil.parsePrivateKeyBlob(key.readPemObject().content)
         privateKey.toKeyPair()
       } catch (e: Exception) {
-        logger.error(e) { "could not load private key" }
+        logger.warn { "could not load private key" }
         null
       }
 
