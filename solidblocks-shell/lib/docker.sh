@@ -31,5 +31,22 @@ function docker_remove_network() {
     log_echo_info "removing docker network '${name}'"
     docker network remove "${name}"
   fi
+}
 
+function docker_install_debian() {
+  apt-get update -y
+  apt-get install --no-install-recommends --no-install-suggests --yes ca-certificates curl
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  echo "1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570  /etc/apt/keyrings/docker.asc" | sha256sum -c
+  chmod a+r /etc/apt/keyrings/docker.asc
+  tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+  apt-get update -y
+  apt-get install  --no-install-recommends --no-install-suggests --yes docker-ce docker-ce-cli containerd.io docker-compose-plugin
 }
