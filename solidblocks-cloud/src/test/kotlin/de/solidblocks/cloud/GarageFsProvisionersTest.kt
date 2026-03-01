@@ -140,9 +140,23 @@ class GarageFsProvisionersTest {
 
         runBlocking {
             val layout = GarageFsLayout(UUID.randomUUID().toString(), 1 * 1000 * 1000, server, adminToken)
-            layoutProvisioner.lookup(layout.asLookup(), context) shouldBe null
+
+            assertSoftly(layoutProvisioner.diff(layout, context)) {
+                it.status shouldBe ResourceDiffStatus.has_changes
+                it.changes shouldHaveSize 1
+            }
+
             layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+            assertSoftly(layoutProvisioner.diff(layout, context)) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+                it.changes shouldHaveSize 0
+            }
+
             layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+            assertSoftly(layoutProvisioner.diff(layout, context)) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+                it.changes shouldHaveSize 0
+            }
 
             // check non-existing bucket
             bucketProvisioner.lookup(bucket.asLookup(), context) shouldBe null

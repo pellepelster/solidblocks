@@ -3,6 +3,8 @@ package de.solidblocks.cloud.provisioner.garagefs.layout
 import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffItem
+import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
@@ -22,38 +24,49 @@ class GarageFsLayoutProvisioner :
     ResourceLookupProvider<GarageFsLayoutLookup, GarageFsLayoutRuntime>,
     InfrastructureResourceProvisioner<GarageFsLayout, GarageFsLayoutRuntime> {
 
+    infix fun <T> List<T>.equalsIgnoreOrder(other: List<T>) = this.size == other.size && this.toSet() == other.toSet()
+
     override suspend fun diff(resource: GarageFsLayout, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
-        is Error<GarageFsLayoutRuntime?> -> ResourceDiff(resource, unknown)
-        is Success<GarageFsLayoutRuntime?> -> {
-            if (result.data == null) {
-                ResourceDiff(resource, missing)
-            } else {
-                ResourceDiff(resource, up_to_date)
+        is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
+        is Success<GarageFsLayoutRuntime> -> {
+            context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) { apis ->
+                when (apis) {
+                    is Error<GarageFsApi> -> ResourceDiff(resource, unknown)
+                    is Success<GarageFsApi> -> {
+                        val status = apis. data.clusterApi.getClusterStatus()
+
+                        if (status.nodes.map { it.id } equalsIgnoreOrder result.data.nodes) {
+                            ResourceDiff(resource, up_to_date)
+                        } else {
+                            ResourceDiff(resource, has_changes, changes = listOf(ResourceDiffItem(
+                                "nodes",
+                                expectedValue = status.nodes.joinToString(", ") { it.id },
+                                actualValue = result.data.nodes.joinToString(", ") { it },
+                            )))
+                        }
+                    }
+                }
             }
+
         }
     }
 
+
     override suspend fun lookup(lookup: GarageFsLayoutLookup, context: ProvisionerContext) =
         when (val result = lookupInternal(lookup, context)) {
-            is Error<GarageFsLayoutRuntime?> -> null
-            is Success<GarageFsLayoutRuntime?> -> result.data
+            is Error<GarageFsLayoutRuntime> -> null
+            is Success<GarageFsLayoutRuntime> -> result.data
         }
 
-    suspend fun lookupInternal(lookup: GarageFsLayoutLookup, context: ProvisionerContext): Result<GarageFsLayoutRuntime?> =
+    suspend fun lookupInternal(lookup: GarageFsLayoutLookup, context: ProvisionerContext): Result<GarageFsLayoutRuntime> =
         context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
             when (apis) {
                 is Error<GarageFsApi> -> Error(apis.error)
                 is Success<GarageFsApi> -> {
                     val layout = apis.data.clusterLayoutApi.getClusterLayout()
-
-                    if (layout.nodes == null) {
-                        Success(null)
-                    } else {
-                        Success(GarageFsLayoutRuntime(lookup.name, layout.nodes!!.map { it.id }))
-                    }
+                    Success(GarageFsLayoutRuntime(lookup.name, layout.roles!!.map { it.id }))
                 }
             }
-
         }
 
     override suspend fun apply(
@@ -62,9 +75,6 @@ class GarageFsLayoutProvisioner :
         log: LogContext,
     ): ApplyResult<GarageFsLayoutRuntime> {
         val runtime = lookup(resource.asLookup(), context)
-        if (runtime != null) {
-            return ApplyResult(runtime)
-        }
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
             val api = when (it) {
@@ -78,16 +88,21 @@ class GarageFsLayoutProvisioner :
                 api.revertClusterLayout()
             }*/
 
-            val status = api.clusterApi.getClusterStatus()
+            val statusNodeIds = api.clusterApi.getClusterStatus().nodes.map { it.id }
+            val layoutNodeIds = (api.clusterLayoutApi.getClusterLayout().roles?: emptyList()).map { it.id }
 
-            val request = UpdateClusterLayoutRequest(
-                roles = status.nodes.map {
-                    ClusterLayoutNodeRequest(it.id, resource.capacity, emptyList(), "dc1")
-                }
-            )
+            val nodesToAdd = statusNodeIds.filter { !layoutNodeIds.contains(it) }
 
-            val response = api.clusterLayoutApi.updateClusterLayout(request)
-            api.clusterLayoutApi.applyClusterLayout(ApplyClusterLayoutRequest(response.version!! + 1))
+            if (nodesToAdd.isNotEmpty()) {
+                val request = UpdateClusterLayoutRequest(
+                    roles = nodesToAdd.map {
+                        ClusterLayoutNodeRequest(it, resource.capacity, emptyList(), "dc1")
+                    }
+                )
+
+                val response = api.clusterLayoutApi.updateClusterLayout(request)
+                api.clusterLayoutApi.applyClusterLayout(ApplyClusterLayoutRequest(response.version!! + 1))
+            }
         }
 
         return ApplyResult(lookup(resource.asLookup(), context))

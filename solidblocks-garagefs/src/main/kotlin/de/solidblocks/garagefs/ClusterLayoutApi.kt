@@ -3,7 +3,7 @@ package de.solidblocks.garagefs
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ClusterLayoutResponse(val version: Int? = null, val nodes: List<ClusterLayoutNodeResponse>? = null, val stagedRoleChanges: List<ClusterLayoutNodeResponse>? = null)
+data class ClusterLayoutResponse(val version: Int? = null, val roles: List<ClusterLayoutNodeResponse>? = null, val stagedRoleChanges: List<ClusterLayoutNodeResponse>? = null)
 
 @Serializable
 data class ClusterLayoutHistoryVersionResponse(val status: String, val version: Int)
