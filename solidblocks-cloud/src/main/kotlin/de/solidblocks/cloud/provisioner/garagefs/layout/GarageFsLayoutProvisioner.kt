@@ -82,14 +82,13 @@ class GarageFsLayoutProvisioner :
                 is Success<GarageFsApi> -> it.data
             }
 
-            /*
-            TODO
-            if (layout.stagedRoleChanges?.isNotEmpty()) {
-                api.revertClusterLayout()
-            }*/
+            val layout = api.clusterLayoutApi.getClusterLayout()
+            if ((layout.stagedRoleChanges?: emptyList()).isNotEmpty()) {
+                throw RuntimeException("GarageFs has unexpected pending changes: ${(layout.stagedRoleChanges?: emptyList()).joinToString(",")}")
+            }
 
             val statusNodeIds = api.clusterApi.getClusterStatus().nodes.map { it.id }
-            val layoutNodeIds = (api.clusterLayoutApi.getClusterLayout().roles?: emptyList()).map { it.id }
+            val layoutNodeIds = (layout.roles?: emptyList()).map { it.id }
 
             val nodesToAdd = statusNodeIds.filter { !layoutNodeIds.contains(it) }
 
