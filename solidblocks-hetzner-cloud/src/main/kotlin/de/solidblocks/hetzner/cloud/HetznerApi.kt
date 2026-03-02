@@ -135,16 +135,14 @@ public class HetznerApi(hcloudToken: String) {
           .post(path) {
             contentType(ContentType.Application.Json)
             data?.let { this.setBody(it) }
-          }
-          .handle<T>()
+          }.handle<T>()
 
   internal suspend inline fun <reified T> put(path: String, data: Any? = null): T? =
       client
           .put(path) {
             contentType(ContentType.Application.Json)
             data?.let { this.setBody(it) }
-          }
-          .handle<T>()
+          }.handle<T>()
 
   internal suspend inline fun <reified T> get(path: String): T? = client.get(path).handle<T>()
 

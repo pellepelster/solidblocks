@@ -7,23 +7,23 @@ import de.solidblocks.hetzner.cloud.model.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DnsZoneListResponseWrapper(val zones: List<DnsZone>, override val meta: MetaResponse) :
-    ListResponse<DnsZone> {
+data class DnsZoneListResponseWrapper(val zones: List<HetznerDnsZone>, override val meta: MetaResponse) :
+    ListResponse<HetznerDnsZone> {
 
-  override val list: List<DnsZone>
+  override val list: List<HetznerDnsZone>
     get() = zones
 }
 
-@Serializable data class DnsZoneResponseWrapper(val zone: DnsZone)
+@Serializable data class DnsZoneResponseWrapper(val zone: HetznerDnsZone)
 
 @Serializable
-data class DnsZone(
+data class HetznerDnsZone(
     override val id: Long,
     override val name: String,
     override val protection: HetznerDeleteProtectionResponse,
 ) : HetznerDeleteProtectedResource<Long>
 
-class HetznerDnsZonesApi(private val api: HetznerApi) : HetznerBaseResourceApi<DnsZone> {
+class HetznerDnsZonesApi(private val api: HetznerApi) : HetznerBaseResourceApi<HetznerDnsZone> {
 
   suspend fun get(name: String) = api.get<DnsZoneResponseWrapper>("v1/zones/$name")
 

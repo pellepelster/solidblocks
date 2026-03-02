@@ -1,27 +1,28 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 
-import de.solidblocks.cloud.api.ApplyResult
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
-import de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest
+import de.solidblocks.hetzner.cloud.resources.DnsRRSetsRecordsUpdateRequest
+import de.solidblocks.hetzner.cloud.resources.DnsRRSetsTTLUpdateRequest
+import de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord
 import de.solidblocks.hetzner.cloud.resources.RRType
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
+import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class HetznerDnsRecordProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerDnsRecordLookup, HetznerDnsRecordRuntime>,
     InfrastructureResourceProvisioner<HetznerDnsRecord, HetznerDnsRecordRuntime> {
+
+    private val logger = KotlinLogging.logger {}
 
     override suspend fun lookup(
         lookup: HetznerDnsRecordLookup,
@@ -34,7 +35,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         return HetznerDnsRecordRuntime(
             record.rrset.id,
             record.rrset.name,
-            record.ttl,
+            record.rrset.ttl,
             zone.name,
             record.rrset.records.map { it.value },
         )
@@ -43,7 +44,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
     override suspend fun diff(resource: HetznerDnsRecord, context: ProvisionerContext) =
         lookup(resource.asLookup(), context)?.let { runtime ->
             val changes = mutableListOf<ResourceDiffItem>()
- 
+
             if (runtime.ttl != resource.ttl) {
                 changes.add(
                     ResourceDiffItem(
@@ -84,14 +85,11 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         log: LogContext,
     ): ApplyResult<HetznerDnsRecordRuntime> {
         val current = lookup(resource.asLookup(), context)
-        if (current != null) {
-            return ApplyResult(current)
-        }
 
         val zone = context.lookup(resource.asLookup().zone) ?: return ApplyResult(null)
 
-        val serverRuntimes =
-            resource.values.map {
+        val serverIps =
+            resource.values.mapNotNull {
                 val runtime = context.lookup(it)
 
                 if (runtime == null) {
@@ -102,21 +100,44 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                     logWarning("server ${it.logText()} has no public ip address", context = log)
                 }
 
-                runtime
+                runtime?.publicIpv4
             }
 
-        val result =
-            api.dnsRrSets(zone.name)
-                .create(
-                    DnsRRSetsCreateRequest(
-                        resource.name,
-                        RRType.A,
-                        serverRuntimes.mapNotNull { it?.publicIpv4 }.map { DnsRRSetRecord(it) },
-                    ),
-                ) ?: return ApplyResult(null)
+        if (current != null) {
+            if (current.ttl != resource.ttl) {
+                logger.info { "updating ${resource.name}/${resource.type} TTL to ${resource.ttl}" }
+                val ttlUpdateResult = api.dnsRrSets(zone.name).updateTTL(resource.name, resource.type, DnsRRSetsTTLUpdateRequest(resource.ttl)) ?: return ApplyResult(null)
+                api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
+                    logInfo("waiting for TTL update on ${resource.logText()}", context = log)
+                }
+            }
+            if (!(current.values equalsIgnoreOrder serverIps)) {
+                logger.info { "updating ${resource.name}/${resource.type} values to ${serverIps.joinToString(",")}" }
+                val ttlUpdateResult = api.dnsRrSets(zone.name).updateRecords(resource.name, resource.type, DnsRRSetsRecordsUpdateRequest(
+                    serverIps.map {
+                        DnsRRSetRecord(it)
+                    }
+                )) ?: return ApplyResult(null)
+                api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
+                    logInfo("waiting for record update on ${resource.logText()}", context = log)
+                }
+            }
+
+        } else {
+            createRRSet(zone, resource, serverIps)
+        }
 
         return ApplyResult(lookup(resource.asLookup(), context))
     }
+
+    private suspend fun createRRSet(zone: HetznerDnsZoneRuntime, resource: HetznerDnsRecord, serverIps: List<String>) = api.dnsRrSets(zone.name).create(
+        DnsRRSetsCreateRequest(
+            resource.name,
+            resource.type,
+            ttl = resource.ttl,
+            serverIps.map { DnsRRSetRecord(it) },
+        ),
+    )
 
     override val supportedLookupType = HetznerDnsRecordLookup::class
 
