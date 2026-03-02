@@ -19,19 +19,14 @@ class LogTest {
 
   @Test
   fun testLogLevels() {
-    logInfoBlcks("some info message", LogSource.BLCKS)
     logInfo("some info message without source")
 
-    logErrorBlcks("some error message", LogSource.BLCKS)
     logError("some error message without source")
 
-    logSuccessBlcks("some success message", LogSource.BLCKS)
     logSuccess("some success message without source")
 
-    logWarningBlcks("some warning message", LogSource.BLCKS)
     logWarning("some warning message without source")
 
-    logDebugBlcks("some debug message", LogSource.BLCKS)
     logDebug("some debug message without source")
   }
 

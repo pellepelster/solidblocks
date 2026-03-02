@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
-import de.solidblocks.utils.logInfoBlcks
+import de.solidblocks.utils.logInfo
 
 class LoadBalancerReference(val reference: String)
 
@@ -165,7 +165,7 @@ class HetznerAsgRotateCommand : CliktCommand(name = "rotate") {
             )
 
     when (result) {
-      AsgRotateStatus.OK -> logInfoBlcks("rollout finished")
+      AsgRotateStatus.OK -> logInfo("rollout finished")
       AsgRotateStatus.TIMEOUT -> throw CliktError("rollout did not finish within timeout")
       AsgRotateStatus.LOADBALANCER_NOT_FOUND ->
           throw CliktError("loadbalancer '$loadbalancer' not found")

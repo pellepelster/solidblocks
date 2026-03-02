@@ -6,9 +6,9 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
-import de.solidblocks.utils.logErrorBlcks
-import de.solidblocks.utils.logInfoBlcks
-import de.solidblocks.utils.logWarningBlcks
+import de.solidblocks.utils.logError
+import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
@@ -38,31 +38,31 @@ class HetznerNukeCommand : CliktCommand(name = "nuke") {
 
       try {
         if (doNuke) {
-          logErrorBlcks("nuking all resources, running simulation...")
+          logError("nuking all resources, running simulation...")
 
           val result = nuker.simulate()
           if (result == 0) {
-            logInfoBlcks("no resources found to delete")
+            logInfo("no resources found to delete")
             return@runBlocking
           }
 
-          logInfoBlcks("will delete $result resources")
+          logInfo("will delete $result resources")
 
           var count = 15
           while (count > 0) {
-            logWarningBlcks("waiting before starting deletion, $count seconds left...")
+            logWarning("waiting before starting deletion, $count seconds left...")
             delay(1000L)
             count--
           }
 
           nuker.nuke()
         } else {
-          logInfoBlcks("running a simulated nuke, add '--do-nuke' to actually delete resources")
+          logInfo("running a simulated nuke, add '--do-nuke' to actually delete resources")
           val result = nuker.simulate()
-          logInfoBlcks("found $result resources to delete")
+          logInfo("found $result resources to delete")
         }
       } catch (e: HetznerApiException) {
-        logErrorBlcks("nuke failed error: ${e.error.message} (${e.error.code}) at '${e.url}'")
+        logError("nuke failed error: ${e.error.message} (${e.error.code}) at '${e.url}'")
       }
     }
   }

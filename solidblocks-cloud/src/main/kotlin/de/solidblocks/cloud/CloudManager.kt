@@ -9,6 +9,7 @@ import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime
+import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime.Companion.PRIVATE_KEY_PATH_PLACEHOLDER
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationManager
@@ -27,7 +28,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val configuration: CloudConfigurationRuntime,
         val providers: List<ProviderRuntime>,
         val services: List<ServiceConfigurationRuntime>,
-    )
+    ) {
+        fun sshKeyProvider() = providers.filterIsInstance<SSHKeyProviderRuntime>().single()
+    }
 
     fun validate(): Result<CloudRuntime> {
         var log = LogContext.default()
@@ -180,12 +183,12 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
         val result = cloudProvisioner.help(log)
 
-        val sshKeyRuntime = runtime.providers.filterIsInstance<SSHKeyProviderRuntime>().single()
+        val sshKeyProvider = runtime.sshKeyProvider()
 
         return when (result) {
             is Success<List<InfrastructureResourceHelp>> -> {
                 Success(result.data.map {
-                    InfrastructureResourceHelp(it.title, it.help.replace("<private_key_path>", sshKeyRuntime.privateKey.absolutePathString()))
+                    InfrastructureResourceHelp(it.title, it.help.replace(PRIVATE_KEY_PATH_PLACEHOLDER, sshKeyProvider.privateKey.absolutePathString()))
                 })
             }
 
@@ -200,4 +203,5 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
         return cloudProvisioner.plan(log)
     }
+
 }

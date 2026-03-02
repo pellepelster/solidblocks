@@ -1,9 +1,16 @@
 package de.solidblocks.cloud.provisioner.garagefs.bucket
 
-import de.solidblocks.cloud.api.*
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ApplyResult
+import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffItem
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
-import de.solidblocks.cloud.provisioner.garagefs.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -13,14 +20,9 @@ import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.garagefs.UpdateBucketRequest
 import de.solidblocks.garagefs.UpdateBucketWebsiteAccess
 import de.solidblocks.utils.LogContext
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
 class GarageFsBucketProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>, InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime> {
-
-    private val logger = KotlinLogging.logger {}
-
-    fun <T> equalsIgnoreOrder(list1: List<T>, list2: List<T>) = list1.size == list2.size && list1.toSet() == list2.toSet()
 
     override suspend fun diff(resource: GarageFsBucket, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsBucketRuntime?> -> ResourceDiff(resource, unknown)
@@ -32,7 +34,7 @@ class GarageFsBucketProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvi
                 val changes = mutableListOf<ResourceDiffItem>()
 
                 val globalAliasesWithOutOwnName = result.data.globalAliases.filter { it != resource.name }
-                if (!equalsIgnoreOrder(resource.websiteAccessDomains, globalAliasesWithOutOwnName)) {
+                if (!(resource.websiteAccessDomains equalsIgnoreOrder globalAliasesWithOutOwnName)) {
                     changes.add(
                         ResourceDiffItem(
                             "website access domains",

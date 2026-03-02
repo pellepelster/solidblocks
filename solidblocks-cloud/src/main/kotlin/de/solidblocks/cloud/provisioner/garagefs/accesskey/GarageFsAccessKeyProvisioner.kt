@@ -3,22 +3,27 @@ package de.solidblocks.cloud.provisioner.garagefs.accesskey
 import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
-import de.solidblocks.garagefs.CreateKeyRequest
-import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.garagefs.CreateKeyRequest
+import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.utils.LogContext
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
 class GarageFsAccessKeyProvisioner :
     BaseGarageFsProvisioner(),
     ResourceLookupProvider<GarageFsAccessKeyLookup, GarageFsAccessKeyRuntime>,
     InfrastructureResourceProvisioner<GarageFsAccessKey, GarageFsAccessKeyRuntime> {
+
+    private val logger = KotlinLogging.logger {}
 
     override suspend fun diff(resource: GarageFsAccessKey, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsAccessKeyRuntime?> -> ResourceDiff(resource, unknown)
@@ -41,16 +46,23 @@ class GarageFsAccessKeyProvisioner :
         context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
             when (apis) {
                 is Error<GarageFsApi> -> Error(apis.error)
-                is Success<GarageFsApi> -> apis.data.accessKeyApi.listKeys().firstOrNull { it.name == lookup.name }
-                    ?.let {
-                        val keyInfo = apis.data.accessKeyApi.getKeyInfo(it.id, showSecretKey = true)
+                is Success<GarageFsApi> -> {
+                    val accessKey = apis.data.accessKeyApi.listKeys().firstOrNull { it.name == lookup.name }
 
-                        if (keyInfo.secretAccessKey == null) {
-                            Success(null)
-                        } else {
-                            Success(GarageFsAccessKeyRuntime(lookup.name, it.id, keyInfo.secretAccessKey!!))
-                        }
-                    } ?: Success(null)
+                    if (accessKey == null) {
+                        logger.warn { "access key '${lookup.name}' not found" }
+                        return@withApiClients Success(null)
+                    }
+
+                    val keyInfo = apis.data.accessKeyApi.getKeyInfo(accessKey.id, showSecretKey = true)
+
+                    if (keyInfo.secretAccessKey == null) {
+                        logger.error { "secret access key not set" }
+                        Success(null)
+                    } else {
+                        Success(GarageFsAccessKeyRuntime(lookup.name, accessKey.id, keyInfo.secretAccessKey!!))
+                    }
+                }
             }
 
         }
@@ -60,7 +72,11 @@ class GarageFsAccessKeyProvisioner :
         context: ProvisionerContext,
         log: LogContext,
     ): ApplyResult<GarageFsAccessKeyRuntime> {
-        val runtime = lookup(resource.asLookup(), context)
+        val runtime = when (val result = lookupInternal(resource.asLookup(), context)) {
+            is Error<GarageFsAccessKeyRuntime?> -> return ApplyResult(null)
+            is Success<GarageFsAccessKeyRuntime?> -> result.data
+        }
+
         if (runtime != null) {
             return ApplyResult(runtime)
         }

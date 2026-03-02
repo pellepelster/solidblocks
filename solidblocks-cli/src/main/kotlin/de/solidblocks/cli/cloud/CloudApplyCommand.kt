@@ -21,16 +21,17 @@ class CloudApplyCommand : CliktCommand(name = "apply") {
     val runtime =
         when (val result = manager.validate()) {
           is Error<CloudManager.CloudRuntime> -> {
-            logError(result.error)
+            logError(
+                "command failed with '${result.error}' have look at 'blcks.log' for more details",
+            )
             throw ProgramResult(1)
           }
-
           is Success<CloudManager.CloudRuntime> -> result.data
         }
 
     when (val result = manager.apply(runtime)) {
       is Error<Unit> -> {
-        logError(result.error)
+        logError("command failed with '${result.error}' have look at 'blcks.log' for more details")
         throw ProgramResult(1)
       }
       else -> {}

@@ -14,7 +14,7 @@ data class GarageFsBucket(val name: String, val publicDomains: List<String>)
 
 class GarageFsUserData(
     val linuxDeviceData: String,
-    val rootDomain: String,
+    val serviceRootDomain: String,
     val rpcSecret: String,
     val adminToken: String,
     val metricsToken: String,
@@ -22,7 +22,7 @@ class GarageFsUserData(
     val enableHttps: Boolean = false,
 ) : ServiceUserData {
 
-  val s3Host = "s3.$rootDomain"
+  val s3Host = "s3.$serviceRootDomain"
 
   override fun render(): String {
     val storageMount = "/storage/data"
@@ -32,7 +32,7 @@ class GarageFsUserData(
         CaddyConfig(
             GlobalOptions(
                 FileSystemStorage(caddyStorageDir),
-                "info@$rootDomain",
+                "info@$serviceRootDomain",
                 if (enableHttps) {
                   null
                 } else {
@@ -41,12 +41,15 @@ class GarageFsUserData(
             ),
             buckets.flatMap {
               listOf(
-                  Site("${it.name}.s3.$rootDomain", ReverseProxy("http://localhost:3900")),
-                  Site("${it.name}.s3-web.$rootDomain", ReverseProxy("http://localhost:3902")),
+                  Site("${it.name}.s3.$serviceRootDomain", ReverseProxy("http://localhost:3900")),
+                  Site(
+                      "${it.name}.s3-web.$serviceRootDomain",
+                      ReverseProxy("http://localhost:3902"),
+                  ),
               ) + it.publicDomains.map { Site(it, ReverseProxy("http://localhost:3902")) }
             } +
                 listOf(
-                    Site("s3-admin.$rootDomain", ReverseProxy("http://localhost:3903")),
+                    Site("s3-admin.$serviceRootDomain", ReverseProxy("http://localhost:3903")),
                     Site(s3Host, ReverseProxy("http://localhost:3900")),
                 ),
         )
@@ -81,8 +84,8 @@ class GarageFsUserData(
             rpcSecret,
             adminToken,
             metricsToken,
-            "s3.$rootDomain",
-            "s3-web.$rootDomain",
+            "s3.$serviceRootDomain",
+            "s3-web.$serviceRootDomain",
         )
 
     val garageFsSystemdConfig =
@@ -117,7 +120,6 @@ class GarageFsUserData(
 
     userData.addCommand(SystemDLibrary.SystemdDaemonReload())
     userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
-    userData.addCommand(GarageLibrary.ApplyLayout(4))
 
     return userData.render()
   }

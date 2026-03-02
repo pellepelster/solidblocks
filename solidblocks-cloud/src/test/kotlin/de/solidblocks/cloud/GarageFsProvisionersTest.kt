@@ -135,11 +135,11 @@ class GarageFsProvisionersTest {
 
         val adminToken = PassSecret("admin_token")
         val bucketName = UUID.randomUUID().toString()
-        val bucket = GarageFsBucket(bucketName, server, adminToken)
+        val bucket = GarageFsBucket(bucketName, server, adminToken, false)
         val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)
 
         runBlocking {
-            val layout = GarageFsLayout(UUID.randomUUID().toString(), 1 * 1000 * 1000, server, adminToken)
+            val layout = GarageFsLayout(1 * 1000 * 1000, server, adminToken)
 
             assertSoftly(layoutProvisioner.diff(layout, context)) {
                 it.status shouldBe ResourceDiffStatus.has_changes
@@ -254,65 +254,72 @@ class GarageFsProvisionersTest {
                 )
             ) { it.status shouldBe ResourceDiffStatus.up_to_date }
 
-            val permission = GarageFsPermission(bucket, accessKey, server, adminToken, true, true, true)
+            val allPermission = GarageFsPermission(bucket, accessKey, server, adminToken, true, true, true)
 
-            permissionProvisioner.lookup(permission.asLookup(), context) shouldBe null
-            permissionProvisioner.apply(permission, context, TEST_LOG_CONTEXT).runtime shouldNotBe null
+            permissionProvisioner.lookup(allPermission.asLookup(), context) shouldBe null
+            permissionProvisioner.apply(allPermission, context, TEST_LOG_CONTEXT).runtime shouldNotBe null
 
-            assertSoftly(permissionProvisioner.lookup(permission.asLookup(), context)!!) {
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
                 it.name shouldBe "${bucket.name}.${accessKey.name}"
                 it.owner shouldBe true
                 it.read shouldBe true
                 it.write shouldBe true
             }
-            assertSoftly(permissionProvisioner.diff(permission, context)) {
+            assertSoftly(permissionProvisioner.diff(allPermission, context)) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
-            assertSoftly(permissionProvisioner.diff(permission.copy(owner = false), context)) {
+            val noOwnerPermission = GarageFsPermission(bucket, accessKey, server, adminToken, false, true, true)
+
+            assertSoftly(permissionProvisioner.diff(noOwnerPermission, context)) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "owner"
                 it.changes[0].expectedValue shouldBe false
                 it.changes[0].actualValue shouldBe true
             }
+
             permissionProvisioner
                 .apply(
-                    permission.copy(owner = false),
+                    noOwnerPermission,
                     context,
                     TEST_LOG_CONTEXT,
                 )
                 .runtime shouldNotBe null
-            assertSoftly(permissionProvisioner.lookup(permission.asLookup(), context)!!) {
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
                 it.name shouldBe "${bucket.name}.${accessKey.name}"
                 it.owner shouldBe false
                 it.read shouldBe true
                 it.write shouldBe true
             }
 
+            val noOwnerNoReadPermission = GarageFsPermission(bucket, accessKey, server, adminToken, false, false, true)
+
             permissionProvisioner.apply(
-                permission.copy(owner = false, read = false),
+                noOwnerNoReadPermission,
                 context,
                 TEST_LOG_CONTEXT,
             ) shouldNotBe null
-            assertSoftly(permissionProvisioner.lookup(permission.asLookup(), context)!!) {
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
                 it.name shouldBe "${bucket.name}.${accessKey.name}"
                 it.owner shouldBe false
                 it.read shouldBe false
                 it.write shouldBe true
             }
 
+            val noOwnerNoReadNoWritePermission = GarageFsPermission(bucket, accessKey, server, adminToken, false, false, false)
+
             permissionProvisioner
                 .apply(
-                    permission.copy(owner = false, read = false, write = false),
+                    noOwnerNoReadNoWritePermission,
                     context,
                     TEST_LOG_CONTEXT,
                 )
                 .runtime shouldBe null
-            permissionProvisioner.lookup(permission.asLookup(), context) shouldBe null
+            permissionProvisioner.lookup(allPermission.asLookup(), context) shouldBe null
 
-            permissionProvisioner.apply(permission, context, TEST_LOG_CONTEXT).runtime shouldNotBe null
-            assertSoftly(permissionProvisioner.lookup(permission.asLookup(), context)!!) {
+            permissionProvisioner.apply(allPermission, context, TEST_LOG_CONTEXT).runtime shouldNotBe null
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
                 it.name shouldBe "${bucket.name}.${accessKey.name}"
                 it.owner shouldBe true
                 it.read shouldBe true

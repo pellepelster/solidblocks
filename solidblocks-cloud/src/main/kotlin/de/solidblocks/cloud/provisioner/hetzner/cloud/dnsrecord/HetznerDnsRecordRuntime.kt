@@ -5,6 +5,7 @@ import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResourceRunti
 class HetznerDnsRecordRuntime(
     val id: String,
     val name: String,
+    val ttl: Int,
     val zone: String,
     val values: List<String>,
     labels: Map<String, String> = emptyMap(),

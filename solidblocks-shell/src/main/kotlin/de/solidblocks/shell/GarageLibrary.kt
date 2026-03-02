@@ -17,8 +17,4 @@ object GarageLibrary {
   class Install : LibraryCommand {
     override fun toShell() = listOf("garage_install")
   }
-
-  class ApplyLayout(val size: Int) : LibraryCommand {
-    override fun toShell() = listOf("garage_apply_layout $size")
-  }
 }

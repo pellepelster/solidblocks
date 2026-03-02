@@ -4,9 +4,11 @@ import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
@@ -17,6 +19,7 @@ import de.solidblocks.garagefs.ClusterLayoutNodeRequest
 import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.garagefs.UpdateClusterLayoutRequest
 import de.solidblocks.utils.LogContext
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
 class GarageFsLayoutProvisioner :
@@ -24,7 +27,7 @@ class GarageFsLayoutProvisioner :
     ResourceLookupProvider<GarageFsLayoutLookup, GarageFsLayoutRuntime>,
     InfrastructureResourceProvisioner<GarageFsLayout, GarageFsLayoutRuntime> {
 
-    infix fun <T> List<T>.equalsIgnoreOrder(other: List<T>) = this.size == other.size && this.toSet() == other.toSet()
+    private val logger = KotlinLogging.logger {}
 
     override suspend fun diff(resource: GarageFsLayout, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
@@ -41,7 +44,11 @@ class GarageFsLayoutProvisioner :
                             ResourceDiff(resource, has_changes, changes = listOf(ResourceDiffItem(
                                 "nodes",
                                 expectedValue = status.nodes.joinToString(", ") { it.id },
-                                actualValue = result.data.nodes.joinToString(", ") { it },
+                                actualValue = if (result.data.nodes.isNotEmpty()) {
+                                    result.data.nodes.joinToString(", ") { it }
+                                } else {
+                                    "<empty>"
+                                },
                             )))
                         }
                     }
@@ -93,14 +100,17 @@ class GarageFsLayoutProvisioner :
             val nodesToAdd = statusNodeIds.filter { !layoutNodeIds.contains(it) }
 
             if (nodesToAdd.isNotEmpty()) {
+                logger.info { "adding nodes ${layoutNodeIds.joinToString(", ")} to layout for ${resource.server.logText()}" }
+
                 val request = UpdateClusterLayoutRequest(
                     roles = nodesToAdd.map {
                         ClusterLayoutNodeRequest(it, resource.capacity, emptyList(), "dc1")
                     }
                 )
-
                 val response = api.clusterLayoutApi.updateClusterLayout(request)
                 api.clusterLayoutApi.applyClusterLayout(ApplyClusterLayoutRequest(response.version!! + 1))
+            } else {
+                logger.info { "to layout is up to date for ${resource.server.logText()}" }
             }
         }
 

@@ -1,5 +1,23 @@
 [
     {
+        "name": "de.solidblocks.docker.Ipam",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.Ipam$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse",
         "fields": [
             {
@@ -108,6 +126,42 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.ClusterLayoutNodeRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutNodeRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutNodeResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutNodeResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeListResponseWrapper",
         "fields": [
             {
@@ -118,6 +172,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ServerTypeListResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.ApiBucketQuotas",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ApiBucketQuotas$Companion",
         "fields": [],
         "methods": [
             {
@@ -162,6 +234,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.GetBucketInfoWebsiteResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.GetBucketInfoWebsiteResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.model.Pagination",
         "fields": [
             {
@@ -190,6 +280,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerCreateResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.CreateBucketLocalAlias",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.CreateBucketLocalAlias$Companion",
         "fields": [],
         "methods": [
             {
@@ -252,6 +360,42 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.StringOrList$Many",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.StringOrList$Many$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.UpdateClusterLayoutRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.UpdateClusterLayoutRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.ImageResponse",
         "fields": [
             {
@@ -288,6 +432,42 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.ListKeysResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ListKeysResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.RestartPolicy",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.RestartPolicy$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord",
         "fields": [
             {
@@ -298,6 +478,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.KeyInfoResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.KeyInfoResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -352,6 +550,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ActionError$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.DependsOn$ServiceMap",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.DependsOn$ServiceMap$Companion",
         "fields": [],
         "methods": [
             {
@@ -424,6 +640,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ActionResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.StringOrList$Single",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.StringOrList$Single$Companion",
         "fields": [],
         "methods": [
             {
@@ -522,6 +756,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.ClusterLayoutHistoryVersionResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutHistoryVersionResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cli.github.Container",
         "fields": [
             {
@@ -532,6 +784,60 @@
     },
     {
         "name": "de.solidblocks.cli.github.Container$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.VolumeMount",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.VolumeMount$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketAliasRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketAliasRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.Condition",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.Condition$Companion",
         "fields": [],
         "methods": [
             {
@@ -576,6 +882,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.ClusterStatusResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterStatusResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.ActionsListResponseWrapper",
         "fields": [
             {
@@ -612,6 +936,60 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.BucketKeyPermChangeRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketKeyPermChangeRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.ApplyClusterLayoutRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ApplyClusterLayoutRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.NetworkDefinition",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.NetworkDefinition$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerAttachServerRequest",
         "fields": [
             {
@@ -640,6 +1018,42 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.NetworksListResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterStatusNodeResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterStatusNodeResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.CreateKeyRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.CreateKeyRequest$Companion",
         "fields": [],
         "methods": [
             {
@@ -702,6 +1116,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.DependsOn$ServiceList",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.DependsOn$ServiceList$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerCreateRequest",
         "fields": [
             {
@@ -712,6 +1144,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerCreateRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketLocalAliasResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketLocalAliasResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -766,6 +1216,42 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.model.MetaResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketInfoResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketInfoResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -846,6 +1332,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.ComposeFile",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.ComposeFile$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.PublicNetworkResponse",
         "fields": [
             {
@@ -874,6 +1378,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.PlacementGroupResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.ListBucketsResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ListBucketsResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -936,6 +1458,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.BucketKeyPermRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.BucketKeyPermRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerHealthStatusResponse",
         "fields": [
             {
@@ -954,6 +1494,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.PortMapping",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.PortMapping$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.VolumeResponse",
         "fields": [
             {
@@ -964,6 +1522,78 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.VolumeResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.CreateBucketRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.CreateBucketRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.UpdateBucketWebsiteAccess",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.UpdateBucketWebsiteAccess$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.IpamConfig",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.IpamConfig$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.KeyPerm",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.KeyPerm$Companion",
         "fields": [],
         "methods": [
             {
@@ -1062,6 +1692,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.ULimit",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.ULimit$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cloud.provisioner.CloudInitResultItem",
         "fields": [
             {
@@ -1134,6 +1782,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.PullPolicy",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.PullPolicy$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.LocationResponse",
         "fields": [
             {
@@ -1144,6 +1810,60 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.LocationResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.Service",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.Service$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.GetBucketInfoKey",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.GetBucketInfoKey$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.VolumeOptions",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.VolumeOptions$Companion",
         "fields": [],
         "methods": [
             {
@@ -1252,6 +1972,24 @@
     },
     {
         "name": "de.solidblocks.infra.test.cloudinit.CloudInitResultWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.ServiceCondition",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.ServiceCondition$Companion",
         "fields": [],
         "methods": [
             {
@@ -1404,6 +2142,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.garagefs.UpdateBucketRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.UpdateBucketRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.ServerResponse",
         "fields": [
             {
@@ -1432,6 +2188,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsListResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutHistoryResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.ClusterLayoutHistoryResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -1476,6 +2250,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.BindOptions",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.BindOptions$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cloud.provisioner.CloudInitResultWrapper",
         "fields": [
             {
@@ -1486,6 +2278,24 @@
     },
     {
         "name": "de.solidblocks.cloud.provisioner.CloudInitResultWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.garagefs.KeyInfoBucketResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.garagefs.KeyInfoBucketResponse$Companion",
         "fields": [],
         "methods": [
             {
@@ -1674,6 +2484,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.UpdateConfig",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.UpdateConfig$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.PlacementGroupsListWrapper",
         "fields": [
             {
@@ -1710,6 +2538,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.docker.HealthCheck",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.HealthCheck$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.model.HetznerChangeProtectionResponse",
         "fields": [
             {
@@ -1738,6 +2584,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ActionResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.Logging",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.Logging$Companion",
         "fields": [],
         "methods": [
             {

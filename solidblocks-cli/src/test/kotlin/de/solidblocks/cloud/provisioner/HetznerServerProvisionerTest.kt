@@ -11,6 +11,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
+import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Success
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
@@ -60,7 +61,7 @@ class HetznerServerProvisionerTest {
           HetznerVolume(
               name,
               "hel1",
-              16,
+              ByteSize.fromGigabytes(16),
               protected = false,
           )
 

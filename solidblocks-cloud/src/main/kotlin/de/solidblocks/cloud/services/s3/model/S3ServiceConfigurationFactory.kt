@@ -28,11 +28,18 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
             }
 
         val buckets =
-            when (val result = this@S3ServiceConfigurationFactory.buckets.parse(yaml)) {
+            when (val result = buckets.parse(yaml)) {
                 is Error<List<S3ServiceBucketConfiguration>> -> return Error(result.error)
                 is Success<List<S3ServiceBucketConfiguration>> -> result.data
             }
 
-        return Success(S3ServiceConfiguration(name, buckets))
+        val dataVolumeSize =
+            when (val result = SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(yaml)) {
+                is Error<Int> -> return Error(result.error)
+                is Success<Int> -> result.data
+            }
+
+
+        return Success(S3ServiceConfiguration(name, dataVolumeSize, buckets))
     }
 }

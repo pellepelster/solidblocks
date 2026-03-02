@@ -4,14 +4,12 @@ import de.solidblocks.utils.Constants.durationFormatter
 import java.text.DecimalFormat
 import kotlin.time.Duration
 import kotlin.time.TimeSource
-import kotlin.time.TimeSource.Monotonic.ValueTimeMark
 
 object Constants {
   val durationFormatter = DecimalFormat("000.000")
 }
 
 public enum class LogSource {
-  BLCKS,
   STDOUT,
   STDERR,
   CLOUDINIT,
@@ -27,20 +25,6 @@ public enum class LogLevel {
 
 val logLevelMaxLength = LogLevel.entries.maxOf { it.name.length }
 
-fun logInfoBlcks(
-    message: String,
-    source: LogSource? = LogSource.BLCKS,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.INFO, source, duration, context)
-
-fun logInfoBlcks(
-    message: String,
-    source: LogSource? = LogSource.BLCKS,
-    start: ValueTimeMark?,
-    context: LogContext? = null,
-) = log(message, LogLevel.INFO, source, start?.let { TimeSource.Monotonic.markNow() - it }, context)
-
 fun logInfo(
     message: String,
     source: LogSource? = null,
@@ -51,26 +35,12 @@ fun logInfo(
 fun logInfo(message: String, source: LogSource? = null, context: LogContext? = null) =
     log(message, LogLevel.INFO, source, null, context)
 
-fun logErrorBlcks(
-    message: String,
-    source: LogSource? = LogSource.BLCKS,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.ERROR, source, duration, context)
-
 fun logError(
     message: String,
     source: LogSource? = null,
     duration: Duration? = null,
     context: LogContext? = null,
 ) = log(message, LogLevel.ERROR, source, duration, context)
-
-fun logSuccessBlcks(
-    message: String,
-    source: LogSource = LogSource.BLCKS,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.SUCCESS, source, duration, context)
 
 fun logSuccess(
     message: String,
@@ -79,26 +49,12 @@ fun logSuccess(
     context: LogContext? = null,
 ) = log(message, LogLevel.SUCCESS, source, duration, context)
 
-fun logWarningBlcks(
-    message: String,
-    source: LogSource = LogSource.BLCKS,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.WARNING, source, duration, context)
-
 fun logWarning(
     message: String,
     source: LogSource? = null,
     duration: Duration? = null,
     context: LogContext? = null,
 ) = log(message, LogLevel.WARNING, source, duration, context)
-
-fun logDebugBlcks(
-    message: String,
-    source: LogSource = LogSource.BLCKS,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.DEBUG, source, duration, context)
 
 fun logDebug(
     message: String,

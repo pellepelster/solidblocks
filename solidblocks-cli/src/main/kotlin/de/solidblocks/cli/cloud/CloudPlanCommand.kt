@@ -24,7 +24,9 @@ class CloudPlanCommand : CliktCommand(name = "plan") {
     val runtime =
         when (val result = manager.validate()) {
           is Error<CloudManager.CloudRuntime> -> {
-            logError(result.error)
+            logError(
+                "command failed with '${result.error}' have look at 'blcks.log' for more details",
+            )
             throw ProgramResult(1)
           }
 
@@ -33,7 +35,7 @@ class CloudPlanCommand : CliktCommand(name = "plan") {
 
     when (val result = manager.plan(runtime)) {
       is Error<Map<ResourceGroup, List<ResourceDiff>>> -> {
-        logError(result.error)
+        logError("command failed with '${result.error}' have look at 'blcks.log' for more details")
         throw ProgramResult(1)
       }
       else -> {}

@@ -64,15 +64,19 @@ class ProvisionersRegistry(
         resource: ResourceType,
         context: ProvisionerContext,
         log: LogContext,
-    ): ApplyResult<RuntimeType> =
-        provisioner(resource).apply(resource, context, log) as ApplyResult<RuntimeType>
+    ): ApplyResult<RuntimeType> {
+        val provisioner = provisioner(resource)
+        logger.info { "creating ${resource.logText()} using provisioner ${provisioner::class.qualifiedName}" }
+        return provisioner.apply(resource, context, log) as ApplyResult<RuntimeType>
+    }
 
-    suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> diff(
+
+    suspend fun <ResourceType : BaseResource> diff(
         resource: ResourceType,
         context: ProvisionerContext,
     ): ResourceDiff? = provisioner(resource).diff(resource, context)
 
-    suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> help(
+    suspend fun <ResourceType : BaseResource> help(
         resource: ResourceType,
         context: ProvisionerContext,
     ): List<InfrastructureResourceHelp> = provisioner(resource).help(resource, context)

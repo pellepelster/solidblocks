@@ -1,8 +1,17 @@
 package de.solidblocks.cloud.provisioner
 
-import de.solidblocks.cloud.api.*
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.InfrastructureResourceHelp
+import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffStatus.duplicate
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.parent_missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
+import de.solidblocks.cloud.api.hierarchicalResourceList
+import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
@@ -12,7 +21,11 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
 import de.solidblocks.cloud.utils.Waiter.Companion.defaultWaiter
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.*
+import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.logDebug
+import de.solidblocks.utils.logError
+import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.logWarning
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -36,8 +49,7 @@ class Provisioner(
 
             for (resource in resources) {
                 try {
-                    val help =
-                        provisionersRegistry.help<BaseResource, BaseInfrastructureResourceRuntime>(resource, context)
+                    val help = provisionersRegistry.help<BaseResource>(resource, context)
                     result.addAll(help)
 
                 } catch (e: Exception) {
@@ -55,72 +67,63 @@ class Provisioner(
         context: ProvisionerContext,
         log: LogContext,
     ): Result<Map<ResourceGroup, List<ResourceDiff>>> {
-        val resourceGroupDiffs =
-            resourceGroups
-                .map { resourceGroup ->
-                    val resourceGroupLogContext = log.indent()
+        val resourceGroupDiffs = resourceGroups.map { resourceGroup ->
+                val resourceGroupLogContext = log.indent()
 
-                    logInfo(
-                        "planning changes for resource group ${resourceGroup.name}",
-                        context = resourceGroupLogContext,
-                    )
-                    val diffLogContext = resourceGroupLogContext.indent()
+                logInfo(
+                    "planning changes for resource group ${resourceGroup.name}",
+                    context = resourceGroupLogContext,
+                )
+                val diffLogContext = resourceGroupLogContext.indent()
 
-                    val diffs =
-                        when (val result = diff(resourceGroup, context, diffLogContext)) {
-                            is Error<List<ResourceDiff>> -> return Error(result.error)
-                            is Success<List<ResourceDiff>> -> result.data
-                        }
+                val diffs = when (val result = diff(resourceGroup, context, diffLogContext)) {
+                    is Error<List<ResourceDiff>> -> return Error(result.error)
+                    is Success<List<ResourceDiff>> -> result.data
+                }
 
-                    diffs.forEach {
-                        when (it.status) {
-                            unknown ->
-                                logInfo("could not determine stattus for ${it.resource.logText()}", context = diffLogContext)
+                diffs.forEach {
+                    when (it.status) {
+                        unknown -> logInfo("could not determine status for ${it.resource.logText()}", context = diffLogContext)
 
-                            missing ->
-                                logInfo("will create ${it.resource.logText()}", context = diffLogContext)
+                        missing -> logInfo("will create ${it.resource.logText()}", context = diffLogContext)
 
-                            up_to_date ->
-                                logInfo("${it.resource.logText()} is up-to-date", context = diffLogContext)
+                        up_to_date -> logInfo("${it.resource.logText()} is up-to-date", context = diffLogContext)
 
-                            has_changes -> {
-                                if (it.needsRecreate()) {
-                                    logInfo(
-                                        "${it.resource.logText()} has breaking changes and needs to be re-created",
-                                        context = diffLogContext,
-                                    )
-                                    it.changes.forEach {
-                                        logInfo("- ${it.logText()}", context = diffLogContext.indent())
-                                    }
-
-                                } else {
-                                    logInfo(
-                                        "${it.resource.logText()} has pending changes", context = diffLogContext
-                                    )
-                                    it.changes.forEach {
-                                        logInfo("- ${it.logText()}", context = diffLogContext.indent())
-                                    }
-                                }
-                            }
-
-                            parent_missing ->
+                        has_changes -> {
+                            if (it.needsRecreate()) {
                                 logInfo(
-                                    "parent resource for ${it.resource.logText()} is missing",
+                                    "${it.resource.logText()} has breaking changes and needs to be re-created",
                                     context = diffLogContext,
                                 )
+                                it.changes.forEach {
+                                    logInfo("- ${it.logText()}", context = diffLogContext.indent())
+                                }
 
-                            duplicate -> {
-                                return Error(
-                                    it.duplicateErrorMessage
-                                        ?: "<unknown duplicate error message for ${it.resource.logText()}>",
+                            } else {
+                                logInfo(
+                                    "${it.resource.logText()} has pending changes", context = diffLogContext
                                 )
+                                it.changes.forEach {
+                                    logInfo("- ${it.logText()}", context = diffLogContext.indent())
+                                }
                             }
                         }
-                    }
 
-                    resourceGroup to diffs
+                        parent_missing -> logInfo(
+                            "parent resource for ${it.resource.logText()} is missing",
+                            context = diffLogContext,
+                        )
+
+                        duplicate -> {
+                            return Error(
+                                it.duplicateErrorMessage ?: "<unknown duplicate error message for ${it.resource.logText()}>",
+                            )
+                        }
+                    }
                 }
-                .toMap()
+
+                resourceGroup to diffs
+            }.toMap()
 
         return Success(resourceGroupDiffs)
     }
@@ -139,9 +142,7 @@ class Provisioner(
             logDebug("creating diff for ${resource.logText()}", context = log)
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
-                val diff =
-                    provisionersRegistry.diff<BaseResource, BaseInfrastructureResourceRuntime>(resource, context)
-                        ?: return@runBlocking Error("diff failed for ${resource.logText()}")
+                val diff = provisionersRegistry.diff<BaseResource>(resource, context) ?: return@runBlocking Error("diff failed for ${resource.logText()}")
 
                 logDebug(
                     "diff status for ${diff.resource.logText()} is '${diff.status}'",
@@ -153,10 +154,9 @@ class Provisioner(
             } catch (e: Exception) {
                 logger.error(e) { "diff failed for ${resource.logText()}" }
 
-                val hasMissingParent =
-                    resource.dependsOn.any { parent ->
-                        result.any { it.resource == parent && (it.status == missing) }
-                    }
+                val hasMissingParent = resource.dependsOn.any { parent ->
+                    result.any { it.resource == parent && (it.status == missing) }
+                }
 
                 if (hasMissingParent) {
                     result.add(ResourceDiff(resource, parent_missing))
@@ -179,24 +179,20 @@ class Provisioner(
         context: ProvisionerContext,
         log: LogContext,
     ): Result<Unit> {
-        val success =
-            resources
-                .map { resource ->
-                    val runtime =
-                        try {
-                            provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
-                                resource,
-                                context,
-                                log,
-                            )
-                        } catch (e: Exception) {
-                            logger.error(e) { "creating ${resource.logText()} failed" }
-                            null
-                        }
-
-                    runtime
+        val success = resources.map { resource ->
+                val runtime = try {
+                    provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
+                        resource,
+                        context,
+                        log,
+                    )
+                } catch (e: Exception) {
+                    logger.error(e) { "creating ${resource.logText()} failed" }
+                    null
                 }
-                .all { it != null }
+
+                runtime
+            }.all { it != null }
 
         return if (success) {
             Success(Unit)
@@ -212,10 +208,12 @@ class Provisioner(
     ): Result<Unit> {
         return runBlocking {
             resourceGroupDiffs.map { (resourceGroup, diffs) ->
+
                 logger.info { "rolling out changes for ${resourceGroup.logText()}" }
 
                 for (diffToDestroy in diffs.filter { it.needsRecreate() }) {
                     val resource = diffToDestroy.resource
+                    logger.info { "destroying ${resource.logText()}" }
                     logInfo("destroying ${resource.logText()}", context = log)
 
                     val result = provisionersRegistry.destroy<BaseResource>(resource, context, log)
@@ -231,31 +229,25 @@ class Provisioner(
                     )
                 }
 
-                val resourcesToApply =
-                    diffs
-                        .filter {
-                            it.status != ResourceDiffStatus.up_to_date &&
-                                    it.status != ResourceDiffStatus.duplicate
-                        }
-                        .map { it.resource }
-                        .hierarchicalResourceList()
+                val resourcesToApply = diffs.filter {
+                        it.status != up_to_date && it.status != duplicate
+                    }.map { it.resource }.hierarchicalResourceList().filterIsInstance<BaseInfrastructureResource<*>>()
 
                 for (resource in resourcesToApply) {
                     logInfo("applying ${resource.logText()}", context = log)
 
                     val applyLog = log.indent()
 
-                    val applyResult =
-                        try {
-                            provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
-                                resource,
-                                context,
-                                applyLog,
-                            )
-                        } catch (e: Exception) {
-                            logger.error(e) { "creating ${resource.logText()} failed" }
-                            null
-                        }
+                    val applyResult = try {
+                        provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
+                            resource,
+                            context,
+                            applyLog,
+                        )
+                    } catch (e: Exception) {
+                        logger.error(e) { "creating ${resource.logText()} failed" }
+                        null
+                    }
 
                     val runtime = applyResult?.runtime
                     if (runtime == null) {
@@ -265,21 +257,20 @@ class Provisioner(
                     runtime.endpoints.forEach {
                         when (it.protocol) {
                             EndpointProtocol.ssh -> {
-                                val sshPortOpen =
-                                    endpointWaiter.waitForCondition {
-                                        try {
-                                            logInfo(
-                                                "waiting for SSH on endpoint '${it.address}:${it.port}'",
-                                                context = applyLog,
-                                            )
-                                            SSHClient(it.address, context.sshKeyPair).command("whoami").exitCode == 0
-                                        } catch (e: Exception) {
-                                            logger.error(e) {
-                                                "error waiting for '${it.protocol}' endpoint ${it.address}:${it.port}"
-                                            }
-                                            false
+                                val sshPortOpen = endpointWaiter.waitForCondition {
+                                    try {
+                                        logInfo(
+                                            "waiting for SSH on endpoint '${it.address}:${it.port}'",
+                                            context = applyLog,
+                                        )
+                                        SSHClient(it.address, context.sshKeyPair).command("whoami").exitCode == 0
+                                    } catch (e: Exception) {
+                                        logger.error(e) {
+                                            "error waiting for '${it.protocol}' endpoint ${it.address}:${it.port}"
                                         }
+                                        false
                                     }
+                                }
 
                                 if (!sshPortOpen) {
                                     return@runBlocking Error<Unit>(
@@ -289,20 +280,17 @@ class Provisioner(
 
                                 val sshClient = SSHClient(it.address, context.sshKeyPair)
 
-                                val cloudInitFinished =
-                                    endpointWaiter.waitForCondition {
-                                        try {
-                                            logInfo(
-                                                "waiting for cloud-init to finish on '${it.address}:${it.port}'",
-                                                context = applyLog,
-                                            )
-                                            sshClient
-                                                .command("test -f /var/lib/cloud/instance/boot-finished")
-                                                .exitCode == 0
-                                        } catch (e: Exception) {
-                                            false
-                                        }
+                                val cloudInitFinished = endpointWaiter.waitForCondition {
+                                    try {
+                                        logInfo(
+                                            "waiting for cloud-init to finish on '${it.address}:${it.port}'",
+                                            context = applyLog,
+                                        )
+                                        sshClient.command("test -f /var/lib/cloud/instance/boot-finished").exitCode == 0
+                                    } catch (e: Exception) {
+                                        false
                                     }
+                                }
 
                                 if (!cloudInitFinished) {
                                     return@runBlocking Error<Unit>(
@@ -311,33 +299,35 @@ class Provisioner(
                                 }
 
                                 val result = sshClient.command("cat /var/lib/cloud/data/status.json")
+
                                 if (result.exitCode != 0) {
                                     return@runBlocking Error<Unit>(
                                         "error fetching cloud-init result from ${it.address}:${it.port}",
                                     )
                                 }
 
-                                val cloudInitResultHasErrors =
-                                    try {
-                                        val json = Json { this.ignoreUnknownKeys = true }
+                                val cloudInitResultHasErrors = try {
+                                    val json = Json { this.ignoreUnknownKeys = true }
 
-                                        val cloudInitResult: CloudInitResultWrapper? =
-                                            json.decodeFromString(result.stdOut)
-                                        if (cloudInitResult == null) {
-                                            return@runBlocking Error<Unit>(
-                                                "error deserializing cloud-init result from ${it.address}:${it.port}",
-                                            )
-                                        }
-
-                                        cloudInitResult.hasErrors
-                                    } catch (e: Exception) {
-                                        logError("failed to deserialize cloud-init status")
-                                        false
+                                    val cloudInitResult: CloudInitResultWrapper? = json.decodeFromString(result.stdOut)
+                                    if (cloudInitResult == null) {
+                                        return@runBlocking Error<Unit>(
+                                            "error deserializing cloud-init result from ${it.address}:${it.port}",
+                                        )
                                     }
 
+                                    cloudInitResult.hasErrors
+                                } catch (e: Exception) {
+                                    logger.error(e) { "failed to deserialize cloud-init status" }
+                                    logError("failed to deserialize cloud-init status")
+                                    false
+                                }
+
                                 if (cloudInitResultHasErrors) {
+                                    val cloudInitOutputLog = sshClient.download("/var/log/cloud-init-output.log")
+
                                     return@runBlocking Error<Unit>(
-                                        "cloud-init has errors on ${it.address}:${it.port}",
+                                        "cloud-init has errors on ${it.address}:${it.port}, '/var/log/cloud-init-output.log' was:\n---\n${cloudInitOutputLog?.toString(Charsets.UTF_8)}---\n",
                                     )
                                 }
                             }

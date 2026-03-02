@@ -11,10 +11,13 @@ import de.solidblocks.garagefs.BucketKeyPermChangeRequest
 import de.solidblocks.garagefs.BucketKeyPermRequest
 import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.utils.LogContext
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
 class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
     InfrastructureResourceProvisioner<GarageFsPermission, GarageFsPermissionRuntime> {
+
+    private val logger = KotlinLogging.logger {}
 
     suspend fun lookupInternal(lookup: GarageFsPermissionLookup, context: ProvisionerContext): Result<GarageFsPermissionRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
@@ -53,8 +56,17 @@ class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupP
         context: ProvisionerContext,
         log: LogContext,
     ): ApplyResult<GarageFsPermissionRuntime> {
-        val bucket = context.lookup(resource.bucket.asLookup()) ?: return ApplyResult(null)
-        val accessKey = context.lookup(resource.accessKey.asLookup()) ?: return ApplyResult(null)
+        val bucket = context.lookup(resource.bucket.asLookup())
+        if (bucket == null) {
+            logger.error { "${resource.bucket.logText()} not found" }
+            return ApplyResult(null)
+        }
+
+        val accessKey = context.lookup(resource.accessKey.asLookup())
+        if (accessKey == null) {
+            logger.error { "${resource.accessKey.logText()} not found" }
+            return ApplyResult(null)
+        }
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
             val apis = when (it) {

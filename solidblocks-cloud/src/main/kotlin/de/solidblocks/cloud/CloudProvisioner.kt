@@ -6,7 +6,6 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.providers.*
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
@@ -27,13 +26,13 @@ class CloudProvisioner(
     val serviceRegistrations: List<ServiceRegistration<*, *>>,
     val providerRegistrations: List<ProviderRegistration<*, *, *>>,
 ) {
-    val sshRuntime = runtime.providers.filterIsInstance<SSHKeyProviderRuntime>().single()
+    val sSHKeyProvider = runtime.sshKeyProvider()
 
     val registry = createRegistry()
 
     val provisionerContext =
         ProvisionerContext(
-            sshRuntime.keyPair,
+            sSHKeyProvider.keyPair,
             runtime.configuration.name,
             runtime.configuration.getDefaultEnvironment(),
             registry,
@@ -69,9 +68,9 @@ class CloudProvisioner(
     }
 
     private fun createResourceGroups(): List<ResourceGroup> {
-        val sshKeyRuntime = runtime.providers.filterIsInstance<SSHKeyProviderRuntime>().single()
+        val sshKeyProvider = runtime.sshKeyProvider()
 
-        val publicKey = SSHKeyUtils.publicKeyToOpenSSH(sshKeyRuntime.keyPair.public)
+        val publicKey = SSHKeyUtils.publicKeyToOpenSSH(sshKeyProvider.keyPair.public)
         val sshKey = HetznerSSHKey(sshKeyName(runtime.configuration), publicKey, emptyMap())
 
         val cloudResourceGroup = ResourceGroup("cloud '${runtime.configuration.name}'", listOf(sshKey))

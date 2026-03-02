@@ -4,6 +4,7 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 
 data class S3ServiceConfiguration(
     override val name: String,
+    val dataVolumeSize: Int,
     val buckets: List<S3ServiceBucketConfiguration>,
 ) : ServiceConfiguration {
     override val type = "s3"

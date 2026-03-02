@@ -8,8 +8,11 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.ssh.SSHClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 open class BaseGarageFsProvisioner {
+
+    private val logger = KotlinLogging.logger {}
 
     suspend fun <T> ProvisionerContext.withApiClients(
         server: HetznerServerLookup,

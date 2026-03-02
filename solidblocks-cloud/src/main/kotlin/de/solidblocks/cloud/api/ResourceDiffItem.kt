@@ -4,7 +4,7 @@ import kotlin.reflect.KProperty0
 
 fun ResourceDiffItem.logText(): String {
   if (expectedValue != null || actualValue != null) {
-    return "$name should be '$expectedValue' but was '$actualValue"
+    return "$name should be '$expectedValue' but was '${actualValue}'"
   }
 
   if (missing) {

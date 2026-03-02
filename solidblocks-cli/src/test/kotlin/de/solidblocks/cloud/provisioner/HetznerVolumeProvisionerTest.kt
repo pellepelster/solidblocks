@@ -5,6 +5,7 @@ import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
+import de.solidblocks.cloud.utils.ByteSize
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -18,7 +19,7 @@ class HetznerVolumeProvisionerTest {
   @Test
   fun testFlow() {
     val name = UUID.randomUUID().toString()
-    val resource = HetznerVolume(name, "hel1", 16, emptyMap())
+    val resource = HetznerVolume(name, "hel1", ByteSize.fromGigabytes(16), emptyMap())
     val provisioner = HetznerVolumeProvisioner(System.getenv("HCLOUD_TOKEN"))
 
     runBlocking {
@@ -41,7 +42,8 @@ class HetznerVolumeProvisionerTest {
       }
 
       // create new label
-      val resourceWithNewLabel = HetznerVolume(name, "hel1", 16, mapOf("foo" to "bar"))
+      val resourceWithNewLabel =
+          HetznerVolume(name, "hel1", ByteSize.fromGigabytes(16), mapOf("foo" to "bar"))
       assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1
@@ -59,7 +61,7 @@ class HetznerVolumeProvisionerTest {
 
       // update delete protection
       val resourceWithNewDeleteProtection =
-          HetznerVolume(name, "hel1", 16, mapOf("foo" to "bar"), false)
+          HetznerVolume(name, "hel1", ByteSize.fromGigabytes(16), mapOf("foo" to "bar"), false)
       assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1
@@ -81,7 +83,8 @@ class HetznerVolumeProvisionerTest {
       }
 
       // update labels
-      val resourceWithUpdatedLabel = HetznerVolume(name, "hel1", 16, mapOf("foo" to "bar2"), false)
+      val resourceWithUpdatedLabel =
+          HetznerVolume(name, "hel1", ByteSize.fromGigabytes(16), mapOf("foo" to "bar2"), false)
       assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
         it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1

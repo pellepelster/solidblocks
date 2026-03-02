@@ -22,7 +22,7 @@ import kotlinx.serialization.json.Json
 suspend fun <T> retryUtil(
     block: suspend () -> T,
     condition: (T) -> Boolean,
-    times: Int = 20,
+    times: Int = 40,
     initialDelay: Long = 1000,
     maxDelay: Long = 5000,
     factor: Double = 2.0,

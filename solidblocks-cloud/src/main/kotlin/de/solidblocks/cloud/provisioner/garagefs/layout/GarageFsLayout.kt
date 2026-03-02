@@ -6,12 +6,11 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 
 class GarageFsLayout(
-    name: String,
     val capacity: Long,
     val server: HetznerServer,
     val adminToken: PassSecret,
-) : BaseInfrastructureResource<GarageFsPermissionRuntime>(name, setOf(server)) {
+) : BaseInfrastructureResource<GarageFsPermissionRuntime>("GarageFsLayout", setOf(server, adminToken)) {
     fun asLookup() = GarageFsLayoutLookup(name, server.asLookup(), adminToken)
-    override fun logText() = "GarageFS access key '$name' on ${server.logText()}"
+    override fun logText() = "GarageFS Layout '$name' on ${server.logText()}"
     override val lookupType = GarageFsLayoutLookup::class
 }

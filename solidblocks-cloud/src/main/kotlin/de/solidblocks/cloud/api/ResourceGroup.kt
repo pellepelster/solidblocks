@@ -63,11 +63,7 @@ private fun List<BaseResource>.createResourceGraph():
     val infrastructureResources = allResources.filterIsInstance<BaseInfrastructureResource<*>>().toSet()
     val infrastructureLookupResources = allResources.filterIsInstance<InfrastructureResourceLookup<*>>().toSet()
 
-    val lookupMappings = infrastructureLookupResources.map { lookup ->
-        lookup to infrastructureResources.firstOrNull() { it.lookupType == lookup::class }
-    }.toMap()
-
-
+    val lookupMappings = infrastructureLookupResources.associateWith { lookup -> infrastructureResources.firstOrNull { it.lookupType == lookup::class } }
     allResources.forEach { graph.addVertex(it) }
 
     allResources.forEach { resource ->

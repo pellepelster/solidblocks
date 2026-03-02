@@ -2,10 +2,18 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
 import de.solidblocks.cloud.Constants.sshKeysLabel
 import de.solidblocks.cloud.Constants.userDataLabel
-import de.solidblocks.cloud.api.*
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ApplyResult
+import de.solidblocks.cloud.api.InfrastructureResourceHelp
+import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffItem
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
+import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime.Companion.PRIVATE_KEY_PATH_PLACEHOLDER
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.utils.HetznerLabels
 import de.solidblocks.hetzner.cloud.HetznerApi
@@ -128,12 +136,10 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                 return ApplyResult(null)
             }
 
-            if (
-                !api.servers.waitForAction(createRequest.action) {
+            if (!api.servers.waitForAction(createRequest.action) {
                     logInfo("waiting for creation of ${resource.logText()}", context = log)
-                }
-            ) {
-                logger.error { "failed to wait for creation of '${resource.name}'" }
+                }) {
+                logger.error { "failed to wait for creation of '${resource.name}', you may need to remove the resource manually and retry" }
                 return ApplyResult(null)
             }
 
@@ -252,9 +258,8 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         resource: HetznerServer,
         context: ProvisionerContext
     ) = lookup(resource.asLookup(), context)?.let {
-        // TODO remove <private_key_path> hack
         listOf(
-            InfrastructureResourceHelp(resource.logText(), "to access server ${it.name} via SSH, run 'ssh -i <private_key_path> root@${it.publicIpv4}'")
+            InfrastructureResourceHelp(resource.logText(), "to access server ${it.name} via SSH, run 'ssh -i ${PRIVATE_KEY_PATH_PLACEHOLDER} root@${it.publicIpv4}'")
         )
     } ?: emptyList()
 

@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
 
 @Suppress("ktlint:standard:property-naming")
@@ -8,8 +9,11 @@ object Constants {
     fun sshKeyName(configuration: CloudConfigurationRuntime) =
         "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
-    fun serverName(configuration: CloudConfigurationRuntime, name: String) =
-        "${configuration.name}-${configuration.getDefaultEnvironment()}-$name"
+    fun serverName(configuration: CloudConfigurationRuntime, name: String, index: Int = 0) =
+        "${configuration.name}-${configuration.getDefaultEnvironment()}-$name-${index}"
+
+    fun serviceDnsName(service: ServiceConfigurationRuntime) =
+        service.name
 
     fun secretPath(configuration: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, segments: List<String>) =
         "${configuration.name}/${configuration.getDefaultEnvironment()}/${runtime.name}/${segments.joinToString("/")}"

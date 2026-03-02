@@ -10,4 +10,6 @@ class HetznerDnsZone(
 
     override val lookupType = HetznerDnsZoneLookup::class
 
+    override fun logText() = "DNS zone '$name'"
+
 }

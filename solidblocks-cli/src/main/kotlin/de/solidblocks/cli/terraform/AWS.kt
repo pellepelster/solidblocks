@@ -3,8 +3,8 @@ package de.solidblocks.cli.terraform
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.*
-import de.solidblocks.utils.logErrorBlcks
-import de.solidblocks.utils.logInfoBlcks
+import de.solidblocks.utils.logError
+import de.solidblocks.utils.logInfo
 
 class AWS(
     private val accessKeyId: String,
@@ -14,9 +14,9 @@ class AWS(
   suspend fun ensureBucket(name: String) {
     s3Client().use {
       if (it.hasBucket(name)) {
-        logInfoBlcks("S3 bucket '$name' already exists")
+        logInfo("S3 bucket '$name' already exists")
       } else {
-        logInfoBlcks("creating S3 bucket '$name'")
+        logInfo("creating S3 bucket '$name'")
         it.createNewBucket(name)
       }
 
@@ -33,7 +33,7 @@ class AWS(
               !currentPublicAccessBlock.restrictPublicBuckets!! ||
               !currentPublicAccessBlock.ignorePublicAcls!!
       ) {
-        logInfoBlcks("disabling public access for S3 bucket '$name'")
+        logInfo("disabling public access for S3 bucket '$name'")
 
         it.putPublicAccessBlock(
             PutPublicAccessBlockRequest {
@@ -47,7 +47,7 @@ class AWS(
             },
         )
       } else {
-        logInfoBlcks("public access for S3 bucket '$name' already disabled")
+        logInfo("public access for S3 bucket '$name' already disabled")
       }
 
       val versioning =
@@ -56,7 +56,7 @@ class AWS(
           )
 
       if (versioning.status != BucketVersioningStatus.Enabled) {
-        logInfoBlcks("enabling versioning for bucket '$name'")
+        logInfo("enabling versioning for bucket '$name'")
 
         it.putBucketVersioning(
             PutBucketVersioningRequest {
@@ -67,7 +67,7 @@ class AWS(
             },
         )
       } else {
-        logInfoBlcks("bucket '$name' versioning is already enabled")
+        logInfo("bucket '$name' versioning is already enabled")
       }
     }
   }
@@ -99,7 +99,7 @@ class AWS(
     } catch (e: NotFound) {
       return false
     } catch (e: Exception) {
-      logErrorBlcks(e.message.orEmpty())
+      logError(e.message.orEmpty())
       return false
     }
 

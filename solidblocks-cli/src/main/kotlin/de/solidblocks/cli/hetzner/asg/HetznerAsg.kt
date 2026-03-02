@@ -15,9 +15,9 @@ import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.resources.*
 import de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetType.ip
 import de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetType.label_selector
-import de.solidblocks.utils.logErrorBlcks
-import de.solidblocks.utils.logInfoBlcks
-import de.solidblocks.utils.logWarningBlcks
+import de.solidblocks.utils.logError
+import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.logWarning
 import java.lang.Thread.sleep
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -148,7 +148,7 @@ class HetznerAsg(hcloudToken: String) {
         }
 
     if (lbById == null && lbByName == null) {
-      logErrorBlcks("load balancer '${loadbalancer.reference}' not found.")
+      logError("load balancer '${loadbalancer.reference}' not found.")
     }
 
     return lbByName ?: lbById
@@ -180,7 +180,7 @@ class HetznerAsg(hcloudToken: String) {
     val networks =
         if (loadbalancer.privateNetworks.isNotEmpty()) {
           val networks = loadbalancer.privateNetworks.mapNotNull { api.networks.get(it.network) }
-          logInfoBlcks(
+          logInfo(
               "load balancer '${loadbalancer.name}' is attached to private network(s) ${
                         networks.joinToString(
                             ", ",
@@ -189,7 +189,7 @@ class HetznerAsg(hcloudToken: String) {
           )
           networks
         } else {
-          logInfoBlcks(
+          logInfo(
               "load balancer '${loadbalancer.name}' has no private network, will use public ip for new servers",
           )
           emptyList()
@@ -201,20 +201,20 @@ class HetznerAsg(hcloudToken: String) {
 
     val userDataHash = hashString(userData)
 
-    logInfoBlcks("hash for provided user data is '$userDataHash'")
-    logInfoBlcks("inspecting load balancer '${loadbalancer.name}'")
+    logInfo("hash for provided user data is '$userDataHash'")
+    logInfo("inspecting load balancer '${loadbalancer.name}'")
 
     val coolDownTime =
         loadbalancer.services.maxOf { it.healthCheck.retries * it.healthCheck.interval }.seconds +
             10.seconds
-    logInfoBlcks("using '$coolDownTime' as cool down time for newly created servers")
+    logInfo("using '$coolDownTime' as cool down time for newly created servers")
     val servers = fetchLoadbalancerServers(loadbalancer.id)
 
     servers
         .filter { it.attachment == ServerInfoAttachmentType.direct }
         .let {
           if (it.isNotEmpty()) {
-            logInfoBlcks(
+            logInfo(
                 "found ${it.size} attached server(s) (${it.joinToString(", ") { "'${it.name}'" }}) on load balancer '${loadbalancer.name}'",
             )
           }
@@ -224,7 +224,7 @@ class HetznerAsg(hcloudToken: String) {
         .filter { it.attachment == ServerInfoAttachmentType.label_selector }
         .let {
           if (it.isNotEmpty()) {
-            logInfoBlcks(
+            logInfo(
                 "found ${it.size} servers (${it.joinToString(", ") {
                             "'${it.name}'"
                         }}) on load balancer '${loadbalancer.name}' matching label selector '${it.first().selector ?: "<unknown>"}'",
@@ -233,9 +233,9 @@ class HetznerAsg(hcloudToken: String) {
         }
 
     if (servers.isEmpty()) {
-      logInfoBlcks("no servers currently attached to load balancer '${loadbalancer.name}'")
+      logInfo("no servers currently attached to load balancer '${loadbalancer.name}'")
     } else {
-      logInfoBlcks("inspecting servers for  load balancer '${loadbalancer.name}'")
+      logInfo("inspecting servers for  load balancer '${loadbalancer.name}'")
     }
 
     var finished = false
@@ -247,13 +247,13 @@ class HetznerAsg(hcloudToken: String) {
     val serverNamePrefix = "${namePrefix ?: loadbalancer.name}-$deploymentId"
     val controlLoopDelay = 5.seconds
 
-    logInfoBlcks(
+    logInfo(
         "starting rollout '$deploymentId' to $replicas replicas, server name prefix is '$serverNamePrefix' and timeout for newly created servers is '$healthTimeout'",
     )
 
     while (!finished) {
       if (Clock.System.now().minus(deploymentStart) > totalTimeout) {
-        logErrorBlcks("rotation timeout of $totalTimeout reached, aborting")
+        logError("rotation timeout of $totalTimeout reached, aborting")
         return@runBlocking AsgRotateStatus.TIMEOUT
       }
 
@@ -267,10 +267,8 @@ class HetznerAsg(hcloudToken: String) {
           }
 
       if (pendingLoadbalancerActions.isNotEmpty()) {
-        logInfoBlcks("load balancer '${loadbalancer.name}' has pending actions")
-        pendingLoadbalancerActions.forEach {
-          api.loadBalancers.waitForAction(it) { logInfoBlcks(it) }
-        }
+        logInfo("load balancer '${loadbalancer.name}' has pending actions")
+        pendingLoadbalancerActions.forEach { api.loadBalancers.waitForAction(it) { logInfo(it) } }
       }
 
       val allServersForCurrentDeployment =
@@ -286,8 +284,8 @@ class HetznerAsg(hcloudToken: String) {
         val actions =
             api.servers.actions(server.id).actions.filter { it.status == ActionStatus.RUNNING }
         if (actions.isNotEmpty()) {
-          logInfoBlcks("server '${server.name}' has pending actions")
-          actions.forEach { api.servers.waitForAction(it) { logInfoBlcks(it) } }
+          logInfo("server '${server.name}' has pending actions")
+          actions.forEach { api.servers.waitForAction(it) { logInfo(it) } }
         }
       }
 
@@ -298,19 +296,19 @@ class HetznerAsg(hcloudToken: String) {
 
       if (allCurrentlyNotAttachedServers.isNotEmpty()) {
         for (server in allCurrentlyNotAttachedServers) {
-          logInfoBlcks("attaching server '${server.name}' to load balancer '${loadbalancer.name}'")
+          logInfo("attaching server '${server.name}' to load balancer '${loadbalancer.name}'")
 
           try {
             val action = api.loadBalancers.attachServer(loadbalancer.id, server.id)
-            if (!api.loadBalancers.waitForAction(action, { logInfoBlcks(it) })) {
-              logErrorBlcks(
+            if (!api.loadBalancers.waitForAction(action, { logInfo(it) })) {
+              logError(
                   "attaching server '${server.name}' to load balancer '${loadbalancer.name}' failed",
               )
               continue
             }
           } catch (e: HetznerApiException) {
             if (e.error.code != HetznerApiErrorType.TARGET_ALREADY_DEFINED) {
-              logErrorBlcks(
+              logError(
                   "attaching server '$server.name' to load balancer '${loadbalancer.name}' failed",
               )
               continue
@@ -330,11 +328,11 @@ class HetznerAsg(hcloudToken: String) {
       val serversToRotate = managedServers.filter { !it.isUpToDate(userDataHash) }
 
       if (unmanagedServers.isNotEmpty()) {
-        logWarningBlcks(
+        logWarning(
             "ignoring ${unmanagedServers.size} unmanaged server(s) (${unmanagedServers.logText()})",
         )
       }
-      logInfoBlcks(
+      logInfo(
           "rotating ${managedServers.size} managed server(s), ${serversToRotate.size} outdated and ${upToDateServers.size} up to date",
       )
 
@@ -343,7 +341,7 @@ class HetznerAsg(hcloudToken: String) {
             it.age < healthTimeout && it.status(coolDownTime) != LoadBalancerHealthStatus.healthy
           }
       if (updatedButNoYetHealthyServers.isNotEmpty()) {
-        logInfoBlcks(
+        logInfo(
             "waiting for servers ${updatedButNoYetHealthyServers.statusLogText()} to become healthy within $healthTimeout",
         )
         continue
@@ -354,19 +352,19 @@ class HetznerAsg(hcloudToken: String) {
             it.age > healthTimeout && it.status(coolDownTime) != LoadBalancerHealthStatus.healthy
           }
       if (updatedButFailedServers.isNotEmpty()) {
-        logInfoBlcks(
+        logInfo(
             "servers ${updatedButFailedServers.statusLogText()} did not become healthy within $healthTimeout, deleting...",
         )
         for (server in updatedButFailedServers) {
-          logInfoBlcks("deleting server '${server.name}'")
+          logInfo("deleting server '${server.name}'")
           try {
             val delete = api.servers.delete(server.id)
-            if (!api.servers.waitForAction(delete, { logInfoBlcks(it) })) {
-              logErrorBlcks("deleting server '${server.name}' failed")
+            if (!api.servers.waitForAction(delete, { logInfo(it) })) {
+              logError("deleting server '${server.name}' failed")
               continue
             }
           } catch (e: HetznerApiException) {
-            logErrorBlcks("deleting server '${server.name}' failed")
+            logError("deleting server '${server.name}' failed")
             continue
           }
         }
@@ -375,7 +373,7 @@ class HetznerAsg(hcloudToken: String) {
       val serverName = "$serverNamePrefix-${upToDateServers.size}"
       if (upToDateServers.size != replicas) {
         if (api.servers.get(serverName) == null) {
-          logInfoBlcks("creating server '$serverName'")
+          logInfo("creating server '$serverName'")
           try {
             val labels = HetznerLabels()
             labels.addLabel(MANAGED_BY_LABEL, "asg")
@@ -402,23 +400,23 @@ class HetznerAsg(hcloudToken: String) {
                 )
 
             if (newServer == null || newServer.action == null) {
-              logErrorBlcks("error while creating server '$serverName'")
+              logError("error while creating server '$serverName'")
               continue
             }
 
             val result =
                 api.waitForAction(
                     newServer.action.id,
-                    { logInfoBlcks(it) },
+                    { logInfo(it) },
                     { api.servers.action(it) },
                 )
 
             if (!result) {
-              logErrorBlcks("server '$serverName' did not become ready within timeout")
+              logError("server '$serverName' did not become ready within timeout")
               continue
             }
           } catch (e: HetznerApiException) {
-            logErrorBlcks(
+            logError(
                 "creation failed for server '$serverName', error was '${e.error.message}' (${e.error.code}), details: ${
                                 e.error.details?.let {
                                     it.fields?.joinToString {
@@ -439,7 +437,7 @@ class HetznerAsg(hcloudToken: String) {
       val updatedAndHealthyServers =
           upToDateServers.filter { it.status(coolDownTime) == LoadBalancerHealthStatus.healthy }
       if (updatedAndHealthyServers.isNotEmpty()) {
-        logInfoBlcks(
+        logInfo(
             "wanted $replicas healthy servers found ${updatedAndHealthyServers.size} (${updatedAndHealthyServers.statusLogText()})",
         )
       }
@@ -458,14 +456,14 @@ class HetznerAsg(hcloudToken: String) {
             .sortedBy { it.age }
 
     if (updatedAndHealthyServers.count() > replicas) {
-      logInfoBlcks(
+      logInfo(
           "wanted $replicas and have ${updatedAndHealthyServers.count()} removing ${updatedAndHealthyServers.count() - replicas}",
       )
 
       updatedAndHealthyServers.take(updatedAndHealthyServers.count() - replicas).forEach {
-        logInfoBlcks("deleting server '${it.name}'")
+        logInfo("deleting server '${it.name}'")
         val delete = api.servers.delete(it.id)
-        api.servers.waitForAction(delete, { logInfoBlcks(it) })
+        api.servers.waitForAction(delete, { logInfo(it) })
       }
     }
 
@@ -475,13 +473,13 @@ class HetznerAsg(hcloudToken: String) {
             .distinctBy { it.id }
 
     if (outdatedServers.isNotEmpty()) {
-      logInfoBlcks(
+      logInfo(
           "deleting outdated managed servers: ${outdatedServers.joinToString(", ") { "'${it.name}'" }}",
       )
       outdatedServers.forEach {
-        logInfoBlcks("deleting outdated managed server '${it.name}'")
+        logInfo("deleting outdated managed server '${it.name}'")
         val delete = api.servers.delete(it.id)
-        api.servers.waitForAction(delete) { logInfoBlcks(it) }
+        api.servers.waitForAction(delete) { logInfo(it) }
       }
     }
 

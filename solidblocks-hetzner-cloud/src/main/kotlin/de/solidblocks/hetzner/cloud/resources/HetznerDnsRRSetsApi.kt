@@ -3,7 +3,12 @@ package de.solidblocks.hetzner.cloud.resources
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerBaseResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerChangeProtectedResource
+import de.solidblocks.hetzner.cloud.model.HetznerChangeProtectionResponse
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -53,7 +58,8 @@ data class DnsRRSetsCreateResponseWrapper(
     @SerialName("action") val action: ActionResponse,
 )
 
-@Serializable data class DnsRRSetsResponseWrapper(@SerialName("rrset") val rrset: DnsRrSetResponse)
+@Serializable
+data class DnsRRSetsResponseWrapper(@SerialName("rrset") val rrset: DnsRrSetResponse, val ttl: Int)
 
 @Serializable
 data class DnsRrSetResponse(

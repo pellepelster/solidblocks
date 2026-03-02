@@ -1,5 +1,6 @@
 package de.solidblocks.ssh
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.net.ServerSocket
@@ -23,7 +24,13 @@ class SSHClient(
     val port: Int = 22,
 ) : Closeable {
 
+  private val logger = KotlinLogging.logger {}
+
   data class SSHCommandResult(val stdOut: String, val stdErr: String, val exitCode: Int)
+
+  init {
+    logger.info { "creating SSH client for $host:$port" }
+  }
 
   val client =
       SshClient.setUpDefaultClient().also {

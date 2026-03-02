@@ -2,9 +2,9 @@ package de.solidblocks.cli.docs.ansible
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cli.utils.*
-import de.solidblocks.utils.logErrorBlcks
-import de.solidblocks.utils.logInfoBlcks
-import de.solidblocks.utils.logWarningBlcks
+import de.solidblocks.utils.logError
+import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.logWarning
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -21,10 +21,10 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
 
     val descriptionLong =
         if (docsReadme.exists()) {
-          logInfoBlcks("found collection readme at '$docsReadme'")
+          logInfo("found collection readme at '$docsReadme'")
           docsReadme.readText()
         } else {
-          logWarningBlcks("collection readme '$docsReadme' not found")
+          logWarning("collection readme '$docsReadme' not found")
           galaxy.description
         }
 
@@ -63,12 +63,12 @@ class AnsibleCollectionHugoGenerator(val collectionDir: Path, val targetDir: Pat
     targetDir.createDirectories()
 
     val collectionIndex = targetDir.resolve("_index.md")
-    logInfoBlcks("writing collection index to '$collectionIndex'")
+    logInfo("writing collection index to '$collectionIndex'")
     collectionIndex.writeText(collectionIndexHugo)
 
     roles.forEach { role ->
       val roleIndex = targetDir.resolve("${role.name}.md")
-      logInfoBlcks("writing role index to '$roleIndex'")
+      logInfo("writing role index to '$roleIndex'")
 
       val roleIndexHugo =
           """
@@ -94,12 +94,12 @@ ${role.tableRows().toMarkdownTableRow()}
 
   private fun verifyInput(): Boolean {
     if (!collectionDir.exists()) {
-      logErrorBlcks("collection directory '$collectionDir' not found")
+      logError("collection directory '$collectionDir' not found")
       return false
     }
 
     if (!collectionDir.isDirectory()) {
-      logErrorBlcks("collection directory '$collectionDir' is not a directory")
+      logError("collection directory '$collectionDir' is not a directory")
       return false
     }
 
@@ -108,7 +108,7 @@ ${role.tableRows().toMarkdownTableRow()}
     }
 
     if (!targetDir.isDirectory()) {
-      logErrorBlcks("target directory '$collectionDir' is not a directory")
+      logError("target directory '$collectionDir' is not a directory")
       return false
     }
 
@@ -117,7 +117,7 @@ ${role.tableRows().toMarkdownTableRow()}
 
   private fun parseRoleVariables(mainYmlFile: Path): List<Variable>? {
     if (!mainYmlFile.exists()) {
-      logInfoBlcks("file '$mainYmlFile' does not exist")
+      logInfo("file '$mainYmlFile' does not exist")
       return null
     }
 
@@ -128,7 +128,7 @@ ${role.tableRows().toMarkdownTableRow()}
         parseVariables(yml.data)
       }
       else -> {
-        logErrorBlcks("failed to parse '$mainYmlFile'")
+        logError("failed to parse '$mainYmlFile'")
         return null
       }
     }
@@ -137,18 +137,18 @@ ${role.tableRows().toMarkdownTableRow()}
   private fun parseGalaxy(data: YamlNode): Galaxy? {
     val version = data.getMapString("version")
     if (version == null) {
-      logErrorBlcks("collection version not found")
+      logError("collection version not found")
       return null
     }
     val namespace = data.getMapString("namespace")
     if (namespace == null) {
-      logErrorBlcks("collection namespace not found")
+      logError("collection namespace not found")
       return null
     }
 
     val name = data.getMapString("name")
     if (name == null) {
-      logErrorBlcks("collection name not found")
+      logError("collection name not found")
       return null
     }
 
@@ -186,7 +186,7 @@ ${role.tableRows().toMarkdownTableRow()}
       when (val ymlKeys = data.getKeys()) {
         is Success -> ymlKeys.data
         else -> {
-          logErrorBlcks("invalid format")
+          logError("invalid format")
           null
         }
       }?.map { key -> Variable(key, data.getMapString(key)) }
@@ -194,24 +194,24 @@ ${role.tableRows().toMarkdownTableRow()}
   fun loadGalaxyYml(): Galaxy? {
     val galaxyYmlFile = collectionDir.resolve("galaxy.yml")
     if (!galaxyYmlFile.exists()) {
-      logWarningBlcks("expected metadata '$galaxyYmlFile' not found")
+      logWarning("expected metadata '$galaxyYmlFile' not found")
       return null
     }
 
-    logInfoBlcks("loading metadata from '$galaxyYmlFile'")
+    logInfo("loading metadata from '$galaxyYmlFile'")
     val galaxyYml = yamlParse(galaxyYmlFile.readText())
 
     return when (galaxyYml) {
       is Success -> {
         val galaxy = parseGalaxy(galaxyYml.data)
         if (galaxy == null) {
-          logErrorBlcks("failed to parse metadata from '$galaxyYmlFile'")
+          logError("failed to parse metadata from '$galaxyYmlFile'")
           return null
         }
         galaxy
       }
       else -> {
-        logErrorBlcks("failed to parse metadata from '$galaxyYmlFile'")
+        logError("failed to parse metadata from '$galaxyYmlFile'")
         return null
       }
     }
@@ -221,24 +221,24 @@ ${role.tableRows().toMarkdownTableRow()}
     val metaYmlFile =
         collectionDir.resolve("roles").resolve(roleName).resolve("meta").resolve("main.yml")
     if (!metaYmlFile.exists()) {
-      logWarningBlcks("role metadata '$metaYmlFile' not found")
+      logWarning("role metadata '$metaYmlFile' not found")
       return null
     }
 
-    logInfoBlcks("loading role metadata from '$metaYmlFile'")
+    logInfo("loading role metadata from '$metaYmlFile'")
     val metaYml = yamlParse(metaYmlFile.readText())
 
     return when (metaYml) {
       is Success -> {
         val roleMetaData = parseRoleMetadata(metaYml.data)
         if (roleMetaData == null) {
-          logErrorBlcks("failed to parse role metadata from '$metaYmlFile'")
+          logError("failed to parse role metadata from '$metaYmlFile'")
           return null
         }
         roleMetaData
       }
       else -> {
-        logErrorBlcks("failed to parse role metadata from '$metaYmlFile'")
+        logError("failed to parse role metadata from '$metaYmlFile'")
         return null
       }
     }

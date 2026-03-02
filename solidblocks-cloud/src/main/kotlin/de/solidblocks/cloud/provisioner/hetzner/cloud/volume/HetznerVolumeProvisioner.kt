@@ -39,7 +39,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
           api.volumes.create(
               VolumeCreateRequest(
                   resource.name,
-                  resource.size,
+                  resource.size.gigabytes(),
                   resource.location,
                   format = VolumeFormat.ext4,
                   automount = false,

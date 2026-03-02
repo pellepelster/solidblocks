@@ -26,6 +26,7 @@ class S3ServiceConfigurationManagerTest {
                 .validatConfiguration(
                     S3ServiceConfiguration(
                         "bucket1",
+                        12,
                         listOf(
                             S3ServiceBucketConfiguration("bucket1", false, emptyList()),
                             S3ServiceBucketConfiguration("bucket1", false, emptyList()),
@@ -52,6 +53,7 @@ class S3ServiceConfigurationManagerTest {
                 .validatConfiguration(
                     S3ServiceConfiguration(
                         "bucket1",
+                        12,
                         listOf(
                             S3ServiceBucketConfiguration(
                                 "bucket1", false, listOf(
