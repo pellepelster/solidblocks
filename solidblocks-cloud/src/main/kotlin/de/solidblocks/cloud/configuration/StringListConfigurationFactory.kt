@@ -2,10 +2,12 @@ package de.solidblocks.cloud.configuration
 
 import com.charleskorn.kaml.YamlNode
 import com.charleskorn.kaml.YamlScalar
+import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.logMessage
 
 class StringListConfigurationFactory : ConfigurationFactory<String> {
 
@@ -16,7 +18,7 @@ class StringListConfigurationFactory : ConfigurationFactory<String> {
     override fun parse(yaml: YamlNode): Result<String> {
         return when (yaml) {
             is YamlScalar -> Success(yaml.content)
-            else -> Error("'$yaml' is not a string")
+            else -> Error("expected a string at ${yaml.location.logMessage()}")
         }
     }
 }

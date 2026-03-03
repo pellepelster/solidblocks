@@ -2,10 +2,10 @@ package de.solidblocks.cloud
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
+import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.mocks.Test1Configuration
 import de.solidblocks.cloud.mocks.Test1ConfigurationFactory
-import de.solidblocks.cloud.configuration.StringListConfigurationFactory
-import de.solidblocks.cloud.configuration.StringListKeyword
+import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.collections.shouldHaveSize
@@ -64,5 +64,26 @@ class ListKeywordsTest {
         list shouldHaveSize 2
         list[0] shouldBe "foo-bar"
         list[1] shouldBe "yolo2000"
+    }
+
+    @Test
+    fun testStringListKeywordEmpty() {
+        val yaml =
+            yamlParse(
+                """
+                list1:
+                    - 
+                    - yolo2000
+                """
+                    .trimIndent(),
+            ).shouldBeTypeOf<Success<YamlNode>>()
+
+        val keyword =
+            StringListKeyword(
+                "list1",
+                TEST_KEYWORD_HELP
+            )
+
+        keyword.parse(yaml.data).shouldBeTypeOf<Error<List<String>>>().error shouldBe "expected a string at line 2 colum 6"
     }
 }

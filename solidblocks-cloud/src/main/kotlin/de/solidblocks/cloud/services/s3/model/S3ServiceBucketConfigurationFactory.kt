@@ -33,13 +33,19 @@ class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucket
             false,
         )
 
+    val publicAccessDomains = StringListKeyword(
+    "public_access_domains",
+        KeywordHelp(
+            "If '${publicAccess.name}' is enabled the bucket will also listen on these Domains. Requires A/AAAA entries to point to the server hosting the buckets. If any provider supports those domains the entries will automatically be created.",
+        )
+    )
     val accessKeys =
         ListKeyword("access_keys", S3ServiceBucketAccessKeyConfigurationFactory(), KeywordHelp("Access keys to generate for bucket access"))
 
     override val help: ConfigurationHelp
         get() = TODO("Not yet implemented")
 
-    override val keywords = listOf(name, publicAccess, accessKeys)
+    override val keywords = listOf(name, publicAccess, accessKeys, publicAccessDomains)
 
     override fun parse(yaml: YamlNode): Result<S3ServiceBucketConfiguration> {
         val name =
@@ -54,6 +60,12 @@ class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucket
                 is Success<Boolean> -> result.data
             }
 
+        val publicAccessDomains =
+            when (val result = publicAccessDomains.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<List<String>> -> result.data
+            }
+
         val accessKeys =
             when (val result = accessKeys.parse(yaml)) {
                 is Error<List<S3ServiceBucketAccessKeyConfiguration>> -> return Error(result.error)
@@ -62,6 +74,6 @@ class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucket
 
 
         logger.debug { "parsed bucket '$name', publicAccess: $publicAccess" }
-        return Success(S3ServiceBucketConfiguration(name, publicAccess, accessKeys))
+        return Success(S3ServiceBucketConfiguration(name, publicAccess, accessKeys, publicAccessDomains))
     }
 }

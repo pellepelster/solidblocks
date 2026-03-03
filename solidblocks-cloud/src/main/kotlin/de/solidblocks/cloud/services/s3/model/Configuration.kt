@@ -12,4 +12,4 @@ data class S3ServiceConfiguration(
 
 data class S3ServiceBucketAccessKeyConfiguration(val name: String)
 
-data class S3ServiceBucketConfiguration(val name: String, val publicAccess: Boolean, val accessKeys: List<S3ServiceBucketAccessKeyConfiguration>)
+data class S3ServiceBucketConfiguration(val name: String, val publicAccess: Boolean, val accessKeys: List<S3ServiceBucketAccessKeyConfiguration>, val publicAccessDomains: List<String>)

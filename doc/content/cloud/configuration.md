@@ -71,8 +71,8 @@ Default location for created infrastructure resources
 ### default-instance-type
 *type*: **string**,
 *optional*: **true**,
-*options*: **cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62, cx23, cx33, cx43, cx53**
-*default*: **cpx21**
+*options*: **cx23, cx33, cx43, cx53, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62**
+*default*: **cx23**
 
 Default instance size for virtual machines
 
@@ -130,6 +130,8 @@ buckets:
         owner: [boolean]
         read: [boolean]
         write: [boolean]
+        #...
+    public_access_domains:
         #...
     #...
 
@@ -202,6 +204,10 @@ Grant read permission to the access key
 *default*: **false**
 
 Grant write permission to the access key
+
+#### public_access_domains
+
+If 'public_access' is enabled the bucket will also listen on these Domains. Requires A/AAAA entries to point to the server hosting the buckets. If any provider supports those domains the entries will automatically be created.
 
 ## PostgreSQL
 
@@ -291,8 +297,10 @@ Deploys a docker service image containers and exposes its endpoints
 ```yaml
 type: docker
 name: <string>
+image: <string>
 endpoints:
   - port: [number]
+    type: [string]
     #...
 
 ```
@@ -306,6 +314,13 @@ endpoints:
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
 
+### image
+*type*: **string**,
+*optional*: **false**,
+*default*: **\<none\>**
+
+Docker image to deploy
+
 ### endpoints
 
 Service endpoints to expose
@@ -315,4 +330,12 @@ Service endpoints to expose
 *optional*: **true**,
 *default*: **\<none\>**
 
-Unique name for the endpoint
+Service port on the docker container
+
+#### type
+*type*: **string**,
+*optional*: **true**,
+*options*: **http**
+*default*: **http**
+
+Type of the service endpoints. Endpoints with the type `http` are automatically terminated with TLS if a `root_domain` is set.
