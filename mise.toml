@@ -89,7 +89,7 @@ echo "GRADLE_OPTS: '${GRADLE_OPTS}'"
 
 [tasks.release-check]
 usage = """
-arg "<version>"
+arg "<version>" env="VERSION"
 """
 run = """
 #!/usr/bin/env bash
@@ -103,7 +103,7 @@ task_release_check ${usage_version}
 
 [tasks.release]
 usage = """
-arg "<version>"
+arg "<version>" env="VERSION"
 """
 run = """
 #!/usr/bin/env bash

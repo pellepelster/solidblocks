@@ -86,7 +86,7 @@ done
 
 [tasks.release-test]
 usage = """
-arg "<version>"
+arg "<version>" env="VERSION"
 """
 run="""
 #!/usr/bin/env bash

@@ -115,7 +115,7 @@ ${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help-hugo ${ROOT_PROJ
 
 [tasks.release-test]
 usage = """
-arg "<version>"
+arg "<version>" env="VERSION"
 """
 run = """
 #!/usr/bin/env bash

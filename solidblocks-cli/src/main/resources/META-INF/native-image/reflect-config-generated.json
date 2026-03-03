@@ -792,6 +792,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsUpdateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsUpdateRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.docker.VolumeMount",
         "fields": [
             {
@@ -1998,24 +2016,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsZone",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsZone$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.cli.SerializationConfigField",
         "fields": [
             {
@@ -2142,6 +2142,42 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsRecordsUpdateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsRecordsUpdateRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.HetznerDnsZone",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.HetznerDnsZone$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.garagefs.UpdateBucketRequest",
         "fields": [
             {
@@ -2260,6 +2296,24 @@
     },
     {
         "name": "de.solidblocks.docker.BindOptions$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsTTLUpdateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsTTLUpdateRequest$Companion",
         "fields": [],
         "methods": [
             {
