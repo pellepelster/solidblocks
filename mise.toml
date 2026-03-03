@@ -9,7 +9,7 @@ config_roots = [
 ]
 
 [tools]
-hugo = "latest"
+hugo = "0.155.2"
 terraform="1.14.5"
 terraform-docs="0.21.0"
 rg="15.1.0"
