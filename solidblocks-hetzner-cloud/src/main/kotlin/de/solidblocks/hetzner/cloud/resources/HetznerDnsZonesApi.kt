@@ -7,8 +7,10 @@ import de.solidblocks.hetzner.cloud.model.*
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DnsZoneListResponseWrapper(val zones: List<HetznerDnsZone>, override val meta: MetaResponse) :
-    ListResponse<HetznerDnsZone> {
+data class DnsZoneListResponseWrapper(
+    val zones: List<HetznerDnsZone>,
+    override val meta: MetaResponse,
+) : ListResponse<HetznerDnsZone> {
 
   override val list: List<HetznerDnsZone>
     get() = zones

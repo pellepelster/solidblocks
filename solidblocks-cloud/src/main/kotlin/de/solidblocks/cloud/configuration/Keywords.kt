@@ -1,18 +1,7 @@
 package de.solidblocks.cloud.configuration
 
 import com.charleskorn.kaml.YamlNode
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.YamlEmpty
-import de.solidblocks.cloud.utils.getList
-import de.solidblocks.cloud.utils.getNonNullOrEmptyString
-import de.solidblocks.cloud.utils.getObject
-import de.solidblocks.cloud.utils.getOptionalBoolean
-import de.solidblocks.cloud.utils.getOptionalNumber
-import de.solidblocks.cloud.utils.getOptionalString
-import de.solidblocks.cloud.utils.getPolymorphicList
-import de.solidblocks.cloud.utils.logMessage
+import de.solidblocks.cloud.utils.*
 
 enum class KeywordType {
     boolean,
@@ -42,7 +31,7 @@ sealed interface ComplexPolymorphicKeyword<T> : Keyword<T> {
     val factories: Map<String, ConfigurationFactory<out T>>
 }
 
-data class ListKeyword<T>(
+open class ListKeyword<T>(
     override val name: String,
     override val factory: ConfigurationFactory<T>,
     val help: KeywordHelp,
@@ -61,6 +50,8 @@ data class ListKeyword<T>(
 
     override val type = KeywordType.list
 }
+
+class StringListKeyword(name: String, help: KeywordHelp) : ListKeyword<String>(name, StringListConfigurationFactory(), help)
 
 data class PolymorphicListKeyword<T>(
     override val name: String,
