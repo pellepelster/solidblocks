@@ -11,6 +11,7 @@ class Utils {}
 val TEST_PROVISIONER_CONTEXT =
     ProvisionerContext(
         SSHKeyUtils.loadKey(Utils::class.java.getResource("/test_ed25519.key").readText()),
+        Utils::class.java.getResource("/test_ed25519.key").path,
         "testCloudName",
         "testEnvironment",
         ProvisionersRegistry(),

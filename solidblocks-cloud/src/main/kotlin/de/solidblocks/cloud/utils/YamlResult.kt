@@ -10,9 +10,9 @@ data class Error<T>(val error: String) : YamlResult<T>, Result<T>
 
 data class YamlEmpty<T>(val message: String) : YamlResult<T>
 
-fun Collection<YamlResult<*>>.hasError() = this.any { it is Error<*> }
+fun Collection<Result<*>>.hasError() = this.any { it is Error<*> }
 
-fun Collection<YamlResult<*>>.aggregateErrors() =
+fun Collection<Result<*>>.aggregateErrors() =
     this.filterIsInstance<Error<*>>().joinToString(", ") { it.error }
 
-fun <T> Collection<YamlResult<*>>.mapSuccess() = this.filterIsInstance<Success<T>>().map { it.data }
+fun <T> Collection<Result<*>>.mapSuccess() = this.filterIsInstance<Success<T>>().map { it.data }

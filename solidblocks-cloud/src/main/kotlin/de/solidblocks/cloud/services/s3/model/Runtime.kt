@@ -11,4 +11,5 @@ data class S3ServiceConfigurationRuntime(
     override val name: String,
     val dataVolumeSize: ByteSize,
     val buckets: List<S3ServiceBucketConfigurationRuntime>,
+    val manuallyManagedPublicWebAccessDomains: Set<String>,
 ) : ServiceConfigurationRuntime

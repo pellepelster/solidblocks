@@ -1,13 +1,8 @@
 package de.solidblocks.cloud.provisioner
 
-import de.solidblocks.cloud.api.InfrastructureResourceHelp
+import de.solidblocks.cloud.Output
 import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffStatus.duplicate
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.parent_missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.hierarchicalResourceList
@@ -21,35 +16,27 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
 import de.solidblocks.cloud.utils.Waiter.Companion.defaultWaiter
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
-import de.solidblocks.utils.logError
-import de.solidblocks.utils.logInfo
-import de.solidblocks.utils.logWarning
+import de.solidblocks.utils.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 
 class Provisioner(
-    val provisionersRegistry: ProvisionersRegistry,
+    val registry: ProvisionersRegistry,
     val endpointWaiter: Waiter = defaultWaiter(),
 ) {
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun help(
-        resourceGroups: List<ResourceGroup>,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): Result<List<InfrastructureResourceHelp>> {
-        val result = mutableListOf<InfrastructureResourceHelp>()
+    suspend fun help(resourceGroups: List<ResourceGroup>, context: ProvisionerContext): Result<List<Output>> {
+        val result = mutableListOf<Output>()
 
         for (resourceGroup in resourceGroups) {
             val resources = resourceGroup.hierarchicalResourceList().toSet()
 
             for (resource in resources) {
                 try {
-                    val help = provisionersRegistry.help<BaseResource>(resource, context)
+                    val help = registry.help<BaseResource>(resource, context)
                     result.addAll(help)
 
                 } catch (e: Exception) {
@@ -68,62 +55,62 @@ class Provisioner(
         log: LogContext,
     ): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val resourceGroupDiffs = resourceGroups.map { resourceGroup ->
-                val resourceGroupLogContext = log.indent()
+            val resourceGroupLogContext = log.indent()
 
-                logInfo(
-                    "planning changes for resource group ${resourceGroup.name}",
-                    context = resourceGroupLogContext,
-                )
-                val diffLogContext = resourceGroupLogContext.indent()
+            logInfo(
+                "planning changes for resource group ${resourceGroup.name}",
+                context = resourceGroupLogContext,
+            )
+            val diffLogContext = resourceGroupLogContext.indent()
 
-                val diffs = when (val result = diff(resourceGroup, context, diffLogContext)) {
-                    is Error<List<ResourceDiff>> -> return Error(result.error)
-                    is Success<List<ResourceDiff>> -> result.data
-                }
+            val diffs = when (val result = diff(resourceGroup, context, diffLogContext)) {
+                is Error<List<ResourceDiff>> -> return Error(result.error)
+                is Success<List<ResourceDiff>> -> result.data
+            }
 
-                diffs.forEach {
-                    when (it.status) {
-                        unknown -> logInfo("could not determine status for ${it.resource.logText()}", context = diffLogContext)
+            diffs.forEach {
+                when (it.status) {
+                    unknown -> logInfo("could not determine status for ${it.resource.logText()}", context = diffLogContext)
 
-                        missing -> logInfo("will create ${it.resource.logText()}", context = diffLogContext)
+                    missing -> logInfo("will create ${it.resource.logText()}", context = diffLogContext)
 
-                        up_to_date -> logInfo("${it.resource.logText()} is up-to-date", context = diffLogContext)
+                    up_to_date -> logInfo("${it.resource.logText()} is up-to-date", context = diffLogContext)
 
-                        has_changes -> {
-                            if (it.needsRecreate()) {
-                                logInfo(
-                                    "${it.resource.logText()} has breaking changes and needs to be re-created",
-                                    context = diffLogContext,
-                                )
-                                it.changes.forEach {
-                                    logInfo("- ${it.logText()}", context = diffLogContext.indent())
-                                }
+                    has_changes -> {
+                        if (it.needsRecreate()) {
+                            logInfo(
+                                "${it.resource.logText()} has breaking changes and needs to be re-created",
+                                context = diffLogContext,
+                            )
+                            it.changes.forEach {
+                                logInfo("- ${it.logText()}", context = diffLogContext.indent())
+                            }
 
-                            } else {
-                                logInfo(
-                                    "${it.resource.logText()} has pending changes", context = diffLogContext
-                                )
-                                it.changes.forEach {
-                                    logInfo("- ${it.logText()}", context = diffLogContext.indent())
-                                }
+                        } else {
+                            logInfo(
+                                "${it.resource.logText()} has pending changes", context = diffLogContext
+                            )
+                            it.changes.forEach {
+                                logInfo("- ${it.logText()}", context = diffLogContext.indent())
                             }
                         }
+                    }
 
-                        parent_missing -> logInfo(
-                            "parent resource for ${it.resource.logText()} is missing",
-                            context = diffLogContext,
+                    parent_missing -> logInfo(
+                        "parent resource for ${it.resource.logText()} is missing",
+                        context = diffLogContext,
+                    )
+
+                    duplicate -> {
+                        return Error(
+                            it.duplicateErrorMessage ?: "<unknown duplicate error message for ${it.resource.logText()}>",
                         )
-
-                        duplicate -> {
-                            return Error(
-                                it.duplicateErrorMessage ?: "<unknown duplicate error message for ${it.resource.logText()}>",
-                            )
-                        }
                     }
                 }
+            }
 
-                resourceGroup to diffs
-            }.toMap()
+            resourceGroup to diffs
+        }.toMap()
 
         return Success(resourceGroupDiffs)
     }
@@ -142,7 +129,7 @@ class Provisioner(
             logDebug("creating diff for ${resource.logText()}", context = log)
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
-                val diff = provisionersRegistry.diff<BaseResource>(resource, context) ?: return@runBlocking Error("diff failed for ${resource.logText()}")
+                val diff = registry.diff<BaseResource>(resource, context) ?: return@runBlocking Error("diff failed for ${resource.logText()}")
 
                 logDebug(
                     "diff status for ${diff.resource.logText()} is '${diff.status}'",
@@ -180,19 +167,19 @@ class Provisioner(
         log: LogContext,
     ): Result<Unit> {
         val success = resources.map { resource ->
-                val runtime = try {
-                    provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
-                        resource,
-                        context,
-                        log,
-                    )
-                } catch (e: Exception) {
-                    logger.error(e) { "creating ${resource.logText()} failed" }
-                    null
-                }
+            val runtime = try {
+                registry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
+                    resource,
+                    context,
+                    log,
+                )
+            } catch (e: Exception) {
+                logger.error(e) { "creating ${resource.logText()} failed" }
+                null
+            }
 
-                runtime
-            }.all { it != null }
+            runtime
+        }.all { it != null }
 
         return if (success) {
             Success(Unit)
@@ -216,7 +203,7 @@ class Provisioner(
                     logger.info { "destroying ${resource.logText()}" }
                     logInfo("destroying ${resource.logText()}", context = log)
 
-                    val result = provisionersRegistry.destroy<BaseResource>(resource, context, log)
+                    val result = registry.destroy<BaseResource>(resource, context, log)
                     if (!result) {
                         return@runBlocking Error("destroying ${resource.logText()} failed")
                     }
@@ -230,8 +217,8 @@ class Provisioner(
                 }
 
                 val resourcesToApply = diffs.filter {
-                        it.status != up_to_date && it.status != duplicate
-                    }.map { it.resource }.hierarchicalResourceList().filterIsInstance<BaseInfrastructureResource<*>>()
+                    it.status != up_to_date && it.status != duplicate
+                }.map { it.resource }.hierarchicalResourceList().filterIsInstance<BaseInfrastructureResource<*>>()
 
                 for (resource in resourcesToApply) {
                     logInfo("applying ${resource.logText()}", context = log)
@@ -239,7 +226,7 @@ class Provisioner(
                     val applyLog = log.indent()
 
                     val applyResult = try {
-                        provisionersRegistry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
+                        registry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
                             resource,
                             context,
                             applyLog,

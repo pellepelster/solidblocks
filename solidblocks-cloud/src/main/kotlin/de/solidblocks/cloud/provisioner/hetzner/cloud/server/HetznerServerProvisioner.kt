@@ -2,18 +2,11 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
 import de.solidblocks.cloud.Constants.sshKeysLabel
 import de.solidblocks.cloud.Constants.userDataLabel
-import de.solidblocks.cloud.api.ApplyResult
-import de.solidblocks.cloud.api.InfrastructureResourceHelp
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.Output
+import de.solidblocks.cloud.api.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime.Companion.PRIVATE_KEY_PATH_PLACEHOLDER
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.utils.HetznerLabels
 import de.solidblocks.hetzner.cloud.HetznerApi
@@ -22,6 +15,7 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import de.solidblocks.utils.logInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.io.path.absolutePathString
 import kotlin.reflect.KClass
 
 class HetznerServerProvisioner(val hcloudToken: String) :
@@ -50,11 +44,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
             )
         }
 
-    override suspend fun apply(
-        resource: HetznerServer,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): ApplyResult<HetznerServerRuntime> {
+    override suspend fun apply(resource: HetznerServer, context: ProvisionerContext, log: LogContext): ApplyResult<HetznerServerRuntime> {
         var server = lookup(resource.asLookup(), context)
 
         if (server == null) {
@@ -242,24 +232,26 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(
-        resource: HetznerServer,
-        context: ProvisionerContext,
-        logContext: LogContext,
-    ) =
-        lookup(resource.asLookup(), context)?.let {
-            val delete = api.servers.delete(it.id)
-            api.servers.waitForAction(delete) {
-                logInfo("waiting for deletion of ${resource.logText()}", context = logContext)
-            }
-        } ?: false
+    override suspend fun destroy(resource: HetznerServer, context: ProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let {
+        val delete = api.servers.delete(it.id)
+        api.servers.waitForAction(delete) {
+            logInfo("waiting for deletion of ${resource.logText()}", context = logContext)
+        }
+    } ?: false
 
-    override suspend fun help(
-        resource: HetznerServer,
-        context: ProvisionerContext
-    ) = lookup(resource.asLookup(), context)?.let {
+    override suspend fun output(resource: HetznerServer, context: ProvisionerContext) = lookup(resource.asLookup(), context)?.let {
+        // TODO use explicit host key checking
+
         listOf(
-            InfrastructureResourceHelp(resource.logText(), "to access server ${it.name} via SSH, run 'ssh -i ${PRIVATE_KEY_PATH_PLACEHOLDER} root@${it.publicIpv4}'")
+            Output(
+                resource.logText(),
+                """
+to access server **${it.name}** via SSH, run 
+```
+ssh -i ${context.sshKeyAbsolutePath} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${it.publicIpv4}
+```
+                """.trimMargin()
+            )
         )
     } ?: emptyList()
 

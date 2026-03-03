@@ -1,5 +1,8 @@
 package de.solidblocks.cli.utils
 
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.terminal.Terminal
+
 sealed interface Result<T>
 
 data class Success<T>(val data: T) : Result<T>
@@ -17,9 +20,15 @@ fun <T> Collection<Result<*>>.mapSuccess() = this.filterIsInstance<Success<T>>()
 
 public fun List<String>.indentWithYamlObjectMarker() =
     this.withIndex().map {
-      if (it.index == 0) {
-        "- ${it.value}"
-      } else {
-        "  ${it.value}"
-      }
+        if (it.index == 0) {
+            "- ${it.value}"
+        } else {
+            "  ${it.value}"
+        }
     }
+
+// TODO workaround for testing inside gradle
+fun createTerminal() = Terminal(
+    AnsiLevel.TRUECOLOR,
+    width = 160
+)

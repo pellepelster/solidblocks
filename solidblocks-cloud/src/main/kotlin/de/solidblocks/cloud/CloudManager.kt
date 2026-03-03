@@ -1,6 +1,5 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.api.InfrastructureResourceHelp
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
@@ -8,9 +7,9 @@ import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime.Companion.PRIVATE_KEY_PATH_PLACEHOLDER
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
+import de.solidblocks.cloud.providers.ssh.sshKeyProvider
+import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationManager
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
@@ -28,46 +27,37 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val configuration: CloudConfigurationRuntime,
         val providers: List<ProviderRuntime>,
         val services: List<ServiceConfigurationRuntime>,
-    ) {
-        fun sshKeyProvider() = providers.filterIsInstance<SSHKeyProviderRuntime>().single()
-    }
+    )
 
     fun validate(): Result<CloudRuntime> {
         var log = LogContext.default()
         logInfo(bold("validating cloud configuration '${cloudConfigFile.absolutePath}'"), context = log)
 
-        val cloudConfiguration = when (val result = ConfigurationParser(
-            CloudConfigurationFactory(providerRegistrations, serviceRegistrations),
-        ).parse(cloudConfigFile)) {
+        // parse cloud configuration
+        val cloudConfiguration = when (val result = ConfigurationParser(CloudConfigurationFactory(providerRegistrations, serviceRegistrations)).parse(cloudConfigFile)) {
             is Error -> return Error(result.error)
-
-
             is Success<CloudConfigurationRuntime> -> result.data
         }
-
         logInfo("parsed cloud configuration '${cloudConfiguration.name}'", context = log)
 
+        // ensure no duplicate default providers are registered
         cloudConfiguration.providers.distinctBy { it.type }.forEach { distinctProvider ->
             if (cloudConfiguration.providers.count { it.type == distinctProvider.type && it.name == DEFAULT_NAME } > 1) {
-                return Error<CloudRuntime>(
-                    "found more then one default for provider of type '${distinctProvider.type}'. When configuring multiple providers of the same type all non-default providers need a unique name.",
-                )
+                return Error<CloudRuntime>("found more then one default for provider of type '${distinctProvider.type}'. When configuring multiple providers of the same type all non-default providers need a unique name.")
             }
         }
 
+        // ensure no duplicate providers names are registered
         cloudConfiguration.providers.forEach { provider ->
             if (cloudConfiguration.providers.count { it.type == provider.type && it.name == provider.name } > 1) {
-                return Error<CloudRuntime>(
-                    "found duplicate provider configuration for type '${provider.type}' with name '${provider.name}'.",
-                )
+                return Error<CloudRuntime>("found duplicate provider configuration for type '${provider.type}' with name '${provider.name}'.")
             }
         }
 
+        // ensure no duplicate service names are registered
         cloudConfiguration.services.forEach { service ->
             if (cloudConfiguration.services.count { it.name == service.name } > 1) {
-                return Error<CloudRuntime>(
-                    "found duplicate service configuration for name '${service.name}'.",
-                )
+                return Error<CloudRuntime>("found duplicate service configuration for name '${service.name}'.")
             }
         }
 
@@ -105,22 +95,15 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
             val manager: ProviderConfigurationManager<ProviderConfiguration, ProviderRuntime> = providerRegistrations.managerForConfiguration(provider)
 
-            logDebug(
-                "validating configuration for '${provider.type}' provider '${provider.name}'",
-                context = log,
-            )
+            logDebug("validating configuration for '${provider.type}' provider '${provider.name}'", context = log)
             val context = ConfigurationContext(cloudConfigFile.parentFile.toPath().toAbsolutePath())
-            val runtime = when (val result = manager.validate(provider, log, context)) {
+            val runtime = when (val result = manager.validate(provider, context, log)) {
                 is Error<ProviderRuntime> -> {
                     return Error<CloudRuntime>(result.error)
                 }
 
                 is Success<ProviderRuntime> -> {
-                    logDebug(
-                        "configuration for '${provider.type}' provider '${provider.name}' is valid",
-                        context = log,
-                    )
-
+                    logDebug("configuration for '${provider.type}' provider '${provider.name}' is valid", context = log)
                     result.data
                 }
             }
@@ -128,6 +111,11 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             log = log.unindent()
             runtime
         }
+
+        val registry = this.providerRegistrations.createRegistry(providers)
+        val sshKeyProvider = providers.sshKeyProvider()
+
+        val context = ProvisionerContext(sshKeyProvider.keyPair, sshKeyProvider.privateKey.absolutePathString(), cloudConfiguration.name, cloudConfiguration.getDefaultEnvironment(), registry)
 
         val services: List<ServiceConfigurationRuntime> = cloudConfiguration.services.map { service ->
             logInfo("found '${service.type}' service with name '${service.name}'", context = log)
@@ -137,14 +125,10 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
             val manager: ServiceConfigurationManager<ServiceConfiguration, ServiceConfigurationRuntime> = serviceRegistrations.forService(service, cloudConfiguration)
 
-            val runtime = when (val result = manager.validatConfiguration(service, log)) {
+            val runtime = when (val result = manager.validatConfiguration(service, context, log)) {
                 is Error<ServiceConfigurationRuntime> -> return Error<CloudRuntime>(result.error)
                 is Success<ServiceConfigurationRuntime> -> {
-                    logDebug(
-                        "configuration for '${service.type}' service '${service.name}' is valid",
-                        context = log,
-                    )
-
+                    logDebug("configuration for '${service.type}' service '${service.name}' is valid", context = log)
                     result.data
                 }
             }
@@ -159,9 +143,10 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         if (runtime.configuration.rootDomain == null) {
             logWarning("no configuration found for '${CloudConfigurationFactory.rootDomain.name}', created services will only be reachable via IP address. Depending on the service this may lead to limited functionality.")
         } else {
-            cloudProvisioner.provisionerContext.lookup(HetznerDnsZoneLookup(runtime.configuration.rootDomain)) ?: return Error<CloudRuntime>(
-                "no zone found for root domain '${runtime.configuration.rootDomain}'",
-            )
+            when (val result = cloudProvisioner.provisionerContext.validateDnsZone(runtime.configuration.rootDomain)) {
+                is Error<*> -> return Error<CloudRuntime>(result.error)
+                else -> {}
+            }
         }
 
         logSuccess("cloud configuration '${cloudConfiguration.name}' is valid", context = log)
@@ -172,30 +157,18 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val log = LogContext.default()
 
         val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
-        val result = cloudProvisioner.apply(log)
 
-        return result
+        return cloudProvisioner.apply(log)
     }
 
-    fun help(runtime: CloudRuntime): Result<List<InfrastructureResourceHelp>> {
-        val log = LogContext.default()
+    fun output(runtime: CloudRuntime): Result<List<Output>> {
+        val provisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
+        return Success(emptyList())
+    }
 
-        val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
-        val result = cloudProvisioner.help(log)
-
-        val sshKeyProvider = runtime.sshKeyProvider()
-
-        return when (result) {
-            is Success<List<InfrastructureResourceHelp>> -> {
-                Success(result.data.map {
-                    InfrastructureResourceHelp(it.title, it.help.replace(PRIVATE_KEY_PATH_PLACEHOLDER, sshKeyProvider.privateKey.absolutePathString()))
-                })
-            }
-
-            else -> {
-                result
-            }
-        }
+    fun help(runtime: CloudRuntime): Result<List<Output>> {
+        val provisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
+        return provisioner.help()
     }
 
     fun plan(runtime: CloudRuntime): Result<Map<ResourceGroup, List<ResourceDiff>>> {

@@ -9,6 +9,8 @@ dependencies {
     implementation(project(":solidblocks-cloud-init"))
     implementation(project(":solidblocks-garagefs"))
 
+    implementation("dnsjava:dnsjava:3.6.3")
+
     implementation("org.slf4j:slf4j-jdk14:2.0.17")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
 

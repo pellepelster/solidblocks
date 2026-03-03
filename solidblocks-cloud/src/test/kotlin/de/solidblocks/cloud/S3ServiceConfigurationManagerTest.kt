@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.services.s3.S3ServiceConfigurationManager
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfiguration
@@ -8,6 +9,7 @@ import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.utils.Error
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
+import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
 class S3ServiceConfigurationManagerTest {
@@ -28,10 +30,11 @@ class S3ServiceConfigurationManagerTest {
                         "bucket1",
                         12,
                         listOf(
-                            S3ServiceBucketConfiguration("bucket1", false, emptyList()),
-                            S3ServiceBucketConfiguration("bucket1", false, emptyList()),
+                            S3ServiceBucketConfiguration("bucket1", false, emptyList(), emptyList()),
+                            S3ServiceBucketConfiguration("bucket1", false, emptyList(), emptyList()),
                         ),
                     ),
+                    mockk<ProvisionerContext>(),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Error<Unit>>()
@@ -59,10 +62,11 @@ class S3ServiceConfigurationManagerTest {
                                 "bucket1", false, listOf(
                                     S3ServiceBucketAccessKeyConfiguration("name1"),
                                     S3ServiceBucketAccessKeyConfiguration("name1")
-                                )
+                                ), emptyList()
                             ),
                         ),
                     ),
+                    mockk<ProvisionerContext>(),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Error<Unit>>()

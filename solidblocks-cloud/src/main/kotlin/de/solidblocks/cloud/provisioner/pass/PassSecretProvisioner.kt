@@ -12,6 +12,7 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 
+// TODO use path for secret access
 class PassSecretProvisioner(val path: String? = null) :
     ResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
     InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime> {
@@ -53,11 +54,7 @@ class PassSecretProvisioner(val path: String? = null) :
     private fun generateSecret(length: Int, allowedChars: List<Char>) =
         (1..length).map { allowedChars.random() }.joinToString("")
 
-    override suspend fun apply(
-        resource: PassSecret,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): ApplyResult<PassSecretRuntime> {
+    override suspend fun apply(resource: PassSecret, context: ProvisionerContext, log: LogContext): ApplyResult<PassSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !resource.tainted) {

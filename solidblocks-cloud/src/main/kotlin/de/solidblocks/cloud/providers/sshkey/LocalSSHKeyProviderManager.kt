@@ -30,11 +30,8 @@ class LocalSSHKeyProviderManager :
 
     val homeDir = Path(System.getProperty("user.home"))
 
-    override fun validate(
-        configuration: LocalSSHKeyProviderConfiguration,
-        log: LogContext,
-        context: ConfigurationContext,
-    ): Result<LocalSSHKeyProviderRuntime> {
+    override fun validate(configuration: LocalSSHKeyProviderConfiguration, context: ConfigurationContext, log: LogContext): Result<LocalSSHKeyProviderRuntime> {
+
         val sshKey =
             when (val result = tryFindKey(configuration, context)) {
                 is Error<*> -> return Error<LocalSSHKeyProviderRuntime>(result.error)

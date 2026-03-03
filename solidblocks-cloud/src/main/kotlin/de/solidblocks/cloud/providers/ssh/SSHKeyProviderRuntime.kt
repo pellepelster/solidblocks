@@ -7,8 +7,6 @@ import java.security.KeyPair
 interface SSHKeyProviderRuntime : ProviderRuntime {
     val keyPair: KeyPair
     val privateKey: Path
-
-    companion object {
-        val PRIVATE_KEY_PATH_PLACEHOLDER: String = "<private_key_path>"
-    }
 }
+
+fun List<ProviderRuntime>.sshKeyProvider() = this.filterIsInstance<SSHKeyProviderRuntime>().single()

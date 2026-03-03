@@ -8,64 +8,65 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.markdown.Markdown
-import com.github.ajalt.mordant.rendering.AnsiLevel
-import com.github.ajalt.mordant.rendering.TextStyles.bold
-import com.github.ajalt.mordant.terminal.Terminal
+import de.solidblocks.cli.utils.createTerminal
 import de.solidblocks.cloud.CloudHelp
 import de.solidblocks.cloud.CloudManager
-import de.solidblocks.cloud.api.InfrastructureResourceHelp
+import de.solidblocks.cloud.Output
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
 
 class CloudHelpCommand : CliktCommand(name = "help") {
 
-  private val configFile by argument().file().optional()
+    private val configFile by argument().file().optional()
 
-  init {
-    installMordantMarkdown()
-  }
-
-  override fun help(context: Context) = "Solidblocks cloud configuration file documentation"
-
-  override fun run() {
-    if (configFile != null) {
-      val manager = CloudManager(configFile!!)
-      val runtime =
-          when (val result = manager.validate()) {
-            is Error<CloudManager.CloudRuntime> -> {
-              logError(result.error)
-              throw ProgramResult(1)
-            }
-
-            is Success<CloudManager.CloudRuntime> -> result.data
-          }
-
-      // TODO workaround for testing inside gradle
-      val t = Terminal(AnsiLevel.TRUECOLOR)
-      t.println()
-
-      when (val result = manager.help(runtime)) {
-        is Error<List<InfrastructureResourceHelp>> -> {
-          logError(result.error)
-          throw ProgramResult(1)
-        }
-
-        is Success<List<InfrastructureResourceHelp>> -> {
-          result.data.forEach {
-            t.println(bold(it.title))
-            t.println()
-            t.println(it.help)
-            t.println()
-            t.println()
-          }
-        }
-      }
-    } else {
-      val md = Markdown(CloudHelp().renderMarkdown(false), true, false)
-      // TODO workaround for testing inside gradle
-      val t = Terminal(AnsiLevel.TRUECOLOR)
-      t.println(md)
+    init {
+        installMordantMarkdown()
     }
-  }
+
+    override fun help(context: Context) = "Solidblocks cloud configuration file documentation"
+
+    override fun run() {
+        val terminal = createTerminal()
+
+        if (configFile != null) {
+            val manager = CloudManager(configFile!!)
+            val runtime =
+                when (val result = manager.validate()) {
+                    is Error<CloudManager.CloudRuntime> -> {
+                        logError(result.error)
+                        throw ProgramResult(1)
+                    }
+
+                    is Success<CloudManager.CloudRuntime> -> result.data
+                }
+
+            terminal.println()
+
+            when (val result = manager.help(runtime)) {
+                is Error<List<Output>> -> {
+                    logError(result.error)
+                    throw ProgramResult(1)
+                }
+
+                is Success<List<Output>> -> {
+                    result.data.forEach {
+                        terminal.println()
+                        terminal.println(
+                            Markdown(
+"""
+# ${it.title}
+${it.text}
+""".trimIndent(), true, false
+                            )
+                        )
+                        terminal.println()
+                    }
+                }
+            }
+        } else {
+            val md = Markdown(CloudHelp().renderMarkdown(false), true, false)
+            terminal.println(md)
+        }
+    }
 }

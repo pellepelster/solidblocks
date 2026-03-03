@@ -11,11 +11,11 @@ data class ConfigurationContext(val configFilePath: Path)
 
 interface ProviderConfigurationManager<C : ProviderConfiguration, R : ProviderRuntime> {
 
-  fun validate(configuration: C, log: LogContext, context: ConfigurationContext): Result<R>
+    fun validate(configuration: C, context: ConfigurationContext, log: LogContext): Result<R>
 
-  fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
+    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
-  fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
+    fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
 
-  val supportedConfiguration: KClass<C>
+    val supportedConfiguration: KClass<C>
 }

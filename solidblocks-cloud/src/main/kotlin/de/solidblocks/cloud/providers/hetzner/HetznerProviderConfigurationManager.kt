@@ -14,26 +14,19 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
 import de.solidblocks.utils.logError
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.runBlocking
 
-class HetznerProviderConfigurationManager : CloudResourceProviderConfigurationManager<
-        HetznerProviderConfiguration,
-        HetznerProviderConfigurationRuntime,
-        > {
+class HetznerProviderConfigurationManager : CloudResourceProviderConfigurationManager<HetznerProviderConfiguration, HetznerProviderConfigurationRuntime> {
 
-    override fun validate(
-        configuration: HetznerProviderConfiguration,
-        log: LogContext,
-        context: ConfigurationContext,
-    ): Result<HetznerProviderConfigurationRuntime> {
+    override fun validate(configuration: HetznerProviderConfiguration, context: ConfigurationContext, log: LogContext): Result<HetznerProviderConfigurationRuntime> {
+
         if (System.getenv("HCLOUD_TOKEN") == null) {
             "environment variable 'HCLOUD_TOKEN' not set".also {
-                    logError(it, context = log)
-                    return Error<HetznerProviderConfigurationRuntime>(it)
-                }
+                logError(it, context = log)
+                return Error<HetznerProviderConfigurationRuntime>(it)
+            }
         }
 
         logInfo("servers default location is '${configuration.defaultLocation}' and default instance is '${configuration.defaultInstanceType}'", context = log)
@@ -46,15 +39,13 @@ class HetznerProviderConfigurationManager : CloudResourceProviderConfigurationMa
             return Success(HetznerProviderConfigurationRuntime(System.getenv("HCLOUD_TOKEN"), configuration.defaultLocation, configuration.defaultInstanceType))
         } catch (_: Exception) {
             "provided Hetzner cloud token is not valid".also {
-                    logError(it, context = log)
-                    return Error<HetznerProviderConfigurationRuntime>(it)
-                }
+                logError(it, context = log)
+                return Error<HetznerProviderConfigurationRuntime>(it)
+            }
         }
     }
 
-    override fun createLookupProviders(runtime: HetznerProviderConfigurationRuntime) = listOf(
-        HetznerDnsZoneProvisioner(runtime.cloudToken),
-    ) as List<ResourceLookupProvider<*, *>>
+    override fun createLookupProviders(runtime: HetznerProviderConfigurationRuntime) = listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<ResourceLookupProvider<*, *>>
 
     override fun createProvisioners(runtime: HetznerProviderConfigurationRuntime) = listOf(
         HetznerDnsRecordProvisioner(runtime.cloudToken),

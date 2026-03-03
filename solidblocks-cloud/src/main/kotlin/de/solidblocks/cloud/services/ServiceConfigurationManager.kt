@@ -3,26 +3,29 @@ package de.solidblocks.cloud.services
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
 interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
-  fun createResources(runtime: R): List<BaseInfrastructureResource<*>>
+    fun createResources(runtime: R): List<BaseInfrastructureResource<*>>
 
-  fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
+    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
-  fun validatConfiguration(configuration: C, context: LogContext): Result<R>
+    fun validatConfiguration(configuration: C, context: ProvisionerContext, log: LogContext): Result<R>
 
-  val supportedConfiguration: KClass<C>
-  val supportedRuntime: KClass<R>
+    fun output(configuration: R, context: ProvisionerContext): Result<List<de.solidblocks.cloud.Output>> = Success(emptyList())
+
+    val supportedConfiguration: KClass<C>
+
+    val supportedRuntime: KClass<R>
 }
 
-fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>
-    .forService(
+fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(
     service: C,
     cloudConfiguration: CloudConfigurationRuntime,
 ): ServiceConfigurationManager<C, R> =
-    this.single { it.supportedConfiguration == service::class }.createManager(cloudConfiguration)
-        as ServiceConfigurationManager<C, R>?
+    this.single { it.supportedConfiguration == service::class }.createManager(cloudConfiguration) as ServiceConfigurationManager<C, R>?
         ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")

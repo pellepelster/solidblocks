@@ -16,6 +16,8 @@ services:
     buckets:
       - name: pelle.io
         public_access: true
+        public_access_domains:
+            - pelle.io
         access_keys:
           - name: "admin"
             owner: true

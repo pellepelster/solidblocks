@@ -3,8 +3,6 @@ package de.solidblocks.cloud.services.s3.model
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAME
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -34,7 +32,7 @@ class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucket
         )
 
     val publicAccessDomains = StringListKeyword(
-    "public_access_domains",
+        "public_access_domains",
         KeywordHelp(
             "If '${publicAccess.name}' is enabled the bucket will also listen on these Domains. Requires A/AAAA entries to point to the server hosting the buckets. If any provider supports those domains the entries will automatically be created.",
         )
@@ -72,8 +70,7 @@ class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucket
                 is Success<List<S3ServiceBucketAccessKeyConfiguration>> -> result.data
             }
 
-
-        logger.debug { "parsed bucket '$name', publicAccess: $publicAccess" }
+        logger.debug { "parsed bucket '$name', publicAccess: $publicAccess, publicAccessDomains: ${publicAccessDomains.joinToString(", ")}" }
         return Success(S3ServiceBucketConfiguration(name, publicAccess, accessKeys, publicAccessDomains))
     }
 }

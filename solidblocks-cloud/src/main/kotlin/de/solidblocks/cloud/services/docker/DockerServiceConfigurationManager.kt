@@ -3,6 +3,7 @@ package de.solidblocks.cloud.services.docker
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionProvisioner
@@ -29,7 +30,8 @@ class DockerServiceConfigurationManager(val cloudConfiguration: CloudConfigurati
 
     override fun validatConfiguration(
         configuration: DockerServiceConfiguration,
-        context: LogContext,
+        context: ProvisionerContext,
+        log: LogContext,
     ): Result<DockerServiceConfigurationRuntime> {
 
         configuration.endpoints.forEach { endpoint ->

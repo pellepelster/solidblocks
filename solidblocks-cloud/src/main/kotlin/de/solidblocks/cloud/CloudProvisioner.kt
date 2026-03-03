@@ -1,14 +1,16 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.Constants.sshKeyName
-import de.solidblocks.cloud.api.InfrastructureResourceHelp
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.providers.*
+import de.solidblocks.cloud.providers.ProviderRegistration
+import de.solidblocks.cloud.providers.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
+import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createLookups
+import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createProvisioners
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.*
@@ -20,19 +22,19 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.runBlocking
+import kotlin.io.path.absolutePathString
 
 class CloudProvisioner(
     val runtime: CloudManager.CloudRuntime,
     val serviceRegistrations: List<ServiceRegistration<*, *>>,
     val providerRegistrations: List<ProviderRegistration<*, *, *>>,
 ) {
-    val sSHKeyProvider = runtime.sshKeyProvider()
-
     val registry = createRegistry()
 
     val provisionerContext =
         ProvisionerContext(
-            sSHKeyProvider.keyPair,
+            runtime.providers.sshKeyProvider().keyPair,
+            runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
             runtime.configuration.name,
             runtime.configuration.getDefaultEnvironment(),
             registry,
@@ -45,12 +47,26 @@ class CloudProvisioner(
         return@runBlocking provisioner.diff(resourceGroups, provisionerContext, log)
     }
 
-    fun help(log: LogContext): Result<List<InfrastructureResourceHelp>> = runBlocking {
+    fun help(): Result<List<Output>> = runBlocking {
         val provisioner = createProvisioner()
         val resourceGroups = createResourceGroups()
 
-        return@runBlocking provisioner.help(resourceGroups, provisionerContext, log)
+        val serviceOutput = serviceManagers().flatMap {
+            when (val result = it.second.output(it.first, provisionerContext)) {
+                is Error<List<Output>> -> return@runBlocking Error<List<Output>>(result.error)
+                is Success<List<Output>> -> result.data
+            }
+        }
+
+        val provisionerOutput = when (val result = provisioner.help(resourceGroups, provisionerContext)) {
+            is Error<List<Output>> -> return@runBlocking Error<List<Output>>(result.error)
+            is Success<List<Output>> -> result.data
+        }
+
+        return@runBlocking Success<List<Output>>(provisionerOutput + serviceOutput)
     }
+
+    fun output(log: LogContext): Result<List<Output>> = Success(emptyList())
 
     fun apply(log: LogContext): Result<Unit> = runBlocking {
         val provisioner = createProvisioner()
@@ -68,47 +84,33 @@ class CloudProvisioner(
     }
 
     private fun createResourceGroups(): List<ResourceGroup> {
-        val sshKeyProvider = runtime.sshKeyProvider()
-
-        val publicKey = SSHKeyUtils.publicKeyToOpenSSH(sshKeyProvider.keyPair.public)
+        val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
         val sshKey = HetznerSSHKey(sshKeyName(runtime.configuration), publicKey, emptyMap())
 
         val cloudResourceGroup = ResourceGroup("cloud '${runtime.configuration.name}'", listOf(sshKey))
 
-        val serviceResourceGroups =
-            runtime.services.map {
-                val manager:
-                        ServiceConfigurationManager<ServiceConfiguration, ServiceConfigurationRuntime> =
-                    serviceRegistrations.managerForService(it, runtime.configuration)
-
-                ResourceGroup(
-                    "service '${it.name}'",
-                    manager.createResources(it),
-                    setOf(cloudResourceGroup),
-                )
-            }
+        val serviceResourceGroups = serviceManagers().map {
+            ResourceGroup(
+                "service '${it.first.name}'",
+                it.second.createResources(it.first),
+                setOf(cloudResourceGroup),
+            )
+        }
         return listOf(cloudResourceGroup) + serviceResourceGroups
     }
 
-    private fun createProvisioner(): Provisioner {
-        val provisioner = Provisioner(registry)
-        return provisioner
+    private fun serviceManagers() = runtime.services.map {
+        val manager:
+                ServiceConfigurationManager<ServiceConfiguration, ServiceConfigurationRuntime> =
+            serviceRegistrations.managerForService(it, runtime.configuration)
+        it to manager
     }
 
-    private fun createRegistry(): ProvisionersRegistry {
-        val configurationProvisioners =
-            runtime.providers.flatMap {
-                val manager: ProviderConfigurationManager<ProviderConfiguration, ProviderRuntime> =
-                    providerRegistrations.managerForRuntime(it)
-                manager.createProvisioners(it)
-            }
+    private fun createProvisioner() = Provisioner(registry)
 
-        val configurationLookups =
-            runtime.providers.flatMap {
-                val manager: ProviderConfigurationManager<ProviderConfiguration, ProviderRuntime> =
-                    providerRegistrations.managerForRuntime(it)
-                manager.createLookupProviders(it)
-            }
+    private fun createRegistry(): ProvisionersRegistry {
+        val providerProvisioners = providerRegistrations.createProvisioners(runtime.providers)
+        val providerLookups = providerRegistrations.createLookups(runtime.providers)
 
         val serviceProvisioners =
             runtime.services.flatMap {
@@ -119,11 +121,10 @@ class CloudProvisioner(
             }
 
         val lookups =
-            configurationLookups +
+            providerLookups +
                     listOf(UserDataLookupProvider()) +
-                    (configurationProvisioners + serviceProvisioners).filterIsInstance<
-                            ResourceLookupProvider<*, *>,
-                            >()
-        return ProvisionersRegistry(lookups, configurationProvisioners + serviceProvisioners)
+                    (providerProvisioners + serviceProvisioners).filterIsInstance<ResourceLookupProvider<*, *>>()
+
+        return ProvisionersRegistry(lookups, providerProvisioners + serviceProvisioners)
     }
 }

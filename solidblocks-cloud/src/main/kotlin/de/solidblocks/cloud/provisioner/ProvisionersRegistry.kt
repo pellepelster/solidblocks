@@ -1,9 +1,11 @@
 package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.Output
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
+import de.solidblocks.cloud.providers.*
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -28,7 +30,7 @@ class ProvisionersRegistry(
         }
 
         @Suppress("UNCHECKED_CAST")
-        (provider as ResourceLookupProvider<InfrastructureResourceLookup<RuntimeType>, RuntimeType>).lookup(lookup,context,)
+        (provider as ResourceLookupProvider<InfrastructureResourceLookup<RuntimeType>, RuntimeType>).lookup(lookup, context)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -79,7 +81,7 @@ class ProvisionersRegistry(
     suspend fun <ResourceType : BaseResource> help(
         resource: ResourceType,
         context: ProvisionerContext,
-    ): List<InfrastructureResourceHelp> = provisioner(resource).help(resource, context)
+    ): List<Output> = provisioner(resource).output(resource, context)
 
     suspend fun <ResourceType : BaseResource> destroy(
         resource: ResourceType,
@@ -91,4 +93,25 @@ class ProvisionersRegistry(
     suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> list(
         resourceType: Class<ResourceType>
     ) = provisioner(resourceType).list() as List<RuntimeType>
+
+    companion object {
+
+        fun List<ProviderRegistration<*, *, *>>.createRegistry(providers: List<ProviderRuntime>) =  ProvisionersRegistry(this.createLookups(providers),this.createProvisioners(providers))
+
+        fun List<ProviderRegistration<*, *, *>>.createProvisioners(providers: List<ProviderRuntime>): List<InfrastructureResourceProvisioner<*, *>> {
+            return providers.flatMap {
+                val manager: ProviderConfigurationManager<ProviderConfiguration, ProviderRuntime> =
+                    this.managerForRuntime(it)
+                manager.createProvisioners(it)
+            }
+
+        }
+
+        fun List<ProviderRegistration<*, *, *>>.createLookups(providers: List<ProviderRuntime>) = providers.flatMap {
+            val manager: ProviderConfigurationManager<ProviderConfiguration, ProviderRuntime> =
+                this.managerForRuntime(it)
+            manager.createLookupProviders(it)
+        }
+
+    }
 }
