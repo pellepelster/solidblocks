@@ -60,6 +60,17 @@ Snippets should always be tested if feasible to ensure the documentation is corr
 
 Solidblocks uses semver compliant versioning, where the release version is derived from the git tag. The tag version is prefix with a `v` eg. `v1.2.3`. The version is stored in the environment variable `VERSION` and is automatically populated from the git context and defaults to `0.0.0` on non-tag references. In the environment variable `VERSION` and through the whole build system the variable is stored without the `v` prefix. The prefix is only added before the artifacts are written to the `build` directory (except for Python artifacts since they have to comply with the PEP 440 versioning standard).
 
+## Release
+
+```shell
+export VERSION=<version> 
+mise //...:build
+mise //...:release-prepare
+mise //...:release-check
+mise //...:release
+```
+
+
 
 ### Docker Artifacts
 
