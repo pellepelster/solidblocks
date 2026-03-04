@@ -37,7 +37,7 @@ set -eu -o pipefail
 
 echo "setting version: ${usage_version}"
 mkdir -p ".tmp"
-rg -e '^(.*testImplementation\\("de\\.solidblocks:infra-test:)(.*)("\\)).*$' "snippets/solidblocks-test-gradle/build.gradle.kts" --replace "\\${1}${usage_version}\\${3}" --passthru --no-filename  --no-line-number --color never > ".tmp/build.gradle.kts"
+rg -e '^(.*testImplementation\\("de\\.solidblocks:infra-test:)(.*)("\\)).*$' "snippets/solidblocks-test-example/build.gradle.kts" --replace "\\${1}${usage_version}\\${3}" --passthru --no-filename  --no-line-number --color never > ".tmp/build.gradle.kts"
 mv ".tmp/build.gradle.kts" "snippets/solidblocks-test-gradle/build.gradle.kts"
 rm -rf .tmp
 """
@@ -53,4 +53,12 @@ export ORG_GRADLE_PROJECT_mavenCentralUsername="${ORG_GRADLE_PROJECT_MAVENCENTRA
 export ORG_GRADLE_PROJECT_mavenCentralPassword="${ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD:-$(pass maven/central-portal/user-token/password)}"
 
 ${ROOT_PROJECT}/gradlew :$(basename $PWD):publishAllPublicationsToMavenCentralRepository
+"""
+
+[tasks.release-test]
+usage = """
+arg "<version>" env="VERSION"
+"""
+run = """
+./snippets/solidblocks-test-example/gradlew build
 """

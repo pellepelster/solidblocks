@@ -7,29 +7,29 @@ faIcon = "fa-brands fa-java"
 +++
 
 
-Solidblocks `infra-test` is an infrastructure testing library for writing unit tests in Java/Kotlin to test the state of your servers and other resources.
+`infra-test` is an infrastructure testing library for writing unit tests in Java/Kotlin to test the state of your servers and other resources.
 
 ## Usage
 
-To use `solidblocks-test` just add the dependency to your Gradle or Maven build
+To use `infra-test` just add the dependency to your Gradle or Maven build
 
 ### build.gradle.kts
 ```groovy
-{{% include "/snippets/solidblocks-test-gradle/build.gradle.kts" %}}
+{{% include "/snippets/solidblocks-test-example/build.gradle.kts" %}}
 ```
 
 Depending on your use case, you can either inject the test context using the `SolidblocksTest` test extension
 
 ### Extension usage
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/ExtensionUsage.kt" %}}
+{{% include "/snippets/solidblocks-test-example/src/test/kotlin/solidblocks/test/gradle/ExtensionUsage.kt" %}}
 ```
 
 or use the factory methods to create the test context directly
 
 ### Factory method usage
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/FactoryMethodUsage.kt" %}}
+{{% include "/snippets/solidblocks-test-example/src/test/kotlin/solidblocks/test/gradle/FactoryMethodUsage.kt" %}}
 ```
 
 > [!INFO]
@@ -88,5 +88,5 @@ Different test functions and assertions are grouped logically in test contexts, 
 Resources created from the different test contexts are cleaned up when all tests are run, except when the `cleanupAfterTestFailure` is set to `false` which then leaves everything in place for debugging purposes.  
 
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/TestContexts.kt" %}}
+{{% include "/snippets/solidblocks-test-example/src/test/kotlin/solidblocks/test/gradle/TestContexts.kt" %}}
 ```

@@ -6,7 +6,7 @@ description = 'Asserts cloud-init runs via SSH'
 The cloud-init context allows assertions based on the artifacts generated after a cloud-init run. Like in the SSH context, the connection to the machine is created via SSH, so the same prerequisites as for the SSH context apply.
 
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/cloudinit/CloudInitContext.kt" %}}
+{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test/cloudinit/CloudInitContext.kt" %}}
 ```
 
 > [!NOTE]
@@ -16,5 +16,5 @@ The cloud-init context allows assertions based on the artifacts generated after 
 #### Assertions
 
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/cloudinit/CloudInitAssertions.kt" %}}
+{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test/cloudinit/CloudInitAssertions.kt" %}}
 ```

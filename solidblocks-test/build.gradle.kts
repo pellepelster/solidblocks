@@ -38,21 +38,16 @@ mavenPublishing {
     }
 
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+
     if (!project.gradle.startParameter.taskNames.any { it.contains("publishToMavenLocal") }) {
         signAllPublications()
     }
-}
-
-
-object Versions {
-    const val testContainersVersion = "1.17.1"
 }
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation(project(":solidblocks-ssh"))
     implementation(project(":solidblocks-hetzner-cloud"))
-    implementation(project(":solidblocks-utils"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.0")
     implementation("org.junit.jupiter:junit-jupiter-api:5.11.0")

@@ -7,12 +7,12 @@ The local and docker command contexts allow to run commands and scrips on the ma
 
 #### Run command or script
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/command/LocalCommandContext.kt" %}}
+{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test/command/LocalCommandContext.kt" %}}
 ```
 
 #### Run command or script inside Docker
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/command/DockerCommandContext.kt" %}}
+{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test/command/DockerCommandContext.kt" %}}
 ```
 
 #### Options
@@ -20,7 +20,7 @@ The local and docker command contexts allow to run commands and scrips on the ma
 Both the local and the docker command execution can be configured before the command is executed
 
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/command/LocalCommandOptions.kt" %}}
+{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test/command/LocalCommandOptions.kt" %}}
 ```
 
 #### Assertions
@@ -28,5 +28,5 @@ Both the local and the docker command execution can be configured before the com
 The following assertions are available for the results of `local().command(...).runResult()` as well as `docker(DockerTestImage.UBUNTU_22).command(...).runResult()`
 
 ```kotlin
-{{% include "/snippets/solidblocks-test-gradle/src/test/kotlin/solidblocks/test/gradle/command/CommandAssertions.kt" %}}
+{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test//command/CommandAssertions.kt" %}}
 ```

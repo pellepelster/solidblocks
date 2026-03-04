@@ -22,105 +22,109 @@ class GarageFsUserData(
     val enableHttps: Boolean = false,
 ) : ServiceUserData {
 
-    companion object {
-        fun s3Host(serviceRootDomain: String) = "s3.$serviceRootDomain"
-        fun s3AdminHost(serviceRootDomain: String) = "s3-admin.$serviceRootDomain"
-    }
+  companion object {
+    fun s3Host(serviceRootDomain: String) = "s3.$serviceRootDomain"
 
-    override fun render(): String {
-        val storageMount = "/storage/data"
-        val caddyStorageDir = "$storageMount/www"
+    fun s3AdminHost(serviceRootDomain: String) = "s3-admin.$serviceRootDomain"
+  }
 
-        val caddyConfig =
-            CaddyConfig(
-                GlobalOptions(
-                    FileSystemStorage(caddyStorageDir),
-                    "info@$serviceRootDomain",
-                    if (enableHttps) {
-                        null
-                    } else {
-                        AutoHttps.off
-                    },
+  override fun render(): String {
+    val storageMount = "/storage/data"
+    val caddyStorageDir = "$storageMount/www"
+
+    val caddyConfig =
+        CaddyConfig(
+            GlobalOptions(
+                FileSystemStorage(caddyStorageDir),
+                "info@$serviceRootDomain",
+                if (enableHttps) {
+                  null
+                } else {
+                  AutoHttps.off
+                },
+            ),
+            buckets.flatMap {
+              listOf(
+                  Site("${it.name}.s3.$serviceRootDomain", ReverseProxy("http://localhost:3900")),
+                  Site(
+                      "${it.name}.s3-web.$serviceRootDomain",
+                      ReverseProxy("http://localhost:3902"),
+                  ),
+              ) + it.publicDomains.map { Site(it, ReverseProxy("http://localhost:3902")) }
+            } +
+                listOf(
+                    Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903")),
+                    Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900")),
                 ),
-                buckets.flatMap {
-                    listOf(
-                        Site("${it.name}.s3.$serviceRootDomain", ReverseProxy("http://localhost:3900")),
-                        Site("${it.name}.s3-web.$serviceRootDomain", ReverseProxy("http://localhost:3902")),
-                    ) + it.publicDomains.map { Site(it, ReverseProxy("http://localhost:3902")) }
-                } +
-                        listOf(
-                            Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903")),
-                            Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900")),
-                        ),
-            )
+        )
 
-        val userData = CloudInitUserData1()
-        userData.addSources(UtilsLibrary.source())
-        userData.addSources(AptLibrary.source())
-        userData.addSources(CurlLibrary.source())
-        userData.addSources(LogLibrary.source())
-        userData.addSources(PackageLibrary.source())
-        userData.addCommand(PackageLibrary.UpdateRepositories())
-        userData.addCommand(PackageLibrary.UpdateSystem())
+    val userData = CloudInitUserData1()
+    userData.addSources(UtilsLibrary.source())
+    userData.addSources(AptLibrary.source())
+    userData.addSources(CurlLibrary.source())
+    userData.addSources(LogLibrary.source())
+    userData.addSources(PackageLibrary.source())
+    userData.addCommand(PackageLibrary.UpdateRepositories())
+    userData.addCommand(PackageLibrary.UpdateSystem())
 
-        userData.addSources(StorageLibrary.source())
-        userData.addCommand(StorageLibrary.Mount(linuxDeviceData, storageMount))
+    userData.addSources(StorageLibrary.source())
+    userData.addCommand(StorageLibrary.Mount(linuxDeviceData, storageMount))
 
-        userData.addSources(CaddyLibrary.source())
-        userData.addCommand(CaddyLibrary.Install())
-        userData.addCommand(StorageLibrary.MkDir(caddyStorageDir, "caddy"))
-        userData.addCommand(
-            WriteFile(
-                caddyConfig.render().toByteArray(),
-                "/etc/caddy/Caddyfile",
-                FilePermissions.RW_R__R__,
+    userData.addSources(CaddyLibrary.source())
+    userData.addCommand(CaddyLibrary.Install())
+    userData.addCommand(StorageLibrary.MkDir(caddyStorageDir, "caddy"))
+    userData.addCommand(
+        WriteFile(
+            caddyConfig.render().toByteArray(),
+            "/etc/caddy/Caddyfile",
+            FilePermissions.RW_R__R__,
+        ),
+    )
+    userData.addCommand(SystemDLibrary.SystemdRestartService("caddy"))
+
+    val garageFsConfig =
+        GarageFsConfig(
+            storageMount,
+            rpcSecret,
+            adminToken,
+            metricsToken,
+            "s3.$serviceRootDomain",
+            "s3-web.$serviceRootDomain",
+        )
+
+    val garageFsSystemdConfig =
+        SystemdConfig(
+            Unit("Garage Data Store"),
+            Service(
+                listOf("/usr/local/bin/garage", "server"),
+                environment = mapOf("RUST_LOG" to "garage=info", "RUST_BACKTRACE" to "1"),
+                limitNOFILE = 42000,
+                stateDirectory = "garage",
             ),
         )
-        userData.addCommand(SystemDLibrary.SystemdRestartService("caddy"))
 
-        val garageFsConfig =
-            GarageFsConfig(
-                storageMount,
-                rpcSecret,
-                adminToken,
-                metricsToken,
-                "s3.$serviceRootDomain",
-                "s3-web.$serviceRootDomain",
-            )
+    userData.addSources(GarageLibrary.source())
+    userData.addCommand(GarageLibrary.Install())
+    userData.addCommand(
+        WriteFile(
+            garageFsConfig.render().toByteArray(),
+            "/etc/garage.toml",
+            FilePermissions.RW_R__R__,
+        ),
+    )
+    userData.addCommand(
+        WriteFile(
+            garageFsSystemdConfig.render().toByteArray(),
+            "/etc/systemd/system/garage.service",
+            FilePermissions.RW_R__R__,
+        ),
+    )
+    userData.addCommand(StorageLibrary.MkDir(garageFsConfig.dataDir))
+    userData.addCommand(StorageLibrary.MkDir(garageFsConfig.metaDataDir))
 
-        val garageFsSystemdConfig =
-            SystemdConfig(
-                Unit("Garage Data Store"),
-                Service(
-                    listOf("/usr/local/bin/garage", "server"),
-                    environment = mapOf("RUST_LOG" to "garage=info", "RUST_BACKTRACE" to "1"),
-                    limitNOFILE = 42000,
-                    stateDirectory = "garage",
-                ),
-            )
+    userData.addCommand(SystemDLibrary.SystemdDaemonReload())
+    userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
 
-        userData.addSources(GarageLibrary.source())
-        userData.addCommand(GarageLibrary.Install())
-        userData.addCommand(
-            WriteFile(
-                garageFsConfig.render().toByteArray(),
-                "/etc/garage.toml",
-                FilePermissions.RW_R__R__,
-            ),
-        )
-        userData.addCommand(
-            WriteFile(
-                garageFsSystemdConfig.render().toByteArray(),
-                "/etc/systemd/system/garage.service",
-                FilePermissions.RW_R__R__,
-            ),
-        )
-        userData.addCommand(StorageLibrary.MkDir(garageFsConfig.dataDir))
-        userData.addCommand(StorageLibrary.MkDir(garageFsConfig.metaDataDir))
-
-        userData.addCommand(SystemDLibrary.SystemdDaemonReload())
-        userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
-
-        return userData.render()
-    }
+    return userData.render()
+  }
 }

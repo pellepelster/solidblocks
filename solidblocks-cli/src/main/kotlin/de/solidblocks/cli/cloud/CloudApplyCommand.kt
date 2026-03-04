@@ -13,44 +13,43 @@ import de.solidblocks.utils.logError
 
 class CloudApplyCommand : CliktCommand(name = "apply") {
 
-    override fun help(context: Context) = "TODO"
+  override fun help(context: Context) = "TODO"
 
-    private val configFile by argument().file()
+  private val configFile by argument().file()
 
-    override fun run() {
-        val manager = CloudManager(configFile)
-        val runtime =
-            when (val result = manager.validate()) {
-                is Error<CloudManager.CloudRuntime> -> {
-                    logError(
-                        "command failed with '${result.error}' have look at 'blcks.log' for more details",
-                    )
-                    throw ProgramResult(1)
-                }
+  override fun run() {
+    val manager = CloudManager(configFile)
+    val runtime =
+        when (val result = manager.validate()) {
+          is Error<CloudManager.CloudRuntime> -> {
+            logError(
+                "command failed with '${result.error}' have look at 'blcks.log' for more details",
+            )
+            throw ProgramResult(1)
+          }
 
-                is Success<CloudManager.CloudRuntime> -> result.data
-            }
-
-        when (val result = manager.apply(runtime)) {
-            is Error<Unit> -> {
-                logError("command failed with '${result.error}' have look at 'blcks.log' for more details")
-                throw ProgramResult(1)
-            }
-
-            else -> {}
+          is Success<CloudManager.CloudRuntime> -> result.data
         }
 
-        when (val result = manager.output(runtime)) {
-            is Error<List<Output>> -> {
-                logError("building output failed with '${result.error}' have look at 'blcks.log' for more details")
-                throw ProgramResult(1)
-            }
-            is Success -> {
-                result.data.forEach { output ->
-                    println(output)
-                }
-            }
-        }
+    when (val result = manager.apply(runtime)) {
+      is Error<Unit> -> {
+        logError("command failed with '${result.error}' have look at 'blcks.log' for more details")
+        throw ProgramResult(1)
+      }
 
+      else -> {}
     }
+
+    when (val result = manager.output(runtime)) {
+      is Error<List<Output>> -> {
+        logError(
+            "building output failed with '${result.error}' have look at 'blcks.log' for more details",
+        )
+        throw ProgramResult(1)
+      }
+      is Success -> {
+        result.data.forEach { output -> println(output) }
+      }
+    }
+  }
 }
