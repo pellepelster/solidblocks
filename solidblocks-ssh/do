@@ -14,10 +14,6 @@ function task_test {
   ${DIR}/../gradlew :solidblocks-ssh:test
 }
 
-function task_format() {
-  ${DIR}/../gradlew :solidblocks-ssh:spotlessApply
-  terraform fmt -recursive
-}
 
 function task_usage {
   echo "Usage: $0 ..."
@@ -28,7 +24,6 @@ arg=${1:-}
 shift || true
 case ${arg} in
   test) task_test "$@" ;;
-  format) task_format "$@" ;;
   clean) task_clean "$@" ;;
   release-artifacts) ;;
   release-test);;

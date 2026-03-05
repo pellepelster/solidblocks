@@ -13,6 +13,8 @@ import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -60,7 +62,7 @@ class HetznerServerProvisionerTest {
       val volume =
           HetznerVolume(
               name,
-              "hel1",
+              HetznerLocation.nbg1,
               ByteSize.fromGigabytes(16),
               protected = false,
           )
@@ -72,8 +74,8 @@ class HetznerServerProvisionerTest {
       val server =
           HetznerServer(
               name,
-              "hel1",
-              "cx23",
+              HetznerLocation.nbg1,
+              HetznerServerType.cx23,
               sshKeys = setOf(sshKey1.asLookup()),
               volumes = setOf(volume.asLookup()),
               userData = UserData(emptySet(), { "" }),
@@ -95,8 +97,8 @@ class HetznerServerProvisionerTest {
             serverProvisioner.diff(
                 HetznerServer(
                     name,
-                    "hel1",
-                    "cx23",
+                    HetznerLocation.nbg1,
+                    HetznerServerType.cx23,
                     sshKeys = setOf(sshKey1.asLookup()),
                     volumes = setOf(volume.asLookup()),
                     userData = UserData(emptySet(), { "" }),
@@ -117,8 +119,8 @@ class HetznerServerProvisionerTest {
             serverProvisioner.diff(
                 HetznerServer(
                     name,
-                    "hel1",
-                    "cx23",
+                    HetznerLocation.nbg1,
+                    HetznerServerType.cx23,
                     sshKeys = setOf(sshKey1.asLookup(), sshKey2.asLookup()),
                     volumes = setOf(volume.asLookup()),
                     userData = UserData(emptySet(), { "" }),

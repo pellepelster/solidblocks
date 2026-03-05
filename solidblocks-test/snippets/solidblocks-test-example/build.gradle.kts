@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id("org.jetbrains.kotlin.jvm") version "2.2.10"
 }
@@ -19,15 +17,4 @@ dependencies {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.fromTarget("24")
-    }
-}
-
-tasks.withType<JavaCompile> {
-    sourceCompatibility = "24"
-    targetCompatibility = "24"
 }

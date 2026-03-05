@@ -76,7 +76,7 @@ class HetznerNetworksApi(private val api: HetznerApi) :
       api.get("v1/networks?${listQuery(page, perPage, filter, labelSelectors)}")
           ?: throw RuntimeException("failed to list networks")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/networks/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/networks/$id")
 
   suspend fun get(id: Long) = api.get<NetworkResponseWrapper>("v1/networks/$id")?.network
 

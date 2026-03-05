@@ -16,8 +16,8 @@ data class PublicNet(
 @Serializable
 data class ServerCreateRequest(
     val name: String,
-    val location: String,
-    @SerialName("server_type") val type: String,
+    val location: HetznerLocation,
+    @SerialName("server_type") val type: HetznerServerType,
     val image: String,
     @SerialName("placement_group") val placementGroup: String? = null,
     @SerialName("ssh_keys") val sshKeys: List<Long>? = null,
@@ -91,7 +91,7 @@ class HetznerServersApi(private val api: HetznerApi) :
           ?: throw RuntimeException("failed to list servers")
 
   override suspend fun delete(id: Long): ActionResponseWrapper =
-      api.complexDelete("v1/servers/$id") ?: throw RuntimeException("failed to delete server")
+      api.deleteWithAction("v1/servers/$id") ?: throw RuntimeException("failed to delete server")
 
   override suspend fun action(id: Long): ActionResponseWrapper =
       api.get("v1/servers/actions/$id") ?: throw RuntimeException("failed to get server action")
@@ -110,7 +110,7 @@ class HetznerServersApi(private val api: HetznerApi) :
 
   suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
-  suspend fun create(request: ServerCreateRequest) =
+  suspend fun create(request: ServerCreateRequest): ServerCreateResponseWrapper =
       api.post<ServerCreateResponseWrapper>("v1/servers", request)
 
   suspend fun update(id: Long, request: ServerUpdateRequest) =

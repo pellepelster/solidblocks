@@ -19,7 +19,7 @@ interface HetznerBaseResourceApi<T> {
       filter: Map<String, FilterValue> = emptyMap(),
       labelSelectors: Map<String, LabelSelectorValue> = emptyMap(),
   ) =
-      handlePaginatedList<T>(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
+      handlePaginatedList(filter, labelSelectors) { page, perPage, filter, labelSelectors ->
         listPaged(
             page,
             perPage,

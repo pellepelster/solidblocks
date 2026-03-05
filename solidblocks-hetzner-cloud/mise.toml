@@ -39,5 +39,5 @@ usage = """
 arg "<version>" env="VERSION"
 """
 run = """
-./gradlew build
+./gradlew clean build
 """

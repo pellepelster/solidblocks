@@ -876,13 +876,6 @@ function task_clean {
   find "${DIR}/test" -name "terraform.tfstate*" -exec rm -rf {} \; || true
 }
 
-function task_format {
-  (
-    cd "${DIR}"
-    terraform fmt -recursive
-  )
-}
-
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -895,7 +888,6 @@ case ${arg} in
   clean) task_clean "$@" ;;
   build) task_build "$@" ;;
   test) task_test "$@" ;;
-  format) task_format "$@" ;;
 
   test-restore-local) task_test_restore_from_local "$@" ;;
   test-restore-local-deploy) task_test_restore_from_local_deploy "$@" ;;

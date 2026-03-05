@@ -12,6 +12,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProv
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
@@ -37,8 +39,8 @@ class HetznerDnsProvisionerTest {
             "server1",
             ServerStatus.running,
             "debian12",
-            "cx23",
-            "nbg1",
+            HetznerServerType.cx23,
+            HetznerLocation.nbg1,
             emptyMap(),
             emptyList(),
             null,
@@ -51,8 +53,8 @@ class HetznerDnsProvisionerTest {
             "server1",
             ServerStatus.running,
             "debian12",
-            "cx23",
-            "nbg1",
+            HetznerServerType.cx23,
+            HetznerLocation.nbg1,
             emptyMap(),
             emptyList(),
             null,

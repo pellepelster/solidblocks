@@ -2,6 +2,8 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResourceRuntime
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
 
 class HetznerServerRuntime(
@@ -9,8 +11,8 @@ class HetznerServerRuntime(
     val name: String,
     val status: ServerStatus,
     val image: String,
-    val type: String,
-    val location: String,
+    val type: HetznerServerType,
+    val location: HetznerLocation,
     labels: Map<String, String>,
     val volumes: List<String>,
     val privateIpv4: String?,

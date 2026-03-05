@@ -30,14 +30,6 @@ function task_test {
   ${DIR}/../gradlew :solidblocks-test:test
 }
 
-function task_format() {
-  ${DIR}/../gradlew :solidblocks-test:spotlessApply
-  (
-    cd ${DIR}
-    terraform fmt -recursive
-  )
-}
-
 function task_clean {
   ${DIR}/../gradlew :solidblocks-test:clean
 }
@@ -60,7 +52,6 @@ shift || true
 case ${arg} in
   clean) task_clean "$@" ;;
   test) task_test "$@" ;;
-  format) task_format "$@" ;;
   test-prepare) task_test_prepare "$@" ;;
   release-artifacts) task_release_artifacts ;;
   release-test) task_release_test ;;

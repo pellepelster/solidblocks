@@ -3,7 +3,12 @@ package de.solidblocks.hetzner.cloud.resources
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerBaseResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerChangeProtectedResource
+import de.solidblocks.hetzner.cloud.model.HetznerChangeProtectionResponse
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -84,11 +89,8 @@ class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: Str
           "v1/zones/$dnsZoneReference/rrsets?${listQuery(page, perPage, filter, labelSelectors)}",
       ) ?: throw RuntimeException("failed to list dns rr sets")
 
-  suspend fun create(request: DnsRRSetsCreateRequest) =
+  suspend fun create(request: DnsRRSetsCreateRequest): DnsRRSetsCreateResponseWrapper =
       api.post<DnsRRSetsCreateResponseWrapper>("v1/zones/$dnsZoneReference/rrsets", request)
-
-  suspend fun update(name: String, type: RRType, request: DnsRRSetsUpdateRequest) =
-      api.put<DnsRRSetsCreateResponseWrapper>("v1/zones/$dnsZoneReference/rrsets/$name/$type")
 
   suspend fun updateTTL(name: String, type: RRType, request: DnsRRSetsTTLUpdateRequest) =
       api.post<ActionResponseWrapper>(
@@ -106,7 +108,7 @@ class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: Str
       api.get<DnsRRSetsResponseWrapper>("v1/zones/$dnsZoneReference/rrsets/$name/$type")
 
   suspend fun delete(rrName: String, rrType: RRType) =
-      api.simpleDelete("v1/zones/$dnsZoneReference/rrsets/$rrName/$rrType")
+      api.delete("v1/zones/$dnsZoneReference/rrsets/$rrName/$rrType")
 
   suspend fun action(id: Long): ActionResponseWrapper =
       api.get("v1/zones/$dnsZoneReference/actions/$id")

@@ -11,10 +11,17 @@ import de.solidblocks.cli.hetzner.hashString
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
-import de.solidblocks.hetzner.cloud.resources.*
+import de.solidblocks.hetzner.cloud.resources.ActionStatus
+import de.solidblocks.hetzner.cloud.resources.LoadBalancerHealthStatus
+import de.solidblocks.hetzner.cloud.resources.LoadBalancerResponse
+import de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetType
 import de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetType.ip
 import de.solidblocks.hetzner.cloud.resources.LoadBalancerTargetType.label_selector
+import de.solidblocks.hetzner.cloud.resources.PublicNet
+import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.utils.logError
 import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
@@ -225,9 +232,11 @@ class HetznerAsg(hcloudToken: String) {
         .let {
           if (it.isNotEmpty()) {
             logInfo(
-                "found ${it.size} servers (${it.joinToString(", ") {
-                            "'${it.name}'"
-                        }}) on load balancer '${loadbalancer.name}' matching label selector '${it.first().selector ?: "<unknown>"}'",
+                "found ${it.size} servers (${
+                            it.joinToString(", ") {
+                                "'${it.name}'"
+                            }
+                        }) on load balancer '${loadbalancer.name}' matching label selector '${it.first().selector ?: "<unknown>"}'",
             )
           }
         }
@@ -385,8 +394,8 @@ class HetznerAsg(hcloudToken: String) {
                 api.servers.create(
                     ServerCreateRequest(
                         serverName,
-                        locationRef.reference,
-                        serverTypeRef.reference,
+                        HetznerLocation.valueOf(locationRef.reference),
+                        HetznerServerType.valueOf(serverTypeRef.reference),
                         imageRef.reference,
                         placementGroupRef?.reference,
                         sshKeyRefs.map { it.reference.toLong() },
@@ -398,11 +407,6 @@ class HetznerAsg(hcloudToken: String) {
                         PublicNet(enableIpv4, enableIpv6),
                     ),
                 )
-
-            if (newServer == null || newServer.action == null) {
-              logError("error while creating server '$serverName'")
-              continue
-            }
 
             val result =
                 api.waitForAction(

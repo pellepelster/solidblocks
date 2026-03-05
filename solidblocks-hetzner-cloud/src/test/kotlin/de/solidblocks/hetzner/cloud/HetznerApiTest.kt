@@ -2,6 +2,8 @@ package de.solidblocks.hetzner.cloud
 
 import de.solidblocks.hetzner.cloud.model.FilterValue
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue.Equals
 import de.solidblocks.hetzner.cloud.model.toLabelSelectors
@@ -34,7 +36,8 @@ class HetznerApiTest {
 
   fun cleanup() {
     runBlocking {
-      mapOf("type" to LabelSelectorValue.NotEquals(ImageType.SNAPSHOT.name.lowercase()))
+      mapOf("type" to LabelSelectorValue.NotEquals(ImageType.snapshot.name.lowercase()))
+
       api.servers.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) shouldBe true
@@ -83,8 +86,8 @@ class HetznerApiTest {
             api.servers.create(
                 ServerCreateRequest(
                     "",
-                    "",
-                    "",
+                    HetznerLocation.nbg1,
+                    HetznerServerType.cx23,
                     "",
                     "",
                     emptyList(),
@@ -120,9 +123,9 @@ class HetznerApiTest {
 
       allImages shouldHaveAtLeastSize 1
 
-      api.images.list().any { it.type != ImageType.APP } shouldBe true
-      api.images.list(mapOf("type" to FilterValue.Equals(ImageType.APP.name.lowercase()))).all {
-        it.type == ImageType.APP
+      api.images.list().any { it.type != ImageType.app } shouldBe true
+      api.images.list(mapOf("type" to FilterValue.Equals(ImageType.app))).all {
+        it.type == ImageType.app
       } shouldBe true
 
       val byId = api.images.get(allImages[0].id)!!
@@ -147,18 +150,15 @@ class HetznerApiTest {
           api.servers.create(
               ServerCreateRequest(
                   name,
-                  "nbg1",
-                  "cx23",
+                  HetznerLocation.nbg1,
+                  HetznerServerType.cx23,
                   image = "debian-12",
                   userData = "",
                   labels = mapOf("test" to "true"),
               ),
           )
 
-      createdServer shouldNotBe null
-      createdServer!!.server.name shouldBe name
-
-      createdServer.action shouldNotBe null
+      createdServer.server.name shouldBe name
       createdServer.action.command shouldBe "create_server"
 
       assertSoftly(api.servers.actions(createdServer.server.id)) {
@@ -228,7 +228,12 @@ class HetznerApiTest {
     runBlocking {
       val name = UUID.randomUUID().toString()
       api.loadBalancers.create(
-          LoadBalancerCreateRequest(LoadBalancerType.lb11, name, "fsn1", labels = testLabels),
+          LoadBalancerCreateRequest(
+              LoadBalancerType.lb11,
+              name,
+              HetznerLocation.nbg1,
+              labels = testLabels,
+          ),
       ) shouldNotBe null
       api.loadBalancers.list() shouldHaveAtLeastSize 1
 
@@ -248,12 +253,12 @@ class HetznerApiTest {
               VolumeCreateRequest(
                   "volume1",
                   16,
-                  "nbg1",
+                  HetznerLocation.nbg1,
                   labels = testLabels,
                   format = VolumeFormat.ext4,
               ),
           )
-      result!!.volume.linuxDevice shouldNotBe null
+      result.volume.linuxDevice shouldNotBe null
       result.volume.format shouldBe VolumeFormat.ext4
       api.volumes.list(labelSelectors = testLabels.toLabelSelectors()) shouldHaveAtLeastSize 1
 
@@ -288,7 +293,13 @@ class HetznerApiTest {
       val name = UUID.randomUUID().toString()
       val volume =
           api.volumes.create(
-              VolumeCreateRequest(name, 12, "nbg1", VolumeFormat.ext4, labels = testLabels),
+              VolumeCreateRequest(
+                  name,
+                  12,
+                  HetznerLocation.nbg1,
+                  VolumeFormat.ext4,
+                  labels = testLabels,
+              ),
           )
 
       val result =
@@ -409,7 +420,7 @@ class HetznerApiTest {
                   labels = testLabels,
               ),
           )
-      response?.rrset?.name shouldBe name
+      response.rrset.name shouldBe name
 
       rrSetsApi.get(name, RRType.TXT) shouldBe null
 
@@ -419,7 +430,7 @@ class HetznerApiTest {
       }
 
       val ttlUpdateAction = rrSetsApi.updateTTL(name, RRType.A, DnsRRSetsTTLUpdateRequest(61))
-      rrSetsApi.waitForAction(ttlUpdateAction!!.action)
+      rrSetsApi.waitForAction(ttlUpdateAction.action)
 
       assertSoftly(rrSetsApi.get(name, RRType.A)!!) {
         it.rrset.name shouldBe name
@@ -436,7 +447,7 @@ class HetznerApiTest {
                   ),
               ),
           )
-      rrSetsApi.waitForAction(recordsUpdateAction!!.action)
+      rrSetsApi.waitForAction(recordsUpdateAction.action)
 
       assertSoftly(rrSetsApi.get(name, RRType.A)!!) {
         it.rrset.name shouldBe name
@@ -446,7 +457,7 @@ class HetznerApiTest {
       }
 
       rrSetsApi.list().map { it.name } shouldContain name
-      rrSetsApi.delete(response!!.rrset.name, response.rrset.type) shouldBe true
+      rrSetsApi.delete(response.rrset.name, response.rrset.type) shouldBe true
 
       rrSetsApi.list().map { it.name } shouldNotContain name
     }

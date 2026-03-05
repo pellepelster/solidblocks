@@ -45,7 +45,7 @@ class HetznerNuker(hcloudToken: String) {
                   } else {
                     val filter =
                         if (resourceApi is HetznerImagesApi) {
-                          mapOf("type" to FilterValue.Equals(ImageType.SNAPSHOT.name.lowercase()))
+                          mapOf("type" to FilterValue.Equals(ImageType.snapshot.name.lowercase()))
                         } else {
                           emptyMap()
                         }
@@ -102,7 +102,7 @@ class HetznerNuker(hcloudToken: String) {
         .forEach { resourceApi ->
           val filter =
               if (resourceApi is HetznerImagesApi) {
-                mapOf("type" to FilterValue.Equals(ImageType.SNAPSHOT.name.lowercase()))
+                mapOf("type" to FilterValue.Equals(ImageType.snapshot.name.lowercase()))
               } else {
                 emptyMap()
               }

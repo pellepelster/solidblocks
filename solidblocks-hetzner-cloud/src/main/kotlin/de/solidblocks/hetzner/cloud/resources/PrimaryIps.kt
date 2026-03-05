@@ -42,7 +42,7 @@ class HetznerPrimaryIpsApi(private val api: HetznerApi) :
       api.get("v1/primary_ips?${listQuery(page, perPage, filter, labelSelectors)}")
           ?: throw RuntimeException("failed list primary ips")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/primary_ips/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/primary_ips/$id")
 
   override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper =
       api.post(

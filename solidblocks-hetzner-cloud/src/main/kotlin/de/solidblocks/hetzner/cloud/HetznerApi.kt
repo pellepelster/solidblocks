@@ -1,19 +1,51 @@
 package de.solidblocks.hetzner.cloud
 
 import de.solidblocks.hetzner.cloud.Constants.defaultPageSize
-import de.solidblocks.hetzner.cloud.model.*
-import de.solidblocks.hetzner.cloud.resources.*
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
+import de.solidblocks.hetzner.cloud.model.HetznerApiErrorWrapper
+import de.solidblocks.hetzner.cloud.model.HetznerApiException
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.resources.ActionResponseWrapper
+import de.solidblocks.hetzner.cloud.resources.ActionStatus
+import de.solidblocks.hetzner.cloud.resources.HetznerCertificatesApi
+import de.solidblocks.hetzner.cloud.resources.HetznerDnsRRSetsApi
+import de.solidblocks.hetzner.cloud.resources.HetznerDnsZonesApi
+import de.solidblocks.hetzner.cloud.resources.HetznerFirewallsApi
+import de.solidblocks.hetzner.cloud.resources.HetznerFloatingIpsApi
+import de.solidblocks.hetzner.cloud.resources.HetznerImagesApi
+import de.solidblocks.hetzner.cloud.resources.HetznerLoadBalancersApi
+import de.solidblocks.hetzner.cloud.resources.HetznerLocationsApi
+import de.solidblocks.hetzner.cloud.resources.HetznerNetworksApi
+import de.solidblocks.hetzner.cloud.resources.HetznerPlacementGroupsApi
+import de.solidblocks.hetzner.cloud.resources.HetznerPrimaryIpsApi
+import de.solidblocks.hetzner.cloud.resources.HetznerSSHKeysApi
+import de.solidblocks.hetzner.cloud.resources.HetznerServerTypesApi
+import de.solidblocks.hetzner.cloud.resources.HetznerServersApi
+import de.solidblocks.hetzner.cloud.resources.HetznerVolumesApi
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.java.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.request
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -130,7 +162,7 @@ public class HetznerApi(hcloudToken: String) {
         }
       }
 
-  internal suspend inline fun <reified T> post(path: String, data: Any? = null): T? =
+  internal suspend inline fun <reified T> post(path: String, data: Any? = null): T =
       client
           .post(path) {
             contentType(ContentType.Application.Json)
@@ -138,7 +170,7 @@ public class HetznerApi(hcloudToken: String) {
           }
           .handle<T>()
 
-  internal suspend inline fun <reified T> put(path: String, data: Any? = null): T? =
+  internal suspend inline fun <reified T> put(path: String, data: Any? = null): T =
       client
           .put(path) {
             contentType(ContentType.Application.Json)
@@ -146,15 +178,15 @@ public class HetznerApi(hcloudToken: String) {
           }
           .handle<T>()
 
-  internal suspend inline fun <reified T> get(path: String): T? = client.get(path).handle<T>()
+  internal suspend inline fun <reified T> get(path: String): T? =
+      client.get(path).handleOptional<T>()
 
-  internal suspend fun simpleDelete(path: String): Boolean =
-      client.delete(path).handleSimpleDelete()
+  internal suspend inline fun <reified T> deleteWithAction(path: String): T? =
+      client.delete(path).handleOptional()
 
-  internal suspend inline fun <reified T> complexDelete(path: String): T? =
-      client.delete(path).handle()
+  internal suspend fun delete(path: String): Boolean = client.delete(path).handleDelete()
 
-  private suspend fun HttpResponse.handleSimpleDelete(): Boolean {
+  private suspend fun HttpResponse.handleDelete(): Boolean {
     if (this.status.isSuccess()) {
       return true
     }
@@ -170,7 +202,7 @@ public class HetznerApi(hcloudToken: String) {
 
   private val logger = KotlinLogging.logger {}
 
-  internal suspend inline fun <reified T> HttpResponse.handle(): T? {
+  internal suspend inline fun <reified T> HttpResponse.handleOptional(): T? {
     if (this.status.isSuccess()) {
       return this.body()
     }
@@ -186,6 +218,16 @@ public class HetznerApi(hcloudToken: String) {
     }
 
     throw RuntimeException("unexpected response HTTP ${this.status} (${this.bodyAsText()})")
+  }
+
+  internal suspend inline fun <reified T> HttpResponse.handle(): T {
+    if (this.status.isSuccess()) {
+      return this.body()
+    }
+
+    val error: HetznerApiErrorWrapper = this.body()
+    logger.error { error }
+    throw HetznerApiException(error.error, this.request.url)
   }
 
   fun waitForAction(

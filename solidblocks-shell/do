@@ -37,10 +37,6 @@ function task_test {
   ${DIR}/../gradlew :solidblocks-shell:test
 }
 
-function task_format {
-  terraform fmt -recursive
-}
-
 function task_demo {
   echo "\${FORMAT_DIM}Dim\${FORMAT_RESET}:             ${FORMAT_DIM}Dim${FORMAT_RESET}"
   echo "\${FORMAT_UNDERLINE}Underline\${FORMAT_RESET}: ${FORMAT_UNDERLINE}Underline${FORMAT_RESET}"
@@ -73,7 +69,6 @@ shift || true
 case ${arg} in
   lint) task_lint "$@" ;;
   clean) task_clean "$@" ;;
-  format) task_format "$@" ;;
   demo) task_demo"$@" ;;
   test) task_test "$@" ;;
   test-integration) task_test_integration "$@" ;;

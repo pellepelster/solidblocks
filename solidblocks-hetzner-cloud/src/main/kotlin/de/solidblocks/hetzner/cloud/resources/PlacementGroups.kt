@@ -33,5 +33,5 @@ class HetznerPlacementGroupsApi(private val api: HetznerApi) :
       api.get("v1/placement_groups?${listQuery(page, perPage, filter, labelSelectors)}")
           ?: throw RuntimeException("failed to list placement groups")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/placement_groups/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/placement_groups/$id")
 }

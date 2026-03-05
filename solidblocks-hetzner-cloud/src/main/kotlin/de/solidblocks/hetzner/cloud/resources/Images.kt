@@ -3,14 +3,18 @@ package de.solidblocks.hetzner.cloud.resources
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerNamedResource
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 enum class ImageType {
-  SYSTEM,
-  SNAPSHOT,
-  APP,
+  system,
+  snapshot,
+  app,
 }
 
 @Serializable
@@ -41,7 +45,7 @@ class HetznerImagesApi(private val api: HetznerApi) :
       api.get("v1/images?${listQuery(page, perPage, filter, labelSelectors)}")
           ?: throw RuntimeException("failed to list images")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/images/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/images/$id")
 
   suspend fun get(id: Long) = api.get<ImageResponseWrapper>("v1/images/$id")?.image
 

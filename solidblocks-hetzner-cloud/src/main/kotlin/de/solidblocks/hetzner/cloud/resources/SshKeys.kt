@@ -60,7 +60,7 @@ class HetznerSSHKeysApi(private val api: HetznerApi) :
 
   suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/ssh_keys/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/ssh_keys/$id")
 
   suspend fun create(request: SSHKeysCreateRequest) =
       api.post<SSHKeyResponseWrapper>("v1/ssh_keys", request)

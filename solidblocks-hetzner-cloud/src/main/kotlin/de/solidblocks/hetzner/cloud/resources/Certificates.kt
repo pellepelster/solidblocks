@@ -32,5 +32,5 @@ class HetznerCertificatesApi(private val api: HetznerApi) :
       api.get("v1/certificates?${listQuery(page, perPage, filter, labelSelectors)}")
           ?: throw RuntimeException("failed to list certificates")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/certificates/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/certificates/$id")
 }

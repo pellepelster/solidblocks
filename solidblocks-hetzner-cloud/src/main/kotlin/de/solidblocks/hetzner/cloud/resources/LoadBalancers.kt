@@ -7,6 +7,7 @@ import de.solidblocks.hetzner.cloud.listQuery
 import de.solidblocks.hetzner.cloud.model.FilterValue
 import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectedResource
 import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.model.ListResponse
 import de.solidblocks.hetzner.cloud.model.MetaResponse
@@ -45,7 +46,7 @@ enum class LoadBalancerType {
 data class LoadBalancerCreateRequest(
     @SerialName("load_balancer_type") val loadBalancerType: LoadBalancerType,
     val name: String,
-    val location: String,
+    val location: HetznerLocation,
     val labels: Map<String, String>? = null,
 )
 
@@ -131,7 +132,7 @@ class HetznerLoadBalancersApi(private val api: HetznerApi) :
 
   suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
-  override suspend fun delete(id: Long): Boolean = api.simpleDelete("v1/load_balancers/$id")
+  override suspend fun delete(id: Long): Boolean = api.delete("v1/load_balancers/$id")
 
   suspend fun attachServer(id: Long, serverId: Long): ActionResponseWrapper =
       api.post(

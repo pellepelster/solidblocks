@@ -1,6 +1,8 @@
 package de.solidblocks.infra.test.hetzner
 
 import de.solidblocks.hetzner.cloud.HetznerApi
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.model.toLabelSelectors
 import de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
@@ -31,7 +33,7 @@ class HetznerServerTestContext(val id: Long, val host: String, val privateKey: S
 
 class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext() {
 
-  val defaultLocation = "nbg1"
+  val defaultLocation = HetznerLocation.nbg1
 
   val api = HetznerApi(hcloudToken)
 
@@ -52,8 +54,8 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
   fun createServer(
       userData: String,
       sshKey: Long,
-      location: String? = null,
-      type: String = "cx23",
+      location: HetznerLocation? = null,
+      type: HetznerServerType = HetznerServerType.cx23,
       image: String = "debian-13",
       name: String? = null,
       volumes: List<Long>? = null,
@@ -165,7 +167,7 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
 
   data class Volume(val id: Long, val linuxDevice: String)
 
-  fun createVolume(name: String? = null, location: kotlin.String? = null): Volume {
+  fun createVolume(name: String? = null, location: HetznerLocation? = null): Volume {
     val resourceName = name ?: testId
 
     logInfo("creating volume '$resourceName'")

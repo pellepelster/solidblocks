@@ -6,11 +6,13 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLooku
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
 class HetznerServer(
     name: String,
-    val location: String,
-    val type: String,
+    val location: HetznerLocation,
+    val type: HetznerServerType,
     val userData: UserData,
     val volumes: Set<HetznerVolumeLookup> = emptySet(),
     val sshKeys: Set<HetznerSSHKeyLookup> = emptySet(),

@@ -1,7 +1,17 @@
 package de.solidblocks.hetzner.cloud.resources
 
-import de.solidblocks.hetzner.cloud.*
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.HetznerApi
+import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
+import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
+import de.solidblocks.hetzner.cloud.InstantSerializer
+import de.solidblocks.hetzner.cloud.listQuery
+import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectedResource
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import kotlinx.serialization.SerialName
@@ -19,7 +29,7 @@ data class VolumeUpdateRequest(val name: String? = null, val labels: Map<String,
 data class VolumeCreateRequest(
     val name: String,
     val size: Int,
-    val location: String,
+    val location: HetznerLocation,
     @SerialName("format") val format: VolumeFormat,
     val automount: Boolean = false,
     val labels: Map<String, String>? = null,
@@ -74,13 +84,13 @@ class HetznerVolumesApi(private val api: HetznerApi) :
   override suspend fun action(id: Long): ActionResponseWrapper =
       api.get("v1/volumes/actions/$id") ?: throw RuntimeException("failed to get volume action")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/volumes/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/volumes/$id")
 
   suspend fun get(id: Long) = api.get<VolumeResponseWrapper>("v1/volumes/$id")?.volume
 
   suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
-  suspend fun create(request: VolumeCreateRequest) =
+  suspend fun create(request: VolumeCreateRequest): VolumeResponseWrapper =
       api.post<VolumeResponseWrapper>("v1/volumes", request)
 
   suspend fun update(id: Long, request: VolumeUpdateRequest) =

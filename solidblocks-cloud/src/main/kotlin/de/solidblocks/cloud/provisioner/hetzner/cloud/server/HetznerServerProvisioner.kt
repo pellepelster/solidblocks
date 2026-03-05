@@ -10,12 +10,13 @@ import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.utils.HetznerLabels
 import de.solidblocks.hetzner.cloud.HetznerApi
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import de.solidblocks.utils.logInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.io.path.absolutePathString
 import kotlin.reflect.KClass
 
 class HetznerServerProvisioner(val hcloudToken: String) :
@@ -33,8 +34,8 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                 it.name,
                 it.status,
                 it.image.name ?: "unknown",
-                it.type.name,
-                it.location.name,
+                HetznerServerType.valueOf(it.type.name),
+                HetznerLocation.valueOf(it.location.name),
                 it.labels,
                 it.volumes.map { volume -> volume.toString() },
                 it.privateNetwork.firstOrNull()?.ip,

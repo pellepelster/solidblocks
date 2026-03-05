@@ -40,7 +40,7 @@ class HetznerFloatingIpsApi(private val api: HetznerApi) :
       api.get("v1/floating_ips?${listQuery(page, perPage, filter, labelSelectors)}")
           ?: throw RuntimeException("failed to list floating ips")
 
-  override suspend fun delete(id: Long) = api.simpleDelete("v1/floating_ips/$id")
+  override suspend fun delete(id: Long) = api.delete("v1/floating_ips/$id")
 
   override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper =
       api.post(

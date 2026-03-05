@@ -40,13 +40,13 @@ sealed class LabelSelectorValue {
   abstract fun query(key: String): String
 }
 
-fun Map<String, String>.toLabelSelectors() =
+public fun Map<String, String>.toLabelSelectors() =
     this.entries.associate { it.key to LabelSelectorValue.Equals(it.value) }
 
 sealed class FilterValue {
-  data class Equals(val value: String) : FilterValue() {
+  data class Equals(val value: Any) : FilterValue() {
     override val query: String
-      get() = value
+      get() = value.toString()
   }
 
   abstract val query: String
@@ -57,3 +57,39 @@ fun KClass<out HetznerNamedResource<*>>.pascalCaseToWhiteSpace() =
 
 fun HetznerNamedResource<*>.logText() =
     "${this::class.pascalCaseToWhiteSpace()} '${name ?: "<no name>"}' ($id)"
+
+enum class HetznerLocation {
+  fsn1,
+  nbg1,
+  hel1,
+  ash,
+  hil,
+  sin,
+}
+
+enum class HetznerServerType {
+  cx23,
+  cx33,
+  cx43,
+  cx53,
+  cpx21,
+  cpx31,
+  cpx41,
+  cpx51,
+  cax11,
+  cax21,
+  cax31,
+  cax41,
+  ccx13,
+  ccx23,
+  ccx33,
+  ccx43,
+  ccx53,
+  ccx63,
+  cpx12,
+  cpx22,
+  cpx32,
+  cpx42,
+  cpx52,
+  cpx62,
+}

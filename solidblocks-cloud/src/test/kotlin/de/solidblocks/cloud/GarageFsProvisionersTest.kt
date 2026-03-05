@@ -20,6 +20,8 @@ import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.garagefs.GarageFsApi
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
 import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
@@ -37,8 +39,8 @@ import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 import org.testcontainers.utility.Base58
-import java.util.*
 import java.util.Locale.getDefault
+import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GarageFsProvisionersTest {
@@ -80,8 +82,8 @@ class GarageFsProvisionersTest {
                     "server1",
                     ServerStatus.running,
                     "debian12",
-                    "cx23",
-                    "nbg1",
+                    HetznerServerType.cx23,
+                    HetznerLocation.nbg1,
                     emptyMap(),
                     emptyList(),
                     null,
@@ -102,8 +104,8 @@ class GarageFsProvisionersTest {
         val server =
             HetznerServer(
                 "server1",
-                "nbg1",
-                "cx23",
+                HetznerLocation.nbg1,
+                HetznerServerType.cx23,
                 UserData(emptySet(), { "" }),
             )
 

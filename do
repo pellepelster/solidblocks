@@ -51,18 +51,6 @@ function task_build {
     task_build_documentation
 }
 
-function task_format {
-    for component in ${COMPONENTS}; do
-      (
-        echo "================================================================================="
-        echo "running format for '${component}'"
-        echo "================================================================================="
-        cd "${DIR}/${component}"
-        "./do" format
-      )
-    done
-}
-
 function task_test_init_aws {
   (
     export AWS_REGION="eu-central-1"
@@ -184,7 +172,6 @@ case ${ARG} in
   clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
   test-init-aws) task_test_init_aws "$@" ;;
   test) task_test "$@" ;;
-  format) task_format "$@" ;;
   release) task_release "$@" ;;
   release-prepare) task_release_prepare "$@" ;;
   release-check) task_release_check "$@" ;;

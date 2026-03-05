@@ -2,14 +2,16 @@ package de.solidblocks.cloud.providers.hetzner
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.KeywordHelp
-import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
+import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
 class HetznerProviderConfigurationFactory :
     PolymorphicConfigurationFactory<HetznerProviderConfiguration>() {
@@ -65,6 +67,6 @@ class HetznerProviderConfigurationFactory :
             is Success<String> -> result.data
         }
 
-        return Success(HetznerProviderConfiguration(name, defaultLocation, defaultInstanceType))
+        return Success(HetznerProviderConfiguration(name, HetznerLocation.valueOf(defaultLocation), HetznerServerType.valueOf(defaultInstanceType)))
     }
 }
