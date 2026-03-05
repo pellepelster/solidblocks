@@ -18,19 +18,6 @@ run = [
     { task = "test" },
 ]
 
-[tasks.release-artifacts]
-run = """
-#!/usr/bin/env bash
-set -eu -o pipefail
-
-export ORG_GRADLE_PROJECT_signingInMemoryKey="${ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY:-$(pass solidblocks/signing_key)}"
-export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="${ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD:-$(pass solidblocks/signing_key_password)}"
-export ORG_GRADLE_PROJECT_mavenCentralUsername="${ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME:-$(pass maven/central-portal/user-token/username)}"
-export ORG_GRADLE_PROJECT_mavenCentralPassword="${ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD:-$(pass maven/central-portal/user-token/password)}"
-
-${ROOT_PROJECT}/gradlew :$(basename $PWD):publishAllPublicationsToMavenCentralRepository
-"""
-
 [tasks.release-prepare]
 usage = """
 arg "<version>" env="VERSION"
