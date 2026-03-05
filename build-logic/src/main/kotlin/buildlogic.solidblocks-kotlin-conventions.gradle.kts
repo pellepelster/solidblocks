@@ -55,12 +55,6 @@ tasks.test {
     )
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(24)
-    }
-}
-
 spotless {
     kotlin {
         ktlint()
@@ -69,12 +63,18 @@ spotless {
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "24"
-    targetCompatibility = "24"
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.fromTarget("24")
+        jvmTarget = JvmTarget.fromTarget("21")
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }

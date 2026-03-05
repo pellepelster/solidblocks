@@ -28,7 +28,7 @@ Common for all `mise.toml` files are the following tasks:
 
 ## Conventions
 
-The follwing environment variables can be used to influence the build if supported by the component.
+The following environment variables can be used to influence the build if supported by the component.
 
 `BUILD_FAST` If set to `true` build are shortened, e.g. by leaving out variants or skipping optimizations. Release build should never uses this.
 
@@ -62,6 +62,7 @@ Solidblocks uses semver compliant versioning, where the release version is deriv
 
 ## Release
 
+### Trigger CI build
 ```shell
 export VERSION=<version> 
 mise //...:build
@@ -70,7 +71,19 @@ mise //...:release-check
 mise //...:release
 ```
 
+### Maven
 
+Release Maven artifacts at https://central.sonatype.com/publishing/deployments
+
+
+### Verify
+
+when all artifacts are released, verify deployment
+
+```shell
+export VERSION=<version> 
+mise //...:release-test
+```
 
 ### Docker Artifacts
 
