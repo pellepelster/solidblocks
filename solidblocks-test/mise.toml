@@ -38,7 +38,7 @@ set -eu -o pipefail
 echo "setting version: ${usage_version}"
 mkdir -p ".tmp"
 rg -e '^(.*testImplementation\\("de\\.solidblocks:infra-test:)(.*)("\\)).*$' "snippets/solidblocks-test-example/build.gradle.kts" --replace "\\${1}${usage_version}\\${3}" --passthru --no-filename  --no-line-number --color never > ".tmp/build.gradle.kts"
-mv ".tmp/build.gradle.kts" "snippets/solidblocks-test-gradle/build.gradle.kts"
+mv ".tmp/build.gradle.kts" "snippets/solidblocks-test-example/build.gradle.kts"
 rm -rf .tmp
 """
 
