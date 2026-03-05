@@ -10,7 +10,7 @@ dependencies {
 }
 
 mavenPublishing {
-    coordinates("de.solidblocks", "infra-test", "${version}")
+    coordinates("de.solidblocks", "infra-utils", "${version}")
 
     pom {
         name.set("Solidblocks Utils")
