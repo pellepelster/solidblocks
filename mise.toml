@@ -135,5 +135,5 @@ export ORG_GRADLE_PROJECT_signingInMemoryKeyPassword="${ORG_GRADLE_PROJECT_SIGNI
 export ORG_GRADLE_PROJECT_mavenCentralUsername="${ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME:-$(pass maven/central-portal/user-token/username)}"
 export ORG_GRADLE_PROJECT_mavenCentralPassword="${ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD:-$(pass maven/central-portal/user-token/password)}"
 
-${ROOT_PROJECT}/gradlew :publishAllPublicationsToMavenCentralRepository
+${ROOT_PROJECT}/gradlew publishAllPublicationsToMavenCentralRepository
 """
