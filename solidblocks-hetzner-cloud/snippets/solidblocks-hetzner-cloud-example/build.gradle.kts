@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    implementation("de.solidblocks:hetzner-cloud:0.4.13")
+    implementation("de.solidblocks:hetzner-cloud:0.4.14")
 }
 
 tasks.named<Test>("test") {

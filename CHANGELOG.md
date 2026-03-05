@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.14
+
+* lower min. Java version for libraries to 21 
+
 ## v0.4.13
 
 * release-engineering
