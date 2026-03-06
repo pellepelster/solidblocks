@@ -16,9 +16,12 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import de.solidblocks.utils.logInfo
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 
 class HetznerProviderConfigurationManager : CloudResourceProviderConfigurationManager<HetznerProviderConfiguration, HetznerProviderConfigurationRuntime> {
+
+    private val logger = KotlinLogging.logger {}
 
     override fun validate(configuration: HetznerProviderConfiguration, context: ConfigurationContext, log: LogContext): Result<HetznerProviderConfigurationRuntime> {
 
@@ -37,8 +40,9 @@ class HetznerProviderConfigurationManager : CloudResourceProviderConfigurationMa
             logInfo("provided Hetzner cloud token is valid", context = log)
 
             return Success(HetznerProviderConfigurationRuntime(System.getenv("HCLOUD_TOKEN"), configuration.defaultLocation, configuration.defaultInstanceType))
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             "provided Hetzner cloud token is not valid".also {
+                logger.error(e) { it }
                 logError(it, context = log)
                 return Error<HetznerProviderConfigurationRuntime>(it)
             }

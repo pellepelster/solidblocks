@@ -70,28 +70,28 @@ class Provisioner(
 
             diffs.forEach {
                 when (it.status) {
-                    unknown -> logInfo("could not determine status for ${it.resource.logText()}", context = diffLogContext)
+                    unknown -> logWarning("could not determine status for ${it.resource.logText()}", context = diffLogContext)
 
-                    missing -> logInfo("will create ${it.resource.logText()}", context = diffLogContext)
+                    missing -> logInfo(bold("will create ${it.resource.logText()}"), context = diffLogContext)
 
-                    up_to_date -> logInfo("${it.resource.logText()} is up-to-date", context = diffLogContext)
+                    up_to_date -> logInfo(dim("${it.resource.logText()} is up-to-date"), context = diffLogContext)
 
                     has_changes -> {
                         if (it.needsRecreate()) {
-                            logInfo(
-                                "${it.resource.logText()} has breaking changes and needs to be re-created",
+                            logInfo(bold(
+                                "${it.resource.logText()} has breaking changes and needs to be re-created"),
                                 context = diffLogContext,
                             )
                             it.changes.forEach {
-                                logInfo("- ${it.logText()}", context = diffLogContext.indent())
+                                logInfo(bold("- ${it.logText()}"), context = diffLogContext.indent())
                             }
 
                         } else {
-                            logInfo(
-                                "${it.resource.logText()} has pending changes", context = diffLogContext
+                            logInfo(bold(
+                                "${it.resource.logText()} has pending changes"), context = diffLogContext
                             )
                             it.changes.forEach {
-                                logInfo("- ${it.logText()}", context = diffLogContext.indent())
+                                logInfo(bold("- ${it.logText()}"), context = diffLogContext.indent())
                             }
                         }
                     }

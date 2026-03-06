@@ -63,7 +63,7 @@ class CloudProvisioner(
             is Success<List<Output>> -> result.data
         }
 
-        return@runBlocking Success<List<Output>>(provisionerOutput + serviceOutput)
+        return@runBlocking Success(provisionerOutput + serviceOutput)
     }
 
     fun output(log: LogContext): Result<List<Output>> = Success(emptyList())

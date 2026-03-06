@@ -41,7 +41,7 @@ class LocalSSHKeyProviderManager :
         logDebug("found ssh key at '${sshKey.toAbsolutePath()}'")
 
         if (SSHKeyUtils.isEncrypted(sshKey.readText())) {
-            return Error("encrypted private keys '$sshKey' are currently not supported")
+            return Error("encrypted private keys are currently not supported ($sshKey)")
         }
 
         val sshKeyPair =
@@ -79,13 +79,20 @@ class LocalSSHKeyProviderManager :
         return !permissions.any { it !in allowedPermissions }
     }
 
+    fun expandTilde(path: String): String {
+        return if (path.startsWith("~")) {
+            System.getProperty("user.home") + path.substring(1)
+        } else {
+            path
+        }
+    }
 
     private fun tryFindKey(
         configuration: LocalSSHKeyProviderConfiguration,
         context: ConfigurationContext,
     ): Result<Path> {
         if (configuration.privateKey != null) {
-            val sshKeyFile = context.configFilePath.toAbsolutePath().resolve(configuration.privateKey)
+            val sshKeyFile = context.configFilePath.toAbsolutePath().resolve(expandTilde(configuration.privateKey))
 
             return if (sshKeyFile.exists()) {
                 Success(sshKeyFile)

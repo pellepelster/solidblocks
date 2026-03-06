@@ -15,16 +15,14 @@ class CloudApplyCommand : CliktCommand(name = "apply") {
 
   override fun help(context: Context) = "TODO"
 
-  private val configFile by argument().file()
+  private val configFile by argument().file(mustExist = true)
 
   override fun run() {
     val manager = CloudManager(configFile)
     val runtime =
         when (val result = manager.validate()) {
           is Error<CloudManager.CloudRuntime> -> {
-            logError(
-                "command failed with '${result.error}' have look at 'blcks.log' for more details",
-            )
+            logError(result.error)
             throw ProgramResult(1)
           }
 
@@ -33,7 +31,7 @@ class CloudApplyCommand : CliktCommand(name = "apply") {
 
     when (val result = manager.apply(runtime)) {
       is Error<Unit> -> {
-        logError("command failed with '${result.error}' have look at 'blcks.log' for more details")
+        logError(result.error)
         throw ProgramResult(1)
       }
 
@@ -42,11 +40,10 @@ class CloudApplyCommand : CliktCommand(name = "apply") {
 
     when (val result = manager.output(runtime)) {
       is Error<List<Output>> -> {
-        logError(
-            "building output failed with '${result.error}' have look at 'blcks.log' for more details",
-        )
+        logError(result.error)
         throw ProgramResult(1)
       }
+
       is Success -> {
         result.data.forEach { output -> println(output) }
       }

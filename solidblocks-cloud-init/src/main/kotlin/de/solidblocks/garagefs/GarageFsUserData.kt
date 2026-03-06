@@ -10,7 +10,7 @@ import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemdConfig
 import de.solidblocks.systemd.Unit
 
-data class GarageFsBucket(val name: String, val publicDomains: List<String>)
+data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
 
 class GarageFsUserData(
     val linuxDeviceData: String,

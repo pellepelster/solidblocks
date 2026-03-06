@@ -39,6 +39,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             is Success<CloudConfigurationRuntime> -> result.data
         }
         logInfo("parsed cloud configuration '${cloudConfiguration.name}'", context = log)
+        log = log.indent()
 
         // ensure no duplicate default providers are registered
         cloudConfiguration.providers.distinctBy { it.type }.forEach { distinctProvider ->
@@ -96,7 +97,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             val manager: ProviderConfigurationManager<ProviderConfiguration, ProviderRuntime> = providerRegistrations.managerForConfiguration(provider)
 
             logDebug("validating configuration for '${provider.type}' provider '${provider.name}'", context = log)
-            val context = ConfigurationContext(cloudConfigFile.parentFile.toPath().toAbsolutePath())
+            val context = ConfigurationContext(cloudConfigFile.toPath().toAbsolutePath().toFile().parentFile.toPath())
             val runtime = when (val result = manager.validate(provider, context, log)) {
                 is Error<ProviderRuntime> -> {
                     return Error<CloudRuntime>(result.error)
