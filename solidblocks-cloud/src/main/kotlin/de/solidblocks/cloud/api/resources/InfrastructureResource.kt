@@ -13,6 +13,5 @@ abstract class BaseInfrastructureResource<RuntimeType>(name: String, dependsOn: 
 }
 
 abstract class BaseLabeledInfrastructureResource<RuntimeType>(
-    name: String, dependsOn: Set<BaseResource>,
-    val labels: Map<String, String>
+    name: String, dependsOn: Set<BaseResource>, val labels: Map<String, String>
 ) : BaseInfrastructureResource<RuntimeType>(name, dependsOn)

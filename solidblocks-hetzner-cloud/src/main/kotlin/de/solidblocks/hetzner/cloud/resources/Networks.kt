@@ -19,6 +19,9 @@ enum class SubnetType {
 }
 
 @Serializable
+data class NetworkUpdateRequest(val name: String? = null, val labels: Map<String, String>? = null)
+
+@Serializable
 data class NetworkCreateSubnetRequest(
     val type: SubnetType,
     @SerialName("ip_range") val ipRange: String,
@@ -48,6 +51,8 @@ data class NetworksListResponseWrapper(
     get() = networks
 }
 
+@Serializable data class ChangeNetworkProtectionRequest(val delete: Boolean)
+
 @Serializable data class NetworkResponseWrapper(val network: NetworkResponse)
 
 @Serializable data class PrivateNetworkResponse(val network: Long, val ip: String)
@@ -61,6 +66,7 @@ data class NetworkResponse(
     override val id: Long,
     override val name: String,
     override val protection: HetznerDeleteProtectionResponse,
+    val labels: Map<String, String>,
 ) : HetznerDeleteProtectedResource<Long>
 
 class HetznerNetworksApi(private val api: HetznerApi) :
@@ -86,8 +92,22 @@ class HetznerNetworksApi(private val api: HetznerApi) :
       api.post<NetworkResponseWrapper>("v1/networks", request)
 
   override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper =
-      api.post("v1/networks/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))
+      api.post("v1/networks/$id/actions/change_protection", ChangeNetworkProtectionRequest(delete))
           ?: throw RuntimeException("failed to change network protection")
+
+  suspend fun waitForAction(
+      action: ActionResponseWrapper,
+      logCallback: ((String) -> Unit)? = null,
+  ) = waitForAction(action.action, logCallback)
+
+  suspend fun waitForAction(action: ActionResponse, logCallback: ((String) -> Unit)? = null) =
+      waitForAction(action.id, logCallback)
+
+  suspend fun waitForAction(id: Long, logCallback: ((String) -> Unit)? = null) =
+      api.waitForAction(id, logCallback, { api.networks.action(it) })
+
+  suspend fun update(id: Long, request: NetworkUpdateRequest) =
+      api.put<NetworkResponseWrapper>("v1/networks/$id", request)
 
   override suspend fun action(id: Long): ActionResponseWrapper =
       api.get("v1/networks/actions/$id") ?: throw RuntimeException("failed to get network action")

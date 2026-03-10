@@ -17,6 +17,11 @@ open class BaseHetznerProvisioner(val hcloudToken: String) {
             .filter { !runtime.labels.containsKey(it.key) }
             .map { ResourceDiffItem("label '${it.key}'", missing = true) }
 
+    val deletedLabels =
+        runtime.labels
+            .filter { !resource.labels.containsKey(it.key) }
+            .map { ResourceDiffItem("label '${it.key}'", changed = true) }
+
     val changedLabels =
         resource.labels
             .map {
@@ -37,6 +42,6 @@ open class BaseHetznerProvisioner(val hcloudToken: String) {
             }
             .filterNotNull()
 
-    return missingLabels + changedLabels
+    return missingLabels + changedLabels + deletedLabels
   }
 }
