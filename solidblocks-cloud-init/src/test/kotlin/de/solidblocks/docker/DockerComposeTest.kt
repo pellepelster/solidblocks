@@ -15,6 +15,7 @@ class DockerComposeTest {
                         Service(
                             "image1:latest",
                             environment = mapOf("foo" to "bar"),
+                            volumes = listOf(Mount(MountType.bind, "/data", "/foo-bar")),
                             ports = listOf(PortMapping(80, 8080)),
                         ),
                 ),
@@ -30,6 +31,10 @@ class DockerComposeTest {
               published: 8080
             environment:
               "foo": "bar"
+            volumes:
+            - type: "bind"
+              source: "/data"
+              target: "/foo-bar"
         """
             .trimIndent()
   }

@@ -17,8 +17,6 @@ interface InfrastructureResourceProvisioner<ResourceType, RuntimeType> {
 
     suspend fun destroyAll(context: ProvisionerContext): Boolean = TODO("Not yet implemented")
 
-    suspend fun list(): List<RuntimeType> = TODO("Not yet implemented")
-
     suspend fun output(resource: ResourceType, context: ProvisionerContext): List<Output> = emptyList()
 
     val supportedResourceType: KClass<*>

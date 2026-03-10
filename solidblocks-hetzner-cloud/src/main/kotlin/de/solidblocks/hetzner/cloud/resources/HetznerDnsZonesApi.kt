@@ -23,6 +23,7 @@ data class HetznerDnsZone(
     override val id: Long,
     override val name: String,
     override val protection: HetznerDeleteProtectionResponse,
+    val labels: Map<String, String>,
 ) : HetznerDeleteProtectedResource<Long>
 
 class HetznerDnsZonesApi(private val api: HetznerApi) : HetznerBaseResourceApi<HetznerDnsZone> {

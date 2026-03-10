@@ -19,16 +19,20 @@ import kotlinx.coroutines.runBlocking
 fun hetznerTestContext(hcloudToken: String, testId: String) =
     HetznerTestContext(hcloudToken, testId)
 
-class HetznerServerTestContext(val id: Long, val host: String, val privateKey: String) :
-    TestContext() {
+class HetznerServerTestContext(
+    val id: Long,
+    val host: String,
+    val privateKey: String,
+    val testId: String? = null,
+) : TestContext() {
 
   fun cloudInit(username: String = "root", port: Int = 22) =
-      cloudInitTestContext(host, privateKey, username, port).also { testContexts.add(it) }
+      cloudInitTestContext(host, privateKey, username, port, testId).also { testContexts.add(it) }
 
   fun ssh(username: String = "root", port: Int = 22) =
-      sshTestContext(host, privateKey, username, port).also { testContexts }
+      sshTestContext(host, privateKey, username, port, testId).also { testContexts }
 
-  fun host() = hostTestContext(host)
+  fun host() = hostTestContext(host, testId)
 }
 
 class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext() {

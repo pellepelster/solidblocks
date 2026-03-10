@@ -41,7 +41,7 @@ class SolidblocksTestContext(val testId: String) : TestContext() {
       }
 
   fun ssh(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
-      sshTestContext(host, keyPair, username, port).also { testContexts.add(it) }
+      sshTestContext(host, keyPair, username, port, testId).also { testContexts.add(it) }
 
   fun host(host: String) = hostTestContext(host)
 

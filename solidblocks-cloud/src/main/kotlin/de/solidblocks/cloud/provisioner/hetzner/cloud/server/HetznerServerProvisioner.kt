@@ -242,10 +242,9 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
     override suspend fun output(resource: HetznerServer, context: ProvisionerContext) = lookup(resource.asLookup(), context)?.let {
         // TODO use explicit host key checking
-
         listOf(
             Output(
-                resource.logText(),
+                resource.logText().capitalize(),
                 """
 to access server **${it.name}** via SSH, run 
 ```

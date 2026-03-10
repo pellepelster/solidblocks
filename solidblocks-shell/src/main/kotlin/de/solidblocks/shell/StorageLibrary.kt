@@ -24,8 +24,11 @@ object StorageLibrary {
     override fun toShell() = listOf("storage_mount $storageDevice $storageDir ${filesystem.name}")
   }
 
-  data class MkDir(val dir: String, val owner: String? = null) : LibraryCommand {
+  data class MkDir(val dir: String, val owner: String? = null, val group: String? = null) :
+      LibraryCommand {
     override fun toShell() =
-        listOf("mkdir -p $dir") + if (owner != null) listOf("chown $owner $dir") else emptyList()
+        listOf("mkdir -p $dir") +
+            (if (owner != null) listOf("chown $owner $dir") else emptyList()) +
+            (if (group != null) listOf("chgrp $group $dir") else emptyList())
   }
 }

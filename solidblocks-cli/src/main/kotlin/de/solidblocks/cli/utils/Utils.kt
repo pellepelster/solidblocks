@@ -1,6 +1,5 @@
 package de.solidblocks.cli.utils
 
-import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.terminal.Terminal
 
 sealed interface Result<T>
@@ -27,9 +26,4 @@ public fun List<String>.indentWithYamlObjectMarker() =
       }
     }
 
-// TODO workaround for testing inside gradle
-fun createTerminal() =
-    Terminal(
-        AnsiLevel.TRUECOLOR,
-        width = 160,
-    )
+fun createTerminal() = Terminal()

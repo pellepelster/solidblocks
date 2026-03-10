@@ -35,7 +35,7 @@ data class Service(
     val expose: List<String> = emptyList(),
     val environment: Map<String, String>? = null,
     @SerialName("env_file") val envFile: StringOrList? = null,
-    val volumes: List<VolumeMount> = emptyList(),
+    val volumes: List<Mount> = emptyList(),
     val networks: List<String> = emptyList(),
     @SerialName("depends_on") val dependsOn: DependsOn? = null,
     val links: List<String> = emptyList(),
@@ -79,9 +79,14 @@ class PortMapping(
     val mode: String? = null,
 )
 
+enum class MountType {
+  bind,
+}
+
 @Serializable
-data class VolumeMount(
-    val source: String? = null,
+data class Mount(
+    val type: MountType,
+    val source: String,
     val target: String,
     @SerialName("read_only") val readOnly: Boolean? = null,
     val bind: BindOptions? = null,

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
     id("org.graalvm.buildtools.native") version "0.11.0"
@@ -89,4 +91,21 @@ graalvmNative {
 application {
     mainClass = "de.solidblocks.cli.MainKt"
     applicationName = "blcks"
+}
+
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "24"
+    targetCompatibility = "24"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget("24")
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
 }

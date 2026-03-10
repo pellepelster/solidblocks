@@ -3,7 +3,7 @@ package de.solidblocks.infra.test.host
 import java.net.InetSocketAddress
 import java.net.Socket
 
-fun hostTestContext(host: String) = HostTestContext(host)
+fun hostTestContext(host: String, testId: String? = null) = HostTestContext(host)
 
 class HostTestContext(val host: String) {
 

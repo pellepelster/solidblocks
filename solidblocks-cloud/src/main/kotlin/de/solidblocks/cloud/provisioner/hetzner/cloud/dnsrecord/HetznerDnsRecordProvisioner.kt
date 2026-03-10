@@ -59,7 +59,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             }
 
             val expectedValues = resource.values.mapNotNull { context.lookup(it)?.publicIpv4 }
-            if (!(expectedValues equalsIgnoreOrder runtime.values)) {
+            if (expectedValues.toSet() != runtime.values.toSet()) {
                 changes.add(
                     ResourceDiffItem(
                         "value",

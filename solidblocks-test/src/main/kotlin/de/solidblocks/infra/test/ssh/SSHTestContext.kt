@@ -10,17 +10,28 @@ import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import java.security.KeyPair
 
-fun sshTestContext(host: String, privateKey: String, username: String = "root", port: Int = 22) =
-    SSHTestContext(host, SSHKeyUtils.loadKey(privateKey), username, port)
+fun sshTestContext(
+    host: String,
+    privateKey: String,
+    username: String = "root",
+    port: Int = 22,
+    testId: String? = null,
+) = SSHTestContext(host, SSHKeyUtils.loadKey(privateKey), username, port, testId)
 
-fun sshTestContext(host: String, keyPair: KeyPair, username: String = "root", port: Int = 22) =
-    SSHTestContext(host, keyPair, username, port)
+fun sshTestContext(
+    host: String,
+    keyPair: KeyPair,
+    username: String = "root",
+    port: Int = 22,
+    testId: String? = null,
+): SSHTestContext = SSHTestContext(host, keyPair, username, port, testId)
 
 class SSHTestContext(
     val host: String,
     val keyPair: KeyPair,
     val username: String = "root",
     val port: Int = 22,
+    val testId: String? = null,
 ) : TestContext() {
 
   init {
@@ -34,7 +45,13 @@ class SSHTestContext(
         PosixFilePermissions.fromString("rw-------"),
     )
 
-    val openSSHConfigFile = File.createTempFile("ssh", ".config")
+    val openSSHConfigFile =
+        if (testId != null) {
+          File("/tmp/$testId.config")
+        } else {
+          File.createTempFile("ssh", ".config")
+        }
+
     logInfo("writing open ssh config for host '$host' to '${openSSHConfigFile.absolutePath}'")
     val sshConfig =
         """

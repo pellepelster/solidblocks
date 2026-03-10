@@ -15,27 +15,30 @@ fun cloudInitTestContext(
     privateKey: String,
     username: String = "root",
     port: Int = 22,
-) = CloudInitTestContext(host, SSHKeyUtils.loadKey(privateKey), username, port)
+    testId: String? = null,
+) = CloudInitTestContext(host, SSHKeyUtils.loadKey(privateKey), username, port, testId)
 
 fun cloudInitTestContext(
     host: String,
     keyPair: KeyPair,
     username: String = "root",
     port: Int = 22,
-) = CloudInitTestContext(host, keyPair, username, port)
+    testId: String? = null,
+) = CloudInitTestContext(host, keyPair, username, port, testId)
 
 class CloudInitTestContext(
     val host: String,
     val keyPair: KeyPair,
     val username: String = "root",
     val port: Int = 22,
+    val testId: String? = null,
 ) : TestContext() {
 
   companion object {
     val json = Json { this.ignoreUnknownKeys = true }
   }
 
-  val ssh = sshTestContext(host, keyPair, username, port).also { testContexts.add(it) }
+  val ssh = sshTestContext(host, keyPair, username, port, testId).also { testContexts.add(it) }
 
   fun isFinished() =
       try {

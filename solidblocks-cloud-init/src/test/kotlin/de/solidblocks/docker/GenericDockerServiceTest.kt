@@ -1,20 +1,17 @@
-package de.solidblocks.garagefs
+package de.solidblocks.docker
 
 import de.solidblocks.cloudinit.waitForSuccessfulProvisioning
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
-import java.util.*
+import java.time.Duration.ofSeconds
+import java.util.concurrent.TimeUnit
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(SolidblocksTest::class)
-class GarageFsUserDataTest {
-
-  fun getRandomString(length: Int): String {
-    val allowedChars = ('a'..'f') + ('0'..'9')
-    return (1..length).map { allowedChars.random() }.joinToString("")
-  }
+class GenericDockerServiceTest {
 
   @Test
   @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
@@ -24,37 +21,22 @@ class GarageFsUserDataTest {
     val volume = hetznerTestContext.createVolume()
     val sshKey = hetznerTestContext.createSSHKey()
 
-    val rpcSecret = getRandomString(64)
-    val adminToken = getRandomString(64)
-    val metricsToken = getRandomString(64)
     val userData =
-        GarageFsUserData(
+        GenericDockerServiceUserData(
+            testContext.testId,
             volume.linuxDevice,
-            rpcSecret,
-            adminToken,
-            metricsToken,
             "yolo.de",
-            emptyList(),
+            "nginx",
+            80,
         )
 
     val serverTestContext =
         hetznerTestContext.createServer(userData.render(), sshKey, volumes = listOf(volume.id))
 
     serverTestContext.waitForSuccessfulProvisioning()
-  }
 
-  @Test
-  fun testRender() {
-    println(
-        GarageFsUserData(
-                "/dev/sdb",
-                UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(),
-                "yolo.de",
-                emptyList(),
-            )
-            .render(),
-    )
+    await().atMost(5, TimeUnit.MINUTES).pollInterval(ofSeconds(5)).until {
+      serverTestContext.host().portIsOpen(80)
+    }
   }
 }

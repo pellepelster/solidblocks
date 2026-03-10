@@ -7,7 +7,7 @@ data class S3ServiceBucketConfigurationRuntime(
     val name: String,
     val publicAccess: Boolean,
     val accessKeys: List<S3ServiceBucketAccessKeyConfigurationRuntime>,
-    val managedPublicWebAccessDomains: Set<String>,
+    val managedPublicWebAccessDomains: Map<String, String>,
     val manuallyManagedPublicWebAccessDomains: Set<String>,
 )
 
