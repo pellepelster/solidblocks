@@ -140,15 +140,23 @@ class HetznerNuker(hcloudToken: String) {
 
             if (resourceApi is HetznerAssignedResourceApi && it is HetznerAssignedResource) {
               if (it.isAssigned) {
-                val actionResponse = resourceApi.unassign(it.id)
-                if (actionResponse != null) {
-                  api.waitForAction(
-                      {
-                        logInfo("unassigning ${it.logText()}")
-                        actionResponse
-                      },
-                      { resourceApi.action(it) },
-                  )
+                try {
+                  val actionResponse = resourceApi.unassign(it.id)
+                  if (actionResponse != null) {
+                    api.waitForAction(
+                        {
+                          logInfo("unassigning ${it.logText()}")
+                          actionResponse
+                        },
+                        { resourceApi.action(it) },
+                    )
+                  }
+                } catch (e: HetznerApiException) {
+                  if (e.error.code == HetznerApiErrorType.NOT_FOUND) {
+                    logWarning(
+                        "skipping unassigning of '${it.logText()}' because backend returned '${e.error.code}'",
+                    )
+                  }
                 }
               }
             }
@@ -160,8 +168,18 @@ class HetznerNuker(hcloudToken: String) {
                   logError("deleting ${it.logText()} failed")
                 }
               } catch (e: HetznerApiException) {
-                if (e.error.code != HetznerApiErrorType.NOT_FOUND) {
-                  throw e
+                when (e.error.code) {
+                  HetznerApiErrorType.NOT_FOUND,
+                  HetznerApiErrorType.SERVER_NOT_STOPPED,
+                  -> {
+                    logWarning(
+                        "skipping deletion of '${it.logText()} because backend returned '${e.error.code}'",
+                    )
+                  }
+
+                  else -> {
+                    throw e
+                  }
                 }
               }
             }

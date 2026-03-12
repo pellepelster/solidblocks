@@ -360,6 +360,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cli.SerializationConfig",
         "fields": [
             {

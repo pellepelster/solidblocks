@@ -6,11 +6,12 @@ import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 
+class TestContextUtils {}
 
 val TEST_PROVISIONER_CONTEXT =
     ProvisionerContext(
-        SSHKeyUtils.loadKey(Utils::class.java.getResource("/test_ed25519.key").readText()),
-        Utils::class.java.getResource("/test_ed25519.key").path,
+        SSHKeyUtils.loadKey(TestContextUtils::class.java.getResource("/test_ed25519.key").readText()),
+        TestContextUtils::class.java.getResource("/test_ed25519.key").path,
         "testCloudName",
         "testEnvironment",
         ProvisionersRegistry(),

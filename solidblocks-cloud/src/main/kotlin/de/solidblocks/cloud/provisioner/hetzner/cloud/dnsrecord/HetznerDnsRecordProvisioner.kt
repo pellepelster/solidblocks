@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 
-import de.solidblocks.cloud.Utils.equalsIgnoreOrder
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime

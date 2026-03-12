@@ -1,7 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
-import de.solidblocks.cloud.Constants.NETWORK_BIT_SHIFT
+import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.ResourceDiff
@@ -92,7 +92,7 @@ class CloudProvisioner(
         val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
         val sshKey = HetznerSSHKey(sshKeyName(runtime.configuration), publicKey, emptyMap())
         val network = HetznerNetwork(networkName(runtime.configuration), DEFAULT_NETWORK)
-        val subnet = HetznerSubnet(Utils.nextNetwork(DEFAULT_NETWORK, NETWORK_BIT_SHIFT), network.asLookup())
+        val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
 
         val cloudResourceGroup = ResourceGroup("cloud '${runtime.configuration.name} base resources'", listOf(sshKey, network, subnet))
 
