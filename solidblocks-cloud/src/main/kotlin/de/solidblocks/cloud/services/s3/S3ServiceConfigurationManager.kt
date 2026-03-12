@@ -106,15 +106,13 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
         }
 
         val zone = HetznerDnsZoneLookup(cloudConfiguration.rootDomain)
-
         val rootDomain = HetznerDnsRecord(
             serverName(cloudConfiguration, runtime.name),
             zone,
             listOf(server.asLookup()),
         )
+
         val catchAllDomain = HetznerDnsRecord("*.${serverName(cloudConfiguration, runtime.name)}", zone, listOf(server.asLookup()))
-
-
         val dnsResources = runtime.buckets.flatMap { it.managedPublicWebAccessDomains.entries }.map {
             if (it.key.isEmpty()) {
                 HetznerDnsRecord(
@@ -125,12 +123,9 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
                     it.value, HetznerDnsZoneLookup(it.value), listOf(server.asLookup())
                 )
             }
-
-
         } + listOf(rootDomain, catchAllDomain)
 
         val layout = GarageFsLayout(runtime.dataVolumeSize.bytes, server, adminToken)
-
         val bucketResources = mutableListOf<BaseInfrastructureResource<*>>()
 
         runtime.buckets.forEach {
@@ -168,7 +163,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) =
         listOf<InfrastructureResourceProvisioner<*, *>>(GarageFsBucketProvisioner(), GarageFsAccessKeyProvisioner(), GarageFsPermissionProvisioner(), GarageFsLayoutProvisioner())
 
-    override fun validatConfiguration(configuration: S3ServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<S3ServiceConfigurationRuntime> {
+    override fun validatConfiguration(index: Int, configuration: S3ServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<S3ServiceConfigurationRuntime> {
 
         if (cloudConfiguration.rootDomain == null) {
             "S3 service needs a valid DNS configuration for host based bucket access, ensure that the clouds `rootDomain` is configured".let {
@@ -191,6 +186,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
 
         return Success(
             S3ServiceConfigurationRuntime(
+                index,
                 configuration.name, ByteSize.fromGigabytes(configuration.dataVolumeSize), configuration.buckets.map { bucket ->
 
                     val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
@@ -259,8 +255,9 @@ ${bucketsHelp(runtime)}
         bucketHelpAccessKeysHelp(it, runtime, it.accessKeys) + "\n"
     }
 
-    fun bucketHelpAccessKeysHelp(bucket: S3ServiceBucketConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, accessKeys: List<S3ServiceBucketAccessKeyConfigurationRuntime>) = accessKeys.joinToString("\n") {
-        """
+    fun bucketHelpAccessKeysHelp(bucket: S3ServiceBucketConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, accessKeys: List<S3ServiceBucketAccessKeyConfigurationRuntime>) =
+        accessKeys.joinToString("\n") {
+            """
         **Bucket '${bucket.name}' with access key '${it.name}'**
         ```
         export ACCESS_KEY="$(pass ${secretPath(cloudConfiguration, runtime, listOf(it.name, "access_key"))})"
@@ -274,7 +271,7 @@ ${bucketsHelp(runtime)}
             ls s3://${bucket.name}
         ```
         """.trimIndent()
-    }
+        }
 
     //sync --no-mime-magic --guess-mime-type
 

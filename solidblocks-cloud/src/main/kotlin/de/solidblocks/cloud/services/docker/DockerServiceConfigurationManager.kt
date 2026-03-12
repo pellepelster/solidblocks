@@ -28,11 +28,7 @@ class DockerServiceConfigurationManager(val cloudConfiguration: CloudConfigurati
     override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) =
         listOf<InfrastructureResourceProvisioner<*, *>>(GarageFsBucketProvisioner(), GarageFsAccessKeyProvisioner(), GarageFsPermissionProvisioner())
 
-    override fun validatConfiguration(
-        configuration: DockerServiceConfiguration,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): Result<DockerServiceConfigurationRuntime> {
+    override fun validatConfiguration(index: Int, configuration: DockerServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<DockerServiceConfigurationRuntime> {
 
         configuration.endpoints.forEach { endpoint ->
             if (configuration.endpoints.count { endpoint.port == it.port } > 1) {
@@ -42,7 +38,7 @@ class DockerServiceConfigurationManager(val cloudConfiguration: CloudConfigurati
 
         return Success(
             DockerServiceConfigurationRuntime(
-                configuration.name,
+                index, configuration.name,
                 configuration.endpoints.map {
                     DockerServiceEndpointConfigurationRuntime(it.port)
                 },

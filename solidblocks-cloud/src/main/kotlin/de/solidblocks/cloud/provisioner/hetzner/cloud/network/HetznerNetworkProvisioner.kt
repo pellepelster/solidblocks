@@ -18,15 +18,13 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
     private val logger = KotlinLogging.logger {}
 
     override suspend fun lookup(lookup: HetznerNetworkLookup, context: ProvisionerContext) =
-        api.networks.get(lookup.name)?.let {
-            HetznerNetworkRuntime(it.id, it.name, it.protection.delete, it.labels)
+        api.networks.get(lookup.name)?.let { network ->
+            HetznerNetworkRuntime(network.id, network.name, network.protection.delete, network.labels, network.subnets.map {
+                HetznerSubnetRuntime(it.ipRange, network.id)
+            })
         }
 
-    override suspend fun apply(
-        resource: HetznerNetwork,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): ApplyResult<HetznerNetworkRuntime> {
+    override suspend fun apply(resource: HetznerNetwork, context: ProvisionerContext, log: LogContext): ApplyResult<HetznerNetworkRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
         val network =

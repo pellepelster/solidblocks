@@ -4,18 +4,17 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.FilterValue
-import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectedResource
-import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse
-import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
-import de.solidblocks.hetzner.cloud.model.ListResponse
-import de.solidblocks.hetzner.cloud.model.MetaResponse
+import de.solidblocks.hetzner.cloud.model.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-enum class SubnetType {
+enum class NetworkType {
   cloud,
   vswitch,
+}
+
+enum class NetworkZone {
+  `eu-central`,
 }
 
 @Serializable
@@ -23,7 +22,7 @@ data class NetworkUpdateRequest(val name: String? = null, val labels: Map<String
 
 @Serializable
 data class NetworkCreateSubnetRequest(
-    val type: SubnetType,
+    val type: NetworkType,
     @SerialName("ip_range") val ipRange: String,
     @SerialName("network_zone") val networkZone: String,
     @SerialName("vswitch_id") val vswitchId: String,
@@ -39,6 +38,13 @@ data class NetworkCreateRequest(
     @SerialName("public_net") val publicNet: PublicNet? = null,
     @SerialName("expose_routes_to_vswitch") val exposeRoutesToVswitch: Boolean = false,
     val routes: List<NetworkCreateRouteRequest> = emptyList(),
+)
+
+@Serializable
+data class NetworksSubnetCreateRequest(
+    val type: NetworkType,
+    @SerialName("ip_range") val ipRange: String,
+    @SerialName("network_zone") val networkZone: NetworkZone,
 )
 
 @Serializable
@@ -67,7 +73,16 @@ data class NetworkResponse(
     override val name: String,
     override val protection: HetznerDeleteProtectionResponse,
     val labels: Map<String, String>,
+    val subnets: List<NetworkSubnetResponse>,
 ) : HetznerDeleteProtectedResource<Long>
+
+@Serializable
+data class NetworkSubnetResponse(
+    val type: NetworkType,
+    @SerialName("ip_range") val ipRange: String,
+    @SerialName("network_zone") val networkZone: NetworkZone,
+    val gateway: String,
+)
 
 class HetznerNetworksApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<Long, NetworkResponse>,
@@ -90,6 +105,9 @@ class HetznerNetworksApi(private val api: HetznerApi) :
 
   suspend fun create(request: NetworkCreateRequest) =
       api.post<NetworkResponseWrapper>("v1/networks", request)
+
+  suspend fun addSubnet(network: Long, request: NetworksSubnetCreateRequest) =
+      api.post<ActionResponseWrapper>("v1/networks/$network/actions/add_subnet", request)
 
   override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper =
       api.post("v1/networks/$id/actions/change_protection", ChangeNetworkProtectionRequest(delete))

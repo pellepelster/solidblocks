@@ -129,7 +129,7 @@ class Provisioner(
             logDebug("creating diff for ${resource.logText()}", context = log)
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
-                val diff = registry.diff<BaseResource>(resource, context) ?: return@runBlocking Error("diff failed for ${resource.logText()}")
+                val diff = registry.diff<BaseResource>(resource, context) ?: return@runBlocking Error("diff failed for ${resource.logText()} (null)")
 
                 logDebug(
                     "diff status for ${diff.resource.logText()} is '${diff.status}'",

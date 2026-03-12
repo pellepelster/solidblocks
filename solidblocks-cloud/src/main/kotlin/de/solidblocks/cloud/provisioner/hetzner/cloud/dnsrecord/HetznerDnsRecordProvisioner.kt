@@ -1,16 +1,12 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 
+import de.solidblocks.cloud.Utils.equalsIgnoreOrder
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
-import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
-import de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest
-import de.solidblocks.hetzner.cloud.resources.DnsRRSetsRecordsUpdateRequest
-import de.solidblocks.hetzner.cloud.resources.DnsRRSetsTTLUpdateRequest
-import de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord
-import de.solidblocks.hetzner.cloud.resources.RRType
+import de.solidblocks.hetzner.cloud.resources.*
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import de.solidblocks.utils.logInfo
@@ -59,7 +55,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             }
 
             val expectedValues = resource.values.mapNotNull { context.lookup(it)?.publicIpv4 }
-            if (expectedValues.toSet() != runtime.values.toSet()) {
+            if (!(expectedValues equalsIgnoreOrder runtime.values)) {
                 changes.add(
                     ResourceDiffItem(
                         "value",
@@ -113,7 +109,8 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             }
             if (!(current.values equalsIgnoreOrder serverIps)) {
                 logger.info { "updating ${resource.name}/${resource.type} values to ${serverIps.joinToString(",")}" }
-                val ttlUpdateResult = api.dnsRrSets(zone.name).updateRecords(resource.name, resource.type, DnsRRSetsRecordsUpdateRequest(
+                val ttlUpdateResult = api.dnsRrSets(zone.name).updateRecords(
+                    resource.name, resource.type, DnsRRSetsRecordsUpdateRequest(
                     serverIps.map {
                         DnsRRSetRecord(it)
                     }

@@ -36,6 +36,14 @@ data class ServersListWrapper(val servers: List<ServerResponse>, override val me
     get() = servers
 }
 
+@Serializable
+data class ServerNetworkAttachRequest(
+    val network: Long,
+    val ip: String? = null,
+    @SerialName("alias_ips") val aliasIps: List<String>? = null,
+    @SerialName("ip_range") val ipRange: String? = null,
+)
+
 @Serializable data class ServerResponseWrapper(@SerialName("server") val server: ServerResponse)
 
 @Serializable
@@ -101,6 +109,15 @@ class HetznerServersApi(private val api: HetznerApi) :
           "v1/servers/$id/actions/change_protection",
           ChangeVolumeProtectionRequest(delete, delete),
       ) ?: throw RuntimeException("failed to change server protection")
+
+  suspend fun attachToNetwork(
+      id: Long,
+      request: ServerNetworkAttachRequest,
+  ): ActionResponseWrapper =
+      api.post(
+          "v1/servers/$id/actions/attach_to_network",
+          request,
+      ) ?: throw RuntimeException("failed to attach server to network")
 
   suspend fun actions(id: Long) =
       api.get<ActionsListResponseWrapper>("v1/servers/$id/actions")

@@ -1,5 +1,8 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
+import de.solidblocks.cloud.Constants.NETWORK_BIT_SHIFT
+import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
@@ -11,6 +14,8 @@ import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createLookups
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createProvisioners
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.*
@@ -79,15 +84,17 @@ class CloudProvisioner(
                 is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
             }
 
-        logInfo(bold("rolling out changes for cloud configuration '${runtime.configuration.name}'"))
+        logInfo(bold("  rolling out changes for cloud configuration '${runtime.configuration.name}'"))
         return@runBlocking provisioner.apply(diffs, provisionerContext, log.indent())
     }
 
     private fun createResourceGroups(): List<ResourceGroup> {
         val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
         val sshKey = HetznerSSHKey(sshKeyName(runtime.configuration), publicKey, emptyMap())
+        val network = HetznerNetwork(networkName(runtime.configuration), DEFAULT_NETWORK)
+        val subnet = HetznerSubnet(Utils.nextNetwork(DEFAULT_NETWORK, NETWORK_BIT_SHIFT), network.asLookup())
 
-        val cloudResourceGroup = ResourceGroup("cloud '${runtime.configuration.name}'", listOf(sshKey))
+        val cloudResourceGroup = ResourceGroup("cloud '${runtime.configuration.name} base resources'", listOf(sshKey, network, subnet))
 
         val serviceResourceGroups = serviceManagers().map {
             ResourceGroup(

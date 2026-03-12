@@ -90,6 +90,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.ChangeNetworkProtectionRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.ChangeNetworkProtectionRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.LocationResponseWrapper",
         "fields": [
             {
@@ -406,6 +424,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ImageResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworksSubnetCreateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworksSubnetCreateRequest$Companion",
         "fields": [],
         "methods": [
             {
@@ -810,24 +846,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.docker.VolumeMount",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.docker.VolumeMount$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.garagefs.BucketAliasRequest",
         "fields": [
             {
@@ -1008,6 +1026,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworkUpdateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworkUpdateRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerAttachServerRequest",
         "fields": [
             {
@@ -1054,6 +1090,24 @@
     },
     {
         "name": "de.solidblocks.garagefs.ClusterStatusNodeResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.docker.Mount",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.docker.Mount$Companion",
         "fields": [],
         "methods": [
             {
@@ -2134,6 +2188,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.FirewallsListWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworkSubnetResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworkSubnetResponse$Companion",
         "fields": [],
         "methods": [
             {

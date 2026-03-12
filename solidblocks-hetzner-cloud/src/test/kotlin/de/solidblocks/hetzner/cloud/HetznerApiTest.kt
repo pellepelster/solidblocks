@@ -1,12 +1,7 @@
 package de.solidblocks.hetzner.cloud
 
-import de.solidblocks.hetzner.cloud.model.FilterValue
-import de.solidblocks.hetzner.cloud.model.HetznerApiException
-import de.solidblocks.hetzner.cloud.model.HetznerLocation
-import de.solidblocks.hetzner.cloud.model.HetznerServerType
-import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.*
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue.Equals
-import de.solidblocks.hetzner.cloud.model.toLabelSelectors
 import de.solidblocks.hetzner.cloud.resources.*
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
@@ -211,13 +206,33 @@ class HetznerApiTest {
   fun testNetworksFlow() {
     runBlocking {
       val name = UUID.randomUUID().toString()
-      api.networks.create(
-          NetworkCreateRequest(name, "10.0.0.0/24", labels = testLabels),
-      ) shouldNotBe null
+      val network =
+          api.networks.create(
+              NetworkCreateRequest(name, "10.0.0.0/8", labels = testLabels),
+          )
+
+      assertSoftly(network) { it.network.subnets shouldHaveSize 0 }
 
       val networkByName = api.networks.get(name)!!
+
       val networkById = api.networks.get(networkByName.id)!!
       networkById.name shouldBe networkByName.name
+
+      val action =
+          api.networks.addSubnet(
+              networkById.id,
+              NetworksSubnetCreateRequest(
+                  NetworkType.cloud,
+                  "10.0.1.0/24",
+                  NetworkZone.`eu-central`,
+              ),
+          )
+      api.networks.waitForAction(action)
+
+      assertSoftly(api.networks.get(networkByName.id)!!) {
+        it.subnets shouldHaveSize 1
+        it.subnets[0].ipRange shouldBe "10.0.1.0/24"
+      }
 
       api.networks.delete(networkById.id) shouldBe true
     }

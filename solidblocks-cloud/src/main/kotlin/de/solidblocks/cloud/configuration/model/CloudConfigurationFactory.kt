@@ -1,15 +1,9 @@
 package de.solidblocks.cloud.configuration.model
 
 import com.charleskorn.kaml.YamlNode
-import de.solidblocks.cloud.configuration.ConfigurationFactory
-import de.solidblocks.cloud.configuration.Keyword
-import de.solidblocks.cloud.configuration.KeywordHelp
-import de.solidblocks.cloud.configuration.StringKeywordOptional
-import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.PolymorphicListKeyword
+import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAME
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
-import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
@@ -60,13 +54,12 @@ class CloudConfigurationFactory(
         )
 
     @Suppress("UNCHECKED_CAST")
-    val services =
-        PolymorphicListKeyword(
-            "services",
-            serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
-                    as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
-            KeywordHelp("Services to create, service names must be unique across all services"),
-        )
+    val services = PolymorphicListKeyword(
+        "services",
+        serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
+                as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
+        KeywordHelp("Services to create, service names must be unique across all services"),
+    )
 
     override val help: ConfigurationHelp =
         ConfigurationHelp(

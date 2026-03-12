@@ -32,6 +32,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     fun validate(): Result<CloudRuntime> {
         var log = LogContext.default()
         logInfo(bold("validating cloud configuration '${cloudConfigFile.absolutePath}'"), context = log)
+        log = log.indent()
 
         // parse cloud configuration
         val cloudConfiguration = when (val result = ConfigurationParser(CloudConfigurationFactory(providerRegistrations, serviceRegistrations)).parse(cloudConfigFile)) {
@@ -39,7 +40,6 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             is Success<CloudConfigurationRuntime> -> result.data
         }
         logInfo("parsed cloud configuration '${cloudConfiguration.name}'", context = log)
-        log = log.indent()
 
         // ensure no duplicate default providers are registered
         cloudConfiguration.providers.distinctBy { it.type }.forEach { distinctProvider ->
@@ -118,7 +118,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         val context = ProvisionerContext(sshKeyProvider.keyPair, sshKeyProvider.privateKey.absolutePathString(), cloudConfiguration.name, cloudConfiguration.getDefaultEnvironment(), registry)
 
-        val services: List<ServiceConfigurationRuntime> = cloudConfiguration.services.map { service ->
+        val services: List<ServiceConfigurationRuntime> = cloudConfiguration.services.mapIndexed { index, service ->
             logInfo("found '${service.type}' service with name '${service.name}'", context = log)
             log = log.indent()
 
@@ -126,7 +126,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
             val manager: ServiceConfigurationManager<ServiceConfiguration, ServiceConfigurationRuntime> = serviceRegistrations.forService(service, cloudConfiguration)
 
-            val runtime = when (val result = manager.validatConfiguration(service, context, log)) {
+            val runtime = when (val result = manager.validatConfiguration(index, service, context, log)) {
                 is Error<ServiceConfigurationRuntime> -> return Error<CloudRuntime>(result.error)
                 is Success<ServiceConfigurationRuntime> -> {
                     logDebug("configuration for '${service.type}' service '${service.name}' is valid", context = log)

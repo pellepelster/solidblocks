@@ -13,6 +13,7 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
+import de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import de.solidblocks.utils.logInfo
@@ -122,11 +123,6 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                 )
             val createRequest = api.servers.create(request)
 
-            if (createRequest == null) {
-                logger.error { "failed to create server '${resource.name}'" }
-                return ApplyResult(null)
-            }
-
             if (!api.servers.waitForAction(createRequest.action) {
                     logInfo("waiting for creation of ${resource.logText()}", context = log)
                 }) {
@@ -140,6 +136,17 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         if (server == null) {
             logger.error { "server creation failed" }
             return ApplyResult(null)
+        }
+
+        if (resource.subnet != null) {
+            val subnet = context.lookup(resource.subnet)
+            if (subnet == null) {
+                logger.error { "subnet '${resource.subnet.name}' not found" }
+                return ApplyResult(null)
+            }
+
+
+            api.servers.attachToNetwork(server.id, ServerNetworkAttachRequest(subnet.network))
         }
 
         return lookup(resource.asLookup(), context).let {

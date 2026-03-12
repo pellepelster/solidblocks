@@ -20,6 +20,7 @@ class HetznerServer(
     labels: Map<String, String> = emptyMap(),
     val image: String = "debian-12",
     val subnet: HetznerSubnetLookup? = null,
+    val privateIp: String? = null,
 ) : BaseLabeledInfrastructureResource<HetznerServerRuntime>(name, setOfNotNull(subnet, userData) + userData.dependsOn + sshKeys + dependsOn, labels) {
 
     fun asLookup() = HetznerServerLookup(name)

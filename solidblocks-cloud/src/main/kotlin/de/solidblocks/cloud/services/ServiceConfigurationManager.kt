@@ -14,7 +14,7 @@ interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfi
 
     fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
-    fun validatConfiguration(configuration: C, context: ProvisionerContext, log: LogContext): Result<R>
+    fun validatConfiguration(index: Int, configuration: C, context: ProvisionerContext, log: LogContext): Result<R>
 
     fun output(configuration: R, context: ProvisionerContext): Result<List<de.solidblocks.cloud.Output>> = Success(emptyList())
 

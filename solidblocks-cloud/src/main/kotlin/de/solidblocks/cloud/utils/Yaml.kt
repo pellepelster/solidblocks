@@ -258,13 +258,13 @@ fun <T> YamlNode.getPolymorphicList(
               when (val type = listItem.getNonNullOrEmptyString("type")) {
                 is Error<*> -> type
                 is Success<*> -> {
-                  val factory = factories.get(type.data)
+                  val factory = factories[type.data]
 
                   factory?.parse(listItem)
                       ?: Error<T>(
                           "unknown type '${type.data}', possible types are ${
-                                        factories.keys.map { "'$it'" }.joinToString(", ")
-                                    } at ${listItem.location.logMessage()}",
+                              factories.keys.joinToString(", ") { "'$it'" }
+                          } at ${listItem.location.logMessage()}",
                       )
                 }
               }

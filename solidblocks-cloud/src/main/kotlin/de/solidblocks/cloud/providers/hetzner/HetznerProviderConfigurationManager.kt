@@ -6,6 +6,8 @@ import de.solidblocks.cloud.providers.CloudResourceProviderConfigurationManager
 import de.solidblocks.cloud.providers.ConfigurationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
@@ -56,6 +58,8 @@ class HetznerProviderConfigurationManager : CloudResourceProviderConfigurationMa
         HetznerServerProvisioner(runtime.cloudToken),
         HetznerVolumeProvisioner(runtime.cloudToken),
         HetznerSSHKeyProvisioner(runtime.cloudToken),
+        HetznerNetworkProvisioner(runtime.cloudToken),
+        HetznerSubnetProvisioner(runtime.cloudToken),
     ) as List<InfrastructureResourceProvisioner<*, *>>
 
     override val supportedConfiguration = HetznerProviderConfiguration::class

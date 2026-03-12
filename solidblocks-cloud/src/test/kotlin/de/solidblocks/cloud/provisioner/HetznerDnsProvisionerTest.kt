@@ -14,6 +14,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntim
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
+import de.solidblocks.infra.test.SolidblocksTest
+import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -22,12 +24,16 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
 
+@ExtendWith(SolidblocksTest::class)
 class HetznerDnsProvisionerTest {
 
     @Test
-    fun testFlow() {
+    fun testFlow(context: SolidblocksTestContext) {
+        val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN"))
+
         val serverProvisioner = mockk<HetznerServerProvisioner>()
         val serverLookup1 = HetznerServerLookup("server1")
         val serverLookup2 = HetznerServerLookup("server2")
@@ -94,6 +100,7 @@ class HetznerDnsProvisionerTest {
                     recordName,
                     HetznerDnsZone("blcks-test.de").asLookup(),
                     listOf(serverLookup1),
+                    labels = hetzner.defaultLabels
                 )
             recordProvisioner.lookup(record.asLookup(), context) shouldBe null
             assertSoftly(recordProvisioner.diff(record, context)) { it.status shouldBe ResourceDiffStatus.missing }
@@ -112,6 +119,7 @@ class HetznerDnsProvisionerTest {
                     recordName,
                     HetznerDnsZone("blcks-test.de").asLookup(),
                     listOf(serverLookup2),
+                    labels = hetzner.defaultLabels
                 )
 
             assertSoftly(recordProvisioner.diff(recordNewServer, context)) {

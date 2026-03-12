@@ -7,21 +7,26 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.infra.test.SolidblocksTest
+import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
 
+@ExtendWith(SolidblocksTest::class)
 class HetznerVolumeProvisionerTest {
 
     @Test
-    fun testFlow() {
+    fun testFlow(context: SolidblocksTestContext) {
+        val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN"))
 
         val name = UUID.randomUUID().toString()
-        val resource = HetznerVolume(name, HetznerLocation.nbg1, ByteSize.fromGigabytes(16), emptyMap())
+        val resource = HetznerVolume(name, HetznerLocation.nbg1, ByteSize.fromGigabytes(16), hetzner.defaultLabels)
         val provisioner = HetznerVolumeProvisioner(System.getenv("HCLOUD_TOKEN"))
 
         runBlocking {
@@ -47,7 +52,7 @@ class HetznerVolumeProvisionerTest {
                 name,
                 HetznerLocation.nbg1,
                 ByteSize.fromGigabytes(16),
-                mapOf("foo" to "bar"),
+                hetzner.defaultLabels + mapOf("foo" to "bar"),
             )
             assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.has_changes
@@ -56,7 +61,7 @@ class HetznerVolumeProvisionerTest {
                 it.changes[0].name shouldBe "label 'foo'"
             }
             provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
-            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
@@ -66,7 +71,7 @@ class HetznerVolumeProvisionerTest {
                 name,
                 HetznerLocation.nbg1,
                 ByteSize.fromGigabytes(16),
-                mapOf("foo" to "bar"),
+                hetzner.defaultLabels + mapOf("foo" to "bar"),
                 false,
             )
             assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
@@ -87,7 +92,7 @@ class HetznerVolumeProvisionerTest {
                 name,
                 HetznerLocation.nbg1,
                 ByteSize.fromGigabytes(16),
-                mapOf("foo" to "bar2"),
+                hetzner.defaultLabels + mapOf("foo" to "bar2"),
                 false,
             )
             assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {

@@ -6,7 +6,6 @@ import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 
-class Utils {}
 
 val TEST_PROVISIONER_CONTEXT =
     ProvisionerContext(

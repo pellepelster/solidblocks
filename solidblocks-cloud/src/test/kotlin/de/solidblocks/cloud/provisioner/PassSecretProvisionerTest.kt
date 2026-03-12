@@ -17,7 +17,7 @@ class PassSecretProvisionerTest {
 
   @Test
   fun testFlow() {
-    val resource = PassSecret("some/extra/path/secret1", 13)
+    val resource = PassSecret("testCloudName/some/extra/path/secret1", 13)
     val provisioner = PassSecretProvisioner()
 
     runCommand(listOf("pass", "rm", "--force", "--recursive", "testCloudName"))

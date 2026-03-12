@@ -1,9 +1,7 @@
 package de.solidblocks.infra.test.hetzner
 
 import de.solidblocks.hetzner.cloud.HetznerApi
-import de.solidblocks.hetzner.cloud.model.HetznerLocation
-import de.solidblocks.hetzner.cloud.model.HetznerServerType
-import de.solidblocks.hetzner.cloud.model.toLabelSelectors
+import de.solidblocks.hetzner.cloud.model.*
 import de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest
@@ -14,6 +12,7 @@ import de.solidblocks.infra.test.host.hostTestContext
 import de.solidblocks.infra.test.ssh.sshTestContext
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
 
 fun hetznerTestContext(hcloudToken: String, testId: String) =
@@ -53,6 +52,14 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
                 }
             }",
     )
+
+    logWarning(
+        "after test completion, alls resources with the labels ${
+                defaultLabels.entries.joinToString(", ") {
+                    "${it.key}=${it.value}"
+                }
+            } will be removed",
+    )
   }
 
   fun createServer(
@@ -81,10 +88,6 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
         "creating server '$resourceName' (${request.type}) in '${request.location}' using image '${request.image}'",
     )
     val newServer = api.servers.create(request)
-
-    if (newServer == null || newServer.action == null) {
-      throw RuntimeException("error while creating server '$resourceName'")
-    }
 
     val result =
         api.waitForAction(
@@ -117,7 +120,7 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
                 SSHKeyUtils.ED25519.publicKeyToOpenSsh(testSSHhKey.publicKey),
                 defaultLabels,
             ),
-        ) ?: throw RuntimeException("failed to create ssh-key '$testId'")
+        )
     newSSHKey.sshKey.id
   }
 
@@ -131,6 +134,16 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
 
   fun cleanup() {
     runBlocking {
+      api.dnsZones.list().forEach { zone ->
+        logInfo("cleaning up dns zone '${zone.name}'")
+        api.dnsRrSets(zone.id.toString())
+            .list(labelSelectors = defaultLabels.toLabelSelectors())
+            .forEach {
+              logInfo("cleaning up dns record '${it.name}/${it.type}'")
+              api.dnsRrSets(zone.id.toString()).delete(it.id, it.type)
+            }
+      }
+
       api.sshKeys
           .list(
               labelSelectors = defaultLabels.toLabelSelectors(),
@@ -139,25 +152,33 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
             logInfo("cleaning up ssh key '${it.name}' (${it.id})")
             api.sshKeys.delete(it.id)
           }
-      api.volumes
-          .list(
-              labelSelectors = defaultLabels.toLabelSelectors(),
-          )
-          .forEach {
-            logInfo("cleaning up volume '${it.name}' (${it.id})")
+      api.volumes.list(labelSelectors = defaultLabels.toLabelSelectors()).forEach {
+        try {
+          logInfo("cleaning up volume '${it.name}' (${it.id})")
 
-            if (it.server != null) {
-              api.waitForAction(
-                  {
-                    logInfo("detaching volume ${it.name} from server ${it.server}")
-                    api.volumes.detach(it.id)
-                  },
-                  { api.volumes.action(it) },
-              )
-            }
-
-            api.volumes.delete(it.id)
+          if (it.protection.delete) {
+            logInfo("removing delete protection from volume '${it.name}' (${it.id})")
+            val action = api.volumes.changeDeleteProtection(it.id, false)
+            api.volumes.waitForAction(action)
           }
+
+          if (it.server != null) {
+            api.waitForAction(
+                {
+                  logInfo("detaching volume ${it.name} from server ${it.server}")
+                  api.volumes.detach(it.id)
+                },
+                { api.volumes.action(it) },
+            )
+          }
+
+          api.volumes.delete(it.id)
+        } catch (e: HetznerApiException) {
+          if (e.error.code == HetznerApiErrorType.LOCKED) {
+            logWarning("skipping locked volume ${it.logText()}")
+          }
+        }
+      }
       api.servers
           .list(
               labelSelectors = defaultLabels.toLabelSelectors(),
@@ -185,7 +206,7 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
                   VolumeFormat.ext4,
                   labels = defaultLabels,
               ),
-          )!!
+          )
           .volume
           .let { Volume(it.id, it.linuxDevice) }
     }

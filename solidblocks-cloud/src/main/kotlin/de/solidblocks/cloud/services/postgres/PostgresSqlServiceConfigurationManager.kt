@@ -29,11 +29,7 @@ class PostgresSqlServiceConfigurationManager(val cloudConfiguration: CloudConfig
     override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) =
         listOf<InfrastructureResourceProvisioner<*, *>>(GarageFsBucketProvisioner(), GarageFsAccessKeyProvisioner(), GarageFsPermissionProvisioner())
 
-    override fun validatConfiguration(
-        configuration: PostgresSqlServiceConfiguration,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): Result<PostgresSqlServiceConfigurationRuntime> {
+    override fun validatConfiguration(index: Int, configuration: PostgresSqlServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<PostgresSqlServiceConfigurationRuntime> {
 
         configuration.databases.forEach { database ->
             if (configuration.databases.count { database.name == it.name } > 1) {
@@ -49,6 +45,7 @@ class PostgresSqlServiceConfigurationManager(val cloudConfiguration: CloudConfig
 
         return Success(
             PostgresSqlServiceConfigurationRuntime(
+                index,
                 configuration.name,
                 configuration.databases.map {
                     PostgresSqlServiceDatabaseConfigurationRuntime(it.name, it.users.map {

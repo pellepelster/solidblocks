@@ -38,7 +38,7 @@ class LocalSSHKeyProviderManager :
                 is Success<Path> -> result.data
             }
 
-        logDebug("found ssh key at '${sshKey.toAbsolutePath()}'")
+        logDebug("found ssh key at '${sshKey.toAbsolutePath()}'", context = log)
 
         if (SSHKeyUtils.isEncrypted(sshKey.readText())) {
             return Error("encrypted private keys are currently not supported ($sshKey)")

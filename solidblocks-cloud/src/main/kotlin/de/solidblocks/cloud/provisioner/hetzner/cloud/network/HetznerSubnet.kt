@@ -5,11 +5,11 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 class HetznerSubnet(
     val subnet: String,
     val network: HetznerNetworkLookup,
-    dependsOn: Set<BaseInfrastructureResource<*>> = emptySet(),
-) : BaseInfrastructureResource<HetznerSubnetRuntime>(subnet, setOf(network) + dependsOn) {
+) : BaseInfrastructureResource<HetznerSubnetRuntime>(subnet, setOf(network)) {
 
     fun asLookup() = HetznerSubnetLookup(name, network)
 
-    override val lookupType = HetznerSubnetLookup::class
+    override fun logText() = "subnet '$subnet'"
 
+    override val lookupType = HetznerSubnetLookup::class
 }

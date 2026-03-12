@@ -3,10 +3,16 @@ package de.solidblocks.cloud
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
+import inet.ipaddr.IPAddress
+import inet.ipaddr.IPAddressString
 
 @Suppress("ktlint:standard:property-naming")
 object Constants {
+
     fun sshKeyName(configuration: CloudConfigurationRuntime) =
+        "${configuration.name}-${configuration.getDefaultEnvironment()}"
+
+    fun networkName(configuration: CloudConfigurationRuntime) =
         "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
     fun serverName(configuration: CloudConfigurationRuntime, name: String, index: Int = 0) =
@@ -38,4 +44,9 @@ object Constants {
         )
 
     fun solidblocksVersion() = "0.0.0"
+
+    const val NETWORK_BIT_SHIFT = 16
+
+    const val DEFAULT_NETWORK = "10.0.0.0/8"
+
 }
