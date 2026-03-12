@@ -46,4 +46,6 @@ object Constants {
     const val DEFAULT_NETWORK = "10.0.0.0/8"
 
     const val DEFAULT_SERVICE_SUBNET = "10.0.1.0/24"
+
+    fun serverIp(index: Int) = "10.0.1.${index + 1}"
 }

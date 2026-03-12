@@ -84,7 +84,7 @@ class CloudProvisioner(
                 is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
             }
 
-        logInfo(bold("  rolling out changes for cloud configuration '${runtime.configuration.name}'"))
+        logInfo(bold("rolling out changes for cloud configuration '${runtime.configuration.name}'"))
         return@runBlocking provisioner.apply(diffs, provisionerContext, log.indent())
     }
 

@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
+import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
@@ -40,7 +41,7 @@ class HetznerNetworkProvisionerTest {
 
         runBlocking {
 
-            val subnet = HetznerSubnet("10.0.1.0/24", resource.asLookup())
+            val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, resource.asLookup())
 
             assertSoftly(subnetProvisioner.diff(subnet, context)!!) {
                 it.status shouldBe ResourceDiffStatus.missing

@@ -1,6 +1,11 @@
 package de.solidblocks.cloud.services.s3
 
+import de.solidblocks.cloud.Constants
+import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
+import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
+import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
+import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.Output
@@ -19,6 +24,8 @@ import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionPr
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
@@ -97,7 +104,9 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloudConfiguration))),
             volumes = setOf(volume.asLookup()),
             dependsOn = setOf(volume),
-            type = cloudConfiguration.hetznerProviderConfig().defaultInstanceType
+            type = cloudConfiguration.hetznerProviderConfig().defaultInstanceType,
+            subnet = HetznerSubnetLookup(DEFAULT_SERVICE_SUBNET, HetznerNetworkLookup(networkName(cloudConfiguration))),
+            privateIp = serverIp(runtime.index)
         )
 
         if (cloudConfiguration.rootDomain == null) {

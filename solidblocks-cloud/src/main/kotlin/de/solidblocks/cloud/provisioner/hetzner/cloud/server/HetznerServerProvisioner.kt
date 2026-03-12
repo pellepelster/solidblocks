@@ -145,12 +145,16 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                 return ApplyResult(null)
             }
 
-
-            api.servers.attachToNetwork(server.id, ServerNetworkAttachRequest(subnet.network))
+            if (resource.privateIp != null) {
+                val action = api.servers.attachToNetwork(server.id, ServerNetworkAttachRequest(subnet.network, resource.privateIp))
+                api.networks.waitForAction(action) {
+                    logInfo("waiting for attachment to ${subnet.logText()}", context = log)
+                }
+            }
         }
 
         return lookup(resource.asLookup(), context).let {
-            logDebug("${resource.logText()} has ip ${it?.publicIpv4 ?: "<none>"}", context = log)
+            logDebug("${resource.logText()} has public ip ${it?.publicIpv4 ?: "<none>"}", context = log)
             ApplyResult(it)
         }
     }
@@ -191,6 +195,18 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                         changed = true,
                         expectedValue = resource.location,
                         actualValue = runtime.location,
+                    ),
+                )
+            }
+
+            if (resource.privateIp != null && resource.privateIp != runtime.privateIpv4) {
+                changes.add(
+                    ResourceDiffItem(
+                        "private ip address",
+                        triggersRecreate = false,
+                        changed = true,
+                        expectedValue = resource.privateIp,
+                        actualValue = runtime.privateIpv4,
                     ),
                 )
             }

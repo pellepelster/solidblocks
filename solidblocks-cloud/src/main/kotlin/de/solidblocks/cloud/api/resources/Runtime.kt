@@ -6,4 +6,5 @@ abstract class BaseLabeledInfrastructureResourceRuntime(val labels: Map<String, 
 }
 
 abstract class BaseInfrastructureResourceRuntime(val endpoints: List<Endpoint> = emptyList()) {
+    open fun logText(): String = this.toString()
 }

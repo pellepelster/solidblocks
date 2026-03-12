@@ -25,7 +25,11 @@ class HetznerServer(
 
     fun asLookup() = HetznerServerLookup(name)
 
-    override fun logText() = "server '$name'"
+    override fun logText() = if (privateIp == null) {
+        "server '$name'"
+    } else {
+        "server '$name' (${privateIp})"
+    }
 
     override val lookupType = HetznerServerLookup::class
 }
