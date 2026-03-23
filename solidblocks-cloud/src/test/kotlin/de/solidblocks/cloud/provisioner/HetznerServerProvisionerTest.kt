@@ -1,16 +1,14 @@
 package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.HetznerTestContext
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
-import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
-import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
-import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
@@ -35,74 +33,49 @@ class HetznerServerProvisionerTest {
         val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN"))
 
         runBlocking {
-            val sshProvisioner = HetznerSSHKeyProvisioner(System.getenv("HCLOUD_TOKEN"))
-            val volumeProvisioner = HetznerVolumeProvisioner(System.getenv("HCLOUD_TOKEN"))
-            val serverProvisioner = HetznerServerProvisioner(System.getenv("HCLOUD_TOKEN"))
             val name = UUID.randomUUID().toString()
 
-            val registry =
-                ProvisionersRegistry(
-                    listOf(
-                        UserDataLookupProvider(),
-                        sshProvisioner,
-                        volumeProvisioner,
-                        serverProvisioner,
-                    ),
-                    listOf(sshProvisioner, volumeProvisioner, serverProvisioner),
-                )
-            val context = TEST_PROVISIONER_CONTEXT.copy(registry = registry)
-            val provisioner = Provisioner(registry)
+            val testContext = HetznerTestContext.create(System.getenv("HCLOUD_TOKEN"))
 
-            val sshKey1 =
-                HetznerSSHKey(
-                    "test-key1",
-                    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPb pelle@fry",
-                    hetzner.defaultLabels
-                )
-            val sshKey2 =
-                HetznerSSHKey(
-                    "test-key2",
-                    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPa pelle@fry",
-                    hetzner.defaultLabels
-                )
-            val volume =
-                HetznerVolume(
-                    name,
-                    HetznerLocation.nbg1,
-                    ByteSize.fromGigabytes(16),
-                    protected = false,
-                    labels = hetzner.defaultLabels
-                )
+            val sshKey1 = HetznerSSHKey(
+                "test-key1", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPb pelle@fry", hetzner.defaultLabels
+            )
+            val sshKey2 = HetznerSSHKey(
+                "test-key2", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+u0dEVRZDzzp4E1teCqF49r8ig3YEk8eaPqNWfDcPa pelle@fry", hetzner.defaultLabels
+            )
+            val volume = HetznerVolume(
+                name, HetznerLocation.nbg1, ByteSize.fromGigabytes(16), protected = false, labels = hetzner.defaultLabels
+            )
 
-            provisioner
-                .apply(listOf(sshKey1, sshKey2, volume), context, TEST_LOG_CONTEXT)
-                .shouldBeTypeOf<Success<Unit>>()
+            val network = HetznerNetwork(name, "10.0.0.0/8")
+            val subnet = HetznerSubnet("10.0.1.0/24", network.asLookup())
 
-            val server =
-                HetznerServer(
-                    name,
-                    HetznerLocation.nbg1,
-                    HetznerServerType.cx23,
-                    sshKeys = setOf(sshKey1.asLookup()),
-                    volumes = setOf(volume.asLookup()),
-                    userData = UserData(emptySet(), { "" }),
-                    labels = hetzner.defaultLabels
-                )
+            testContext.provisioner.apply(listOf(sshKey1, sshKey2, volume, network, subnet), testContext.context, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<Unit>>()
+
+            val server = HetznerServer(
+                name,
+                HetznerLocation.nbg1,
+                HetznerServerType.cx23,
+                sshKeys = setOf(sshKey1.asLookup()),
+                volumes = setOf(volume.asLookup()),
+                userData = UserData(emptySet(), { "" }),
+                labels = hetzner.defaultLabels
+            )
 
             runBlocking {
-                serverProvisioner.lookup(server.asLookup(), context) shouldBe null
-                assertSoftly(serverProvisioner.diff(server, context)!!) {
+                testContext.serverProvisioner.lookup(server.asLookup(), testContext.context) shouldBe null
+                assertSoftly(testContext.serverProvisioner.diff(server, testContext.context)!!) {
                     it.status shouldBe ResourceDiffStatus.missing
                 }
 
-                serverProvisioner.apply(server, context, TEST_LOG_CONTEXT) shouldNotBe null
+                testContext.serverProvisioner.apply(server, testContext.context, TEST_LOG_CONTEXT) shouldNotBe null
 
-                assertSoftly(serverProvisioner.diff(server, context)!!) {
+                assertSoftly(testContext.serverProvisioner.diff(server, testContext.context)!!) {
                     it.status shouldBe ResourceDiffStatus.up_to_date
                 }
 
                 assertSoftly(
-                    serverProvisioner.diff(
+                    testContext.serverProvisioner.diff(
                         HetznerServer(
                             name,
                             HetznerLocation.nbg1,
@@ -113,7 +86,7 @@ class HetznerServerProvisionerTest {
                             image = "debian-99",
                             labels = hetzner.defaultLabels
                         ),
-                        context,
+                        testContext.context,
                     )!!,
                 ) {
                     it.status shouldBe ResourceDiffStatus.has_changes
@@ -125,7 +98,7 @@ class HetznerServerProvisionerTest {
                 }
 
                 assertSoftly(
-                    serverProvisioner.diff(
+                    testContext.serverProvisioner.diff(
                         HetznerServer(
                             name,
                             HetznerLocation.nbg1,
@@ -135,24 +108,50 @@ class HetznerServerProvisionerTest {
                             userData = UserData(emptySet(), { "" }),
                             labels = hetzner.defaultLabels
                         ),
-                        context,
+                        testContext.context,
                     )!!,
                 ) {
                     it.status shouldBe ResourceDiffStatus.has_changes
                     it.needsRecreate() shouldBe true
                     it.changes shouldHaveSize 1
                     it.changes[0].name shouldBe "sshKeys"
-                    it.changes[0].expectedValue shouldBe
-                            "c5383689b3a31bbd0fafbe5c62865ae53a9da27adb1f96b1d94e358f83c9bab6"
-                    it.changes[0].actualValue shouldBe
-                            "b500b5a03c1ddbd8b64d477d406ab9a11f985ad382d14fefa45541094599fcb9"
+                    it.changes[0].expectedValue shouldBe "c5383689b3a31bbd0fafbe5c62865ae53a9da27adb1f96b1d94e358f83c9bab6"
+                    it.changes[0].actualValue shouldBe "b500b5a03c1ddbd8b64d477d406ab9a11f985ad382d14fefa45541094599fcb9"
                 }
 
-                assertSoftly(serverProvisioner.lookup(server.asLookup(), context)) {
+                assertSoftly(testContext.serverProvisioner.lookup(server.asLookup(), testContext.context)) {
                     it!!.name shouldBe name
                 }
 
-                serverProvisioner.destroy(server, context, TEST_LOG_CONTEXT)
+                val serverWithPrivateNetwork = HetznerServer(
+                    name,
+                    HetznerLocation.nbg1,
+                    HetznerServerType.cx23,
+                    sshKeys = setOf(sshKey1.asLookup()),
+                    volumes = setOf(volume.asLookup()),
+                    userData = UserData(emptySet(), { "" }),
+                    labels = hetzner.defaultLabels,
+                    subnet = subnet.asLookup(),
+                    privateIp = "10.0.1.1"
+                )
+
+                assertSoftly(
+                    testContext.serverProvisioner.diff(serverWithPrivateNetwork, testContext.context)!!,
+                ) {
+                    it.status shouldBe ResourceDiffStatus.has_changes
+                    it.changes shouldHaveSize 1
+                    it.changes[0].name shouldBe "private ip address"
+                    it.changes[0].expectedValue shouldBe "10.0.1.1"
+                    it.changes[0].actualValue shouldBe null
+                }
+
+                testContext.serverProvisioner.apply(serverWithPrivateNetwork, testContext.context, TEST_LOG_CONTEXT) shouldNotBe null
+
+                assertSoftly(testContext.serverProvisioner.lookup(serverWithPrivateNetwork.asLookup(), testContext.context)!!) {
+                    it.privateIpv4 shouldBe "10.0.1.1"
+                }
+
+                testContext.serverProvisioner.destroy(server, testContext.context, TEST_LOG_CONTEXT)
             }
         }
     }

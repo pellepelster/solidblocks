@@ -6,11 +6,13 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
 import java.security.KeyPair
 
 data class ProvisionerContext(
     val sshKeyPair: KeyPair,
     val sshKeyAbsolutePath: String,
+    val sshConfigFilePath: Path,
     val cloudName: String,
     val environmentName: String,
     val registry: ProvisionersRegistry,

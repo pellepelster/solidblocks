@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner.garagefs.layout
 
-import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
@@ -11,6 +10,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
+import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -32,7 +32,7 @@ class GarageFsLayoutProvisioner :
     override suspend fun diff(resource: GarageFsLayout, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
         is Success<GarageFsLayoutRuntime> -> {
-            context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) { apis ->
+            context.withApiClients(resource.server, resource.adminToken) { apis ->
                 when (apis) {
                     is Error<GarageFsApi> -> ResourceDiff(resource, unknown)
                     is Success<GarageFsApi> -> {
@@ -66,7 +66,7 @@ class GarageFsLayoutProvisioner :
         }
 
     suspend fun lookupInternal(lookup: GarageFsLayoutLookup, context: ProvisionerContext): Result<GarageFsLayoutRuntime> =
-        context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
+        context.withApiClients(lookup.server, lookup.adminToken) { apis ->
             when (apis) {
                 is Error<GarageFsApi> -> Error(apis.error)
                 is Success<GarageFsApi> -> {
@@ -80,10 +80,10 @@ class GarageFsLayoutProvisioner :
         resource: GarageFsLayout,
         context: ProvisionerContext,
         log: LogContext,
-    ): ApplyResult<GarageFsLayoutRuntime> {
+    ): Result<GarageFsLayoutRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
-        context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
+        context.withApiClients(resource.server, resource.adminToken) {
             val api = when (it) {
                 is Error<GarageFsApi> -> throw RuntimeException(it.error)
                 is Success<GarageFsApi> -> it.data
@@ -114,7 +114,9 @@ class GarageFsLayoutProvisioner :
             }
         }
 
-        return ApplyResult(lookup(resource.asLookup(), context))
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<GarageFsLayoutRuntime>("error creating ${resource.logText()}")
     }
 
     override val supportedLookupType: KClass<*> = GarageFsLayoutLookup::class

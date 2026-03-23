@@ -9,5 +9,7 @@ data class PostgresSqlServiceDatabaseUsersConfigurationRuntime(val name: String)
 data class PostgresSqlServiceConfigurationRuntime(
     override val index: Int,
     override val name: String,
+    val instanceSize: Int,
+    val backupRetention: Int,
     val buckets: List<PostgresSqlServiceDatabaseConfigurationRuntime>,
 ) : ServiceConfigurationRuntime

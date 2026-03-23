@@ -103,7 +103,6 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
             location = cloudConfiguration.hetznerProviderConfig().defaultLocation,
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloudConfiguration))),
             volumes = setOf(volume.asLookup()),
-            dependsOn = setOf(volume),
             type = cloudConfiguration.hetznerProviderConfig().defaultInstanceType,
             subnet = HetznerSubnetLookup(DEFAULT_SERVICE_SUBNET, HetznerNetworkLookup(networkName(cloudConfiguration))),
             privateIp = serverIp(runtime.index)
@@ -134,7 +133,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
             }
         } + listOf(rootDomain, catchAllDomain)
 
-        val layout = GarageFsLayout(runtime.dataVolumeSize.bytes, server, adminToken)
+        val layout = GarageFsLayout(runtime.dataVolumeSize.bytes, server.asLookup(), adminToken.asLookup())
         val bucketResources = mutableListOf<BaseInfrastructureResource<*>>()
 
         runtime.buckets.forEach {
@@ -170,7 +169,7 @@ class S3ServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRu
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) =
-        listOf<InfrastructureResourceProvisioner<*, *>>(GarageFsBucketProvisioner(), GarageFsAccessKeyProvisioner(), GarageFsPermissionProvisioner(), GarageFsLayoutProvisioner())
+        listOf<InfrastructureResourceProvisioner<*, *>>()
 
     override fun validatConfiguration(index: Int, configuration: S3ServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<S3ServiceConfigurationRuntime> {
 

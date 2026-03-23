@@ -16,10 +16,14 @@ services:
     buckets:
       - name: pelle.io
         public_access: true
-        public_access_domains:
-            - pelle.io
         access_keys:
           - name: "admin"
             owner: true
             read: true
             write: true
+  - type: postgresql
+    name: database1
+  - type: docker
+    name: service1
+    link:
+      - database1

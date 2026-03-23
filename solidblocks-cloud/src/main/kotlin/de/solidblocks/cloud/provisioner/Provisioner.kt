@@ -78,8 +78,10 @@ class Provisioner(
 
                     has_changes -> {
                         if (it.needsRecreate()) {
-                            logInfo(bold(
-                                "${it.resource.logText()} has breaking changes and needs to be re-created"),
+                            logInfo(
+                                bold(
+                                    "${it.resource.logText()} has breaking changes and needs to be re-created"
+                                ),
                                 context = diffLogContext,
                             )
                             it.changes.forEach {
@@ -87,8 +89,10 @@ class Provisioner(
                             }
 
                         } else {
-                            logInfo(bold(
-                                "${it.resource.logText()} has pending changes"), context = diffLogContext
+                            logInfo(
+                                bold(
+                                    "${it.resource.logText()} has pending changes"
+                                ), context = diffLogContext
                             )
                             it.changes.forEach {
                                 logInfo(bold("- ${it.logText()}"), context = diffLogContext.indent())
@@ -188,11 +192,7 @@ class Provisioner(
         }
     }
 
-    fun apply(
-        resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): Result<Unit> {
+    fun apply(resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>, context: ProvisionerContext, log: LogContext): Result<Unit> {
         return runBlocking {
             resourceGroupDiffs.map { (resourceGroup, diffs) ->
 
@@ -222,23 +222,18 @@ class Provisioner(
 
                 for (resource in resourcesToApply) {
                     logInfo("applying ${resource.logText()}", context = log)
-
                     val applyLog = log.indent()
 
-                    val applyResult = try {
-                        registry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
-                            resource,
-                            context,
-                            applyLog,
-                        )
+                    val result = try {
+                        registry.apply<BaseResource, BaseInfrastructureResourceRuntime>(resource, context, applyLog)
                     } catch (e: Exception) {
                         logger.error(e) { "creating ${resource.logText()} failed" }
-                        null
+                        Error<BaseInfrastructureResourceRuntime>(e.message ?: "<unknown>")
                     }
 
-                    val runtime = applyResult?.runtime
-                    if (runtime == null) {
-                        return@runBlocking Error("creating ${resource.logText()} failed")
+                    val runtime = when (result) {
+                        is Error<BaseInfrastructureResourceRuntime> -> return@runBlocking Error<Unit>(result.error)
+                        is Success<BaseInfrastructureResourceRuntime> -> result.data
                     }
 
                     runtime.endpoints.forEach {

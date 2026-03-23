@@ -1,12 +1,14 @@
 package de.solidblocks.cloud.provisioner.pass
 
-import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.runCommand
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
@@ -54,11 +56,11 @@ class PassSecretProvisioner(val path: String? = null) :
     private fun generateSecret(length: Int, allowedChars: List<Char>) =
         (1..length).map { allowedChars.random() }.joinToString("")
 
-    override suspend fun apply(resource: PassSecret, context: ProvisionerContext, log: LogContext): ApplyResult<PassSecretRuntime> {
+    override suspend fun apply(resource: PassSecret, context: ProvisionerContext, log: LogContext): Result<PassSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !resource.tainted) {
-            return ApplyResult(current)
+            return Success(current)
         }
 
         logDebug("creating secret at '${resource.name}'", context = log)
@@ -76,11 +78,12 @@ class PassSecretProvisioner(val path: String? = null) :
             )
 
         if (result == null || result.exitCode != 0) {
-            logger.error { "pass insert command failed" }
-            return ApplyResult(null)
+            return Error("pass insert command failed")
         }
 
-        return ApplyResult(lookup(resource.asLookup(), context))
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<PassSecretRuntime>("error creating ${resource.logText()}")
     }
 
     override val supportedLookupType = PassSecretLookup::class

@@ -7,11 +7,11 @@ import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
-data class ConfigurationContext(val configFilePath: Path)
+data class CloudConfigurationContext(val configFileDirectory: Path)
 
 interface ProviderConfigurationManager<C : ProviderConfiguration, R : ProviderRuntime> {
 
-    fun validate(configuration: C, context: ConfigurationContext, log: LogContext): Result<R>
+    fun validate(configuration: C, context: CloudConfigurationContext, log: LogContext): Result<R>
 
     fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 

@@ -1,11 +1,8 @@
 package de.solidblocks.cloud.provisioner.garagefs.accesskey
 
-import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
@@ -67,18 +64,14 @@ class GarageFsAccessKeyProvisioner :
 
         }
 
-    override suspend fun apply(
-        resource: GarageFsAccessKey,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): ApplyResult<GarageFsAccessKeyRuntime> {
+    override suspend fun apply(resource: GarageFsAccessKey, context: ProvisionerContext, log: LogContext): Result<GarageFsAccessKeyRuntime> {
         val runtime = when (val result = lookupInternal(resource.asLookup(), context)) {
-            is Error<GarageFsAccessKeyRuntime?> -> return ApplyResult(null)
+            is Error<GarageFsAccessKeyRuntime?> -> return Error<GarageFsAccessKeyRuntime>(result.error)
             is Success<GarageFsAccessKeyRuntime?> -> result.data
         }
 
         if (runtime != null) {
-            return ApplyResult(runtime)
+            return Success(runtime)
         }
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
@@ -90,7 +83,9 @@ class GarageFsAccessKeyProvisioner :
             apis.accessKeyApi.createKey(CreateKeyRequest(name = resource.name))
         }
 
-        return ApplyResult(lookup(resource.asLookup(), context))
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<GarageFsAccessKeyRuntime>("error creating ${resource.logText()}")
     }
 
     override val supportedLookupType: KClass<*> = GarageFsAccessKeyLookup::class

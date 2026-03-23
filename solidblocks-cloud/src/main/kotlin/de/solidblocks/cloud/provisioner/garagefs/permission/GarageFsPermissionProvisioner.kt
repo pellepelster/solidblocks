@@ -1,9 +1,13 @@
 package de.solidblocks.cloud.provisioner.garagefs.permission
 
-import de.solidblocks.cloud.api.*
+import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -29,7 +33,7 @@ class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupP
                     it.globalAliases.contains(bucket.name)
                 }
 
-                permission?.let {
+                if (permission != null) {
                     GarageFsPermissionRuntime(
                         bucket,
                         accessKey,
@@ -37,6 +41,8 @@ class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupP
                         permission.permissions.read!!,
                         permission.permissions.write!!,
                     )
+                } else {
+                    GarageFsPermissionRuntime(bucket, accessKey, false, false, false)
                 }.let { Success(it) }
             }
         }
@@ -55,22 +61,13 @@ class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupP
         resource: GarageFsPermission,
         context: ProvisionerContext,
         log: LogContext,
-    ): ApplyResult<GarageFsPermissionRuntime> {
-        val bucket = context.lookup(resource.bucket.asLookup())
-        if (bucket == null) {
-            logger.error { "${resource.bucket.logText()} not found" }
-            return ApplyResult(null)
-        }
-
-        val accessKey = context.lookup(resource.accessKey.asLookup())
-        if (accessKey == null) {
-            logger.error { "${resource.accessKey.logText()} not found" }
-            return ApplyResult(null)
-        }
+    ): Result<GarageFsPermissionRuntime> {
+        val bucket = context.lookup(resource.bucket.asLookup()) ?: return Error<GarageFsPermissionRuntime>("${resource.bucket.logText()} not found")
+        val accessKey = context.lookup(resource.accessKey.asLookup()) ?: return Error<GarageFsPermissionRuntime>("${resource.accessKey.logText()} not found")
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
             val apis = when (it) {
-                is Error<GarageFsApi> -> throw RuntimeException(it.error)
+                is Error<GarageFsApi> -> return@withApiClients Error<GarageFsPermissionRuntime>(it.error)
                 is Success<GarageFsApi> -> it.data
             }
 
@@ -90,7 +87,9 @@ class GarageFsPermissionProvisioner : BaseGarageFsProvisioner(), ResourceLookupP
             )
         }
 
-        return ApplyResult(lookup(resource.asLookup(), context))
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<GarageFsPermissionRuntime>("error creating ${resource.logText()}")
     }
 
     override suspend fun diff(resource: GarageFsPermission, context: ProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {

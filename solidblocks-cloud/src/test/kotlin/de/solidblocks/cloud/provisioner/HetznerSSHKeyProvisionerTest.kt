@@ -3,14 +3,18 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyRuntime
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -42,7 +46,7 @@ class HetznerSSHKeyProvisionerTest {
             }
 
             // create
-            provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe
+            provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerSSHKeyRuntime>>().data.name shouldBe
                     name
             assertSoftly(provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
                 it.fingerprint shouldBe "99:fc:9b:f4:04:69:2c:9d:30:d5:2c:d9:1e:ca:b2:76"
@@ -81,9 +85,7 @@ class HetznerSSHKeyProvisionerTest {
                 it.changes[0].name shouldBe "label 'foo'"
             }
             provisioner
-                .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-                .runtime
-                ?.name shouldBe name
+                .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerSSHKeyRuntime>>().data.name shouldBe name
 
             assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
@@ -109,9 +111,7 @@ class HetznerSSHKeyProvisionerTest {
                     resourceWithUpdatedLabel,
                     TEST_PROVISIONER_CONTEXT,
                     TEST_LOG_CONTEXT,
-                )
-                .runtime
-                ?.name shouldBe name
+                ).shouldBeTypeOf<Success<HetznerSSHKeyRuntime>>().data.name shouldBe name
             assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()

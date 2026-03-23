@@ -1,15 +1,24 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
+import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeysLabel
 import de.solidblocks.cloud.Constants.userDataLabel
 import de.solidblocks.cloud.Output
-import de.solidblocks.cloud.api.*
+import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.HetznerLabels
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.HetznerApi
+import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
+import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
@@ -18,6 +27,7 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import de.solidblocks.utils.logInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
 import kotlin.reflect.KClass
 
 class HetznerServerProvisioner(val hcloudToken: String) :
@@ -46,7 +56,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
             )
         }
 
-    override suspend fun apply(resource: HetznerServer, context: ProvisionerContext, log: LogContext): ApplyResult<HetznerServerRuntime> {
+    override suspend fun apply(resource: HetznerServer, context: ProvisionerContext, log: LogContext): Result<HetznerServerRuntime> {
         var server = lookup(resource.asLookup(), context)
 
         if (server == null) {
@@ -54,22 +64,15 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
             val sshKeys =
                 resource.sshKeys.map {
-                    val key = context.lookup(it)
-                    if (key == null) {
-                        throw RuntimeException("failed to lookup ${it.logText()}")
-                    }
-                    key
+                    context.lookup(it) ?: return Error<HetznerServerRuntime>("failed to lookup ${it.logText()}")
                 }
 
             val volumes =
                 resource.volumes.map {
-                    val volume = context.lookup(it)
-                    if (volume == null) {
-                        throw RuntimeException("failed to resolve ${it.logText()}")
-                    }
+                    val volume = context.lookup(it) ?: return Error<HetznerServerRuntime>("failed to resolve ${it.logText()}")
 
                     if (volume.server != null) {
-                        throw RuntimeException(
+                        return Error<HetznerServerRuntime>(
                             "volume ${it.logText()} already attached to server ${volume.server}",
                         )
                     }
@@ -126,37 +129,37 @@ class HetznerServerProvisioner(val hcloudToken: String) :
             if (!api.servers.waitForAction(createRequest.action) {
                     logInfo("waiting for creation of ${resource.logText()}", context = log)
                 }) {
-                logger.error { "failed to wait for creation of '${resource.name}', you may need to remove the resource manually and retry" }
-                return ApplyResult(null)
+                return Error("failed to wait for creation of '${resource.name}', you may need to remove the resource manually and retry")
             }
 
             server = lookup(resource.asLookup(), context)
         }
 
         if (server == null) {
-            logger.error { "server creation failed" }
-            return ApplyResult(null)
+            return Error("server creation failed")
         }
 
         if (resource.subnet != null) {
-            val subnet = context.lookup(resource.subnet)
-            if (subnet == null) {
-                logger.error { "subnet '${resource.subnet.name}' not found" }
-                return ApplyResult(null)
-            }
+            val subnet = context.lookup(resource.subnet) ?: return Error("subnet '${resource.subnet.name}' not found")
 
             if (resource.privateIp != null) {
-                val action = api.servers.attachToNetwork(server.id, ServerNetworkAttachRequest(subnet.network, resource.privateIp))
-                api.networks.waitForAction(action) {
-                    logInfo("waiting for attachment to ${subnet.logText()}", context = log)
+                try {
+                    val action = api.servers.attachToNetwork(server.id, ServerNetworkAttachRequest(subnet.network, resource.privateIp))
+                    api.networks.waitForAction(action) {
+                        logInfo("waiting for attachment to ${subnet.logText()}", context = log)
+                    }
+                } catch (e: HetznerApiException) {
+                    if (e.error.code != HetznerApiErrorType.SERVER_ALREADY_ATTACHED) {
+                        return Error("hetzner api error '${e.error.code}'")
+                    }
                 }
             }
         }
 
-        return lookup(resource.asLookup(), context).let {
-            logDebug("${resource.logText()} has public ip ${it?.publicIpv4 ?: "<none>"}", context = log)
-            ApplyResult(it)
-        }
+        return lookup(resource.asLookup(), context)?.let {
+            logDebug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}", context = log)
+            Success(it)
+        } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
     }
 
     override suspend fun diff(resource: HetznerServer, context: ProvisionerContext): ResourceDiff? {
@@ -263,20 +266,18 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         }
     } ?: false
 
-    override suspend fun output(resource: HetznerServer, context: ProvisionerContext) = lookup(resource.asLookup(), context)?.let {
-        // TODO use explicit host key checking
-        listOf(
-            Output(
-                resource.logText().capitalize(),
-                """
-to access server **${it.name}** via SSH, run 
+    override suspend fun output(resource: HetznerServer, context: ProvisionerContext) = listOf(
+        Output(
+            resource.logText().capitalize(),
+            """
+to access server **${resource.name}** via SSH, run 
 ```
-ssh -i ${context.sshKeyAbsolutePath} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@${it.publicIpv4}
+ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.cloudName))} ${resource.name}
 ```
                 """.trimMargin()
-            )
         )
-    } ?: emptyList()
+    )
+
 
     override val supportedLookupType: KClass<*> = HetznerServerLookup::class
 

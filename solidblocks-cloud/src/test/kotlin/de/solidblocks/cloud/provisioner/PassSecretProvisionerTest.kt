@@ -3,13 +3,16 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.runCommand
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldHaveLength
+import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
@@ -49,7 +52,7 @@ class PassSecretProvisionerTest {
       }
 
       val secretAfterTaint = provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-      generatedSecret.secret shouldNotBe secretAfterTaint.runtime!!.secret
+      generatedSecret.secret shouldNotBe secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data
 
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
         it!!.status shouldBe ResourceDiffStatus.up_to_date

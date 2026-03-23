@@ -1,11 +1,8 @@
 package de.solidblocks.cloud.services.docker.model
 
 import com.charleskorn.kaml.YamlNode
-import de.solidblocks.cloud.configuration.KeywordHelp
-import de.solidblocks.cloud.configuration.ListKeyword
-import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
@@ -27,9 +24,11 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
     val endpoints =
         ListKeyword("endpoints", DockerServiceEndpointConfigurationFactory(), KeywordHelp("Service endpoints to expose"))
 
+    val links = StringListKeyword("links", KeywordHelp("Linked services will automatically expose connection information to the linked service as environment variables, e.g. database credentials"))
+
     override val help = ConfigurationHelp("Docker", "Deploys a docker service image containers and exposes its endpoints")
 
-    override val keywords = listOf(SERVICE_NAME_KEYWORD, endpoints, image)
+    override val keywords = listOf(SERVICE_NAME_KEYWORD, endpoints, image, links)
 
     override fun parse(yaml: YamlNode): Result<DockerServiceConfiguration> {
         val name =
@@ -44,6 +43,12 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
                 is Success<List<DockerServiceEndpointConfiguration>> -> result.data
             }
 
-        return Success(DockerServiceConfiguration(name, endpoints))
+        val links =
+            when (val result = links.parse(yaml)) {
+                is Error<List<String>> -> return Error(result.error)
+                is Success<List<String>> -> result.data
+            }
+
+        return Success(DockerServiceConfiguration(name, endpoints, links))
     }
 }

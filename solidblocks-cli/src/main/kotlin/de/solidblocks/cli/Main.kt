@@ -46,6 +46,7 @@ fun main(args: Array<String>) {
         CloudApplyCommand(),
         CloudPlanCommand(),
         CloudHelpCommand(),
+        CloudSSHConfigCommand(),
         CloudHelpHugoCommand(),
     )
   }

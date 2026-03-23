@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.volume
 
-import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
@@ -8,6 +7,9 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest
 import de.solidblocks.hetzner.cloud.resources.VolumeFormat
 import de.solidblocks.hetzner.cloud.resources.VolumeUpdateRequest
@@ -20,89 +22,91 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
     ResourceLookupProvider<HetznerVolumeLookup, HetznerVolumeRuntime>,
     InfrastructureResourceProvisioner<HetznerVolume, HetznerVolumeRuntime> {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: HetznerVolumeLookup, context: ProvisionerContext) =
-      api.volumes.get(lookup.name)?.let {
-        HetznerVolumeRuntime(it.id, it.name, it.linuxDevice, it.server, it.labels, it.protection.delete)
-      }
-
-  override suspend fun apply(
-      resource: HetznerVolume,
-      context: ProvisionerContext,
-      log: LogContext,
-  ): ApplyResult<HetznerVolumeRuntime> {
-    val runtime = lookup(resource.asLookup(), context)
-
-    val volume =
-        if (runtime == null) {
-          api.volumes.create(
-              VolumeCreateRequest(
-                  resource.name,
-                  resource.size.gigabytes(),
-                  resource.location,
-                  format = VolumeFormat.ext4,
-                  automount = false,
-                  resource.labels,
-              ),
-          )
-          lookup(resource.asLookup(), context)
-        } else {
-          runtime
+    override suspend fun lookup(lookup: HetznerVolumeLookup, context: ProvisionerContext) =
+        api.volumes.get(lookup.name)?.let {
+            HetznerVolumeRuntime(it.id, it.name, it.linuxDevice, it.server, it.labels, it.protection.delete)
         }
 
-    if (volume == null) {
-      return ApplyResult(null)
-    }
+    override suspend fun apply(
+        resource: HetznerVolume,
+        context: ProvisionerContext,
+        log: LogContext,
+    ): Result<HetznerVolumeRuntime> {
+        val runtime = lookup(resource.asLookup(), context)
 
-    val protect = api.volumes.changeDeleteProtection(volume.id, resource.protected)
-    api.volumes.waitForAction(protect)
+        val volume =
+            if (runtime == null) {
+                api.volumes.create(
+                    VolumeCreateRequest(
+                        resource.name,
+                        resource.size.gigabytes(),
+                        resource.location,
+                        format = VolumeFormat.ext4,
+                        automount = false,
+                        resource.labels,
+                    ),
+                )
+                lookup(resource.asLookup(), context)
+            } else {
+                runtime
+            }
 
-    api.volumes.update(volume.id, VolumeUpdateRequest(resource.name, resource.labels))
-
-    return ApplyResult(lookup(resource.asLookup(), context))
-  }
-
-  override suspend fun diff(resource: HetznerVolume, context: ProvisionerContext): ResourceDiff? {
-    val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
-
-    val deleteProtection =
-        if (runtime.deleteProtected != resource.protected) {
-          listOf(
-              ResourceDiffItem(
-                  "delete protection",
-                  changed = true,
-                  expectedValue = resource.protected.toString(),
-                  actualValue = runtime.deleteProtected.toString(),
-              ),
-          )
-        } else {
-          emptyList()
+        if (volume == null) {
+            return Error("error creating ${resource.logText()}")
         }
 
-    val changes = createLabelDiff(resource, runtime) + deleteProtection
+        val protect = api.volumes.changeDeleteProtection(volume.id, resource.protected)
+        api.volumes.waitForAction(protect)
 
-    return if (changes.isEmpty()) {
-      ResourceDiff(
-          resource,
-          up_to_date,
-      )
-    } else {
-      ResourceDiff(
-          resource,
-          has_changes,
-          changes = changes,
-      )
+        api.volumes.update(volume.id, VolumeUpdateRequest(resource.name, resource.labels))
+
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<HetznerVolumeRuntime>("error creating ${resource.logText()}")
     }
-  }
 
-  override suspend fun destroy(
-      resource: HetznerVolume,
-      context: ProvisionerContext,
-      logContext: LogContext,
-  ) = lookup(resource.asLookup(), context)?.let { api.volumes.delete(it.id) } ?: false
+    override suspend fun diff(resource: HetznerVolume, context: ProvisionerContext): ResourceDiff? {
+        val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
-  override val supportedLookupType: KClass<*> = HetznerVolumeLookup::class
+        val deleteProtection =
+            if (runtime.deleteProtected != resource.protected) {
+                listOf(
+                    ResourceDiffItem(
+                        "delete protection",
+                        changed = true,
+                        expectedValue = resource.protected.toString(),
+                        actualValue = runtime.deleteProtected.toString(),
+                    ),
+                )
+            } else {
+                emptyList()
+            }
 
-  override val supportedResourceType: KClass<*> = HetznerVolume::class
+        val changes = createLabelDiff(resource, runtime) + deleteProtection
+
+        return if (changes.isEmpty()) {
+            ResourceDiff(
+                resource,
+                up_to_date,
+            )
+        } else {
+            ResourceDiff(
+                resource,
+                has_changes,
+                changes = changes,
+            )
+        }
+    }
+
+    override suspend fun destroy(
+        resource: HetznerVolume,
+        context: ProvisionerContext,
+        logContext: LogContext,
+    ) = lookup(resource.asLookup(), context)?.let { api.volumes.delete(it.id) } ?: false
+
+    override val supportedLookupType: KClass<*> = HetznerVolumeLookup::class
+
+    override val supportedResourceType: KClass<*> = HetznerVolume::class
 }

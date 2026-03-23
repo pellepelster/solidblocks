@@ -3,9 +3,12 @@ package de.solidblocks.cloud
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
+import java.nio.file.Path
 
 @Suppress("ktlint:standard:property-naming")
 object Constants {
+
+    fun sshConfigFilePath(configFileDirectory: Path, cloudName: String) = configFileDirectory.resolve("${cloudName}_ssh_config")
 
     fun sshKeyName(configuration: CloudConfigurationRuntime) =
         "${configuration.name}-${configuration.getDefaultEnvironment()}"

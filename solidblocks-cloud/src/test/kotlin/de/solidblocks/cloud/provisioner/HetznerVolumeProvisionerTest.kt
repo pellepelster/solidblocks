@@ -5,7 +5,9 @@ import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeRuntime
 import de.solidblocks.cloud.utils.ByteSize
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
@@ -13,6 +15,7 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -38,7 +41,7 @@ class HetznerVolumeProvisionerTest {
             }
 
             // create
-            provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerVolumeRuntime>>().data.name shouldBe name
             assertSoftly(provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
                 it.deleteProtected shouldBe true
             }
@@ -60,7 +63,7 @@ class HetznerVolumeProvisionerTest {
                 it.changes[0].missing shouldBe true
                 it.changes[0].name shouldBe "label 'foo'"
             }
-            provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerVolumeRuntime>>().data.name shouldBe name
             assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
@@ -81,7 +84,7 @@ class HetznerVolumeProvisionerTest {
                 it.changes[0].expectedValue shouldBe "false"
                 it.changes[0].actualValue shouldBe "true"
             }
-            provisioner.apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            provisioner.apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerVolumeRuntime>>().data.name shouldBe name
             assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
@@ -102,7 +105,7 @@ class HetznerVolumeProvisionerTest {
                 it.changes[0].expectedValue shouldBe "bar2"
                 it.changes[0].actualValue shouldBe "bar"
             }
-            provisioner.apply(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            provisioner.apply(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerVolumeRuntime>>().data.name shouldBe name
             assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()

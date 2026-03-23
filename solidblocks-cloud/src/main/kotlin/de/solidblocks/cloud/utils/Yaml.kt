@@ -3,6 +3,7 @@ package de.solidblocks.cloud.utils
 import com.charleskorn.kaml.*
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import de.solidblocks.cloud.joinToStringOrEmpty
 
 fun Location.logMessage() = "line ${this.line} colum ${this.column}"
 
@@ -216,7 +217,7 @@ fun YamlNode.getBoolean(key: String, default: Boolean): Result<Boolean> =
     when (val result = getBoolean(key)) {
       is YamlEmpty<Boolean> -> Success(default)
       is Error<Boolean> -> Error(result.error)
-      is Success<Boolean> -> Success(result.data ?: default)
+      is Success<Boolean> -> Success(result.data)
     }
 
 fun <T> YamlNode.getList(key: String, factory: ConfigurationFactory<T>): YamlResult<List<T>> {
@@ -263,7 +264,7 @@ fun <T> YamlNode.getPolymorphicList(
                   factory?.parse(listItem)
                       ?: Error<T>(
                           "unknown type '${type.data}', possible types are ${
-                              factories.keys.joinToString(", ") { "'$it'" }
+                              factories.keys.joinToStringOrEmpty(", ") { "'$it'" }
                           } at ${listItem.location.logMessage()}",
                       )
                 }

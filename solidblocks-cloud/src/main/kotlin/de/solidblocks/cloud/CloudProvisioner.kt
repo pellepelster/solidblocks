@@ -14,8 +14,14 @@ import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createLookups
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createProvisioners
+import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
+import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisioner
+import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayoutProvisioner
+import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.*
@@ -27,6 +33,8 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.runBlocking
+import java.io.File
+import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class CloudProvisioner(
@@ -40,6 +48,7 @@ class CloudProvisioner(
         ProvisionerContext(
             runtime.providers.sshKeyProvider().keyPair,
             runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
+            runtime.configurationContext.configFileDirectory,
             runtime.configuration.name,
             runtime.configuration.getDefaultEnvironment(),
             registry,
@@ -127,11 +136,42 @@ class CloudProvisioner(
                 manager.createProvisioners(it)
             }
 
+        val defaultProvisioners = listOf(GarageFsBucketProvisioner(), GarageFsAccessKeyProvisioner(), GarageFsPermissionProvisioner(), GarageFsLayoutProvisioner())
+
+
         val lookups =
             providerLookups +
                     listOf(UserDataLookupProvider()) +
-                    (providerProvisioners + serviceProvisioners).filterIsInstance<ResourceLookupProvider<*, *>>()
+                    (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<ResourceLookupProvider<*, *>>()
 
-        return ProvisionersRegistry(lookups, providerProvisioners + serviceProvisioners)
+        return ProvisionersRegistry(lookups, providerProvisioners + defaultProvisioners + serviceProvisioners)
+    }
+
+    fun createSSHConfig(sshConfigFile: File): Result<Unit> {
+        val resourceGroups = createResourceGroups()
+        val servers = resourceGroups.flatMap { it.hierarchicalResourceList().filterIsInstance<HetznerServer>() }
+
+        val serversIps = servers.map {
+            val runtime = provisionerContext.lookup(it.asLookup()) as HetznerServerRuntime
+            it.name to runtime.publicIpv4
+        }
+
+        // TODO use explicit host key checking
+        val sshConfigHeader = """
+            Host *
+                UserKnownHostsFile /dev/null
+                StrictHostKeyChecking no
+                User root
+                IdentityFile ${provisionerContext.sshKeyAbsolutePath}
+        """.trimIndent()
+
+        val sshConfigHosts = serversIps.joinToString("\n") { "Host ${it.first}\n    HostName ${it.second}\n" }
+
+        return try {
+            sshConfigFile.writeText(sshConfigHeader + "\n\n" + sshConfigHosts)
+            Success<Unit>(Unit)
+        } catch (e: Exception) {
+            Error<Unit>(e.message ?: "unknown error")
+        }
     }
 }

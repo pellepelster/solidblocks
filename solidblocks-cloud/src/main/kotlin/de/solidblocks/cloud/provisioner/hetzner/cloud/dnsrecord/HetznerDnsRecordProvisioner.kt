@@ -6,6 +6,9 @@ import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.*
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
@@ -44,13 +47,8 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             if (runtime.ttl != resource.ttl) {
                 changes.add(
                     ResourceDiffItem(
-                        "value",
-                        false,
-                        false,
-                        true,
-                        expectedValue = resource.ttl,
-                        actualValue = runtime.ttl,
-                    ),
+                        "value", false, false, true, expectedValue = resource.ttl, actualValue = runtime.ttl,
+                    )
                 )
             }
 
@@ -58,13 +56,8 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             if (!(expectedValues equalsIgnoreOrder runtime.values)) {
                 changes.add(
                     ResourceDiffItem(
-                        "value",
-                        false,
-                        false,
-                        true,
-                        expectedValue = expectedValues.joinToString(","),
-                        actualValue = runtime.values.joinToString(","),
-                    ),
+                        "value", false, false, true, expectedValue = expectedValues.joinToString(","), actualValue = runtime.values.joinToString(","),
+                    )
                 )
             }
 
@@ -79,10 +72,9 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         resource: HetznerDnsRecord,
         context: ProvisionerContext,
         log: LogContext,
-    ): ApplyResult<HetznerDnsRecordRuntime> {
+    ): Result<HetznerDnsRecordRuntime> {
         val current = lookup(resource.asLookup(), context)
-
-        val zone = context.lookup(resource.asLookup().zone) ?: return ApplyResult(null)
+        val zone = context.lookup(resource.asLookup().zone) ?: return Error("zone '${resource.asLookup().zone.name}' not found'")
 
         val serverIps =
             resource.values.mapNotNull {
@@ -102,7 +94,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         if (current != null) {
             if (current.ttl != resource.ttl) {
                 logger.info { "updating ${resource.name}/${resource.type} TTL to ${resource.ttl}" }
-                val ttlUpdateResult = api.dnsRrSets(zone.name).updateTTL(resource.name, resource.type, DnsRRSetsTTLUpdateRequest(resource.ttl)) ?: return ApplyResult(null)
+                val ttlUpdateResult = api.dnsRrSets(zone.name).updateTTL(resource.name, resource.type, DnsRRSetsTTLUpdateRequest(resource.ttl))
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
                     logInfo("waiting for TTL update on ${resource.logText()}", context = log)
                 }
@@ -111,10 +103,10 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                 logger.info { "updating ${resource.name}/${resource.type} values to ${serverIps.joinToString(",")}" }
                 val ttlUpdateResult = api.dnsRrSets(zone.name).updateRecords(
                     resource.name, resource.type, DnsRRSetsRecordsUpdateRequest(
-                    serverIps.map {
-                        DnsRRSetRecord(it)
-                    }
-                )) ?: return ApplyResult(null)
+                        serverIps.map {
+                            DnsRRSetRecord(it)
+                        }
+                    ))
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
                     logInfo("waiting for record update on ${resource.logText()}", context = log)
                 }
@@ -124,7 +116,9 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             createRRSet(zone, resource, serverIps)
         }
 
-        return ApplyResult(lookup(resource.asLookup(), context))
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<HetznerDnsRecordRuntime>("error creating ${resource.logText()}")
     }
 
     private suspend fun createRRSet(zone: HetznerDnsZoneRuntime, resource: HetznerDnsRecord, serverIps: List<String>) = api.dnsRrSets(zone.name).create(

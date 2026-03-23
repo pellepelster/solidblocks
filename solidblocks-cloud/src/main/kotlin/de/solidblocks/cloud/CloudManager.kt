@@ -3,6 +3,7 @@ package de.solidblocks.cloud
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
+import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.*
@@ -18,12 +19,14 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.*
+import de.solidblocks.utils.Constants
 import java.io.File
 import kotlin.io.path.absolutePathString
 
 class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
     data class CloudRuntime(
+        val configurationContext: CloudConfigurationContext,
         val configuration: CloudConfigurationRuntime,
         val providers: List<ProviderRuntime>,
         val services: List<ServiceConfigurationRuntime>,
@@ -37,7 +40,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         // parse cloud configuration
         val cloudConfiguration = when (val result = ConfigurationParser(CloudConfigurationFactory(providerRegistrations, serviceRegistrations)).parse(cloudConfigFile)) {
             is Error -> return Error(result.error)
-            is Success<CloudConfigurationRuntime> -> result.data
+            is Success<CloudConfiguration> -> result.data
         }
         logInfo("parsed cloud configuration '${cloudConfiguration.name}'", context = log)
 
@@ -89,6 +92,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 }",
             )
         }
+        val configurationContext = CloudConfigurationContext(cloudConfigFile.toPath().toAbsolutePath().toFile().parentFile.toPath())
 
         val providers: List<ProviderRuntime> = cloudConfiguration.providers.map { provider ->
             logInfo("found '${provider.type}' provider with name '${provider.name}'", context = log)
@@ -97,8 +101,8 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             val manager: ProviderConfigurationManager<ProviderConfiguration, ProviderRuntime> = providerRegistrations.managerForConfiguration(provider)
 
             logDebug("validating configuration for '${provider.type}' provider '${provider.name}'", context = log)
-            val context = ConfigurationContext(cloudConfigFile.toPath().toAbsolutePath().toFile().parentFile.toPath())
-            val runtime = when (val result = manager.validate(provider, context, log)) {
+
+            val runtime = when (val result = manager.validate(provider, configurationContext, log)) {
                 is Error<ProviderRuntime> -> {
                     return Error<CloudRuntime>(result.error)
                 }
@@ -116,7 +120,14 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val registry = this.providerRegistrations.createRegistry(providers)
         val sshKeyProvider = providers.sshKeyProvider()
 
-        val context = ProvisionerContext(sshKeyProvider.keyPair, sshKeyProvider.privateKey.absolutePathString(), cloudConfiguration.name, cloudConfiguration.getDefaultEnvironment(), registry)
+        val context = ProvisionerContext(
+            sshKeyProvider.keyPair,
+            sshKeyProvider.privateKey.absolutePathString(),
+            configurationContext.configFileDirectory,
+            cloudConfiguration.name,
+            cloudConfiguration.getDefaultEnvironment(),
+            registry
+        )
 
         val services: List<ServiceConfigurationRuntime> = cloudConfiguration.services.mapIndexed { index, service ->
             logInfo("found '${service.type}' service with name '${service.name}'", context = log)
@@ -138,7 +149,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             runtime
         }
 
-        val runtime = CloudRuntime(cloudConfiguration, providers, services)
+        val runtime = CloudRuntime(configurationContext, CloudConfigurationRuntime(cloudConfiguration.name, cloudConfiguration.rootDomain), providers, services)
         val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
 
         if (runtime.configuration.rootDomain == null) {
@@ -154,17 +165,30 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         return Success(runtime)
     }
 
-    fun apply(runtime: CloudRuntime): Result<Unit> {
+    fun apply(runtime: CloudRuntime): Result<List<Output>> {
         val log = LogContext.default()
-
         val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
+        writeSshConfig(runtime)
 
-        return cloudProvisioner.apply(log)
+        when (val result = cloudProvisioner.apply(log)) {
+            is Error<Unit> -> return Error<List<Output>>(result.error)
+            is Success<*> -> {
+                return help(runtime)
+            }
+        }
     }
 
-    fun output(runtime: CloudRuntime): Result<List<Output>> {
+    fun writeSshConfig(runtime: CloudRuntime): Result<Unit> {
         val provisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
-        return Success(emptyList())
+        val sshConfigFile = de.solidblocks.cloud.Constants.sshConfigFilePath(runtime.configurationContext.configFileDirectory, runtime.configuration.name)
+
+        when (val result = provisioner.createSSHConfig(sshConfigFile.toFile())) {
+            is Error<Unit> -> return result
+            is Success<Unit> -> {
+                logInfo(bold("ssh config file or cloud '${runtime.configuration.name}' written to '${sshConfigFile.toAbsolutePath()}'"))
+                return result
+            }
+        }
     }
 
     fun help(runtime: CloudRuntime): Result<List<Output>> {

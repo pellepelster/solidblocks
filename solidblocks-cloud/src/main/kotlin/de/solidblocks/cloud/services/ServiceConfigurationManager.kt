@@ -2,6 +2,7 @@ package de.solidblocks.cloud.services
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.utils.Result
@@ -16,7 +17,7 @@ interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfi
 
     fun validatConfiguration(index: Int, configuration: C, context: ProvisionerContext, log: LogContext): Result<R>
 
-    fun output(configuration: R, context: ProvisionerContext): Result<List<de.solidblocks.cloud.Output>> = Success(emptyList())
+    fun output(runtime: R, context: ProvisionerContext): Result<List<de.solidblocks.cloud.Output>> = Success(emptyList())
 
     val supportedConfiguration: KClass<C>
 
@@ -25,7 +26,7 @@ interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfi
 
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(
     service: C,
-    cloudConfiguration: CloudConfigurationRuntime,
+    cloudConfiguration: CloudConfiguration,
 ): ServiceConfigurationManager<C, R> =
     this.single { it.supportedConfiguration == service::class }.createManager(cloudConfiguration) as ServiceConfigurationManager<C, R>?
         ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")

@@ -16,84 +16,69 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 
 class CloudConfigurationFactory(
-    providerRegistrations:
-    List<ProviderRegistration<
-            out ProviderConfiguration,
-            out ProviderRuntime,
-            out ProviderConfigurationManager<*, *>>>,
+    providerRegistrations: List<ProviderRegistration<out ProviderConfiguration, out ProviderRuntime, out ProviderConfigurationManager<*, *>>>,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
-) : ConfigurationFactory<CloudConfigurationRuntime> {
+) : ConfigurationFactory<CloudConfiguration> {
 
     companion object {
-        val name =
-            StringKeyword(
-                "name",
-                RFC_1123_NAME,
-                KeywordHelp(
-                    "Unique name for the cloud deployment. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files."
-                ),
-            )
+        val name = StringKeyword(
+            "name",
+            RFC_1123_NAME,
+            KeywordHelp(
+                "Unique name for the cloud deployment. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files."
+            ),
+        )
 
-        val rootDomain =
-            StringKeywordOptional(
-                "root_domain",
-                DOMAIN_NAME,
-                KeywordHelp(
-                    "Root domain to use for addresses of created services, e.g. `<service_name>.<root_domain>`. If set the domain must be manageable by one of the configured providers.",
-                ),
-            )
+        val rootDomain = StringKeywordOptional(
+            "root_domain",
+            DOMAIN_NAME,
+            KeywordHelp(
+                "Root domain to use for addresses of created services, e.g. `<service_name>.<root_domain>`. If set the domain must be manageable by one of the configured providers.",
+            ),
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
-    val providers =
-        PolymorphicListKeyword(
-            "providers",
-            providerRegistrations.associate { it.type to it.createConfigurationFactory() }
-                    as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
-            KeywordHelp("Provider list, if two providers of the same type are configured, unique names must be provided. For a minimal configuration at least a SSH, secret and cloud provider is needed."),
-        )
+    val providers = PolymorphicListKeyword(
+        "providers",
+        providerRegistrations.associate { it.type to it.createConfigurationFactory() } as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
+        KeywordHelp("Provider list, if two providers of the same type are configured, unique names must be provided. For a minimal configuration at least a SSH, secret and cloud provider is needed."),
+    )
 
     @Suppress("UNCHECKED_CAST")
     val services = PolymorphicListKeyword(
         "services",
-        serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
-                as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
+        serviceRegistrations.associate { it.type to it.createConfigurationFactory() } as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
         KeywordHelp("Services to create, service names must be unique across all services"),
     )
 
-    override val help: ConfigurationHelp =
-        ConfigurationHelp(
-            "Configuration",
-            "A Solidblocks instance can be defined using a YAML based configuration file with the following format"
-        )
+    override val help: ConfigurationHelp = ConfigurationHelp(
+        "Configuration", "A Solidblocks instance can be defined using a YAML based configuration file with the following format"
+    )
 
     override val keywords = listOf<Keyword<*>>(name, rootDomain, providers, services)
 
-    override fun parse(yaml: YamlNode): Result<CloudConfigurationRuntime> {
-        val name =
-            when (val name = name.parse(yaml)) {
-                is Error<*> -> return Error(name.error)
-                is Success<String> -> name.data
-            }
+    override fun parse(yaml: YamlNode): Result<CloudConfiguration> {
+        val name = when (val name = name.parse(yaml)) {
+            is Error<*> -> return Error(name.error)
+            is Success<String> -> name.data
+        }
 
-        val rootDomain =
-            when (val rootDomain = rootDomain.parse(yaml)) {
-                is Error<*> -> return Error(rootDomain.error)
-                is Success<String?> -> rootDomain.data
-            }
+        val rootDomain = when (val rootDomain = rootDomain.parse(yaml)) {
+            is Error<*> -> return Error(rootDomain.error)
+            is Success<String?> -> rootDomain.data
+        }
 
-        val providers =
-            when (val providers = providers.parse(yaml)) {
-                is Error<*> -> return Error(providers.error)
-                is Success<List<ProviderConfiguration>> -> providers.data
-            }
+        val providers = when (val providers = providers.parse(yaml)) {
+            is Error<*> -> return Error(providers.error)
+            is Success<List<ProviderConfiguration>> -> providers.data
+        }
 
-        val services =
-            when (val services = services.parse(yaml)) {
-                is Error<*> -> return Error(services.error)
-                is Success<List<ServiceConfiguration>> -> services.data
-            }
+        val services = when (val services = services.parse(yaml)) {
+            is Error<*> -> return Error(services.error)
+            is Success<List<ServiceConfiguration>> -> services.data
+        }
 
-        return Success(CloudConfigurationRuntime(name, rootDomain, providers, services))
+        return Success(CloudConfiguration(name, rootDomain, providers, services))
     }
 }

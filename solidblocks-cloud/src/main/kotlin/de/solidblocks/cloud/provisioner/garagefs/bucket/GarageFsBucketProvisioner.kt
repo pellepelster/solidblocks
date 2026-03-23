@@ -1,24 +1,17 @@
 package de.solidblocks.cloud.provisioner.garagefs.bucket
 
-import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.garagefs.BucketAliasRequest
-import de.solidblocks.garagefs.CreateBucketRequest
-import de.solidblocks.garagefs.GarageFsApi
-import de.solidblocks.garagefs.UpdateBucketRequest
-import de.solidblocks.garagefs.UpdateBucketWebsiteAccess
+import de.solidblocks.garagefs.*
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
@@ -84,16 +77,12 @@ class GarageFsBucketProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvi
         }
     }
 
-    override suspend fun apply(
-        resource: GarageFsBucket,
-        context: ProvisionerContext,
-        log: LogContext,
-    ): ApplyResult<GarageFsBucketRuntime> {
+    override suspend fun apply(resource: GarageFsBucket, context: ProvisionerContext, log: LogContext): Result<GarageFsBucketRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
             val apis = when (it) {
-                is Error<GarageFsApi> -> throw RuntimeException(it.error)
+                is Error<GarageFsApi> -> return@withApiClients Error<GarageFsBucketRuntime>(it.error)
                 is Success<GarageFsApi> -> it.data
             }
 
@@ -126,7 +115,9 @@ class GarageFsBucketProvisioner : BaseGarageFsProvisioner(), ResourceLookupProvi
             )
         }
 
-        return ApplyResult(lookup(resource.asLookup(), context))
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<GarageFsBucketRuntime>("error creating ${resource.logText()}")
     }
 
     override val supportedLookupType: KClass<*> = GarageFsBucketLookup::class

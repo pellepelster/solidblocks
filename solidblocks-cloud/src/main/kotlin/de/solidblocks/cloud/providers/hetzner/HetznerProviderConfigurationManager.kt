@@ -3,7 +3,7 @@ package de.solidblocks.cloud.providers.hetzner
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.providers.CloudResourceProviderConfigurationManager
-import de.solidblocks.cloud.providers.ConfigurationContext
+import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
@@ -25,7 +25,7 @@ class HetznerProviderConfigurationManager : CloudResourceProviderConfigurationMa
 
     private val logger = KotlinLogging.logger {}
 
-    override fun validate(configuration: HetznerProviderConfiguration, context: ConfigurationContext, log: LogContext): Result<HetznerProviderConfigurationRuntime> {
+    override fun validate(configuration: HetznerProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<HetznerProviderConfigurationRuntime> {
 
         if (System.getenv("HCLOUD_TOKEN") == null) {
             "environment variable 'HCLOUD_TOKEN' not set".also {

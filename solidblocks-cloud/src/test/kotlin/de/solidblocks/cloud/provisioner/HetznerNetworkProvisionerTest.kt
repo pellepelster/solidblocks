@@ -5,16 +5,20 @@ import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -55,7 +59,7 @@ class HetznerNetworkProvisionerTest {
             }
 
             // create
-            networkProvisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            networkProvisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerNetworkRuntime>>().data.name shouldBe name
             assertSoftly(networkProvisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
                 it.deleteProtected shouldBe true
             }
@@ -72,7 +76,7 @@ class HetznerNetworkProvisionerTest {
                 it.changes[0].missing shouldBe true
                 it.changes[0].name shouldBe "label 'foo'"
             }
-            networkProvisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            networkProvisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerNetworkRuntime>>().data.name shouldBe name
             assertSoftly(networkProvisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
@@ -84,7 +88,7 @@ class HetznerNetworkProvisionerTest {
                 it.changes[0].changed shouldBe true
                 it.changes[0].name shouldBe "label 'foo'"
             }
-            networkProvisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            networkProvisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerNetworkRuntime>>().data.name shouldBe name
 
 
             // update delete protection
@@ -97,7 +101,7 @@ class HetznerNetworkProvisionerTest {
                 it.changes[0].actualValue shouldBe "true"
             }
 
-            networkProvisioner.apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).runtime?.name shouldBe name
+            networkProvisioner.apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<HetznerNetworkRuntime>>().data.name shouldBe name
             assertSoftly(networkProvisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()

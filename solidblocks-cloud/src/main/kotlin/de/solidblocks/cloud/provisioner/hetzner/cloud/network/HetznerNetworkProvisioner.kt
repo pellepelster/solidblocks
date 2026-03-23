@@ -1,9 +1,15 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.network
 
-import de.solidblocks.cloud.api.*
+import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.NetworkCreateRequest
 import de.solidblocks.hetzner.cloud.resources.NetworkUpdateRequest
 import de.solidblocks.utils.LogContext
@@ -19,12 +25,13 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
     override suspend fun lookup(lookup: HetznerNetworkLookup, context: ProvisionerContext) =
         api.networks.get(lookup.name)?.let { network ->
-            HetznerNetworkRuntime(network.id, network.name, network.protection.delete, network.labels, network.subnets.map {
+            HetznerNetworkRuntime(network.id, network.name, network.ipRange, network.protection.delete, network.labels, network.subnets.map {
                 HetznerSubnetRuntime(it.ipRange, network.id)
             })
         }
 
-    override suspend fun apply(resource: HetznerNetwork, context: ProvisionerContext, log: LogContext): ApplyResult<HetznerNetworkRuntime> {
+
+    override suspend fun apply(resource: HetznerNetwork, context: ProvisionerContext, log: LogContext): Result<HetznerNetworkRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
         val network =
@@ -42,7 +49,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
             }
 
         if (network == null) {
-            return ApplyResult(null)
+            return Error("failed to create network")
         }
 
         val protect = api.networks.changeDeleteProtection(network.id, resource.protected)
@@ -50,7 +57,9 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
         api.networks.update(network.id, NetworkUpdateRequest(resource.name, resource.labels))
 
-        return ApplyResult(lookup(resource.asLookup(), context))
+        return lookup(resource.asLookup(), context)?.let {
+            Success(it)
+        } ?: Error<HetznerNetworkRuntime>("error creating ${resource.logText()}")
     }
 
     override suspend fun diff(resource: HetznerNetwork, context: ProvisionerContext): ResourceDiff? {

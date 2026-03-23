@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.Output
-import de.solidblocks.cloud.api.ApplyResult
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceLookupProvider
@@ -9,6 +8,7 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.providers.*
+import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -48,10 +48,10 @@ class ProvisionersRegistry(
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> apply(resource: ResourceType, context: ProvisionerContext, log: LogContext): ApplyResult<RuntimeType> {
+    suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> apply(resource: ResourceType, context: ProvisionerContext, log: LogContext): Result<RuntimeType> {
         val provisioner = provisioner(resource)
         logger.info { "creating ${resource.logText()} using provisioner ${provisioner::class.qualifiedName}" }
-        return provisioner.apply(resource, context, log) as ApplyResult<RuntimeType>
+        return provisioner.apply(resource, context, log) as Result<RuntimeType>
     }
 
 

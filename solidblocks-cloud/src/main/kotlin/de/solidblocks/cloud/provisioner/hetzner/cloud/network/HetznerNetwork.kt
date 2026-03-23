@@ -7,7 +7,7 @@ class HetznerNetwork(name: String, val ipRange: String, labels: Map<String, Stri
 
     fun asLookup() = HetznerNetworkLookup(name)
 
-    override fun logText() = "network '$name'"
+    override fun logText() = "network '$name' (${ipRange})"
 
     override val lookupType = HetznerNetworkLookup::class
 }
