@@ -8,7 +8,7 @@ import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
 import de.solidblocks.cloud.providers.ProviderRegistration
-import de.solidblocks.cloud.providers.ProviderRuntime
+import de.solidblocks.cloud.providers.ProviderConfigurtionRuntime
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.utils.Error
@@ -16,7 +16,7 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 
 class CloudConfigurationFactory(
-    providerRegistrations: List<ProviderRegistration<out ProviderConfiguration, out ProviderRuntime, out ProviderConfigurationManager<*, *>>>,
+    providerRegistrations: List<ProviderRegistration<out ProviderConfiguration, out ProviderConfigurtionRuntime, out ProviderConfigurationManager<*, *>>>,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
 ) : ConfigurationFactory<CloudConfiguration> {
 

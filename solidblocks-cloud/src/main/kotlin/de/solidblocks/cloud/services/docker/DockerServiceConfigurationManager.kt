@@ -2,6 +2,7 @@ package de.solidblocks.cloud.services.docker
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.services.ServiceConfigurationManager
@@ -17,6 +18,7 @@ class DockerServiceConfigurationManager() :
     ServiceConfigurationManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
 
     override fun createResources(
+        cloud: CloudConfigurationRuntime,
         runtime: DockerServiceConfigurationRuntime
     ): List<BaseInfrastructureResource<*>> {
         return emptyList()
@@ -25,18 +27,18 @@ class DockerServiceConfigurationManager() :
     override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) =
         listOf<InfrastructureResourceProvisioner<*, *>>()
 
-    override fun validatConfiguration(index: Int, configuration: DockerServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<DockerServiceConfigurationRuntime> {
+    override fun validatConfiguration(index: Int, cloud: CloudConfiguration, service: DockerServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<DockerServiceConfigurationRuntime> {
 
-        configuration.endpoints.forEach { endpoint ->
-            if (configuration.endpoints.count { endpoint.port == it.port } > 1) {
+        service.endpoints.forEach { endpoint ->
+            if (service.endpoints.count { endpoint.port == it.port } > 1) {
                 return Error("duplicated port config for port '${endpoint.port}'")
             }
         }
 
         return Success(
             DockerServiceConfigurationRuntime(
-                index, configuration.name,
-                configuration.endpoints.map {
+                index, service.name,
+                service.endpoints.map {
                     DockerServiceEndpointConfigurationRuntime(it.port)
                 },
             ),

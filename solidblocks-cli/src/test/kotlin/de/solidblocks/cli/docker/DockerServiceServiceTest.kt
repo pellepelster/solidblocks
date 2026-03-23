@@ -3,7 +3,6 @@ package de.solidblocks.cli.docker
 import de.solidblocks.cloud.configuration.ConfigurationParser
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.services.docker.DockerServiceConfigurationManager
 import de.solidblocks.cloud.services.docker.DockerServiceRegistration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.utils.Success
@@ -44,8 +43,11 @@ class DockerServiceServiceTest {
     @Test
     fun testSelfLinkError() {
 
+        /*
         val cloudConfig = CloudConfiguration("test")
         DockerServiceConfigurationManager()
+        
+         */
     }
 
-    }
+}

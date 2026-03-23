@@ -1,5 +1,5 @@
 package de.solidblocks.cloud.providers.pass
 
-import de.solidblocks.cloud.providers.ProviderRuntime
+import de.solidblocks.cloud.providers.ProviderConfigurtionRuntime
 
-class PassProviderRuntime : ProviderRuntime
+class PassProviderRuntime : ProviderConfigurtionRuntime

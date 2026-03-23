@@ -7,6 +7,7 @@ import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
@@ -27,51 +28,43 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.postgresql.PostgresqlUserData
 import de.solidblocks.utils.LogContext
 
-class PostgresSqlServiceConfigurationManager(val cloudConfiguration: CloudConfigurationRuntime) :
-    ServiceConfigurationManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
+class PostgresSqlServiceConfigurationManager() : ServiceConfigurationManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 
-    override fun createResources(
-        runtime: PostgresSqlServiceConfigurationRuntime
-    ): List<BaseInfrastructureResource<*>> {
+    override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): List<BaseInfrastructureResource<*>> {
 
-        val dataVolume =
-            HetznerVolume(serverName(cloudConfiguration, runtime.name) + "-data", cloudConfiguration.hetznerProviderConfig().defaultLocation, ByteSize.fromGigabytes(runtime.instanceSize), emptyMap())
-        val backupVolume =
-            HetznerVolume(serverName(cloudConfiguration, runtime.name) + "-backup", cloudConfiguration.hetznerProviderConfig().defaultLocation, ByteSize.fromGigabytes(runtime.backupRetention), emptyMap())
+        val dataVolume = HetznerVolume(serverName(cloud, runtime.name) + "-data", cloud.hetznerProviderConfig().defaultLocation, ByteSize.fromGigabytes(runtime.instanceSize), emptyMap())
+        val backupVolume = HetznerVolume(serverName(cloud, runtime.name) + "-backup", cloud.hetznerProviderConfig().defaultLocation, ByteSize.fromGigabytes(runtime.backupRetention), emptyMap())
 
 
         val userData = UserData(
             setOf(dataVolume, backupVolume),
             { context ->
                 PostgresqlUserData(
-                    context.ensureLookup(dataVolume.asLookup()).device,
-                    context.ensureLookup(backupVolume.asLookup()).device,
-                    runtime.name
+                    context.ensureLookup(dataVolume.asLookup()).device, context.ensureLookup(backupVolume.asLookup()).device, runtime.name
                 ).render()
             },
         )
 
         val server = HetznerServer(
-            serverName(cloudConfiguration, runtime.name),
+            serverName(cloud, runtime.name),
             userData = userData,
-            location = cloudConfiguration.hetznerProviderConfig().defaultLocation,
-            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloudConfiguration))),
+            location = cloud.hetznerProviderConfig().defaultLocation,
+            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
             volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
-            type = cloudConfiguration.hetznerProviderConfig().defaultInstanceType,
-            subnet = HetznerSubnetLookup(DEFAULT_SERVICE_SUBNET, HetznerNetworkLookup(networkName(cloudConfiguration))),
+            type = cloud.hetznerProviderConfig().defaultInstanceType,
+            subnet = HetznerSubnetLookup(DEFAULT_SERVICE_SUBNET, HetznerNetworkLookup(networkName(cloud))),
             privateIp = serverIp(runtime.index)
         )
 
         return listOf(server)
     }
 
-    override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) =
-        listOf<InfrastructureResourceProvisioner<*, *>>()
+    override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()
 
-    override fun validatConfiguration(index: Int, configuration: PostgresSqlServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<PostgresSqlServiceConfigurationRuntime> {
+    override fun validatConfiguration(index: Int, cloud: CloudConfiguration, service: PostgresSqlServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<PostgresSqlServiceConfigurationRuntime> {
 
-        configuration.databases.forEach { database ->
-            if (configuration.databases.count { database.name == it.name } > 1) {
+        service.databases.forEach { database ->
+            if (service.databases.count { database.name == it.name } > 1) {
                 return Error("duplicated database with name '${database.name}', ensure that the database names are unique")
             }
 
@@ -85,10 +78,10 @@ class PostgresSqlServiceConfigurationManager(val cloudConfiguration: CloudConfig
         return Success(
             PostgresSqlServiceConfigurationRuntime(
                 index,
-                configuration.name,
-                configuration.instanceSize,
-                configuration.backupFullRetentionDays,
-                configuration.databases.map {
+                service.name,
+                service.instanceSize,
+                service.backupFullRetentionDays,
+                service.databases.map {
                     PostgresSqlServiceDatabaseConfigurationRuntime(it.name, it.users.map {
                         PostgresSqlServiceDatabaseUsersConfigurationRuntime(it.name)
                     })

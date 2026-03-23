@@ -1,5 +1,6 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.cloud.CloudManager.CloudRuntime
 import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.networkName
@@ -34,7 +35,6 @@ import de.solidblocks.utils.bold
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class CloudProvisioner(
@@ -46,27 +46,27 @@ class CloudProvisioner(
 
     val provisionerContext =
         ProvisionerContext(
-            runtime.providers.sshKeyProvider().keyPair,
-            runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
+            runtime.cloud.providers.sshKeyProvider().keyPair,
+            runtime.cloud.providers.sshKeyProvider().privateKey.absolutePathString(),
             runtime.configurationContext.configFileDirectory,
-            runtime.configuration.name,
-            runtime.configuration.getDefaultEnvironment(),
+            runtime.cloud.name,
+            runtime.cloud.getDefaultEnvironment(),
             registry,
         )
 
     fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
         val provisioner = createProvisioner()
-        logInfo(bold("planning changes for cloud configuration '${runtime.configuration.name}'"))
+        logInfo(bold("planning changes for cloud configuration '${runtime.cloud.name}'"))
         val resourceGroups = createResourceGroups()
         return@runBlocking provisioner.diff(resourceGroups, provisionerContext, log)
     }
 
-    fun help(): Result<List<Output>> = runBlocking {
+    fun help(runtime: CloudRuntime): Result<List<Output>> = runBlocking {
         val provisioner = createProvisioner()
         val resourceGroups = createResourceGroups()
 
         val serviceOutput = serviceManagers().flatMap {
-            when (val result = it.second.output(it.first, provisionerContext)) {
+            when (val result = it.second.output(runtime.cloud, it.first, provisionerContext)) {
                 is Error<List<Output>> -> return@runBlocking Error<List<Output>>(result.error)
                 is Success<List<Output>> -> result.data
             }
@@ -93,46 +93,46 @@ class CloudProvisioner(
                 is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
             }
 
-        logInfo(bold("rolling out changes for cloud configuration '${runtime.configuration.name}'"))
+        logInfo(bold("rolling out changes for cloud configuration '${runtime.cloud.name}'"))
         return@runBlocking provisioner.apply(diffs, provisionerContext, log.indent())
     }
 
     private fun createResourceGroups(): List<ResourceGroup> {
-        val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
-        val sshKey = HetznerSSHKey(sshKeyName(runtime.configuration), publicKey, emptyMap())
-        val network = HetznerNetwork(networkName(runtime.configuration), DEFAULT_NETWORK)
+        val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.cloud.providers.sshKeyProvider().keyPair.public)
+        val sshKey = HetznerSSHKey(sshKeyName(runtime.cloud), publicKey, emptyMap())
+        val network = HetznerNetwork(networkName(runtime.cloud), DEFAULT_NETWORK)
         val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
 
-        val cloudResourceGroup = ResourceGroup("cloud '${runtime.configuration.name} base resources'", listOf(sshKey, network, subnet))
+        val cloudResourceGroup = ResourceGroup("cloud '${runtime.cloud.name} base resources'", listOf(sshKey, network, subnet))
 
         val serviceResourceGroups = serviceManagers().map {
             ResourceGroup(
                 "service '${it.first.name}'",
-                it.second.createResources(it.first),
+                it.second.createResources(runtime.cloud, it.first),
                 setOf(cloudResourceGroup),
             )
         }
         return listOf(cloudResourceGroup) + serviceResourceGroups
     }
 
-    private fun serviceManagers() = runtime.services.map {
+    private fun serviceManagers() = runtime.cloud.services.map {
         val manager:
                 ServiceConfigurationManager<ServiceConfiguration, ServiceConfigurationRuntime> =
-            serviceRegistrations.managerForService(it, runtime.configuration)
+            serviceRegistrations.managerForService(it)
         it to manager
     }
 
     private fun createProvisioner() = Provisioner(registry)
 
     private fun createRegistry(): ProvisionersRegistry {
-        val providerProvisioners = providerRegistrations.createProvisioners(runtime.providers)
-        val providerLookups = providerRegistrations.createLookups(runtime.providers)
+        val providerProvisioners = providerRegistrations.createProvisioners(runtime.cloud.providers)
+        val providerLookups = providerRegistrations.createLookups(runtime.cloud.providers)
 
         val serviceProvisioners =
-            runtime.services.flatMap {
+            runtime.cloud.services.flatMap {
                 val manager:
                         ServiceConfigurationManager<ServiceConfiguration, ServiceConfigurationRuntime> =
-                    serviceRegistrations.managerForService(it, runtime.configuration)
+                    serviceRegistrations.managerForService(it)
                 manager.createProvisioners(it)
             }
 

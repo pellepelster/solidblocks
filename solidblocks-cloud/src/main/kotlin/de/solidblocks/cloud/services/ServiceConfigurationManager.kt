@@ -11,22 +11,20 @@ import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
 interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
-    fun createResources(runtime: R): List<BaseInfrastructureResource<*>>
+
+    fun createResources(cloud: CloudConfigurationRuntime, runtime: R): List<BaseInfrastructureResource<*>>
 
     fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
-    fun validatConfiguration(index: Int, configuration: C, context: ProvisionerContext, log: LogContext): Result<R>
+    fun validatConfiguration(index: Int, cloud: CloudConfiguration, configuration: C, context: ProvisionerContext, log: LogContext): Result<R>
 
-    fun output(runtime: R, context: ProvisionerContext): Result<List<de.solidblocks.cloud.Output>> = Success(emptyList())
+    fun output(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<List<de.solidblocks.cloud.Output>> = Success(emptyList())
 
     val supportedConfiguration: KClass<C>
 
     val supportedRuntime: KClass<R>
 }
 
-fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(
-    service: C,
-    cloudConfiguration: CloudConfiguration,
-): ServiceConfigurationManager<C, R> =
-    this.single { it.supportedConfiguration == service::class }.createManager(cloudConfiguration) as ServiceConfigurationManager<C, R>?
+fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceConfigurationManager<C, R> =
+    this.single { it.supportedConfiguration == service::class }.createManager() as ServiceConfigurationManager<C, R>?
         ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")

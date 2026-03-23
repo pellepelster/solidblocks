@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.services.postgres
 
-import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationFactory
@@ -11,8 +10,7 @@ class PostgresSqlServiceRegistration :
     override val supportedConfiguration = PostgresSqlServiceConfiguration::class
     override val supportedRuntime = PostgresSqlServiceConfigurationRuntime::class
 
-    override fun createManager(cloudConfiguration: CloudConfigurationRuntime) =
-        PostgresSqlServiceConfigurationManager(cloudConfiguration)
+    override fun createManager() = PostgresSqlServiceConfigurationManager()
 
     override fun createConfigurationFactory() = PostgresSqlServiceConfigurationFactory()
 
