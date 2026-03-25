@@ -12,6 +12,7 @@ import de.solidblocks.cli.utils.createTerminal
 import de.solidblocks.cloud.CloudHelp
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.Output
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -34,12 +35,12 @@ class CloudHelpCommand : CliktCommand(name = "help") {
             val manager = CloudManager(configFile!!)
             val runtime =
                 when (val result = manager.validate()) {
-                    is Error<CloudManager.CloudRuntime> -> {
+                    is Error<CloudConfigurationRuntime> -> {
                         logError(result.error)
                         throw ProgramResult(1)
                     }
 
-                    is Success<CloudManager.CloudRuntime> -> result.data
+                    is Success<CloudConfigurationRuntime> -> result.data
                 }
 
             terminal.println()

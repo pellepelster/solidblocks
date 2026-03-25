@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.KeywordHelp
+import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
@@ -15,6 +16,8 @@ import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 
 class TestContextUtils {}
+
+val TEST_CLOUD_CONFIGURATION = CloudConfiguration("testCloudName", "cloud1.test-blcks.de", emptyList(), emptyList())
 
 val TEST_PROVISIONER_CONTEXT = ProvisionerContext(
     SSHKeyUtils.loadKey(TestContextUtils::class.java.getResource("/test_ed25519.key").readText()),

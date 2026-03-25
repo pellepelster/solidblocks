@@ -10,7 +10,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test
 
-class S3ServiceConfigurationFactoryTest {
+class S3ServiceTest {
 
   @Test
   fun testParse() {

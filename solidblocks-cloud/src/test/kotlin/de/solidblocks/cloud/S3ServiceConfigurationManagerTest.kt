@@ -2,7 +2,7 @@ package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.provisioner.ProvisionerContext
-import de.solidblocks.cloud.services.s3.S3ServiceConfigurationManager
+import de.solidblocks.cloud.services.s3.S3ServiceManager
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
@@ -23,7 +23,7 @@ class S3ServiceConfigurationManagerTest {
             emptyList(),
         )
 
-        val result = S3ServiceConfigurationManager().validatConfiguration(
+        val result = S3ServiceManager().validatConfiguration(
                 0,
                 cloud,
                 S3ServiceConfiguration(
@@ -51,7 +51,7 @@ class S3ServiceConfigurationManagerTest {
             emptyList(),
         )
 
-        val result = S3ServiceConfigurationManager().validatConfiguration(
+        val result = S3ServiceManager().validatConfiguration(
                 0,
                 cloud,
                 S3ServiceConfiguration(

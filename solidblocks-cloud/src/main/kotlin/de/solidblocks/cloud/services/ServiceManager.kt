@@ -10,7 +10,7 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
-interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
+interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
 
     fun createResources(cloud: CloudConfigurationRuntime, runtime: R): List<BaseInfrastructureResource<*>>
 
@@ -25,6 +25,7 @@ interface ServiceConfigurationManager<C : ServiceConfiguration, R : ServiceConfi
     val supportedRuntime: KClass<R>
 }
 
-fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceConfigurationManager<C, R> =
-    this.single { it.supportedConfiguration == service::class }.createManager() as ServiceConfigurationManager<C, R>?
+fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceManager<C, R> =
+    this.single { it.supportedConfiguration == service::class }.createManager() as ServiceManager<C, R>?
         ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")
+

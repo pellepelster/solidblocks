@@ -26,7 +26,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.services.ServiceConfigurationManager
+import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
@@ -45,7 +45,7 @@ import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
 
-class S3ServiceConfigurationManager() : ServiceConfigurationManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
+class S3ServiceManager() : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
     private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
 

@@ -1,6 +1,7 @@
 package de.solidblocks.cli
 
 import de.solidblocks.cloud.configuration.ConfigurationParser
+import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
@@ -18,11 +19,10 @@ class CloudConfigurationFactoryTest {
             """
         name: foo-bar
         root_domain: foo.bar
-        """
-                .trimIndent()
+        """.trimIndent()
 
         val cloud =
-            ConfigurationParser(CloudConfigurationFactory(emptyList(), emptyList())).parse(rawYml).shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
+            ConfigurationParser(CloudConfigurationFactory(emptyList(), emptyList())).parse(rawYml).shouldBeTypeOf<Success<CloudConfiguration>>()
 
         cloud.data.name shouldBe "foo-bar"
         cloud.data.services.shouldBeEmpty()
@@ -39,8 +39,7 @@ class CloudConfigurationFactoryTest {
             - name: foo-bar
               type: invalid
         
-        """
-                .trimIndent()
+        """.trimIndent()
 
         val cloud =
             ConfigurationParser(CloudConfigurationFactory(emptyList(), emptyList())).parse(rawYml).shouldBeTypeOf<Error<CloudConfigurationRuntime>>()

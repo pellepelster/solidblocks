@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.file
 import de.solidblocks.cli.cloud.CloudHelpCommand.Companion.printHelp
 import de.solidblocks.cloud.CloudManager
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
@@ -21,12 +22,12 @@ class CloudApplyCommand : CliktCommand(name = "apply") {
         val manager = CloudManager(configFile)
         val runtime =
             when (val result = manager.validate()) {
-                is Error<CloudManager.CloudRuntime> -> {
+                is Error<CloudConfigurationRuntime> -> {
                     logError(result.error)
                     throw ProgramResult(1)
                 }
 
-                is Success<CloudManager.CloudRuntime> -> result.data
+                is Success<CloudConfigurationRuntime> -> result.data
             }
 
         printHelp(manager.apply(runtime))

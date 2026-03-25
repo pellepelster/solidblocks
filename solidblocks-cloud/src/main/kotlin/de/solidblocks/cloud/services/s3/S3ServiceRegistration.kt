@@ -10,7 +10,7 @@ class S3ServiceRegistration :
     override val supportedConfiguration = S3ServiceConfiguration::class
     override val supportedRuntime = S3ServiceConfigurationRuntime::class
 
-    override fun createManager() = S3ServiceConfigurationManager()
+    override fun createManager() = S3ServiceManager()
 
     override fun createConfigurationFactory() = S3ServiceConfigurationFactory()
 

@@ -8,6 +8,7 @@ import com.github.ajalt.clikt.parameters.types.file
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
+import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
@@ -23,12 +24,12 @@ class CloudPlanCommand : CliktCommand(name = "plan") {
 
     val runtime =
         when (val result = manager.validate()) {
-          is Error<CloudManager.CloudRuntime> -> {
+          is Error<CloudConfigurationRuntime> -> {
             logError(result.error)
             throw ProgramResult(1)
           }
 
-          is Success<CloudManager.CloudRuntime> -> result.data
+          is Success<CloudConfigurationRuntime> -> result.data
         }
 
     when (val result = manager.plan(runtime)) {

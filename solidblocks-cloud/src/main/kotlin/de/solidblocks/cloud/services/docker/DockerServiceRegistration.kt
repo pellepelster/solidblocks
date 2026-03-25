@@ -10,7 +10,7 @@ class DockerServiceRegistration :
     override val supportedConfiguration = DockerServiceConfiguration::class
     override val supportedRuntime = DockerServiceConfigurationRuntime::class
 
-    override fun createManager() = DockerServiceConfigurationManager()
+    override fun createManager() = DockerServiceManager()
 
     override fun createConfigurationFactory() = DockerServiceConfigurationFactory()
 

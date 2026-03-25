@@ -10,7 +10,7 @@ class PostgresSqlServiceRegistration :
     override val supportedConfiguration = PostgresSqlServiceConfiguration::class
     override val supportedRuntime = PostgresSqlServiceConfigurationRuntime::class
 
-    override fun createManager() = PostgresSqlServiceConfigurationManager()
+    override fun createManager() = PostgresSqlServiceManager()
 
     override fun createConfigurationFactory() = PostgresSqlServiceConfigurationFactory()
 

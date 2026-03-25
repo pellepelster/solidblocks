@@ -12,7 +12,7 @@ data class StringConstraints(val maxLength: Int? = null, val minLength: Int? = n
     companion object {
         val NONE = StringConstraints()
         val RFC_1123_NAME = StringConstraints(63, 2, "[a-z0-9]+(-[a-z0-9]+)*")
-        val DOMAIN_NAME = StringConstraints(253, 4, "^([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,}\$")
+        val DOMAIN_NAME = StringConstraints(253, 4, "^([a-z0-9]+(-[a-z0-9]+)*)(\\.([a-z0-9]+(-[a-z0-9]+)*))*\$")
     }
 }
 
