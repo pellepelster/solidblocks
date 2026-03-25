@@ -35,6 +35,8 @@ dependencies {
 
     testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.455")
     testImplementation("com.google.cloud:google-cloud-storage:2.34.0")
+
+    testImplementation(project(":solidblocks-test"))
 }
 
 tasks.withType<Test> {
