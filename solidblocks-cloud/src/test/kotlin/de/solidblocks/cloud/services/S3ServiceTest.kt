@@ -18,7 +18,7 @@ class S3ServiceConfigurationFactoryTest {
         """
         name: "name1"
         buckets:
-            - name: "bucket1"
+            - name: bucket1
         """
             .trimIndent()
 

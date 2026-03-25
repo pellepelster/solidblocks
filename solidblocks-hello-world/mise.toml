@@ -1,0 +1,24 @@
+[tasks.clean]
+run = "rm -rf build"
+
+[tasks.build]
+run = "docker build -t ghcr.io/pellepelster/solidblocks-rds-postgresql:latest ."
+
+[tasks.run]
+run = """
+docker compose build
+docker compose up
+"""
+
+[tasks.release-artifacts]
+run = """
+docker push ghcr.io/pellepelster/solidblocks-rds-postgresql:latest
+"""
+
+[tasks.preflight-check]
+run = [
+    { task = "clean" },
+    { task = "format" },
+    { task = "build" },
+    { task = "test" },
+]
