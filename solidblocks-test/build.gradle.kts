@@ -54,9 +54,9 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
     implementation("com.github.docker-java:docker-java:3.4.0")
     implementation("com.github.docker-java:docker-java-transport-zerodep:3.4.0")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.455")
 
     api("io.kotest:kotest-assertions-core:5.9.1")
-
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     testImplementation("org.awaitility:awaitility:4.2.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")

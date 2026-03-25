@@ -1,11 +1,13 @@
 package de.solidblocks.infra.test
 
 import de.solidblocks.utils.logInfo
-import java.math.BigInteger
-import java.security.MessageDigest
-import org.junit.jupiter.api.extension.*
+import org.junit.jupiter.api.extension.AfterAllCallback
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.api.extension.ParameterContext
+import org.junit.jupiter.api.extension.ParameterResolver
+import org.junit.jupiter.api.extension.TestWatcher
 
-public class SolidblocksTest : ParameterResolver, BeforeAllCallback, AfterAllCallback, TestWatcher {
+public class SolidblocksTest : ParameterResolver, AfterAllCallback, TestWatcher {
 
   private val contexts = mutableMapOf<String, SolidblocksTestContext>()
 
@@ -14,31 +16,12 @@ public class SolidblocksTest : ParameterResolver, BeforeAllCallback, AfterAllCal
       extensionContext: ExtensionContext,
   ) = parameterContext.parameter.type == SolidblocksTestContext::class.java
 
-  fun String.toTestId(length: Int): String {
-    val digest = MessageDigest.getInstance("SHA-256")
-    val alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    val base = alphanumeric.length
-
-    val hashBytes = digest.digest(this.toByteArray())
-    var number = BigInteger(1, hashBytes)
-
-    val sb = StringBuilder()
-
-    repeat(length) {
-      val remainder = (number.mod(BigInteger.valueOf(base.toLong()))).toInt()
-      sb.append(alphanumeric[remainder])
-      number = number.divide(BigInteger.valueOf(base.toLong()))
-    }
-
-    return sb.toString()
-  }
-
   override fun resolveParameter(
       parameterContext: ParameterContext,
       extensionContext: ExtensionContext,
   ) =
       contexts.getOrPut(extensionContext.uniqueId) {
-        val testId = extensionContext.uniqueId.toTestId(12)
+        val testId = extensionContext.uniqueId.generateTestId()
         logInfo("creating test context with id '$testId' for '${extensionContext.uniqueId}'")
         SolidblocksTestContext(testId)
       }
@@ -63,10 +46,6 @@ public class SolidblocksTest : ParameterResolver, BeforeAllCallback, AfterAllCal
   override fun afterAll(context: ExtensionContext) {
     allContexts().forEach { it.afterAll() }
     allContexts().forEach { it.cleanUp() }
-  }
-
-  override fun beforeAll(context: ExtensionContext) {
-    allContexts().forEach { it.beforeAll() }
   }
 
   override fun testFailed(context: ExtensionContext, cause: Throwable?) {

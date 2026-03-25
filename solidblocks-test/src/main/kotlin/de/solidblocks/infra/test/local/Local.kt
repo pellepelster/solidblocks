@@ -1,4 +1,5 @@
 import de.solidblocks.infra.test.CommandTestContext
+import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.command.ProcessResult
@@ -15,10 +16,14 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.time.TimeSource
 import kotlin.time.TimeSource.Monotonic.markNow
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 
 class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
 
@@ -143,7 +148,8 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
   }
 }
 
-class LocalTestContext : CommandTestContext<LocalCommandBuilder, LocalScriptBuilder> {
+class LocalTestContext(testId: String? = null) :
+    TestContext(testId), CommandTestContext<LocalCommandBuilder, LocalScriptBuilder> {
 
   private val resources = mutableListOf<Closeable>()
 
@@ -164,4 +170,4 @@ class LocalTestContext : CommandTestContext<LocalCommandBuilder, LocalScriptBuil
   }
 }
 
-fun localTestContext() = LocalTestContext()
+fun localTestContext(testId: String? = null) = LocalTestContext(testId)

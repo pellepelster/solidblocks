@@ -6,13 +6,13 @@ import kotlin.concurrent.atomics.incrementAndFetch
 
 @OptIn(ExperimentalAtomicApi::class) val testContextOrder = AtomicLong(0)
 
-open class TestContext {
+open class TestContext(optionalTestId: String?) {
+
+  val testId: String = optionalTestId ?: generateTestId()
 
   @OptIn(ExperimentalAtomicApi::class) val order = testContextOrder.incrementAndFetch()
 
   val testContexts = mutableListOf<TestContext>()
-
-  open fun beforeAll() {}
 
   open fun afterAll() {}
 

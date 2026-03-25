@@ -10,6 +10,7 @@ import com.github.dockerjava.api.model.MountType
 import com.github.dockerjava.api.model.PullResponseItem
 import de.solidblocks.infra.test.CommandTestContext
 import de.solidblocks.infra.test.Constants.dockerTestImageLabels
+import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
 import de.solidblocks.infra.test.command.ProcessResult
@@ -18,7 +19,11 @@ import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logInfo
-import java.io.*
+import java.io.BufferedWriter
+import java.io.Closeable
+import java.io.OutputStreamWriter
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.lang.Thread.sleep
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -27,8 +32,16 @@ import kotlin.io.path.exists
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeSource
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 
 enum class DockerTestImage {
   DEBIAN_10 {
@@ -229,8 +242,8 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
   }
 }
 
-class DockerTestContext(private val image: DockerTestImage) :
-    CommandTestContext<DockerCommandBuilder, DockerScriptBuilder> {
+class DockerTestContext(testId: String? = null, private val image: DockerTestImage) :
+    TestContext(testId), CommandTestContext<DockerCommandBuilder, DockerScriptBuilder> {
 
   private val resources = mutableListOf<Closeable>()
 
@@ -251,4 +264,5 @@ class DockerTestContext(private val image: DockerTestImage) :
   }
 }
 
-fun dockerTestContext(image: DockerTestImage) = DockerTestContext(image)
+fun dockerTestContext(image: DockerTestImage, testId: String? = null) =
+    DockerTestContext(testId, image)

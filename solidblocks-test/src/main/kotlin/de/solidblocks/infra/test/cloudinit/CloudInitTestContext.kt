@@ -31,8 +31,8 @@ class CloudInitTestContext(
     val keyPair: KeyPair,
     val username: String = "root",
     val port: Int = 22,
-    val testId: String? = null,
-) : TestContext() {
+    testId: String? = null,
+) : TestContext(testId) {
 
   companion object {
     val json = Json { this.ignoreUnknownKeys = true }

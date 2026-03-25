@@ -4,16 +4,18 @@ import de.solidblocks.infra.test.TestContext
 import java.nio.file.Path
 import kotlin.io.path.exists
 
-fun terraformTestContext(dir: Path, version: String? = null) = TerraformTestContext(dir, version)
+fun terraformTestContext(dir: Path, version: String? = null, testId: String? = null) =
+    TerraformTestContext(dir, version, testId = testId)
 
-fun terraformTestContext(dir: String, version: String? = null) =
-    TerraformTestContext(Path.of(dir), version)
+fun terraformTestContext(dir: String, version: String? = null, testId: String? = null) =
+    TerraformTestContext(Path.of(dir), version, testId = testId)
 
 class TerraformTestContext(
     val dir: Path,
     version: String? = null,
     val environment: Map<String, String> = emptyMap(),
-) : TestContext() {
+    testId: String? = null,
+) : TestContext(testId) {
 
   val terraform = Terraform(dir, version, environment)
 

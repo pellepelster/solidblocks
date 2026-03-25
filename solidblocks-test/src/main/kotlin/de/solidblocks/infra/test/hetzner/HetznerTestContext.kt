@@ -1,7 +1,12 @@
 package de.solidblocks.infra.test.hetzner
 
 import de.solidblocks.hetzner.cloud.HetznerApi
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
+import de.solidblocks.hetzner.cloud.model.HetznerApiException
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
+import de.solidblocks.hetzner.cloud.model.logText
+import de.solidblocks.hetzner.cloud.model.toLabelSelectors
 import de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest
@@ -10,6 +15,7 @@ import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.cloudinit.cloudInitTestContext
 import de.solidblocks.infra.test.host.hostTestContext
 import de.solidblocks.infra.test.ssh.sshTestContext
+import de.solidblocks.infra.test.testLabels
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
@@ -22,8 +28,8 @@ class HetznerServerTestContext(
     val id: Long,
     val host: String,
     val privateKey: String,
-    val testId: String? = null,
-) : TestContext() {
+    testId: String? = null,
+) : TestContext(testId) {
 
   fun cloudInit(username: String = "root", port: Int = 22) =
       cloudInitTestContext(host, privateKey, username, port, testId).also { testContexts.add(it) }
@@ -31,10 +37,10 @@ class HetznerServerTestContext(
   fun ssh(username: String = "root", port: Int = 22) =
       sshTestContext(host, privateKey, username, port, testId).also { testContexts }
 
-  fun host() = hostTestContext(host, testId)
+  fun host(testId: String? = null) = hostTestContext(host, testId)
 }
 
-class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext() {
+class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestContext(testId) {
 
   val defaultLocation = HetznerLocation.nbg1
 
@@ -42,7 +48,7 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
 
   val testSSHhKey = SSHKeyUtils.ED25519.generate()
 
-  val defaultLabels = mapOf("blcks.de/test-id" to testId, "blcks.de/managed-by" to "test")
+  val defaultLabels = testLabels(this.testId)
 
   init {
     logInfo(
@@ -122,10 +128,6 @@ class HetznerTestContext(hcloudToken: String, val testId: String) : TestContext(
             ),
         )
     newSSHKey.sshKey.id
-  }
-
-  override fun beforeAll() {
-    cleanup()
   }
 
   override fun cleanUp() {
