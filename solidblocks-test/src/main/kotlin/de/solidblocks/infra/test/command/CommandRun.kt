@@ -27,7 +27,12 @@ class CommandRunAssertion(
 
   fun fileExists(file: String) = runBlocking {
     val result = commandRunner.runCommand(arrayOf("test", "-f", file)) {}
+    val processResult = result.await()
+    processResult.exitCode == 0
+  }
 
+  fun directoryExists(directory: String) = runBlocking {
+    val result = commandRunner.runCommand(arrayOf("test", "-d", directory)) {}
     val processResult = result.await()
     processResult.exitCode == 0
   }
@@ -35,9 +40,15 @@ class CommandRunAssertion(
   fun sha256sum(file: String) = runBlocking {
     val output = mutableListOf<TimestampedOutputLine>()
     val result = commandRunner.runCommand(arrayOf("sha256sum", file)) { output.add(it) }
-
     result.await()
 
+    output.joinToString("") { it.line }.split(" ").firstOrNull()?.trim()
+  }
+
+  fun fileContent(file: String) = runBlocking {
+    val output = mutableListOf<TimestampedOutputLine>()
+    val result = commandRunner.runCommand(arrayOf("cat", file)) { output.add(it) }
+    result.await()
     output.joinToString("") { it.line }.split(" ").firstOrNull()?.trim()
   }
 }

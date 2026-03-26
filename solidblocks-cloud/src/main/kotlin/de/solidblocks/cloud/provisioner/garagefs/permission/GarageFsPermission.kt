@@ -15,20 +15,23 @@ class GarageFsPermission(
     val owner: Boolean,
     val read: Boolean,
     val write: Boolean,
-    dependsOn: Set<BaseResource> = emptySet()
-) : BaseInfrastructureResource<GarageFsPermissionRuntime>("${bucket.name}-${accessKey.name}", setOf(server, bucket, accessKey) + dependsOn) {
+    dependsOn: Set<BaseResource> = emptySet(),
+) :
+    BaseInfrastructureResource<GarageFsPermissionRuntime>(
+        "${bucket.name}-${accessKey.name}",
+        setOf(server, bucket, accessKey) + dependsOn,
+    ) {
 
-    fun asLookup() =
-        GarageFsPermissionLookup(
-            name,
-            bucket.asLookup(),
-            accessKey.asLookup(),
-            server.asLookup(),
-            adminToken.asLookup(),
-        )
+  fun asLookup() =
+      GarageFsPermissionLookup(
+          name,
+          bucket.asLookup(),
+          accessKey.asLookup(),
+          server.asLookup(),
+          adminToken.asLookup(),
+      )
 
-    override fun logText() = "GarageFS permission '$name' on ${server.logText()}"
+  override fun logText() = "GarageFS permission '$name' on ${server.logText()}"
 
-    override val lookupType = GarageFsPermissionLookup::class
-
+  override val lookupType = GarageFsPermissionLookup::class
 }

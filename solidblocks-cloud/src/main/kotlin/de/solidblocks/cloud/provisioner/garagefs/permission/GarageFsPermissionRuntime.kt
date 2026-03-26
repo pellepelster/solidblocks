@@ -11,6 +11,6 @@ class GarageFsPermissionRuntime(
     val read: Boolean,
     val write: Boolean,
 ) : BaseInfrastructureResourceRuntime() {
-    val name: String
-        get() = "${bucket.name}.${accessKey.name}"
+  val name: String
+    get() = "${bucket.name}.${accessKey.name}"
 }

@@ -21,7 +21,7 @@ enum class Target(var target: String) {
   override fun toString(): String = target
 }
 
-class SystemdConfig(val unit: Unit, val service: Service, val install: Install = Install()) {
+class SystemDConfig(val unit: Unit, val service: Service, val install: Install? = Install()) {
   fun render(): String {
     val sw = StringWriter()
 
@@ -39,6 +39,10 @@ class SystemdConfig(val unit: Unit, val service: Service, val install: Install =
     sw.appendLine()
 
     sw.appendLine("[Service]")
+    if (service.type != null) {
+      sw.appendLine("Type=${service.type}")
+    }
+
     service.environment.entries.forEach { sw.appendLine("Environment=\"${it.key}=${it.value}\"") }
     sw.appendLine("ExecStart=${service.execStart.joinToString(" ")}")
     service.stateDirectory?.let { sw.appendLine("StateDirectory=$it") }
@@ -46,8 +50,10 @@ class SystemdConfig(val unit: Unit, val service: Service, val install: Install =
     service.limitNOFILE?.let { sw.appendLine("LimitNOFILE=$it") }
     sw.appendLine()
 
-    sw.appendLine("[Install]")
-    sw.appendLine("WantedBy=${install.wantedBy}")
+    if (install != null) {
+      sw.appendLine("[Install]")
+      sw.appendLine("WantedBy=${install.wantedBy}")
+    }
 
     return sw.toString()
   }
@@ -60,6 +66,10 @@ class Unit(
     val wants: List<Target>? = null,
 )
 
+enum class ServiceType {
+  simple,
+}
+
 class Service(
     val execStart: List<String>,
     val restart: Restart = Restart.ALWAYS,
@@ -68,6 +78,7 @@ class Service(
     val stateDirectory: String? = null,
     val limitNOFILE: Int? = null,
     val execDown: List<String>? = null,
+    val type: ServiceType? = null,
 )
 
 class Install(val wantedBy: Target = Target.MULTI_USER_TARGET)

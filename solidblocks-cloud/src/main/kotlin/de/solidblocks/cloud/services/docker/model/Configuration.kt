@@ -7,7 +7,7 @@ data class DockerServiceConfiguration(
     val endpoints: List<DockerServiceEndpointConfiguration>,
     val links: List<String>,
 ) : ServiceConfiguration {
-    override val type = "docker"
+  override val type = "docker"
 }
 
 data class DockerServiceEndpointConfiguration(val port: Int)

@@ -1,18 +1,20 @@
 package de.solidblocks.cloudinit
 
-import de.solidblocks.cloudinit.model.*
-import de.solidblocks.cloudinit.model.CloudInitUserData.Companion.SCRIPT_PLACEHOLDER
-import de.solidblocks.cloudinit.model.CloudInitUserData.Companion.VARIABLES_PLACEHOLDER
+import de.solidblocks.cloudinit.model.CloudInitUserData
+import de.solidblocks.cloudinit.model.FilePermissions
+import de.solidblocks.cloudinit.model.GroupPermission
+import de.solidblocks.cloudinit.model.OtherPermission
+import de.solidblocks.cloudinit.model.UserPermission
+import de.solidblocks.cloudinit.model.WriteFile
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.hetzner.HetznerServerTestContext
 import de.solidblocks.shell.StorageLibrary
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldNotContain
 import java.nio.file.Files
 import java.time.Duration.ofSeconds
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.writeText
 import org.awaitility.Awaitility.await
@@ -34,6 +36,7 @@ class CloudInitUserDataTest {
     val randomContent = UUID.randomUUID().toString()
 
     val cloudInitUserData = CloudInitUserData()
+    cloudInitUserData.addSources(StorageLibrary.source())
     cloudInitUserData.addCommand(StorageLibrary.Mount(volume.linuxDevice, "/storage/data"))
     cloudInitUserData.addCommand(WriteFile(randomContent.toByteArray(), "/tmp/foo-bar"))
 
@@ -83,20 +86,6 @@ class CloudInitUserDataTest {
             .readText()
     template shouldContain "__CLOUD_INIT_VARIABLES__"
     template shouldContain "__CLOUD_INIT_SCRIPT__"
-  }
-
-  @Test
-  fun testRender() {
-    val rendered =
-        CloudInitUserData()
-            .also { it.addCommand(StorageLibrary.Mount("/dev/device1", "/mount/mount1")) }
-            .render()
-    rendered shouldNotContain VARIABLES_PLACEHOLDER
-    rendered shouldNotContain SCRIPT_PLACEHOLDER
-
-    println("=======================================================================")
-    println(rendered)
-    println("=======================================================================")
   }
 
   @Test

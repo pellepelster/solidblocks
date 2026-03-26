@@ -19,74 +19,81 @@ class PassSecretProvisioner(val path: String? = null) :
     ResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
     InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime> {
 
-    private val logger = KotlinLogging.logger {}
+  private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: PassSecret, context: ProvisionerContext): ResourceDiff? {
-        val runtime = lookup(resource.asLookup(), context)
+  override suspend fun diff(resource: PassSecret, context: ProvisionerContext): ResourceDiff? {
+    val runtime = lookup(resource.asLookup(), context)
 
-        return if (runtime != null) {
-            ResourceDiff(resource, up_to_date)
-        } else {
-            ResourceDiff(resource, missing)
-        }
+    return if (runtime != null) {
+      ResourceDiff(resource, up_to_date)
+    } else {
+      ResourceDiff(resource, missing)
+    }
+  }
+
+  override suspend fun lookup(
+      lookup: PassSecretLookup,
+      context: ProvisionerContext,
+  ): PassSecretRuntime? {
+    val result = runCommand(listOf("pass", "show", lookup.name))
+
+    if (result == null) {
+      logger.error { "pass command failed" }
+      return null
     }
 
-    override suspend fun lookup(lookup: PassSecretLookup, context: ProvisionerContext): PassSecretRuntime? {
-        val result = runCommand(listOf("pass", "show", lookup.name))
-
-        if (result == null) {
-            logger.error { "pass command failed" }
-            return null
-        }
-
-        if (result.exitCode == 0) {
-            return PassSecretRuntime(lookup.name, result.stdout)
-        } else {
-            if (result.stdout.contains("is not in the password store")) {
-                return null
-            }
-        }
-
-        logger.error {
-            "invalid pass command result (${result.exitCode}), stdout: '${result.stdout}', stderr: '${result.stderr}'"
-        }
+    if (result.exitCode == 0) {
+      return PassSecretRuntime(lookup.name, result.stdout)
+    } else {
+      if (result.stdout.contains("is not in the password store")) {
         return null
+      }
     }
 
-    private fun generateSecret(length: Int, allowedChars: List<Char>) =
-        (1..length).map { allowedChars.random() }.joinToString("")
+    logger.error {
+      "invalid pass command result (${result.exitCode}), stdout: '${result.stdout}', stderr: '${result.stderr}'"
+    }
+    return null
+  }
 
-    override suspend fun apply(resource: PassSecret, context: ProvisionerContext, log: LogContext): Result<PassSecretRuntime> {
-        val current = lookup(resource.asLookup(), context)
+  private fun generateSecret(length: Int, allowedChars: List<Char>) =
+      (1..length).map { allowedChars.random() }.joinToString("")
 
-        if (current != null && !resource.tainted) {
-            return Success(current)
-        }
+  override suspend fun apply(
+      resource: PassSecret,
+      context: ProvisionerContext,
+      log: LogContext,
+  ): Result<PassSecretRuntime> {
+    val current = lookup(resource.asLookup(), context)
 
-        logDebug("creating secret at '${resource.name}'", context = log)
+    if (current != null && !resource.tainted) {
+      return Success(current)
+    }
 
-        val secret = if (resource.secret == null) {
-            generateSecret(resource.length, resource.allowedChars)
+    logDebug("creating secret at '${resource.name}'", context = log)
+
+    val secret =
+        if (resource.secret == null) {
+          generateSecret(resource.length, resource.allowedChars)
         } else {
-            resource.secret(context)
+          resource.secret(context)
         }
 
-        val result =
-            runCommand(
-                listOf("pass", "insert", "--multiline", "--force", resource.name),
-                secret,
-            )
+    val result =
+        runCommand(
+            listOf("pass", "insert", "--multiline", "--force", resource.name),
+            secret,
+        )
 
-        if (result == null || result.exitCode != 0) {
-            return Error("pass insert command failed")
-        }
-
-        return lookup(resource.asLookup(), context)?.let {
-            Success(it)
-        } ?: Error<PassSecretRuntime>("error creating ${resource.logText()}")
+    if (result == null || result.exitCode != 0) {
+      return Error("pass insert command failed")
     }
 
-    override val supportedLookupType = PassSecretLookup::class
+    return lookup(resource.asLookup(), context)?.let { Success(it) }
+        ?: Error<PassSecretRuntime>("error creating ${resource.logText()}")
+  }
 
-    override val supportedResourceType = PassSecret::class
+  override val supportedLookupType = PassSecretLookup::class
+
+  override val supportedResourceType = PassSecret::class
 }

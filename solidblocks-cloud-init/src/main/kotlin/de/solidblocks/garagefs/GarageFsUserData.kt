@@ -1,13 +1,27 @@
 package de.solidblocks.garagefs
 
-import de.solidblocks.caddy.*
+import de.solidblocks.caddy.AutoHttps
+import de.solidblocks.caddy.CaddyConfig
+import de.solidblocks.caddy.FileSystemStorage
+import de.solidblocks.caddy.GlobalOptions
+import de.solidblocks.caddy.ReverseProxy
+import de.solidblocks.caddy.Site
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.model.CloudInitUserData1
+import de.solidblocks.cloudinit.model.CloudInitUserData
 import de.solidblocks.cloudinit.model.FilePermissions
 import de.solidblocks.cloudinit.model.WriteFile
-import de.solidblocks.shell.*
+import de.solidblocks.cloudinit.model.installSystemDUnit
+import de.solidblocks.shell.AptLibrary
+import de.solidblocks.shell.CaddyLibrary
+import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.GarageLibrary
+import de.solidblocks.shell.LogLibrary
+import de.solidblocks.shell.PackageLibrary
+import de.solidblocks.shell.StorageLibrary
+import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.SystemdConfig
+import de.solidblocks.systemd.SystemDConfig
 import de.solidblocks.systemd.Unit
 
 data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
@@ -58,7 +72,7 @@ class GarageFsUserData(
                 ),
         )
 
-    val userData = CloudInitUserData1()
+    val userData = CloudInitUserData()
     userData.addSources(UtilsLibrary.source())
     userData.addSources(AptLibrary.source())
     userData.addSources(CurlLibrary.source())
@@ -92,8 +106,8 @@ class GarageFsUserData(
             "s3-web.$serviceRootDomain",
         )
 
-    val garageFsSystemdConfig =
-        SystemdConfig(
+    val garageFsSystemDConfig =
+        SystemDConfig(
             Unit("Garage Data Store"),
             Service(
                 listOf("/usr/local/bin/garage", "server"),
@@ -112,17 +126,10 @@ class GarageFsUserData(
             FilePermissions.RW_R__R__,
         ),
     )
-    userData.addCommand(
-        WriteFile(
-            garageFsSystemdConfig.render().toByteArray(),
-            "/etc/systemd/system/garage.service",
-            FilePermissions.RW_R__R__,
-        ),
-    )
     userData.addCommand(StorageLibrary.MkDir(garageFsConfig.dataDir))
     userData.addCommand(StorageLibrary.MkDir(garageFsConfig.metaDataDir))
 
-    userData.addCommand(SystemDLibrary.SystemdDaemonReload())
+    userData.installSystemDUnit("garage", garageFsSystemDConfig)
     userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
 
     return userData.render()

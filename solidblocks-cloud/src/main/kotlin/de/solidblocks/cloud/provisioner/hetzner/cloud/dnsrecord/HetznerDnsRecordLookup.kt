@@ -5,5 +5,5 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLook
 
 class HetznerDnsRecordLookup(name: String, val zone: HetznerDnsZoneLookup) :
     InfrastructureResourceLookup<HetznerDnsRecordRuntime>(name, emptySet()) {
-    override fun logText() = "DNS record '$name.${zone.name}'"
+  override fun logText() = "DNS record '$name.${zone.name}'"
 }

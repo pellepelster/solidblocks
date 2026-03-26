@@ -14,16 +14,19 @@ import org.junit.jupiter.api.Test
 
 class S3ServiceConfigurationManagerTest {
 
-    @Test
-    fun testDuplicateBucketName() {
-        val cloud = CloudConfiguration(
+  @Test
+  fun testDuplicateBucketName() {
+    val cloud =
+        CloudConfiguration(
             "name1",
             "blcks-test.de",
             emptyList(),
             emptyList(),
         )
 
-        val result = S3ServiceManager().validatConfiguration(
+    val result =
+        S3ServiceManager()
+            .validatConfiguration(
                 0,
                 cloud,
                 S3ServiceConfiguration(
@@ -36,22 +39,26 @@ class S3ServiceConfigurationManagerTest {
                 ),
                 mockk<ProvisionerContext>(),
                 TEST_LOG_CONTEXT,
-            ).shouldBeTypeOf<Error<Unit>>()
+            )
+            .shouldBeTypeOf<Error<Unit>>()
 
-        result.error shouldBe "duplicated configuration for bucket with name 'bucket1', ensure that the bucket names are unique"
-    }
+    result.error shouldBe
+        "duplicated configuration for bucket with name 'bucket1', ensure that the bucket names are unique"
+  }
 
-    @Test
-    fun testDuplicateBucketAccessKeyName() {
-
-        val cloud = CloudConfiguration(
+  @Test
+  fun testDuplicateBucketAccessKeyName() {
+    val cloud =
+        CloudConfiguration(
             "name1",
             "blcks-test.de",
             emptyList(),
             emptyList(),
         )
 
-        val result = S3ServiceManager().validatConfiguration(
+    val result =
+        S3ServiceManager()
+            .validatConfiguration(
                 0,
                 cloud,
                 S3ServiceConfiguration(
@@ -59,16 +66,22 @@ class S3ServiceConfigurationManagerTest {
                     12,
                     listOf(
                         S3ServiceBucketConfiguration(
-                            "bucket1", false, listOf(
-                                S3ServiceBucketAccessKeyConfiguration("name1"), S3ServiceBucketAccessKeyConfiguration("name1")
-                            ), emptyList()
+                            "bucket1",
+                            false,
+                            listOf(
+                                S3ServiceBucketAccessKeyConfiguration("name1"),
+                                S3ServiceBucketAccessKeyConfiguration("name1"),
+                            ),
+                            emptyList(),
                         ),
                     ),
                 ),
                 mockk<ProvisionerContext>(),
                 TEST_LOG_CONTEXT,
-            ).shouldBeTypeOf<Error<Unit>>()
+            )
+            .shouldBeTypeOf<Error<Unit>>()
 
-        result.error shouldBe "duplicated access key with name 'name1' found for bucket 'bucket1', ensure that the access key names are unique"
-    }
+    result.error shouldBe
+        "duplicated access key with name 'name1' found for bucket 'bucket1', ensure that the access key names are unique"
+  }
 }

@@ -21,15 +21,21 @@ class HetznerServer(
     val image: String = "debian-12",
     val subnet: HetznerSubnetLookup? = null,
     val privateIp: String? = null,
-) : BaseLabeledInfrastructureResource<HetznerServerRuntime>(name, setOfNotNull(subnet, userData) + volumes + userData.dependsOn + sshKeys + dependsOn, labels) {
+) :
+    BaseLabeledInfrastructureResource<HetznerServerRuntime>(
+        name,
+        setOfNotNull(subnet, userData) + volumes + userData.dependsOn + sshKeys + dependsOn,
+        labels,
+    ) {
 
-    fun asLookup() = HetznerServerLookup(name)
+  fun asLookup() = HetznerServerLookup(name)
 
-    override fun logText() = if (privateIp == null) {
+  override fun logText() =
+      if (privateIp == null) {
         "server '$name'"
-    } else {
-        "server '$name' (${privateIp})"
-    }
+      } else {
+        "server '$name' ($privateIp)"
+      }
 
-    override val lookupType = HetznerServerLookup::class
+  override val lookupType = HetznerServerLookup::class
 }

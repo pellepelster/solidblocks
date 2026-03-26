@@ -8,9 +8,12 @@ data class PostgresSqlServiceConfiguration(
     val backupFullRetentionDays: Int,
     val databases: List<PostgresSqlServiceDatabaseConfiguration>,
 ) : ServiceConfiguration {
-    override val type = "postgresql"
+  override val type = "postgresql"
 }
 
-data class PostgresSqlServiceDatabaseConfiguration(val name: String, val users: List<PostgresSqlServiceDatabaseUserConfiguration>)
+data class PostgresSqlServiceDatabaseConfiguration(
+    val name: String,
+    val users: List<PostgresSqlServiceDatabaseUserConfiguration>,
+)
 
 data class PostgresSqlServiceDatabaseUserConfiguration(val name: String)

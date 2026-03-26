@@ -8,7 +8,7 @@ class SystemDConfigTest {
   @Test
   fun testRender() {
     val config =
-        SystemdConfig(
+        SystemDConfig(
             Unit("foo-bar"),
             Service(
                 listOf("/usr/local/bin/service1", "arg1"),

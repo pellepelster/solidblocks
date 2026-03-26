@@ -11,7 +11,9 @@ class HetznerVolume(
     labels: Map<String, String> = emptyMap(),
     val protected: Boolean = true,
 ) : BaseLabeledInfrastructureResource<HetznerVolumeRuntime>(name, emptySet(), labels) {
-    fun asLookup() = HetznerVolumeLookup(name)
-    override fun logText() = "volume '$name'"
-    override val lookupType = HetznerVolumeLookup::class
+  fun asLookup() = HetznerVolumeLookup(name)
+
+  override fun logText() = "volume '$name'"
+
+  override val lookupType = HetznerVolumeLookup::class
 }

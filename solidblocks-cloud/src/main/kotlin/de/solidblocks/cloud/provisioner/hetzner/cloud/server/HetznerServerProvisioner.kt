@@ -34,60 +34,67 @@ class HetznerServerProvisioner(val hcloudToken: String) :
     ResourceLookupProvider<HetznerServerLookup, HetznerServerRuntime>,
     InfrastructureResourceProvisioner<HetznerServer, HetznerServerRuntime> {
 
-    private val logger = KotlinLogging.logger {}
+  private val logger = KotlinLogging.logger {}
 
-    val api = HetznerApi(hcloudToken)
+  val api = HetznerApi(hcloudToken)
 
-    override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) =
-        api.servers.get(lookup.name)?.let {
-            HetznerServerRuntime(
-                it.id,
-                it.name,
-                it.status,
-                it.image.name ?: "unknown",
-                HetznerServerType.valueOf(it.type.name),
-                HetznerLocation.valueOf(it.location.name),
-                it.labels,
-                it.volumes.map { volume -> volume.toString() },
-                it.privateNetwork.firstOrNull()?.ip,
-                it.publicNetwork?.ipv4?.ip,
-                it.publicNetwork?.ipv4?.ip?.let { listOf(Endpoint(it, 22, EndpointProtocol.ssh)) }
-                    ?: emptyList(),
-            )
-        }
+  override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) =
+      api.servers.get(lookup.name)?.let {
+        HetznerServerRuntime(
+            it.id,
+            it.name,
+            it.status,
+            it.image.name ?: "unknown",
+            HetznerServerType.valueOf(it.type.name),
+            HetznerLocation.valueOf(it.location.name),
+            it.labels,
+            it.volumes.map { volume -> volume.toString() },
+            it.privateNetwork.firstOrNull()?.ip,
+            it.publicNetwork?.ipv4?.ip,
+            it.publicNetwork?.ipv4?.ip?.let { listOf(Endpoint(it, 22, EndpointProtocol.ssh)) }
+                ?: emptyList(),
+        )
+      }
 
-    override suspend fun apply(resource: HetznerServer, context: ProvisionerContext, log: LogContext): Result<HetznerServerRuntime> {
-        var server = lookup(resource.asLookup(), context)
+  override suspend fun apply(
+      resource: HetznerServer,
+      context: ProvisionerContext,
+      log: LogContext,
+  ): Result<HetznerServerRuntime> {
+    var server = lookup(resource.asLookup(), context)
 
-        if (server == null) {
-            logger.info { "server '${resource.name}' not found, creating" }
+    if (server == null) {
+      logger.info { "server '${resource.name}' not found, creating" }
 
-            val sshKeys =
-                resource.sshKeys.map {
-                    context.lookup(it) ?: return Error<HetznerServerRuntime>("failed to lookup ${it.logText()}")
-                }
+      val sshKeys =
+          resource.sshKeys.map {
+            context.lookup(it)
+                ?: return Error<HetznerServerRuntime>("failed to lookup ${it.logText()}")
+          }
 
-            val volumes =
-                resource.volumes.map {
-                    val volume = context.lookup(it) ?: return Error<HetznerServerRuntime>("failed to resolve ${it.logText()}")
+      val volumes =
+          resource.volumes.map {
+            val volume =
+                context.lookup(it)
+                    ?: return Error<HetznerServerRuntime>("failed to resolve ${it.logText()}")
 
-                    if (volume.server != null) {
-                        return Error<HetznerServerRuntime>(
-                            "volume ${it.logText()} already attached to server ${volume.server}",
-                        )
-                    }
+            if (volume.server != null) {
+              return Error<HetznerServerRuntime>(
+                  "volume ${it.logText()} already attached to server ${volume.server}",
+              )
+            }
 
-                    volume
-                }
+            volume
+          }
 
-            val userData = context.ensureLookup(resource.userData)
+      val userData = context.ensureLookup(resource.userData)
 
-            val labels = HetznerLabels()
-            labels.addHashedLabel(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
-            labels.addHashedLabel(userDataLabel, userData.userData)
+      val labels = HetznerLabels()
+      labels.addHashedLabel(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
+      labels.addHashedLabel(userDataLabel, userData.userData)
 
-            logDebug(
-                "using ssh key(s): ${
+      logDebug(
+          "using ssh key(s): ${
                     sshKeys.let {
                         if (it.isEmpty()) {
                             "<none>"
@@ -96,10 +103,10 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                         }
                     }
                 }",
-                context = log,
-            )
-            logDebug(
-                "using volume(s): ${
+          context = log,
+      )
+      logDebug(
+          "using volume(s): ${
                     volumes.let {
                         if (it.isEmpty()) {
                             "<none>"
@@ -108,178 +115,199 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                         }
                     }
                 }",
-                context = log,
-            )
-            logger.info {
-                "creating server '${resource.name}' with ssh keys ${sshKeys.joinToString(", ") { "${it.name} (${it.id})" }}"
-            }
-            val request =
-                ServerCreateRequest(
-                    resource.name,
-                    resource.location,
-                    resource.type,
-                    image = resource.image,
-                    userData = userData.userData,
-                    sshKeys = sshKeys.map { it.id },
-                    volumes = volumes.map { it.id },
-                    labels = labels.rawLabels(),
-                )
-            val createRequest = api.servers.create(request)
+          context = log,
+      )
+      logger.info {
+        "creating server '${resource.name}' with ssh keys ${sshKeys.joinToString(", ") { "${it.name} (${it.id})" }}"
+      }
+      val request =
+          ServerCreateRequest(
+              resource.name,
+              resource.location,
+              resource.type,
+              image = resource.image,
+              userData = userData.userData,
+              sshKeys = sshKeys.map { it.id },
+              volumes = volumes.map { it.id },
+              labels = labels.rawLabels(),
+          )
+      val createRequest = api.servers.create(request)
 
-            if (!api.servers.waitForAction(createRequest.action) {
-                    logInfo("waiting for creation of ${resource.logText()}", context = log)
-                }) {
-                return Error("failed to wait for creation of '${resource.name}', you may need to remove the resource manually and retry")
-            }
+      if (
+          !api.servers.waitForAction(createRequest.action) {
+            logInfo("waiting for creation of ${resource.logText()}", context = log)
+          }
+      ) {
+        return Error(
+            "failed to wait for creation of '${resource.name}', you may need to remove the resource manually and retry",
+        )
+      }
 
-            server = lookup(resource.asLookup(), context)
-        }
-
-        if (server == null) {
-            return Error("server creation failed")
-        }
-
-        if (resource.subnet != null) {
-            val subnet = context.lookup(resource.subnet) ?: return Error("subnet '${resource.subnet.name}' not found")
-
-            if (resource.privateIp != null) {
-                try {
-                    val action = api.servers.attachToNetwork(server.id, ServerNetworkAttachRequest(subnet.network, resource.privateIp))
-                    api.networks.waitForAction(action) {
-                        logInfo("waiting for attachment to ${subnet.logText()}", context = log)
-                    }
-                } catch (e: HetznerApiException) {
-                    if (e.error.code != HetznerApiErrorType.SERVER_ALREADY_ATTACHED) {
-                        return Error("hetzner api error '${e.error.code}'")
-                    }
-                }
-            }
-        }
-
-        return lookup(resource.asLookup(), context)?.let {
-            logDebug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}", context = log)
-            Success(it)
-        } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
+      server = lookup(resource.asLookup(), context)
     }
 
-    override suspend fun diff(resource: HetznerServer, context: ProvisionerContext): ResourceDiff? {
-        val runtime = lookup(resource.asLookup(), context)
-
-        return if (runtime != null) {
-            val changes = mutableListOf<ResourceDiffItem>()
-
-            val labels = HetznerLabels(runtime.labels)
-
-            val sshKeys =
-                resource.sshKeys.map {
-                    context.lookup(it) ?: throw RuntimeException("failed to lookup ${it.logText()}")
-                }
-
-            val sshKeysHash =
-                labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
-
-            if (!sshKeysHash.matches) {
-                changes.add(
-                    ResourceDiffItem(
-                        resource::sshKeys,
-                        triggersRecreate = true,
-                        changed = true,
-                        expectedValue = sshKeysHash.expectedValue,
-                        actualValue = sshKeysHash.actualValue,
-                    ),
-                )
-            }
-
-            if (resource.location != runtime.location) {
-                changes.add(
-                    ResourceDiffItem(
-                        "location",
-                        triggersRecreate = true,
-                        changed = true,
-                        expectedValue = resource.location,
-                        actualValue = runtime.location,
-                    ),
-                )
-            }
-
-            if (resource.privateIp != null && resource.privateIp != runtime.privateIpv4) {
-                changes.add(
-                    ResourceDiffItem(
-                        "private ip address",
-                        triggersRecreate = false,
-                        changed = true,
-                        expectedValue = resource.privateIp,
-                        actualValue = runtime.privateIpv4,
-                    ),
-                )
-            }
-
-            val userData = context.lookup(resource.userData) ?: return ResourceDiff(
-                resource, has_changes, changes = listOf(
-                    ResourceDiffItem(
-                        "user data checksum",
-                        triggersRecreate = true,
-                        changed = true,
-                    )
-                )
-            )
-            val userDataHash =
-                labels.hashLabelMatches(
-                    userDataLabel,
-                    userData.userData,
-                )
-
-            if (!userDataHash.matches) {
-                changes.add(
-                    ResourceDiffItem(
-                        "user data checksum",
-                        triggersRecreate = true,
-                        changed = true,
-                        expectedValue = userDataHash.expectedValue,
-                        actualValue = userDataHash.actualValue,
-                    ),
-                )
-            }
-
-            if (resource.type != runtime.type) {
-                changes.add(ResourceDiffItem("type", true, true, false, resource.type, runtime.type))
-            }
-
-            if (resource.image != runtime.image) {
-                changes.add(ResourceDiffItem("image", true, true, false, resource.image, runtime.image))
-            }
-
-            if (changes.isEmpty()) {
-                ResourceDiff(resource, up_to_date)
-            } else {
-                ResourceDiff(resource, has_changes, changes = changes)
-            }
-        } else {
-            ResourceDiff(resource, missing)
-        }
+    if (server == null) {
+      return Error("server creation failed")
     }
 
-    override suspend fun destroy(resource: HetznerServer, context: ProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let {
+    if (resource.subnet != null) {
+      val subnet =
+          context.lookup(resource.subnet)
+              ?: return Error("subnet '${resource.subnet.name}' not found")
+
+      if (resource.privateIp != null) {
+        try {
+          val action =
+              api.servers.attachToNetwork(
+                  server.id,
+                  ServerNetworkAttachRequest(subnet.network, resource.privateIp),
+              )
+          api.networks.waitForAction(action) {
+            logInfo("waiting for attachment to ${subnet.logText()}", context = log)
+          }
+        } catch (e: HetznerApiException) {
+          if (e.error.code != HetznerApiErrorType.SERVER_ALREADY_ATTACHED) {
+            return Error("hetzner api error '${e.error.code}'")
+          }
+        }
+      }
+    }
+
+    return lookup(resource.asLookup(), context)?.let {
+      logDebug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}", context = log)
+      Success(it)
+    } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
+  }
+
+  override suspend fun diff(resource: HetznerServer, context: ProvisionerContext): ResourceDiff? {
+    val runtime = lookup(resource.asLookup(), context)
+
+    return if (runtime != null) {
+      val changes = mutableListOf<ResourceDiffItem>()
+
+      val labels = HetznerLabels(runtime.labels)
+
+      val sshKeys =
+          resource.sshKeys.map {
+            context.lookup(it) ?: throw RuntimeException("failed to lookup ${it.logText()}")
+          }
+
+      val sshKeysHash =
+          labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
+
+      if (!sshKeysHash.matches) {
+        changes.add(
+            ResourceDiffItem(
+                resource::sshKeys,
+                triggersRecreate = true,
+                changed = true,
+                expectedValue = sshKeysHash.expectedValue,
+                actualValue = sshKeysHash.actualValue,
+            ),
+        )
+      }
+
+      if (resource.location != runtime.location) {
+        changes.add(
+            ResourceDiffItem(
+                "location",
+                triggersRecreate = true,
+                changed = true,
+                expectedValue = resource.location,
+                actualValue = runtime.location,
+            ),
+        )
+      }
+
+      if (resource.privateIp != null && resource.privateIp != runtime.privateIpv4) {
+        changes.add(
+            ResourceDiffItem(
+                "private ip address",
+                triggersRecreate = false,
+                changed = true,
+                expectedValue = resource.privateIp,
+                actualValue = runtime.privateIpv4,
+            ),
+        )
+      }
+
+      val userData =
+          context.lookup(resource.userData)
+              ?: return ResourceDiff(
+                  resource,
+                  has_changes,
+                  changes =
+                      listOf(
+                          ResourceDiffItem(
+                              "user data checksum",
+                              triggersRecreate = true,
+                              changed = true,
+                          ),
+                      ),
+              )
+      val userDataHash =
+          labels.hashLabelMatches(
+              userDataLabel,
+              userData.userData,
+          )
+
+      if (!userDataHash.matches) {
+        changes.add(
+            ResourceDiffItem(
+                "user data checksum",
+                triggersRecreate = true,
+                changed = true,
+                expectedValue = userDataHash.expectedValue,
+                actualValue = userDataHash.actualValue,
+            ),
+        )
+      }
+
+      if (resource.type != runtime.type) {
+        changes.add(ResourceDiffItem("type", true, true, false, resource.type, runtime.type))
+      }
+
+      if (resource.image != runtime.image) {
+        changes.add(ResourceDiffItem("image", true, true, false, resource.image, runtime.image))
+      }
+
+      if (changes.isEmpty()) {
+        ResourceDiff(resource, up_to_date)
+      } else {
+        ResourceDiff(resource, has_changes, changes = changes)
+      }
+    } else {
+      ResourceDiff(resource, missing)
+    }
+  }
+
+  override suspend fun destroy(
+      resource: HetznerServer,
+      context: ProvisionerContext,
+      logContext: LogContext,
+  ) =
+      lookup(resource.asLookup(), context)?.let {
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) {
-            logInfo("waiting for deletion of ${resource.logText()}", context = logContext)
+          logInfo("waiting for deletion of ${resource.logText()}", context = logContext)
         }
-    } ?: false
+      } ?: false
 
-    override suspend fun output(resource: HetznerServer, context: ProvisionerContext) = listOf(
-        Output(
-            resource.logText().capitalize(),
-            """
+  override suspend fun output(resource: HetznerServer, context: ProvisionerContext) =
+      listOf(
+          Output(
+              resource.logText().capitalize(),
+              """
 to access server **${resource.name}** via SSH, run 
 ```
 ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.cloudName))} ${resource.name}
 ```
-                """.trimMargin()
-        )
-    )
+            """
+                  .trimMargin(),
+          ),
+      )
 
+  override val supportedLookupType: KClass<*> = HetznerServerLookup::class
 
-    override val supportedLookupType: KClass<*> = HetznerServerLookup::class
-
-    override val supportedResourceType: KClass<*> = HetznerServer::class
+  override val supportedResourceType: KClass<*> = HetznerServer::class
 }

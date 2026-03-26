@@ -7,12 +7,21 @@ import de.solidblocks.caddy.GlobalOptions
 import de.solidblocks.caddy.ReverseProxy
 import de.solidblocks.caddy.Site
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.model.CloudInitUserData1
+import de.solidblocks.cloudinit.model.CloudInitUserData
 import de.solidblocks.cloudinit.model.FilePermissions
 import de.solidblocks.cloudinit.model.WriteFile
-import de.solidblocks.shell.*
+import de.solidblocks.cloudinit.model.installSystemDUnit
+import de.solidblocks.shell.AptLibrary
+import de.solidblocks.shell.CaddyLibrary
+import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.DockerLibrary
+import de.solidblocks.shell.LogLibrary
+import de.solidblocks.shell.PackageLibrary
+import de.solidblocks.shell.StorageLibrary
+import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.SystemdConfig
+import de.solidblocks.systemd.SystemDConfig
 import de.solidblocks.systemd.Target
 import de.solidblocks.systemd.Unit
 
@@ -47,7 +56,7 @@ class GenericDockerServiceUserData(
             ),
         )
 
-    val userData = CloudInitUserData1()
+    val userData = CloudInitUserData()
     userData.addSources(UtilsLibrary.source())
     userData.addSources(AptLibrary.source())
     userData.addSources(CurlLibrary.source())
@@ -98,8 +107,8 @@ class GenericDockerServiceUserData(
     userData.addCommand(StorageLibrary.MkDir(dockerWorkingDirectory))
     userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
-    val dockerSystemdConfig =
-        SystemdConfig(
+    val dockerSystemDConfig =
+        SystemDConfig(
             Unit(
                 "'$name' docker compose service",
                 after = listOf(Target.DOCKER_SERVICE),
@@ -121,14 +130,7 @@ class GenericDockerServiceUserData(
             ),
         )
 
-    userData.addCommand(
-        WriteFile(
-            dockerSystemdConfig.render().toByteArray(),
-            "/etc/systemd/system/$name.service",
-            FilePermissions.RW_R__R__,
-        ),
-    )
-    userData.addCommand(SystemDLibrary.SystemdDaemonReload())
+    userData.installSystemDUnit(name, dockerSystemDConfig)
     userData.addCommand(SystemDLibrary.SystemdRestartService(name))
 
     return userData.render()

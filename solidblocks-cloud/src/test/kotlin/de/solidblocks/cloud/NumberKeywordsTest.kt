@@ -14,101 +14,106 @@ import org.junit.jupiter.api.Test
 
 class NumberKeywordsTest {
 
-    @Test
-    fun testNumberKeyword() {
-        val yaml =
-            yamlParse(
+  @Test
+  fun testNumberKeyword() {
+    val yaml =
+        yamlParse(
                 """
                 number1: 123
                 """
                     .trimIndent(),
-            ).shouldBeTypeOf<Success<YamlNode>>()
-
-        val keyword =
-            NumberKeyword(
-                "number1",
-                NumberConstraints.NONE,
-                TEST_KEYWORD_HELP
             )
-        keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 123
-    }
+            .shouldBeTypeOf<Success<YamlNode>>()
 
-    @Test
-    fun testNumberKeywordOptional() {
-        val yaml =
-            yamlParse(
+    val keyword =
+        NumberKeyword(
+            "number1",
+            NumberConstraints.NONE,
+            TEST_KEYWORD_HELP,
+        )
+    keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 123
+  }
+
+  @Test
+  fun testNumberKeywordOptional() {
+    val yaml =
+        yamlParse(
                 """
                 number2: 123
                 """
                     .trimIndent(),
-            ).shouldBeTypeOf<Success<YamlNode>>()
-
-        val keyword =
-            NumberKeywordOptional(
-                "number1",
-                NumberConstraints.NONE,
-                TEST_KEYWORD_HELP,
             )
-        keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe null
-    }
+            .shouldBeTypeOf<Success<YamlNode>>()
 
-    @Test
-    fun testNumberKeywordOptionalWithDefault() {
-        val yaml =
-            yamlParse(
+    val keyword =
+        NumberKeywordOptional(
+            "number1",
+            NumberConstraints.NONE,
+            TEST_KEYWORD_HELP,
+        )
+    keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe null
+  }
+
+  @Test
+  fun testNumberKeywordOptionalWithDefault() {
+    val yaml =
+        yamlParse(
                 """
                 number2: 123
                 """
                     .trimIndent(),
-            ).shouldBeTypeOf<Success<YamlNode>>()
-
-        val keyword =
-            NumberKeywordOptionalWithDefault(
-                "number1",
-                NumberConstraints.NONE,
-                TEST_KEYWORD_HELP,
-                124
             )
-        keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 124
-    }
+            .shouldBeTypeOf<Success<YamlNode>>()
 
-    @Test
-    fun testNumberKeywordMin() {
-        val yaml =
-            yamlParse(
+    val keyword =
+        NumberKeywordOptionalWithDefault(
+            "number1",
+            NumberConstraints.NONE,
+            TEST_KEYWORD_HELP,
+            124,
+        )
+    keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 124
+  }
+
+  @Test
+  fun testNumberKeywordMin() {
+    val yaml =
+        yamlParse(
                 """
                 number1: 21
                 """
                     .trimIndent(),
-            ).shouldBeTypeOf<Success<YamlNode>>()
-
-        val keyword =
-            NumberKeyword(
-                "number1",
-                NumberConstraints(min = 22),
-                TEST_KEYWORD_HELP,
             )
-        keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe "'number1' may not be smaller then 22 at line 1 colum 1"
-    }
+            .shouldBeTypeOf<Success<YamlNode>>()
 
-    @Test
-    fun testNumberKeywordMax() {
-        val yaml =
-            yamlParse(
+    val keyword =
+        NumberKeyword(
+            "number1",
+            NumberConstraints(min = 22),
+            TEST_KEYWORD_HELP,
+        )
+    keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
+        "'number1' may not be smaller then 22 at line 1 colum 1"
+  }
+
+  @Test
+  fun testNumberKeywordMax() {
+    val yaml =
+        yamlParse(
                 """
                 number1: 21
                 """
                     .trimIndent(),
-            ).shouldBeTypeOf<Success<YamlNode>>()
-
-        val keyword =
-            NumberKeyword(
-                "number1",
-                NumberConstraints(max = 12),
-                TEST_KEYWORD_HELP,
             )
-        keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe "'number1' may not be larger then null at line 1 colum 1"
-    }
+            .shouldBeTypeOf<Success<YamlNode>>()
 
-
+    val keyword =
+        NumberKeyword(
+            "number1",
+            NumberConstraints(max = 12),
+            TEST_KEYWORD_HELP,
+        )
+    keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
+        "'number1' may not be larger then null at line 1 colum 1"
+  }
 }

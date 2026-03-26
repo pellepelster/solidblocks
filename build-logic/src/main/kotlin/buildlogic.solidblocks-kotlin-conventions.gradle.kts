@@ -50,7 +50,16 @@ tasks.test {
             "GCP_SERVICE_ACCOUNT_KEY" to providers.of(PassSecretValueSource::class) {
                 this.parameters.path.set("solidblocks/gcp/test/service_account_key")
                 this.parameters.environment.set("GCP_SERVICE_ACCOUNT_KEY")
-            }.get()
+            }.get(),
+            "AWS_ACCESS_KEY_ID" to providers.of(PassSecretValueSource::class) {
+                this.parameters.path.set("solidblocks/aws/test/access_key_id")
+                //this.parameters.environment.set("AWS_ACCESS_KEY_ID")
+            }.get(),
+            "AWS_SECRET_ACCESS_KEY" to providers.of(PassSecretValueSource::class) {
+                this.parameters.path.set("solidblocks/aws/test/secret_access_key")
+                //this.parameters.environment.set("AWS_SECRET_ACCESS_KEY")
+            }.get(),
+            "AWS_REGION" to "eu-central-1"
         )
     )
 }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 public class PostgresTest {
   @Test
-  fun testDockerInstall() {
+  fun testInstall() {
     val result =
         dockerTestContext(DockerTestImage.DEBIAN_12)
             .script()

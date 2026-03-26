@@ -8,12 +8,13 @@ import de.solidblocks.cloud.services.postgres.PostgresSqlServiceRegistration
 import de.solidblocks.cloud.services.s3.S3ServiceRegistration
 
 abstract class BaseCloudManager {
-    val serviceRegistrations = listOf(S3ServiceRegistration(), PostgresSqlServiceRegistration(), DockerServiceRegistration())
+  val serviceRegistrations =
+      listOf(S3ServiceRegistration(), PostgresSqlServiceRegistration(), DockerServiceRegistration())
 
-    val providerRegistrations =
-        listOf(
-            HetznerProviderRegistration(),
-            PassProviderRegistration(),
-            LocalSSHKeyProviderRegistration(),
-        )
+  val providerRegistrations =
+      listOf(
+          HetznerProviderRegistration(),
+          PassProviderRegistration(),
+          LocalSSHKeyProviderRegistration(),
+      )
 }

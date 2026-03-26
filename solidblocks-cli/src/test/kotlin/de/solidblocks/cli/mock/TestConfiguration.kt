@@ -2,11 +2,11 @@ package de.solidblocks.cli.mock
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ConfigurationFactory
-import de.solidblocks.cloud.configuration.KeywordHelp
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.ObjectKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 

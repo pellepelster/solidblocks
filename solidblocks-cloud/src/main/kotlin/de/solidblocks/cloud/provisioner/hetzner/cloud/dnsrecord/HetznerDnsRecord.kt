@@ -13,9 +13,9 @@ class HetznerDnsRecord(
     val type: RRType = RRType.A,
     labels: Map<String, String> = emptyMap(),
 ) : BaseLabeledInfrastructureResource<HetznerDnsRecordRuntime>(name, setOf(zone), labels) {
-    fun asLookup() = HetznerDnsRecordLookup(name, zone)
+  fun asLookup() = HetznerDnsRecordLookup(name, zone)
 
-    override fun logText() = "DNS record '$name.${zone.name}/${type}'"
+  override fun logText() = "DNS record '$name.${zone.name}/$type'"
 
-    override val lookupType = HetznerDnsRecordLookup::class
+  override val lookupType = HetznerDnsRecordLookup::class
 }

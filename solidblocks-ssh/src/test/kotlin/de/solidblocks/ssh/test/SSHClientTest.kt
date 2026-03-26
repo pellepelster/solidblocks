@@ -75,6 +75,15 @@ class SSHClientTest {
   }
 
   @Test
+  fun testCommandWithArguments() {
+    assertSoftly(client.command("echo foo-bar")) {
+      it.exitCode shouldBe 0
+      it.stdOut shouldBe "foo-bar\n"
+      it.stdErr shouldBe ""
+    }
+  }
+
+  @Test
   fun testCommandFailure() {
     assertSoftly(client.command("invalid")) {
       it.exitCode shouldBe 127

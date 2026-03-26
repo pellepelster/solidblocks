@@ -17,7 +17,7 @@ class PostgresqlUserDataTest {
 
   @Test
   @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
-  fun testIntegration(testContext: SolidblocksTestContext) {
+  fun testFlow(testContext: SolidblocksTestContext) {
     val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
     val dataVolume = hetznerTestContext.createVolume("${hetznerTestContext.testId}-data")

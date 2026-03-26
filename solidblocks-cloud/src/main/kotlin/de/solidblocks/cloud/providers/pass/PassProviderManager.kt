@@ -14,24 +14,27 @@ import de.solidblocks.utils.logError
 class PassProviderManager :
     ProviderConfigurationManager<PassProviderConfiguration, PassProviderRuntime> {
 
-    override fun validate(configuration: PassProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<PassProviderRuntime> {
-
-        if (commandExists("pass")) {
-            logDebug("found 'pass' executable", context = log)
-        } else {
-            "'pass' executable not found"
-                .also {
-                    logError(it, context = log)
-                    return Error<PassProviderRuntime>(it)
-                }
-        }
-
-        return Success(PassProviderRuntime())
+  override fun validate(
+      configuration: PassProviderConfiguration,
+      context: CloudConfigurationContext,
+      log: LogContext,
+  ): Result<PassProviderRuntime> {
+    if (commandExists("pass")) {
+      logDebug("found 'pass' executable", context = log)
+    } else {
+      "'pass' executable not found"
+          .also {
+            logError(it, context = log)
+            return Error<PassProviderRuntime>(it)
+          }
     }
 
-    // TODO
-    override fun createProvisioners(runtime: PassProviderRuntime) =
-        listOf(PassSecretProvisioner(null))
+    return Success(PassProviderRuntime())
+  }
 
-    override val supportedConfiguration = PassProviderConfiguration::class
+  // TODO
+  override fun createProvisioners(runtime: PassProviderRuntime) =
+      listOf(PassSecretProvisioner(null))
+
+  override val supportedConfiguration = PassProviderConfiguration::class
 }

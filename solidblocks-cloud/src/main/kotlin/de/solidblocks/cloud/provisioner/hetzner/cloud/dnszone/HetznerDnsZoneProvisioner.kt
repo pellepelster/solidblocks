@@ -4,20 +4,24 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 
-class HetznerDnsZoneProvisioner(hcloudToken: String) : BaseHetznerProvisioner(hcloudToken), ResourceLookupProvider<HetznerDnsZoneLookup, HetznerDnsZoneRuntime> {
+class HetznerDnsZoneProvisioner(hcloudToken: String) :
+    BaseHetznerProvisioner(hcloudToken),
+    ResourceLookupProvider<HetznerDnsZoneLookup, HetznerDnsZoneRuntime> {
 
-    override suspend fun lookup(lookup: HetznerDnsZoneLookup, context: ProvisionerContext): HetznerDnsZoneRuntime? {
-        val zone = api.dnsZones.get(lookup.name) ?: return null
+  override suspend fun lookup(
+      lookup: HetznerDnsZoneLookup,
+      context: ProvisionerContext,
+  ): HetznerDnsZoneRuntime? {
+    val zone = api.dnsZones.get(lookup.name) ?: return null
 
-        return HetznerDnsZoneRuntime(
-            zone.zone.id,
-            zone.zone.name,
-        )
-    }
+    return HetznerDnsZoneRuntime(
+        zone.zone.id,
+        zone.zone.name,
+    )
+  }
 
-    override suspend fun list() = api.dnsZones.list().map {
-        HetznerDnsZoneRuntime(it.id, it.name, it.labels)
-    }
+  override suspend fun list() =
+      api.dnsZones.list().map { HetznerDnsZoneRuntime(it.id, it.name, it.labels) }
 
-    override val supportedLookupType = HetznerDnsZoneLookup::class
+  override val supportedLookupType = HetznerDnsZoneLookup::class
 }

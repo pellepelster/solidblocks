@@ -184,15 +184,15 @@ fun YamlNode.getBoolean(key: String): YamlResult<Boolean> =
 
 fun YamlNode.getOptionalNumber(key: String): Result<Int?> =
     when (val scalar = getScalar(key)) {
-        is YamlEmpty<String> -> Success<Int?>(null)
-        is Error<String> -> Error<Int?>(scalar.error)
-        is Success<String> -> {
-            try {
-                Success(scalar.data.toInt())
-            } catch (e: YamlScalarFormatException) {
-                Error("expected number but got '${e.originalValue}' at ${this.location.logMessage()}")
-            }
+      is YamlEmpty<String> -> Success<Int?>(null)
+      is Error<String> -> Error<Int?>(scalar.error)
+      is Success<String> -> {
+        try {
+          Success(scalar.data.toInt())
+        } catch (e: YamlScalarFormatException) {
+          Error("expected number but got '${e.originalValue}' at ${this.location.logMessage()}")
         }
+      }
     }
 
 fun YamlNode.getNumber(key: String): YamlResult<Number?> =
@@ -264,8 +264,8 @@ fun <T> YamlNode.getPolymorphicList(
                   factory?.parse(listItem)
                       ?: Error<T>(
                           "unknown type '${type.data}', possible types are ${
-                              factories.keys.joinToStringOrEmpty(", ") { "'$it'" }
-                          } at ${listItem.location.logMessage()}",
+                                        factories.keys.joinToStringOrEmpty(", ") { "'$it'" }
+                                    } at ${listItem.location.logMessage()}",
                       )
                 }
               }

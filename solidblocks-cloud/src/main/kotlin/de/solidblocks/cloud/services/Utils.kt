@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.services
 
-import de.solidblocks.cloud.configuration.KeywordHelp
 import de.solidblocks.cloud.configuration.NumberConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
 import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.utils.KeywordHelp
 
 val SERVICE_NAME_KEYWORD =
     StringKeyword(
@@ -24,4 +24,3 @@ val SERVICE_DATA_VOLUME_SIZE_KEYWORD =
         ),
         16,
     )
-

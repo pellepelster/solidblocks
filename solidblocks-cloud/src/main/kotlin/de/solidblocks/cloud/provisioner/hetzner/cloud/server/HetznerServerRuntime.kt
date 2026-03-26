@@ -19,5 +19,4 @@ class HetznerServerRuntime(
     val publicIpv4: String?,
     endpoints: List<Endpoint>,
     val sshPort: Int = 22,
-) : BaseLabeledInfrastructureResourceRuntime(labels, endpoints) {
-}
+) : BaseLabeledInfrastructureResourceRuntime(labels, endpoints)

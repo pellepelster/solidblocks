@@ -52,7 +52,8 @@ class PassSecretProvisionerTest {
       }
 
       val secretAfterTaint = provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-      generatedSecret.secret shouldNotBe secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data
+      generatedSecret.secret shouldNotBe
+          secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data
 
       assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
         it!!.status shouldBe ResourceDiffStatus.up_to_date

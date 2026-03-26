@@ -14,51 +14,55 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
 
-class DockerServiceManager() :
+class DockerServiceManager :
     ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
 
-    override fun createResources(
-        cloud: CloudConfigurationRuntime,
-        runtime: DockerServiceConfigurationRuntime
-    ): List<BaseInfrastructureResource<*>> {
-        return emptyList()
+  override fun createResources(
+      cloud: CloudConfigurationRuntime,
+      runtime: DockerServiceConfigurationRuntime,
+  ): List<BaseInfrastructureResource<*>> = emptyList()
+
+  override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) =
+      listOf<InfrastructureResourceProvisioner<*, *>>()
+
+  override fun validatConfiguration(
+      index: Int,
+      cloud: CloudConfiguration,
+      configuration: DockerServiceConfiguration,
+      context: ProvisionerContext,
+      log: LogContext,
+  ): Result<DockerServiceConfigurationRuntime> {
+    configuration.links.forEach { link ->
+      if (cloud.services.none { it.name == link }) {
+        return Error("linked service '$link' not found for service '${configuration.name}'")
+      }
     }
 
-    override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) =
-        listOf<InfrastructureResourceProvisioner<*, *>>()
+    configuration.links.forEach { link ->
+      if (configuration.name == link) {
+        return Error("service can not be linked with itself '$link' -> '$link'")
+      }
+    }
 
-    override fun validatConfiguration(index: Int, cloud: CloudConfiguration, configuration: DockerServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<DockerServiceConfigurationRuntime> {
-
-        configuration.links.forEach { link ->
-            if (cloud.services.none { it.name == link }) {
-                return Error("linked service '${link}' not found for service '${configuration.name}'")
-            }
-        }
-
-        configuration.links.forEach { link ->
-            if (configuration.name == link) {
-                return Error("service can not be linked with itself '${link}' -> '${link}'")
-            }
-        }
-
-        configuration.endpoints.forEach { endpoint ->
-            if (configuration.endpoints.count { endpoint.port == it.port } > 1) {
-                return Error("duplicated port config for port '${endpoint.port}' for service '${configuration.name}'")
-            }
-        }
-
-        return Success(
-            DockerServiceConfigurationRuntime(
-                index, configuration.name,
-                configuration.endpoints.map {
-                    DockerServiceEndpointConfigurationRuntime(it.port)
-                },
-                configuration.links
-            )
+    configuration.endpoints.forEach { endpoint ->
+      if (configuration.endpoints.count { endpoint.port == it.port } > 1) {
+        return Error(
+            "duplicated port config for port '${endpoint.port}' for service '${configuration.name}'",
         )
+      }
     }
 
-    override val supportedConfiguration = DockerServiceConfiguration::class
+    return Success(
+        DockerServiceConfigurationRuntime(
+            index,
+            configuration.name,
+            configuration.endpoints.map { DockerServiceEndpointConfigurationRuntime(it.port) },
+            configuration.links,
+        ),
+    )
+  }
 
-    override val supportedRuntime = DockerServiceConfigurationRuntime::class
+  override val supportedConfiguration = DockerServiceConfiguration::class
+
+  override val supportedRuntime = DockerServiceConfigurationRuntime::class
 }

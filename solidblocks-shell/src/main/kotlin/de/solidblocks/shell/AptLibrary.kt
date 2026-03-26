@@ -12,4 +12,8 @@ object AptLibrary {
           .use(
               BufferedReader::readText,
           )
+
+  class UpdateRepositories : LibraryCommand {
+    override fun toShell() = listOf("apt_update_repositories")
+  }
 }

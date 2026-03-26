@@ -7,12 +7,12 @@ import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRunt
 
 class DockerServiceRegistration :
     ServiceRegistration<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
-    override val supportedConfiguration = DockerServiceConfiguration::class
-    override val supportedRuntime = DockerServiceConfigurationRuntime::class
+  override val supportedConfiguration = DockerServiceConfiguration::class
+  override val supportedRuntime = DockerServiceConfigurationRuntime::class
 
-    override fun createManager() = DockerServiceManager()
+  override fun createManager() = DockerServiceManager()
 
-    override fun createConfigurationFactory() = DockerServiceConfigurationFactory()
+  override fun createConfigurationFactory() = DockerServiceConfigurationFactory()
 
-    override val type = "docker"
+  override val type = "docker"
 }

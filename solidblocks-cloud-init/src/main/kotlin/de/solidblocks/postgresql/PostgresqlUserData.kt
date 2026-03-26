@@ -1,17 +1,24 @@
 package de.solidblocks.postgresql
 
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.model.CloudInitUserData1
-import de.solidblocks.cloudinit.model.FilePermissions
+import de.solidblocks.cloudinit.model.CloudInitUserData
 import de.solidblocks.cloudinit.model.WriteFile
+import de.solidblocks.cloudinit.model.installSystemDUnit
 import de.solidblocks.docker.ComposeFile
 import de.solidblocks.docker.Mount
 import de.solidblocks.docker.MountType
 import de.solidblocks.docker.PortMapping
 import de.solidblocks.docker.toYaml
-import de.solidblocks.shell.*
+import de.solidblocks.shell.AptLibrary
+import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.DockerLibrary
+import de.solidblocks.shell.LogLibrary
+import de.solidblocks.shell.PackageLibrary
+import de.solidblocks.shell.StorageLibrary
+import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.SystemdConfig
+import de.solidblocks.systemd.SystemDConfig
 import de.solidblocks.systemd.Target
 import de.solidblocks.systemd.Unit
 
@@ -25,7 +32,7 @@ class PostgresqlUserData(
     val storageMount = "/storage/data"
     val backupMount = "/storage/backup"
 
-    val userData = CloudInitUserData1()
+    val userData = CloudInitUserData()
 
     userData.addSources(UtilsLibrary.source())
 
@@ -80,8 +87,8 @@ class PostgresqlUserData(
     userData.addCommand(StorageLibrary.MkDir(dockerWorkingDirectory))
     userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
-    val dockerSystemdConfig =
-        SystemdConfig(
+    val dockerSystemDConfig =
+        SystemDConfig(
             Unit(
                 "PostgresSQL instance '$instanceName'",
                 after = listOf(Target.DOCKER_SERVICE),
@@ -103,14 +110,7 @@ class PostgresqlUserData(
             ),
         )
 
-    userData.addCommand(
-        WriteFile(
-            dockerSystemdConfig.render().toByteArray(),
-            "/etc/systemd/system/$instanceName.service",
-            FilePermissions.RW_R__R__,
-        ),
-    )
-    userData.addCommand(SystemDLibrary.SystemdDaemonReload())
+    userData.installSystemDUnit(instanceName, dockerSystemDConfig)
     userData.addCommand(SystemDLibrary.SystemdRestartService(instanceName))
 
     return userData.render()

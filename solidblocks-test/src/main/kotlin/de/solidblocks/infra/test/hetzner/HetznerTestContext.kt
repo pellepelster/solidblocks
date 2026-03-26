@@ -238,4 +238,6 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
       )
     }
   }
+
+  fun destroyVolume(volume: Volume) = runBlocking { api.volumes.delete(volume.id) }
 }

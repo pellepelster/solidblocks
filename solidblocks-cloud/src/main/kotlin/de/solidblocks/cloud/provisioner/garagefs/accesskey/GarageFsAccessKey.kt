@@ -10,9 +10,11 @@ class GarageFsAccessKey(
     name: String,
     val server: HetznerServer,
     val adminToken: PassSecret,
-    dependsOn: Set<BaseResource> = emptySet()
+    dependsOn: Set<BaseResource> = emptySet(),
 ) : BaseInfrastructureResource<GarageFsPermissionRuntime>(name, dependsOn + setOf(server)) {
-    fun asLookup() = GarageFsAccessKeyLookup(name, server.asLookup(), adminToken)
-    override fun logText() = "GarageFS access key '$name' on ${server.logText()}"
-    override val lookupType = GarageFsAccessKeyLookup::class
+  fun asLookup() = GarageFsAccessKeyLookup(name, server.asLookup(), adminToken)
+
+  override fun logText() = "GarageFS access key '$name' on ${server.logText()}"
+
+  override val lookupType = GarageFsAccessKeyLookup::class
 }

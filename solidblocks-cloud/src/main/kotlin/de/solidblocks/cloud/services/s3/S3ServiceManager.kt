@@ -26,8 +26,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
@@ -45,186 +45,283 @@ import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
 
-class S3ServiceManager() : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
+class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
-    private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
+  private fun serviceRootDomain(
+      cloud: CloudConfigurationRuntime,
+      runtime: ServiceConfigurationRuntime,
+  ) = "${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
 
-    override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime): List<BaseInfrastructureResource<*>> {
+  override fun createResources(
+      cloud: CloudConfigurationRuntime,
+      runtime: S3ServiceConfigurationRuntime,
+  ): List<BaseInfrastructureResource<*>> {
+    val volume =
+        HetznerVolume(
+            serverName(cloud, runtime.name),
+            cloud.hetznerProviderConfig().defaultLocation,
+            runtime.dataVolumeSize,
+            emptyMap(),
+        )
 
-        val volume = HetznerVolume(serverName(cloud, runtime.name), cloud.hetznerProviderConfig().defaultLocation, runtime.dataVolumeSize, emptyMap())
-
-        val adminToken = PassSecret(
+    val adminToken =
+        PassSecret(
             secretPath(cloud, runtime, listOf("garage", "admin_token")),
             length = 64,
             allowedChars = ('a'..'f') + ('0'..'9'),
         )
 
-        val rpcSecret = PassSecret(
+    val rpcSecret =
+        PassSecret(
             secretPath(cloud, runtime, listOf("garage", "rpc_secret")),
             length = 64,
             allowedChars = ('a'..'f') + ('0'..'9'),
         )
 
-        val metricsToken = PassSecret(
+    val metricsToken =
+        PassSecret(
             secretPath(cloud, runtime, listOf("garage", "metrics_token")),
             length = 64,
             allowedChars = ('a'..'f') + ('0'..'9'),
         )
 
-        val userData = UserData(
+    val userData =
+        UserData(
             setOf(volume, adminToken, rpcSecret, metricsToken),
             { context ->
-                if (listOf(adminToken, rpcSecret, metricsToken).any { context.lookup(it.asLookup()) == null }) {
-                    return@UserData null
-                }
+              if (
+                  listOf(adminToken, rpcSecret, metricsToken).any {
+                    context.lookup(it.asLookup()) == null
+                  }
+              ) {
+                return@UserData null
+              }
 
-                GarageFsUserData(
-                    context.ensureLookup(volume.asLookup()).device,
-                    serviceRootDomain(cloud, runtime),
-                    context.ensureLookup(rpcSecret.asLookup()).secret,
-                    context.ensureLookup(adminToken.asLookup()).secret,
-                    context.ensureLookup(metricsToken.asLookup()).secret,
-                    runtime.buckets.map {
-                        de.solidblocks.garagefs.GarageFsBucket(it.name, it.managedPublicWebAccessDomains.values.toSet() + it.manuallyManagedPublicWebAccessDomains)
-                    },
-                    true,
-                ).render()
+              GarageFsUserData(
+                      context.ensureLookup(volume.asLookup()).device,
+                      serviceRootDomain(cloud, runtime),
+                      context.ensureLookup(rpcSecret.asLookup()).secret,
+                      context.ensureLookup(adminToken.asLookup()).secret,
+                      context.ensureLookup(metricsToken.asLookup()).secret,
+                      runtime.buckets.map {
+                        de.solidblocks.garagefs.GarageFsBucket(
+                            it.name,
+                            it.managedPublicWebAccessDomains.values.toSet() +
+                                it.manuallyManagedPublicWebAccessDomains,
+                        )
+                      },
+                      true,
+                  )
+                  .render()
             },
         )
 
-        val server = HetznerServer(
+    val server =
+        HetznerServer(
             serverName(cloud, runtime.name),
             userData = userData,
             location = cloud.hetznerProviderConfig().defaultLocation,
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
             volumes = setOf(volume.asLookup()),
             type = cloud.hetznerProviderConfig().defaultInstanceType,
-            subnet = HetznerSubnetLookup(DEFAULT_SERVICE_SUBNET, HetznerNetworkLookup(networkName(cloud))),
-            privateIp = serverIp(runtime.index)
+            subnet =
+                HetznerSubnetLookup(
+                    DEFAULT_SERVICE_SUBNET,
+                    HetznerNetworkLookup(networkName(cloud)),
+                ),
+            privateIp = serverIp(runtime.index),
         )
 
-        if (cloud.rootDomain == null) {
-            throw IllegalArgumentException("root domain is required")
+    if (cloud.rootDomain == null) {
+      throw IllegalArgumentException("root domain is required")
+    }
 
-        }
-
-        val zone = HetznerDnsZoneLookup(cloud.rootDomain)
-        val rootDomain = HetznerDnsRecord(
+    val zone = HetznerDnsZoneLookup(cloud.rootDomain)
+    val rootDomain =
+        HetznerDnsRecord(
             serverName(cloud, runtime.name),
             zone,
             listOf(server.asLookup()),
         )
 
-        val catchAllDomain = HetznerDnsRecord("*.${serverName(cloud, runtime.name)}", zone, listOf(server.asLookup()))
-        val dnsResources = runtime.buckets.flatMap { it.managedPublicWebAccessDomains.entries }.map {
-            if (it.key.isEmpty()) {
+    val catchAllDomain =
+        HetznerDnsRecord("*.${serverName(cloud, runtime.name)}", zone, listOf(server.asLookup()))
+    val dnsResources =
+        runtime.buckets
+            .flatMap { it.managedPublicWebAccessDomains.entries }
+            .map {
+              if (it.key.isEmpty()) {
                 HetznerDnsRecord(
-                    "@", HetznerDnsZoneLookup(it.value), listOf(server.asLookup())
+                    "@",
+                    HetznerDnsZoneLookup(it.value),
+                    listOf(server.asLookup()),
                 )
-            } else {
+              } else {
                 HetznerDnsRecord(
-                    it.value, HetznerDnsZoneLookup(it.value), listOf(server.asLookup())
+                    it.value,
+                    HetznerDnsZoneLookup(it.value),
+                    listOf(server.asLookup()),
                 )
-            }
-        } + listOf(rootDomain, catchAllDomain)
+              }
+            } + listOf(rootDomain, catchAllDomain)
 
-        val layout = GarageFsLayout(runtime.dataVolumeSize.bytes, server.asLookup(), adminToken.asLookup())
-        val bucketResources = mutableListOf<BaseInfrastructureResource<*>>()
+    val layout =
+        GarageFsLayout(runtime.dataVolumeSize.bytes, server.asLookup(), adminToken.asLookup())
+    val bucketResources = mutableListOf<BaseInfrastructureResource<*>>()
 
-        runtime.buckets.forEach {
+    runtime.buckets.forEach {
+      val bucket =
+          GarageFsBucket(
+              it.name,
+              server,
+              adminToken,
+              websiteAccess = it.publicAccess,
+              emptyList(),
+              setOf(layout),
+          )
+      bucketResources.add(bucket)
 
-            val bucket = GarageFsBucket(it.name, server, adminToken, websiteAccess = it.publicAccess, emptyList(), setOf(layout))
-            bucketResources.add(bucket)
+      it.accessKeys.forEach { accessKeyRuntime ->
+        val accessKey =
+            GarageFsAccessKey(
+                secretPath(cloud, runtime, listOf(accessKeyRuntime.name)),
+                server,
+                adminToken,
+                setOf(layout),
+            )
+        bucketResources.add(accessKey)
 
-            it.accessKeys.forEach { accessKeyRuntime ->
-
-                val accessKey = GarageFsAccessKey(secretPath(cloud, runtime, listOf(accessKeyRuntime.name)), server, adminToken, setOf(layout))
-                bucketResources.add(accessKey)
-
-                bucketResources.add(PassSecret(secretPath(cloud, runtime, listOf(accessKeyRuntime.name, "secret_key")), secret = {
-                    it.ensureLookup(accessKey.asLookup()).secretAccessKey
-                }, dependsOn = setOf(accessKey)))
-
-                bucketResources.add(PassSecret(secretPath(cloud, runtime, listOf(accessKeyRuntime.name, "access_key")), secret = {
-                    it.ensureLookup(accessKey.asLookup()).id
-                }, dependsOn = setOf(accessKey)))
-
-                val permission = GarageFsPermission(
-                    bucket, accessKey, server, adminToken, true, true, true, setOf(layout)
-                )
-                bucketResources.add(permission)
-            }
-        }
-
-        val s3HostSecret = PassSecret(secretPath(cloud, runtime, listOf("endpoints", "s3_host")), secret = {
-            s3Host(serviceRootDomain(cloud, runtime))
-        })
-
-        return listOf(server, volume, adminToken, rpcSecret, metricsToken, layout) + bucketResources + listOf(s3HostSecret) + dnsResources
-    }
-
-    override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) =
-        listOf<InfrastructureResourceProvisioner<*, *>>()
-
-    override fun validatConfiguration(index: Int, cloud: CloudConfiguration, configuration: S3ServiceConfiguration, context: ProvisionerContext, log: LogContext): Result<S3ServiceConfigurationRuntime> {
-
-        if (cloud.rootDomain == null) {
-            "S3 service needs a valid DNS configuration for host based bucket access, ensure that the clouds `rootDomain` is configured".let {
-                logError(it)
-                return Error(it)
-            }
-        }
-
-        configuration.buckets.forEach { bucket ->
-            if (configuration.buckets.count { bucket.name == it.name } > 1) {
-                return Error("duplicated configuration for bucket with name '${bucket.name}', ensure that the bucket names are unique")
-            }
-
-            bucket.accessKeys.forEach { accessKey ->
-                if (bucket.accessKeys.count { accessKey.name == it.name } > 1) {
-                    return Error("duplicated access key with name '${accessKey.name}' found for bucket '${bucket.name}', ensure that the access key names are unique")
-                }
-            }
-        }
-
-        return Success(
-            S3ServiceConfigurationRuntime(
-                index,
-                configuration.name, ByteSize.fromGigabytes(configuration.dataVolumeSize), configuration.buckets.map { bucket ->
-
-                    val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
-                    val managedPublicAccessDomains = mutableMapOf<String, String>()
-
-                    val dnsZones: List<HetznerDnsZoneRuntime> = runBlocking {
-                        context.registry.list(HetznerDnsZoneLookup::class)
-                    }
-
-                    logInfo("validating bucket configuration for bucket '${bucket.name}'", context = log)
-                    bucket.publicAccessDomains.forEach { publicAccessDomain ->
-                        val matchingDnsZones = dnsZones.filter {
-                            publicAccessDomain.endsWith(it.name)
-                        }
-
-                        if (matchingDnsZones.isNotEmpty()) {
-                            managedPublicAccessDomains[publicAccessDomain.removeSuffix(matchingDnsZones.single().name).removeSuffix(".")] = matchingDnsZones.single().name
-                        } else {
-                            logWarning("public access domain '$publicAccessDomain' is not managed by any cloud provider, records must me manually created/updated", context = log.indent())
-                            manuallyManagedPublicAccessDomains.add(publicAccessDomain)
-                        }
-                    }
-
-                    S3ServiceBucketConfigurationRuntime(bucket.name, bucket.publicAccess, bucket.accessKeys.map {
-                        S3ServiceBucketAccessKeyConfigurationRuntime(it.name)
-                    }, managedPublicAccessDomains, manuallyManagedPublicAccessDomains)
-                })
+        bucketResources.add(
+            PassSecret(
+                secretPath(cloud, runtime, listOf(accessKeyRuntime.name, "secret_key")),
+                secret = { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
+                dependsOn = setOf(accessKey),
+            ),
         )
+
+        bucketResources.add(
+            PassSecret(
+                secretPath(cloud, runtime, listOf(accessKeyRuntime.name, "access_key")),
+                secret = { it.ensureLookup(accessKey.asLookup()).id },
+                dependsOn = setOf(accessKey),
+            ),
+        )
+
+        val permission =
+            GarageFsPermission(
+                bucket,
+                accessKey,
+                server,
+                adminToken,
+                true,
+                true,
+                true,
+                setOf(layout),
+            )
+        bucketResources.add(permission)
+      }
     }
 
-    override fun output(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): Result<List<Output>> {
-        return Success(
-            listOf(
-                Output(
-                    "S3 Service '${runtime.name}'", """
+    val s3HostSecret =
+        PassSecret(
+            secretPath(cloud, runtime, listOf("endpoints", "s3_host")),
+            secret = { s3Host(serviceRootDomain(cloud, runtime)) },
+        )
+
+    return listOf(server, volume, adminToken, rpcSecret, metricsToken, layout) +
+        bucketResources +
+        listOf(s3HostSecret) +
+        dnsResources
+  }
+
+  override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) =
+      listOf<InfrastructureResourceProvisioner<*, *>>()
+
+  override fun validatConfiguration(
+      index: Int,
+      cloud: CloudConfiguration,
+      configuration: S3ServiceConfiguration,
+      context: ProvisionerContext,
+      log: LogContext,
+  ): Result<S3ServiceConfigurationRuntime> {
+    if (cloud.rootDomain == null) {
+      "S3 service needs a valid DNS configuration for host based bucket access, ensure that the clouds `rootDomain` is configured"
+          .let {
+            logError(it)
+            return Error(it)
+          }
+    }
+
+    configuration.buckets.forEach { bucket ->
+      if (configuration.buckets.count { bucket.name == it.name } > 1) {
+        return Error(
+            "duplicated configuration for bucket with name '${bucket.name}', ensure that the bucket names are unique",
+        )
+      }
+
+      bucket.accessKeys.forEach { accessKey ->
+        if (bucket.accessKeys.count { accessKey.name == it.name } > 1) {
+          return Error(
+              "duplicated access key with name '${accessKey.name}' found for bucket '${bucket.name}', ensure that the access key names are unique",
+          )
+        }
+      }
+    }
+
+    return Success(
+        S3ServiceConfigurationRuntime(
+            index,
+            configuration.name,
+            ByteSize.fromGigabytes(configuration.dataVolumeSize),
+            configuration.buckets.map { bucket ->
+              val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
+              val managedPublicAccessDomains = mutableMapOf<String, String>()
+
+              val dnsZones: List<HetznerDnsZoneRuntime> = runBlocking {
+                context.registry.list(HetznerDnsZoneLookup::class)
+              }
+
+              logInfo("validating bucket configuration for bucket '${bucket.name}'", context = log)
+              bucket.publicAccessDomains.forEach { publicAccessDomain ->
+                val matchingDnsZones = dnsZones.filter { publicAccessDomain.endsWith(it.name) }
+
+                if (matchingDnsZones.isNotEmpty()) {
+                  managedPublicAccessDomains[
+                      publicAccessDomain
+                          .removeSuffix(matchingDnsZones.single().name)
+                          .removeSuffix("."),
+                  ] = matchingDnsZones.single().name
+                } else {
+                  logWarning(
+                      "public access domain '$publicAccessDomain' is not managed by any cloud provider, records must me manually created/updated",
+                      context = log.indent(),
+                  )
+                  manuallyManagedPublicAccessDomains.add(publicAccessDomain)
+                }
+              }
+
+              S3ServiceBucketConfigurationRuntime(
+                  bucket.name,
+                  bucket.publicAccess,
+                  bucket.accessKeys.map { S3ServiceBucketAccessKeyConfigurationRuntime(it.name) },
+                  managedPublicAccessDomains,
+                  manuallyManagedPublicAccessDomains,
+              )
+            },
+        ),
+    )
+  }
+
+  override fun output(
+      cloud: CloudConfigurationRuntime,
+      runtime: S3ServiceConfigurationRuntime,
+      context: ProvisionerContext,
+  ): Result<List<Output>> =
+      Success(
+          listOf(
+              Output(
+                  "S3 Service '${runtime.name}'",
+                  """
 
 ## Endpoints
 
@@ -246,19 +343,25 @@ export METRICS_SECRET="$(pass ${secretPath(cloud, runtime, listOf("garage", "met
 ## Usage examples
 
 ${bucketsHelp(cloud, runtime)}
-""".trimIndent()
-                )
-            )
-        )
-    }
+                """
+                      .trimIndent(),
+              ),
+          ),
+      )
 
-    fun bucketsHelp(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime) = runtime.buckets.joinToString("\n") {
+  fun bucketsHelp(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime) =
+      runtime.buckets.joinToString("\n") {
         bucketHelpAccessKeysHelp(cloud, it, runtime, it.accessKeys) + "\n"
-    }
+      }
 
-    fun bucketHelpAccessKeysHelp(cloud: CloudConfigurationRuntime, bucket: S3ServiceBucketConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, accessKeys: List<S3ServiceBucketAccessKeyConfigurationRuntime>) =
-        accessKeys.joinToString("\n") {
-            """
+  fun bucketHelpAccessKeysHelp(
+      cloud: CloudConfigurationRuntime,
+      bucket: S3ServiceBucketConfigurationRuntime,
+      runtime: S3ServiceConfigurationRuntime,
+      accessKeys: List<S3ServiceBucketAccessKeyConfigurationRuntime>,
+  ) =
+      accessKeys.joinToString("\n") {
+        """
         **Bucket '${bucket.name}' with access key '${it.name}'**
         ```
         export ACCESS_KEY="$(pass ${secretPath(cloud, runtime, listOf(it.name, "access_key"))})"
@@ -271,12 +374,13 @@ ${bucketsHelp(cloud, runtime)}
             --secret_key ${'$'}{SECRET_KEY} \
             ls s3://${bucket.name}
         ```
-        """.trimIndent()
-        }
+        """
+            .trimIndent()
+      }
 
-    //sync --no-mime-magic --guess-mime-type
+  // sync --no-mime-magic --guess-mime-type
 
-    override val supportedConfiguration = S3ServiceConfiguration::class
+  override val supportedConfiguration = S3ServiceConfiguration::class
 
-    override val supportedRuntime = S3ServiceConfigurationRuntime::class
+  override val supportedRuntime = S3ServiceConfigurationRuntime::class
 }
