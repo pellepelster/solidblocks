@@ -1,6 +1,5 @@
-package de.solidblocks.cloudinit.model
+package de.solidblocks.shell
 
-import de.solidblocks.shell.LibraryCommand
 import kotlin.io.encoding.Base64
 
 class WriteFile(
@@ -9,12 +8,20 @@ class WriteFile(
     val permissions: FilePermissions = FilePermissions(),
 ) : LibraryCommand {
 
-  override fun toShell() =
+  override fun commands() =
       listOf(
           "touch $path",
           "chmod ${permissions.renderChmod()} $path",
           "echo \"${Base64.encode(content)}\" | base64 -d > $path",
       )
+}
+
+data class MkDir(val dir: String, val owner: String? = null, val group: String? = null) :
+    LibraryCommand {
+  override fun commands() =
+      listOf("mkdir -p $dir") +
+          (if (owner != null) listOf("chown $owner $dir") else emptyList()) +
+          (if (group != null) listOf("chgrp $group $dir") else emptyList())
 }
 
 sealed class Permission(val read: Boolean, val write: Boolean, val execute: Boolean) {

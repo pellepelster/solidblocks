@@ -14,6 +14,6 @@ object CaddyLibrary {
           )
 
   class Install : LibraryCommand {
-    override fun toShell() = listOf("caddy_install")
+    override fun commands() = listOf("caddy_install")
   }
 }

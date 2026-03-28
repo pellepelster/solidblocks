@@ -6,20 +6,21 @@ import de.solidblocks.caddy.FileSystemStorage
 import de.solidblocks.caddy.GlobalOptions
 import de.solidblocks.caddy.ReverseProxy
 import de.solidblocks.caddy.Site
+import de.solidblocks.cloudinit.CloudInitUserData
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.model.CloudInitUserData
-import de.solidblocks.cloudinit.model.FilePermissions
-import de.solidblocks.cloudinit.model.WriteFile
-import de.solidblocks.cloudinit.model.installSystemDUnit
+import de.solidblocks.cloudinit.installSystemDUnit
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CaddyLibrary
 import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.FilePermissions
 import de.solidblocks.shell.GarageLibrary
 import de.solidblocks.shell.LogLibrary
+import de.solidblocks.shell.MkDir
 import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.UtilsLibrary
+import de.solidblocks.shell.WriteFile
 import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDConfig
 import de.solidblocks.systemd.Unit
@@ -86,7 +87,7 @@ class GarageFsUserData(
 
     userData.addSources(CaddyLibrary.source())
     userData.addCommand(CaddyLibrary.Install())
-    userData.addCommand(StorageLibrary.MkDir(caddyStorageDir, "caddy"))
+    userData.addCommand(MkDir(caddyStorageDir, "caddy"))
     userData.addCommand(
         WriteFile(
             caddyConfig.render().toByteArray(),
@@ -126,8 +127,8 @@ class GarageFsUserData(
             FilePermissions.RW_R__R__,
         ),
     )
-    userData.addCommand(StorageLibrary.MkDir(garageFsConfig.dataDir))
-    userData.addCommand(StorageLibrary.MkDir(garageFsConfig.metaDataDir))
+    userData.addCommand(MkDir(garageFsConfig.dataDir))
+    userData.addCommand(MkDir(garageFsConfig.metaDataDir))
 
     userData.installSystemDUnit("garage", garageFsSystemDConfig)
     userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))

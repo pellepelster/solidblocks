@@ -44,6 +44,7 @@ class SystemDConfig(val unit: Unit, val service: Service, val install: Install? 
     }
 
     service.environment.entries.forEach { sw.appendLine("Environment=\"${it.key}=${it.value}\"") }
+    service.environmentFiles.forEach { sw.appendLine("EnvironmentFile=$it") }
     sw.appendLine("ExecStart=${service.execStart.joinToString(" ")}")
     service.stateDirectory?.let { sw.appendLine("StateDirectory=$it") }
     service.workingDirectory?.let { sw.appendLine("WorkingDirectory=$it") }
@@ -74,6 +75,7 @@ class Service(
     val execStart: List<String>,
     val restart: Restart = Restart.ALWAYS,
     val environment: Map<String, String> = emptyMap(),
+    val environmentFiles: List<String> = emptyList(),
     val workingDirectory: String? = null,
     val stateDirectory: String? = null,
     val limitNOFILE: Int? = null,

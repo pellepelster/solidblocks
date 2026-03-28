@@ -4,9 +4,13 @@ import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.files.workingDir
 import de.solidblocks.infra.test.files.zipFile
+import de.solidblocks.shell.FilePermissions
+import de.solidblocks.shell.GroupPermission
+import de.solidblocks.shell.OtherPermission
+import de.solidblocks.shell.UserPermission
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
-import java.util.UUID
+import java.util.*
 import localTestContext
 import org.junit.jupiter.api.Test
 
@@ -32,5 +36,32 @@ public class FileTest {
             .run()
 
     assertSoftly(result) { it shouldHaveExitCode 0 }
+  }
+
+  @Test
+  fun testDefaultFilePermission() {
+    FilePermissions().renderChmod() shouldBe "u=rw-,g=---,o=---"
+  }
+
+  @Test
+  fun testFilePermission() {
+    FilePermissions(
+            UserPermission(true, true, true),
+            GroupPermission(true, false, true),
+            OtherPermission(false, true, false),
+        )
+        .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
+    FilePermissions(
+            UserPermission(true, true, true),
+            GroupPermission(true, false, true),
+            OtherPermission(false, true, false),
+        )
+        .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
+    FilePermissions(
+            UserPermission(false, false, false),
+            GroupPermission(false, false, false),
+            OtherPermission(false, false, false),
+        )
+        .renderChmod() shouldBe "u=---,g=---,o=---"
   }
 }

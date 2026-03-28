@@ -1,20 +1,14 @@
 package de.solidblocks.cloudinit
 
-import de.solidblocks.cloudinit.model.CloudInitUserData
-import de.solidblocks.cloudinit.model.FilePermissions
-import de.solidblocks.cloudinit.model.GroupPermission
-import de.solidblocks.cloudinit.model.OtherPermission
-import de.solidblocks.cloudinit.model.UserPermission
-import de.solidblocks.cloudinit.model.WriteFile
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.hetzner.HetznerServerTestContext
-import de.solidblocks.shell.StorageLibrary
+import de.solidblocks.shell.*
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.nio.file.Files
 import java.time.Duration.ofSeconds
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.writeText
 import org.awaitility.Awaitility.await
@@ -73,11 +67,6 @@ class CloudInitUserDataTest {
   }
 
   @Test
-  fun testDefaultFilePermission() {
-    FilePermissions().renderChmod() shouldBe "u=rw-,g=---,o=---"
-  }
-
-  @Test
   fun testPlaceHolders() {
     val template =
         CloudInitUserData::class
@@ -86,28 +75,6 @@ class CloudInitUserDataTest {
             .readText()
     template shouldContain "__CLOUD_INIT_VARIABLES__"
     template shouldContain "__CLOUD_INIT_SCRIPT__"
-  }
-
-  @Test
-  fun testFilePermission() {
-    FilePermissions(
-            UserPermission(true, true, true),
-            GroupPermission(true, false, true),
-            OtherPermission(false, true, false),
-        )
-        .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
-    FilePermissions(
-            UserPermission(true, true, true),
-            GroupPermission(true, false, true),
-            OtherPermission(false, true, false),
-        )
-        .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
-    FilePermissions(
-            UserPermission(false, false, false),
-            GroupPermission(false, false, false),
-            OtherPermission(false, false, false),
-        )
-        .renderChmod() shouldBe "u=---,g=---,o=---"
   }
 }
 

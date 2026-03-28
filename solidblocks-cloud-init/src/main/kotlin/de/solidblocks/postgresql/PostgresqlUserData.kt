@@ -1,9 +1,8 @@
 package de.solidblocks.postgresql
 
+import de.solidblocks.cloudinit.CloudInitUserData
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.model.CloudInitUserData
-import de.solidblocks.cloudinit.model.WriteFile
-import de.solidblocks.cloudinit.model.installSystemDUnit
+import de.solidblocks.cloudinit.installSystemDUnit
 import de.solidblocks.docker.ComposeFile
 import de.solidblocks.docker.Mount
 import de.solidblocks.docker.MountType
@@ -13,10 +12,12 @@ import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CurlLibrary
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.LogLibrary
+import de.solidblocks.shell.MkDir
 import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.UtilsLibrary
+import de.solidblocks.shell.WriteFile
 import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDConfig
 import de.solidblocks.systemd.Target
@@ -50,8 +51,8 @@ class PostgresqlUserData(
     userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
 
     userData.addCommand(DockerLibrary.InstallDebian())
-    userData.addCommand(StorageLibrary.MkDir("/storage/data", "10000", "10000"))
-    userData.addCommand(StorageLibrary.MkDir("/storage/backup", "10000", "10000"))
+    userData.addCommand(MkDir("/storage/data", "10000", "10000"))
+    userData.addCommand(MkDir("/storage/backup", "10000", "10000"))
 
     val dockerWorkingDirectory = "/usr/local/etc/containers/"
     val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
@@ -84,7 +85,7 @@ class PostgresqlUserData(
                         ),
                 ),
         )
-    userData.addCommand(StorageLibrary.MkDir(dockerWorkingDirectory))
+    userData.addCommand(MkDir(dockerWorkingDirectory))
     userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
     val dockerSystemDConfig =

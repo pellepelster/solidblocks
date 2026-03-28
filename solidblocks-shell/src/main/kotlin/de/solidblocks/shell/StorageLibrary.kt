@@ -17,18 +17,10 @@ object StorageLibrary {
   }
 
   data class Mount(
-      val storageDevice: String,
-      val storageDir: String,
+      val device: String,
+      val path: String,
       val filesystem: FileSystem = FileSystem.ext4,
   ) : LibraryCommand {
-    override fun toShell() = listOf("storage_mount $storageDevice $storageDir ${filesystem.name}")
-  }
-
-  data class MkDir(val dir: String, val owner: String? = null, val group: String? = null) :
-      LibraryCommand {
-    override fun toShell() =
-        listOf("mkdir -p $dir") +
-            (if (owner != null) listOf("chown $owner $dir") else emptyList()) +
-            (if (group != null) listOf("chgrp $group $dir") else emptyList())
+    override fun commands() = listOf("storage_mount $device $path ${filesystem.name}")
   }
 }

@@ -14,14 +14,14 @@ object PackageLibrary {
           )
 
   class UpdateSystem : LibraryCommand {
-    override fun toShell() = listOf("package_update_system")
+    override fun commands() = listOf("package_update_system")
   }
 
   class UpdateRepositories : LibraryCommand {
-    override fun toShell() = listOf("package_update_repositories")
+    override fun commands() = listOf("package_update_repositories")
   }
 
   class InstallPackage(val pkg: String) : LibraryCommand {
-    override fun toShell() = listOf("package_ensure_package $pkg")
+    override fun commands() = listOf("package_ensure_package $pkg")
   }
 }

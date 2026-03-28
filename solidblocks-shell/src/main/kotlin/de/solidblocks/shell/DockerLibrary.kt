@@ -14,6 +14,6 @@ object DockerLibrary {
           )
 
   class InstallDebian : LibraryCommand {
-    override fun toShell() = listOf("docker_install_debian")
+    override fun commands() = listOf("docker_install_debian")
   }
 }

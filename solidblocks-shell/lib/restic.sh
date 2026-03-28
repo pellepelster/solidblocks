@@ -1,17 +1,32 @@
 _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-#test -f "${_DIR}/text.sh" && source "${_DIR}/text.sh"
-#test -f "${_DIR}/utils.sh" && source "${_DIR}/utils.sh"
+test -f "${_DIR}/curl.sh" && source "${_DIR}/curl.sh"
 
 function restic_install() {
-  apt-get install -y restic
+  curl_wrapper https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_amd64.bz2 -o /tmp/restic_0.18.1_linux_amd64.bz2
+  echo "680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d /tmp/restic_0.18.1_linux_amd64.bz2" | sha256sum --check
+  bunzip2 /tmp/restic_0.18.1_linux_amd64.bz2
+  mv /tmp/restic_0.18.1_linux_amd64 /usr/bin/restic
+  chmod +x /usr/bin/restic
 }
 
-function restic_ensure_repo() {
+function restic_ensure_local_repo() {
   local repo="${1}"
-  local password="${2}"
+  export $(cat /etc/restic/credentials | xargs)
 
-  export RESTIC_PASSWORD="${password}"
+  if restic --repo "${repo}" cat config; then
+    echo "[blcks] repository '${repo}' already exists"
+  else
+    echo "[blcks] initializing repository '${repo}'"
+    restic init --repo "${repo}"
+  fi
+}
+
+function restic_ensure_s3_repo() {
+  local repo="${1}"
+  export $(cat /etc/restic/credentials | xargs)
+
+  echo "[blcks] checking repository '${repo}'"
 
   if restic --repo "${repo}" cat config; then
     echo "[blcks] repository '${repo}' already exists"
@@ -23,38 +38,52 @@ function restic_ensure_repo() {
 
 function restic_backup() {
   local repo="${1}"
-  local password="${2}"
-  local directory="${3}"
+  local directory="${2}"
+  export $(cat /etc/restic/credentials | xargs)
 
-  export RESTIC_PASSWORD="${password}"
   restic --repo "${repo}" --verbose backup ${directory}
 }
 
 function restic_restore() {
   local repo="${1}"
-  local password="${2}"
+  export $(cat /etc/restic/credentials | xargs)
 
-  export RESTIC_PASSWORD="${password}"
-  if [[ "$(restic --repo ${repo} snapshots --json)" == "[]" ]]; then
-    echo "[blcks] no snapshots found in repository '${repo}'"
-  else
-    echo "[blcks] restoring latest snapshot from repository '${repo}'"
-    restic --repo "${repo}" restore latest --target /
-  fi
+  local snapshots=$(restic --repo ${repo} snapshots --json --latest 1)
+
+    if [[ "${snapshots}" == "[]" ]]; then
+      echo "[blcks] no snapshots found in repository '${repo}'"
+      return
+    fi
+
+    local snapshot_id=$(echo ${snapshots} | jq -r ".[0].id")
+    local snapshot_time=$(echo ${snapshots} | jq -r ".[0].time")
+    echo "[blcks] found snapshot '${snapshot_id}' from '${snapshot_time}'"
+
+    while read path
+    do
+      if [ -z "$( ls -A ${path} )" ]; then
+         echo "[blcks] target path '${path}' is empty"
+      else
+         echo "[blcks] target path '${path}' is not empty, canceling restore"
+         return
+      fi
+    done < <(echo "${snapshots}" | jq -r '.[0].paths[]')
+
+    echo "[blcks] restoring snapshot '${snapshot_id}' from repository '${repo}'"
+    restic --repo "${repo}" restore --overwrite never --target / --json ${snapshot_id}
 }
 
 function restic_stats() {
   local repo="${1}"
-  local password="${2}"
+  export $(cat /etc/restic/credentials | xargs)
 
-  export RESTIC_PASSWORD="${password}"
   restic --repo "${repo}" stats --json
 }
 
 function restic_snapshots() {
   local repo="${1}"
-  local password="${2}"
+  shift || true
+  export $(cat /etc/restic/credentials | xargs)
 
-  export RESTIC_PASSWORD="${password}"
-  restic --repo "${repo}" snapshots --json
+  restic --repo "${repo}" snapshots --json $@
 }

@@ -6,7 +6,7 @@ spool-path=/rds/pgbackrest/spool
 
 {{ if eq (getenv "DB_BACKUP_S3") "1" }}
 repo{{ $repoIndex }}-type=s3
-repo{{ $repoIndex }}-path=/pgbackrest
+repo{{ $repoIndex }}-path={{ getenv "DB_BACKUP_S3_PATH" "/pgbackrest" }}
 
 repo{{ $repoIndex }}-s3-region={{ getenv "DB_BACKUP_S3_REGION" "eu-central-1" }}
 repo{{ $repoIndex }}-s3-endpoint={{ getenv "DB_BACKUP_S3_HOST" "s3.eu-central-1.amazonaws.com" }}

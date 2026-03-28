@@ -15,6 +15,6 @@ object GarageLibrary {
           )
 
   class Install : LibraryCommand {
-    override fun toShell() = listOf("garage_install")
+    override fun commands() = listOf("garage_install")
   }
 }

@@ -1,25 +1,11 @@
 package de.solidblocks.docker
 
-import de.solidblocks.caddy.AutoHttps
-import de.solidblocks.caddy.CaddyConfig
-import de.solidblocks.caddy.FileSystemStorage
-import de.solidblocks.caddy.GlobalOptions
-import de.solidblocks.caddy.ReverseProxy
-import de.solidblocks.caddy.Site
+import de.solidblocks.caddy.*
+import de.solidblocks.cloudinit.CloudInitUserData
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.model.CloudInitUserData
-import de.solidblocks.cloudinit.model.FilePermissions
-import de.solidblocks.cloudinit.model.WriteFile
-import de.solidblocks.cloudinit.model.installSystemDUnit
-import de.solidblocks.shell.AptLibrary
-import de.solidblocks.shell.CaddyLibrary
-import de.solidblocks.shell.CurlLibrary
-import de.solidblocks.shell.DockerLibrary
-import de.solidblocks.shell.LogLibrary
-import de.solidblocks.shell.PackageLibrary
-import de.solidblocks.shell.StorageLibrary
-import de.solidblocks.shell.SystemDLibrary
-import de.solidblocks.shell.UtilsLibrary
+import de.solidblocks.cloudinit.installSystemDUnit
+import de.solidblocks.shell.*
+import de.solidblocks.shell.MkDir
 import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDConfig
 import de.solidblocks.systemd.Target
@@ -73,7 +59,7 @@ class GenericDockerServiceUserData(
 
     userData.addSources(CaddyLibrary.source())
     userData.addCommand(CaddyLibrary.Install())
-    userData.addCommand(StorageLibrary.MkDir(caddyStorageDir, "caddy"))
+    userData.addCommand(MkDir(caddyStorageDir, "caddy"))
     userData.addCommand(
         WriteFile(
             caddyConfig.render().toByteArray(),
@@ -104,7 +90,7 @@ class GenericDockerServiceUserData(
                         ),
                 ),
         )
-    userData.addCommand(StorageLibrary.MkDir(dockerWorkingDirectory))
+    userData.addCommand(MkDir(dockerWorkingDirectory))
     userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
     val dockerSystemDConfig =

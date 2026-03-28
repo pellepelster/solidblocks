@@ -14,6 +14,6 @@ object AptLibrary {
           )
 
   class UpdateRepositories : LibraryCommand {
-    override fun toShell() = listOf("apt_update_repositories")
+    override fun commands() = listOf("apt_update_repositories")
   }
 }
