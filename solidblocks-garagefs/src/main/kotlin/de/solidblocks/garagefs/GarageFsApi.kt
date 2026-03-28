@@ -12,7 +12,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
-class GarageFsApi(val apiToken: String, val baseAddress: String = "http://localhost:3903") {
+public class GarageFsApi(val apiToken: String, val baseAddress: String = "http://localhost:3903") {
 
   val clusterApi = ClusterApi(this)
   val clusterLayoutApi = ClusterLayoutApi(this)

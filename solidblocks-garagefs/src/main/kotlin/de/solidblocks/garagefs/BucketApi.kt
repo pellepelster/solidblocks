@@ -3,42 +3,43 @@ package de.solidblocks.garagefs
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UpdateBucketWebsiteAccess(
+public data class UpdateBucketWebsiteAccess(
     val enabled: Boolean,
     val errorDocument: String? = null,
     val indexDocument: String? = null,
 )
 
 @Serializable
-data class UpdateBucketRequest(
+public data class UpdateBucketRequest(
     val quotas: ApiBucketQuotas? = null,
     val websiteAccess: UpdateBucketWebsiteAccess? = null,
 )
 
 @Serializable
-data class CreateBucketLocalAlias(
+public data class CreateBucketLocalAlias(
     val accessKeyId: String,
     val alias: String,
     val allow: BucketKeyPermRequest? = null,
 )
 
 @Serializable
-data class CreateBucketRequest(
+public data class CreateBucketRequest(
     val globalAlias: String? = null,
     val localAlias: CreateBucketLocalAlias? = null,
 )
 
 @Serializable
-data class ListBucketsResponse(
+public data class ListBucketsResponse(
     val globalAliases: List<String>,
     val id: String,
     val localAliases: List<BucketLocalAliasResponse>,
 )
 
-@Serializable data class BucketLocalAliasResponse(val accessKeyId: String, val alias: String)
+@Serializable
+public data class BucketLocalAliasResponse(val accessKeyId: String, val alias: String)
 
 @Serializable
-data class BucketKeyPermRequest(
+public data class BucketKeyPermRequest(
     val owner: Boolean? = null,
     val read: Boolean? = null,
     val write: Boolean? = null,
