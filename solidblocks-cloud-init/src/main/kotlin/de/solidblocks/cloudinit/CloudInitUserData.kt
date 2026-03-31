@@ -1,11 +1,7 @@
 package de.solidblocks.cloudinit
 
 import de.solidblocks.shell.*
-import de.solidblocks.shell.ResticLibrary.RESTIC_CREDENTIALS_PATH
-import de.solidblocks.systemd.Restart
-import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDConfig
-import de.solidblocks.systemd.Unit
 import java.io.StringWriter
 import kotlin.io.encoding.Base64
 
@@ -63,85 +59,4 @@ fun CloudInitUserData.installSystemDUnit(name: String, config: SystemDConfig) {
       ),
   )
   addCommand(SystemDLibrary.SystemdDaemonReload())
-}
-
-fun CloudInitUserData.resticLocalBackup(
-    name: String,
-    repositoryPath: String,
-    repositoryPassword: String,
-    backupPath: String,
-) {
-  addLibSources("curl", CurlLibrary.source())
-  addLibSources("restic", ResticLibrary.source())
-
-  val systemdD =
-      SystemDConfig(
-          Unit("backup for '$name'", emptyList(), emptyList()),
-          Service(
-              listOf(
-                  "restic",
-                  "backup",
-                  "--repo",
-                  repositoryPath,
-                  "--verbose",
-                  "backup",
-                  backupPath,
-              ),
-              restart = Restart.ON_FAILURE,
-              environment = mapOf("RESTIC_PASSWORD" to repositoryPassword),
-          ),
-          null,
-      )
-
-  addSources(PackageLibrary.source())
-  addCommand(PackageLibrary.InstallPackage("jq"))
-  addCommand(ResticLibrary.Install())
-  addCommand(ResticLibrary.WriteCredentials(repositoryPassword))
-  addCommand(ResticLibrary.EnsureLocalRepo(repositoryPath))
-  addCommand(ResticLibrary.Restore(repositoryPath))
-  installSystemDUnit("backup-$name-local", systemdD)
-}
-
-fun CloudInitUserData.resticS3Backup(
-    name: String,
-    repositoryPassword: String,
-    repositoryPath: String,
-    bucket: String,
-    awsRegion: String,
-    awsAccessKey: String,
-    awsSecretKey: String,
-    backupPath: String,
-) {
-  addLibSources("curl", CurlLibrary.source())
-  addLibSources("restic", ResticLibrary.source())
-
-  val s3Repository = "s3:s3.$awsRegion.amazonaws.com/$bucket/$repositoryPath"
-
-  val systemdD =
-      SystemDConfig(
-          Unit("backup for '$name'", emptyList(), emptyList()),
-          Service(
-              listOf(
-                  "restic",
-                  "backup",
-                  "--repo",
-                  s3Repository,
-                  "--verbose",
-                  "backup",
-                  backupPath,
-              ),
-              restart = Restart.ON_FAILURE,
-              environment = mapOf("RESTIC_PASSWORD" to repositoryPassword),
-              environmentFiles = listOf(RESTIC_CREDENTIALS_PATH),
-          ),
-          null,
-      )
-
-  addSources(PackageLibrary.source())
-  addCommand(PackageLibrary.InstallPackage("jq"))
-  addCommand(ResticLibrary.Install())
-  addCommand(ResticLibrary.WriteS3Credentials(repositoryPassword, awsAccessKey, awsSecretKey))
-  addCommand(ResticLibrary.EnsureS3Repo(s3Repository))
-  addCommand(ResticLibrary.Restore(s3Repository))
-  installSystemDUnit("backup-$name-s3", systemdD)
 }

@@ -14,10 +14,10 @@ private val yaml =
             ),
     )
 
-fun ComposeFile.toYaml(): String = yaml.encodeToString(ComposeFile.serializer(), this)
+public fun ComposeFile.toYaml(): String = yaml.encodeToString(ComposeFile.serializer(), this)
 
 @Serializable
-data class ComposeFile(
+public data class ComposeFile(
     val version: String = "3.9",
     val services: Map<String, Service> = emptyMap(),
     val networks: Map<String, NetworkDefinition> = emptyMap(),

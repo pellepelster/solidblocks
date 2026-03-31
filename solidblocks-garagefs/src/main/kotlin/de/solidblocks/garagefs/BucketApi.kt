@@ -35,8 +35,7 @@ public data class ListBucketsResponse(
     val localAliases: List<BucketLocalAliasResponse>,
 )
 
-@Serializable
-public data class BucketLocalAliasResponse(val accessKeyId: String, val alias: String)
+@Serializable public data class BucketLocalAliasResponse(val accessKeyId: String, val alias: String)
 
 @Serializable
 public data class BucketKeyPermRequest(
