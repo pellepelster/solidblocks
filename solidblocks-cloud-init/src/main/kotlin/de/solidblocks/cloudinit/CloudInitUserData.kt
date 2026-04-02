@@ -50,13 +50,14 @@ data class CloudInitUserData(var environmentVariables: Map<String, String> = mut
   }
 }
 
-fun CloudInitUserData.installSystemDUnit(name: String, config: SystemDConfig) {
+fun CloudInitUserData.installSystemDUnit(config: SystemDConfig) {
   addCommand(
       WriteFile(
           config.render().toByteArray(),
-          "/etc/systemd/system/$name.service",
+          "/etc/systemd/system/${config.fullUnitName()}",
           FilePermissions.Companion.RW_R__R__,
       ),
   )
-  addCommand(SystemDLibrary.SystemdDaemonReload())
+  addCommand(SystemDLibrary.DaemonReload())
+  addCommand(SystemDLibrary.Enable(config.fullUnitName()))
 }

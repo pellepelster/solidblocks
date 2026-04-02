@@ -6,8 +6,9 @@ import de.solidblocks.cloudinit.ServiceUserData
 import de.solidblocks.cloudinit.installSystemDUnit
 import de.solidblocks.shell.*
 import de.solidblocks.shell.MkDir
+import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.SystemDConfig
+import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.Target
 import de.solidblocks.systemd.Unit
 
@@ -67,7 +68,7 @@ class GenericDockerServiceUserData(
             FilePermissions.RW_R__R__,
         ),
     )
-    userData.addCommand(SystemDLibrary.SystemdRestartService("caddy"))
+    userData.addCommand(SystemDLibrary.Restart("caddy"))
 
     val dockerWorkingDirectory = "/usr/local/etc/containers/"
     val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
@@ -94,7 +95,8 @@ class GenericDockerServiceUserData(
     userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
     val dockerSystemDConfig =
-        SystemDConfig(
+        SystemDService(
+            name,
             Unit(
                 "'$name' docker compose service",
                 after = listOf(Target.DOCKER_SERVICE),
@@ -114,10 +116,11 @@ class GenericDockerServiceUserData(
                 execDown =
                     listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
             ),
+            Install(),
         )
 
-    userData.installSystemDUnit(name, dockerSystemDConfig)
-    userData.addCommand(SystemDLibrary.SystemdRestartService(name))
+    userData.installSystemDUnit(dockerSystemDConfig)
+    userData.addCommand(SystemDLibrary.Restart(name))
 
     return userData.render()
   }

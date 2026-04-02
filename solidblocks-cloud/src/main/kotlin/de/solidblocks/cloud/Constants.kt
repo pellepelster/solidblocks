@@ -29,6 +29,9 @@ object Constants {
   ) =
       "${configuration.name}/${configuration.getDefaultEnvironment()}/${runtime.name}/${segments.joinToString("/")}"
 
+  fun secretPath(configuration: CloudConfigurationRuntime, segments: List<String>) =
+      "${configuration.name}/${configuration.getDefaultEnvironment()}/${segments.joinToString("/")}"
+
   const val namespace: String = "blcks.de"
 
   const val managedByLabel: String = "$namespace/managed-by"

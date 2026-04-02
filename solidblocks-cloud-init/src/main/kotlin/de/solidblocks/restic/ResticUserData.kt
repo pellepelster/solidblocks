@@ -6,9 +6,15 @@ import de.solidblocks.shell.CurlLibrary
 import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.ResticLibrary
 import de.solidblocks.shell.ResticLibrary.RESTIC_CREDENTIALS_PATH
+import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.systemd.Daily
+import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Restart
 import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDConfig
+import de.solidblocks.systemd.SystemDService
+import de.solidblocks.systemd.SystemDTimer
+import de.solidblocks.systemd.Timer
 import de.solidblocks.systemd.Unit
 
 private fun String.toBackupName1(): String =
@@ -16,7 +22,7 @@ private fun String.toBackupName1(): String =
 
 private fun String.s3SystemDUnitName() = "backup-${toBackupName1()}-s3"
 
-private fun String.localSystemDUnitName() = "backup-${toBackupName1()}-s3"
+private fun String.localSystemDUnitName() = "backup-${toBackupName1()}-local"
 
 private fun CloudInitUserData.resticCommon() {
   addLibSources("curl", CurlLibrary.source())
@@ -27,8 +33,25 @@ private fun CloudInitUserData.resticCommon() {
   addCommand(ResticLibrary.Install())
 }
 
+fun CloudInitUserData.installBackupUnitWithTrigger(config: SystemDConfig) {
+  installSystemDUnit(config)
+  val timer =
+      SystemDTimer(
+          config.name,
+          Unit("backup for '${config.name}'"),
+          Timer(
+              Daily(),
+              config.fullUnitName(),
+          ),
+          Install(),
+      )
+  installSystemDUnit(timer)
+  addCommand(SystemDLibrary.Start(timer.fullUnitName()))
+}
+
 fun localBackupSystemDUnit(localRepository: String, backupPath: String) =
-    SystemDConfig(
+    SystemDService(
+        backupPath.localSystemDUnitName(),
         Unit("local backup for '$backupPath'", emptyList(), emptyList()),
         Service(
             listOf(
@@ -43,11 +66,12 @@ fun localBackupSystemDUnit(localRepository: String, backupPath: String) =
             restart = Restart.ON_FAILURE,
             environmentFiles = listOf(RESTIC_CREDENTIALS_PATH),
         ),
-        null,
+        Install(),
     )
 
 fun s3BackupSystemDUnit(s3Repository: String, backupPath: String) =
-    SystemDConfig(
+    SystemDService(
+        backupPath.s3SystemDUnitName(),
         Unit("s3 backup for '$backupPath'", emptyList(), emptyList()),
         Service(
             listOf(
@@ -62,7 +86,7 @@ fun s3BackupSystemDUnit(s3Repository: String, backupPath: String) =
             restart = Restart.ON_FAILURE,
             environmentFiles = listOf(RESTIC_CREDENTIALS_PATH),
         ),
-        null,
+        Install(),
     )
 
 fun CloudInitUserData.resticLocalBackup(
@@ -74,10 +98,8 @@ fun CloudInitUserData.resticLocalBackup(
   addCommand(ResticLibrary.WriteCredentials(repositoryPassword))
   addCommand(ResticLibrary.EnsureLocalRepo(localRepository))
   addCommand(ResticLibrary.Restore(localRepository))
-  installSystemDUnit(
-      backupPath.localSystemDUnitName(),
-      localBackupSystemDUnit(localRepository, backupPath),
-  )
+
+  installBackupUnitWithTrigger(localBackupSystemDUnit(localRepository, backupPath))
 }
 
 fun CloudInitUserData.resticS3Backup(
@@ -92,7 +114,7 @@ fun CloudInitUserData.resticS3Backup(
   addCommand(ResticLibrary.WriteS3Credentials(repositoryPassword, awsAccessKey, awsSecretKey))
   addCommand(ResticLibrary.EnsureS3Repo(s3Repository))
   addCommand(ResticLibrary.Restore(s3Repository))
-  installSystemDUnit(backupPath.s3SystemDUnitName(), s3BackupSystemDUnit(s3Repository, backupPath))
+  installBackupUnitWithTrigger(s3BackupSystemDUnit(s3Repository, backupPath))
 }
 
 fun CloudInitUserData.resticLocalAndS3Backup(
@@ -113,9 +135,6 @@ fun CloudInitUserData.resticLocalAndS3Backup(
   addCommand(ResticLibrary.Restore(localRepository))
   addCommand(ResticLibrary.Restore(s3Repository))
 
-  installSystemDUnit(
-      backupPath.localSystemDUnitName(),
-      localBackupSystemDUnit(localRepository, backupPath),
-  )
-  installSystemDUnit(backupPath.s3SystemDUnitName(), s3BackupSystemDUnit(s3Repository, backupPath))
+  installBackupUnitWithTrigger(localBackupSystemDUnit(localRepository, backupPath))
+  installBackupUnitWithTrigger(s3BackupSystemDUnit(s3Repository, backupPath))
 }

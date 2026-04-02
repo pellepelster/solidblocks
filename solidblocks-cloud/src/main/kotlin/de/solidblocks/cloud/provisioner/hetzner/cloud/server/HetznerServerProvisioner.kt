@@ -11,7 +11,10 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
+import de.solidblocks.cloud.equalsIgnoreOrder
+import de.solidblocks.cloud.joinToStringOrEmpty
 import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.HetznerLabels
 import de.solidblocks.cloud.utils.Result
@@ -48,7 +51,9 @@ class HetznerServerProvisioner(val hcloudToken: String) :
             HetznerServerType.valueOf(it.type.name),
             HetznerLocation.valueOf(it.location.name),
             it.labels,
-            it.volumes.map { volume -> volume.toString() },
+            it.volumes
+                .mapNotNull { api.volumes.get(it) }
+                .mapNotNull { context.lookup(HetznerVolumeLookup(it.name)) },
             it.privateNetwork.firstOrNull()?.ip,
             it.publicNetwork?.ipv4?.ip,
             it.publicNetwork?.ipv4?.ip?.let { listOf(Endpoint(it, 22, EndpointProtocol.ssh)) }
@@ -265,6 +270,19 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
       if (resource.type != runtime.type) {
         changes.add(ResourceDiffItem("type", true, true, false, resource.type, runtime.type))
+      }
+
+      if (!(resource.volumes.toList() equalsIgnoreOrder runtime.volumes)) {
+        changes.add(
+            ResourceDiffItem(
+                "volumes",
+                true,
+                true,
+                false,
+                resource.volumes.joinToStringOrEmpty { it.name },
+                runtime.volumes.joinToStringOrEmpty { it.name },
+            ),
+        )
       }
 
       if (resource.image != runtime.image) {

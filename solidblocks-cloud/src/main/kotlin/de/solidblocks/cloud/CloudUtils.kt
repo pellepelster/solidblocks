@@ -11,5 +11,5 @@ public fun <T> Iterable<T>.joinToStringOrEmpty(
     if (this.count() == 0) {
       empty
     } else {
-      this.joinToStringOrEmpty(separator) { transform.invoke(it) }
+      this.joinToString(separator) { transform.invoke(it) }
     }

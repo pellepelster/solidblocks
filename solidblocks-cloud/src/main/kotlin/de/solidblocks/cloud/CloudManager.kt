@@ -173,6 +173,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
               ) {
                 is Error<ServiceConfigurationRuntime> ->
                     return Error<CloudConfigurationRuntime>(result.error)
+
                 is Success<ServiceConfigurationRuntime> -> {
                   logDebug(
                       "configuration for '${service.type}' service '${service.name}' is valid",
@@ -214,11 +215,11 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
   fun apply(runtime: CloudConfigurationRuntime): Result<List<Output>> {
     val log = LogContext.default()
     val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
-    writeSshConfig(runtime)
 
     when (val result = cloudProvisioner.apply(log)) {
       is Error<Unit> -> return Error<List<Output>>(result.error)
       is Success<*> -> {
+        writeSshConfig(runtime)
         return help(runtime)
       }
     }

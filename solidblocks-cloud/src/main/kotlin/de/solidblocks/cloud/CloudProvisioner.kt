@@ -3,6 +3,7 @@ package de.solidblocks.cloud
 import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.networkName
+import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
@@ -24,6 +25,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
+import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
@@ -106,8 +108,18 @@ class CloudProvisioner(
     val network = HetznerNetwork(networkName(runtime), DEFAULT_NETWORK)
     val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
 
+    val backupPassword =
+        PassSecret(
+            secretPath(runtime, listOf("backup", "password")),
+            length = 32,
+            allowedChars = ('a'..'f') + ('0'..'9'),
+        )
+
     val cloudResourceGroup =
-        ResourceGroup("cloud '${runtime.name} base resources'", listOf(sshKey, network, subnet))
+        ResourceGroup(
+            "cloud '${runtime.name} base resources'",
+            listOf(sshKey, network, subnet, backupPassword),
+        )
 
     val serviceResourceGroups =
         serviceManagers().map {

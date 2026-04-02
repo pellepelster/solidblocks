@@ -1,7 +1,7 @@
 package de.solidblocks.garagefs
 
 class GarageFsConfig(
-    val baseStorageDir: String,
+    val baseDataDir: String,
     val rpcSecret: String,
     val adminToken: String,
     val metricsToken: String,
@@ -9,8 +9,8 @@ class GarageFsConfig(
     val s3WebFqdn: String,
 ) {
 
-  val metaDataDir = "$baseStorageDir/garage/meta"
-  val dataDir = "$baseStorageDir/garage/data"
+  val metaDataDir = "$baseDataDir/meta"
+  val dataDir = "$baseDataDir/data"
 
   fun render(): String =
       """

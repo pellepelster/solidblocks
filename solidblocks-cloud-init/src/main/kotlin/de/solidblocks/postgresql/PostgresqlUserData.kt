@@ -18,8 +18,9 @@ import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.shell.WriteFile
+import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.SystemDConfig
+import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.Target
 import de.solidblocks.systemd.Unit
 
@@ -89,7 +90,8 @@ class PostgresqlUserData(
     userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
     val dockerSystemDConfig =
-        SystemDConfig(
+        SystemDService(
+            instanceName,
             Unit(
                 "PostgresSQL instance '$instanceName'",
                 after = listOf(Target.DOCKER_SERVICE),
@@ -109,10 +111,11 @@ class PostgresqlUserData(
                 execDown =
                     listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
             ),
+            Install(),
         )
 
-    userData.installSystemDUnit(instanceName, dockerSystemDConfig)
-    userData.addCommand(SystemDLibrary.SystemdRestartService(instanceName))
+    userData.installSystemDUnit(dockerSystemDConfig)
+    userData.addCommand(SystemDLibrary.Restart(instanceName))
 
     return userData.render()
   }

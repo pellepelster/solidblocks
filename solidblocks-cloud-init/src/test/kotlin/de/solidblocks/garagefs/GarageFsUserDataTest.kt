@@ -18,40 +18,51 @@ class GarageFsUserDataTest {
 
   @Test
   @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
-  fun testIntegration(testContext: SolidblocksTestContext) {
-    val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
+  fun testIntegration(context: SolidblocksTestContext) {
+    val hetznerContext = context.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
-    val volume = hetznerTestContext.createVolume()
-    val sshKey = hetznerTestContext.createSSHKey()
+    val dataVolume = hetznerContext.createVolume("${context.testId}-data")
+    val backupVolume = hetznerContext.createVolume("${context.testId}-backup")
+    val sshKey = hetznerContext.createSSHKey()
 
     val rpcSecret = getRandomString(64)
     val adminToken = getRandomString(64)
     val metricsToken = getRandomString(64)
     val userData =
         GarageFsUserData(
-            volume.linuxDevice,
+            "service1",
+            dataVolume.linuxDevice,
+            backupVolume.linuxDevice,
+            "some-password",
+            "yolo.de",
             rpcSecret,
             adminToken,
             metricsToken,
-            "yolo.de",
             emptyList(),
         )
 
-    val serverTestContext =
-        hetznerTestContext.createServer(userData.render(), sshKey, volumes = listOf(volume.id))
+    val serverContext =
+        hetznerContext.createServer(
+            userData.render(),
+            sshKey,
+            volumes = listOf(dataVolume.id, backupVolume.id),
+        )
 
-    serverTestContext.waitForSuccessfulProvisioning()
+    serverContext.waitForSuccessfulProvisioning()
   }
 
   @Test
   fun testRender() {
     println(
         GarageFsUserData(
+                "service1",
                 "/dev/sdb",
-                UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(),
-                UUID.randomUUID().toString(),
+                "/dev/sdc",
+                "some-password",
                 "yolo.de",
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
+                UUID.randomUUID().toString(),
                 emptyList(),
             )
             .render(),

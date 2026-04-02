@@ -9,6 +9,7 @@ import de.solidblocks.caddy.Site
 import de.solidblocks.cloudinit.CloudInitUserData
 import de.solidblocks.cloudinit.ServiceUserData
 import de.solidblocks.cloudinit.installSystemDUnit
+import de.solidblocks.restic.resticLocalBackup
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CaddyLibrary
 import de.solidblocks.shell.CurlLibrary
@@ -21,14 +22,18 @@ import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.shell.WriteFile
+import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.SystemDConfig
+import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.Unit
 
 data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
 
 class GarageFsUserData(
-    val linuxDeviceData: String,
+    val serviceName: String,
+    val dataLinuxDevice: String,
+    val backupLinuxDevice: String,
+    val backupPassword: String,
     val serviceRootDomain: String,
     val rpcSecret: String,
     val adminToken: String,
@@ -45,12 +50,15 @@ class GarageFsUserData(
 
   override fun render(): String {
     val storageMount = "/storage/data"
-    val caddyStorageDir = "$storageMount/www"
+    val backupMount = "/storage/backup"
+    val serviceDataDir = "$storageMount/$serviceName"
+    val caddyDataDir = "$serviceDataDir/www"
+    val garageFsDataDir = "$serviceDataDir/garage"
 
     val caddyConfig =
         CaddyConfig(
             GlobalOptions(
-                FileSystemStorage(caddyStorageDir),
+                FileSystemStorage(caddyDataDir),
                 "info@$serviceRootDomain",
                 if (enableHttps) {
                   null
@@ -83,11 +91,12 @@ class GarageFsUserData(
     userData.addCommand(PackageLibrary.UpdateSystem())
 
     userData.addSources(StorageLibrary.source())
-    userData.addCommand(StorageLibrary.Mount(linuxDeviceData, storageMount))
+    userData.addCommand(StorageLibrary.Mount(dataLinuxDevice, storageMount))
+    userData.addCommand(StorageLibrary.Mount(backupLinuxDevice, backupMount))
 
     userData.addSources(CaddyLibrary.source())
     userData.addCommand(CaddyLibrary.Install())
-    userData.addCommand(MkDir(caddyStorageDir, "caddy"))
+    userData.addCommand(MkDir(caddyDataDir, "caddy"))
     userData.addCommand(
         WriteFile(
             caddyConfig.render().toByteArray(),
@@ -95,11 +104,11 @@ class GarageFsUserData(
             FilePermissions.RW_R__R__,
         ),
     )
-    userData.addCommand(SystemDLibrary.SystemdRestartService("caddy"))
+    userData.addCommand(SystemDLibrary.Restart("caddy"))
 
     val garageFsConfig =
         GarageFsConfig(
-            storageMount,
+            garageFsDataDir,
             rpcSecret,
             adminToken,
             metricsToken,
@@ -108,7 +117,8 @@ class GarageFsUserData(
         )
 
     val garageFsSystemDConfig =
-        SystemDConfig(
+        SystemDService(
+            "garage",
             Unit("Garage Data Store"),
             Service(
                 listOf("/usr/local/bin/garage", "server"),
@@ -116,6 +126,7 @@ class GarageFsUserData(
                 limitNOFILE = 42000,
                 stateDirectory = "garage",
             ),
+            Install(),
         )
 
     userData.addSources(GarageLibrary.source())
@@ -130,8 +141,10 @@ class GarageFsUserData(
     userData.addCommand(MkDir(garageFsConfig.dataDir))
     userData.addCommand(MkDir(garageFsConfig.metaDataDir))
 
-    userData.installSystemDUnit("garage", garageFsSystemDConfig)
-    userData.addCommand(SystemDLibrary.SystemdRestartService("garage"))
+    userData.installSystemDUnit(garageFsSystemDConfig)
+    userData.addCommand(SystemDLibrary.Restart("garage"))
+
+    userData.resticLocalBackup("$backupMount/$serviceName", backupPassword, serviceDataDir)
 
     return userData.render()
   }

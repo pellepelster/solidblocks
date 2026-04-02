@@ -25,6 +25,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
@@ -56,9 +57,17 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
       cloud: CloudConfigurationRuntime,
       runtime: S3ServiceConfigurationRuntime,
   ): List<BaseInfrastructureResource<*>> {
-    val volume =
+    val dataVolume =
         HetznerVolume(
-            serverName(cloud, runtime.name),
+            serverName(cloud, runtime.name) + "-data",
+            cloud.hetznerProviderConfig().defaultLocation,
+            runtime.dataVolumeSize,
+            emptyMap(),
+        )
+
+    val backupVolume =
+        HetznerVolume(
+            serverName(cloud, runtime.name) + "-backup",
             cloud.hetznerProviderConfig().defaultLocation,
             runtime.dataVolumeSize,
             emptyMap(),
@@ -85,9 +94,14 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             allowedChars = ('a'..'f') + ('0'..'9'),
         )
 
+    val backupPassword =
+        PassSecretLookup(
+            secretPath(cloud, listOf("backup", "password")),
+        )
+
     val userData =
         UserData(
-            setOf(volume, adminToken, rpcSecret, metricsToken),
+            setOf(dataVolume, backupVolume, adminToken, rpcSecret, metricsToken),
             { context ->
               if (
                   listOf(adminToken, rpcSecret, metricsToken).any {
@@ -98,7 +112,10 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
               }
 
               GarageFsUserData(
-                      context.ensureLookup(volume.asLookup()).device,
+                      runtime.name,
+                      context.ensureLookup(dataVolume.asLookup()).device,
+                      context.ensureLookup(backupVolume.asLookup()).device,
+                      context.ensureLookup(backupPassword).secret,
                       serviceRootDomain(cloud, runtime),
                       context.ensureLookup(rpcSecret.asLookup()).secret,
                       context.ensureLookup(adminToken.asLookup()).secret,
@@ -122,7 +139,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             userData = userData,
             location = cloud.hetznerProviderConfig().defaultLocation,
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-            volumes = setOf(volume.asLookup()),
+            volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
             type = cloud.hetznerProviderConfig().defaultInstanceType,
             subnet =
                 HetznerSubnetLookup(
@@ -228,7 +245,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             secret = { s3Host(serviceRootDomain(cloud, runtime)) },
         )
 
-    return listOf(server, volume, adminToken, rpcSecret, metricsToken, layout) +
+    return listOf(server, dataVolume, adminToken, rpcSecret, metricsToken, layout) +
         bucketResources +
         listOf(s3HostSecret) +
         dnsResources
