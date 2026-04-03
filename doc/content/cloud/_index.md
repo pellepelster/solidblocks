@@ -3,18 +3,22 @@ title = 'Cloud'
 description = 'Locally managed cloud services on bare VMs'
 overviewGroup = "cloud"
 faIcon = "fa-cloud"
+aliases = ["cli/cloud/"]
 +++
 
-Solidbloks cloud is a standalone CLI tools that creates high level managed services on bare virtual machines, networking and storage. No container schedulers, no cloud specific services, just plain Linux running services, managed via SSH.
+Solidblocks cloud is a standalone CLI tool that creates high level managed services on bare virtual machines, networking and storage. No container schedulers, no cloud specific services, just plain Linux virtual machines running services, managed via SSH.
+
+## Installation
+Solidblocks cloud is part of the Solidblocks CLI, look [here](cli/) for installation instructions. 
 
 ## Quickstart
 
-**create config `cloud1.yml`**  
+**create configuration `cloud1.yml`**  
 ```yaml
 {{% include "/snippets/cloud-minimial-example.yml" %}}
 ```
 
-**apply config**
+**apply configuration**
 ```shell
 blcks cloud apply cloud1.yml 
 [...]
@@ -30,23 +34,51 @@ curl http://<ip adress>
 
 ## Overview
 
-### Design
- 
-* Only basic building blocks that are widely available across the majority of cloud providers are used, e.g. VM, storage disks, DNS and private networking to keep the setup simple and portable
-* Instead of complex container schedulers or API driven control-planes Solidblocks clouds relies on plain Unix services and docker containers started with systemd
-* No extra or intermediary state is used, the source of truth is the configuration file. Resources are identified solely based on its name
-* Apart from the data disks every created resource must be treated as ephemeral. It must always be possible to re-provision from scratch and get the same system-state as before
-* The created VMs can survive standalone, it must always be possible to use them without Solidblocks cloud
-* It is open for integration of resources that are managed out of band with other IaC tools
+Solidblocks cloud uses a cyclic process starting with a high level `configuration` that is transformed into a runtime `model` defining all resources that are needed to implement the services. During the `plan` phase this model is compared with the running state inside the cloud, and a `diff` is created containing all missing or changed resources. Based on this `diff` during the `apply` phase the running state is diverged towards the intended `model` derived from the `configuration`.
+
+![Provisioning Cycle](provisioning_cycle.excalidraw.png)
 
 ### Configuration
 
-The configuration file is the central source of truth for all deployments. It is YAML based and defines the services to deploy and where to deploy them
+The configuration file is the central source of truth for all deployments. It is written in YAML and defines the services to deploy and where to deploy them
 
 **example**
 ```yaml
 {{% include "/snippets/cloud-minimial-example.yml" %}}
 ```
+
+To see what the model looks like and which resources would be created/changed by an apply, run
+
+```shell
+blcks cloud plan <configuration>
+```
+
+which will give you a detailed overview over the pending changes. To apply those changes run
+
+```shell
+blcks cloud apply <configuration>
+```
+
+which will deploy the changes, and provide you with an overview about the deployed services afterward. A full description of all configuration options is available online [here](./configuration) or via the CLI
+
+```shell
+blcks cloud help configuration
+```
+
+### Providers
+
+Providers enable Solidblocks cloud to create all the needed resources like virtual machines, storage volumes, DNS entries or secrets to implement a service. For a minimal cloud configuration at three different provider types are needed:
+
+* **SSH key provider**
+Used to load SSH keys that are used for cloud VM management. 
+
+* **Secret Provider** To provision and manage services, secrets are needed for API keys, database users, etc. The secret provider is used to store and retrieve secrets by a secret path.
+
+* **Cloud Provider** The cloud provider implements the creation of the needed cloud resources like virtual machines, storage volumes, firewall, etc.
+
+### Services
+
+Services are created using high level service definitions. For example given a service with the type `postgresql` will instruct Solidblocks cloud to create a VM with a data and backup disk, install PostgreSQL, setup backup and recovery and create all needed database users.
 
 ### Resource Identity
 
@@ -104,4 +136,13 @@ If needed VM management tasks are executed over SSH. This could be service start
 
 #### ❸ Service Configuration
 
-When the service is started and if needed further configuration done on the services API using an SSH tunnel to prevent potential sensitive APIs from being exposed on the internet. This could for example be the creation of users and schemas on a database. 
+When the service is started and if needed further configuration is done on the services API using an SSH tunnel to prevent potential sensitive APIs from being exposed on the internet. This could for example be the creation of users and schemas on a database. 
+
+### Design
+
+* Only basic building blocks that are widely available across the majority of cloud providers are used, e.g. VM, storage disks, DNS and private networking to keep the setup simple and portable
+* Instead of complex container schedulers or API driven control-planes Solidblocks clouds relies on plain Unix services and docker containers started with systemd
+* No extra or intermediary state is used, the source of truth is the configuration file. Resources are identified solely based on its name
+* Apart from the data and backup disks, every created resource must be treated as ephemeral. It must always be possible to re-provision from scratch and get the same system-state as before
+* The created VMs can survive standalone, it must always be possible to use them without Solidblocks cloud
+* It is open for integration of resources that are managed out of band with other IaC tools

@@ -17,7 +17,7 @@ class CloudPlanCommand : CliktCommand(name = "plan") {
 
   private val configFile by argument().file(mustExist = true)
 
-  override fun help(context: Context) = "TODO"
+  override fun help(context: Context) = "plan changes for a cloud configuration"
 
   override fun run() {
     val manager = CloudManager(configFile)

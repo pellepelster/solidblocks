@@ -272,7 +272,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         changes.add(ResourceDiffItem("type", true, true, false, resource.type, runtime.type))
       }
 
-      if (!(resource.volumes.toList() equalsIgnoreOrder runtime.volumes)) {
+      if (!(resource.volumes.map { it.name } equalsIgnoreOrder runtime.volumes.map { it.name })) {
         changes.add(
             ResourceDiffItem(
                 "volumes",

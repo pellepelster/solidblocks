@@ -1,17 +1,8 @@
 package de.solidblocks.shell
 
-import java.io.BufferedReader
+object ResticLibrary : ShellLibrary {
 
-object ResticLibrary {
-  fun source() =
-      ResticLibrary::class
-          .java
-          .classLoader
-          .getResourceAsStream("restic.sh")
-          .bufferedReader(Charsets.UTF_8)
-          .use(
-              BufferedReader::readText,
-          )
+  override fun name() = "restic"
 
   class Install : LibraryCommand {
     override fun commands() = listOf("restic_install")

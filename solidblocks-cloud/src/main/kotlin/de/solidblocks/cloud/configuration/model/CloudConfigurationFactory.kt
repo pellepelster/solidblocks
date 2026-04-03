@@ -71,7 +71,7 @@ class CloudConfigurationFactory(
   override val help: ConfigurationHelp =
       ConfigurationHelp(
           "Configuration",
-          "A Solidblocks instance can be defined using a YAML based configuration file with the following format",
+          "A Solidblocks instance is defined using a YAML based configuration file with the following format",
       )
 
   override val keywords = listOf<Keyword<*>>(name, rootDomain, providers, services)

@@ -1,17 +1,8 @@
 package de.solidblocks.shell
 
-import java.io.BufferedReader
+object CaddyLibrary : ShellLibrary {
 
-object CaddyLibrary {
-  fun source() =
-      CaddyLibrary::class
-          .java
-          .classLoader
-          .getResourceAsStream("caddy.sh")
-          .bufferedReader(Charsets.UTF_8)
-          .use(
-              BufferedReader::readText,
-          )
+  override fun name() = "caddy"
 
   class Install : LibraryCommand {
     override fun commands() = listOf("caddy_install")

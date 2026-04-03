@@ -1,8 +1,6 @@
 package de.solidblocks.postgresql
 
-import de.solidblocks.cloudinit.CloudInitUserData
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.installSystemDUnit
 import de.solidblocks.docker.ComposeFile
 import de.solidblocks.docker.Mount
 import de.solidblocks.docker.MountType
@@ -14,6 +12,7 @@ import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.LogLibrary
 import de.solidblocks.shell.MkDir
 import de.solidblocks.shell.PackageLibrary
+import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.UtilsLibrary
@@ -23,6 +22,7 @@ import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.Target
 import de.solidblocks.systemd.Unit
+import de.solidblocks.systemd.installSystemDUnit
 
 class PostgresqlUserData(
     val storageDevice: String,
@@ -34,20 +34,20 @@ class PostgresqlUserData(
     val storageMount = "/storage/data"
     val backupMount = "/storage/backup"
 
-    val userData = CloudInitUserData()
+    val userData = ShellScript()
 
-    userData.addSources(UtilsLibrary.source())
+    userData.addInlineSource(UtilsLibrary)
 
-    userData.addSources(AptLibrary.source())
-    userData.addSources(CurlLibrary.source())
-    userData.addSources(DockerLibrary.source())
-    userData.addSources(LogLibrary.source())
+    userData.addInlineSource(AptLibrary)
+    userData.addInlineSource(CurlLibrary)
+    userData.addInlineSource(DockerLibrary)
+    userData.addInlineSource(LogLibrary)
 
-    userData.addSources(PackageLibrary.source())
+    userData.addInlineSource(PackageLibrary)
     userData.addCommand(PackageLibrary.UpdateRepositories())
     userData.addCommand(PackageLibrary.UpdateSystem())
 
-    userData.addSources(StorageLibrary.source())
+    userData.addInlineSource(StorageLibrary)
     userData.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
     userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
 

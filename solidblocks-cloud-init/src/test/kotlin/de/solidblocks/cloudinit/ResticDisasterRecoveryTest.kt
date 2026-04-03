@@ -7,6 +7,7 @@ import de.solidblocks.restic.resticLocalAndS3Backup
 import de.solidblocks.restic.resticLocalBackup
 import de.solidblocks.restic.resticS3Backup
 import de.solidblocks.shell.AptLibrary
+import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.StorageLibrary
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
@@ -33,9 +34,9 @@ class ResticDisasterRecoveryTest {
     val localRepository = "$backupMount/repo1"
     val backupPath = "/storage/data/foo-bar"
 
-    val userData = CloudInitUserData()
-    userData.addSources(StorageLibrary.source())
-    userData.addSources(AptLibrary.source())
+    val userData = ShellScript()
+    userData.addInlineSource(StorageLibrary)
+    userData.addInlineSource(AptLibrary)
     userData.addCommand(AptLibrary.UpdateRepositories())
     userData.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
     userData.addCommand(StorageLibrary.Mount(backupVolume.linuxDevice, backupMount))
@@ -65,9 +66,9 @@ class ResticDisasterRecoveryTest {
     // re-create server with new data disk
     val dataVolume2 = hetzner.createVolume("${hetzner.testId}-data2")
 
-    val userDataRestore = CloudInitUserData()
-    userDataRestore.addSources(StorageLibrary.source())
-    userDataRestore.addSources(AptLibrary.source())
+    val userDataRestore = ShellScript()
+    userDataRestore.addInlineSource(StorageLibrary)
+    userDataRestore.addInlineSource(AptLibrary)
     userDataRestore.addCommand(AptLibrary.UpdateRepositories())
     userDataRestore.addCommand(StorageLibrary.Mount(dataVolume2.linuxDevice, "/storage/data"))
     userDataRestore.addCommand(StorageLibrary.Mount(backupVolume.linuxDevice, backupMount))
@@ -99,9 +100,9 @@ class ResticDisasterRecoveryTest {
 
     val dataVolume1 = hetzner.createVolume("${hetzner.testId}-data1")
 
-    val userData = CloudInitUserData()
-    userData.addSources(StorageLibrary.source())
-    userData.addSources(AptLibrary.source())
+    val userData = ShellScript()
+    userData.addInlineSource(StorageLibrary)
+    userData.addInlineSource(AptLibrary)
     userData.addCommand(AptLibrary.UpdateRepositories())
     userData.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
 
@@ -137,9 +138,9 @@ class ResticDisasterRecoveryTest {
     // re-create server with new data disk
     val dataVolume2 = hetzner.createVolume("${hetzner.testId}-data2")
 
-    val userDataRestore = CloudInitUserData()
-    userDataRestore.addSources(StorageLibrary.source())
-    userDataRestore.addSources(AptLibrary.source())
+    val userDataRestore = ShellScript()
+    userDataRestore.addInlineSource(StorageLibrary)
+    userDataRestore.addInlineSource(AptLibrary)
     userData.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
 
     userDataRestore.addCommand(AptLibrary.UpdateRepositories())
@@ -182,9 +183,9 @@ class ResticDisasterRecoveryTest {
     val localRepository = "$backupMount/repo1"
     val s3Repository = "s3:s3.eu-central-1.amazonaws.com/$bucket/${generateRandomString(5)}"
 
-    val userData = CloudInitUserData()
-    userData.addSources(StorageLibrary.source())
-    userData.addSources(AptLibrary.source())
+    val userData = ShellScript()
+    userData.addInlineSource(StorageLibrary)
+    userData.addInlineSource(AptLibrary)
     userData.addCommand(AptLibrary.UpdateRepositories())
     userData.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
     userData.addCommand(StorageLibrary.Mount(backupVolume1.linuxDevice, backupMount))
@@ -229,9 +230,9 @@ class ResticDisasterRecoveryTest {
     hetzner.destroyVolume(dataVolume1)
     val dataVolume2 = hetzner.createVolume("${hetzner.testId}-data2")
 
-    val userDataAfterDataVolumeDelete = CloudInitUserData()
-    userDataAfterDataVolumeDelete.addSources(StorageLibrary.source())
-    userDataAfterDataVolumeDelete.addSources(AptLibrary.source())
+    val userDataAfterDataVolumeDelete = ShellScript()
+    userDataAfterDataVolumeDelete.addInlineSource(StorageLibrary)
+    userDataAfterDataVolumeDelete.addInlineSource(AptLibrary)
     userDataAfterDataVolumeDelete.addCommand(
         StorageLibrary.Mount(dataVolume2.linuxDevice, "/storage/data"),
     )
@@ -271,9 +272,9 @@ class ResticDisasterRecoveryTest {
     hetzner.destroyVolume(backupVolume1)
     hetzner.destroyVolume(dataVolume2)
 
-    val userDataAfterBackupVolumeDelete = CloudInitUserData()
-    userDataAfterBackupVolumeDelete.addSources(StorageLibrary.source())
-    userDataAfterBackupVolumeDelete.addSources(AptLibrary.source())
+    val userDataAfterBackupVolumeDelete = ShellScript()
+    userDataAfterBackupVolumeDelete.addInlineSource(StorageLibrary)
+    userDataAfterBackupVolumeDelete.addInlineSource(AptLibrary)
     userDataAfterBackupVolumeDelete.addCommand(
         StorageLibrary.Mount(dataVolume3.linuxDevice, "/storage/data"),
     )

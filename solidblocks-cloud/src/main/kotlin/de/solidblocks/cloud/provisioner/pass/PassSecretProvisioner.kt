@@ -14,7 +14,6 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-// TODO use path for secret access
 class PassSecretProvisioner(val path: String? = null) :
     ResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
     InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime> {

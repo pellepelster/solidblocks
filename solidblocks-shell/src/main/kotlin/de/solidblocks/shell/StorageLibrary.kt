@@ -1,16 +1,8 @@
 package de.solidblocks.shell
 
-import java.io.BufferedReader
+object StorageLibrary : ShellLibrary {
 
-object StorageLibrary {
-  // TODO remove storage.sh from cloud-init
-  fun source() =
-      StorageLibrary::class
-          .java
-          .classLoader
-          .getResourceAsStream("storage.sh")
-          .bufferedReader(Charsets.UTF_8)
-          .use(BufferedReader::readText)
+  override fun name() = "storage"
 
   enum class FileSystem {
     ext4,

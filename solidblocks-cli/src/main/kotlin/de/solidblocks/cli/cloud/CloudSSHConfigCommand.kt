@@ -15,7 +15,7 @@ class CloudSSHConfigCommand : CliktCommand(name = "ssh-config") {
 
   private val configFile by argument().file(mustExist = true)
 
-  override fun help(context: Context) = "TODO"
+  override fun help(context: Context) = "generates a SSH configuration file to access cloud VMs"
 
   override fun run() {
     val manager = CloudManager(configFile)

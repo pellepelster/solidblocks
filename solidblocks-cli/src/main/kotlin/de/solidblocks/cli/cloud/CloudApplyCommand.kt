@@ -14,7 +14,7 @@ import de.solidblocks.utils.logError
 
 class CloudApplyCommand : CliktCommand(name = "apply") {
 
-  override fun help(context: Context) = "TODO"
+  override fun help(context: Context) = "roll out a cloud configuration"
 
   private val configFile by argument().file(mustExist = true)
 

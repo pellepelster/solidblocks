@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.file
 import de.solidblocks.cloud.CloudHelp
 
-class CloudHelpHugoCommand : CliktCommand(name = "help-hugo") {
+class CloudHelpConfigurationHugoCommand : CliktCommand(name = "configuration-hugo") {
 
   private val hugoFile by argument().file()
 

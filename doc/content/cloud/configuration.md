@@ -3,7 +3,7 @@ title = 'Configuration'
 description = 'configuration file format documentation'
 +++
 
-A Solidblocks instance can be defined using a YAML based configuration file with the following format
+A Solidblocks cloud instance  is defined using a YAML based configuration file with the following format
 
 ```yaml
 name: <string>

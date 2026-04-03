@@ -32,7 +32,6 @@ class PassProviderManager :
     return Success(PassProviderRuntime())
   }
 
-  // TODO
   override fun createProvisioners(runtime: PassProviderRuntime) =
       listOf(PassSecretProvisioner(null))
 

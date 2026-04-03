@@ -1,5 +1,9 @@
 package de.solidblocks.systemd
 
+import de.solidblocks.shell.FilePermissions
+import de.solidblocks.shell.ShellScript
+import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.shell.WriteFile
 import java.io.StringWriter
 
 enum class Restart(var target: String) {
@@ -152,4 +156,16 @@ class Install(val wantedBy: Target = Target.MULTI_USER_TARGET) {
 
     return sw.toString()
   }
+}
+
+fun ShellScript.installSystemDUnit(config: SystemDConfig) {
+  addCommand(
+      WriteFile(
+          config.render().toByteArray(),
+          "/etc/systemd/system/${config.fullUnitName()}",
+          FilePermissions.RW_R__R__,
+      ),
+  )
+  addCommand(SystemDLibrary.DaemonReload())
+  addCommand(SystemDLibrary.Enable(config.fullUnitName()))
 }

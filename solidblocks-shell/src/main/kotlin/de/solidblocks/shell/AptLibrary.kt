@@ -1,17 +1,8 @@
 package de.solidblocks.shell
 
-import java.io.BufferedReader
+object AptLibrary : ShellLibrary {
 
-object AptLibrary {
-  fun source() =
-      AptLibrary::class
-          .java
-          .classLoader
-          .getResourceAsStream("apt.sh")
-          .bufferedReader(Charsets.UTF_8)
-          .use(
-              BufferedReader::readText,
-          )
+  override fun name() = "apt"
 
   class UpdateRepositories : LibraryCommand {
     override fun commands() = listOf("apt_update_repositories")

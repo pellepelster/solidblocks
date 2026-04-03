@@ -1,6 +1,7 @@
 package de.solidblocks.shell
 
 object SystemDLibrary {
+
   data class Restart(val unit: String) : LibraryCommand {
     override fun commands() = listOf("systemctl restart $unit")
   }

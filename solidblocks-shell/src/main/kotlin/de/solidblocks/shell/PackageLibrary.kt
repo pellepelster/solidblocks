@@ -1,17 +1,8 @@
 package de.solidblocks.shell
 
-import java.io.BufferedReader
+object PackageLibrary : ShellLibrary {
 
-object PackageLibrary {
-  fun source() =
-      PackageLibrary::class
-          .java
-          .classLoader
-          .getResourceAsStream("package.sh")
-          .bufferedReader(Charsets.UTF_8)
-          .use(
-              BufferedReader::readText,
-          )
+  override fun name() = "package"
 
   class UpdateSystem : LibraryCommand {
     override fun commands() = listOf("package_update_system")

@@ -11,6 +11,7 @@ import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
+import de.solidblocks.cloud.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
@@ -76,10 +77,11 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
       }
     }
 
-    // validate that exactly one cloud provider is configured
-    if (cloud.providers.count { it is CloudResourceProviderConfiguration } != 1) {
+    /** validate that exactly one cloud provider is configured */
+    val cloudProviders = cloud.providers.filterIsInstance<CloudResourceProviderConfiguration>()
+    if (cloudProviders.count() != 1) {
       return Error<CloudConfigurationRuntime>(
-          "more than one or no provider for cloud resource creation found, please register exactly one. available types are: ${
+          "more than one or no cloud provider found (${cloudProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         CloudResourceProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -89,9 +91,8 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
       )
     }
 
+    /** validate that exactly one ssh key provider is configured */
     val sshProviders = cloud.providers.filterIsInstance<SSHKeyProviderConfiguration>()
-
-    // validate that exactly one ssh key provider is configured
     if (sshProviders.count() != 1) {
       return Error<CloudConfigurationRuntime>(
           "more than one or no provider for ssh keys found (${sshProviders.count()}), please register exactly one. available types are: ${
@@ -103,6 +104,21 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 }",
       )
     }
+
+    /** validate that exactly one secret provider is configured */
+    val secretProviders = cloud.providers.filterIsInstance<SecretProviderConfiguration>()
+    if (secretProviders.count() != 1) {
+      return Error<CloudConfigurationRuntime>(
+          "more than one or no secret provider found (${secretProviders.count()}), please register exactly one. available types are: ${
+                    providerRegistrations.filter {
+                        SecretProviderConfiguration::class.java.isAssignableFrom(
+                            it.supportedConfiguration.java,
+                        )
+                    }.joinToString(", ") { "'${it.type}'" }
+                }",
+      )
+    }
+
     val configurationContext =
         CloudConfigurationContext(
             cloudConfigFile.toPath().toAbsolutePath().toFile().parentFile.toPath(),
@@ -238,7 +254,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
       is Success<Unit> -> {
         logInfo(
             bold(
-                "ssh config file or cloud '${runtime.name}' written to '${sshConfigFile.toAbsolutePath()}'",
+                "ssh config file for cloud '${runtime.name}' written to '${sshConfigFile.toAbsolutePath()}', use 'ssh -F ${sshConfigFile.toAbsolutePath()} <host>' to access the VMs",
             ),
         )
         return result

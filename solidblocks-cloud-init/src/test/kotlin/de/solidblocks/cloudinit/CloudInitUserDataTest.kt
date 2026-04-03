@@ -29,8 +29,8 @@ class CloudInitUserDataTest {
 
     val randomContent = UUID.randomUUID().toString()
 
-    val cloudInitUserData = CloudInitUserData()
-    cloudInitUserData.addSources(StorageLibrary.source())
+    val cloudInitUserData = ShellScript()
+    cloudInitUserData.addInlineSource(StorageLibrary)
     cloudInitUserData.addCommand(StorageLibrary.Mount(volume.linuxDevice, "/storage/data"))
     cloudInitUserData.addCommand(WriteFile(randomContent.toByteArray(), "/tmp/foo-bar"))
 
@@ -69,10 +69,7 @@ class CloudInitUserDataTest {
   @Test
   fun testPlaceHolders() {
     val template =
-        CloudInitUserData::class
-            .java
-            .getResource("/blcks-cloud-init-bootstrap.sh.template")
-            .readText()
+        ShellScript::class.java.getResource("/blcks-cloud-init-bootstrap.sh.template").readText()
     template shouldContain "__CLOUD_INIT_VARIABLES__"
     template shouldContain "__CLOUD_INIT_SCRIPT__"
   }

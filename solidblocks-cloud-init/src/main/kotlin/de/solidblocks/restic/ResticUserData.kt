@@ -1,11 +1,10 @@
 package de.solidblocks.restic
 
-import de.solidblocks.cloudinit.CloudInitUserData
-import de.solidblocks.cloudinit.installSystemDUnit
 import de.solidblocks.shell.CurlLibrary
 import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.ResticLibrary
 import de.solidblocks.shell.ResticLibrary.RESTIC_CREDENTIALS_PATH
+import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.systemd.Daily
 import de.solidblocks.systemd.Install
@@ -16,6 +15,7 @@ import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.SystemDTimer
 import de.solidblocks.systemd.Timer
 import de.solidblocks.systemd.Unit
+import de.solidblocks.systemd.installSystemDUnit
 
 private fun String.toBackupName1(): String =
     this.removePrefix("/").removeSuffix("/").replace("/", "-")
@@ -24,16 +24,16 @@ private fun String.s3SystemDUnitName() = "backup-${toBackupName1()}-s3"
 
 private fun String.localSystemDUnitName() = "backup-${toBackupName1()}-local"
 
-private fun CloudInitUserData.resticCommon() {
-  addLibSources("curl", CurlLibrary.source())
-  addLibSources("restic", ResticLibrary.source())
+private fun ShellScript.resticCommon() {
+  addLibSources(CurlLibrary)
+  addLibSources(ResticLibrary)
 
-  addSources(PackageLibrary.source())
+  addInlineSource(PackageLibrary)
   addCommand(PackageLibrary.InstallPackage("jq"))
   addCommand(ResticLibrary.Install())
 }
 
-fun CloudInitUserData.installBackupUnitWithTrigger(config: SystemDConfig) {
+fun ShellScript.installBackupUnitWithTrigger(config: SystemDConfig) {
   installSystemDUnit(config)
   val timer =
       SystemDTimer(
@@ -89,7 +89,7 @@ fun s3BackupSystemDUnit(s3Repository: String, backupPath: String) =
         Install(),
     )
 
-fun CloudInitUserData.resticLocalBackup(
+fun ShellScript.resticLocalBackup(
     localRepository: String,
     repositoryPassword: String,
     backupPath: String,
@@ -102,7 +102,7 @@ fun CloudInitUserData.resticLocalBackup(
   installBackupUnitWithTrigger(localBackupSystemDUnit(localRepository, backupPath))
 }
 
-fun CloudInitUserData.resticS3Backup(
+fun ShellScript.resticS3Backup(
     s3Repository: String,
     repositoryPassword: String,
     awsAccessKey: String,
@@ -117,7 +117,7 @@ fun CloudInitUserData.resticS3Backup(
   installBackupUnitWithTrigger(s3BackupSystemDUnit(s3Repository, backupPath))
 }
 
-fun CloudInitUserData.resticLocalAndS3Backup(
+fun ShellScript.resticLocalAndS3Backup(
     localRepository: String,
     s3Repository: String,
     repositoryPassword: String,

@@ -1,17 +1,8 @@
 package de.solidblocks.shell
 
-import java.io.BufferedReader
+object DockerLibrary : ShellLibrary {
 
-object DockerLibrary {
-  fun source() =
-      DockerLibrary::class
-          .java
-          .classLoader
-          .getResourceAsStream("docker.sh")
-          .bufferedReader(Charsets.UTF_8)
-          .use(
-              BufferedReader::readText,
-          )
+  override fun name() = "docker"
 
   class InstallDebian : LibraryCommand {
     override fun commands() = listOf("docker_install_debian")

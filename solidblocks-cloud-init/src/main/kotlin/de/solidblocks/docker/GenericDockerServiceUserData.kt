@@ -1,16 +1,16 @@
 package de.solidblocks.docker
 
 import de.solidblocks.caddy.*
-import de.solidblocks.cloudinit.CloudInitUserData
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.cloudinit.installSystemDUnit
 import de.solidblocks.shell.*
 import de.solidblocks.shell.MkDir
+import de.solidblocks.shell.ShellScript
 import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.Target
 import de.solidblocks.systemd.Unit
+import de.solidblocks.systemd.installSystemDUnit
 
 class GenericDockerServiceUserData(
     val name: String,
@@ -43,22 +43,22 @@ class GenericDockerServiceUserData(
             ),
         )
 
-    val userData = CloudInitUserData()
-    userData.addSources(UtilsLibrary.source())
-    userData.addSources(AptLibrary.source())
-    userData.addSources(CurlLibrary.source())
-    userData.addSources(DockerLibrary.source())
-    userData.addSources(LogLibrary.source())
-    userData.addSources(PackageLibrary.source())
+    val userData = ShellScript()
+    userData.addInlineSource(UtilsLibrary)
+    userData.addInlineSource(AptLibrary)
+    userData.addInlineSource(CurlLibrary)
+    userData.addInlineSource(DockerLibrary)
+    userData.addInlineSource(LogLibrary)
+    userData.addInlineSource(PackageLibrary)
     userData.addCommand(PackageLibrary.UpdateRepositories())
     userData.addCommand(PackageLibrary.UpdateSystem())
 
-    userData.addSources(StorageLibrary.source())
+    userData.addInlineSource(StorageLibrary)
     userData.addCommand(StorageLibrary.Mount(linuxDevice, storageMount))
 
     userData.addCommand(DockerLibrary.InstallDebian())
 
-    userData.addSources(CaddyLibrary.source())
+    userData.addInlineSource(CaddyLibrary)
     userData.addCommand(CaddyLibrary.Install())
     userData.addCommand(MkDir(caddyStorageDir, "caddy"))
     userData.addCommand(

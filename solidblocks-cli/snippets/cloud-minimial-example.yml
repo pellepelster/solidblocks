@@ -2,6 +2,7 @@
 name: "cloud1"
 
 providers:
+  - type: pass
   - type: ssh_key
     private_key: "ed25519.key"
   - type: hcloud
@@ -13,3 +14,5 @@ services:
   - type: docker
     name: webservice1
     image: ghcr.io/pellepelster/solidblocks-hello-world:0.0.0
+    links:
+      - database1

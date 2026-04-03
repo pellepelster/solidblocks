@@ -1,18 +1,8 @@
 package de.solidblocks.shell
 
-import java.io.BufferedReader
+object GarageLibrary : ShellLibrary {
 
-object GarageLibrary {
-
-  fun source() =
-      GarageLibrary::class
-          .java
-          .classLoader
-          .getResourceAsStream("garage.sh")
-          .bufferedReader(Charsets.UTF_8)
-          .use(
-              BufferedReader::readText,
-          )
+  override fun name() = "garage"
 
   class Install : LibraryCommand {
     override fun commands() = listOf("garage_install")
