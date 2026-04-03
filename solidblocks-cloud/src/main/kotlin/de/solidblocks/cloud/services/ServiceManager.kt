@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.services
 
+import de.solidblocks.cloud.Output
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
@@ -12,6 +13,10 @@ import kotlin.reflect.KClass
 
 interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
 
+  fun info(cloud: CloudConfigurationRuntime, runtime: R): Result<ServiceInfo>
+
+  fun linkedEnvironmentVariables(cloud: CloudConfigurationRuntime, runtime: R) = null
+
   fun createResources(
       cloud: CloudConfigurationRuntime,
       runtime: R,
@@ -19,7 +24,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 
   fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
-  fun validatConfiguration(
+  fun validateConfiguration(
       index: Int,
       cloud: CloudConfiguration,
       configuration: C,
@@ -27,11 +32,11 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
       log: LogContext,
   ): Result<R>
 
-  fun output(
+  fun help(
       cloud: CloudConfigurationRuntime,
       runtime: R,
       context: ProvisionerContext,
-  ): Result<List<de.solidblocks.cloud.Output>> = Success(emptyList())
+  ): Result<List<Output>> = Success(emptyList())
 
   val supportedConfiguration: KClass<C>
 

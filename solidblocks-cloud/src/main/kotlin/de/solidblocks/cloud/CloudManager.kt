@@ -1,5 +1,6 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
@@ -14,6 +15,7 @@ import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createReg
 import de.solidblocks.cloud.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.forService
 import de.solidblocks.cloud.utils.Error
@@ -185,7 +187,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
           val runtime =
               when (
-                  val result = manager.validatConfiguration(index, cloud, service, context, log)
+                  val result = manager.validateConfiguration(index, cloud, service, context, log)
               ) {
                 is Error<ServiceConfigurationRuntime> ->
                     return Error<CloudConfigurationRuntime>(result.error)
@@ -244,7 +246,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
   fun writeSshConfig(runtime: CloudConfigurationRuntime): Result<Unit> {
     val provisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
     val sshConfigFile =
-        de.solidblocks.cloud.Constants.sshConfigFilePath(
+        sshConfigFilePath(
             runtime.context.configFileDirectory,
             runtime.name,
         )
@@ -271,5 +273,11 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     val log = LogContext.default()
     val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
     return cloudProvisioner.plan(log)
+  }
+
+  fun info(runtime: CloudConfigurationRuntime): Result<List<ServiceInfo>> {
+    val log = LogContext.default()
+    val cloudProvisioner = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations)
+    return cloudProvisioner.info(log)
   }
 }

@@ -16,6 +16,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
@@ -30,6 +31,11 @@ import de.solidblocks.utils.LogContext
 
 class PostgresSqlServiceManager :
     ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
+
+  override fun info(
+      cloud: CloudConfigurationRuntime,
+      runtime: PostgresSqlServiceConfigurationRuntime,
+  ) = Success(ServiceInfo(runtime.name, emptyMap()))
 
   override fun createResources(
       cloud: CloudConfigurationRuntime,
@@ -85,7 +91,7 @@ class PostgresSqlServiceManager :
   override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) =
       listOf<InfrastructureResourceProvisioner<*, *>>()
 
-  override fun validatConfiguration(
+  override fun validateConfiguration(
       index: Int,
       cloud: CloudConfiguration,
       service: PostgresSqlServiceConfiguration,

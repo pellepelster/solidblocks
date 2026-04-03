@@ -26,7 +26,7 @@ class S3ServiceConfigurationManagerTest {
 
     val result =
         S3ServiceManager()
-            .validatConfiguration(
+            .validateConfiguration(
                 0,
                 cloud,
                 S3ServiceConfiguration(
@@ -58,7 +58,7 @@ class S3ServiceConfigurationManagerTest {
 
     val result =
         S3ServiceManager()
-            .validatConfiguration(
+            .validateConfiguration(
                 0,
                 cloud,
                 S3ServiceConfiguration(

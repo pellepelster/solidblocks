@@ -31,6 +31,9 @@ import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.aggregateErrors
+import de.solidblocks.cloud.utils.hasError
+import de.solidblocks.cloud.utils.mapSuccess
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
@@ -63,13 +66,23 @@ class CloudProvisioner(
     return@runBlocking provisioner.diff(resourceGroups, provisionerContext, log)
   }
 
+  fun info(log: LogContext): Result<List<ServiceInfo>> {
+    val result = serviceManagers().map { it.second.info(runtime, it.first) }
+
+    return if (result.hasError()) {
+      Error<List<ServiceInfo>>(result.aggregateErrors())
+    } else {
+      Success(result.mapSuccess<ServiceInfo>().map { it })
+    }
+  }
+
   fun help(runtime: CloudConfigurationRuntime): Result<List<Output>> = runBlocking {
     val provisioner = createProvisioner()
     val resourceGroups = createResourceGroups()
 
     val serviceOutput =
         serviceManagers().flatMap {
-          when (val result = it.second.output(runtime, it.first, provisionerContext)) {
+          when (val result = it.second.help(runtime, it.first, provisionerContext)) {
             is Error<List<Output>> -> return@runBlocking Error<List<Output>>(result.error)
             is Success<List<Output>> -> result.data
           }

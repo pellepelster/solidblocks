@@ -28,6 +28,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
@@ -52,6 +53,9 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
       cloud: CloudConfigurationRuntime,
       runtime: ServiceConfigurationRuntime,
   ) = "${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
+
+  override fun info(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime) =
+      Success(ServiceInfo(runtime.name, emptyMap()))
 
   override fun createResources(
       cloud: CloudConfigurationRuntime,
@@ -254,7 +258,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
   override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) =
       listOf<InfrastructureResourceProvisioner<*, *>>()
 
-  override fun validatConfiguration(
+  override fun validateConfiguration(
       index: Int,
       cloud: CloudConfiguration,
       configuration: S3ServiceConfiguration,
@@ -329,7 +333,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
     )
   }
 
-  override fun output(
+  override fun help(
       cloud: CloudConfigurationRuntime,
       runtime: S3ServiceConfigurationRuntime,
       context: ProvisionerContext,

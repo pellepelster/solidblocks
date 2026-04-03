@@ -67,7 +67,7 @@ class DockerServiceTest {
 
     val result =
         DockerServiceManager()
-            .validatConfiguration(
+            .validateConfiguration(
                 2,
                 cloud,
                 configuration,
@@ -89,7 +89,7 @@ class DockerServiceTest {
 
     val result =
         DockerServiceManager()
-            .validatConfiguration(
+            .validateConfiguration(
                 2,
                 cloud,
                 configuration,
@@ -108,7 +108,7 @@ class DockerServiceTest {
 
     val result =
         DockerServiceManager()
-            .validatConfiguration(
+            .validateConfiguration(
                 2,
                 cloud,
                 configuration,
@@ -134,7 +134,7 @@ class DockerServiceTest {
 
     val result =
         DockerServiceManager()
-            .validatConfiguration(
+            .validateConfiguration(
                 2,
                 cloud,
                 configuration,
