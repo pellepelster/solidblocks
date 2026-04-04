@@ -5,7 +5,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
@@ -28,14 +28,14 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
       index: Int,
       cloud: CloudConfiguration,
       configuration: C,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<R>
 
   fun help(
       cloud: CloudConfigurationRuntime,
       runtime: R,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): Result<List<Output>> = Success(emptyList())
 
   val supportedConfiguration: KClass<C>

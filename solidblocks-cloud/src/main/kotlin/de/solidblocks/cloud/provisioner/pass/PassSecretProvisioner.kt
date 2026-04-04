@@ -5,7 +5,7 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -20,7 +20,7 @@ class PassSecretProvisioner(val path: String? = null) :
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun diff(resource: PassSecret, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(resource: PassSecret, context: CloudProvisionerContext): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     return if (runtime != null) {
@@ -32,7 +32,7 @@ class PassSecretProvisioner(val path: String? = null) :
 
   override suspend fun lookup(
       lookup: PassSecretLookup,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): PassSecretRuntime? {
     val result = runCommand(listOf("pass", "show", lookup.name))
 
@@ -60,7 +60,7 @@ class PassSecretProvisioner(val path: String? = null) :
 
   override suspend fun apply(
       resource: PassSecret,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<PassSecretRuntime> {
     val current = lookup(resource.asLookup(), context)

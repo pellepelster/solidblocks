@@ -3,7 +3,7 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.network
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -24,7 +24,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
 
   override suspend fun lookup(
       lookup: HetznerSubnetLookup,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): HetznerSubnetRuntime? {
     val network = context.lookup(lookup.network)
 
@@ -40,7 +40,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
 
   override suspend fun apply(
       resource: HetznerSubnet,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<HetznerSubnetRuntime> {
     val network =
@@ -63,7 +63,10 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
         ?: Error<HetznerSubnetRuntime>("error creating ${resource.logText()}")
   }
 
-  override suspend fun diff(resource: HetznerSubnet, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(
+      resource: HetznerSubnet,
+      context: CloudProvisionerContext,
+  ): ResourceDiff? {
     val network = context.lookup(resource.network) ?: return ResourceDiff(resource, missing)
 
     return if (network.subnets.none { it.subnet == resource.subnet }) {

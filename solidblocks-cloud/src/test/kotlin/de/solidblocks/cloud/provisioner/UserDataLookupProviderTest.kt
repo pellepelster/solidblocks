@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
+import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.provisioner.mock.*
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
@@ -28,7 +28,7 @@ class UserDataLookupProviderTest {
               ),
               listOf(provisioner1, provisioner2),
           )
-      val context = TEST_PROVISIONER_CONTEXT.copy(registry = registry)
+      val context = TestProvisionerContext(registry)
 
       val resource1 = Resource1("resource1")
       val resource2 = Resource2("resource2")

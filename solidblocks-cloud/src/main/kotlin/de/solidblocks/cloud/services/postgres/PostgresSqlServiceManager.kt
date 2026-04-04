@@ -9,7 +9,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -95,7 +95,7 @@ class PostgresSqlServiceManager :
       index: Int,
       cloud: CloudConfiguration,
       service: PostgresSqlServiceConfiguration,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<PostgresSqlServiceConfigurationRuntime> {
     service.databases.forEach { database ->

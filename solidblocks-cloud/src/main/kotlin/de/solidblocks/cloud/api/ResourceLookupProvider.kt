@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.api
 
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import kotlin.reflect.KClass
 
 interface ResourceLookupProvider<
@@ -9,7 +9,7 @@ interface ResourceLookupProvider<
     RuntimeType,
 > {
 
-  suspend fun lookup(lookup: ResourceLookupType, context: ProvisionerContext): RuntimeType?
+  suspend fun lookup(lookup: ResourceLookupType, context: CloudProvisionerContext): RuntimeType?
 
   suspend fun list(): List<RuntimeType> = TODO("Not yet implemented")
 

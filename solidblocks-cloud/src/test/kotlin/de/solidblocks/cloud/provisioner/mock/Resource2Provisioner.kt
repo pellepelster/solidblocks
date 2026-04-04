@@ -5,7 +5,7 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -20,10 +20,10 @@ class Resource2Provisioner :
 
   val resources = mutableMapOf<String, Resource2>()
 
-  override suspend fun lookup(lookup: Resource2Lookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: Resource2Lookup, context: CloudProvisionerContext) =
       resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
 
-  override suspend fun diff(resource: Resource2, context: ProvisionerContext): ResourceDiff? =
+  override suspend fun diff(resource: Resource2, context: CloudProvisionerContext): ResourceDiff? =
       if (resource.name == "throw_exception_on_diff") {
         throw RuntimeException()
       } else if (resource.name == "force_recreate_change") {
@@ -39,7 +39,7 @@ class Resource2Provisioner :
 
   override suspend fun apply(
       resource: Resource2,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<Resource2Runtime> {
     appliedResources.add(resource.name)
@@ -59,7 +59,7 @@ class Resource2Provisioner :
 
   override suspend fun destroy(
       resource: Resource2,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       logContext: LogContext,
   ): Boolean {
     destroyedResources.add(resource.name)

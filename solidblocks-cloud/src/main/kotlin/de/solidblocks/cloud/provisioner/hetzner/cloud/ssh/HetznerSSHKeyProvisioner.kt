@@ -4,7 +4,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -24,7 +24,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: CloudProvisionerContext) =
       api.sshKeys.get(lookup.name)?.let {
         HetznerSSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
       }
@@ -36,7 +36,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
 
   override suspend fun apply(
       resource: HetznerSSHKey,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<HetznerSSHKeyRuntime> {
     val runtime = lookup(resource.asLookup(), context)
@@ -65,7 +65,10 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
         ?: Error<HetznerSSHKeyRuntime>("error creating ${resource.logText()}")
   }
 
-  override suspend fun diff(resource: HetznerSSHKey, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(
+      resource: HetznerSSHKey,
+      context: CloudProvisionerContext,
+  ): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     if (runtime == null) {
@@ -94,7 +97,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
 
   override suspend fun destroy(
       resource: HetznerSSHKey,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       logContext: LogContext,
   ) = lookup(resource.asLookup(), context)?.let { api.sshKeys.delete(it.id) } ?: false
 

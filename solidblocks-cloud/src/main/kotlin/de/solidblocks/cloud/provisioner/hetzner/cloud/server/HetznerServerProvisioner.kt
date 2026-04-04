@@ -13,7 +13,7 @@ import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.joinToStringOrEmpty
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.HetznerLabels
@@ -41,7 +41,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
   val api = HetznerApi(hcloudToken)
 
-  override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: HetznerServerLookup, context: CloudProvisionerContext) =
       api.servers.get(lookup.name)?.let {
         HetznerServerRuntime(
             it.id,
@@ -63,7 +63,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
   override suspend fun apply(
       resource: HetznerServer,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<HetznerServerRuntime> {
     var server = lookup(resource.asLookup(), context)
@@ -184,7 +184,10 @@ class HetznerServerProvisioner(val hcloudToken: String) :
     } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
   }
 
-  override suspend fun diff(resource: HetznerServer, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(
+      resource: HetznerServer,
+      context: CloudProvisionerContext,
+  ): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context)
 
     return if (runtime != null) {
@@ -301,7 +304,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
   override suspend fun destroy(
       resource: HetznerServer,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       logContext: LogContext,
   ) =
       lookup(resource.asLookup(), context)?.let {
@@ -311,7 +314,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         }
       } ?: false
 
-  override suspend fun output(resource: HetznerServer, context: ProvisionerContext) =
+  override suspend fun output(resource: HetznerServer, context: CloudProvisionerContext) =
       listOf(
           Output(
               resource.logText().capitalize(),

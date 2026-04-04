@@ -3,7 +3,7 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.equalsIgnoreOrder
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.utils.Error
@@ -25,7 +25,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
 
   override suspend fun lookup(
       lookup: HetznerDnsRecordLookup,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): HetznerDnsRecordRuntime? {
     val zone = context.lookup(lookup.zone) ?: return null
 
@@ -40,7 +40,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
     )
   }
 
-  override suspend fun diff(resource: HetznerDnsRecord, context: ProvisionerContext) =
+  override suspend fun diff(resource: HetznerDnsRecord, context: CloudProvisionerContext) =
       lookup(resource.asLookup(), context)?.let { runtime ->
         val changes = mutableListOf<ResourceDiffItem>()
 
@@ -80,7 +80,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
 
   override suspend fun apply(
       resource: HetznerDnsRecord,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<HetznerDnsRecordRuntime> {
     val current = lookup(resource.asLookup(), context)

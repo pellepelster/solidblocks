@@ -26,6 +26,8 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("io.ktor:ktor-client-java:3.1.2")
 
+    implementation("org.postgresql:postgresql:42.7.7")
+
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }

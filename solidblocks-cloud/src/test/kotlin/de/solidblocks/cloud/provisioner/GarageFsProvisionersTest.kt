@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
+import de.solidblocks.cloud.TestContextUtils
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
@@ -38,6 +38,7 @@ import io.kotest.matchers.string.shouldHaveLength
 import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.nio.file.Path
 import java.util.*
 import java.util.Locale.getDefault
 import org.awaitility.Awaitility.await
@@ -67,11 +68,6 @@ class GarageFsProvisionersTest {
             it.addExposedPort(3903)
             it.start()
           }
-
-  val key =
-      SSHKeyUtils.tryLoadKey(
-          GarageFsProvisionersTest::class.java.getResource("/test_ed25519.key").readText(),
-      )
 
   @BeforeAll
   fun setup() {
@@ -130,29 +126,35 @@ class GarageFsProvisionersTest {
     val layoutProvisioner = GarageFsLayoutProvisioner()
 
     val context =
-        TEST_PROVISIONER_CONTEXT.copy(
-            registry =
-                ProvisionersRegistry(
-                    listOf(
-                        serverProvisioner,
-                        secretProvisioner,
-                        permissionProvisioner,
-                        accessKeyProvisioner,
-                        bucketProvisioner,
-                    ),
-                    listOf(
-                        serverProvisioner,
-                        secretProvisioner,
-                        permissionProvisioner,
-                        accessKeyProvisioner,
-                        bucketProvisioner,
-                    ),
+        ProvisionerContext(
+            SSHKeyUtils.loadKey(
+                TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
+            ),
+            "some_path",
+            Path.of("."),
+            "cloud1",
+            "test",
+            ProvisionersRegistry(
+                listOf(
+                    serverProvisioner,
+                    secretProvisioner,
+                    permissionProvisioner,
+                    accessKeyProvisioner,
+                    bucketProvisioner,
                 ),
+                listOf(
+                    serverProvisioner,
+                    secretProvisioner,
+                    permissionProvisioner,
+                    accessKeyProvisioner,
+                    bucketProvisioner,
+                ),
+            ),
         )
 
     val adminToken = PassSecret("admin_token")
     val bucketName = UUID.randomUUID().toString()
-    val bucket = GarageFsBucket(bucketName, server, adminToken, false)
+    val bucket = GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), false)
     val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)
 
     runBlocking {
@@ -218,7 +220,7 @@ class GarageFsProvisionersTest {
       }
 
       val bucketWithWebsiteAccess =
-          GarageFsBucket(bucketName, server, adminToken, websiteAccess = true)
+          GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), websiteAccess = true)
       assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
         it.status shouldBe ResourceDiffStatus.has_changes
         it.changes shouldHaveSize 1
@@ -242,8 +244,8 @@ class GarageFsProvisionersTest {
       val bucketWithWebsiteAccessDomains =
           GarageFsBucket(
               bucketName,
-              server,
-              adminToken,
+              server.asLookup(),
+              adminToken.asLookup(),
               websiteAccess = true,
               websiteAccessDomains = listOf("yolo.de"),
           )

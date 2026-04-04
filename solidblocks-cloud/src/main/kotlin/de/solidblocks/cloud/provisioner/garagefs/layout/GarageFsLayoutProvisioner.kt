@@ -8,8 +8,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.equalsIgnoreOrder
-import de.solidblocks.cloud.provisioner.ProvisionerContext
-import de.solidblocks.cloud.provisioner.garagefs.bucket.BaseGarageFsProvisioner
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -28,7 +28,7 @@ class GarageFsLayoutProvisioner :
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun diff(resource: GarageFsLayout, context: ProvisionerContext) =
+  override suspend fun diff(resource: GarageFsLayout, context: CloudProvisionerContext) =
       when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
         is Success<GarageFsLayoutRuntime> -> {
@@ -65,7 +65,7 @@ class GarageFsLayoutProvisioner :
         }
       }
 
-  override suspend fun lookup(lookup: GarageFsLayoutLookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: GarageFsLayoutLookup, context: CloudProvisionerContext) =
       when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsLayoutRuntime> -> null
         is Success<GarageFsLayoutRuntime> -> result.data
@@ -73,7 +73,7 @@ class GarageFsLayoutProvisioner :
 
   suspend fun lookupInternal(
       lookup: GarageFsLayoutLookup,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): Result<GarageFsLayoutRuntime> =
       context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
@@ -87,7 +87,7 @@ class GarageFsLayoutProvisioner :
 
   override suspend fun apply(
       resource: GarageFsLayout,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<GarageFsLayoutRuntime> {
     val runtime = lookup(resource.asLookup(), context)

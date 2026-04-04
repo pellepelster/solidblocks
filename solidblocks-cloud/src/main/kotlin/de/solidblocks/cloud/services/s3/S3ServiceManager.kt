@@ -11,7 +11,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
 import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayout
@@ -194,8 +194,8 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
       val bucket =
           GarageFsBucket(
               it.name,
-              server,
-              adminToken,
+              server.asLookup(),
+              adminToken.asLookup(),
               websiteAccess = it.publicAccess,
               emptyList(),
               setOf(layout),
@@ -262,7 +262,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
       index: Int,
       cloud: CloudConfiguration,
       configuration: S3ServiceConfiguration,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<S3ServiceConfigurationRuntime> {
     if (cloud.rootDomain == null) {
@@ -299,7 +299,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
               val managedPublicAccessDomains = mutableMapOf<String, String>()
 
               val dnsZones: List<HetznerDnsZoneRuntime> = runBlocking {
-                context.registry.list(HetznerDnsZoneLookup::class)
+                context.list(HetznerDnsZoneLookup::class)
               }
 
               logInfo("validating bucket configuration for bucket '${bucket.name}'", context = log)
@@ -336,7 +336,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
   override fun help(
       cloud: CloudConfigurationRuntime,
       runtime: S3ServiceConfigurationRuntime,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): Result<List<Output>> =
       Success(
           listOf(

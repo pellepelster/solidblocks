@@ -4,7 +4,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
@@ -33,7 +33,7 @@ class DockerServiceManager :
       index: Int,
       cloud: CloudConfiguration,
       configuration: DockerServiceConfiguration,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<DockerServiceConfigurationRuntime> {
     configuration.links.forEach { link ->

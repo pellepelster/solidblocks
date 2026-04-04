@@ -96,6 +96,7 @@ class SSHClient(
       block: suspend (Int) -> T,
   ): T {
     val port = localPort ?: findAvailablePort()
+
     session.createLocalPortForwardingTracker(port, SshdSocketAddress("localhost", remotePort)).use {
       return block.invoke(port)
     }

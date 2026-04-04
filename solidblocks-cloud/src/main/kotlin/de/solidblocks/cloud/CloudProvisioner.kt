@@ -38,6 +38,7 @@ import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
 import de.solidblocks.utils.logInfo
+import java.io.Closeable
 import java.io.File
 import kotlin.io.path.absolutePathString
 import kotlinx.coroutines.runBlocking
@@ -46,10 +47,10 @@ class CloudProvisioner(
     val runtime: CloudConfigurationRuntime,
     val serviceRegistrations: List<ServiceRegistration<*, *>>,
     val providerRegistrations: List<ProviderRegistration<*, *, *>>,
-) {
+) : Closeable {
   val registry = createRegistry()
 
-  val provisionerContext =
+  val context =
       ProvisionerContext(
           runtime.providers.sshKeyProvider().keyPair,
           runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
@@ -63,7 +64,7 @@ class CloudProvisioner(
     val provisioner = createProvisioner()
     logInfo(bold("planning changes for cloud configuration '${runtime.name}'"))
     val resourceGroups = createResourceGroups()
-    return@runBlocking provisioner.diff(resourceGroups, provisionerContext, log)
+    return@runBlocking provisioner.diff(resourceGroups, context, log)
   }
 
   fun info(log: LogContext): Result<List<ServiceInfo>> {
@@ -82,14 +83,14 @@ class CloudProvisioner(
 
     val serviceOutput =
         serviceManagers().flatMap {
-          when (val result = it.second.help(runtime, it.first, provisionerContext)) {
+          when (val result = it.second.help(runtime, it.first, context)) {
             is Error<List<Output>> -> return@runBlocking Error<List<Output>>(result.error)
             is Success<List<Output>> -> result.data
           }
         }
 
     val provisionerOutput =
-        when (val result = provisioner.help(resourceGroups, provisionerContext)) {
+        when (val result = provisioner.help(resourceGroups, context)) {
           is Error<List<Output>> -> return@runBlocking Error<List<Output>>(result.error)
           is Success<List<Output>> -> result.data
         }
@@ -111,7 +112,7 @@ class CloudProvisioner(
         }
 
     logInfo(bold("rolling out changes for cloud configuration '${runtime.name}'"))
-    return@runBlocking provisioner.apply(diffs, provisionerContext, log.indent())
+    return@runBlocking provisioner.apply(diffs, context, log.indent())
   }
 
   private fun createResourceGroups(): List<ResourceGroup> {
@@ -193,7 +194,7 @@ class CloudProvisioner(
 
     val serversIps =
         servers.map {
-          val runtime = provisionerContext.lookup(it.asLookup()) as HetznerServerRuntime
+          val runtime = context.lookup(it.asLookup()) as HetznerServerRuntime
           it.name to runtime.publicIpv4
         }
 
@@ -204,7 +205,7 @@ class CloudProvisioner(
                 UserKnownHostsFile /dev/null
                 StrictHostKeyChecking no
                 User root
-                IdentityFile ${provisionerContext.sshKeyAbsolutePath}
+                IdentityFile ${context.sshKeyAbsolutePath}
         """
             .trimIndent()
 
@@ -217,5 +218,9 @@ class CloudProvisioner(
     } catch (e: Exception) {
       Error<Unit>(e.message ?: "unknown error")
     }
+  }
+
+  override fun close() {
+    context.close()
   }
 }

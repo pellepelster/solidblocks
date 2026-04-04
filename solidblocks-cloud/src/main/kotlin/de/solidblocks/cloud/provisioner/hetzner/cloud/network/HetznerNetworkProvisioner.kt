@@ -5,7 +5,7 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -23,7 +23,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
   private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: HetznerNetworkLookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: HetznerNetworkLookup, context: CloudProvisionerContext) =
       api.networks.get(lookup.name)?.let { network ->
         HetznerNetworkRuntime(
             network.id,
@@ -37,7 +37,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
   override suspend fun apply(
       resource: HetznerNetwork,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<HetznerNetworkRuntime> {
     val runtime = lookup(resource.asLookup(), context)
@@ -69,7 +69,10 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
         ?: Error<HetznerNetworkRuntime>("error creating ${resource.logText()}")
   }
 
-  override suspend fun diff(resource: HetznerNetwork, context: ProvisionerContext): ResourceDiff? {
+  override suspend fun diff(
+      resource: HetznerNetwork,
+      context: CloudProvisionerContext,
+  ): ResourceDiff? {
     val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
     val deleteProtection =
@@ -104,7 +107,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
   override suspend fun destroy(
       resource: HetznerNetwork,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       logContext: LogContext,
   ) = lookup(resource.asLookup(), context)?.let { api.networks.delete(it.id) } ?: false
 

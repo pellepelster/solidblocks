@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
+import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
@@ -81,12 +81,11 @@ class HetznerDnsProvisionerTest {
       }
 
       val context =
-          TEST_PROVISIONER_CONTEXT.copy(
-              registry =
-                  ProvisionersRegistry(
-                      listOf(serverProvisioner, zoneProvisioner),
-                      listOf(serverProvisioner),
-                  ),
+          TestProvisionerContext(
+              ProvisionersRegistry(
+                  listOf(serverProvisioner, zoneProvisioner),
+                  listOf(serverProvisioner),
+              ),
           )
 
       val zone = HetznerDnsZone("blcks-test.de")

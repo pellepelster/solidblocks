@@ -30,7 +30,7 @@ class Provisioner(
 
   suspend fun help(
       resourceGroups: List<ResourceGroup>,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): Result<List<Output>> {
     val result = mutableListOf<Output>()
 
@@ -52,7 +52,7 @@ class Provisioner(
 
   suspend fun diff(
       resourceGroups: List<ResourceGroup>,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<Map<ResourceGroup, List<ResourceDiff>>> {
     val resourceGroupDiffs =
@@ -140,7 +140,7 @@ class Provisioner(
 
   private fun diff(
       resourceGroup: ResourceGroup,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<List<ResourceDiff>> = runBlocking {
     logger.info { "creating diff for ${resourceGroup.logText()}" }
@@ -190,7 +190,7 @@ class Provisioner(
 
   suspend fun apply(
       resources: List<BaseResource>,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<Unit> {
     val success =
@@ -221,7 +221,7 @@ class Provisioner(
 
   fun apply(
       resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<Unit> {
     return runBlocking {

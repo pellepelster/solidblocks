@@ -52,7 +52,7 @@ class ProvisionersRegistry(
   @Suppress("UNCHECKED_CAST")
   suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> apply(
       resource: ResourceType,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<RuntimeType> {
     val provisioner = provisioner(resource)
@@ -64,23 +64,23 @@ class ProvisionersRegistry(
 
   suspend fun <ResourceType : BaseResource> diff(
       resource: ResourceType,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): ResourceDiff? = provisioner(resource).diff(resource, context)
 
   suspend fun <ResourceType : BaseResource> help(
       resource: ResourceType,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): List<Output> = provisioner(resource).output(resource, context)
 
   suspend fun <ResourceType : BaseResource> destroy(
       resource: ResourceType,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       logContext: LogContext,
   ): Boolean = provisioner(resource).destroy(resource, context, logContext)
 
   fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(
       lookup: ResourceLookupType,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): RuntimeType? = runBlocking {
     val provider =
         resourceLookupProviders.firstOrNull {

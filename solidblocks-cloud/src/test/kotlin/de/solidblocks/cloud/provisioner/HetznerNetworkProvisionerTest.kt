@@ -4,6 +4,7 @@ import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
+import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
@@ -40,7 +41,7 @@ class HetznerNetworkProvisionerTest {
             listOf(networkProvisioner, subnetProvisioner),
             listOf(networkProvisioner, subnetProvisioner),
         )
-    val context = TEST_PROVISIONER_CONTEXT.copy(registry = registry)
+    val context = TestProvisionerContext(registry)
 
     runBlocking {
       val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, resource.asLookup())

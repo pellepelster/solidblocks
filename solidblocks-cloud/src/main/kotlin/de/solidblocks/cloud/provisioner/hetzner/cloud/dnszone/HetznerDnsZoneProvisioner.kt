@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone
 
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 
 class HetznerDnsZoneProvisioner(hcloudToken: String) :
@@ -10,7 +10,7 @@ class HetznerDnsZoneProvisioner(hcloudToken: String) :
 
   override suspend fun lookup(
       lookup: HetznerDnsZoneLookup,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): HetznerDnsZoneRuntime? {
     val zone = api.dnsZones.get(lookup.name) ?: return null
 

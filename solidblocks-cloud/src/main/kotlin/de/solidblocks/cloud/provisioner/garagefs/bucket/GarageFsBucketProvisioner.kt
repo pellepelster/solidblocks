@@ -6,7 +6,8 @@ import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.equalsIgnoreOrder
-import de.solidblocks.cloud.provisioner.ProvisionerContext
+import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -19,7 +20,7 @@ class GarageFsBucketProvisioner :
     ResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>,
     InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime> {
 
-  override suspend fun diff(resource: GarageFsBucket, context: ProvisionerContext) =
+  override suspend fun diff(resource: GarageFsBucket, context: CloudProvisionerContext) =
       when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsBucketRuntime?> -> ResourceDiff(resource, unknown)
         is Success<GarageFsBucketRuntime?> -> {
@@ -65,7 +66,7 @@ class GarageFsBucketProvisioner :
         }
       }
 
-  override suspend fun lookup(lookup: GarageFsBucketLookup, context: ProvisionerContext) =
+  override suspend fun lookup(lookup: GarageFsBucketLookup, context: CloudProvisionerContext) =
       when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsBucketRuntime?> -> null
         is Success<GarageFsBucketRuntime?> -> result.data
@@ -73,9 +74,9 @@ class GarageFsBucketProvisioner :
 
   private suspend fun lookupInternal(
       lookup: GarageFsBucketLookup,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
   ): Result<GarageFsBucketRuntime?> =
-      context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
+      context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
           is Error<GarageFsApi> -> Error(apis.error)
           is Success<GarageFsApi> ->
@@ -98,12 +99,12 @@ class GarageFsBucketProvisioner :
 
   override suspend fun apply(
       resource: GarageFsBucket,
-      context: ProvisionerContext,
+      context: CloudProvisionerContext,
       log: LogContext,
   ): Result<GarageFsBucketRuntime> {
     val current = lookup(resource.asLookup(), context)
 
-    context.withApiClients(resource.server.asLookup(), resource.adminToken.asLookup()) {
+    context.withApiClients(resource.server, resource.adminToken) {
       val apis =
           when (it) {
             is Error<GarageFsApi> -> return@withApiClients Error<GarageFsBucketRuntime>(it.error)
