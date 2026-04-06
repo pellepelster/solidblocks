@@ -5,7 +5,6 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
-import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
@@ -17,9 +16,6 @@ import de.solidblocks.utils.LogContext
 
 class DockerServiceManager :
     ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
-
-  override fun info(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime) =
-      Success(ServiceInfo(runtime.name, emptyMap()))
 
   override fun createResources(
       cloud: CloudConfigurationRuntime,

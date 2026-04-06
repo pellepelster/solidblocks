@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.api
 
-import de.solidblocks.cloud.Output
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
@@ -25,8 +24,7 @@ interface InfrastructureResourceProvisioner<ResourceType, RuntimeType> {
 
   suspend fun destroyAll(context: CloudProvisionerContext): Boolean = TODO("Not yet implemented")
 
-  suspend fun output(resource: ResourceType, context: CloudProvisionerContext): List<Output> =
-      emptyList()
+  //suspend fun info(resource: ResourceType, context: CloudProvisionerContext): String? = null
 
   val supportedResourceType: KClass<*>
 }

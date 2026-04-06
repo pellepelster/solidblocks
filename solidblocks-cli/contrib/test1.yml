@@ -23,6 +23,8 @@ services:
             write: true
   - type: postgresql
     name: database1
+    databases:
+      - name: somedb
   - type: docker
     name: service1
     link:

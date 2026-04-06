@@ -16,7 +16,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.services.ServiceInfo
+import de.solidblocks.cloud.services.EnvironmentVariable
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
@@ -32,105 +32,121 @@ import de.solidblocks.utils.LogContext
 class PostgresSqlServiceManager :
     ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 
-  override fun info(
-      cloud: CloudConfigurationRuntime,
-      runtime: PostgresSqlServiceConfigurationRuntime,
-  ) = Success(ServiceInfo(runtime.name, emptyMap()))
+        /*
+    override fun info(
+        cloud: CloudConfigurationRuntime,
+        runtime: PostgresSqlServiceConfigurationRuntime,
+    ): Success<ServiceInfo> {
 
-  override fun createResources(
-      cloud: CloudConfigurationRuntime,
-      runtime: PostgresSqlServiceConfigurationRuntime,
-  ): List<BaseInfrastructureResource<*>> {
-    val dataVolume =
-        HetznerVolume(
-            serverName(cloud, runtime.name) + "-data",
-            cloud.hetznerProviderConfig().defaultLocation,
-            ByteSize.fromGigabytes(runtime.instanceSize),
-            emptyMap(),
-        )
-    val backupVolume =
-        HetznerVolume(
-            serverName(cloud, runtime.name) + "-backup",
-            cloud.hetznerProviderConfig().defaultLocation,
-            ByteSize.fromGigabytes(runtime.backupRetention),
-            emptyMap(),
+        val exposedEnvironmentVariables = runtime.databases.flatMap {
+            listOf(
+                EnvironmentVariable("${runtime.name}_${it.name}_USER".uppercase(), "name of the default user for database '${it.name}'"),
+                EnvironmentVariable("${runtime.name}_${it.name}_PASSWORD".uppercase(), "password for the default user of database '${it.name}'")
+            )
+        } + listOf(
+            EnvironmentVariable("${runtime.name}_DATABASE_HOST".uppercase(), "host address for service '${runtime.name}'"),
+            EnvironmentVariable("${runtime.name}_DATABASE_PORT".uppercase(), "database port for service '${runtime.name}'"),
+
         )
 
-    val userData =
-        UserData(
-            setOf(dataVolume, backupVolume),
-            { context ->
-              PostgresqlUserData(
-                      context.ensureLookup(dataVolume.asLookup()).device,
-                      context.ensureLookup(backupVolume.asLookup()).device,
-                      runtime.name,
-                  )
-                  .render()
-            },
-        )
+        return Success(ServiceInfo(runtime.name, exposedEnvironmentVariables))
+    }
+*/
 
-    val server =
-        HetznerServer(
-            serverName(cloud, runtime.name),
-            userData = userData,
-            location = cloud.hetznerProviderConfig().defaultLocation,
-            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-            volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
-            type = cloud.hetznerProviderConfig().defaultInstanceType,
-            subnet =
-                HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
-                    HetznerNetworkLookup(networkName(cloud)),
-                ),
-            privateIp = serverIp(runtime.index),
-        )
+    override fun createResources(
+        cloud: CloudConfigurationRuntime,
+        runtime: PostgresSqlServiceConfigurationRuntime,
+    ): List<BaseInfrastructureResource<*>> {
+        val dataVolume =
+            HetznerVolume(
+                serverName(cloud, runtime.name) + "-data",
+                cloud.hetznerProviderConfig().defaultLocation,
+                ByteSize.fromGigabytes(runtime.instanceSize),
+                emptyMap(),
+            )
+        val backupVolume =
+            HetznerVolume(
+                serverName(cloud, runtime.name) + "-backup",
+                cloud.hetznerProviderConfig().defaultLocation,
+                ByteSize.fromGigabytes(runtime.backupRetention),
+                emptyMap(),
+            )
 
-    return listOf(server)
-  }
+        val userData =
+            UserData(
+                setOf(dataVolume, backupVolume),
+                { context ->
+                    PostgresqlUserData(
+                        context.ensureLookup(dataVolume.asLookup()).device,
+                        context.ensureLookup(backupVolume.asLookup()).device,
+                        runtime.name,
+                    )
+                        .render()
+                },
+            )
 
-  override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) =
-      listOf<InfrastructureResourceProvisioner<*, *>>()
+        val server =
+            HetznerServer(
+                serverName(cloud, runtime.name),
+                userData = userData,
+                location = cloud.hetznerProviderConfig().defaultLocation,
+                sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
+                volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
+                type = cloud.hetznerProviderConfig().defaultInstanceType,
+                subnet =
+                    HetznerSubnetLookup(
+                        DEFAULT_SERVICE_SUBNET,
+                        HetznerNetworkLookup(networkName(cloud)),
+                    ),
+                privateIp = serverIp(runtime.index),
+            )
 
-  override fun validateConfiguration(
-      index: Int,
-      cloud: CloudConfiguration,
-      service: PostgresSqlServiceConfiguration,
-      context: CloudProvisionerContext,
-      log: LogContext,
-  ): Result<PostgresSqlServiceConfigurationRuntime> {
-    service.databases.forEach { database ->
-      if (service.databases.count { database.name == it.name } > 1) {
-        return Error(
-            "duplicated database with name '${database.name}', ensure that the database names are unique",
-        )
-      }
-
-      database.users.forEach { user ->
-        if (database.users.count { user.name == it.name } > 1) {
-          return Error(
-              "duplicated user with name '${user.name}' found for database '${database.name}', ensure that the user names are unique",
-          )
-        }
-      }
+        return listOf(server)
     }
 
-    return Success(
-        PostgresSqlServiceConfigurationRuntime(
-            index,
-            service.name,
-            service.instanceSize,
-            service.backupFullRetentionDays,
-            service.databases.map {
-              PostgresSqlServiceDatabaseConfigurationRuntime(
-                  it.name,
-                  it.users.map { PostgresSqlServiceDatabaseUsersConfigurationRuntime(it.name) },
-              )
-            },
-        ),
-    )
-  }
+    override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) =
+        listOf<InfrastructureResourceProvisioner<*, *>>()
 
-  override val supportedConfiguration = PostgresSqlServiceConfiguration::class
+    override fun validateConfiguration(
+        index: Int,
+        cloud: CloudConfiguration,
+        service: PostgresSqlServiceConfiguration,
+        context: CloudProvisionerContext,
+        log: LogContext,
+    ): Result<PostgresSqlServiceConfigurationRuntime> {
+        service.databases.forEach { database ->
+            if (service.databases.count { database.name == it.name } > 1) {
+                return Error(
+                    "duplicated database with name '${database.name}', ensure that the database names are unique",
+                )
+            }
 
-  override val supportedRuntime = PostgresSqlServiceConfigurationRuntime::class
+            database.users.forEach { user ->
+                if (database.users.count { user.name == it.name } > 1) {
+                    return Error(
+                        "duplicated user with name '${user.name}' found for database '${database.name}', ensure that the user names are unique",
+                    )
+                }
+            }
+        }
+
+        return Success(
+            PostgresSqlServiceConfigurationRuntime(
+                index,
+                service.name,
+                service.instanceSize,
+                service.backupFullRetentionDays,
+                service.databases.map {
+                    PostgresSqlServiceDatabaseConfigurationRuntime(
+                        it.name,
+                        it.users.map { PostgresSqlServiceDatabaseUsersConfigurationRuntime(it.name) },
+                    )
+                },
+            ),
+        )
+    }
+
+    override val supportedConfiguration = PostgresSqlServiceConfiguration::class
+
+    override val supportedRuntime = PostgresSqlServiceConfigurationRuntime::class
 }

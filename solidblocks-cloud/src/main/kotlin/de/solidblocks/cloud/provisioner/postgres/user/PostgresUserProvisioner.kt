@@ -115,14 +115,14 @@ class PostgresUserProvisioner :
         if (lookup(resource.asLookup(), context) == null) {
           result.data.createStatement().use {
             it.execute(
-                "CREATE USER ${it.enquoteIdentifier(resource.name, false)} WITH PASSWORD ${it.enquoteLiteral(password.secret)}",
+                "CREATE USER ${it.enquoteIdentifier(resource.name, false)} WITH ENCRYPTED PASSWORD ${it.enquoteLiteral(password.secret)}",
             )
           }
         }
 
         result.data.createStatement().use {
           it.execute(
-              "ALTER USER ${it.enquoteIdentifier(resource.name, false)} WITH PASSWORD ${it.enquoteLiteral(password.secret)}",
+              "ALTER USER ${it.enquoteIdentifier(resource.name, false)} WITH ENCRYPTED PASSWORD ${it.enquoteLiteral(password.secret)}",
           )
         }
       }

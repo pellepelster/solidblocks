@@ -15,7 +15,6 @@ import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createReg
 import de.solidblocks.cloud.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.forService
 import de.solidblocks.cloud.utils.Error
@@ -233,14 +232,14 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         }
   }
 
-  fun apply(runtime: CloudConfigurationRuntime): Result<List<Output>> {
+  fun apply(runtime: CloudConfigurationRuntime): Result<String> {
     val log = LogContext.default()
     CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
       when (val result = it.apply(log)) {
-        is Error<Unit> -> return Error<List<Output>>(result.error)
+        is Error<Unit> -> return Error<String>(result.error)
         is Success<*> -> {
           writeSshConfig(runtime)
-          return help(runtime)
+          return info(runtime)
         }
       }
     }
@@ -268,9 +267,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     }
   }
 
-  fun help(runtime: CloudConfigurationRuntime): Result<List<Output>> {
+  fun info(runtime: CloudConfigurationRuntime): Result<String> {
     CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-      return it.help(runtime)
+      return it.info(runtime)
     }
   }
 
@@ -278,13 +277,6 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     val log = LogContext.default()
     CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
       return it.plan(log)
-    }
-  }
-
-  fun info(runtime: CloudConfigurationRuntime): Result<List<ServiceInfo>> {
-    val log = LogContext.default()
-    CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-      return it.info(log)
     }
   }
 }

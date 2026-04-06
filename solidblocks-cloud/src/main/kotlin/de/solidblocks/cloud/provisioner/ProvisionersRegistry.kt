@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner
 
-import de.solidblocks.cloud.Output
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceLookupProvider
@@ -67,10 +66,12 @@ class ProvisionersRegistry(
       context: CloudProvisionerContext,
   ): ResourceDiff? = provisioner(resource).diff(resource, context)
 
-  suspend fun <ResourceType : BaseResource> help(
+    /*
+  suspend fun <ResourceType : BaseResource> info(
       resource: ResourceType,
       context: CloudProvisionerContext,
-  ): List<Output> = provisioner(resource).output(resource, context)
+  ): List<String> = provisioner(resource).info(resource, context)
+*/
 
   suspend fun <ResourceType : BaseResource> destroy(
       resource: ResourceType,

@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.file
-import de.solidblocks.cli.cloud.CloudHelpCommand.Companion.printHelp
+import de.solidblocks.cli.cloud.CloudHelpCommand.Companion.printMarkdown
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
@@ -30,6 +30,6 @@ class CloudApplyCommand : CliktCommand(name = "apply") {
           is Success<CloudConfigurationRuntime> -> result.data
         }
 
-    printHelp(manager.apply(runtime))
+    printMarkdown(manager.apply(runtime))
   }
 }

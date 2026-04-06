@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner
 
-import de.solidblocks.cloud.Output
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceGroup
@@ -28,27 +27,29 @@ class Provisioner(
 
   private val logger = KotlinLogging.logger {}
 
-  suspend fun help(
+    /*
+  suspend fun info(
       resourceGroups: List<ResourceGroup>,
       context: CloudProvisionerContext,
-  ): Result<List<Output>> {
-    val result = mutableListOf<Output>()
+  ): Result<String> {
+    val result = mutableListOf<String>()
 
     for (resourceGroup in resourceGroups) {
       val resources = resourceGroup.hierarchicalResourceList().toSet()
 
       for (resource in resources) {
         try {
-          val help = registry.help<BaseResource>(resource, context)
-          result.addAll(help)
+          val info = registry.info(resource, context)
+          result.addAll(info)
         } catch (e: Exception) {
           logger.error(e) { "error creating help for ${resource.logText()}" }
         }
       }
     }
 
-    return Success(result)
+    return Success(result.joinToString("\n"))
   }
+*/
 
   suspend fun diff(
       resourceGroups: List<ResourceGroup>,

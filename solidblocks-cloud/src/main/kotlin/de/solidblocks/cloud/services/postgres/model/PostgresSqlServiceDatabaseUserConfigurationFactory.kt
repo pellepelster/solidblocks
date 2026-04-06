@@ -15,7 +15,6 @@ class PostgresSqlServiceDatabaseUserConfigurationFactory :
 
   private val logger = KotlinLogging.logger {}
 
-  // TODO verify size and content
   val name =
       StringKeyword(
           "name",

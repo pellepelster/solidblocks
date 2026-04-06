@@ -51,8 +51,7 @@ class Code(val content: String) : Markdown() {
 ```yaml
 $content
 ```
-        """
-          .trimIndent()
+        """.trimIndent()
 }
 
 class Paragraph(val content: String) : Markdown() {

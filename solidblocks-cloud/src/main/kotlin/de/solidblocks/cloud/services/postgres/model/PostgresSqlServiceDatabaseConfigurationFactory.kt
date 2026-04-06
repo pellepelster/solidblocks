@@ -22,7 +22,7 @@ class PostgresSqlServiceDatabaseConfigurationFactory :
           "name",
           DOMAIN_NAME,
           KeywordHelp(
-              "Unique name for the bucket. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.",
+              "Unique name for the database",
           ),
       )
 
