@@ -2,10 +2,11 @@ package de.solidblocks.cloud.services.postgres.model
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
-import de.solidblocks.cloud.configuration.NumberConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
+import de.solidblocks.cloud.services.BACKUP_DATA_VOLUME_SIZE_KEYWORD
+import de.solidblocks.cloud.services.BACKUP_FULL_RETENTION_DAYS_KEYWORD
+import de.solidblocks.cloud.services.SERVICE_DATA_VOLUME_SIZE_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -30,28 +31,14 @@ class PostgresSqlServiceConfigurationFactory :
           "Single node PostgreSQL database instance with pgBackRest powered backup.",
       )
 
-  val instanceSize =
-      NumberKeywordOptionalWithDefault(
-          "instanceSize",
-          NONE,
-          KeywordHelp(
-              "Size in GB for the database instance",
-          ),
-          16,
-      )
-
-  val backupFullRetentionDays =
-      NumberKeywordOptionalWithDefault(
-          "backupFullRetentionDays",
-          NONE,
-          KeywordHelp(
-              "amount of days to keep full backups",
-          ),
-          16,
-      )
-
   override val keywords =
-      listOf(SERVICE_NAME_KEYWORD, databases, instanceSize, backupFullRetentionDays)
+      listOf(
+          SERVICE_NAME_KEYWORD,
+          databases,
+          SERVICE_DATA_VOLUME_SIZE_KEYWORD,
+          BACKUP_DATA_VOLUME_SIZE_KEYWORD,
+          BACKUP_FULL_RETENTION_DAYS_KEYWORD,
+      )
 
   override fun parse(yaml: YamlNode): Result<PostgresSqlServiceConfiguration> {
     val name =
@@ -61,15 +48,21 @@ class PostgresSqlServiceConfigurationFactory :
         }
 
     val backupFullRetentionDays =
-        when (val name = backupFullRetentionDays.parse(yaml)) {
+        when (val name = BACKUP_FULL_RETENTION_DAYS_KEYWORD.parse(yaml)) {
           is Error<*> -> return Error(name.error)
           is Success<Int> -> name.data
         }
 
-    val instanceSize =
-        when (val name = instanceSize.parse(yaml)) {
+    val dataVolumeSize =
+        when (val name = SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(yaml)) {
           is Error<*> -> return Error(name.error)
           is Success<Int> -> name.data
+        }
+
+    val backupVolumeSize =
+        when (val name = BACKUP_DATA_VOLUME_SIZE_KEYWORD.parse(yaml)) {
+          is Error<*> -> return Error(name.error)
+          is Success<Int?> -> name.data
         }
 
     val databases =
@@ -79,7 +72,13 @@ class PostgresSqlServiceConfigurationFactory :
         }
 
     return Success(
-        PostgresSqlServiceConfiguration(name, instanceSize, backupFullRetentionDays, databases),
+        PostgresSqlServiceConfiguration(
+            name,
+            dataVolumeSize,
+            backupFullRetentionDays,
+            backupVolumeSize,
+            databases,
+        ),
     )
   }
 }

@@ -11,7 +11,7 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 
 @ExtendWith(SolidblocksTest::class)
-class SSHClientTest {
+class SSHHealthCheckTest {
 
   val sshServer =
       GenericContainer(
@@ -24,7 +24,7 @@ class SSHClientTest {
             it.start()
           }
 
-  val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key").readText()
+  val ed25519Key = SSHHealthCheckTest::class.java.getResource("/test_ed25519.key").readText()
   val key = SSHKeyUtils.loadKey(ed25519Key)
 
   @Test

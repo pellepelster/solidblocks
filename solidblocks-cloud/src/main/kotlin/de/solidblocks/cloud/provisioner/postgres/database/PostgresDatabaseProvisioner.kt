@@ -13,10 +13,8 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
-import java.sql.DriverManager
 import kotlin.let
 import kotlin.use
-import org.postgresql.util.PSQLException
 
 class PostgresDatabaseProvisioner :
     BasePostgresProvisioner(),
@@ -73,7 +71,10 @@ class PostgresDatabaseProvisioner :
   ): Result<PostgresDatabaseRuntime> {
     val user = context.ensureLookup(resource.user)
 
-    when (val result = context.createAdminConnection(resource.server, resource.superUserPassword)) {
+    when (
+        val result =
+            context.waitForAdminConnection(resource.server, resource.superUserPassword, log)
+    ) {
       is Error<Connection> -> Error<PostgresDatabaseRuntime?>(result.error)
       is Success<Connection> -> {
         if (lookup(resource.asLookup(), context) == null) {

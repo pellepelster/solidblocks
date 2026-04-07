@@ -4,6 +4,8 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 
 data class DockerServiceConfiguration(
     override val name: String,
+    val image: String,
+    val dataVolumeSize: Int,
     val endpoints: List<DockerServiceEndpointConfiguration>,
     val links: List<String>,
 ) : ServiceConfiguration {

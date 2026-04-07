@@ -1,7 +1,8 @@
 package de.solidblocks.cloud.health
 
 import de.solidblocks.cloud.api.health.HealthCheck
-import de.solidblocks.cloud.api.health.HealthStatus
+import de.solidblocks.cloud.api.health.HealthStatus.healthy
+import de.solidblocks.cloud.api.health.HealthStatus.unhealthy
 import de.solidblocks.ssh.SSHClient
 import java.security.KeyPair
 
@@ -11,12 +12,12 @@ class SSHHealthCheck(val key: KeyPair) : HealthCheck {
       try {
         SSHClient(address, key, port = port).use {
           if (it.command("whoami").exitCode == 0) {
-            HealthStatus.healthy
+            healthy
           } else {
-            HealthStatus.unhealthy
+            unhealthy
           }
         }
       } catch (e: Exception) {
-        HealthStatus.unhealthy
+        unhealthy
       }
 }

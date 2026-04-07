@@ -66,12 +66,12 @@ class ProvisionersRegistry(
       context: CloudProvisionerContext,
   ): ResourceDiff? = provisioner(resource).diff(resource, context)
 
-    /*
+  /*
   suspend fun <ResourceType : BaseResource> info(
       resource: ResourceType,
       context: CloudProvisionerContext,
   ): List<String> = provisioner(resource).info(resource, context)
-*/
+   */
 
   suspend fun <ResourceType : BaseResource> destroy(
       resource: ResourceType,

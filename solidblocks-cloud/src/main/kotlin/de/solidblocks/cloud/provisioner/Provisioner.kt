@@ -13,7 +13,6 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
-import de.solidblocks.cloud.utils.Waiter.Companion.defaultWaiter
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -22,12 +21,12 @@ import kotlinx.serialization.json.Json
 
 class Provisioner(
     val registry: ProvisionersRegistry,
-    val endpointWaiter: Waiter = defaultWaiter(),
+    val waitConfig: Waiter.WaitConfig = Waiter.DEFAULT_WAIT,
 ) {
 
   private val logger = KotlinLogging.logger {}
 
-    /*
+  /*
   suspend fun info(
       resourceGroups: List<ResourceGroup>,
       context: CloudProvisionerContext,
@@ -49,7 +48,7 @@ class Provisioner(
 
     return Success(result.joinToString("\n"))
   }
-*/
+   */
 
   suspend fun diff(
       resourceGroups: List<ResourceGroup>,
@@ -274,6 +273,7 @@ class Provisioner(
               when (result) {
                 is Error<BaseInfrastructureResourceRuntime> ->
                     return@runBlocking Error<Unit>(result.error)
+
                 is Success<BaseInfrastructureResourceRuntime> -> result.data
               }
 
@@ -281,7 +281,7 @@ class Provisioner(
             when (it.protocol) {
               EndpointProtocol.ssh -> {
                 val sshPortOpen =
-                    endpointWaiter.waitForCondition {
+                    Waiter.waitForCondition(waitConfig) {
                       try {
                         logInfo(
                             "waiting for SSH on endpoint '${it.address}:${it.port}'",
@@ -305,7 +305,7 @@ class Provisioner(
                 val sshClient = SSHClient(it.address, context.sshKeyPair)
 
                 val cloudInitFinished =
-                    endpointWaiter.waitForCondition {
+                    Waiter.waitForCondition(waitConfig) {
                       try {
                         logInfo(
                             "waiting for cloud-init to finish on '${it.address}:${it.port}'",

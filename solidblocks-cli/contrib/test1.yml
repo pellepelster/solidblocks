@@ -7,25 +7,14 @@ providers:
   - type: ssh_key
     private_key: "test_ed25519.key"
   - type: hcloud
-    #default-location: nbg1
-    #default-instance-type: nbg1
 
 services:
-  - type: s3
-    name: s3
-    buckets:
-      - name: pelle.io
-        public_access: true
-        access_keys:
-          - name: "admin"
-            owner: true
-            read: true
-            write: true
   - type: postgresql
     name: database1
     databases:
-      - name: somedb
+      - name: hello-world
   - type: docker
     name: service1
+    image: ghcr.io/pellepelster/solidblocks-hello-world:latest
     link:
       - database1

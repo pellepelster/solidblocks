@@ -8,6 +8,7 @@ class NumberConstraints(val max: Int? = null, val min: Int? = null) {
   companion object {
     val NONE = NumberConstraints()
     val IP_PORTS = NumberConstraints(65536, 23)
+    val VOLUME_SIZE = NumberConstraints(1024, 16)
   }
 }
 
@@ -67,7 +68,7 @@ class NumberKeyword(name: String, constraints: NumberConstraints, help: KeywordH
 }
 
 class NumberKeywordOptional(name: String, constraints: NumberConstraints, help: KeywordHelp) :
-    BaseNumberKeyword<Int>(name, constraints, true, null, help) {
+    BaseNumberKeyword<Int?>(name, constraints, true, null, help) {
 
   override fun parseInternal(yaml: YamlNode): Result<Int?> {
     val number =

@@ -7,6 +7,8 @@ data class DockerServiceEndpointConfigurationRuntime(val port: Int)
 data class DockerServiceConfigurationRuntime(
     override val index: Int,
     override val name: String,
+    val image: String,
+    val dataVolumeSize: Int,
     val endpoints: List<DockerServiceEndpointConfigurationRuntime>,
     val links: List<String>,
 ) : ServiceConfigurationRuntime

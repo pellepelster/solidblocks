@@ -26,6 +26,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
+import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
@@ -45,159 +47,160 @@ class CloudProvisioner(
     val serviceRegistrations: List<ServiceRegistration<*, *>>,
     val providerRegistrations: List<ProviderRegistration<*, *, *>>,
 ) : Closeable {
-    val registry = createRegistry()
+  val registry = createRegistry()
 
-    val context =
-        ProvisionerContext(
-            runtime.providers.sshKeyProvider().keyPair,
-            runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
-            runtime.context.configFileDirectory,
-            runtime.name,
-            runtime.getDefaultEnvironment(),
-            registry,
-        )
+  val context =
+      ProvisionerContext(
+          runtime.providers.sshKeyProvider().keyPair,
+          runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
+          runtime.context.configFileDirectory,
+          runtime.name,
+          runtime.getDefaultEnvironment(),
+          registry,
+      )
 
-    fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
-        val provisioner = createProvisioner()
-        logInfo(bold("planning changes for cloud configuration '${runtime.name}'"))
-        val resourceGroups = createResourceGroups()
-        return@runBlocking provisioner.diff(resourceGroups, context, log)
-    }
+  fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
+    val provisioner = createProvisioner()
+    logInfo(bold("planning changes for cloud configuration '${runtime.name}'"))
+    val resourceGroups = createResourceGroups()
+    return@runBlocking provisioner.diff(resourceGroups, context, log)
+  }
 
-    fun info(runtime: CloudConfigurationRuntime): Result<String> = runBlocking {
-        val serviceOutput =
-            serviceManagers().map {
-                when (val result = it.second.info(runtime, it.first, context)) {
-                    is Error<String?> -> return@runBlocking Error<String>(result.error)
-                    is Success<String?> -> result.data
-                }
-            }
-
-        return@runBlocking Success(serviceOutput.filterNotNull().joinToString("\n"))
-    }
-
-
-    fun apply(log: LogContext): Result<Unit> = runBlocking {
-        val provisioner = createProvisioner()
-
-        val diffs =
-            when (val result = plan(log)) {
-                is Error<Map<ResourceGroup, List<ResourceDiff>>> ->
-                    return@runBlocking Error<Unit>(result.error)
-
-                is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
-            }
-
-        logInfo(bold("rolling out changes for cloud configuration '${runtime.name}'"))
-        return@runBlocking provisioner.apply(diffs, context, log.indent())
-    }
-
-    private fun createResourceGroups(): List<ResourceGroup> {
-        val publicKey =
-            SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
-        val sshKey = HetznerSSHKey(sshKeyName(runtime), publicKey, emptyMap())
-        val network = HetznerNetwork(networkName(runtime), DEFAULT_NETWORK)
-        val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
-
-        val backupPassword =
-            PassSecret(
-                secretPath(runtime, listOf("backup", "password")),
-                length = 32,
-                allowedChars = ('a'..'f') + ('0'..'9'),
-            )
-
-        val cloudResourceGroup =
-            ResourceGroup(
-                "cloud '${runtime.name} base resources'",
-                listOf(sshKey, network, subnet, backupPassword),
-            )
-
-        val serviceResourceGroups =
-            serviceManagers().map {
-                ResourceGroup(
-                    "service '${it.first.name}'",
-                    it.second.createResources(runtime, it.first),
-                    setOf(cloudResourceGroup),
-                )
-            }
-        return listOf(cloudResourceGroup) + serviceResourceGroups
-    }
-
-    private fun serviceManagers() =
-        runtime.services.map {
-            val manager: ServiceManager<ServiceConfiguration, ServiceConfigurationRuntime> =
-                serviceRegistrations.managerForService(it)
-            it to manager
+  fun info(runtime: CloudConfigurationRuntime): Result<String> = runBlocking {
+    val serviceOutput =
+        serviceManagers().map {
+          when (val result = it.second.info(runtime, it.first, context)) {
+            is Error<String?> -> return@runBlocking Error<String>(result.error)
+            is Success<String?> -> result.data
+          }
         }
 
-    private fun createProvisioner() = Provisioner(registry)
+    return@runBlocking Success(serviceOutput.filterNotNull().joinToString("\n"))
+  }
 
-    private fun createRegistry(): ProvisionersRegistry {
-        val providerProvisioners = providerRegistrations.createProvisioners(runtime.providers)
-        val providerLookups = providerRegistrations.createLookups(runtime.providers)
+  fun apply(log: LogContext): Result<Unit> = runBlocking {
+    val provisioner = createProvisioner()
 
-        val serviceProvisioners =
-            runtime.services.flatMap {
-                val manager: ServiceManager<ServiceConfiguration, ServiceConfigurationRuntime> =
-                    serviceRegistrations.managerForService(it)
-                manager.createProvisioners(it)
-            }
+    val diffs =
+        when (val result = plan(log)) {
+          is Error<Map<ResourceGroup, List<ResourceDiff>>> ->
+              return@runBlocking Error<Unit>(result.error)
 
-        val defaultProvisioners =
-            listOf(
-                GarageFsBucketProvisioner(),
-                GarageFsAccessKeyProvisioner(),
-                GarageFsPermissionProvisioner(),
-                GarageFsLayoutProvisioner(),
-            )
+          is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
+        }
 
-        val lookups =
-            providerLookups +
-                    listOf(UserDataLookupProvider()) +
-                    (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-                            ResourceLookupProvider<*, *>,
-                            >()
+    logInfo(bold("rolling out changes for cloud configuration '${runtime.name}'"))
+    return@runBlocking provisioner.apply(diffs, context, log.indent())
+  }
 
-        return ProvisionersRegistry(
-            lookups,
-            providerProvisioners + defaultProvisioners + serviceProvisioners,
+  private fun createResourceGroups(): List<ResourceGroup> {
+    val publicKey =
+        SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
+    val sshKey = HetznerSSHKey(sshKeyName(runtime), publicKey, emptyMap())
+    val network = HetznerNetwork(networkName(runtime), DEFAULT_NETWORK)
+    val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
+
+    val backupPassword =
+        PassSecret(
+            secretPath(runtime, listOf("backup", "password")),
+            length = 32,
+            allowedChars = ('a'..'f') + ('0'..'9'),
         )
-    }
 
-    fun createSSHConfig(sshConfigFile: File): Result<Unit> {
-        val resourceGroups = createResourceGroups()
-        val servers =
-            resourceGroups.flatMap { it.hierarchicalResourceList().filterIsInstance<HetznerServer>() }
+    val cloudResourceGroup =
+        ResourceGroup(
+            "cloud '${runtime.name} base resources'",
+            listOf(sshKey, network, subnet, backupPassword),
+        )
 
-        val serversIps =
-            servers.map {
-                val runtime = context.lookup(it.asLookup()) as HetznerServerRuntime
-                it.name to runtime.publicIpv4
-            }
+    val serviceResourceGroups =
+        serviceManagers().map {
+          ResourceGroup(
+              "service '${it.first.name}'",
+              it.second.createResources(runtime, it.first),
+              setOf(cloudResourceGroup),
+          )
+        }
+    return listOf(cloudResourceGroup) + serviceResourceGroups
+  }
 
-        // TODO use explicit host key checking
-        val sshConfigHeader =
-            """
+  private fun serviceManagers() =
+      runtime.services.map {
+        val manager: ServiceManager<ServiceConfiguration, ServiceConfigurationRuntime> =
+            serviceRegistrations.managerForService(it)
+        it to manager
+      }
+
+  private fun createProvisioner() = Provisioner(registry)
+
+  private fun createRegistry(): ProvisionersRegistry {
+    val providerProvisioners = providerRegistrations.createProvisioners(runtime.providers)
+    val providerLookups = providerRegistrations.createLookups(runtime.providers)
+
+    val serviceProvisioners =
+        runtime.services.flatMap {
+          val manager: ServiceManager<ServiceConfiguration, ServiceConfigurationRuntime> =
+              serviceRegistrations.managerForService(it)
+          manager.createProvisioners(it)
+        }
+
+    val defaultProvisioners =
+        listOf(
+            GarageFsBucketProvisioner(),
+            GarageFsAccessKeyProvisioner(),
+            GarageFsPermissionProvisioner(),
+            GarageFsLayoutProvisioner(),
+            PostgresUserProvisioner(),
+            PostgresDatabaseProvisioner(),
+        )
+
+    val lookups =
+        providerLookups +
+            listOf(UserDataLookupProvider()) +
+            (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
+                ResourceLookupProvider<*, *>,
+            >()
+
+    return ProvisionersRegistry(
+        lookups,
+        providerProvisioners + defaultProvisioners + serviceProvisioners,
+    )
+  }
+
+  fun createSSHConfig(sshConfigFile: File): Result<Unit> {
+    val resourceGroups = createResourceGroups()
+    val servers =
+        resourceGroups.flatMap { it.hierarchicalResourceList().filterIsInstance<HetznerServer>() }
+
+    val serversIps =
+        servers.map {
+          val runtime = context.lookup(it.asLookup()) as HetznerServerRuntime
+          it.name to runtime.publicIpv4
+        }
+
+    // TODO use explicit host key checking
+    val sshConfigHeader =
+        """
             Host *
                 UserKnownHostsFile /dev/null
                 StrictHostKeyChecking no
                 User root
                 IdentityFile ${context.sshKeyAbsolutePath}
         """
-                .trimIndent()
+            .trimIndent()
 
-        val sshConfigHosts =
-            serversIps.joinToString("\n") { "Host ${it.first}\n    HostName ${it.second}\n" }
+    val sshConfigHosts =
+        serversIps.joinToString("\n") { "Host ${it.first}\n    HostName ${it.second}\n" }
 
-        return try {
-            sshConfigFile.writeText(sshConfigHeader + "\n\n" + sshConfigHosts)
-            Success<Unit>(Unit)
-        } catch (e: Exception) {
-            Error<Unit>(e.message ?: "unknown error")
-        }
+    return try {
+      sshConfigFile.writeText(sshConfigHeader + "\n\n" + sshConfigHosts)
+      Success<Unit>(Unit)
+    } catch (e: Exception) {
+      Error<Unit>(e.message ?: "unknown error")
     }
+  }
 
-    override fun close() {
-        context.close()
-    }
+  override fun close() {
+    context.close()
+  }
 }

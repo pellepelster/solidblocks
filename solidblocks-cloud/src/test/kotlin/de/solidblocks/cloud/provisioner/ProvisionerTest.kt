@@ -17,8 +17,6 @@ import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 import org.junit.jupiter.api.Test
 
 class ProvisionerTest {
@@ -32,7 +30,7 @@ class ProvisionerTest {
                   emptyList(),
                   listOf(Resource1Provisioner(), Resource2Provisioner()),
               ),
-              Waiter(1, 1.seconds.toJavaDuration()),
+              Waiter.WaitConfig(1, 1000),
           )
 
       val resource1 = Resource1("test1")
@@ -87,7 +85,7 @@ class ProvisionerTest {
       val provisioner =
           Provisioner(
               ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-              Waiter(1, 1.seconds.toJavaDuration()),
+              Waiter.WaitConfig(1, 1000),
           )
 
       val resource2ForceRecreateChange = Resource2("force_recreate_change", setOf())

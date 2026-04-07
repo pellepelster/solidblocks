@@ -28,6 +28,7 @@ class PostgresqlUserData(
     val storageDevice: String,
     val backupDevice: String,
     val instanceName: String,
+    val superUserPassword: String,
 ) : ServiceUserData {
 
   override fun render(): String {
@@ -70,6 +71,7 @@ class PostgresqlUserData(
                                 mapOf(
                                     "DB_INSTANCE_NAME" to instanceName,
                                     "DB_BACKUP_LOCAL" to "1",
+                                    "DB_ADMIN_PASSWORD" to superUserPassword,
                                 ),
                             volumes =
                                 listOf(

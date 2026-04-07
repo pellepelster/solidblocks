@@ -15,9 +15,9 @@ import de.solidblocks.systemd.installSystemDUnit
 class GenericDockerServiceUserData(
     val name: String,
     val linuxDevice: String,
-    val rootDomain: String,
+    val rootDomain: String?,
     val dockerImage: String,
-    val dockerHttpPort: Int,
+    val ports: Map<Int, Int>,
     val enableHttps: Boolean = false,
 ) : ServiceUserData {
 
@@ -25,22 +25,18 @@ class GenericDockerServiceUserData(
     val storageMount = "/storage/data"
     val caddyStorageDir = "$storageMount/www"
 
-    val dockerHttpPortHost = 8080
-
     val caddyConfig =
         CaddyConfig(
             GlobalOptions(
                 FileSystemStorage(caddyStorageDir),
-                "info@$rootDomain",
+                "info@${rootDomain ?: "localhost"}",
                 if (enableHttps) {
                   null
                 } else {
                   AutoHttps.off
                 },
             ),
-            listOf(
-                Site(":80", ReverseProxy("http://localhost:$dockerHttpPortHost")),
-            ),
+            ports.map { Site(":${it.key}", ReverseProxy("http://localhost:${it.value}")) },
         )
 
     val userData = ShellScript()
@@ -82,12 +78,12 @@ class GenericDockerServiceUserData(
                         Service(
                             image = dockerImage,
                             ports =
-                                listOf(
-                                    PortMapping(
-                                        dockerHttpPort,
-                                        dockerHttpPortHost,
-                                    ),
-                                ),
+                                ports.map {
+                                  PortMapping(
+                                      it.key,
+                                      it.value,
+                                  )
+                                },
                         ),
                 ),
         )

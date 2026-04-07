@@ -51,6 +51,7 @@ class NumberKeywordsTest {
             NumberConstraints.NONE,
             TEST_KEYWORD_HELP,
         )
+
     keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe null
   }
 

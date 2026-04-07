@@ -4,6 +4,8 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
+import de.solidblocks.cloud.services.BACKUP_DATA_VOLUME_SIZE_KEYWORD
+import de.solidblocks.cloud.services.BACKUP_FULL_RETENTION_DAYS_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_DATA_VOLUME_SIZE_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
@@ -28,7 +30,14 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
           "S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfleurs.fr/). Currently only single region deployment are supported.",
       )
 
-  override val keywords = listOf(SERVICE_NAME_KEYWORD, buckets, SERVICE_DATA_VOLUME_SIZE_KEYWORD)
+  override val keywords =
+      listOf(
+          SERVICE_NAME_KEYWORD,
+          buckets,
+          SERVICE_DATA_VOLUME_SIZE_KEYWORD,
+          BACKUP_FULL_RETENTION_DAYS_KEYWORD,
+          BACKUP_DATA_VOLUME_SIZE_KEYWORD,
+      )
 
   override fun parse(yaml: YamlNode): Result<S3ServiceConfiguration> {
     val name =

@@ -1,16 +1,12 @@
 package de.solidblocks.cloud.documentation
 
-import de.solidblocks.cloud.*
 import de.solidblocks.cloud.configuration.*
+import de.solidblocks.cloud.markdown
 import kotlin.text.appendLine
 
 class DocumentationGenerator(val hugo: Boolean = false) {
 
-  fun generateMarkdown(factory: ConfigurationFactory<*>): String {
-    val markdown = MarkdownBuilder(hugo)
-    generateMarkdown(markdown, 1, factory)
-    return markdown.build()
-  }
+  fun generateMarkdown(factory: ConfigurationFactory<*>) = generateMarkdown(1, factory)
 
   fun SimpleKeyword<*>.example() =
       if (optional) {
@@ -36,79 +32,91 @@ class DocumentationGenerator(val hugo: Boolean = false) {
     example.appendLine("${"  ".repeat(level + 2)}#...")
   }
 
-  private fun ConfigurationFactory<*>.generateKeywordDocumentation(
-      markdown: MarkdownBuilder,
-      level: Int,
-  ) {
+  private fun ConfigurationFactory<*>.generateKeywordDocumentation(level: Int): String {
     val simpleTypes = this.keywords.filterIsInstance<SimpleKeyword<*>>()
     val listTypes = this.keywords.filterIsInstance<ListKeyword<*>>()
 
-    simpleTypes.forEach {
-      markdown.append(Header(level + 1, it.name))
-      "${it.name} (${if (it.optional) "optional" else "required"})"
-      markdown.append(Italic("type"), Text(": "), Bold(it.type.name), Text(","))
-      markdown.append(Italic("optional"), Text(": "), Bold(it.optional), Text(","))
-      when (it) {
-        is BaseStringKeyword<*> -> {
-          if (it.constraints.minLength != null) {
-            markdown.append(
-                Italic("min. length"),
-                Text(": "),
-                Bold(it.constraints.minLength.toString()),
-                Text(","),
-            )
+    return markdown {
+      simpleTypes.forEach {
+        h(level + 1, it.name)
+        line {
+          italic("type")
+          text(": ")
+          bold(it.type.name)
+          text(", ")
+
+          italic("optional")
+          text(": ")
+          bold(it.optional.toString())
+          text(", ")
+        }
+        line {
+          when (it) {
+            is BaseStringKeyword<*> -> {
+              if (it.constraints.minLength != null) {
+                italic("min. length")
+                text(": ")
+                bold(it.constraints.minLength.toString())
+                text(", ")
+              }
+
+              if (it.constraints.maxLength != null) {
+                italic("max. length")
+                text(": ")
+                bold(it.constraints.maxLength.toString())
+                text(", ")
+              }
+
+              if (it.constraints.options.isNotEmpty()) {
+                italic("options")
+                text(": ")
+                bold(it.constraints.options.joinToString(", "))
+                text(", ")
+              }
+            }
+
+            else -> {}
           }
 
-          if (it.constraints.maxLength != null) {
-            markdown.append(
-                Italic("max. length"),
-                Text(": "),
-                Bold(it.constraints.maxLength.toString()),
-                Text(","),
-            )
-          }
+          italic("default")
+          text(": ")
 
-          if (it.constraints.options.isNotEmpty()) {
-            markdown.append(
-                Italic("options"),
-                Text(": "),
-                Bold(it.constraints.options.joinToString(", ")),
-            )
+          if (hugo) {
+            bold("${it.default ?: "\\<none\\>"}")
+          } else {
+            bold("${it.default ?: "<none>"}")
           }
         }
-        else -> {}
-      }
-      markdown.append(Italic("default"), Text(": "), Bold("${it.default ?: "<none>"}"))
 
-      markdown.append(Paragraph(it.help.description))
-    }
-    listTypes.forEach {
-      markdown.append(Header(level + 1, it.name))
-      markdown.append(Paragraph(it.help.description))
-      it.factory.generateKeywordDocumentation(markdown, level + 1)
+        p(it.help.description)
+      }
+      listTypes.forEach {
+        h(level + 1, it.name)
+        p(it.help.description)
+        +it.factory.generateKeywordDocumentation(level + 1)
+      }
     }
   }
 
   private fun generateMarkdown(
-      markdown: MarkdownBuilder,
       level: Int,
       factory: ConfigurationFactory<*>,
       factoryKey: String? = null,
-  ) {
+  ): String = markdown {
     val simpleTypes = factory.keywords.filterIsInstance<SimpleKeyword<*>>()
     val listTypes = factory.keywords.filterIsInstance<ListKeyword<*>>()
     val polymorphicListTypes = factory.keywords.filterIsInstance<PolymorphicListKeyword<*>>()
 
     if (level == 1 && !hugo || level > 1) {
-      markdown.append(Header(level, factory.help.title))
+      h(level, factory.help.title)
     }
 
-    markdown.append(Paragraph(factory.help.description))
+    p(factory.help.description)
 
     val example = StringBuilder()
 
     if (factory is PolymorphicConfigurationFactory) {
-      example.appendLine("type: ${factoryKey ?: "unknown"}")
+      text("type: ${factoryKey ?: "unknown"}")
     }
 
     simpleTypes.forEach { example.appendLine(it.example()) }
@@ -121,16 +129,16 @@ class DocumentationGenerator(val hugo: Boolean = false) {
       example.appendLine("    #...")
     }
 
-    markdown.append(Code(example.toString()))
+    codeBlock(example.toString())
 
-    markdown.append(Header(level + 1, "Keywords"))
-    factory.generateKeywordDocumentation(markdown, level)
+    h(level + 1, "Keywords")
+    +factory.generateKeywordDocumentation(level)
 
     polymorphicListTypes.forEach {
-      markdown.append(Header(level, it.name.capitalize()))
-      markdown.append(Paragraph(it.help.description))
+      h(level, it.name.capitalize())
+      p(it.help.description)
 
-      it.factories.entries.forEach { generateMarkdown(markdown, level + 1, it.value, it.key) }
+      it.factories.entries.forEach { +generateMarkdown(level + 1, it.value, it.key) }
     }
   }
 }

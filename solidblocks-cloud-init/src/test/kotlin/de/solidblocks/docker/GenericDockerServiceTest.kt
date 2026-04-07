@@ -27,7 +27,7 @@ class GenericDockerServiceTest {
             volume.linuxDevice,
             "yolo.de",
             "nginx",
-            80,
+            mapOf(80 to 80),
         )
 
     val serverTestContext =

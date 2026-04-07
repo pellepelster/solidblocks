@@ -1,90 +1,57 @@
 package de.solidblocks.cloud.utils
 
-import io.github.resilience4j.retry.Retry
-import io.github.resilience4j.retry.RetryConfig
-import io.github.resilience4j.retry.RetryRegistry
-import java.time.Duration
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.delay
 
-class Waiter(maxAttempts: Int, delay: Duration) {
+object Waiter {
 
-  private val registry: RetryRegistry =
-      RetryRegistry.of(
-          RetryConfig.custom<Any?>()
-              .maxAttempts(maxAttempts)
-              .waitDuration(delay)
-              .retryOnException { it is RetryableException }
-              .build(),
-      )
+  /*
+  private val shortWaiter = Waiter(6 * 5, Duration.ofSeconds(1))
 
-  private val conditionRegistry: RetryRegistry =
-      RetryRegistry.of(
-          RetryConfig.custom<Boolean>()
-              .maxAttempts(maxAttempts)
-              .waitDuration(delay)
-              .retryOnResult { !it }
-              .retryOnException { it is RetryableException }
-              .build(),
-      )
+  private val defaultWaiter = Waiter(6 * 5, Duration.ofSeconds(10))
 
-  data class WaitResult<T>(val result: T, val success: Boolean)
+  fun defaultWaiter(): Waiter = defaultWaiter
+   */
 
-  private val waitResultRegistry: RetryRegistry =
-      RetryRegistry.of(
-          RetryConfig.custom<WaitResult<Any>>()
-              .maxAttempts(maxAttempts)
-              .waitDuration(delay)
-              .retryOnResult { !it.success }
-              .retryOnException { it is RetryableException }
-              .build(),
-      )
+  suspend fun <T> waitForResult(callback: suspend () -> Result<T>) =
+      waitForResult(DEFAULT_WAIT, callback)
 
-  fun <T> waitFor(callable: () -> T?): T? {
-    val retry = registry.retry(UUID.randomUUID().toString())
-    val supplier = Retry.decorateSupplier(retry, callable)
+  suspend fun <T> longWaitForResult(callback: suspend () -> Result<T>) =
+      waitForResult(LONG_WAIT, callback)
 
-    return supplier.get()
+  data class WaitConfig(val maxIterations: Int = 10, val waitTimeMs: Long = 500L)
+
+  public val DEFAULT_WAIT = WaitConfig(30, 2000L)
+
+  public val LONG_WAIT = WaitConfig(60, 2000L)
+
+  suspend fun <T> waitFor(config: WaitConfig, callback: suspend () -> T?): T? {
+    repeat(config.maxIterations) {
+      val result = callback()
+      if (result != null) return result
+      delay(config.waitTimeMs)
+    }
+    return null
   }
 
-  fun waitForCondition(callable: () -> Boolean): Boolean {
-    val retry = conditionRegistry.retry(UUID.randomUUID().toString())
-    val supplier = Retry.decorateSupplier(retry, callable)
-
-    return supplier.get()
+  suspend fun waitForCondition(config: WaitConfig, callback: suspend () -> Boolean): Boolean {
+    repeat(config.maxIterations) {
+      val result = callback()
+      if (result) return result
+      delay(config.waitTimeMs)
+    }
+    return false
   }
 
-  fun <T> waitForConditionWithResult(callable: () -> WaitResult<T>): WaitResult<T> {
-    val retry = waitResultRegistry.retry(UUID.randomUUID().toString())
-    val supplier = Retry.decorateSupplier(retry, callable)
-    return supplier.get()
-  }
+  suspend fun <T> waitForResult(config: WaitConfig, callback: suspend () -> Result<T>): Result<T> {
+    repeat(config.maxIterations) {
+      val result = callback()
 
-  fun waitForCondition(countDown: Int, callable: () -> Boolean): Boolean {
-    val count = AtomicInteger(countDown)
+      when (result) {
+        is Error<*> -> delay(config.waitTimeMs)
+        is Success<*> -> return result
+      }
+    }
 
-    val retry = conditionRegistry.retry(UUID.randomUUID().toString())
-    val supplier =
-        Retry.decorateSupplier(retry) {
-          val result = callable.invoke()
-          if (result) {
-            count.decrementAndGet()
-          }
-
-          count.get() == 0
-        }
-
-    return supplier.get()
-  }
-
-  companion object {
-
-    private val shortWaiter = Waiter(6 * 5, Duration.ofSeconds(1))
-
-    private val defaultWaiter = Waiter(6 * 5, Duration.ofSeconds(10))
-
-    fun defaultWaiter(): Waiter = defaultWaiter
-
-    fun shortWaiter(): Waiter = shortWaiter
+    return Error("error waiting for success")
   }
 }

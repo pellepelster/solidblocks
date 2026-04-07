@@ -13,54 +13,54 @@ import de.solidblocks.utils.logError
 
 class CloudHelpCommand : CliktCommand(name = "help") {
 
-    // private val configFile by argument().file().optional()
+  // private val configFile by argument().file().optional()
 
-    init {
-        installMordantMarkdown()
-    }
+  init {
+    installMordantMarkdown()
+  }
 
-    override fun help(context: Context) = "Solidblocks cloud help"
+  override fun help(context: Context) = "Solidblocks cloud help"
 
-    override fun run() {
-        /*
-        val terminal = createTerminal()
+  override fun run() {
+    /*
+    val terminal = createTerminal()
 
-          val manager = CloudManager(configFile!!)
-          val runtime =
-              when (val result = manager.validate()) {
-                is Error<CloudConfigurationRuntime> -> {
-                  logError(result.error)
-                  throw ProgramResult(1)
-                }
-
-                is Success<CloudConfigurationRuntime> -> result.data
-              }
-
-          terminal.println()
-          printHelp(manager.help(runtime))
-
-         */
-    }
-
-    companion object {
-        public fun printMarkdown(markdown: Result<String>) {
-            val terminal = createTerminal()
-            when (markdown) {
-                is Error<String> -> {
-                    logError(markdown.error)
-                    throw ProgramResult(1)
-                }
-
-                is Success<String> -> {
-                    terminal.println(
-                        Markdown(
-                            markdown.data,
-                            true,
-                            false,
-                        ),
-                    )
-                }
+      val manager = CloudManager(configFile!!)
+      val runtime =
+          when (val result = manager.validate()) {
+            is Error<CloudConfigurationRuntime> -> {
+              logError(result.error)
+              throw ProgramResult(1)
             }
+
+            is Success<CloudConfigurationRuntime> -> result.data
+          }
+
+      terminal.println()
+      printHelp(manager.help(runtime))
+
+     */
+  }
+
+  companion object {
+    public fun printMarkdown(markdown: Result<String>) {
+      val terminal = createTerminal()
+      when (markdown) {
+        is Error<String> -> {
+          logError(markdown.error)
+          throw ProgramResult(1)
         }
+
+        is Success<String> -> {
+          terminal.println(
+              Markdown(
+                  markdown.data,
+                  true,
+                  false,
+              ),
+          )
+        }
+      }
     }
+  }
 }

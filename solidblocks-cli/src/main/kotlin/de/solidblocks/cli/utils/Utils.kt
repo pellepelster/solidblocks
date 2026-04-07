@@ -20,11 +20,11 @@ fun <T> Collection<Result<*>>.mapSuccess() = this.filterIsInstance<Success<T>>()
 
 public fun List<String>.indentWithYamlObjectMarker() =
     this.withIndex().map {
-        if (it.index == 0) {
-            "- ${it.value}"
-        } else {
-            "  ${it.value}"
-        }
+      if (it.index == 0) {
+        "- ${it.value}"
+      } else {
+        "  ${it.value}"
+      }
     }
 
 fun createTerminal() = Terminal(AnsiLevel.ANSI256)

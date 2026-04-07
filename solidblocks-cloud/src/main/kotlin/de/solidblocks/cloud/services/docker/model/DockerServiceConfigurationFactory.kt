@@ -4,6 +4,7 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
+import de.solidblocks.cloud.services.SERVICE_DATA_VOLUME_SIZE_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -26,14 +27,14 @@ class DockerServiceConfigurationFactory :
       ListKeyword(
           "endpoints",
           DockerServiceEndpointConfigurationFactory(),
-          KeywordHelp("Service endpoints to expose"),
+          KeywordHelp("Service endpoints to publicly expose"),
       )
 
   val links =
       StringListKeyword(
           "links",
           KeywordHelp(
-              "Linked services will automatically expose connection information to the linked service as environment variables, e.g. database credentials",
+              "Linked services will automatically expose environment variables to the linked service, e.g. database credentials. To see which variables are available run the `info` command.",
           ),
       )
 
@@ -47,9 +48,21 @@ class DockerServiceConfigurationFactory :
 
   override fun parse(yaml: YamlNode): Result<DockerServiceConfiguration> {
     val name =
-        when (val name = SERVICE_NAME_KEYWORD.parse(yaml)) {
-          is Error<*> -> return Error(name.error)
-          is Success<String> -> name.data
+        when (val result = SERVICE_NAME_KEYWORD.parse(yaml)) {
+          is Error<*> -> return Error(result.error)
+          is Success<String> -> result.data
+        }
+
+    val image =
+        when (val result = image.parse(yaml)) {
+          is Error<*> -> return Error(result.error)
+          is Success<String> -> result.data
+        }
+
+    val dataVolumeSize =
+        when (val result = SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(yaml)) {
+          is Error<Int> -> return Error(result.error)
+          is Success<Int> -> result.data
         }
 
     val endpoints =
@@ -64,6 +77,6 @@ class DockerServiceConfigurationFactory :
           is Success<List<String>> -> result.data
         }
 
-    return Success(DockerServiceConfiguration(name, endpoints, links))
+    return Success(DockerServiceConfiguration(name, image, dataVolumeSize, endpoints, links))
   }
 }

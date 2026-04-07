@@ -43,6 +43,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
   ): Result<HetznerVolumeRuntime> {
     val runtime = lookup(resource.asLookup(), context)
 
+    logger.info { "creating volume '${resource.name}' with size ${resource.size.gigabytes()}" }
     val volume =
         if (runtime == null) {
           api.volumes.create(

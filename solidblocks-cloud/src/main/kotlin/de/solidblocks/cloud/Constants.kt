@@ -2,7 +2,6 @@ package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
 import java.nio.file.Path
 
 @Suppress("ktlint:standard:property-naming")
@@ -24,7 +23,7 @@ object Constants {
 
   fun secretPath(
       configuration: CloudConfigurationRuntime,
-      runtime: S3ServiceConfigurationRuntime,
+      runtime: ServiceConfigurationRuntime,
       segments: List<String>,
   ) =
       "${configuration.name}/${configuration.getDefaultEnvironment()}/${runtime.name}/${segments.joinToString("/")}"

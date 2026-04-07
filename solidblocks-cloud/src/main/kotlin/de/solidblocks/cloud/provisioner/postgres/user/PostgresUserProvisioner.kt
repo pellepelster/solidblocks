@@ -109,7 +109,10 @@ class PostgresUserProvisioner :
   ): Result<PostgresUserRuntime> {
     val password = context.ensureLookup(resource.password)
 
-    when (val result = context.createAdminConnection(resource.server, resource.superUserPassword)) {
+    when (
+        val result =
+            context.waitForAdminConnection(resource.server, resource.superUserPassword, log)
+    ) {
       is Error<Connection> -> Error<PostgresUserRuntime?>(result.error)
       is Success<Connection> -> {
         if (lookup(resource.asLookup(), context) == null) {

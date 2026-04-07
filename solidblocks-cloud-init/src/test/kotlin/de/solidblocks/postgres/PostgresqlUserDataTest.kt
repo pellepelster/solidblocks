@@ -29,6 +29,7 @@ class PostgresqlUserDataTest {
             dataVolume.linuxDevice,
             backupVolume.linuxDevice,
             "instance1",
+            "very-secret",
         )
 
     val serverTestContext =

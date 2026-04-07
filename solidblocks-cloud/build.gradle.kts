@@ -18,7 +18,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
 
     implementation("org.jgrapht:jgrapht-core:1.5.1")
-    implementation("io.github.resilience4j:resilience4j-retry:2.1.0")
     implementation("com.charleskorn.kaml:kaml:0.83.0")
 
     implementation("io.ktor:ktor-client-resources:3.1.2")

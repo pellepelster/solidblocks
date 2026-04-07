@@ -61,9 +61,12 @@ class DockerServiceTest {
             "cloud1",
             "cloud1.test-blcks.de",
             emptyList(),
-            listOf(DockerServiceConfiguration("docker2", emptyList(), listOf("docker1"))),
+            listOf(
+                DockerServiceConfiguration("docker2", "image2", 16, emptyList(), listOf("docker1")),
+            ),
         )
-    val configuration = DockerServiceConfiguration("docker1", emptyList(), listOf("docker2"))
+    val configuration =
+        DockerServiceConfiguration("docker1", "image1", 16, emptyList(), listOf("docker2"))
 
     val result =
         DockerServiceManager()
@@ -85,7 +88,8 @@ class DockerServiceTest {
   @Test
   fun testInvalidLink() {
     val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), emptyList())
-    val configuration = DockerServiceConfiguration("docker1", emptyList(), listOf("docker3"))
+    val configuration =
+        DockerServiceConfiguration("docker1", "image11", 16, emptyList(), listOf("docker3"))
 
     val result =
         DockerServiceManager()
@@ -102,7 +106,8 @@ class DockerServiceTest {
 
   @Test
   fun testSelfLink() {
-    val configuration = DockerServiceConfiguration("docker1", emptyList(), listOf("docker1"))
+    val configuration =
+        DockerServiceConfiguration("docker1", "image1", 16, emptyList(), listOf("docker1"))
     val cloud =
         CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), listOf(configuration))
 
@@ -125,6 +130,8 @@ class DockerServiceTest {
     val configuration =
         DockerServiceConfiguration(
             "docker1",
+            "image1",
+            16,
             listOf(
                 DockerServiceEndpointConfiguration(8080),
                 DockerServiceEndpointConfiguration(8080),

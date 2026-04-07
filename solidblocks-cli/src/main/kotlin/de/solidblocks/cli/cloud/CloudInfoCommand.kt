@@ -14,30 +14,31 @@ import de.solidblocks.utils.logError
 
 class CloudInfoCommand : CliktCommand(name = "info") {
 
-    override fun help(context: Context) = "show details for a cloud configuration"
+  override fun help(context: Context) = "show details for a cloud configuration"
 
-    private val configFile by argument().file(mustExist = true)
+  private val configFile by argument().file(mustExist = true)
 
-    override fun run() {
-        val manager = CloudManager(configFile)
-        val runtime = when (val result = manager.validate()) {
-            is Error<CloudConfigurationRuntime> -> {
-                logError(result.error)
-                throw ProgramResult(1)
-            }
+  override fun run() {
+    val manager = CloudManager(configFile)
+    val runtime =
+        when (val result = manager.validate()) {
+          is Error<CloudConfigurationRuntime> -> {
+            logError(result.error)
+            throw ProgramResult(1)
+          }
 
-            is Success<CloudConfigurationRuntime> -> result.data
+          is Success<CloudConfigurationRuntime> -> result.data
         }
 
-        when (val result = manager.info(runtime)) {
-            is Error<String> -> {
-                logError(result.error)
-                throw ProgramResult(1)
-            }
+    when (val result = manager.info(runtime)) {
+      is Error<String> -> {
+        logError(result.error)
+        throw ProgramResult(1)
+      }
 
-            is Success<String> -> printMarkdown(result)
-        }
+      is Success<String> -> printMarkdown(result)
     }
+  }
 }
 
 /*

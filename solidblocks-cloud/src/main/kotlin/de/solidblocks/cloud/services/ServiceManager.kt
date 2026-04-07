@@ -12,35 +12,39 @@ import kotlin.reflect.KClass
 
 interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
 
-    fun linkedEnvironmentVariables(cloud: CloudConfigurationRuntime, runtime: R) = null
+  fun linkedEnvironmentVariables(
+      cloud: CloudConfigurationRuntime,
+      runtime: R,
+  ): List<EnvironmentVariable> = emptyList()
 
-    fun createResources(
-        cloud: CloudConfigurationRuntime,
-        runtime: R,
-    ): List<BaseInfrastructureResource<*>>
+  fun createResources(
+      cloud: CloudConfigurationRuntime,
+      runtime: R,
+  ): List<BaseInfrastructureResource<*>>
 
-    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
+  fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
-    fun validateConfiguration(
-        index: Int,
-        cloud: CloudConfiguration,
-        configuration: C,
-        context: CloudProvisionerContext,
-        log: LogContext,
-    ): Result<R>
+  fun validateConfiguration(
+      index: Int,
+      cloud: CloudConfiguration,
+      configuration: C,
+      context: CloudProvisionerContext,
+      log: LogContext,
+  ): Result<R>
 
-    fun info(
-        cloud: CloudConfigurationRuntime,
-        runtime: R,
-        context: CloudProvisionerContext,
-    ): Result<String?> = Success(null)
+  fun info(
+      cloud: CloudConfigurationRuntime,
+      runtime: R,
+      context: CloudProvisionerContext,
+  ): Result<String?> = Success(null)
 
-    val supportedConfiguration: KClass<C>
+  val supportedConfiguration: KClass<C>
 
-    val supportedRuntime: KClass<R>
+  val supportedRuntime: KClass<R>
 }
 
-fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceManager<C, R> =
+fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>
+    .forService(service: C): ServiceManager<C, R> =
     this.single { it.supportedConfiguration == service::class }.createManager()
-            as ServiceManager<C, R>?
+        as ServiceManager<C, R>?
         ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")

@@ -2,7 +2,7 @@
 run = "rm -rf build"
 
 [tasks.build]
-run = "docker build -t ghcr.io/pellepelster/solidblocks-rds-postgresql:latest ."
+run = "docker build -t ghcr.io/pellepelster/solidblocks-hello-world:latest ."
 
 [tasks.run]
 run = """
@@ -12,7 +12,7 @@ docker compose up
 
 [tasks.release-artifacts]
 run = """
-docker push ghcr.io/pellepelster/solidblocks-rds-postgresql:latest
+docker push ghcr.io/pellepelster/solidblocks-hello-world:latest
 """
 
 [tasks.preflight-check]

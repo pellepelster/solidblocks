@@ -4,8 +4,5 @@ Host *
     User root
     IdentityFile /home/pelle/git/solidblocks/solidblocks-cli/contrib/test_ed25519.key
 
-Host cloud1-default-s3-0
-    HostName 167.235.204.212
-
 Host cloud1-default-database1-0
-    HostName 91.99.112.149
+    HostName 46.225.153.167
