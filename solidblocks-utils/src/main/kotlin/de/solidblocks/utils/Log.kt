@@ -110,7 +110,7 @@ fun log(
   val formattedParts =
       listOfNotNull(formattedSource, formattedDuration, formattedMessage).joinToString(" ")
 
-  println(
+  System.err.println(
       "[${level.name.padStart(logLevelMaxLength)}] ${"  ".repeat(context?.indent ?: 0)}$formattedParts",
   )
 }

@@ -6,7 +6,6 @@ import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
@@ -37,7 +36,13 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
       cloud: CloudConfigurationRuntime,
       runtime: R,
       context: CloudProvisionerContext,
-  ): Result<String?> = Success(null)
+  ): Result<String>
+
+  fun infoJson(
+      cloud: CloudConfigurationRuntime,
+      runtime: R,
+      context: CloudProvisionerContext,
+  ): Result<ServiceInfo>
 
   val supportedConfiguration: KClass<C>
 

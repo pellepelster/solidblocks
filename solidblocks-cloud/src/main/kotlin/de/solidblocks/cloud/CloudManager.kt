@@ -19,6 +19,7 @@ import de.solidblocks.cloud.providers.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
 import de.solidblocks.cloud.secret.SecretProviderConfiguration
+import de.solidblocks.cloud.services.CloudInfo
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
@@ -286,6 +287,12 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
   fun info(runtime: CloudConfigurationRuntime): Result<String> {
     CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
       return it.info(runtime)
+    }
+  }
+
+  fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> {
+    CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
+      return it.infoJson(runtime)
     }
   }
 

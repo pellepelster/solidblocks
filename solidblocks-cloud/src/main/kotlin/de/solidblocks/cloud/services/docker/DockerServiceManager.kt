@@ -4,7 +4,6 @@ import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
-import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -22,37 +21,46 @@ import de.solidblocks.cloud.services.BackupRuntime
 import de.solidblocks.cloud.services.EnvironmentVariableCallback
 import de.solidblocks.cloud.services.EnvironmentVariableStatic
 import de.solidblocks.cloud.services.InstanceRuntime
+import de.solidblocks.cloud.services.ServerInfo
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfigurationRuntime
+import de.solidblocks.cloud.services.sshConnectCommand
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.docker.GenericDockerServiceUserData
 import de.solidblocks.utils.LogContext
-import java.nio.file.Path
 
 class DockerServiceManager :
     ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
+
+  override fun infoJson(
+      cloud: CloudConfigurationRuntime,
+      runtime: DockerServiceConfigurationRuntime,
+      context: CloudProvisionerContext,
+  ) =
+      Success(
+          ServiceInfo(runtime.name, listOf(ServerInfo(sshConnectCommand(context, cloud, runtime)))),
+      )
 
   override fun info(
       cloud: CloudConfigurationRuntime,
       runtime: DockerServiceConfigurationRuntime,
       context: CloudProvisionerContext,
-  ): Result<String?> =
+  ): Result<String> =
       Success(
           markdown {
             h1("Service '${runtime.name}'")
 
             h2("Servers")
             text("to access server **${serverName(cloud, runtime.name)}** via SSH, run")
-            codeBlock(
-                "ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.cloudName))} ${serverName(cloud, runtime.name)}",
-            )
+            codeBlock(sshConnectCommand(context, cloud, runtime))
           },
       )
 

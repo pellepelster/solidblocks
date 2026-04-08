@@ -27,11 +27,14 @@ import de.solidblocks.cloud.services.BackupRuntime
 import de.solidblocks.cloud.services.EnvironmentVariableCallback
 import de.solidblocks.cloud.services.EnvironmentVariableStatic
 import de.solidblocks.cloud.services.InstanceRuntime
+import de.solidblocks.cloud.services.ServerInfo
+import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseUsersConfigurationRuntime
+import de.solidblocks.cloud.services.sshConnectCommand
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -82,11 +85,20 @@ class PostgresSqlServiceManager :
               ),
           )
 
+  override fun infoJson(
+      cloud: CloudConfigurationRuntime,
+      runtime: PostgresSqlServiceConfigurationRuntime,
+      context: CloudProvisionerContext,
+  ) =
+      Success(
+          ServiceInfo(runtime.name, listOf(ServerInfo(sshConnectCommand(context, cloud, runtime)))),
+      )
+
   override fun info(
       cloud: CloudConfigurationRuntime,
       runtime: PostgresSqlServiceConfigurationRuntime,
       context: CloudProvisionerContext,
-  ): Result<String?> =
+  ): Result<String> =
       Success(
           markdown {
             h1("Service '${runtime.name}'")

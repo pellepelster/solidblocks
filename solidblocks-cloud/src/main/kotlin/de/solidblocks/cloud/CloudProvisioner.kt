@@ -28,7 +28,13 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
-import de.solidblocks.cloud.services.*
+import de.solidblocks.cloud.services.CloudInfo
+import de.solidblocks.cloud.services.ServiceConfiguration
+import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceInfo
+import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.ServiceRegistration
+import de.solidblocks.cloud.services.managerForService
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -70,12 +76,24 @@ class CloudProvisioner(
     val serviceOutput =
         serviceManagers().map {
           when (val result = it.second.info(runtime, it.first, context)) {
-            is Error<String?> -> return@runBlocking Error<String>(result.error)
-            is Success<String?> -> result.data
+            is Error<String> -> return@runBlocking Error<String>(result.error)
+            is Success<String> -> result.data
           }
         }
 
-    return@runBlocking Success(serviceOutput.filterNotNull().joinToString("\n"))
+    return@runBlocking Success(serviceOutput.joinToString("\n"))
+  }
+
+  fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> = runBlocking {
+    val services =
+        serviceManagers().map {
+          when (val result = it.second.infoJson(runtime, it.first, context)) {
+            is Error<ServiceInfo> -> return@runBlocking Error<CloudInfo>(result.error)
+            is Success<ServiceInfo> -> result.data
+          }
+        }
+
+    return@runBlocking Success(CloudInfo(services))
   }
 
   fun apply(log: LogContext): Result<Unit> = runBlocking {
