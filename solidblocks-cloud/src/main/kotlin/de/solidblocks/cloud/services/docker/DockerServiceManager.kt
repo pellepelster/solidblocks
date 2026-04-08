@@ -51,7 +51,7 @@ class DockerServiceManager :
                       context.ensureLookup(dataVolume.asLookup()).device,
                       cloud.rootDomain,
                       runtime.image,
-                      runtime.endpoints.map { it.port to it.port }.toMap(),
+                      runtime.endpoints.associate { it.port + 1024 to it.port },
                   )
                   .render()
             },

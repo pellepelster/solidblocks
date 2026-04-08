@@ -21,7 +21,7 @@ import kotlinx.serialization.json.Json
 
 class Provisioner(
     val registry: ProvisionersRegistry,
-    val waitConfig: Waiter.WaitConfig = Waiter.DEFAULT_WAIT,
+    val waitConfig: Waiter.WaitConfig = Waiter.LONG_WAIT,
 ) {
 
   private val logger = KotlinLogging.logger {}

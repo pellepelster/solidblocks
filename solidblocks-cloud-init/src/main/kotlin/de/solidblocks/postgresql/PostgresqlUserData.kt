@@ -18,6 +18,7 @@ import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.shell.WriteFile
 import de.solidblocks.systemd.Install
+import de.solidblocks.systemd.Restart
 import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.Target
@@ -108,6 +109,7 @@ class PostgresqlUserData(
                     "up",
                     "--force-recreate",
                 ),
+                restart = Restart.ALWAYS,
                 environment = environment,
                 workingDirectory = dockerWorkingDirectory,
                 execDown =

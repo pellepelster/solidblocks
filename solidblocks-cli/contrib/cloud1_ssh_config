@@ -6,3 +6,6 @@ Host *
 
 Host cloud1-default-database1-0
     HostName 46.225.153.167
+
+Host cloud1-default-service1-0
+    HostName 46.224.161.199

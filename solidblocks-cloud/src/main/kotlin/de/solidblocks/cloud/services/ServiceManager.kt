@@ -15,7 +15,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
   fun linkedEnvironmentVariables(
       cloud: CloudConfigurationRuntime,
       runtime: R,
-  ): List<EnvironmentVariable> = emptyList()
+  ): List<BaseEnvironmentVariable> = emptyList()
 
   fun createResources(
       cloud: CloudConfigurationRuntime,

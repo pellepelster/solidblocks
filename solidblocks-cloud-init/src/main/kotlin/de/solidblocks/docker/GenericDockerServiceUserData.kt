@@ -6,6 +6,7 @@ import de.solidblocks.shell.*
 import de.solidblocks.shell.MkDir
 import de.solidblocks.shell.ShellScript
 import de.solidblocks.systemd.Install
+import de.solidblocks.systemd.Restart
 import de.solidblocks.systemd.Service
 import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.Target
@@ -107,6 +108,7 @@ class GenericDockerServiceUserData(
                     "up",
                     "--force-recreate",
                 ),
+                restart = Restart.ALWAYS,
                 environment = environment,
                 workingDirectory = dockerWorkingDirectory,
                 execDown =

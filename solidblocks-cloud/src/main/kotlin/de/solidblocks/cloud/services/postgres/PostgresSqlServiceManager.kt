@@ -15,13 +15,15 @@ import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.services.EnvironmentVariable
+import de.solidblocks.cloud.services.EnvironmentVariableCallback
+import de.solidblocks.cloud.services.EnvironmentVariableStatic
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
@@ -45,25 +47,34 @@ class PostgresSqlServiceManager :
       runtime: PostgresSqlServiceConfigurationRuntime,
   ) =
       runtime.databases.flatMap {
+        val password = defaultDatabaseUserPassword(cloud, runtime, it).asLookup()
+
         listOf(
-            EnvironmentVariable(
+            EnvironmentVariableStatic(
                 sanitizeEnvironmentVariables("${runtime.name}_${it.name}_USER"),
                 "name of the default user for database '${it.name}'",
+                defaultDatabaseUserName(cloud, runtime, it),
             ),
-            EnvironmentVariable(
+            EnvironmentVariableCallback(
                 sanitizeEnvironmentVariables("${runtime.name}_${it.name}_PASSWORD"),
                 "password for the default user of database '${it.name}'",
+                { it.ensureLookup(password).secret },
             ),
         )
       } +
           listOf(
-              EnvironmentVariable(
+              EnvironmentVariableCallback(
                   sanitizeEnvironmentVariables("${runtime.name}_DATABASE_HOST"),
                   "host address for service '${runtime.name}'",
+                  {
+                    it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
+                        .privateIpv4 ?: throw RuntimeException("no private ip address found")
+                  },
               ),
-              EnvironmentVariable(
+              EnvironmentVariableStatic(
                   sanitizeEnvironmentVariables("${runtime.name}_DATABASE_PORT"),
                   "database port for service '${runtime.name}'",
+                  "5432",
               ),
           )
 
@@ -137,10 +148,10 @@ class PostgresSqlServiceManager :
 
     val databaseResources =
         runtime.databases.flatMap {
-          val password = PassSecret(secretPath(cloud, runtime, listOf(it.name, "password")))
+          val password = defaultDatabaseUserPassword(cloud, runtime, it)
           val user =
               PostgresUser(
-                  it.name,
+                  defaultDatabaseUserName(cloud, runtime, it),
                   password.asLookup(),
                   server.asLookup(),
                   superUserPassword.asLookup(),
@@ -159,6 +170,18 @@ class PostgresSqlServiceManager :
 
     return listOf(server, dataVolume, backupVolume) + databaseResources
   }
+
+  fun defaultDatabaseUserPassword(
+      cloud: CloudConfigurationRuntime,
+      runtime: PostgresSqlServiceConfigurationRuntime,
+      database: PostgresSqlServiceDatabaseConfigurationRuntime,
+  ) = PassSecret(secretPath(cloud, runtime, listOf(database.name, "password")))
+
+  fun defaultDatabaseUserName(
+      cloud: CloudConfigurationRuntime,
+      runtime: PostgresSqlServiceConfigurationRuntime,
+      database: PostgresSqlServiceDatabaseConfigurationRuntime,
+  ) = database.name
 
   override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) =
       listOf<InfrastructureResourceProvisioner<*, *>>()

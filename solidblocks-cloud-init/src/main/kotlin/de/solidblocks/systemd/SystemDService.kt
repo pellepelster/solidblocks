@@ -72,6 +72,7 @@ class SystemDService(
     sw.appendLine("ExecStart=${service.execStart.joinToString(" ")}")
     service.stateDirectory?.let { sw.appendLine("StateDirectory=$it") }
     service.workingDirectory?.let { sw.appendLine("WorkingDirectory=$it") }
+    service.restart?.let { sw.appendLine("Restart=$it") }
     service.limitNOFILE?.let { sw.appendLine("LimitNOFILE=$it") }
     sw.appendLine()
 
@@ -138,7 +139,7 @@ enum class ServiceType {
 
 class Service(
     val execStart: List<String>,
-    val restart: Restart = Restart.ALWAYS,
+    val restart: Restart? = null,
     val environment: Map<String, String> = emptyMap(),
     val environmentFiles: List<String> = emptyList(),
     val workingDirectory: String? = null,

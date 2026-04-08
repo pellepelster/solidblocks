@@ -16,5 +16,7 @@ services:
   - type: docker
     name: service1
     image: ghcr.io/pellepelster/solidblocks-hello-world:latest
+    endpoints:
+      - port: 80
     link:
       - database1

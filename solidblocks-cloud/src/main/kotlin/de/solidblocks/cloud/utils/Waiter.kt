@@ -22,7 +22,7 @@ object Waiter {
 
   public val DEFAULT_WAIT = WaitConfig(30, 2000L)
 
-  public val LONG_WAIT = WaitConfig(60, 2000L)
+  public val LONG_WAIT = WaitConfig(90, 2000L)
 
   suspend fun <T> waitFor(config: WaitConfig, callback: suspend () -> T?): T? {
     repeat(config.maxIterations) {

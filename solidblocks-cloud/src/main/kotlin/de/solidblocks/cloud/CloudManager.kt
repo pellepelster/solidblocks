@@ -236,7 +236,11 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     val log = LogContext.default()
     CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
       when (val result = it.apply(log)) {
-        is Error<Unit> -> return Error<String>(result.error)
+        is Error<Unit> -> {
+          writeSshConfig(runtime)
+          return Error<String>(result.error)
+        }
+
         is Success<*> -> {
           writeSshConfig(runtime)
           return info(runtime)
