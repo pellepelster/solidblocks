@@ -39,8 +39,8 @@ import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.coEvery
 import io.mockk.mockk
 import java.nio.file.Path
-import java.util.*
 import java.util.Locale.getDefault
+import java.util.UUID
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -150,6 +150,7 @@ class GarageFsProvisionersTest {
                     bucketProvisioner,
                 ),
             ),
+            emptyList(),
         )
 
     val adminToken = PassSecret("admin_token")

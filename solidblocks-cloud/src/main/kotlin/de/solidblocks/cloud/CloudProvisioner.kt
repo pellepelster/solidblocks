@@ -57,6 +57,7 @@ class CloudProvisioner(
           runtime.name,
           runtime.getDefaultEnvironment(),
           registry,
+          serviceRegistrations,
       )
 
   fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
@@ -117,7 +118,7 @@ class CloudProvisioner(
         serviceManagers().map {
           ResourceGroup(
               "service '${it.first.name}'",
-              it.second.createResources(runtime, it.first),
+              it.second.createResources(runtime, it.first, context),
               setOf(cloudResourceGroup),
           )
         }

@@ -22,8 +22,10 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.services.BackupRuntime
 import de.solidblocks.cloud.services.EnvironmentVariableCallback
 import de.solidblocks.cloud.services.EnvironmentVariableStatic
+import de.solidblocks.cloud.services.InstanceRuntime
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
@@ -51,12 +53,12 @@ class PostgresSqlServiceManager :
 
         listOf(
             EnvironmentVariableStatic(
-                sanitizeEnvironmentVariables("${runtime.name}_${it.name}_USER"),
+                sanitizeEnvironmentVariables("DATABASE_USER"),
                 "name of the default user for database '${it.name}'",
                 defaultDatabaseUserName(cloud, runtime, it),
             ),
             EnvironmentVariableCallback(
-                sanitizeEnvironmentVariables("${runtime.name}_${it.name}_PASSWORD"),
+                sanitizeEnvironmentVariables("DATABASE_PASSWORD"),
                 "password for the default user of database '${it.name}'",
                 { it.ensureLookup(password).secret },
             ),
@@ -64,7 +66,7 @@ class PostgresSqlServiceManager :
       } +
           listOf(
               EnvironmentVariableCallback(
-                  sanitizeEnvironmentVariables("${runtime.name}_DATABASE_HOST"),
+                  sanitizeEnvironmentVariables("DATABASE_HOST"),
                   "host address for service '${runtime.name}'",
                   {
                     it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
@@ -72,7 +74,7 @@ class PostgresSqlServiceManager :
                   },
               ),
               EnvironmentVariableStatic(
-                  sanitizeEnvironmentVariables("${runtime.name}_DATABASE_PORT"),
+                  sanitizeEnvironmentVariables("DATABASE_PORT"),
                   "database port for service '${runtime.name}'",
                   "5432",
               ),
@@ -96,21 +98,21 @@ class PostgresSqlServiceManager :
   override fun createResources(
       cloud: CloudConfigurationRuntime,
       runtime: PostgresSqlServiceConfigurationRuntime,
+      context: CloudProvisionerContext,
   ): List<BaseInfrastructureResource<*>> {
     val dataVolume =
         HetznerVolume(
             serverName(cloud, runtime.name) + "-data",
-            cloud.hetznerProviderConfig().defaultLocation,
-            ByteSize.fromGigabytes(runtime.dataVolumeSize),
+            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            ByteSize.fromGigabytes(runtime.instance.volumeSize),
             emptyMap(),
         )
+
     val backupVolume =
         HetznerVolume(
             serverName(cloud, runtime.name) + "-backup",
-            cloud.hetznerProviderConfig().defaultLocation,
-            ByteSize.fromGigabytes(
-                runtime.backupVolumeSize ?: (runtime.dataVolumeSize * runtime.backupRetention),
-            ),
+            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            runtime.backup.backupVolumeSizeWithDefault(runtime.instance.volumeSize),
             emptyMap(),
         )
 
@@ -134,10 +136,10 @@ class PostgresSqlServiceManager :
         HetznerServer(
             serverName(cloud, runtime.name),
             userData = userData,
-            location = cloud.hetznerProviderConfig().defaultLocation,
+            location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
             volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
-            type = cloud.hetznerProviderConfig().defaultInstanceType,
+            type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet =
                 HetznerSubnetLookup(
                     DEFAULT_SERVICE_SUBNET,
@@ -189,12 +191,12 @@ class PostgresSqlServiceManager :
   override fun validateConfiguration(
       index: Int,
       cloud: CloudConfiguration,
-      service: PostgresSqlServiceConfiguration,
+      configuration: PostgresSqlServiceConfiguration,
       context: CloudProvisionerContext,
       log: LogContext,
   ): Result<PostgresSqlServiceConfigurationRuntime> {
-    service.databases.forEach { database ->
-      if (service.databases.count { database.name == it.name } > 1) {
+    configuration.databases.forEach { database ->
+      if (configuration.databases.count { database.name == it.name } > 1) {
         return Error(
             "duplicated database with name '${database.name}', ensure that the database names are unique",
         )
@@ -212,11 +214,10 @@ class PostgresSqlServiceManager :
     return Success(
         PostgresSqlServiceConfigurationRuntime(
             index,
-            service.name,
-            service.dataVolumeSize,
-            service.backupFullRetentionDays,
-            service.backupVolumeSize,
-            service.databases.map {
+            configuration.name,
+            InstanceRuntime.fromConfig(configuration.instance),
+            BackupRuntime.fromConfig(configuration.backup),
+            configuration.databases.map {
               PostgresSqlServiceDatabaseConfigurationRuntime(
                   it.name,
                   it.users.map { PostgresSqlServiceDatabaseUsersConfigurationRuntime(it.name) },

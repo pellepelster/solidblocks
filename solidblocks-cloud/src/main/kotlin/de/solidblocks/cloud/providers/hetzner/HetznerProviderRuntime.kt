@@ -4,8 +4,8 @@ import de.solidblocks.cloud.providers.ProviderConfigurtionRuntime
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
-data class HetznerProviderConfigurationRuntime(
+data class HetznerProviderRuntime(
     val cloudToken: String,
-    val defaultLocation: HetznerLocation,
+    val defaultLocation1: HetznerLocation,
     val defaultInstanceType: HetznerServerType,
 ) : ProviderConfigurtionRuntime

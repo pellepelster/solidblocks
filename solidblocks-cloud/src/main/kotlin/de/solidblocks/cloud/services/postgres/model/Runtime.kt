@@ -1,5 +1,7 @@
 package de.solidblocks.cloud.services.postgres.model
 
+import de.solidblocks.cloud.services.BackupRuntime
+import de.solidblocks.cloud.services.InstanceRuntime
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 
 data class PostgresSqlServiceDatabaseConfigurationRuntime(
@@ -12,8 +14,7 @@ data class PostgresSqlServiceDatabaseUsersConfigurationRuntime(val name: String)
 data class PostgresSqlServiceConfigurationRuntime(
     override val index: Int,
     override val name: String,
-    val dataVolumeSize: Int,
-    val backupRetention: Int,
-    val backupVolumeSize: Int?,
+    val instance: InstanceRuntime,
+    val backup: BackupRuntime,
     val databases: List<PostgresSqlServiceDatabaseConfigurationRuntime>,
 ) : ServiceConfigurationRuntime

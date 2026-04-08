@@ -4,6 +4,11 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
+import de.solidblocks.cloud.services.ServiceConfiguration
+import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.ServiceRegistration
+import de.solidblocks.cloud.services.managerForService
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -38,6 +43,10 @@ interface CloudProvisionerContext {
   suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(
       clazz: KClass<*>
   ): List<RuntimeType>
+
+  fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(
+      runtime: R
+  ): ServiceManager<C, R>
 }
 
 data class ProvisionerContext(
@@ -47,6 +56,7 @@ data class ProvisionerContext(
     override val cloudName: String,
     val environmentName: String,
     val registry: ProvisionersRegistry,
+    val serviceRegistrations: List<ServiceRegistration<*, *>>,
 ) : CloudProvisionerContext, Closeable {
   private val logger = KotlinLogging.logger {}
 
@@ -105,6 +115,10 @@ data class ProvisionerContext(
   override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(
       clazz: KClass<*>
   ): List<RuntimeType> = registry.list(clazz)
+
+  override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(
+      runtime: R
+  ): ServiceManager<C, R> = serviceRegistrations.managerForService(runtime)
 
   override fun close() {
     sshClients.forEach {

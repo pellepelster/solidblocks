@@ -28,7 +28,7 @@ class HetznerProviderConfigurationFactory :
 
   val defaultLocation =
       StringKeywordOptionalWithDefault(
-          "default-location",
+          "default_location",
           HETZNER_LOCATIONS,
           HETZNER_LOCATIONS.options.first(),
           KeywordHelp(

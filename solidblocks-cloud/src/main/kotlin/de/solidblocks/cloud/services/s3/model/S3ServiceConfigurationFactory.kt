@@ -4,9 +4,10 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.services.BACKUP_DATA_VOLUME_SIZE_KEYWORD
-import de.solidblocks.cloud.services.BACKUP_FULL_RETENTION_DAYS_KEYWORD
-import de.solidblocks.cloud.services.SERVICE_DATA_VOLUME_SIZE_KEYWORD
+import de.solidblocks.cloud.services.BackupConfig
+import de.solidblocks.cloud.services.BackupConfigurationFactory
+import de.solidblocks.cloud.services.InstanceConfig
+import de.solidblocks.cloud.services.InstanceConfigurationFactory
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -34,10 +35,7 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
       listOf(
           SERVICE_NAME_KEYWORD,
           buckets,
-          SERVICE_DATA_VOLUME_SIZE_KEYWORD,
-          BACKUP_FULL_RETENTION_DAYS_KEYWORD,
-          BACKUP_DATA_VOLUME_SIZE_KEYWORD,
-      )
+      ) + BackupConfigurationFactory.keywords + InstanceConfigurationFactory.keywords
 
   override fun parse(yaml: YamlNode): Result<S3ServiceConfiguration> {
     val name =
@@ -52,12 +50,18 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
           is Success<List<S3ServiceBucketConfiguration>> -> result.data
         }
 
-    val dataVolumeSize =
-        when (val result = SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(yaml)) {
-          is Error<Int> -> return Error(result.error)
-          is Success<Int> -> result.data
+    val instance =
+        when (val result = InstanceConfigurationFactory.parse(yaml)) {
+          is Error<InstanceConfig> -> return Error(result.error)
+          is Success<InstanceConfig> -> result.data
         }
 
-    return Success(S3ServiceConfiguration(name, dataVolumeSize, buckets))
+    val backup =
+        when (val result = BackupConfigurationFactory.parse(yaml)) {
+          is Error<BackupConfig> -> return Error(result.error)
+          is Success<BackupConfig> -> result.data
+        }
+
+    return Success(S3ServiceConfiguration(name, instance, backup, buckets))
   }
 }

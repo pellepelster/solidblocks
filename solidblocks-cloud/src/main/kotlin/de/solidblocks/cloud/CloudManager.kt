@@ -7,7 +7,13 @@ import de.solidblocks.cloud.configuration.ConfigurationParser
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.providers.*
+import de.solidblocks.cloud.providers.CloudConfigurationContext
+import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
+import de.solidblocks.cloud.providers.DEFAULT_NAME
+import de.solidblocks.cloud.providers.ProviderConfiguration
+import de.solidblocks.cloud.providers.ProviderConfigurationManager
+import de.solidblocks.cloud.providers.ProviderConfigurtionRuntime
+import de.solidblocks.cloud.providers.managerForConfiguration
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
@@ -20,7 +26,12 @@ import de.solidblocks.cloud.services.forService
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.utils.*
+import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.bold
+import de.solidblocks.utils.logDebug
+import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.logSuccess
+import de.solidblocks.utils.logWarning
 import java.io.File
 import kotlin.io.path.absolutePathString
 
@@ -168,6 +179,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             cloud.name,
             cloud.getDefaultEnvironment(),
             registry,
+            serviceRegistrations,
         )
         .use {
           val services: List<ServiceConfigurationRuntime> =

@@ -20,6 +20,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
   fun createResources(
       cloud: CloudConfigurationRuntime,
       runtime: R,
+      context: CloudProvisionerContext,
   ): List<BaseInfrastructureResource<*>>
 
   fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>

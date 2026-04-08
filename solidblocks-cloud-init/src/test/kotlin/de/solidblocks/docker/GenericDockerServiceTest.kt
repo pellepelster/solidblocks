@@ -18,20 +18,26 @@ class GenericDockerServiceTest {
   fun testIntegration(testContext: SolidblocksTestContext) {
     val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
-    val volume = hetznerTestContext.createVolume()
+    val dataVolume = hetznerTestContext.createVolume("${testContext.testId}-data")
+    val backupVolume = hetznerTestContext.createVolume("${testContext.testId}-backup")
     val sshKey = hetznerTestContext.createSSHKey()
 
     val userData =
         GenericDockerServiceUserData(
             testContext.testId,
-            volume.linuxDevice,
+            dataVolume.linuxDevice,
+            backupVolume.linuxDevice,
             "yolo.de",
             "nginx",
             mapOf(80 to 80),
         )
 
     val serverTestContext =
-        hetznerTestContext.createServer(userData.render(), sshKey, volumes = listOf(volume.id))
+        hetznerTestContext.createServer(
+            userData.render(),
+            sshKey,
+            volumes = listOf(dataVolume.id, backupVolume.id),
+        )
 
     serverTestContext.waitForSuccessfulProvisioning()
 

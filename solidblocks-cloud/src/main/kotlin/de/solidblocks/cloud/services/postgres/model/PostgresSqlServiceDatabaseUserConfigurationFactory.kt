@@ -53,7 +53,7 @@ class PostgresSqlServiceDatabaseUserConfigurationFactory :
   override val help: ConfigurationHelp
     get() = TODO("Not yet implemented")
 
-  override val keywords = listOf<SimpleKeyword<*>>(name, admin, read, write)
+  override val keywords = listOf<SimpleKeyword<*>>(name)
 
   override fun parse(yaml: YamlNode): Result<PostgresSqlServiceDatabaseUserConfiguration> {
     val name =

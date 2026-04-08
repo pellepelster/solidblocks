@@ -1,10 +1,25 @@
 package de.solidblocks.docker
 
-import de.solidblocks.caddy.*
+import de.solidblocks.caddy.AutoHttps
+import de.solidblocks.caddy.CaddyConfig
+import de.solidblocks.caddy.FileSystemStorage
+import de.solidblocks.caddy.GlobalOptions
+import de.solidblocks.caddy.ReverseProxy
+import de.solidblocks.caddy.Site
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.shell.*
+import de.solidblocks.shell.AptLibrary
+import de.solidblocks.shell.CaddyLibrary
+import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.DockerLibrary
+import de.solidblocks.shell.FilePermissions
+import de.solidblocks.shell.LogLibrary
 import de.solidblocks.shell.MkDir
+import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.ShellScript
+import de.solidblocks.shell.StorageLibrary
+import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.shell.UtilsLibrary
+import de.solidblocks.shell.WriteFile
 import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Restart
 import de.solidblocks.systemd.Service
@@ -15,15 +30,19 @@ import de.solidblocks.systemd.installSystemDUnit
 
 class GenericDockerServiceUserData(
     val name: String,
-    val linuxDevice: String,
+    val dataDevice: String,
+    val backupDevice: String,
     val rootDomain: String?,
     val dockerImage: String,
     val ports: Map<Int, Int>,
     val enableHttps: Boolean = false,
+    val environmentVariables: Map<String, String> = emptyMap(),
 ) : ServiceUserData {
 
   override fun render(): String {
     val storageMount = "/storage/data"
+    val backupMount = "/storage/backup"
+
     val caddyStorageDir = "$storageMount/www"
 
     val caddyConfig =
@@ -37,7 +56,7 @@ class GenericDockerServiceUserData(
                   AutoHttps.off
                 },
             ),
-            ports.map { Site(":${it.key}", ReverseProxy("http://localhost:${it.value}")) },
+            ports.map { Site(":${it.key}", ReverseProxy("http://localhost:${it.value + 1024}")) },
         )
 
     val userData = ShellScript()
@@ -51,7 +70,8 @@ class GenericDockerServiceUserData(
     userData.addCommand(PackageLibrary.UpdateSystem())
 
     userData.addInlineSource(StorageLibrary)
-    userData.addCommand(StorageLibrary.Mount(linuxDevice, storageMount))
+    userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
+    userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
 
     userData.addCommand(DockerLibrary.InstallDebian())
 
@@ -67,7 +87,7 @@ class GenericDockerServiceUserData(
     )
     userData.addCommand(SystemDLibrary.Restart("caddy"))
 
-    val dockerWorkingDirectory = "/usr/local/etc/containers/"
+    val dockerWorkingDirectory = "/usr/local/etc/containers"
     val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
     val environment = mapOf<String, String>()
 
@@ -81,10 +101,11 @@ class GenericDockerServiceUserData(
                             ports =
                                 ports.map {
                                   PortMapping(
-                                      it.key,
                                       it.value,
+                                      it.value + 1024,
                                   )
                                 },
+                            environment = environmentVariables,
                         ),
                 ),
         )

@@ -16,6 +16,12 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.services.BackupRuntime
+import de.solidblocks.cloud.services.EnvironmentVariableCallback
+import de.solidblocks.cloud.services.EnvironmentVariableStatic
+import de.solidblocks.cloud.services.InstanceRuntime
+import de.solidblocks.cloud.services.ServiceConfiguration
+import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
@@ -33,12 +39,31 @@ class DockerServiceManager :
   override fun createResources(
       cloud: CloudConfigurationRuntime,
       runtime: DockerServiceConfigurationRuntime,
+      context: CloudProvisionerContext,
   ): List<BaseInfrastructureResource<*>> {
+    val environmentVariables =
+        runtime.links.flatMap { link ->
+          val links = cloud.services.filter { it.name == link }
+          links.flatMap {
+            context
+                .managerForService<ServiceConfiguration, ServiceConfigurationRuntime>(it)
+                .linkedEnvironmentVariables(cloud, it)
+          }
+        }
+
     val dataVolume =
         HetznerVolume(
             serverName(cloud, runtime.name) + "-data",
-            cloud.hetznerProviderConfig().defaultLocation,
-            ByteSize.fromGigabytes(runtime.dataVolumeSize),
+            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            ByteSize.fromGigabytes(runtime.instance.volumeSize),
+            emptyMap(),
+        )
+
+    val backupVolume =
+        HetznerVolume(
+            serverName(cloud, runtime.name) + "-backup",
+            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            runtime.backup.backupVolumeSizeWithDefault(runtime.instance.volumeSize),
             emptyMap(),
         )
 
@@ -49,9 +74,20 @@ class DockerServiceManager :
               GenericDockerServiceUserData(
                       runtime.name,
                       context.ensureLookup(dataVolume.asLookup()).device,
+                      context.ensureLookup(backupVolume.asLookup()).device,
                       cloud.rootDomain,
                       runtime.image,
-                      runtime.endpoints.associate { it.port + 1024 to it.port },
+                      runtime.endpoints.associate { 80 to it.port },
+                      environmentVariables =
+                          environmentVariables.associate {
+                            val value =
+                                when (it) {
+                                  is EnvironmentVariableCallback -> it.value.invoke(context)
+                                  is EnvironmentVariableStatic -> it.value
+                                }
+
+                            it.name to value
+                          },
                   )
                   .render()
             },
@@ -61,10 +97,10 @@ class DockerServiceManager :
         HetznerServer(
             serverName(cloud, runtime.name),
             userData = userData,
-            location = cloud.hetznerProviderConfig().defaultLocation,
+            location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-            volumes = setOf(dataVolume.asLookup()),
-            type = cloud.hetznerProviderConfig().defaultInstanceType,
+            volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
+            type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet =
                 HetznerSubnetLookup(
                     DEFAULT_SERVICE_SUBNET,
@@ -73,7 +109,7 @@ class DockerServiceManager :
             privateIp = serverIp(runtime.index),
         )
 
-    return listOf(server, dataVolume)
+    return listOf(server, dataVolume, backupVolume)
   }
 
   override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) =
@@ -111,7 +147,8 @@ class DockerServiceManager :
             index,
             configuration.name,
             configuration.image,
-            configuration.dataVolumeSize,
+            InstanceRuntime.fromConfig(configuration.instance),
+            BackupRuntime.fromConfig(configuration.backup),
             configuration.endpoints.map { DockerServiceEndpointConfigurationRuntime(it.port) },
             configuration.links,
         ),

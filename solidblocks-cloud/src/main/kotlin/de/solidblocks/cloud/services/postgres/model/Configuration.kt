@@ -1,12 +1,13 @@
 package de.solidblocks.cloud.services.postgres.model
 
+import de.solidblocks.cloud.services.BackupConfig
+import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
 
 data class PostgresSqlServiceConfiguration(
     override val name: String,
-    val dataVolumeSize: Int,
-    val backupFullRetentionDays: Int,
-    val backupVolumeSize: Int?,
+    val instance: InstanceConfig,
+    val backup: BackupConfig,
     val databases: List<PostgresSqlServiceDatabaseConfiguration>,
 ) : ServiceConfiguration {
   override val type = "postgresql"

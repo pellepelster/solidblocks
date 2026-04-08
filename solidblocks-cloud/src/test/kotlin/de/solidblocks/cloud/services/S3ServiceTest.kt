@@ -12,6 +12,8 @@ import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationFactory
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.yamlParse
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -54,7 +56,8 @@ class S3ServiceTest {
                 cloud,
                 S3ServiceConfiguration(
                     "bucket1",
-                    12,
+                    InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+                    BackupConfig(16, 7),
                     listOf(
                         S3ServiceBucketConfiguration("bucket1", false, emptyList(), emptyList()),
                         S3ServiceBucketConfiguration("bucket1", false, emptyList(), emptyList()),
@@ -63,7 +66,7 @@ class S3ServiceTest {
                 mockk<CloudProvisionerContext>(),
                 TEST_LOG_CONTEXT,
             )
-            .shouldBeTypeOf<de.solidblocks.cloud.utils.Error<Unit>>()
+            .shouldBeTypeOf<Error<Unit>>()
 
     result.error shouldBe
         "duplicated configuration for bucket with name 'bucket1', ensure that the bucket names are unique"
@@ -86,7 +89,8 @@ class S3ServiceTest {
                 cloud,
                 S3ServiceConfiguration(
                     "bucket1",
-                    12,
+                    InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+                    BackupConfig(16, 7),
                     listOf(
                         S3ServiceBucketConfiguration(
                             "bucket1",

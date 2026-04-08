@@ -13,6 +13,9 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvis
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
+import de.solidblocks.cloud.services.ServiceConfiguration
+import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
@@ -55,6 +58,10 @@ class TestProvisionerContext(
 
   override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>) =
       TODO("Not yet implemented")
+
+  override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(
+      runtime: R
+  ): ServiceManager<C, R> = TODO("Not yet implemented")
 }
 
 val TEST_PROVISIONER_CONTEXT =

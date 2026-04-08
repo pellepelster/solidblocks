@@ -27,6 +27,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.services.BackupRuntime
+import de.solidblocks.cloud.services.InstanceRuntime
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
@@ -56,20 +58,21 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
   override fun createResources(
       cloud: CloudConfigurationRuntime,
       runtime: S3ServiceConfigurationRuntime,
+      context: CloudProvisionerContext,
   ): List<BaseInfrastructureResource<*>> {
     val dataVolume =
         HetznerVolume(
             serverName(cloud, runtime.name) + "-data",
-            cloud.hetznerProviderConfig().defaultLocation,
-            runtime.dataVolumeSize,
+            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            ByteSize.fromGigabytes(runtime.instance.volumeSize),
             emptyMap(),
         )
 
     val backupVolume =
         HetznerVolume(
             serverName(cloud, runtime.name) + "-backup",
-            cloud.hetznerProviderConfig().defaultLocation,
-            runtime.dataVolumeSize,
+            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            runtime.backup.backupVolumeSizeWithDefault(runtime.instance.volumeSize),
             emptyMap(),
         )
 
@@ -137,10 +140,10 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         HetznerServer(
             serverName(cloud, runtime.name),
             userData = userData,
-            location = cloud.hetznerProviderConfig().defaultLocation,
+            location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
             volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
-            type = cloud.hetznerProviderConfig().defaultInstanceType,
+            type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet =
                 HetznerSubnetLookup(
                     DEFAULT_SERVICE_SUBNET,
@@ -183,7 +186,11 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             } + listOf(rootDomain, catchAllDomain)
 
     val layout =
-        GarageFsLayout(runtime.dataVolumeSize.bytes, server.asLookup(), adminToken.asLookup())
+        GarageFsLayout(
+            ByteSize.fromGigabytes(runtime.instance.volumeSize).bytes,
+            server.asLookup(),
+            adminToken.asLookup(),
+        )
     val bucketResources = mutableListOf<BaseInfrastructureResource<*>>()
 
     runtime.buckets.forEach {
@@ -289,7 +296,8 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         S3ServiceConfigurationRuntime(
             index,
             configuration.name,
-            ByteSize.fromGigabytes(configuration.dataVolumeSize),
+            InstanceRuntime.fromConfig(configuration.instance),
+            BackupRuntime.fromConfig(configuration.backup),
             configuration.buckets.map { bucket ->
               val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
               val managedPublicAccessDomains = mutableMapOf<String, String>()

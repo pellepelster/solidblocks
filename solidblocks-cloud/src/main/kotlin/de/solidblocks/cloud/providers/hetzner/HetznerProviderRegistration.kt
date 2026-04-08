@@ -7,12 +7,12 @@ val HETZNER_PROVIDER_TYPE = "hcloud"
 class HetznerProviderRegistration :
     CloudResourceProviderRegistration<
         HetznerProviderConfiguration,
-        HetznerProviderConfigurationRuntime,
+        HetznerProviderRuntime,
         HetznerProviderConfigurationManager,
     > {
 
   override val supportedConfiguration = HetznerProviderConfiguration::class
-  override val supportedRuntime = HetznerProviderConfigurationRuntime::class
+  override val supportedRuntime = HetznerProviderRuntime::class
 
   override fun createConfigurationManager() = HetznerProviderConfigurationManager()
 

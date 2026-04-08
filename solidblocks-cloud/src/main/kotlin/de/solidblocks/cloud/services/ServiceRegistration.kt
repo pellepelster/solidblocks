@@ -15,12 +15,6 @@ interface ServiceRegistration<C : ServiceConfiguration, R : ServiceConfiguration
 }
 
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>
-    .managerForService(configuration: C): ServiceManager<C, R> =
-    this.singleOrNull { it.supportedConfiguration == configuration::class }?.createManager()
-        as ServiceManager<C, R>?
-        ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")
-
-fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>
     .managerForService(runtime: R): ServiceManager<C, R> =
     this.singleOrNull { it.supportedRuntime == runtime::class }?.createManager()
         as ServiceManager<C, R>?

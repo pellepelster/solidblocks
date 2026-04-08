@@ -12,6 +12,8 @@ import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRunt
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfiguration
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.hetzner.cloud.model.HetznerLocation
+import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -62,11 +64,25 @@ class DockerServiceTest {
             "cloud1.test-blcks.de",
             emptyList(),
             listOf(
-                DockerServiceConfiguration("docker2", "image2", 16, emptyList(), listOf("docker1")),
+                DockerServiceConfiguration(
+                    "docker2",
+                    "image2",
+                    InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+                    BackupConfig(16, 7),
+                    emptyList(),
+                    listOf("docker1"),
+                ),
             ),
         )
     val configuration =
-        DockerServiceConfiguration("docker1", "image1", 16, emptyList(), listOf("docker2"))
+        DockerServiceConfiguration(
+            "docker1",
+            "image1",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            emptyList(),
+            listOf("docker2"),
+        )
 
     val result =
         DockerServiceManager()
@@ -89,7 +105,14 @@ class DockerServiceTest {
   fun testInvalidLink() {
     val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), emptyList())
     val configuration =
-        DockerServiceConfiguration("docker1", "image11", 16, emptyList(), listOf("docker3"))
+        DockerServiceConfiguration(
+            "docker1",
+            "image11",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            emptyList(),
+            listOf("docker3"),
+        )
 
     val result =
         DockerServiceManager()
@@ -107,7 +130,14 @@ class DockerServiceTest {
   @Test
   fun testSelfLink() {
     val configuration =
-        DockerServiceConfiguration("docker1", "image1", 16, emptyList(), listOf("docker1"))
+        DockerServiceConfiguration(
+            "docker1",
+            "image1",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            emptyList(),
+            listOf("docker1"),
+        )
     val cloud =
         CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), listOf(configuration))
 
@@ -131,7 +161,8 @@ class DockerServiceTest {
         DockerServiceConfiguration(
             "docker1",
             "image1",
-            16,
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
             listOf(
                 DockerServiceEndpointConfiguration(8080),
                 DockerServiceEndpointConfiguration(8080),

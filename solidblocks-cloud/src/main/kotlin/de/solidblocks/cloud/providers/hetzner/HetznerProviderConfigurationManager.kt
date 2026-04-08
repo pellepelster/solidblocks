@@ -24,7 +24,7 @@ import kotlinx.coroutines.runBlocking
 class HetznerProviderConfigurationManager :
     CloudResourceProviderConfigurationManager<
         HetznerProviderConfiguration,
-        HetznerProviderConfigurationRuntime,
+        HetznerProviderRuntime,
     > {
 
   private val logger = KotlinLogging.logger {}
@@ -33,12 +33,12 @@ class HetznerProviderConfigurationManager :
       configuration: HetznerProviderConfiguration,
       context: CloudConfigurationContext,
       log: LogContext,
-  ): Result<HetznerProviderConfigurationRuntime> {
+  ): Result<HetznerProviderRuntime> {
     if (System.getenv("HCLOUD_TOKEN") == null) {
       "environment variable 'HCLOUD_TOKEN' not set"
           .also {
             logError(it, context = log)
-            return Error<HetznerProviderConfigurationRuntime>(it)
+            return Error<HetznerProviderRuntime>(it)
           }
     }
 
@@ -53,7 +53,7 @@ class HetznerProviderConfigurationManager :
       logInfo("provided Hetzner cloud token is valid", context = log)
 
       return Success(
-          HetznerProviderConfigurationRuntime(
+          HetznerProviderRuntime(
               System.getenv("HCLOUD_TOKEN"),
               configuration.defaultLocation,
               configuration.defaultInstanceType,
@@ -64,15 +64,15 @@ class HetznerProviderConfigurationManager :
           .also {
             logger.error(e) { it }
             logError(it, context = log)
-            return Error<HetznerProviderConfigurationRuntime>(it)
+            return Error<HetznerProviderRuntime>(it)
           }
     }
   }
 
-  override fun createLookupProviders(runtime: HetznerProviderConfigurationRuntime) =
+  override fun createLookupProviders(runtime: HetznerProviderRuntime) =
       listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<ResourceLookupProvider<*, *>>
 
-  override fun createProvisioners(runtime: HetznerProviderConfigurationRuntime) =
+  override fun createProvisioners(runtime: HetznerProviderRuntime) =
       listOf(
           HetznerDnsRecordProvisioner(runtime.cloudToken),
           HetznerServerProvisioner(runtime.cloudToken),
