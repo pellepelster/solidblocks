@@ -40,29 +40,3 @@ class CloudInfoCommand : CliktCommand(name = "info") {
     }
   }
 }
-
-/*
-fun ServiceInfo.printService(): String {
-    val sw = StringWriter()
-    sw.appendLine(
-        """
-## Service ${this.serviceName}
-### Linked Environment Variables
-
-Environment variables that will be injected when this service is linked to another service
-
-""".trimIndent()
-    )
-    sw.appendLine("| name | description |")
-    sw.appendLine("|------|-------------|")
-
-    if (this.exportedEnvironmentVariables.isNotEmpty()) {
-        this.exportedEnvironmentVariables.forEach {
-            sw.appendLine("| ${it.name} | ${it.description} |")
-        }
-    } else {
-        sw.appendLine("| - | - |")
-    }
-
-    return sw.toString()
-}*/

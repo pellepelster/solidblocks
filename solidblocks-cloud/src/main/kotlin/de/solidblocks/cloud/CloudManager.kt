@@ -12,7 +12,7 @@ import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
 import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
-import de.solidblocks.cloud.providers.ProviderConfigurtionRuntime
+import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.managerForConfiguration
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.ssh.sshKeyProvider
@@ -136,13 +136,13 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             cloudConfigFile.toPath().toAbsolutePath().toFile().parentFile.toPath(),
         )
 
-    val providers: List<ProviderConfigurtionRuntime> =
+    val providers: List<ProviderConfigurationRuntime> =
         cloud.providers.map { provider ->
           logInfo("found '${provider.type}' provider with name '${provider.name}'", context = log)
           log = log.indent()
 
           val manager:
-              ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurtionRuntime> =
+              ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
               providerRegistrations.managerForConfiguration(provider)
 
           logDebug(
@@ -152,11 +152,11 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
           val runtime =
               when (val result = manager.validate(provider, configurationContext, log)) {
-                is Error<ProviderConfigurtionRuntime> -> {
+                is Error<ProviderConfigurationRuntime> -> {
                   return Error<CloudConfigurationRuntime>(result.error)
                 }
 
-                is Success<ProviderConfigurtionRuntime> -> {
+                is Success<ProviderConfigurationRuntime> -> {
                   logDebug(
                       "configuration for '${provider.type}' provider '${provider.name}' is valid",
                       context = log,

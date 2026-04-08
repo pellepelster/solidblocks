@@ -7,7 +7,7 @@ import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_N
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
-import de.solidblocks.cloud.providers.ProviderConfigurtionRuntime
+import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceRegistration
@@ -21,7 +21,7 @@ class CloudConfigurationFactory(
         List<
             ProviderRegistration<
                 out ProviderConfiguration,
-                out ProviderConfigurtionRuntime,
+                out ProviderConfigurationRuntime,
                 out ProviderConfigurationManager<*, *>,
             >,
         >,

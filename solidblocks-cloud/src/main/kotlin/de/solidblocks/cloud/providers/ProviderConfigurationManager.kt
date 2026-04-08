@@ -9,7 +9,10 @@ import kotlin.reflect.KClass
 
 data class CloudConfigurationContext(val configFileDirectory: Path)
 
-interface ProviderConfigurationManager<C : ProviderConfiguration, R : ProviderConfigurtionRuntime> {
+interface ProviderConfigurationManager<
+    C : ProviderConfiguration,
+    R : ProviderConfigurationRuntime,
+> {
 
   fun validate(configuration: C, context: CloudConfigurationContext, log: LogContext): Result<R>
 

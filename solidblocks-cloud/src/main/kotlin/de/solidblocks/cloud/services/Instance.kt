@@ -33,7 +33,7 @@ object InstanceConfigurationFactory {
           HETZNER_LOCATIONS,
           HETZNER_LOCATIONS.options.first(),
           KeywordHelp(
-              "Hetzner location for created infrastructure resources",
+              "Hetzner location for created infrastructure resources, if not set the default from the Hetzner provider configuration is used.",
           ),
       )
 
@@ -43,7 +43,7 @@ object InstanceConfigurationFactory {
           HETZNER_INSTANCE_TYPE,
           HETZNER_INSTANCE_TYPE.options.first(),
           KeywordHelp(
-              "Hetzner instance size for virtual machines",
+              "Hetzner instance size for virtual machines, if not set the default from the Hetzner provider configuration is used.",
           ),
       )
 

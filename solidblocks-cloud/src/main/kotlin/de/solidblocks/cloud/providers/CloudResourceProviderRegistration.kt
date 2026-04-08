@@ -2,6 +2,6 @@ package de.solidblocks.cloud.providers
 
 interface CloudResourceProviderRegistration<
     C : CloudResourceProviderConfiguration,
-    R : ProviderConfigurtionRuntime,
+    R : ProviderConfigurationRuntime,
     M : CloudResourceProviderConfigurationManager<C, R>,
 > : ProviderRegistration<C, R, M>

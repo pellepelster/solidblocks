@@ -110,7 +110,7 @@ run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
 [tasks.release-prepare]
 run="""
-${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration-hugo ${ROOT_PROJECT}//doc/content/cloud/configuration.md"
+${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration-hugo ${ROOT_PROJECT}/doc/content/cloud/configuration.md"
 """
 
 [tasks.release-test]

@@ -1,9 +1,9 @@
 package de.solidblocks.cloud.providers.ssh
 
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
-import de.solidblocks.cloud.providers.ProviderConfigurtionRuntime
+import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 
 interface SSHKeyProviderConfigurationManager<
     C : SSHKeyProviderConfiguration,
-    R : ProviderConfigurtionRuntime,
+    R : ProviderConfigurationRuntime,
 > : ProviderConfigurationManager<C, R>

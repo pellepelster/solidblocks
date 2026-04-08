@@ -6,10 +6,10 @@ faIcon = "fa-cloud"
 aliases = ["cli/cloud/"]
 +++
 
-Solidblocks cloud is a standalone CLI tool that creates high level managed services on bare virtual machines, networking and storage. No container schedulers, no cloud specific services, just plain Linux virtual machines running services, managed via SSH.
+Solidblocks Cloud is a standalone CLI tool that deploys managed services on bare virtual machines, networking and storage. No container schedulers, no cloud specific services, just plain virtual machines running services on Linux , managed via SSH.
 
 ## Installation
-Solidblocks cloud is part of the Solidblocks CLI, look [here](cli/) for installation instructions. 
+Solidblocks Cloud is part of the Solidblocks CLI, look [here](cli/) for installation instructions. 
 
 ## Quickstart
 

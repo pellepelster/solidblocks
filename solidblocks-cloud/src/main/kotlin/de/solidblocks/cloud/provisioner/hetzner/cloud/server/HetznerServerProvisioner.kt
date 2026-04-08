@@ -5,7 +5,9 @@ import de.solidblocks.cloud.Constants.userDataLabel
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
@@ -310,22 +312,6 @@ class HetznerServerProvisioner(val hcloudToken: String) :
           logInfo("waiting for deletion of ${resource.logText()}", context = logContext)
         }
       } ?: false
-
-  /*
-    override suspend fun output(resource: HetznerServer, context: CloudProvisionerContext) =
-        listOf(
-            Output(
-                resource.logText().capitalize(),
-                """
-  to access server **${resource.name}** via SSH, run
-  ```
-  ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.cloudName))} ${resource.name}
-  ```
-              """
-                    .trimMargin(),
-            ),
-        )
-   */
 
   override val supportedLookupType: KClass<*> = HetznerServerLookup::class
 

@@ -5,6 +5,7 @@ import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -37,6 +38,7 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.postgresql.PostgresqlUserData
 import de.solidblocks.utils.LogContext
+import java.nio.file.Path
 
 class PostgresSqlServiceManager :
     ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
@@ -88,10 +90,18 @@ class PostgresSqlServiceManager :
       Success(
           markdown {
             h1("Service '${runtime.name}'")
+
+            h2("Servers")
+            text("to access server **${serverName(cloud, runtime.name)}** via SSH, run")
+            codeBlock(
+                "ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.cloudName))} ${serverName(cloud, runtime.name)}",
+            )
+
+            /*
             table {
-              header("Name", "Description")
-              linkedEnvironmentVariables(cloud, runtime).forEach { row(it.name, it.description) }
-            }
+                header("Name", "Description")
+                linkedEnvironmentVariables(cloud, runtime).forEach { row(it.name, it.description) }
+            }*/
           },
       )
 

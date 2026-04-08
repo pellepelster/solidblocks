@@ -5,6 +5,7 @@ import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -46,6 +47,7 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
+import java.nio.file.Path
 import kotlinx.coroutines.runBlocking
 
 class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
@@ -343,6 +345,12 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
       context: CloudProvisionerContext,
   ) =
       markdown {
+            h2("Servers")
+            text("to access server **${serverName(cloud, runtime.name)}** via SSH, run")
+            codeBlock(
+                "ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.cloudName))} ${serverName(cloud, runtime.name)}",
+            )
+
             h2("Endpoints")
 
             list {

@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 
 interface ProviderRegistration<
     C : ProviderConfiguration,
-    R : ProviderConfigurtionRuntime,
+    R : ProviderConfigurationRuntime,
     M : ProviderConfigurationManager<C, R>,
 > {
   val supportedConfiguration: KClass<C>
@@ -22,14 +22,18 @@ interface ProviderRegistration<
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <C : ProviderConfiguration, R : ProviderConfigurtionRuntime> List<ProviderRegistration<*, *, *>>
+fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
+    ProviderRegistration<*, *, *>,
+>
     .managerForConfiguration(configuration: C): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
         ?.createConfigurationManager() as ProviderConfigurationManager<C, R>?
         ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")
 
 @Suppress("UNCHECKED_CAST")
-fun <C : ProviderConfiguration, R : ProviderConfigurtionRuntime> List<ProviderRegistration<*, *, *>>
+fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
+    ProviderRegistration<*, *, *>,
+>
     .managerForRuntime(runtime: R): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedRuntime == runtime::class }?.createConfigurationManager()
         as ProviderConfigurationManager<C, R>?

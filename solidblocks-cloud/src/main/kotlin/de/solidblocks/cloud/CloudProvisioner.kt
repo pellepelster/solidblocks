@@ -23,7 +23,6 @@ import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionPr
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
-import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
@@ -174,10 +173,7 @@ class CloudProvisioner(
         resourceGroups.flatMap { it.hierarchicalResourceList().filterIsInstance<HetznerServer>() }
 
     val serversIps =
-        servers.map {
-          val runtime = context.lookup(it.asLookup()) as HetznerServerRuntime
-          it.name to runtime.publicIpv4
-        }
+        servers.mapNotNull { context.lookup(it.asLookup()) }.map { it.name to it.publicIpv4 }
 
     // TODO use explicit host key checking
     val sshConfigHeader =

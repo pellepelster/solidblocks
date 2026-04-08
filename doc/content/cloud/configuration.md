@@ -41,7 +41,7 @@ Provides Hetzner Cloud based infrastructure resources. An API key with read/writ
 type: hcloud
 ```
 name: [string]
-default-location: [string]
+default_location: [string]
 default-instance-type: [string]
 ```
 ### Keywords
@@ -51,7 +51,7 @@ default-instance-type: [string]
 
 Name for the provider, can be omitted if only one provider of this specific type is configured
 
-### default-location
+### default_location
 *type*: **string**, *optional*: **true**, 
 *options*: **fsn1, nbg1, hel1, ash, hil, sin**, *default*: **fsn1**
 
@@ -104,9 +104,11 @@ S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfl
 type: s3
 ```
 name: <string>
-data_size: [number]
-backup_full_retention_days: [number]
 backup_size: [number]
+backup_full_retention_days: [number]
+data_size: [number]
+hetzner_location: [string]
+hetzner_instance_type: [string]
 buckets:
   - name: <string>
     public_access: [boolean]
@@ -127,11 +129,11 @@ buckets:
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
 
-### data_size
+### backup_size
 *type*: **number**, *optional*: **true**, 
-*default*: **16**
+*default*: **\<none\>**
 
-Size in GB for the data volume keeping all data needed for this service.
+Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
 
 ### backup_full_retention_days
 *type*: **number**, *optional*: **true**, 
@@ -139,11 +141,23 @@ Size in GB for the data volume keeping all data needed for this service.
 
 amount of days to keep full backups
 
-### backup_size
+### data_size
 *type*: **number**, *optional*: **true**, 
-*default*: **\<none\>**
+*default*: **16**
 
-Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
+Size in GB for the data volume keeping all data needed for this service.
+
+### hetzner_location
+*type*: **string**, *optional*: **true**, 
+*options*: **fsn1, nbg1, hel1, ash, hil, sin**, *default*: **fsn1**
+
+Hetzner location for created infrastructure resources, if not set the default from the Hetzner provider configuration is used.
+
+### hetzner_instance_type
+*type*: **string**, *optional*: **true**, 
+*options*: **cx23, cx33, cx43, cx53, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62**, *default*: **cx23**
+
+Hetzner instance size for virtual machines, if not set the default from the Hetzner provider configuration is used.
 
 ### buckets
 
@@ -201,16 +215,15 @@ Single node PostgreSQL database instance with pgBackRest powered backup.
 type: postgresql
 ```
 name: <string>
-data_size: [number]
 backup_size: [number]
 backup_full_retention_days: [number]
+data_size: [number]
+hetzner_location: [string]
+hetzner_instance_type: [string]
 databases:
   - name: <string>
     users:
       - name: <string>
-        admin: [boolean]
-        read: [boolean]
-        write: [boolean]
         #...
     #...
 ```
@@ -220,12 +233,6 @@ databases:
 *min. length*: **2**, *max. length*: **63**, *default*: **\<none\>**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
-
-### data_size
-*type*: **number**, *optional*: **true**, 
-*default*: **16**
-
-Size in GB for the data volume keeping all data needed for this service.
 
 ### backup_size
 *type*: **number**, *optional*: **true**, 
@@ -238,6 +245,24 @@ Size in GB for the local backup volume. If not set the size will be derived from
 *default*: **7**
 
 amount of days to keep full backups
+
+### data_size
+*type*: **number**, *optional*: **true**, 
+*default*: **16**
+
+Size in GB for the data volume keeping all data needed for this service.
+
+### hetzner_location
+*type*: **string**, *optional*: **true**, 
+*options*: **fsn1, nbg1, hel1, ash, hil, sin**, *default*: **fsn1**
+
+Hetzner location for created infrastructure resources, if not set the default from the Hetzner provider configuration is used.
+
+### hetzner_instance_type
+*type*: **string**, *optional*: **true**, 
+*options*: **cx23, cx33, cx43, cx53, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62**, *default*: **cx23**
+
+Hetzner instance size for virtual machines, if not set the default from the Hetzner provider configuration is used.
 
 ### databases
 
@@ -259,24 +284,6 @@ Users to create for database access
 
 Unique name for the access key
 
-##### admin
-*type*: **boolean**, *optional*: **true**, 
-*default*: **false**
-
-Grant full DDL privileges to the user
-
-##### read
-*type*: **boolean**, *optional*: **true**, 
-*default*: **false**
-
-Grant read permissions to the user
-
-##### write
-*type*: **boolean**, *optional*: **true**, 
-*default*: **false**
-
-Grant update/insert and delete permissions to the user
-
 ## Docker
 
 Deploys a docker service image containers and exposes its endpoints
@@ -285,6 +292,11 @@ type: docker
 ```
 name: <string>
 image: <string>
+backup_size: [number]
+backup_full_retention_days: [number]
+data_size: [number]
+hetzner_location: [string]
+hetzner_instance_type: [string]
 endpoints:
   - port: [number]
     type: [string]
@@ -304,6 +316,36 @@ Unique name for the service. Must conform with [RFC 1123](https://datatracker.ie
 *default*: **\<none\>**
 
 Docker image to deploy
+
+### backup_size
+*type*: **number**, *optional*: **true**, 
+*default*: **\<none\>**
+
+Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
+
+### backup_full_retention_days
+*type*: **number**, *optional*: **true**, 
+*default*: **7**
+
+amount of days to keep full backups
+
+### data_size
+*type*: **number**, *optional*: **true**, 
+*default*: **16**
+
+Size in GB for the data volume keeping all data needed for this service.
+
+### hetzner_location
+*type*: **string**, *optional*: **true**, 
+*options*: **fsn1, nbg1, hel1, ash, hil, sin**, *default*: **fsn1**
+
+Hetzner location for created infrastructure resources, if not set the default from the Hetzner provider configuration is used.
+
+### hetzner_instance_type
+*type*: **string**, *optional*: **true**, 
+*options*: **cx23, cx33, cx43, cx53, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62**, *default*: **cx23**
+
+Hetzner instance size for virtual machines, if not set the default from the Hetzner provider configuration is used.
 
 ### endpoints
 

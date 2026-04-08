@@ -1,3 +1,3 @@
 package de.solidblocks.cloud.providers
 
-interface ProviderConfigurtionRuntime
+interface ProviderConfigurationRuntime

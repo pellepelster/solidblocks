@@ -116,25 +116,25 @@ class ProvisionersRegistry(
   companion object {
 
     fun List<ProviderRegistration<*, *, *>>.createRegistry(
-        providers: List<ProviderConfigurtionRuntime>
+        providers: List<ProviderConfigurationRuntime>
     ) = ProvisionersRegistry(this.createLookups(providers), this.createProvisioners(providers))
 
     fun List<ProviderRegistration<*, *, *>>.createProvisioners(
-        providers: List<ProviderConfigurtionRuntime>
+        providers: List<ProviderConfigurationRuntime>
     ): List<InfrastructureResourceProvisioner<*, *>> =
         providers.flatMap {
           val manager:
-              ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurtionRuntime> =
+              ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
               this.managerForRuntime(it)
           manager.createProvisioners(it)
         }
 
     fun List<ProviderRegistration<*, *, *>>.createLookups(
-        providers: List<ProviderConfigurtionRuntime>
+        providers: List<ProviderConfigurationRuntime>
     ) =
         providers.flatMap {
           val manager:
-              ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurtionRuntime> =
+              ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
               this.managerForRuntime(it)
           manager.createLookupProviders(it)
         }
