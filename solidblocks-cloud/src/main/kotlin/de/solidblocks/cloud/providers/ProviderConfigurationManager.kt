@@ -7,7 +7,7 @@ import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
-data class CloudConfigurationContext(val configFileDirectory: Path)
+data class CloudConfigurationContext(val cloudName: String, val configFileDirectory: Path)
 
 interface ProviderConfigurationManager<
     C : ProviderConfiguration,

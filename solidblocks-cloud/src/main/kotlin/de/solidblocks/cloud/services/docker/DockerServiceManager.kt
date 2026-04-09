@@ -97,7 +97,7 @@ class DockerServiceManager :
 
     val userData =
         UserData(
-            setOf(dataVolume),
+            setOf(dataVolume, backupVolume),
             { context ->
               GenericDockerServiceUserData(
                       runtime.name,

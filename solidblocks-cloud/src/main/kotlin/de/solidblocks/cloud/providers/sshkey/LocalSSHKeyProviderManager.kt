@@ -22,120 +22,132 @@ import kotlin.io.path.readText
 
 class LocalSSHKeyProviderManager :
     SSHKeyProviderConfigurationManager<
-        LocalSSHKeyProviderConfiguration,
-        LocalSSHKeyProviderRuntime,
-    > {
+            LocalSSHKeyProviderConfiguration,
+            LocalSSHKeyProviderRuntime,
+            > {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  val homeDir = Path(System.getProperty("user.home"))
+    val homeDir = Path(System.getProperty("user.home"))
 
-  override fun validate(
-      configuration: LocalSSHKeyProviderConfiguration,
-      context: CloudConfigurationContext,
-      log: LogContext,
-  ): Result<LocalSSHKeyProviderRuntime> {
-    val sshKey =
-        when (val result = tryFindKey(configuration, context)) {
-          is Error<*> -> return Error<LocalSSHKeyProviderRuntime>(result.error)
-          is Success<Path> -> result.data
+    override fun validate(
+        configuration: LocalSSHKeyProviderConfiguration,
+        context: CloudConfigurationContext,
+        log: LogContext,
+    ): Result<LocalSSHKeyProviderRuntime> {
+        val sshKey =
+            when (val result = tryFindKey(configuration, context, log)) {
+                is Error<*> -> return Error<LocalSSHKeyProviderRuntime>(result.error)
+                is Success<Path> -> result.data
+            }
+
+        logDebug("found ssh key at '${sshKey.toAbsolutePath()}'", context = log)
+
+        if (SSHKeyUtils.isEncrypted(sshKey.readText())) {
+            return Error("encrypted private keys are currently not supported ($sshKey)")
         }
 
-    logDebug("found ssh key at '${sshKey.toAbsolutePath()}'", context = log)
+        val sshKeyPair =
+            try {
+                SSHKeyUtils.tryLoadKey(sshKey.readText())
+            } catch (e: Exception) {
+                logger.error(e) { "failed to load private key from '$sshKey'" }
+                null
+            }
 
-    if (SSHKeyUtils.isEncrypted(sshKey.readText())) {
-      return Error("encrypted private keys are currently not supported ($sshKey)")
-    }
-
-    val sshKeyPair =
-        try {
-          SSHKeyUtils.tryLoadKey(sshKey.readText())
-        } catch (e: Exception) {
-          logger.error(e) { "failed to load private key from '$sshKey'" }
-          null
+        if (sshKeyPair == null) {
+            return Error("failed to load private key from '$sshKey'")
         }
 
-    if (sshKeyPair == null) {
-      return Error("failed to load private key from '$sshKey'")
-    }
-
-    logInfo(
-        "found ssh private key at '$sshKey' with type '${sshKeyPair.private.algorithm.lowercase()}'",
-        context = log,
-    )
-
-    if (!checkFilePermission(sshKey)) {
-      return Error(
-          "permissions for ssh key '${sshKey.absolutePathString()}' are too open, should be owner r/w only",
-      )
-    }
-
-    return Success(LocalSSHKeyProviderRuntime(sshKeyPair, sshKey.toAbsolutePath()))
-  }
-
-  private fun checkFilePermission(sshKey: Path): Boolean {
-    val permissions = Files.getPosixFilePermissions(sshKey)
-
-    val allowedPermissions =
-        setOf(
-            PosixFilePermission.OWNER_READ,
-            PosixFilePermission.OWNER_WRITE,
+        logInfo(
+            "found ssh private key at '$sshKey' with type '${sshKeyPair.private.algorithm.lowercase()}'",
+            context = log,
         )
 
-    return !permissions.any { it !in allowedPermissions }
-  }
-
-  fun expandTilde(path: String): String =
-      if (path.startsWith("~")) {
-        System.getProperty("user.home") + path.substring(1)
-      } else {
-        path
-      }
-
-  private fun tryFindKey(
-      configuration: LocalSSHKeyProviderConfiguration,
-      context: CloudConfigurationContext,
-  ): Result<Path> {
-    if (configuration.privateKey != null) {
-      val sshKeyFile =
-          context.configFileDirectory
-              .toAbsolutePath()
-              .resolve(expandTilde(configuration.privateKey))
-
-      return if (sshKeyFile.exists()) {
-        Success(sshKeyFile)
-      } else {
-        Error("ssh key file '${sshKeyFile.absolutePathString()}' does not exist")
-      }
-    }
-    val sshKey =
-        defaultSSHKeyNames.firstNotNullOfOrNull {
-          val privateKey = homeDir.resolve(".ssh").resolve(it)
-
-          if (privateKey.exists()) {
-            privateKey
-          } else {
-            null
-          }
+        if (!checkFilePermission(sshKey)) {
+            return Error(
+                "permissions for ssh key '${sshKey.absolutePathString()}' are too open, should be owner r/w only",
+            )
         }
 
-    if (sshKey == null) {
-      return Error(
-          "no SSH key found, tried ${
+        return Success(LocalSSHKeyProviderRuntime(sshKeyPair, sshKey.toAbsolutePath()))
+    }
+
+    private fun checkFilePermission(sshKey: Path): Boolean {
+        val permissions = Files.getPosixFilePermissions(sshKey)
+
+        val allowedPermissions =
+            setOf(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
+            )
+
+        return !permissions.any { it !in allowedPermissions }
+    }
+
+    fun expandTilde(path: String): String =
+        if (path.startsWith("~")) {
+            System.getProperty("user.home") + path.substring(1)
+        } else {
+            path
+        }
+
+    private fun tryFindKey(
+        configuration: LocalSSHKeyProviderConfiguration,
+        context: CloudConfigurationContext,
+        log: LogContext
+    ): Result<Path> {
+        if (configuration.privateKey != null) {
+            val sshKeyFile =
+                context.configFileDirectory
+                    .toAbsolutePath()
+                    .resolve(expandTilde(configuration.privateKey))
+
+            return if (sshKeyFile.exists()) {
+                Success(sshKeyFile)
+            } else {
+                Error("ssh key file '${sshKeyFile.absolutePathString()}' does not exist")
+            }
+        }
+
+        val sshKeyFile =
+            context.configFileDirectory
+                .toAbsolutePath()
+                .resolve(expandTilde("${context.cloudName}.key"))
+
+        if (sshKeyFile.exists()) {
+            logInfo("found ssh key '${sshKeyFile.absolutePathString()}'", context = log)
+            return Success(sshKeyFile)
+        }
+
+        val sshKey =
+            defaultSSHKeyNames.firstNotNullOfOrNull {
+                val privateKey = homeDir.resolve(".ssh").resolve(it)
+
+                if (privateKey.exists()) {
+                    privateKey
+                } else {
+                    null
+                }
+            }
+
+        if (sshKey == null) {
+            return Error(
+                "no SSH key found, tried ${
                     defaultSSHKeyNames.joinToString(", ") {
                         "'${
                             homeDir.resolve(".ssh").resolve(it)
                         }'"
                     }
                 }",
-      )
+            )
+        }
+
+        return Success(sshKey)
     }
 
-    return Success(sshKey)
-  }
+    override fun createProvisioners(runtime: LocalSSHKeyProviderRuntime) =
+        emptyList<InfrastructureResourceProvisioner<*, *>>()
 
-  override fun createProvisioners(runtime: LocalSSHKeyProviderRuntime) =
-      emptyList<InfrastructureResourceProvisioner<*, *>>()
-
-  override val supportedConfiguration = LocalSSHKeyProviderConfiguration::class
+    override val supportedConfiguration = LocalSSHKeyProviderConfiguration::class
 }

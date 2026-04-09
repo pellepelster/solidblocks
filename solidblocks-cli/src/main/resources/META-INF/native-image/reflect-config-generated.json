@@ -846,6 +846,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.services.ServerInfo",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.services.ServerInfo$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsUpdateRequest",
         "fields": [
             {
@@ -1674,6 +1692,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.services.ServiceInfo",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.services.ServiceInfo$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.garagefs.KeyPerm",
         "fields": [
             {
@@ -1846,6 +1882,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRrSetResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.services.CloudInfo",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.services.CloudInfo$Companion",
         "fields": [],
         "methods": [
             {
