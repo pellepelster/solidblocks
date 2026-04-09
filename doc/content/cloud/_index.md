@@ -36,7 +36,7 @@ curl ${ENDPOINT}/hello
 ```
 
 **see it in action**
-{{< asciicast src="/cloud/casts/cloud1.cast" poster="npt:0:04" autoPlay=true loop=true >}}
+{{< asciicast src="/cloud/casts/quickstart.cast" poster="npt:0:04" autoPlay=true loop=true >}}
 
 
 ### Configuration

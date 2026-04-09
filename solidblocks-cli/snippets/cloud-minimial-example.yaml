@@ -1,0 +1,18 @@
+---
+name: cloud1
+
+providers:
+  - type: pass
+  - type: ssh_key
+  - type: hcloud
+
+services:
+  - type: postgresql
+    name: database1
+  - type: docker
+    name: service1
+    image: ghcr.io/pellepelster/solidblocks-hello-world:latest
+    endpoints:
+      - container_port: 8080
+    links:
+      - database1

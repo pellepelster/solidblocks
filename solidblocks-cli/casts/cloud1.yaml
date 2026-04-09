@@ -1,12 +1,12 @@
 ---
-name: "cloud1"
+name: cloud1
 
 providers:
   # use pass password manager for secret storage
   - type: pass
-  # ssh keys will be loaded from <name>.key or the default ssh paths
+  # ssh key for VM mgmt. will be loaded from <name>.key or the default ssh paths
   - type: ssh_key
-  # use the Hetzner cloud for needed service resources like VMs, storage, networking, ...
+  # use Hetzner cloud to create resources like VMs, storage, networking
   - type: hcloud
 
 services:
@@ -14,12 +14,14 @@ services:
   - type: postgresql
     name: database1
     databases:
+      # create a database with auto-generated credentials
       - name: hello-world
-  # deploy a simple dockerized hello world application using the database as storage backend
+  # deploy a dockerized hello world application
   - type: docker
     name: service1
     image: ghcr.io/pellepelster/solidblocks-hello-world:latest
     endpoints:
-      - port: 8080
+      - container_port: 8080
+    # inject database connection details and credentials into environment
     links:
       - database1

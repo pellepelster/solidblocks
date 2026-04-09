@@ -1,0 +1,1 @@
+asciinema rec <name>.cast --window-size 100x32 --command "PS1=\"\$ \" bash --norc"

@@ -1,5 +1,6 @@
 ---
-name: "cloud1"
+name: cloud1
+root_domain: blcks-test.de
 
 providers:
   - type: pass
@@ -9,10 +10,12 @@ providers:
 services:
   - type: postgresql
     name: database1
+    databases:
+      - name: hello-world
   - type: docker
     name: service1
     image: ghcr.io/pellepelster/solidblocks-hello-world:latest
     endpoints:
-      - port: 8080
+      - container_port: 8080
     links:
       - database1

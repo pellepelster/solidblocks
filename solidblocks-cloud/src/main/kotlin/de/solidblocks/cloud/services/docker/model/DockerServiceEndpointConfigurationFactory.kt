@@ -16,7 +16,7 @@ class DockerServiceEndpointConfigurationFactory : ConfigurationFactory<DockerSer
 
     val port =
         NumberKeyword(
-            "port",
+            "container_port",
             IP_PORTS,
             KeywordHelp(
                 "Service port on the docker container",

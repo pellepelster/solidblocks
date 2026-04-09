@@ -1,11 +1,9 @@
 ---
 name: cloud1
-root_domain: blcks-test.de
 
 providers:
   - type: pass
   - type: ssh_key
-    private_key: "test_ed25519.key"
   - type: hcloud
 
 services:
@@ -17,6 +15,6 @@ services:
     name: service1
     image: ghcr.io/pellepelster/solidblocks-hello-world:latest
     endpoints:
-      - port: 8080
+      - container_port: 8080
     links:
       - database1
