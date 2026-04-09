@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.ssh
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
@@ -62,9 +63,12 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
     override suspend fun diff(resource: HetznerSSHKey, context: CloudProvisionerContext): ResourceDiff? {
         val runtime = lookup(resource.asLookup(), context)
 
+        val resourceFingerprint = computeFingerprint(resource.publicKey)
+
+        val changes = mutableListOf<ResourceDiffItem>()
+
         if (runtime == null) {
-            val fingerprint = computeFingerprint(resource.publicKey)
-            val duplicateKey = listAll().firstOrNull { it.fingerprint == fingerprint }
+            val duplicateKey = listAll().firstOrNull { it.fingerprint == resourceFingerprint }
 
             return if (duplicateKey == null) {
                 ResourceDiff(resource, missing)
@@ -76,9 +80,22 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
                     "another key with the fingerprint '${duplicateKey.fingerprint}' already exists (${duplicateKey.name})",
                 )
             }
+        } else {
+
+            if (runtime.fingerprint != resourceFingerprint) {
+                changes.add(ResourceDiffItem(
+                    "fingerprint",
+                    changed = true,
+                    triggersRecreate = true,
+                    expectedValue = resourceFingerprint,
+                    actualValue = runtime.fingerprint,
+                ))
+            }
         }
 
-        val changes = createLabelDiff(resource, runtime)
+        changes.addAll(createLabelDiff(resource, runtime))
+
+
         return if (changes.isEmpty()) {
             ResourceDiff(resource, up_to_date)
         } else {

@@ -136,7 +136,7 @@ class HetznerServerProvisionerTest {
                     it.status shouldBe ResourceDiffStatus.has_changes
                     it.needsRecreate() shouldBe true
                     it.changes shouldHaveSize 1
-                    it.changes[0].name shouldBe "sshKeys"
+                    it.changes[0].name shouldBe "ssh keys"
                     it.changes[0].expectedValue shouldBe
                         "c5383689b3a31bbd0fafbe5c62865ae53a9da27adb1f96b1d94e358f83c9bab6"
                     it.changes[0].actualValue shouldBe

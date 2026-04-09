@@ -34,6 +34,13 @@ class HetznerSSHKeyProvisionerTest {
                 hetzner.defaultLabels,
             )
 
+        val resourceWithDifferentFingerprint =
+            HetznerSSHKey(
+                name,
+                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDBQBtbY8Kdi4XtH2sTVSkepcdhZHWEnKAQ8PrPcIp/p pelle@fry",
+                hetzner.defaultLabels,
+            )
+
         val provisioner = HetznerSSHKeyProvisioner(System.getenv("HCLOUD_TOKEN"))
 
         runBlocking {
@@ -57,6 +64,16 @@ class HetznerSSHKeyProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
+
+            assertSoftly(provisioner.diff(resourceWithDifferentFingerprint, TEST_PROVISIONER_CONTEXT)!!) {
+                it.status shouldBe ResourceDiffStatus.has_changes
+                it.changes shouldHaveSize 1
+                it.changes[0].name shouldBe "fingerprint"
+                it.changes[0].triggersRecreate shouldBe true
+                it.changes[0].expectedValue shouldBe "d3:16:bf:af:b2:60:3e:e1:56:0d:54:3d:73:bb:9a:38"
+                it.changes[0].actualValue shouldBe "99:fc:9b:f4:04:69:2c:9d:30:d5:2c:d9:1e:ca:b2:76"
+            }
+
 
             // uploading the same ssh key with a different name should result in a duplicate error
             val resourceWithNewName =

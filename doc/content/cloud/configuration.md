@@ -298,7 +298,7 @@ data_size: [number]
 hetzner_location: [string]
 hetzner_instance_type: [string]
 endpoints:
-  - port: [number]
+  - container_port: [number]
     type: [string]
     #...
 links:
@@ -351,7 +351,7 @@ Hetzner instance size for virtual machines, if not set the default from the Hetz
 
 Service endpoints to publicly expose
 
-#### port
+#### container_port
 *type*: **number**, *optional*: **true**, 
 *default*: **\<none\>**
 

@@ -31,8 +31,8 @@ data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
 
 class GarageFsUserData(
     val serviceName: String,
-    val dataLinuxDevice: String,
-    val backupLinuxDevice: String,
+    val dataDevice: String,
+    val backupDevice: String,
     val backupPassword: String,
     val serviceRootDomain: String,
     val rpcSecret: String,
@@ -90,8 +90,8 @@ class GarageFsUserData(
         userData.addCommand(PackageLibrary.UpdateSystem())
 
         userData.addInlineSource(StorageLibrary)
-        userData.addCommand(StorageLibrary.Mount(dataLinuxDevice, storageMount))
-        userData.addCommand(StorageLibrary.Mount(backupLinuxDevice, backupMount))
+        userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
+        userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
 
         userData.addInlineSource(CaddyLibrary)
         userData.addCommand(CaddyLibrary.Install())

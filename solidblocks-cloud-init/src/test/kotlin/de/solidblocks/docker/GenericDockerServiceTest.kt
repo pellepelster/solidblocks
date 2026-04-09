@@ -26,6 +26,7 @@ class GenericDockerServiceTest {
                 testContext.testId,
                 dataVolume.linuxDevice,
                 backupVolume.linuxDevice,
+                "very-secret",
                 "yolo.de",
                 "nginx",
                 mapOf(80 to 80),

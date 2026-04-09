@@ -9,6 +9,8 @@ providers:
 services:
   - type: postgresql
     name: database1
+    databases:
+      - name: hello-world
   - type: docker
     name: service1
     image: ghcr.io/pellepelster/solidblocks-hello-world:latest

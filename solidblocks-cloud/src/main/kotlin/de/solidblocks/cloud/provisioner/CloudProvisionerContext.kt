@@ -54,9 +54,9 @@ data class ProvisionerContext(
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
     override fun <
-        RuntimeType,
-        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-        > ensureLookup(lookup: ResourceLookupType): RuntimeType =
+            RuntimeType,
+            ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
+            > ensureLookup(lookup: ResourceLookupType): RuntimeType =
         registry.lookup(lookup, this).let {
             if (it == null) {
                 logger.error { "could not find resource ${lookup.logText()}" }
@@ -84,11 +84,16 @@ data class ProvisionerContext(
         val server = this.lookup(server)
 
         return if (server != null) {
-            createOrGetSshClient(
-                server.publicIpv4 ?: throw RuntimeException("${server.logText()} has no public ip"),
-                port = server.sshPort,
-            )
-                .portForward(port) { block.invoke(it) }
+            try {
+                createOrGetSshClient(
+                    server.publicIpv4 ?: throw RuntimeException("${server.logText()} has no public ip"),
+                    port = server.sshPort,
+                )
+                    .portForward(port) { block.invoke(it) }
+            } catch (e: Exception) {
+                logger.error(e) { "could not connect to server $server" }
+                block.invoke(null)
+            }
         } else {
             block.invoke(null)
         }

@@ -7,6 +7,7 @@ import de.solidblocks.caddy.GlobalOptions
 import de.solidblocks.caddy.ReverseProxy
 import de.solidblocks.caddy.Site
 import de.solidblocks.cloudinit.ServiceUserData
+import de.solidblocks.restic.resticLocalBackup
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CaddyLibrary
 import de.solidblocks.shell.CurlLibrary
@@ -29,9 +30,10 @@ import de.solidblocks.systemd.Unit
 import de.solidblocks.systemd.installSystemDUnit
 
 class GenericDockerServiceUserData(
-    val name: String,
+    val serviceName: String,
     val dataDevice: String,
     val backupDevice: String,
+    val backupPassword: String,
     val rootDomain: String?,
     val dockerImage: String,
     val ports: Map<Int, Int>,
@@ -41,8 +43,8 @@ class GenericDockerServiceUserData(
     override fun render(): String {
         val storageMount = "/storage/data"
         val backupMount = "/storage/backup"
-
-        val caddyStorageDir = "$storageMount/www"
+        val serviceDataDir = "$storageMount/$serviceName"
+        val caddyStorageDir = "$serviceDataDir/www"
 
         val caddyConfig =
             CaddyConfig(
@@ -94,7 +96,7 @@ class GenericDockerServiceUserData(
             ComposeFile(
                 services =
                 mapOf(
-                    name to
+                    serviceName to
                         Service(
                             image = dockerImage,
                             ports =
@@ -113,9 +115,9 @@ class GenericDockerServiceUserData(
 
         val dockerSystemDConfig =
             SystemDService(
-                name,
+                serviceName,
                 Unit(
-                    "'$name' docker compose service",
+                    "'$serviceName' docker compose service",
                     after = listOf(Target.DOCKER_SERVICE),
                     requires = listOf(Target.DOCKER_SERVICE),
                 ),
@@ -138,7 +140,9 @@ class GenericDockerServiceUserData(
             )
 
         userData.installSystemDUnit(dockerSystemDConfig)
-        userData.addCommand(SystemDLibrary.Restart(name))
+        userData.addCommand(SystemDLibrary.Restart(serviceName))
+
+        userData.resticLocalBackup("$backupMount/$serviceName", backupPassword, serviceDataDir)
 
         return userData.render()
     }

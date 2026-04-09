@@ -2,6 +2,7 @@ package de.solidblocks.cloud.services.docker
 
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.networkName
+import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshKeyName
@@ -17,6 +18,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
+import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.BackupRuntime
 import de.solidblocks.cloud.services.EndpointInfo
@@ -95,6 +97,11 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                 emptyMap(),
             )
 
+        val backupPassword =
+            PassSecretLookup(
+                secretPath(cloud, listOf("backup", "password")),
+            )
+
         val userData =
             UserData(
                 setOf(dataVolume, backupVolume),
@@ -103,6 +110,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                         runtime.name,
                         context.ensureLookup(dataVolume.asLookup()).device,
                         context.ensureLookup(backupVolume.asLookup()).device,
+                        context.ensureLookup(backupPassword).secret,
                         cloud.rootDomain,
                         runtime.image,
                         runtime.endpoints.associate { 80 to it.port },

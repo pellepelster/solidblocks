@@ -197,7 +197,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
             if (!sshKeysHash.matches) {
                 changes.add(
                     ResourceDiffItem(
-                        resource::sshKeys,
+                        "ssh keys",
                         triggersRecreate = true,
                         changed = true,
                         expectedValue = sshKeysHash.expectedValue,

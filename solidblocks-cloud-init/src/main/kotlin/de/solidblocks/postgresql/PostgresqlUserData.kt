@@ -17,11 +17,15 @@ import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.shell.WriteFile
+import de.solidblocks.systemd.Daily
 import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Restart
 import de.solidblocks.systemd.Service
+import de.solidblocks.systemd.ServiceType
 import de.solidblocks.systemd.SystemDService
+import de.solidblocks.systemd.SystemDTimer
 import de.solidblocks.systemd.Target
+import de.solidblocks.systemd.Timer
 import de.solidblocks.systemd.Unit
 import de.solidblocks.systemd.installSystemDUnit
 
@@ -51,7 +55,7 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
         userData.addCommand(MkDir("/storage/data", "10000", "10000"))
         userData.addCommand(MkDir("/storage/backup", "10000", "10000"))
 
-        val dockerWorkingDirectory = "/usr/local/etc/containers/"
+        val dockerWorkingDirectory = "/etc/docker/${instanceName}"
         val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
         val environment = mapOf<String, String>()
 
@@ -113,6 +117,48 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
             )
 
         userData.installSystemDUnit(dockerSystemDConfig)
+
+        val backupFullSystemDConfig =
+            SystemDService(
+                "${instanceName}-backup-full",
+                Unit(
+                    "full backup for PostgresSQL instance '$instanceName'",
+                    after = emptyList(),
+                    requires = emptyList(),
+                ),
+                Service(
+                    listOf(
+                        "/usr/bin/docker",
+                        "compose",
+                        "--file",
+                        dockerComposeFile,
+                        "exec",
+                        "--no-tty",
+                        instanceName,
+                        "/rds/bin/backup-full.sh",
+                    ),
+                    type = ServiceType.oneshot,
+                    workingDirectory = dockerWorkingDirectory,
+                ),
+                Install(),
+            )
+
+        userData.installSystemDUnit(backupFullSystemDConfig)
+
+        val timer =
+            SystemDTimer(
+                backupFullSystemDConfig.name,
+                Unit("full backup for PostgresSQL instance '$instanceName'"),
+                Timer(
+                    Daily(),
+                    backupFullSystemDConfig.fullUnitName(),
+                ),
+                Install(),
+            )
+        userData.installSystemDUnit(timer)
+        userData.addCommand(SystemDLibrary.Start(timer.fullUnitName()))
+
+
         userData.addCommand(SystemDLibrary.Restart(instanceName))
 
         return userData.render()

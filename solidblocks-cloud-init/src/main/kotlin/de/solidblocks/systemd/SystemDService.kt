@@ -119,7 +119,7 @@ class Timer(val onCalendar: OnCalendar, val unit: String) {
 }
 
 enum class ServiceType {
-    simple,
+    simple, oneshot
 }
 
 class Service(
