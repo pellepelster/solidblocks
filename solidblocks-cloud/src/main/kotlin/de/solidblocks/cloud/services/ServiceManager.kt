@@ -25,7 +25,9 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
         log: LogContext,
     ): Result<R>
 
-    fun info(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): Result<String>
+    fun infoText(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): Result<String>
+
+    fun status(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): Result<String>
 
     fun infoJson(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): Result<ServiceInfo>
 

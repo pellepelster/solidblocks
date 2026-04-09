@@ -74,7 +74,6 @@ class HetznerSSHKeyProvisionerTest {
                 it.changes[0].actualValue shouldBe "99:fc:9b:f4:04:69:2c:9d:30:d5:2c:d9:1e:ca:b2:76"
             }
 
-
             // uploading the same ssh key with a different name should result in a duplicate error
             val resourceWithNewName =
                 HetznerSSHKey(

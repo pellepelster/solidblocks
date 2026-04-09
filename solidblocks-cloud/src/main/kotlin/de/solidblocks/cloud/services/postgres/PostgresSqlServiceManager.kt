@@ -12,6 +12,7 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.markdown
+import de.solidblocks.cloud.pgbackrest.model.parsePgBackRestInfoOutput
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
@@ -40,13 +41,40 @@ import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.formatBytes
+import de.solidblocks.cloud.utils.formatLocale
 import de.solidblocks.postgresql.PostgresqlUserData
+import de.solidblocks.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
+import java.time.Duration
 
 class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
+
+    override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
+        val result = context.createOrGetSshClient(HetznerServerLookup(serverName(cloud, runtime.name))).command(BACKUP_STATUS_COMMAND)
+        if (result.exitCode != 0) {
+            return Error<String>("command failed '${result.stdErr}'")
+        }
+
+        val backupStatus = result.stdOut.parsePgBackRestInfoOutput()
+
+        return markdown {
+            h1("Service '${runtime.name}'")
+            h2("Backups")
+
+            table {
+                header("start", "duration", "size")
+                backupStatus.flatMap {
+                    it.backup
+                }.forEach {
+                    row(it.timestamp.start.formatLocale(), Duration.between(it.timestamp.start, it.timestamp.stop).formatLocale(), it.info.size.formatBytes())
+                }
+            }
+        }.let { Success(it) }
+    }
 
     override fun linkedEnvironmentVariables(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime) = runtime.databases.flatMap {
         val password = defaultDatabaseUserPassword(cloud, runtime, it).asLookup()
@@ -92,10 +120,10 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         if (cloud.dnsEnabled == true) {
             TODO()
         } else {
-            "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.privateIpv4}/${database.name}"
+            "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.privateIpv4 ?: "<unknown>"}/${database.name}"
         }
 
-    override fun info(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
+    override fun infoText(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
         markdown {
             h1("Service '${runtime.name}'")
 

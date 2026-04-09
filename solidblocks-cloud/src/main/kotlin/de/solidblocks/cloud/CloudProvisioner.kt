@@ -71,7 +71,19 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     fun info(runtime: CloudConfigurationRuntime): Result<String> = runBlocking {
         val serviceOutput =
             serviceManagers().map {
-                when (val result = it.second.info(runtime, it.first, context)) {
+                when (val result = it.second.infoText(runtime, it.first, context)) {
+                    is Error<String> -> return@runBlocking Error<String>(result.error)
+                    is Success<String> -> result.data
+                }
+            }
+
+        return@runBlocking Success(serviceOutput.joinToString("\n"))
+    }
+
+    fun status(runtime: CloudConfigurationRuntime): Result<String> = runBlocking {
+        val serviceOutput =
+            serviceManagers().map {
+                when (val result = it.second.status(runtime, it.first, context)) {
                     is Error<String> -> return@runBlocking Error<String>(result.error)
                     is Success<String> -> result.data
                 }

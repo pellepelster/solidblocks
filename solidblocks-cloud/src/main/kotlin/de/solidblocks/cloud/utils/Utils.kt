@@ -1,6 +1,12 @@
 package de.solidblocks.cloud.utils
 
+import kotlinx.serialization.json.Json
 import java.io.InputStreamReader
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 fun commandExists(command: String) = try {
     val isWindows = System.getProperty("os.name").lowercase().contains("win")
@@ -62,5 +68,32 @@ class ByteSize(val bytes: Long) {
 
     companion object {
         fun fromGigabytes(gigabytes: Int) = ByteSize(gigabytes.toLong() * 1000 * 1000 * 1000)
+    }
+}
+
+val json = Json { ignoreUnknownKeys = true }
+
+fun Instant.formatLocale(zone: ZoneId = ZoneId.systemDefault()) = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withZone(zone).format(this)
+
+fun Duration.formatLocale() = if (this.toMinutes() > 2) {
+    "${this.toMinutes()}m"
+} else {
+    "${this.toSeconds()}s"
+}
+
+fun Long.formatBytes(): String {
+    val units = listOf("B", "KB", "MB", "GB")
+    var value = this.toDouble()
+    var unitIndex = 0
+
+    while (value >= 1024 && unitIndex < units.lastIndex) {
+        value /= 1024
+        unitIndex++
+    }
+
+    return if (unitIndex == 0) {
+        "$this ${units[unitIndex]}"
+    } else {
+        "${"%.2f".format(value)} ${units[unitIndex]}"
     }
 }

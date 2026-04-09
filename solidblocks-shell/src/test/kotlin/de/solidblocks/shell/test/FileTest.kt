@@ -40,7 +40,12 @@ public class FileTest {
 
     @Test
     fun testDefaultFilePermission() {
-        FilePermissions().renderChmod() shouldBe "u=rw-,g=---,o=---"
+        FilePermissions().renderChmod() shouldBe "u=rw,g=,o="
+    }
+
+    @Test
+    fun testAllReadExecute() {
+        FilePermissions.R_XR_XR_X.renderChmod() shouldBe "u=rx,g=rx,o=rx"
     }
 
     @Test
@@ -50,18 +55,18 @@ public class FileTest {
             GroupPermission(true, false, true),
             OtherPermission(false, true, false),
         )
-            .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
+            .renderChmod() shouldBe "u=rwx,g=rx,o=w"
         FilePermissions(
             UserPermission(true, true, true),
             GroupPermission(true, false, true),
             OtherPermission(false, true, false),
         )
-            .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
+            .renderChmod() shouldBe "u=rwx,g=rx,o=w"
         FilePermissions(
             UserPermission(false, false, false),
             GroupPermission(false, false, false),
             OtherPermission(false, false, false),
         )
-            .renderChmod() shouldBe "u=---,g=---,o=---"
+            .renderChmod() shouldBe "u=,g=,o="
     }
 }

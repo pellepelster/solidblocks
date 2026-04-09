@@ -11,6 +11,7 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.markdown
+import de.solidblocks.cloud.pgbackrest.model.parsePgBackRestInfoOutput
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
@@ -20,6 +21,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.restic.model.parseResticSnapshotsOutput
 import de.solidblocks.cloud.services.BackupRuntime
 import de.solidblocks.cloud.services.EndpointInfo
 import de.solidblocks.cloud.services.EnvironmentVariableCallback
@@ -38,8 +40,13 @@ import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.formatBytes
+import de.solidblocks.cloud.utils.formatLocale
 import de.solidblocks.docker.GenericDockerServiceUserData
+import de.solidblocks.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
+import de.solidblocks.restic.RESTIC_STATUS_COMMAND
 import de.solidblocks.utils.LogContext
+import java.time.Duration
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
 
@@ -51,7 +58,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         ),
     )
 
-    override fun info(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
+    override fun infoText(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
         markdown {
             h1("Service '${runtime.name}'")
 
@@ -64,10 +71,31 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         },
     )
 
+    override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
+        val result = context.createOrGetSshClient(HetznerServerLookup(serverName(cloud, runtime.name))).command(RESTIC_STATUS_COMMAND)
+        if (result.exitCode != 0) {
+            return Error<String>("command failed '${result.stdErr}'")
+        }
+
+        val backupStatus = result.stdOut.parseResticSnapshotsOutput()
+
+        return markdown {
+            h1("Service '${runtime.name}'")
+            h2("Backups")
+
+            table {
+                header("start", "duration", "size")
+                backupStatus.forEach {
+                    row(it.summary.backupStart.formatLocale(), Duration.between(it.summary.backupStart, it.summary.backupEnd).formatLocale(), it.summary.totalBytesProcessed.formatBytes())
+                }
+            }
+        }.let { Success(it) }
+    }
+
     fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext) = if (cloud.dnsEnabled == true) {
         TODO()
     } else {
-        "http://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.publicIpv4}"
+        "http://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.publicIpv4 ?: "<unknown>"}"
     }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {

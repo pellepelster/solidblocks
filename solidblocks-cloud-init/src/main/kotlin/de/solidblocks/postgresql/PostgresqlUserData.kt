@@ -1,35 +1,19 @@
 package de.solidblocks.postgresql
 
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.docker.ComposeFile
-import de.solidblocks.docker.Mount
-import de.solidblocks.docker.MountType
-import de.solidblocks.docker.PortMapping
-import de.solidblocks.docker.toYaml
-import de.solidblocks.shell.AptLibrary
-import de.solidblocks.shell.CurlLibrary
-import de.solidblocks.shell.DockerLibrary
-import de.solidblocks.shell.LogLibrary
-import de.solidblocks.shell.MkDir
-import de.solidblocks.shell.PackageLibrary
-import de.solidblocks.shell.ShellScript
-import de.solidblocks.shell.StorageLibrary
-import de.solidblocks.shell.SystemDLibrary
-import de.solidblocks.shell.UtilsLibrary
-import de.solidblocks.shell.WriteFile
-import de.solidblocks.systemd.Daily
-import de.solidblocks.systemd.Install
-import de.solidblocks.systemd.Restart
+import de.solidblocks.docker.*
+import de.solidblocks.shell.*
+import de.solidblocks.systemd.*
 import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.ServiceType
-import de.solidblocks.systemd.SystemDService
-import de.solidblocks.systemd.SystemDTimer
 import de.solidblocks.systemd.Target
-import de.solidblocks.systemd.Timer
 import de.solidblocks.systemd.Unit
-import de.solidblocks.systemd.installSystemDUnit
 
 class PostgresqlUserData(val storageDevice: String, val backupDevice: String, val instanceName: String, val superUserPassword: String) : ServiceUserData {
+
+    companion object {
+        val BACKUP_STATUS_COMMAND = "pgbackrest-status"
+    }
+
     override fun render(): String {
         val storageMount = "/storage/data"
         val backupMount = "/storage/backup"
@@ -55,7 +39,7 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
         userData.addCommand(MkDir("/storage/data", "10000", "10000"))
         userData.addCommand(MkDir("/storage/backup", "10000", "10000"))
 
-        val dockerWorkingDirectory = "/etc/docker/${instanceName}"
+        val dockerWorkingDirectory = "/etc/docker/$instanceName"
         val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
         val environment = mapOf<String, String>()
 
@@ -120,7 +104,7 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
 
         val backupFullSystemDConfig =
             SystemDService(
-                "${instanceName}-backup-full",
+                "$instanceName-backup-full",
                 Unit(
                     "full backup for PostgresSQL instance '$instanceName'",
                     after = emptyList(),
@@ -158,8 +142,20 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
         userData.installSystemDUnit(timer)
         userData.addCommand(SystemDLibrary.Start(timer.fullUnitName()))
 
-
         userData.addCommand(SystemDLibrary.Restart(instanceName))
+
+        val wrapper = """
+    #!/bin/env bash
+    docker compose -f $dockerComposeFile exec --no-tty $instanceName /rds/bin/backup-info.sh --output=json
+        """.trimIndent()
+
+        userData.addCommand(
+            WriteFile(
+                wrapper.toByteArray(),
+                "/usr/local/bin/$BACKUP_STATUS_COMMAND",
+                FilePermissions.R_XR_XR_X,
+            ),
+        )
 
         return userData.render()
     }

@@ -46,6 +46,7 @@ fun main(args: Array<String>) {
             CloudApplyCommand(),
             CloudPlanCommand(),
             CloudInfoCommand(),
+            CloudStatusCommand(),
             CloudHelpCommand().also {
                 it.subcommands(CloudHelpConfigurationCommand(), CloudHelpConfigurationHugoCommand())
             },

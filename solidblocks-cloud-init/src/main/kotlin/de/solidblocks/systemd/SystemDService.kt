@@ -76,19 +76,21 @@ class SystemDService(override val name: String, val unit: Unit, val service: Ser
     override val extension = "service"
 }
 
-class Unit(val description: String, val after: List<Target>? = listOf(Target.NETWORK_ONLINE_TARGET), val requires: List<Target>? = listOf(Target.NETWORK_ONLINE_TARGET), val wants: List<Target>? = null) {
+class Unit(val description: String, val after: List<Target> = listOf(Target.NETWORK_ONLINE_TARGET), val requires: List<Target> = listOf(Target.NETWORK_ONLINE_TARGET), val wants: List<Target> = emptyList()) {
     fun render(): String {
         val sw = StringWriter()
 
         sw.appendLine("[Unit]")
         sw.appendLine("Description=$description")
-        if (after != null) {
+        if (after.isNotEmpty()) {
             sw.appendLine("After=${after.joinToString(" ")}")
         }
-        if (requires != null) {
+
+        if (requires.isNotEmpty()) {
             sw.appendLine("Requires=${requires.joinToString(" ")}")
         }
-        if (wants != null) {
+
+        if (wants.isNotEmpty()) {
             sw.appendLine("Wants=${wants.joinToString(" ")}")
         }
 
@@ -119,7 +121,8 @@ class Timer(val onCalendar: OnCalendar, val unit: String) {
 }
 
 enum class ServiceType {
-    simple, oneshot
+    simple,
+    oneshot,
 }
 
 class Service(

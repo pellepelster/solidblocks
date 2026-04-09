@@ -19,6 +19,8 @@ import java.nio.file.Path
 import java.security.KeyPair
 import kotlin.reflect.KClass
 
+private val logger = KotlinLogging.logger {}
+
 interface CloudProvisionerContext {
     val sshKeyPair: KeyPair
     val sshConfigFilePath: Path
@@ -30,11 +32,19 @@ interface CloudProvisionerContext {
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ensureLookup(lookup: ResourceLookupType): RuntimeType
 
-    suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T
+    fun createOrGetSshClient(server: HetznerServerLookup): SSHClient
 
     suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType>
 
     fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R>
+}
+
+suspend fun <T> CloudProvisionerContext.withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = try {
+    createOrGetSshClient(server)
+        .portForward(port) { block.invoke(it) }
+} catch (e: Exception) {
+    logger.error(e) { "could not connect to server $server" }
+    block.invoke(null)
 }
 
 data class ProvisionerContext(
@@ -47,16 +57,15 @@ data class ProvisionerContext(
     val serviceRegistrations: List<ServiceRegistration<*, *>>,
 ) : CloudProvisionerContext,
     Closeable {
-    private val logger = KotlinLogging.logger {}
 
     val sshClients = mutableMapOf<String, SSHClient>()
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
     override fun <
-            RuntimeType,
-            ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-            > ensureLookup(lookup: ResourceLookupType): RuntimeType =
+        RuntimeType,
+        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
+        > ensureLookup(lookup: ResourceLookupType): RuntimeType =
         registry.lookup(lookup, this).let {
             if (it == null) {
                 logger.error { "could not find resource ${lookup.logText()}" }
@@ -75,27 +84,13 @@ data class ProvisionerContext(
         }
     }
 
-    fun createOrGetSshClient(host: String, port: Int) = sshClients.getOrPut("$host:$port") {
-        logger.info { "creating ssh client for '$host:$port'" }
-        SSHClient(host, this.sshKeyPair, port = port)
-    }
+    override fun createOrGetSshClient(server: HetznerServerLookup): SSHClient {
+        val server = this.ensureLookup(server)
+        val publicIpv4 = server.publicIpv4 ?: throw RuntimeException("${server.logText()} has no public ip")
 
-    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T {
-        val server = this.lookup(server)
-
-        return if (server != null) {
-            try {
-                createOrGetSshClient(
-                    server.publicIpv4 ?: throw RuntimeException("${server.logText()} has no public ip"),
-                    port = server.sshPort,
-                )
-                    .portForward(port) { block.invoke(it) }
-            } catch (e: Exception) {
-                logger.error(e) { "could not connect to server $server" }
-                block.invoke(null)
-            }
-        } else {
-            block.invoke(null)
+        return sshClients.getOrPut("${server.name}:${server.sshPort}") {
+            logger.info { "creating ssh client for '${server.name}:${server.sshPort}'" }
+            SSHClient(publicIpv4, this.sshKeyPair, port = server.sshPort)
         }
     }
 

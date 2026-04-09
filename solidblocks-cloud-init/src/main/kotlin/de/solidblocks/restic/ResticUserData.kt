@@ -1,15 +1,18 @@
 package de.solidblocks.restic
 
 import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.FilePermissions
 import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.ResticLibrary
 import de.solidblocks.shell.ResticLibrary.RESTIC_CREDENTIALS_PATH
 import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.shell.WriteFile
 import de.solidblocks.systemd.Daily
 import de.solidblocks.systemd.Install
 import de.solidblocks.systemd.Restart
 import de.solidblocks.systemd.Service
+import de.solidblocks.systemd.ServiceType
 import de.solidblocks.systemd.SystemDConfig
 import de.solidblocks.systemd.SystemDService
 import de.solidblocks.systemd.SystemDTimer
@@ -17,11 +20,11 @@ import de.solidblocks.systemd.Timer
 import de.solidblocks.systemd.Unit
 import de.solidblocks.systemd.installSystemDUnit
 
-private fun String.toBackupName1(): String = this.removePrefix("/").removeSuffix("/").replace("/", "-")
+private fun String.toBackupUnitName(): String = this.removePrefix("/").removeSuffix("/").replace("/", "-")
 
-private fun String.s3SystemDUnitName() = "backup-${toBackupName1()}-s3"
+private fun String.s3SystemDUnitName() = "backup-${toBackupUnitName()}-s3"
 
-private fun String.localSystemDUnitName() = "backup-${toBackupName1()}-local"
+private fun String.localSystemDUnitName() = "backup-${toBackupUnitName()}-local"
 
 private fun ShellScript.resticCommon() {
     addLibSources(CurlLibrary)
@@ -61,6 +64,7 @@ fun localBackupSystemDUnit(localRepository: String, backupPath: String) = System
             "backup",
             backupPath,
         ),
+        type = ServiceType.oneshot,
         restart = Restart.ON_FAILURE,
         environmentFiles = listOf(RESTIC_CREDENTIALS_PATH),
     ),
@@ -80,6 +84,7 @@ fun s3BackupSystemDUnit(s3Repository: String, backupPath: String) = SystemDServi
             "backup",
             backupPath,
         ),
+        type = ServiceType.oneshot,
         restart = Restart.ON_FAILURE,
         environmentFiles = listOf(RESTIC_CREDENTIALS_PATH),
     ),
@@ -90,6 +95,7 @@ fun ShellScript.resticLocalBackup(localRepository: String, repositoryPassword: S
     resticCommon()
     addCommand(ResticLibrary.WriteCredentials(repositoryPassword))
     addCommand(ResticLibrary.EnsureLocalRepo(localRepository))
+    installResticStatusWrapper(localRepository, backupPath)
     addCommand(ResticLibrary.Restore(localRepository))
 
     installBackupUnitWithTrigger(localBackupSystemDUnit(localRepository, backupPath))
@@ -106,8 +112,28 @@ fun ShellScript.resticS3Backup(
 
     addCommand(ResticLibrary.WriteS3Credentials(repositoryPassword, awsAccessKey, awsSecretKey))
     addCommand(ResticLibrary.EnsureS3Repo(s3Repository))
+    installResticStatusWrapper(s3Repository, backupPath)
     addCommand(ResticLibrary.Restore(s3Repository))
     installBackupUnitWithTrigger(s3BackupSystemDUnit(s3Repository, backupPath))
+}
+
+const val RESTIC_STATUS_COMMAND = "restic-status"
+
+fun ShellScript.installResticStatusWrapper(repository: String, backupPath: String) {
+    val wrapper = """
+    #!/bin/env bash
+    
+    export $(cat ${RESTIC_CREDENTIALS_PATH} | xargs)
+    restic --repo $repository snapshots --json
+    """.trimIndent()
+
+    addCommand(
+        WriteFile(
+            wrapper.toByteArray(),
+            "/usr/local/bin/${RESTIC_STATUS_COMMAND}",
+            FilePermissions.R_XR_XR_X,
+        ),
+    )
 }
 
 fun ShellScript.resticLocalAndS3Backup(

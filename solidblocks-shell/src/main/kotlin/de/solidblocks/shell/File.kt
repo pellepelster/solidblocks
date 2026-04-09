@@ -17,7 +17,7 @@ data class MkDir(val dir: String, val owner: String? = null, val group: String? 
 }
 
 sealed class Permission(val read: Boolean, val write: Boolean, val execute: Boolean) {
-    fun renderChmod() = "${if (read) "r" else "-"}${if (write) "w" else "-"}${if (execute) "x" else "-"}"
+    fun renderChmod() = "${if (read) "r" else ""}${if (write) "w" else ""}${if (execute) "x" else ""}"
 }
 
 class UserPermission(read: Boolean = true, write: Boolean = true, execute: Boolean = false) : Permission(read, write, execute) {
@@ -25,6 +25,7 @@ class UserPermission(read: Boolean = true, write: Boolean = true, execute: Boole
         val RWX = UserPermission(true, true, true)
         val RW_ = UserPermission(true, true, false)
         val R__ = UserPermission(true, false, false)
+        val R_X = UserPermission(true, false, true)
         val NONE = UserPermission(false, false, false)
     }
 }
@@ -34,6 +35,7 @@ class GroupPermission(read: Boolean = false, write: Boolean = false, execute: Bo
         val RWX = GroupPermission(true, true, true)
         val RW_ = GroupPermission(true, true, false)
         val R__ = GroupPermission(true, false, false)
+        val R_X = GroupPermission(true, false, true)
         val NONE = GroupPermission(false, false, false)
     }
 }
@@ -43,6 +45,7 @@ class OtherPermission(read: Boolean = false, write: Boolean = false, execute: Bo
         val RWX = OtherPermission(true, true, true)
         val RW_ = OtherPermission(true, true, false)
         val R__ = OtherPermission(true, false, false)
+        val R_X = OtherPermission(true, false, true)
         val NONE = OtherPermission(false, false, false)
     }
 }
@@ -62,6 +65,12 @@ data class FilePermissions(val user: UserPermission = UserPermission(), val grou
                 UserPermission.RW_,
                 GroupPermission.R__,
                 OtherPermission.R__,
+            )
+        val R_XR_XR_X =
+            FilePermissions(
+                UserPermission.R_X,
+                GroupPermission.R_X,
+                OtherPermission.R_X,
             )
     }
 }

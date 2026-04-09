@@ -81,20 +81,20 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
                 )
             }
         } else {
-
             if (runtime.fingerprint != resourceFingerprint) {
-                changes.add(ResourceDiffItem(
-                    "fingerprint",
-                    changed = true,
-                    triggersRecreate = true,
-                    expectedValue = resourceFingerprint,
-                    actualValue = runtime.fingerprint,
-                ))
+                changes.add(
+                    ResourceDiffItem(
+                        "fingerprint",
+                        changed = true,
+                        triggersRecreate = true,
+                        expectedValue = resourceFingerprint,
+                        actualValue = runtime.fingerprint,
+                    ),
+                )
             }
         }
 
         changes.addAll(createLabelDiff(resource, runtime))
-
 
         return if (changes.isEmpty()) {
             ResourceDiff(resource, up_to_date)

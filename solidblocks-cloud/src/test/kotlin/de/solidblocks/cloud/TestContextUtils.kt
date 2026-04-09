@@ -17,6 +17,7 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.utils.KeywordHelp
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
@@ -45,7 +46,9 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
         ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
         > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
 
-    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = block.invoke(portMappings[port])
+    override fun createOrGetSshClient(server: HetznerServerLookup): SSHClient {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>) = TODO("Not yet implemented")
 

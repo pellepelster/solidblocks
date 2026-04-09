@@ -291,6 +291,12 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         }
     }
 
+    fun status(runtime: CloudConfigurationRuntime): Result<String> {
+        CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
+            return it.status(runtime)
+        }
+    }
+
     fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> {
         CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
             return it.infoJson(runtime)

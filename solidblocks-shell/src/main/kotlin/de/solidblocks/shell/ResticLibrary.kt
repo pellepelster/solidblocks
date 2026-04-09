@@ -3,6 +3,8 @@ package de.solidblocks.shell
 object ResticLibrary : ShellLibrary {
     override fun name() = "restic"
 
+    const val RESTIC_CREDENTIALS_PATH = "/etc/restic/credentials"
+
     class Install : LibraryCommand {
         override fun commands() = listOf("restic_install")
     }
@@ -14,8 +16,6 @@ object ResticLibrary : ShellLibrary {
     class EnsureS3Repo(val repository: String) : LibraryCommand {
         override fun commands() = listOf("restic_ensure_s3_repo '$repository'")
     }
-
-    const val RESTIC_CREDENTIALS_PATH = "/etc/restic/credentials"
 
     class WriteS3Credentials(val password: String, val accessKey: String, val secretKey: String) : LibraryCommand {
         override fun commands() = MkDir("/etc/restic/").commands() +
