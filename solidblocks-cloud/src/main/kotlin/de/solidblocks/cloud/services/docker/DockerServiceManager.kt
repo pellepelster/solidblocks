@@ -14,10 +14,12 @@ import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.BackupRuntime
+import de.solidblocks.cloud.services.EndpointInfo
 import de.solidblocks.cloud.services.EnvironmentVariableCallback
 import de.solidblocks.cloud.services.EnvironmentVariableStatic
 import de.solidblocks.cloud.services.InstanceRuntime
@@ -46,7 +48,11 @@ class DockerServiceManager :
       context: CloudProvisionerContext,
   ) =
       Success(
-          ServiceInfo(runtime.name, listOf(ServerInfo(sshConnectCommand(context, cloud, runtime)))),
+          ServiceInfo(
+              runtime.name,
+              listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
+              listOf(EndpointInfo(endpoint(cloud, runtime, context))),
+          ),
       )
 
   override fun info(
@@ -61,8 +67,22 @@ class DockerServiceManager :
             h2("Servers")
             text("to access server **${serverName(cloud, runtime.name)}** via SSH, run")
             codeBlock(sshConnectCommand(context, cloud, runtime))
+
+            h2("Endpoints")
+            list { item(endpoint(cloud, runtime, context)) }
           },
       )
+
+  fun endpoint(
+      cloud: CloudConfigurationRuntime,
+      runtime: DockerServiceConfigurationRuntime,
+      context: CloudProvisionerContext,
+  ) =
+      if (cloud.dnsEnabled == true) {
+        TODO()
+      } else {
+        "http://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.publicIpv4}"
+      }
 
   override fun createResources(
       cloud: CloudConfigurationRuntime,

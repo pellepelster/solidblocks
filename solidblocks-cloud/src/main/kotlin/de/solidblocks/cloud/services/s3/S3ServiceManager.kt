@@ -28,6 +28,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.BackupRuntime
+import de.solidblocks.cloud.services.EndpointInfo
 import de.solidblocks.cloud.services.InstanceRuntime
 import de.solidblocks.cloud.services.ServerInfo
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
@@ -346,7 +347,14 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
       context: CloudProvisionerContext,
   ) =
       Success(
-          ServiceInfo(runtime.name, listOf(ServerInfo(sshConnectCommand(context, cloud, runtime)))),
+          ServiceInfo(
+              runtime.name,
+              listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
+              listOf(
+                  EndpointInfo("https://${s3Host(serviceRootDomain(cloud, runtime))}"),
+                  EndpointInfo("https://${s3AdminHost(serviceRootDomain(cloud, runtime))}"),
+              ),
+          ),
       )
 
   override fun info(

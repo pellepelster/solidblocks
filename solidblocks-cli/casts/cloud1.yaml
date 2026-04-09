@@ -13,9 +13,13 @@ services:
   # spin up a Postgresql database
   - type: postgresql
     name: database1
+    databases:
+      - name: hello-world
   # deploy a simple dockerized hello world application using the database as storage backend
   - type: docker
     name: service1
     image: ghcr.io/pellepelster/solidblocks-hello-world:latest
+    endpoints:
+      - port: 8080
     links:
       - database1

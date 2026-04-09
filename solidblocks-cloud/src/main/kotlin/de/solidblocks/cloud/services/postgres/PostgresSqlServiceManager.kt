@@ -24,6 +24,7 @@ import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.BackupRuntime
+import de.solidblocks.cloud.services.EndpointInfo
 import de.solidblocks.cloud.services.EnvironmentVariableCallback
 import de.solidblocks.cloud.services.EnvironmentVariableStatic
 import de.solidblocks.cloud.services.InstanceRuntime
@@ -91,8 +92,24 @@ class PostgresSqlServiceManager :
       context: CloudProvisionerContext,
   ) =
       Success(
-          ServiceInfo(runtime.name, listOf(ServerInfo(sshConnectCommand(context, cloud, runtime)))),
+          ServiceInfo(
+              runtime.name,
+              listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
+              runtime.databases.map { EndpointInfo(endpoint(cloud, runtime, context, it)) },
+          ),
       )
+
+  fun endpoint(
+      cloud: CloudConfigurationRuntime,
+      runtime: PostgresSqlServiceConfigurationRuntime,
+      context: CloudProvisionerContext,
+      database: PostgresSqlServiceDatabaseConfigurationRuntime,
+  ) =
+      if (cloud.dnsEnabled == true) {
+        TODO()
+      } else {
+        "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.privateIpv4}/${database.name}"
+      }
 
   override fun info(
       cloud: CloudConfigurationRuntime,
@@ -108,6 +125,9 @@ class PostgresSqlServiceManager :
             codeBlock(
                 "ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.cloudName))} ${serverName(cloud, runtime.name)}",
             )
+
+            h2("Endpoints")
+            list { runtime.databases.forEach { text(endpoint(cloud, runtime, context, it)) } }
 
             /*
             table {
