@@ -14,10 +14,5 @@ data class S3ServiceBucketConfigurationRuntime(
 
 data class S3ServiceBucketAccessKeyConfigurationRuntime(val name: String)
 
-data class S3ServiceConfigurationRuntime(
-    override val index: Int,
-    override val name: String,
-    val instance: InstanceRuntime,
-    val backup: BackupRuntime,
-    val buckets: List<S3ServiceBucketConfigurationRuntime>,
-) : ServiceConfigurationRuntime
+data class S3ServiceConfigurationRuntime(override val index: Int, override val name: String, val instance: InstanceRuntime, val backup: BackupRuntime, val buckets: List<S3ServiceBucketConfigurationRuntime>) :
+    ServiceConfigurationRuntime

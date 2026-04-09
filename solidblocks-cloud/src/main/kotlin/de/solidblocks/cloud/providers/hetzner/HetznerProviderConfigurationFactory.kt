@@ -13,72 +13,71 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
-class HetznerProviderConfigurationFactory :
-    PolymorphicConfigurationFactory<HetznerProviderConfiguration>() {
+class HetznerProviderConfigurationFactory : PolymorphicConfigurationFactory<HetznerProviderConfiguration>() {
 
-  val name =
-      StringKeywordOptionalWithDefault(
-          "name",
-          NONE,
-          DEFAULT_NAME,
-          KeywordHelp(
-              "Name for the provider, can be omitted if only one provider of this specific type is configured",
-          ),
-      )
-
-  val defaultLocation =
-      StringKeywordOptionalWithDefault(
-          "default_location",
-          HETZNER_LOCATIONS,
-          HETZNER_LOCATIONS.options.first(),
-          KeywordHelp(
-              "Default location for created infrastructure resources",
-          ),
-      )
-
-  val defaultInstanceType =
-      StringKeywordOptionalWithDefault(
-          "default-instance-type",
-          HETZNER_INSTANCE_TYPE,
-          HETZNER_INSTANCE_TYPE.options.first(),
-          KeywordHelp(
-              "Default instance size for virtual machines",
-          ),
-      )
-
-  override val help =
-      ConfigurationHelp(
-          "Hetzner",
-          "Provides Hetzner Cloud based infrastructure resources. An API key with read/write access must be provided via the environment variable `HCLOUD_TOKEN`.",
-      )
-
-  override val keywords = listOf(name, defaultLocation, defaultInstanceType)
-
-  override fun parse(yaml: YamlNode): Result<HetznerProviderConfiguration> {
     val name =
-        when (val result = name.parse(yaml)) {
-          is Error<String> -> return Error(result.error)
-          is Success<String> -> result.data
-        }
+        StringKeywordOptionalWithDefault(
+            "name",
+            NONE,
+            DEFAULT_NAME,
+            KeywordHelp(
+                "Name for the provider, can be omitted if only one provider of this specific type is configured",
+            ),
+        )
 
     val defaultLocation =
-        when (val result = defaultLocation.parse(yaml)) {
-          is Error<*> -> return Error(result.error)
-          is Success<String> -> result.data
-        }
+        StringKeywordOptionalWithDefault(
+            "default_location",
+            HETZNER_LOCATIONS,
+            HETZNER_LOCATIONS.options.first(),
+            KeywordHelp(
+                "Default location for created infrastructure resources",
+            ),
+        )
 
     val defaultInstanceType =
-        when (val result = defaultInstanceType.parse(yaml)) {
-          is Error<*> -> return Error(result.error)
-          is Success<String> -> result.data
-        }
+        StringKeywordOptionalWithDefault(
+            "default-instance-type",
+            HETZNER_INSTANCE_TYPE,
+            HETZNER_INSTANCE_TYPE.options.first(),
+            KeywordHelp(
+                "Default instance size for virtual machines",
+            ),
+        )
 
-    return Success(
-        HetznerProviderConfiguration(
-            name,
-            HetznerLocation.valueOf(defaultLocation),
-            HetznerServerType.valueOf(defaultInstanceType),
-        ),
-    )
-  }
+    override val help =
+        ConfigurationHelp(
+            "Hetzner",
+            "Provides Hetzner Cloud based infrastructure resources. An API key with read/write access must be provided via the environment variable `HCLOUD_TOKEN`.",
+        )
+
+    override val keywords = listOf(name, defaultLocation, defaultInstanceType)
+
+    override fun parse(yaml: YamlNode): Result<HetznerProviderConfiguration> {
+        val name =
+            when (val result = name.parse(yaml)) {
+                is Error<String> -> return Error(result.error)
+                is Success<String> -> result.data
+            }
+
+        val defaultLocation =
+            when (val result = defaultLocation.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<String> -> result.data
+            }
+
+        val defaultInstanceType =
+            when (val result = defaultInstanceType.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<String> -> result.data
+            }
+
+        return Success(
+            HetznerProviderConfiguration(
+                name,
+                HetznerLocation.valueOf(defaultLocation),
+                HetznerServerType.valueOf(defaultInstanceType),
+            ),
+        )
+    }
 }

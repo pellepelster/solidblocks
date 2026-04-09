@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CloudInitResultWrapper(@SerialName("v1") val v1: CloudInitResult) {
-  val allErrors: List<String>
-    get() =
-        listOfNotNull(
+    val allErrors: List<String>
+        get() =
+            listOfNotNull(
                 v1.errors,
                 v1.init?.errors,
                 v1.initLocal?.errors,
@@ -15,13 +15,13 @@ data class CloudInitResultWrapper(@SerialName("v1") val v1: CloudInitResult) {
                 v1.modulesConfig?.errors,
                 v1.modulesFinal?.errors,
             )
-            .flatten()
+                .flatten()
 
-  val hasErrors: Boolean
-    get() = allErrors.any { it.isNotEmpty() }
+    val hasErrors: Boolean
+        get() = allErrors.any { it.isNotEmpty() }
 
-  val isFinished: Boolean
-    get() = v1.modulesFinal?.finished != null
+    val isFinished: Boolean
+        get() = v1.modulesFinal?.finished != null
 }
 
 @Serializable
@@ -35,8 +35,4 @@ data class CloudInitResult(
 )
 
 @Serializable
-data class CloudInitResultItem(
-    @SerialName("errors") val errors: List<String>,
-    @SerialName("finished") val finished: Float? = null,
-    @SerialName("start") val start: Float? = null,
-)
+data class CloudInitResultItem(@SerialName("errors") val errors: List<String>, @SerialName("finished") val finished: Float? = null, @SerialName("start") val start: Float? = null)

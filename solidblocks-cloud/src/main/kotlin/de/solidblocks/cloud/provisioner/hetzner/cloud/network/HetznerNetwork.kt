@@ -2,16 +2,12 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.network
 
 import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResource
 
-class HetznerNetwork(
-    name: String,
-    val ipRange: String,
-    labels: Map<String, String> = emptyMap(),
-    val protected: Boolean = true,
-) : BaseLabeledInfrastructureResource<HetznerNetworkRuntime>(name, emptySet(), labels) {
+class HetznerNetwork(name: String, val ipRange: String, labels: Map<String, String> = emptyMap(), val protected: Boolean = true) :
+    BaseLabeledInfrastructureResource<HetznerNetworkRuntime>(name, emptySet(), labels) {
 
-  fun asLookup() = HetznerNetworkLookup(name)
+    fun asLookup() = HetznerNetworkLookup(name)
 
-  override fun logText() = "network '$name' ($ipRange)"
+    override fun logText() = "network '$name' ($ipRange)"
 
-  override val lookupType = HetznerNetworkLookup::class
+    override val lookupType = HetznerNetworkLookup::class
 }

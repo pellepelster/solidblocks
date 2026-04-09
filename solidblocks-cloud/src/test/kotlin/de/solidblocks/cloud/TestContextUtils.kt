@@ -27,41 +27,29 @@ class TestContextUtils
 val TEST_CLOUD_CONFIGURATION =
     CloudConfiguration("testCloudName", "cloud1.test-blcks.de", emptyList(), emptyList())
 
-class TestProvisionerContext(
-    val registry: ProvisionersRegistry,
-    val portMappings: Map<Int, Int> = emptyMap(),
-) : CloudProvisionerContext {
-  override val sshKeyPair =
-      SSHKeyUtils.loadKey(
-          TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
-      )
+class TestProvisionerContext(val registry: ProvisionersRegistry, val portMappings: Map<Int, Int> = emptyMap()) : CloudProvisionerContext {
+    override val sshKeyPair =
+        SSHKeyUtils.loadKey(
+            TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
+        )
 
-  override val sshConfigFilePath = Path.of(".")
-  override val cloudName = "testCloudName"
+    override val sshConfigFilePath = Path.of(".")
+    override val cloudName = "testCloudName"
 
-  override fun validateDnsZone(zone: String) = TODO("Not yet implemented")
+    override fun validateDnsZone(zone: String) = TODO("Not yet implemented")
 
-  override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(
-      lookup: ResourceLookupType
-  ): RuntimeType? = registry.lookup(lookup, this)
+    override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
-  override fun <
-      RuntimeType,
-      ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-  > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
+    override fun <
+        RuntimeType,
+        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
+        > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
 
-  override suspend fun <T> withPortForward(
-      server: HetznerServerLookup,
-      port: Int,
-      block: suspend (Int?) -> T,
-  ): T = block.invoke(portMappings[port])
+    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = block.invoke(portMappings[port])
 
-  override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>) =
-      TODO("Not yet implemented")
+    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>) = TODO("Not yet implemented")
 
-  override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(
-      runtime: R
-  ): ServiceManager<C, R> = TODO("Not yet implemented")
+    override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = TODO("Not yet implemented")
 }
 
 val TEST_PROVISIONER_CONTEXT =
@@ -69,47 +57,43 @@ val TEST_PROVISIONER_CONTEXT =
         ProvisionersRegistry(),
     )
 
-data class HetznerTestContext(
-    val provisioner: Provisioner,
-    val serverProvisioner: HetznerServerProvisioner,
-    val context: CloudProvisionerContext,
-) {
+data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: CloudProvisionerContext) {
 
-  companion object {
-    fun create(hcloudToken: String): HetznerTestContext {
-      val sshProvisioner = HetznerSSHKeyProvisioner(hcloudToken)
-      val volumeProvisioner = HetznerVolumeProvisioner(hcloudToken)
-      val serverProvisioner = HetznerServerProvisioner(hcloudToken)
-      val networkProvisioner = HetznerNetworkProvisioner(hcloudToken)
-      val subnetProvisioner = HetznerSubnetProvisioner(hcloudToken)
+    companion object {
+        fun create(hcloudToken: String): HetznerTestContext {
+            val sshProvisioner = HetznerSSHKeyProvisioner(hcloudToken)
+            val volumeProvisioner = HetznerVolumeProvisioner(hcloudToken)
+            val serverProvisioner = HetznerServerProvisioner(hcloudToken)
+            val networkProvisioner = HetznerNetworkProvisioner(hcloudToken)
+            val subnetProvisioner = HetznerSubnetProvisioner(hcloudToken)
 
-      val registry =
-          ProvisionersRegistry(
-              listOf(
-                  UserDataLookupProvider(),
-                  sshProvisioner,
-                  volumeProvisioner,
-                  serverProvisioner,
-                  networkProvisioner,
-                  subnetProvisioner,
-              ),
-              listOf(
-                  sshProvisioner,
-                  volumeProvisioner,
-                  serverProvisioner,
-                  networkProvisioner,
-                  subnetProvisioner,
-              ),
-          )
-      val provisioner = Provisioner(registry)
+            val registry =
+                ProvisionersRegistry(
+                    listOf(
+                        UserDataLookupProvider(),
+                        sshProvisioner,
+                        volumeProvisioner,
+                        serverProvisioner,
+                        networkProvisioner,
+                        subnetProvisioner,
+                    ),
+                    listOf(
+                        sshProvisioner,
+                        volumeProvisioner,
+                        serverProvisioner,
+                        networkProvisioner,
+                        subnetProvisioner,
+                    ),
+                )
+            val provisioner = Provisioner(registry)
 
-      return HetznerTestContext(
-          provisioner,
-          serverProvisioner,
-          TestProvisionerContext(registry),
-      )
+            return HetznerTestContext(
+                provisioner,
+                serverProvisioner,
+                TestProvisionerContext(registry),
+            )
+        }
     }
-  }
 }
 
 val TEST_LOG_CONTEXT = LogContext()

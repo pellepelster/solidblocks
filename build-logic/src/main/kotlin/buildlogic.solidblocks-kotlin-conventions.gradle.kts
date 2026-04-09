@@ -67,7 +67,6 @@ tasks.test {
 spotless {
     kotlin {
         ktlint()
-        ktfmt()
     }
 }
 

@@ -9,14 +9,14 @@ class HetznerProviderRegistration :
         HetznerProviderConfiguration,
         HetznerProviderRuntime,
         HetznerProviderConfigurationManager,
-    > {
+        > {
 
-  override val supportedConfiguration = HetznerProviderConfiguration::class
-  override val supportedRuntime = HetznerProviderRuntime::class
+    override val supportedConfiguration = HetznerProviderConfiguration::class
+    override val supportedRuntime = HetznerProviderRuntime::class
 
-  override fun createConfigurationManager() = HetznerProviderConfigurationManager()
+    override fun createConfigurationManager() = HetznerProviderConfigurationManager()
 
-  override fun createConfigurationFactory() = HetznerProviderConfigurationFactory()
+    override fun createConfigurationFactory() = HetznerProviderConfigurationFactory()
 
-  override val type = HETZNER_PROVIDER_TYPE
+    override val type = HETZNER_PROVIDER_TYPE
 }

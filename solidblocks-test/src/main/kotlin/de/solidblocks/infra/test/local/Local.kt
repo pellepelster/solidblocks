@@ -8,14 +8,6 @@ import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logInfo
-import java.io.Closeable
-import java.lang.Thread.sleep
-import java.nio.charset.Charset
-import java.nio.file.Path
-import java.util.concurrent.TimeUnit
-import kotlin.io.path.absolutePathString
-import kotlin.time.TimeSource
-import kotlin.time.TimeSource.Monotonic.markNow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -24,37 +16,42 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import java.io.Closeable
+import java.lang.Thread.sleep
+import java.nio.charset.Charset
+import java.nio.file.Path
+import java.util.concurrent.TimeUnit
+import kotlin.io.path.absolutePathString
+import kotlin.time.TimeSource
+import kotlin.time.TimeSource.Monotonic.markNow
 
 class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
+    private val runners = mutableListOf<CommandRunner>()
 
-  private val runners = mutableListOf<CommandRunner>()
+    private fun killProcessAndWait(process: Process) {
+        sleep(100)
 
-  private fun killProcessAndWait(process: Process) {
-    sleep(100)
+        Runtime.getRuntime().exec("kill -SIGINT ${process.pid()}")
+        process.descendants().forEach { it.destroyForcibly() }
 
-    Runtime.getRuntime().exec("kill -SIGINT ${process.pid()}")
-    process.descendants().forEach { it.destroyForcibly() }
-
-    while (process.isAlive) {
-      sleep(10)
+        while (process.isAlive) {
+            sleep(10)
+        }
     }
-  }
 
-  override suspend fun createCommandRunner() =
-      object : CommandRunner {
+    override suspend fun createCommandRunner() = object : CommandRunner {
         override suspend fun runCommand(
             command: Array<String>,
             envs: Map<String, String>,
             inheritEnv: Boolean,
             stdin: Channel<String>,
             output: (entry: TimestampedOutputLine) -> Unit,
-        ) =
-            withContext(Dispatchers.IO) {
-              async {
+        ) = withContext(Dispatchers.IO) {
+            async {
                 val processBuilder = ProcessBuilder(command.toList())
 
                 if (!inheritEnv) {
-                  processBuilder.environment().clear()
+                    processBuilder.environment().clear()
                 }
                 processBuilder.environment().putAll(envs)
 
@@ -67,59 +64,59 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                 logInfo("starting command '${command.joinToString(" ")}'")
 
                 launch {
-                  while (process.isAlive && !stdin.isClosedForReceive) {
-                    yield()
-                    val result = stdin.tryReceive()
-                    if (result.isSuccess) {
-                      result.getOrNull()?.let {
-                        stdinWriter.write(it)
-                        stdinWriter.newLine()
-                        stdinWriter.flush()
-                      }
+                    while (process.isAlive && !stdin.isClosedForReceive) {
+                        yield()
+                        val result = stdin.tryReceive()
+                        if (result.isSuccess) {
+                            result.getOrNull()?.let {
+                                stdinWriter.write(it)
+                                stdinWriter.newLine()
+                                stdinWriter.flush()
+                            }
+                        }
                     }
-                  }
                 }
 
                 try {
-                  launch {
-                    process.inputStream
-                        .bufferedReader(Charset.defaultCharset())
-                        .lineSequence()
-                        .asFlow()
-                        .flowOn(
-                            Dispatchers.IO,
-                        )
-                        .collect {
-                          val entry =
-                              TimestampedOutputLine(
-                                  TimeSource.Monotonic.markNow(),
-                                  it,
-                                  OutputType.STDOUT,
-                              )
-                          output.invoke(entry)
-                        }
-                  }
+                    launch {
+                        process.inputStream
+                            .bufferedReader(Charset.defaultCharset())
+                            .lineSequence()
+                            .asFlow()
+                            .flowOn(
+                                Dispatchers.IO,
+                            )
+                            .collect {
+                                val entry =
+                                    TimestampedOutputLine(
+                                        TimeSource.Monotonic.markNow(),
+                                        it,
+                                        OutputType.STDOUT,
+                                    )
+                                output.invoke(entry)
+                            }
+                    }
 
-                  launch {
-                    process.errorStream
-                        .bufferedReader(Charset.defaultCharset())
-                        .lineSequence()
-                        .asFlow()
-                        .flowOn(
-                            Dispatchers.IO,
-                        )
-                        .collect {
-                          val entry = TimestampedOutputLine(markNow(), it, OutputType.STDERR)
-                          output.invoke(entry)
-                        }
-                  }
+                    launch {
+                        process.errorStream
+                            .bufferedReader(Charset.defaultCharset())
+                            .lineSequence()
+                            .asFlow()
+                            .flowOn(
+                                Dispatchers.IO,
+                            )
+                            .collect {
+                                val entry = TimestampedOutputLine(markNow(), it, OutputType.STDERR)
+                                output.invoke(entry)
+                            }
+                    }
 
-                  if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
-                    logInfo(
-                        "timeout for command exceeded ($timeout)",
-                        context = context,
-                    )
-                  }
+                    if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
+                        logInfo(
+                            "timeout for command exceeded ($timeout)",
+                            context = context,
+                        )
+                    }
 
                   /*
                   if (!stdin.isClosedForSend) {
@@ -127,47 +124,45 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
                   }
                    */
 
-                  val end = TimeSource.Monotonic.markNow()
-                  killProcessAndWait(process)
+                    val end = TimeSource.Monotonic.markNow()
+                    killProcessAndWait(process)
 
-                  ProcessResult(
-                      exitCode = process.exitValue(),
-                      runtime = end.minus(context.start),
-                  )
+                    ProcessResult(
+                        exitCode = process.exitValue(),
+                        runtime = end.minus(context.start),
+                    )
                 } finally {
-                  killProcessAndWait(process)
+                    killProcessAndWait(process)
                 }
-              }
             }
+        }
 
         override fun close() {}
-      }
+    }
 
-  override fun close() {
-    runners.forEach { it.close() }
-  }
+    override fun close() {
+        runners.forEach { it.close() }
+    }
 }
 
 class LocalTestContext(testId: String? = null) :
-    TestContext(testId), CommandTestContext<LocalCommandBuilder, LocalScriptBuilder> {
+    TestContext(testId),
+    CommandTestContext<LocalCommandBuilder, LocalScriptBuilder> {
+    private val resources = mutableListOf<Closeable>()
 
-  private val resources = mutableListOf<Closeable>()
+    override fun command(vararg command: String) = LocalCommandBuilder(command.toList().toTypedArray()).apply { resources.add(this) }
 
-  override fun command(vararg command: String) =
-      LocalCommandBuilder(command.toList().toTypedArray()).apply { resources.add(this) }
-
-  override fun command(command: Path) =
-      LocalCommandBuilder(listOf(command.absolutePathString()).toTypedArray()).apply {
+    override fun command(command: Path) = LocalCommandBuilder(listOf(command.absolutePathString()).toTypedArray()).apply {
         resources.add(this)
-      }
+    }
 
-  override fun script() = LocalScriptBuilder().apply { resources.add(this) }
+    override fun script() = LocalScriptBuilder().apply { resources.add(this) }
 
-  override fun toString(): String = "LocalTestContext()"
+    override fun toString(): String = "LocalTestContext()"
 
-  override fun close() {
-    resources.forEach { it.close() }
-  }
+    override fun close() {
+        resources.forEach { it.close() }
+    }
 }
 
 fun localTestContext(testId: String? = null) = LocalTestContext(testId)

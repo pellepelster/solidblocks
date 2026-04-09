@@ -9,13 +9,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class FloatingIPsListWrapper(
-    @SerialName("floating_ips") val floatingIPs: List<FloatingIpResponse>,
-    override val meta: MetaResponse,
-) : ListResponse<FloatingIpResponse> {
-
-  override val list: List<FloatingIpResponse>
-    get() = floatingIPs
+data class FloatingIPsListWrapper(@SerialName("floating_ips") val floatingIPs: List<FloatingIpResponse>, override val meta: MetaResponse) : ListResponse<FloatingIpResponse> {
+    override val list: List<FloatingIpResponse>
+        get() = floatingIPs
 }
 
 @Serializable
@@ -30,28 +26,19 @@ data class FloatingIpResponse(
 class HetznerFloatingIpsApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<Long, FloatingIpResponse>,
     HetznerProtectedResourceApi<Long, FloatingIpResponse> {
+    override suspend fun listPaged(page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>): FloatingIPsListWrapper =
+        api.get("v1/floating_ips?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list floating ips")
 
-  override suspend fun listPaged(
-      page: Int,
-      perPage: Int,
-      filter: Map<String, FilterValue>,
-      labelSelectors: Map<String, LabelSelectorValue>,
-  ): FloatingIPsListWrapper =
-      api.get("v1/floating_ips?${listQuery(page, perPage, filter, labelSelectors)}")
-          ?: throw RuntimeException("failed to list floating ips")
+    override suspend fun delete(id: Long) = api.delete("v1/floating_ips/$id")
 
-  override suspend fun delete(id: Long) = api.delete("v1/floating_ips/$id")
+    override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper = api.post(
+        "v1/floating_ips/$id/actions/change_protection",
+        ChangeVolumeProtectionRequest(delete),
+    ) ?: throw RuntimeException("failed to change floating ip protection")
 
-  override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper =
-      api.post(
-          "v1/floating_ips/$id/actions/change_protection",
-          ChangeVolumeProtectionRequest(delete),
-      ) ?: throw RuntimeException("failed to change floating ip protection")
+    suspend fun unassign(id: Long, delete: Boolean): ActionResponseWrapper? = api.post("v1/floating_ips/$id/actions/unassign")
 
-  suspend fun unassign(id: Long, delete: Boolean): ActionResponseWrapper? =
-      api.post("v1/floating_ips/$id/actions/unassign")
-
-  override suspend fun action(id: Long): ActionResponseWrapper =
-      api.get("v1/floating_ips/actions/$id")
-          ?: throw RuntimeException("failed to get action for floating")
+    override suspend fun action(id: Long): ActionResponseWrapper = api.get("v1/floating_ips/actions/$id")
+        ?: throw RuntimeException("failed to get action for floating")
 }

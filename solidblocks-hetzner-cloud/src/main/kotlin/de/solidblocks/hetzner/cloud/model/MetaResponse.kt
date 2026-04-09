@@ -4,11 +4,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 interface ListResponse<T> {
-  val meta: MetaResponse
-  val list: List<T>
+    val meta: MetaResponse
+    val list: List<T>
 }
 
-@Serializable data class MetaResponse(val pagination: Pagination)
+@Serializable
+data class MetaResponse(val pagination: Pagination)
 
 @Serializable
 data class Pagination(

@@ -11,9 +11,9 @@ class PassSecret(
     val secret: ((CloudProvisionerContext) -> String)? = null,
     dependsOn: Set<BaseResource> = emptySet(),
 ) : BaseInfrastructureResource<PassSecretRuntime>(name, dependsOn) {
-  fun asLookup() = PassSecretLookup(name)
+    fun asLookup() = PassSecretLookup(name)
 
-  override fun logText() = "pass secret '$name'"
+    override fun logText() = "pass secret '$name'"
 
-  override val lookupType = PassSecretLookup::class
+    override val lookupType = PassSecretLookup::class
 }

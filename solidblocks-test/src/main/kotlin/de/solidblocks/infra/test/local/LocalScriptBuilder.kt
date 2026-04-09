@@ -7,25 +7,24 @@ import kotlinx.coroutines.runBlocking
 import localTestContext
 
 class LocalScriptBuilder : ScriptBuilder() {
+    override fun run(): CommandResult<TimestampedOutputLine> = runBlocking {
+        val buildScript = buildScript()
+        val command =
+            localTestContext()
+                .command(*buildScript.second.toTypedArray())
+                .workingDir(buildScript.first)
+                .env(envs)
+                .inheritEnv(inheritEnv)
+                .defaultWaitForOutput(defaultWaitForOutput)
 
-  override fun run(): CommandResult<TimestampedOutputLine> = runBlocking {
-    val buildScript = buildScript()
-    val command =
-        localTestContext()
-            .command(*buildScript.second.toTypedArray())
-            .workingDir(buildScript.first)
-            .env(envs)
-            .inheritEnv(inheritEnv)
-            .defaultWaitForOutput(defaultWaitForOutput)
+        if (assertSteps) {
+            steps.forEachIndexed { index, step ->
+                command.assert { it.waitForOutput(".*finished step $index.*") { "continue" } }
 
-    if (assertSteps) {
-      steps.forEachIndexed { index, step ->
-        command.assert { it.waitForOutput(".*finished step $index.*") { "continue" } }
+                command.assert { step.assertion?.invoke(it) }
+            }
+        }
 
-        command.assert { step.assertion?.invoke(it) }
-      }
+        command.runResult()
     }
-
-    command.runResult()
-  }
 }

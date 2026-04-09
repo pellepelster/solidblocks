@@ -15,9 +15,9 @@ class GarageFsBucket(
     dependsOn: Set<BaseResource> = emptySet(),
 ) : BaseInfrastructureResource<GarageFsPermissionRuntime>(name, setOf(server) + dependsOn) {
 
-  fun asLookup() = GarageFsBucketLookup(name, server, adminToken)
+    fun asLookup() = GarageFsBucketLookup(name, server, adminToken)
 
-  override fun logText() = "GarageFS S3 bucket '$name' on ${server.logText()}"
+    override fun logText() = "GarageFS S3 bucket '$name' on ${server.logText()}"
 
-  override val lookupType = GarageFsBucketLookup::class
+    override val lookupType = GarageFsBucketLookup::class
 }

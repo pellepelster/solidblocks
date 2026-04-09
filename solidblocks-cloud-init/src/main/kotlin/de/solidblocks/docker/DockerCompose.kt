@@ -8,20 +8,16 @@ import kotlinx.serialization.Serializable
 private val yaml =
     Yaml(
         configuration =
-            YamlConfiguration(
-                encodeDefaults = false,
-                encodingIndentationSize = 2,
-            ),
+        YamlConfiguration(
+            encodeDefaults = false,
+            encodingIndentationSize = 2,
+        ),
     )
 
 public fun ComposeFile.toYaml(): String = yaml.encodeToString(ComposeFile.serializer(), this)
 
 @Serializable
-public data class ComposeFile(
-    val version: String = "3.9",
-    val services: Map<String, Service> = emptyMap(),
-    val networks: Map<String, NetworkDefinition> = emptyMap(),
-)
+public data class ComposeFile(val version: String = "3.9", val services: Map<String, Service> = emptyMap(), val networks: Map<String, NetworkDefinition> = emptyMap())
 
 @Serializable
 data class Service(
@@ -67,40 +63,25 @@ data class Service(
 )
 
 enum class Protocol {
-  tcp,
-  udp,
+    tcp,
+    udp,
 }
 
 @Serializable
-class PortMapping(
-    val target: Int,
-    val published: Int? = null,
-    val protocol: Protocol? = null,
-    val mode: String? = null,
-)
+class PortMapping(val target: Int, val published: Int? = null, val protocol: Protocol? = null, val mode: String? = null)
 
 enum class MountType {
-  bind,
+    bind,
 }
 
 @Serializable
-data class Mount(
-    val type: MountType,
-    val source: String,
-    val target: String,
-    @SerialName("read_only") val readOnly: Boolean? = null,
-    val bind: BindOptions? = null,
-    val volume: VolumeOptions? = null,
-)
+data class Mount(val type: MountType, val source: String, val target: String, @SerialName("read_only") val readOnly: Boolean? = null, val bind: BindOptions? = null, val volume: VolumeOptions? = null)
 
 @Serializable
-data class BindOptions(
-    val propagation: String? = null,
-    @SerialName("create_host_path") val createHostPath: Boolean? = null,
-    @SerialName("selinux") val selinux: String? = null,
-)
+data class BindOptions(val propagation: String? = null, @SerialName("create_host_path") val createHostPath: Boolean? = null, @SerialName("selinux") val selinux: String? = null)
 
-@Serializable data class VolumeOptions(val nocopy: Boolean? = null)
+@Serializable
+data class VolumeOptions(val nocopy: Boolean? = null)
 
 @Serializable
 data class NetworkDefinition(
@@ -116,35 +97,39 @@ data class NetworkDefinition(
 @Serializable
 data class Ipam(val driver: String? = null, val config: List<IpamConfig> = emptyList())
 
-@Serializable data class IpamConfig(val subnet: String? = null, val gateway: String? = null)
+@Serializable
+data class IpamConfig(val subnet: String? = null, val gateway: String? = null)
 
 @Serializable
 sealed class DependsOn {
-  @Serializable @SerialName("list") data class ServiceList(val services: List<String>) : DependsOn()
+    @Serializable
+    @SerialName("list")
+    data class ServiceList(val services: List<String>) : DependsOn()
 
-  @Serializable
-  @SerialName("map")
-  data class ServiceMap(val conditions: Map<String, ServiceCondition>) : DependsOn()
+    @Serializable
+    @SerialName("map")
+    data class ServiceMap(val conditions: Map<String, ServiceCondition>) : DependsOn()
 }
 
 @Serializable
-data class ServiceCondition(
-    val condition: Condition = Condition.service_started,
-    val restart: Boolean? = null,
-)
+data class ServiceCondition(val condition: Condition = Condition.service_started, val restart: Boolean? = null)
 
 @Serializable
 enum class Condition {
-  service_started,
-  service_healthy,
-  service_completed_successfully,
+    service_started,
+    service_healthy,
+    service_completed_successfully,
 }
 
 @Serializable
 sealed class StringOrList {
-  @Serializable @SerialName("string") data class Single(val value: String) : StringOrList()
+    @Serializable
+    @SerialName("string")
+    data class Single(val value: String) : StringOrList()
 
-  @Serializable @SerialName("list") data class Many(val values: List<String>) : StringOrList()
+    @Serializable
+    @SerialName("list")
+    data class Many(val values: List<String>) : StringOrList()
 }
 
 @Serializable
@@ -172,18 +157,23 @@ data class Logging(val driver: String? = null, val options: Map<String, String> 
 
 @Serializable
 enum class RestartPolicy {
-  no,
-  always,
-  @SerialName("on-failure") on_failure,
-  @SerialName("unless-stopped") unless_stopped,
+    no,
+    always,
+
+    @SerialName("on-failure")
+    on_failure,
+
+    @SerialName("unless-stopped")
+    unless_stopped,
 }
 
 @Serializable
 enum class PullPolicy {
-  always,
-  never,
-  missing,
-  build,
+    always,
+    never,
+    missing,
+    build,
 }
 
-@Serializable data class ULimit(val soft: Int? = null, val hard: Int? = null)
+@Serializable
+data class ULimit(val soft: Int? = null, val hard: Int? = null)

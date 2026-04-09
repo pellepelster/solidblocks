@@ -6,62 +6,36 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 object Constants {
-  val durationFormatter = DecimalFormat("000.000")
+    val durationFormatter = DecimalFormat("000.000")
 }
 
 public enum class LogSource {
-  STDOUT,
-  STDERR,
-  CLOUDINIT,
+    STDOUT,
+    STDERR,
+    CLOUDINIT,
 }
 
 public enum class LogLevel {
-  INFO,
-  ERROR,
-  SUCCESS,
-  WARNING,
-  DEBUG,
+    INFO,
+    ERROR,
+    SUCCESS,
+    WARNING,
+    DEBUG,
 }
 
 val logLevelMaxLength = LogLevel.entries.maxOf { it.name.length }
 
-fun logInfo(
-    message: String,
-    source: LogSource? = null,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.INFO, source, duration, context)
+fun logInfo(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) = log(message, LogLevel.INFO, source, duration, context)
 
-fun logInfo(message: String, source: LogSource? = null, context: LogContext? = null) =
-    log(message, LogLevel.INFO, source, null, context)
+fun logInfo(message: String, source: LogSource? = null, context: LogContext? = null) = log(message, LogLevel.INFO, source, null, context)
 
-fun logError(
-    message: String,
-    source: LogSource? = null,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.ERROR, source, duration, context)
+fun logError(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) = log(message, LogLevel.ERROR, source, duration, context)
 
-fun logSuccess(
-    message: String,
-    source: LogSource? = null,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.SUCCESS, source, duration, context)
+fun logSuccess(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) = log(message, LogLevel.SUCCESS, source, duration, context)
 
-fun logWarning(
-    message: String,
-    source: LogSource? = null,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.WARNING, source, duration, context)
+fun logWarning(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) = log(message, LogLevel.WARNING, source, duration, context)
 
-fun logDebug(
-    message: String,
-    source: LogSource? = null,
-    duration: Duration? = null,
-    context: LogContext? = null,
-) = log(message, LogLevel.DEBUG, source, duration, context)
+fun logDebug(message: String, source: LogSource? = null, duration: Duration? = null, context: LogContext? = null) = log(message, LogLevel.DEBUG, source, duration, context)
 
 fun log(
     message: String,
@@ -70,47 +44,47 @@ fun log(
     duration: Duration? = null,
     context: LogContext? = null,
 ) {
-  val color: COLORS? =
-      when (level) {
-        LogLevel.INFO -> null
-        LogLevel.DEBUG -> COLORS.BRIGHT_BLUE
-        LogLevel.ERROR -> COLORS.RED
-        LogLevel.SUCCESS -> COLORS.GREEN
-        LogLevel.WARNING -> COLORS.YELLOW
-      }
+    val color: COLORS? =
+        when (level) {
+            LogLevel.INFO -> null
+            LogLevel.DEBUG -> COLORS.BRIGHT_BLUE
+            LogLevel.ERROR -> COLORS.RED
+            LogLevel.SUCCESS -> COLORS.GREEN
+            LogLevel.WARNING -> COLORS.YELLOW
+        }
 
-  val formattedMessage =
-      if (color == null) {
-        message
-      } else {
-        color(message, color)
-      }
+    val formattedMessage =
+        if (color == null) {
+            message
+        } else {
+            color(message, color)
+        }
 
-  val formattedSource =
-      if (source == null) {
-        null
-      } else {
-        "[$source]"
-      }
+    val formattedSource =
+        if (source == null) {
+            null
+        } else {
+            "[$source]"
+        }
 
-  val d =
-      duration
-          ?: when (context) {
-            is TimingLogContext -> TimeSource.Monotonic.markNow() - context.start
-            else -> null
-          }
+    val d =
+        duration
+            ?: when (context) {
+                is TimingLogContext -> TimeSource.Monotonic.markNow() - context.start
+                else -> null
+            }
 
-  val formattedDuration =
-      if (d == null) {
-        null
-      } else {
-        "[${durationFormatter.format(d.inWholeMilliseconds / 1000f)}s]"
-      }
+    val formattedDuration =
+        if (d == null) {
+            null
+        } else {
+            "[${durationFormatter.format(d.inWholeMilliseconds / 1000f)}s]"
+        }
 
-  val formattedParts =
-      listOfNotNull(formattedSource, formattedDuration, formattedMessage).joinToString(" ")
+    val formattedParts =
+        listOfNotNull(formattedSource, formattedDuration, formattedMessage).joinToString(" ")
 
-  System.err.println(
-      "[${level.name.padStart(logLevelMaxLength)}] ${"  ".repeat(context?.indent ?: 0)}$formattedParts",
-  )
+    System.err.println(
+        "[${level.name.padStart(logLevelMaxLength)}] ${"  ".repeat(context?.indent ?: 0)}$formattedParts",
+    )
 }

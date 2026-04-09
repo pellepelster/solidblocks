@@ -13,23 +13,22 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
 
 class CloudApplyCommand : CliktCommand(name = "apply") {
+    override fun help(context: Context) = "roll out a cloud configuration"
 
-  override fun help(context: Context) = "roll out a cloud configuration"
+    private val configFile by argument().file(mustExist = true)
 
-  private val configFile by argument().file(mustExist = true)
+    override fun run() {
+        val manager = CloudManager(configFile)
+        val runtime =
+            when (val result = manager.validate()) {
+                is Error<CloudConfigurationRuntime> -> {
+                    logError(result.error)
+                    throw ProgramResult(1)
+                }
 
-  override fun run() {
-    val manager = CloudManager(configFile)
-    val runtime =
-        when (val result = manager.validate()) {
-          is Error<CloudConfigurationRuntime> -> {
-            logError(result.error)
-            throw ProgramResult(1)
-          }
+                is Success<CloudConfigurationRuntime> -> result.data
+            }
 
-          is Success<CloudConfigurationRuntime> -> result.data
-        }
-
-    printMarkdown(manager.apply(runtime))
-  }
+        printMarkdown(manager.apply(runtime))
+    }
 }

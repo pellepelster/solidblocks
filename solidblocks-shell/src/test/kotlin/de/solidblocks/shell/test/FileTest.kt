@@ -10,58 +10,58 @@ import de.solidblocks.shell.OtherPermission
 import de.solidblocks.shell.UserPermission
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
-import java.util.*
 import localTestContext
 import org.junit.jupiter.api.Test
+import java.util.*
 
 public class FileTest {
-  @Test
-  fun testExtractToDirectory() {
-    val tempDir = tempDir()
-    tempDir.zipFile("file.zip").entry("file1", "content1").entry("file2", "content2").create()
+    @Test
+    fun testExtractToDirectory() {
+        val tempDir = tempDir()
+        tempDir.zipFile("file.zip").entry("file1", "content1").entry("file2", "content2").create()
 
-    val extractTempDir = "/tmp/${UUID.randomUUID()}"
+        val extractTempDir = "/tmp/${UUID.randomUUID()}"
 
-    val result =
-        localTestContext()
-            .script()
-            .sources(tempDir)
-            .sources(workingDir().resolve("lib"))
-            .includes(workingDir().resolve("lib").resolve("file.sh"))
-            .step("file_extract_to_directory file.zip $extractTempDir") {
-              it.fileExists("$extractTempDir/file1") shouldBe true
-              it.fileExists("$extractTempDir/file2") shouldBe true
-              it.fileExists("$extractTempDir/.file.zip.extracted") shouldBe true
-            }
-            .run()
+        val result =
+            localTestContext()
+                .script()
+                .sources(tempDir)
+                .sources(workingDir().resolve("lib"))
+                .includes(workingDir().resolve("lib").resolve("file.sh"))
+                .step("file_extract_to_directory file.zip $extractTempDir") {
+                    it.fileExists("$extractTempDir/file1") shouldBe true
+                    it.fileExists("$extractTempDir/file2") shouldBe true
+                    it.fileExists("$extractTempDir/.file.zip.extracted") shouldBe true
+                }
+                .run()
 
-    assertSoftly(result) { it shouldHaveExitCode 0 }
-  }
+        assertSoftly(result) { it shouldHaveExitCode 0 }
+    }
 
-  @Test
-  fun testDefaultFilePermission() {
-    FilePermissions().renderChmod() shouldBe "u=rw-,g=---,o=---"
-  }
+    @Test
+    fun testDefaultFilePermission() {
+        FilePermissions().renderChmod() shouldBe "u=rw-,g=---,o=---"
+    }
 
-  @Test
-  fun testFilePermission() {
-    FilePermissions(
+    @Test
+    fun testFilePermission() {
+        FilePermissions(
             UserPermission(true, true, true),
             GroupPermission(true, false, true),
             OtherPermission(false, true, false),
         )
-        .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
-    FilePermissions(
+            .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
+        FilePermissions(
             UserPermission(true, true, true),
             GroupPermission(true, false, true),
             OtherPermission(false, true, false),
         )
-        .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
-    FilePermissions(
+            .renderChmod() shouldBe "u=rwx,g=r-x,o=-w-"
+        FilePermissions(
             UserPermission(false, false, false),
             GroupPermission(false, false, false),
             OtherPermission(false, false, false),
         )
-        .renderChmod() shouldBe "u=---,g=---,o=---"
-  }
+            .renderChmod() shouldBe "u=---,g=---,o=---"
+    }
 }

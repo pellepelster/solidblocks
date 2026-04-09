@@ -11,22 +11,22 @@ import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 
 public class CaddyTest {
-  @Test
-  fun testEnsurePackage() {
-    val result =
-        dockerTestContext(DockerTestImage.DEBIAN_12)
-            .script()
-            .sources(workingDir().resolve("lib"))
-            .includes(workingDir().resolve("lib").resolve("curl.sh"))
-            .includes(workingDir().resolve("lib").resolve("caddy.sh"))
-            .step("caddy_install") { it.fileExists("/usr/bin/caddy") shouldBe true }
-            .run()
+    @Test
+    fun testEnsurePackage() {
+        val result =
+            dockerTestContext(DockerTestImage.DEBIAN_12)
+                .script()
+                .sources(workingDir().resolve("lib"))
+                .includes(workingDir().resolve("lib").resolve("curl.sh"))
+                .includes(workingDir().resolve("lib").resolve("caddy.sh"))
+                .step("caddy_install") { it.fileExists("/usr/bin/caddy") shouldBe true }
+                .run()
 
-    assertSoftly(result) { it shouldHaveExitCode 0 }
-  }
+        assertSoftly(result) { it shouldHaveExitCode 0 }
+    }
 
-  @Test
-  fun testLibrarySource() {
-    CaddyLibrary.source() shouldContain "caddy_install"
-  }
+    @Test
+    fun testLibrarySource() {
+        CaddyLibrary.source() shouldContain "caddy_install"
+    }
 }

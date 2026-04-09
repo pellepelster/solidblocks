@@ -10,13 +10,12 @@ import de.solidblocks.cloud.utils.logMessage
 
 class StringListConfigurationFactory : ConfigurationFactory<String> {
 
-  override val help = ConfigurationHelp("TODO", "TODO")
+    override val help = ConfigurationHelp("TODO", "TODO")
 
-  override val keywords = emptyList<SimpleKeyword<*>>()
+    override val keywords = emptyList<SimpleKeyword<*>>()
 
-  override fun parse(yaml: YamlNode): Result<String> =
-      when (yaml) {
+    override fun parse(yaml: YamlNode): Result<String> = when (yaml) {
         is YamlScalar -> Success(yaml.content)
         else -> Error("expected a string at ${yaml.location.logMessage()}")
-      }
+    }
 }

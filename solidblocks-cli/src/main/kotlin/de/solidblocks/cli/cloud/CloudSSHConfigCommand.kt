@@ -12,31 +12,30 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
 
 class CloudSSHConfigCommand : CliktCommand(name = "ssh-config") {
+    private val configFile by argument().file(mustExist = true)
 
-  private val configFile by argument().file(mustExist = true)
+    override fun help(context: Context) = "generates a SSH configuration file to access cloud VMs"
 
-  override fun help(context: Context) = "generates a SSH configuration file to access cloud VMs"
+    override fun run() {
+        val manager = CloudManager(configFile)
 
-  override fun run() {
-    val manager = CloudManager(configFile)
+        val runtime =
+            when (val result = manager.validate()) {
+                is Error<CloudConfigurationRuntime> -> {
+                    logError(result.error)
+                    throw ProgramResult(1)
+                }
 
-    val runtime =
-        when (val result = manager.validate()) {
-          is Error<CloudConfigurationRuntime> -> {
-            logError(result.error)
-            throw ProgramResult(1)
-          }
+                is Success<CloudConfigurationRuntime> -> result.data
+            }
 
-          is Success<CloudConfigurationRuntime> -> result.data
+        when (val result = manager.writeSshConfig(runtime)) {
+            is Error<Unit> -> {
+                logError(result.error)
+                throw ProgramResult(1)
+            }
+
+            else -> {}
         }
-
-    when (val result = manager.writeSshConfig(runtime)) {
-      is Error<Unit> -> {
-        logError(result.error)
-        throw ProgramResult(1)
-      }
-
-      else -> {}
     }
-  }
 }

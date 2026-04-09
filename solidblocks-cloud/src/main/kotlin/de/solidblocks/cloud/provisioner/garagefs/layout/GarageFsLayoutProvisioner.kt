@@ -26,115 +26,105 @@ class GarageFsLayoutProvisioner :
     ResourceLookupProvider<GarageFsLayoutLookup, GarageFsLayoutRuntime>,
     InfrastructureResourceProvisioner<GarageFsLayout, GarageFsLayoutRuntime> {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  override suspend fun diff(resource: GarageFsLayout, context: CloudProvisionerContext) =
-      when (val result = lookupInternal(resource.asLookup(), context)) {
+    override suspend fun diff(resource: GarageFsLayout, context: CloudProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
         is Success<GarageFsLayoutRuntime> -> {
-          context.withApiClients(resource.server, resource.adminToken) { apis ->
-            when (apis) {
-              is Error<GarageFsApi> -> ResourceDiff(resource, unknown)
-              is Success<GarageFsApi> -> {
-                val status = apis.data.clusterApi.getClusterStatus()
+            context.withApiClients(resource.server, resource.adminToken) { apis ->
+                when (apis) {
+                    is Error<GarageFsApi> -> ResourceDiff(resource, unknown)
+                    is Success<GarageFsApi> -> {
+                        val status = apis.data.clusterApi.getClusterStatus()
 
-                if (status.nodes.map { it.id } equalsIgnoreOrder result.data.nodes) {
-                  ResourceDiff(resource, up_to_date)
-                } else {
-                  ResourceDiff(
-                      resource,
-                      has_changes,
-                      changes =
-                          listOf(
-                              ResourceDiffItem(
-                                  "nodes",
-                                  expectedValue = status.nodes.joinToString(", ") { it.id },
-                                  actualValue =
-                                      if (result.data.nodes.isNotEmpty()) {
-                                        result.data.nodes.joinToString(", ") { it }
-                                      } else {
-                                        "<empty>"
-                                      },
-                              ),
-                          ),
-                  )
+                        if (status.nodes.map { it.id } equalsIgnoreOrder result.data.nodes) {
+                            ResourceDiff(resource, up_to_date)
+                        } else {
+                            ResourceDiff(
+                                resource,
+                                has_changes,
+                                changes =
+                                listOf(
+                                    ResourceDiffItem(
+                                        "nodes",
+                                        expectedValue = status.nodes.joinToString(", ") { it.id },
+                                        actualValue =
+                                        if (result.data.nodes.isNotEmpty()) {
+                                            result.data.nodes.joinToString(", ") { it }
+                                        } else {
+                                            "<empty>"
+                                        },
+                                    ),
+                                ),
+                            )
+                        }
+                    }
                 }
-              }
             }
-          }
         }
-      }
-
-  override suspend fun lookup(lookup: GarageFsLayoutLookup, context: CloudProvisionerContext) =
-      when (val result = lookupInternal(lookup, context)) {
-        is Error<GarageFsLayoutRuntime> -> null
-        is Success<GarageFsLayoutRuntime> -> result.data
-      }
-
-  suspend fun lookupInternal(
-      lookup: GarageFsLayoutLookup,
-      context: CloudProvisionerContext,
-  ): Result<GarageFsLayoutRuntime> =
-      context.withApiClients(lookup.server, lookup.adminToken) { apis ->
-        when (apis) {
-          is Error<GarageFsApi> -> Error(apis.error)
-          is Success<GarageFsApi> -> {
-            val layout = apis.data.clusterLayoutApi.getClusterLayout()
-            Success(GarageFsLayoutRuntime(lookup.name, layout.roles!!.map { it.id }))
-          }
-        }
-      }
-
-  override suspend fun apply(
-      resource: GarageFsLayout,
-      context: CloudProvisionerContext,
-      log: LogContext,
-  ): Result<GarageFsLayoutRuntime> {
-    val runtime = lookup(resource.asLookup(), context)
-
-    context.withApiClients(resource.server, resource.adminToken) {
-      val api =
-          when (it) {
-            is Error<GarageFsApi> -> throw RuntimeException(it.error)
-            is Success<GarageFsApi> -> it.data
-          }
-
-      val layout = api.clusterLayoutApi.getClusterLayout()
-      if ((layout.stagedRoleChanges ?: emptyList()).isNotEmpty()) {
-        throw RuntimeException(
-            "GarageFs has unexpected pending changes: ${(layout.stagedRoleChanges ?: emptyList()).joinToString(",")}",
-        )
-      }
-
-      val statusNodeIds = api.clusterApi.getClusterStatus().nodes.map { it.id }
-      val layoutNodeIds = (layout.roles ?: emptyList()).map { it.id }
-
-      val nodesToAdd = statusNodeIds.filter { !layoutNodeIds.contains(it) }
-
-      if (nodesToAdd.isNotEmpty()) {
-        logger.info {
-          "adding nodes ${layoutNodeIds.joinToString(", ")} to layout for ${resource.server.logText()}"
-        }
-
-        val request =
-            UpdateClusterLayoutRequest(
-                roles =
-                    nodesToAdd.map {
-                      ClusterLayoutNodeRequest(it, resource.capacity, emptyList(), "dc1")
-                    },
-            )
-        val response = api.clusterLayoutApi.updateClusterLayout(request)
-        api.clusterLayoutApi.applyClusterLayout(ApplyClusterLayoutRequest(response.version!! + 1))
-      } else {
-        logger.info { "to layout is up to date for ${resource.server.logText()}" }
-      }
     }
 
-    return lookup(resource.asLookup(), context)?.let { Success(it) }
-        ?: Error<GarageFsLayoutRuntime>("error creating ${resource.logText()}")
-  }
+    override suspend fun lookup(lookup: GarageFsLayoutLookup, context: CloudProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
+        is Error<GarageFsLayoutRuntime> -> null
+        is Success<GarageFsLayoutRuntime> -> result.data
+    }
 
-  override val supportedLookupType: KClass<*> = GarageFsLayoutLookup::class
+    suspend fun lookupInternal(lookup: GarageFsLayoutLookup, context: CloudProvisionerContext): Result<GarageFsLayoutRuntime> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
+        when (apis) {
+            is Error<GarageFsApi> -> Error(apis.error)
+            is Success<GarageFsApi> -> {
+                val layout = apis.data.clusterLayoutApi.getClusterLayout()
+                Success(GarageFsLayoutRuntime(lookup.name, layout.roles!!.map { it.id }))
+            }
+        }
+    }
 
-  override val supportedResourceType: KClass<*> = GarageFsLayout::class
+    override suspend fun apply(resource: GarageFsLayout, context: CloudProvisionerContext, log: LogContext): Result<GarageFsLayoutRuntime> {
+        val runtime = lookup(resource.asLookup(), context)
+
+        context.withApiClients(resource.server, resource.adminToken) {
+            val api =
+                when (it) {
+                    is Error<GarageFsApi> -> throw RuntimeException(it.error)
+                    is Success<GarageFsApi> -> it.data
+                }
+
+            val layout = api.clusterLayoutApi.getClusterLayout()
+            if ((layout.stagedRoleChanges ?: emptyList()).isNotEmpty()) {
+                throw RuntimeException(
+                    "GarageFs has unexpected pending changes: ${(layout.stagedRoleChanges ?: emptyList()).joinToString(",")}",
+                )
+            }
+
+            val statusNodeIds = api.clusterApi.getClusterStatus().nodes.map { it.id }
+            val layoutNodeIds = (layout.roles ?: emptyList()).map { it.id }
+
+            val nodesToAdd = statusNodeIds.filter { !layoutNodeIds.contains(it) }
+
+            if (nodesToAdd.isNotEmpty()) {
+                logger.info {
+                    "adding nodes ${layoutNodeIds.joinToString(", ")} to layout for ${resource.server.logText()}"
+                }
+
+                val request =
+                    UpdateClusterLayoutRequest(
+                        roles =
+                        nodesToAdd.map {
+                            ClusterLayoutNodeRequest(it, resource.capacity, emptyList(), "dc1")
+                        },
+                    )
+                val response = api.clusterLayoutApi.updateClusterLayout(request)
+                api.clusterLayoutApi.applyClusterLayout(ApplyClusterLayoutRequest(response.version!! + 1))
+            } else {
+                logger.info { "to layout is up to date for ${resource.server.logText()}" }
+            }
+        }
+
+        return lookup(resource.asLookup(), context)?.let { Success(it) }
+            ?: Error<GarageFsLayoutRuntime>("error creating ${resource.logText()}")
+    }
+
+    override val supportedLookupType: KClass<*> = GarageFsLayoutLookup::class
+
+    override val supportedResourceType: KClass<*> = GarageFsLayout::class
 }

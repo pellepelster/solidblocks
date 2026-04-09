@@ -25,102 +25,96 @@ import de.solidblocks.systemd.Target
 import de.solidblocks.systemd.Unit
 import de.solidblocks.systemd.installSystemDUnit
 
-class PostgresqlUserData(
-    val storageDevice: String,
-    val backupDevice: String,
-    val instanceName: String,
-    val superUserPassword: String,
-) : ServiceUserData {
+class PostgresqlUserData(val storageDevice: String, val backupDevice: String, val instanceName: String, val superUserPassword: String) : ServiceUserData {
+    override fun render(): String {
+        val storageMount = "/storage/data"
+        val backupMount = "/storage/backup"
 
-  override fun render(): String {
-    val storageMount = "/storage/data"
-    val backupMount = "/storage/backup"
+        val userData = ShellScript()
 
-    val userData = ShellScript()
+        userData.addInlineSource(UtilsLibrary)
 
-    userData.addInlineSource(UtilsLibrary)
+        userData.addInlineSource(AptLibrary)
+        userData.addInlineSource(CurlLibrary)
+        userData.addInlineSource(DockerLibrary)
+        userData.addInlineSource(LogLibrary)
 
-    userData.addInlineSource(AptLibrary)
-    userData.addInlineSource(CurlLibrary)
-    userData.addInlineSource(DockerLibrary)
-    userData.addInlineSource(LogLibrary)
+        userData.addInlineSource(PackageLibrary)
+        userData.addCommand(PackageLibrary.UpdateRepositories())
+        userData.addCommand(PackageLibrary.UpdateSystem())
 
-    userData.addInlineSource(PackageLibrary)
-    userData.addCommand(PackageLibrary.UpdateRepositories())
-    userData.addCommand(PackageLibrary.UpdateSystem())
+        userData.addInlineSource(StorageLibrary)
+        userData.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
+        userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
 
-    userData.addInlineSource(StorageLibrary)
-    userData.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
-    userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
+        userData.addCommand(DockerLibrary.InstallDebian())
+        userData.addCommand(MkDir("/storage/data", "10000", "10000"))
+        userData.addCommand(MkDir("/storage/backup", "10000", "10000"))
 
-    userData.addCommand(DockerLibrary.InstallDebian())
-    userData.addCommand(MkDir("/storage/data", "10000", "10000"))
-    userData.addCommand(MkDir("/storage/backup", "10000", "10000"))
+        val dockerWorkingDirectory = "/usr/local/etc/containers/"
+        val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
+        val environment = mapOf<String, String>()
 
-    val dockerWorkingDirectory = "/usr/local/etc/containers/"
-    val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
-    val environment = mapOf<String, String>()
-
-    val dockerCompose =
-        ComposeFile(
-            services =
+        val dockerCompose =
+            ComposeFile(
+                services =
                 mapOf(
                     instanceName to
                         de.solidblocks.docker.Service(
                             image = "ghcr.io/pellepelster/solidblocks-rds-postgresql:17-v0.4.15",
                             environment =
-                                mapOf(
-                                    "DB_INSTANCE_NAME" to instanceName,
-                                    "DB_BACKUP_LOCAL" to "1",
-                                    "DB_ADMIN_PASSWORD" to superUserPassword,
-                                ),
+                            mapOf(
+                                "DB_INSTANCE_NAME" to instanceName,
+                                "DB_BACKUP_LOCAL" to "1",
+                                "DB_ADMIN_PASSWORD" to superUserPassword,
+                            ),
                             volumes =
-                                listOf(
-                                    Mount(MountType.bind, storageMount, "/storage/data"),
-                                    Mount(MountType.bind, backupMount, "/storage/backup"),
-                                ),
+                            listOf(
+                                Mount(MountType.bind, storageMount, "/storage/data"),
+                                Mount(MountType.bind, backupMount, "/storage/backup"),
+                            ),
                             ports =
-                                listOf(
-                                    PortMapping(
-                                        5432,
-                                        5432,
-                                    ),
+                            listOf(
+                                PortMapping(
+                                    5432,
+                                    5432,
                                 ),
+                            ),
                         ),
                 ),
-        )
-    userData.addCommand(MkDir(dockerWorkingDirectory))
-    userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
+            )
+        userData.addCommand(MkDir(dockerWorkingDirectory))
+        userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
-    val dockerSystemDConfig =
-        SystemDService(
-            instanceName,
-            Unit(
-                "PostgresSQL instance '$instanceName'",
-                after = listOf(Target.DOCKER_SERVICE),
-                requires = listOf(Target.DOCKER_SERVICE),
-            ),
-            Service(
-                listOf(
-                    "/usr/bin/docker",
-                    "compose",
-                    "--file",
-                    dockerComposeFile,
-                    "up",
-                    "--force-recreate",
+        val dockerSystemDConfig =
+            SystemDService(
+                instanceName,
+                Unit(
+                    "PostgresSQL instance '$instanceName'",
+                    after = listOf(Target.DOCKER_SERVICE),
+                    requires = listOf(Target.DOCKER_SERVICE),
                 ),
-                restart = Restart.ALWAYS,
-                environment = environment,
-                workingDirectory = dockerWorkingDirectory,
-                execDown =
+                Service(
+                    listOf(
+                        "/usr/bin/docker",
+                        "compose",
+                        "--file",
+                        dockerComposeFile,
+                        "up",
+                        "--force-recreate",
+                    ),
+                    restart = Restart.ALWAYS,
+                    environment = environment,
+                    workingDirectory = dockerWorkingDirectory,
+                    execDown =
                     listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
-            ),
-            Install(),
-        )
+                ),
+                Install(),
+            )
 
-    userData.installSystemDUnit(dockerSystemDConfig)
-    userData.addCommand(SystemDLibrary.Restart(instanceName))
+        userData.installSystemDUnit(dockerSystemDConfig)
+        userData.addCommand(SystemDLibrary.Restart(instanceName))
 
-    return userData.render()
-  }
+        return userData.render()
+    }
 }

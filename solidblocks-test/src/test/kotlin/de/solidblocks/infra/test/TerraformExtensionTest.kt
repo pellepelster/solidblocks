@@ -6,16 +6,15 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(SolidblocksTest::class)
 public class TerraformExtensionTest {
+    @Test
+    fun testResourcesAreDestroyedAfterTest(context: SolidblocksTestContext) {
+        val terraform1 = TerraformExtensionTest::class.java.getResource("/terraformTestBed1").path
 
-  @Test
-  fun testResourcesAreDestroyedAfterTest(context: SolidblocksTestContext) {
-    val terraform1 = TerraformExtensionTest::class.java.getResource("/terraformTestBed1").path
-
-    val terraform = context.terraform(terraform1)
-    terraform.init()
-    terraform.apply()
-    val output = terraform.output()
-    val raw = output.raw()
-    raw shouldHaveSize 5
-  }
+        val terraform = context.terraform(terraform1)
+        terraform.init()
+        terraform.apply()
+        val output = terraform.output()
+        val raw = output.raw()
+        raw shouldHaveSize 5
+    }
 }

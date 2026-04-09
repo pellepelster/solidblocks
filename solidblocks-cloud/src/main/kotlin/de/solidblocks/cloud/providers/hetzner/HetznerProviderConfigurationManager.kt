@@ -25,63 +25,57 @@ class HetznerProviderConfigurationManager :
     CloudResourceProviderConfigurationManager<
         HetznerProviderConfiguration,
         HetznerProviderRuntime,
-    > {
+        > {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  override fun validate(
-      configuration: HetznerProviderConfiguration,
-      context: CloudConfigurationContext,
-      log: LogContext,
-  ): Result<HetznerProviderRuntime> {
-    if (System.getenv("HCLOUD_TOKEN") == null) {
-      "environment variable 'HCLOUD_TOKEN' not set"
-          .also {
-            logError(it, context = log)
-            return Error<HetznerProviderRuntime>(it)
-          }
+    override fun validate(configuration: HetznerProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<HetznerProviderRuntime> {
+        if (System.getenv("HCLOUD_TOKEN") == null) {
+            "environment variable 'HCLOUD_TOKEN' not set"
+                .also {
+                    logError(it, context = log)
+                    return Error<HetznerProviderRuntime>(it)
+                }
+        }
+
+        logInfo(
+            "servers default location is '${configuration.defaultLocation}' and default instance is '${configuration.defaultInstanceType}'",
+            context = log,
+        )
+
+        try {
+            val api = HetznerApi(System.getenv("HCLOUD_TOKEN"))
+            runBlocking { api.servers.list() }
+            logInfo("provided Hetzner cloud token is valid", context = log)
+
+            return Success(
+                HetznerProviderRuntime(
+                    System.getenv("HCLOUD_TOKEN"),
+                    configuration.defaultLocation,
+                    configuration.defaultInstanceType,
+                ),
+            )
+        } catch (e: Exception) {
+            "provided Hetzner cloud token is not valid"
+                .also {
+                    logger.error(e) { it }
+                    logError(it, context = log)
+                    return Error<HetznerProviderRuntime>(it)
+                }
+        }
     }
 
-    logInfo(
-        "servers default location is '${configuration.defaultLocation}' and default instance is '${configuration.defaultInstanceType}'",
-        context = log,
+    override fun createLookupProviders(runtime: HetznerProviderRuntime) = listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<ResourceLookupProvider<*, *>>
+
+    override fun createProvisioners(runtime: HetznerProviderRuntime) = listOf(
+        HetznerDnsRecordProvisioner(runtime.cloudToken),
+        HetznerServerProvisioner(runtime.cloudToken),
+        HetznerVolumeProvisioner(runtime.cloudToken),
+        HetznerSSHKeyProvisioner(runtime.cloudToken),
+        HetznerNetworkProvisioner(runtime.cloudToken),
+        HetznerSubnetProvisioner(runtime.cloudToken),
     )
+        as List<InfrastructureResourceProvisioner<*, *>>
 
-    try {
-      val api = HetznerApi(System.getenv("HCLOUD_TOKEN"))
-      runBlocking { api.servers.list() }
-      logInfo("provided Hetzner cloud token is valid", context = log)
-
-      return Success(
-          HetznerProviderRuntime(
-              System.getenv("HCLOUD_TOKEN"),
-              configuration.defaultLocation,
-              configuration.defaultInstanceType,
-          ),
-      )
-    } catch (e: Exception) {
-      "provided Hetzner cloud token is not valid"
-          .also {
-            logger.error(e) { it }
-            logError(it, context = log)
-            return Error<HetznerProviderRuntime>(it)
-          }
-    }
-  }
-
-  override fun createLookupProviders(runtime: HetznerProviderRuntime) =
-      listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<ResourceLookupProvider<*, *>>
-
-  override fun createProvisioners(runtime: HetznerProviderRuntime) =
-      listOf(
-          HetznerDnsRecordProvisioner(runtime.cloudToken),
-          HetznerServerProvisioner(runtime.cloudToken),
-          HetznerVolumeProvisioner(runtime.cloudToken),
-          HetznerSSHKeyProvisioner(runtime.cloudToken),
-          HetznerNetworkProvisioner(runtime.cloudToken),
-          HetznerSubnetProvisioner(runtime.cloudToken),
-      )
-          as List<InfrastructureResourceProvisioner<*, *>>
-
-  override val supportedConfiguration = HetznerProviderConfiguration::class
+    override val supportedConfiguration = HetznerProviderConfiguration::class
 }

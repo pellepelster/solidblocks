@@ -10,22 +10,21 @@ interface ProviderRegistration<
     C : ProviderConfiguration,
     R : ProviderConfigurationRuntime,
     M : ProviderConfigurationManager<C, R>,
-> {
-  val supportedConfiguration: KClass<C>
-  val supportedRuntime: KClass<R>
+    > {
+    val supportedConfiguration: KClass<C>
+    val supportedRuntime: KClass<R>
 
-  fun createConfigurationManager(): M
+    fun createConfigurationManager(): M
 
-  fun createConfigurationFactory(): ConfigurationFactory<C>
+    fun createConfigurationFactory(): ConfigurationFactory<C>
 
-  val type: String
+    val type: String
 }
 
 @Suppress("UNCHECKED_CAST")
 fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
     ProviderRegistration<*, *, *>,
->
-    .managerForConfiguration(configuration: C): ProviderConfigurationManager<C, R> =
+    >.managerForConfiguration(configuration: C): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
         ?.createConfigurationManager() as ProviderConfigurationManager<C, R>?
         ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")
@@ -33,16 +32,13 @@ fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
 @Suppress("UNCHECKED_CAST")
 fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
     ProviderRegistration<*, *, *>,
->
-    .managerForRuntime(runtime: R): ProviderConfigurationManager<C, R> =
+    >.managerForRuntime(runtime: R): ProviderConfigurationManager<C, R> =
     this.singleOrNull { it.supportedRuntime == runtime::class }?.createConfigurationManager()
         as ProviderConfigurationManager<C, R>?
         ?: throw RuntimeException("no manager found for '${runtime::class.qualifiedName}'")
 
 @Suppress("UNCHECKED_CAST")
-fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(
-    configuration: SSHKeyProviderConfiguration
-): SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderRuntime> =
+fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(configuration: SSHKeyProviderConfiguration): SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderRuntime> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
         ?.createConfigurationManager()
         as SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderRuntime>?

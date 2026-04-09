@@ -4,17 +4,16 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class CaddyConfigTest {
+    @Test
+    fun testRender() {
+        val config =
+            CaddyConfig(
+                GlobalOptions(FileSystemStorage("/data/storage/www"), "info@yolo.de"),
+                listOf(Site("yolo.de", ReverseProxy("http://localhost:3903"))),
+            )
 
-  @Test
-  fun testRender() {
-    val config =
-        CaddyConfig(
-            GlobalOptions(FileSystemStorage("/data/storage/www"), "info@yolo.de"),
-            listOf(Site("yolo.de", ReverseProxy("http://localhost:3903"))),
-        )
-
-    config.render() shouldBe
-        """
+        config.render() shouldBe
+            """
         {
           storage file_system {
             root /data/storage/www
@@ -27,6 +26,6 @@ class CaddyConfigTest {
         }
 
         """
-            .trimIndent()
-  }
+                .trimIndent()
+    }
 }

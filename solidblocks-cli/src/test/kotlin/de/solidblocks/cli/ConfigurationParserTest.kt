@@ -11,11 +11,10 @@ import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test
 
 class ConfigurationParserTest {
-
-  @Test
-  fun testParseConfiguration() {
-    val rawYml =
-        """
+    @Test
+    fun testParseConfiguration() {
+        val rawYml =
+            """
         test1:
           - name: foo
             flag1: true
@@ -29,34 +28,34 @@ class ConfigurationParserTest {
         test2:
           number1: 13
         """
-            .trimIndent()
+                .trimIndent()
 
-    val result = ConfigurationParser(TestConfigurationFactory()).parse(rawYml)
-    val testConfiguration = result.shouldBeTypeOf<Success<TestConfiguration>>()
+        val result = ConfigurationParser(TestConfigurationFactory()).parse(rawYml)
+        val testConfiguration = result.shouldBeTypeOf<Success<TestConfiguration>>()
 
-    testConfiguration.data.test1 shouldHaveSize 2
-    testConfiguration.data.test1[0].name shouldBe "foo"
-    testConfiguration.data.test1[0].flag1 shouldBe true
-    testConfiguration.data.test1[1].name shouldBe "bar"
-    testConfiguration.data.test1[1].flag1 shouldBe false
+        testConfiguration.data.test1 shouldHaveSize 2
+        testConfiguration.data.test1[0].name shouldBe "foo"
+        testConfiguration.data.test1[0].flag1 shouldBe true
+        testConfiguration.data.test1[1].name shouldBe "bar"
+        testConfiguration.data.test1[1].flag1 shouldBe false
 
-    testConfiguration.data.test2.number1 shouldBe 13
-  }
+        testConfiguration.data.test2.number1 shouldBe 13
+    }
 
-  @Test
-  fun testParseConfigurationError() {
-    val rawYml =
-        """
+    @Test
+    fun testParseConfigurationError() {
+        val rawYml =
+            """
         test1:
           - name: foo
             flag1: true
           - name: forbidden
             flag1: false
         """
-            .trimIndent()
+                .trimIndent()
 
-    val result = ConfigurationParser(TestConfigurationFactory()).parse(rawYml)
-    val testConfiguration = result.shouldBeTypeOf<Error<TestConfiguration>>()
-    testConfiguration.error shouldBe "name 'forbidden' is not allowed at line 4 colum 5"
-  }
+        val result = ConfigurationParser(TestConfigurationFactory()).parse(rawYml)
+        val testConfiguration = result.shouldBeTypeOf<Error<TestConfiguration>>()
+        testConfiguration.error shouldBe "name 'forbidden' is not allowed at line 4 colum 5"
+    }
 }

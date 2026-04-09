@@ -12,14 +12,14 @@ import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.model.ListResponse
 import de.solidblocks.hetzner.cloud.model.MetaResponse
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 enum class VolumeFormat {
-  ext4,
-  xfs,
+    ext4,
+    xfs,
 }
 
 @Serializable
@@ -35,11 +35,12 @@ data class VolumeCreateRequest(
     val labels: Map<String, String>? = null,
 )
 
-@Serializable data class VolumeResponseWrapper(@SerialName("volume") val volume: VolumeResponse)
+@Serializable
+data class VolumeResponseWrapper(@SerialName("volume") val volume: VolumeResponse)
 
 enum class VolumeStatus {
-  available,
-  creating,
+    available,
+    creating,
 }
 
 @Serializable
@@ -64,53 +65,36 @@ data class ChangeVolumeProtectionRequest(val delete: Boolean, val rebuild: Boole
 class HetznerVolumesApi(private val api: HetznerApi) :
     HetznerDeleteResourceApi<Long, VolumeResponse>,
     HetznerProtectedResourceApi<Long, VolumeResponse> {
+    override suspend fun listPaged(page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>): VolumesListWrapper =
+        api.get("v1/volumes?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list volumes")
 
-  override suspend fun listPaged(
-      page: Int,
-      perPage: Int,
-      filter: Map<String, FilterValue>,
-      labelSelectors: Map<String, LabelSelectorValue>,
-  ): VolumesListWrapper =
-      api.get("v1/volumes?${listQuery(page, perPage, filter, labelSelectors)}")
-          ?: throw RuntimeException("failed to list volumes")
+    override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper = api.post("v1/volumes/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))
+        ?: throw RuntimeException("failed to change protection")
 
-  override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper =
-      api.post("v1/volumes/$id/actions/change_protection", ChangeVolumeProtectionRequest(delete))
-          ?: throw RuntimeException("failed to change protection")
+    suspend fun detach(id: Long): ActionResponseWrapper = api.post("v1/volumes/$id/actions/detach") ?: throw RuntimeException("failed to detach volume")
 
-  suspend fun detach(id: Long): ActionResponseWrapper =
-      api.post("v1/volumes/$id/actions/detach") ?: throw RuntimeException("failed to detach volume")
+    override suspend fun action(id: Long): ActionResponseWrapper = api.get("v1/volumes/actions/$id") ?: throw RuntimeException("failed to get volume action")
 
-  override suspend fun action(id: Long): ActionResponseWrapper =
-      api.get("v1/volumes/actions/$id") ?: throw RuntimeException("failed to get volume action")
+    override suspend fun delete(id: Long) = api.delete("v1/volumes/$id")
 
-  override suspend fun delete(id: Long) = api.delete("v1/volumes/$id")
+    suspend fun get(id: Long) = api.get<VolumeResponseWrapper>("v1/volumes/$id")?.volume
 
-  suspend fun get(id: Long) = api.get<VolumeResponseWrapper>("v1/volumes/$id")?.volume
+    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 
-  suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+    suspend fun create(request: VolumeCreateRequest): VolumeResponseWrapper = api.post<VolumeResponseWrapper>("v1/volumes", request)
 
-  suspend fun create(request: VolumeCreateRequest): VolumeResponseWrapper =
-      api.post<VolumeResponseWrapper>("v1/volumes", request)
+    suspend fun update(id: Long, request: VolumeUpdateRequest) = api.put<VolumeResponseWrapper>("v1/volumes/$id", request)
 
-  suspend fun update(id: Long, request: VolumeUpdateRequest) =
-      api.put<VolumeResponseWrapper>("v1/volumes/$id", request)
+    suspend fun waitForAction(action: ActionResponseWrapper, logCallback: ((String) -> Unit)? = null) = waitForAction(action.action, logCallback)
 
-  suspend fun waitForAction(
-      action: ActionResponseWrapper,
-      logCallback: ((String) -> Unit)? = null,
-  ) = waitForAction(action.action, logCallback)
+    suspend fun waitForAction(action: ActionResponse, logCallback: ((String) -> Unit)? = null) = waitForAction(action.id, logCallback)
 
-  suspend fun waitForAction(action: ActionResponse, logCallback: ((String) -> Unit)? = null) =
-      waitForAction(action.id, logCallback)
-
-  suspend fun waitForAction(id: Long, logCallback: ((String) -> Unit)? = null) =
-      api.waitForAction(id, logCallback, { api.volumes.action(it) })
+    suspend fun waitForAction(id: Long, logCallback: ((String) -> Unit)? = null) = api.waitForAction(id, logCallback, { api.volumes.action(it) })
 }
 
 @Serializable
-data class VolumesListWrapper(val volumes: List<VolumeResponse>, override val meta: MetaResponse) :
-    ListResponse<VolumeResponse> {
-  override val list: List<VolumeResponse>
-    get() = volumes
+data class VolumesListWrapper(val volumes: List<VolumeResponse>, override val meta: MetaResponse) : ListResponse<VolumeResponse> {
+    override val list: List<VolumeResponse>
+        get() = volumes
 }

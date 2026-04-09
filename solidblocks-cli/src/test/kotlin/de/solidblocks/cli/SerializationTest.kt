@@ -1,8 +1,5 @@
 package de.solidblocks.cli
 
-import java.lang.reflect.Modifier
-import kotlin.io.path.Path
-import kotlin.io.path.writeText
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Tag
@@ -10,6 +7,9 @@ import org.junit.jupiter.api.Test
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
+import java.lang.reflect.Modifier
+import kotlin.io.path.Path
+import kotlin.io.path.writeText
 
 @Serializable
 data class SerializationConfig(
@@ -22,66 +22,63 @@ data class SerializationConfig(
     val allPublicMethods: Boolean? = null,
 )
 
-@Serializable data class SerializationConfigField(val name: String)
+@Serializable
+data class SerializationConfigField(val name: String)
 
 @Serializable
-data class SerializationConfigMethod(
-    val name: String,
-    val parameterTypes: List<String> = emptyList(),
-)
+data class SerializationConfigMethod(val name: String, val parameterTypes: List<String> = emptyList())
 
 class SerializationConfigGenerator {
+    fun findSerializableClasses(packageName: String): Set<Class<*>> {
+        val reflections =
+            Reflections(
+                ConfigurationBuilder().forPackages(packageName).addScanners(Scanners.TypesAnnotated),
+            )
 
-  fun findSerializableClasses(packageName: String): Set<Class<*>> {
-    val reflections =
-        Reflections(
-            ConfigurationBuilder().forPackages(packageName).addScanners(Scanners.TypesAnnotated),
-        )
+        return reflections
+            .getTypesAnnotatedWith(Serializable::class.java)
+            .filter { !Modifier.isAbstract(it.modifiers) }
+            .toSet()
+    }
 
-    return reflections
-        .getTypesAnnotatedWith(Serializable::class.java)
-        .filter { !Modifier.isAbstract(it.modifiers) }
-        .toSet()
-  }
-
-  @Test
-  @Tag("generate")
-  fun generateConfig() {
-    val config =
-        findSerializableClasses("de.solidblocks").flatMap {
-          listOf(
-              SerializationConfig(
-                  it.name,
-                  listOf(SerializationConfigField("Companion")),
-                  emptyList(),
-              ),
-              SerializationConfig(
-                  "${it.name}\$Companion",
-                  emptyList(),
-                  listOf(
-                      SerializationConfigMethod("serializer"),
-                  ),
-              ),
-          )
-        } +
-            listOf(
-                SerializationConfig(
-                    "java.util.logging.FileHandler",
-                    null,
-                    listOf(SerializationConfigMethod("<init>")),
-                ),
-                SerializationConfig(
-                    "java.security.KeyPairGenerator",
-                    null,
-                    listOf(
-                        SerializationConfigMethod(
-                            "getInstance",
-                            listOf("java.lang.String", "java.lang.String"),
+    @Test
+    @Tag("generate")
+    fun generateConfig() {
+        val config =
+            findSerializableClasses("de.solidblocks").flatMap {
+                listOf(
+                    SerializationConfig(
+                        it.name,
+                        listOf(SerializationConfigField("Companion")),
+                        emptyList(),
+                    ),
+                    SerializationConfig(
+                        "${it.name}\$Companion",
+                        emptyList(),
+                        listOf(
+                            SerializationConfigMethod("serializer"),
                         ),
                     ),
-                ),
-            ) +
-            listOf(
+                )
+            } +
+                listOf(
+                    SerializationConfig(
+                        "java.util.logging.FileHandler",
+                        null,
+                        listOf(SerializationConfigMethod("<init>")),
+                    ),
+                    SerializationConfig(
+                        "java.security.KeyPairGenerator",
+                        null,
+                        listOf(
+                            SerializationConfigMethod(
+                                "getInstance",
+                                listOf("java.lang.String", "java.lang.String"),
+                            ),
+                        ),
+                    ),
+                ) +
+                listOf(
                     "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$Ed25519",
                     "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$Ed448",
                     "org.bouncycastle.jcajce.provider.asymmetric.edec.KeyFactorySpi\$X25519",
@@ -95,26 +92,26 @@ class SerializationConfigGenerator {
                     "org.bouncycastle.jcajce.provider.asymmetric.rsa.CipherSpi\$PKCS1v1_5Padding",
                     "org.bouncycastle.jcajce.provider.asymmetric.rsa.CipherSpi\$OAEPPadding",
                 )
-                .map {
-                  SerializationConfig(
-                      it,
-                      null,
-                      null,
-                      true,
-                      true,
-                      true,
-                      true,
-                  )
-                }
+                    .map {
+                        SerializationConfig(
+                            it,
+                            null,
+                            null,
+                            true,
+                            true,
+                            true,
+                            true,
+                        )
+                    }
 
-    val reflectConfigFile =
-        Path("").resolve("src/main/resources/META-INF/native-image/reflect-config-generated.json")
+        val reflectConfigFile =
+            Path("").resolve("src/main/resources/META-INF/native-image/reflect-config-generated.json")
 
-    val json = Json {
-      prettyPrint = true
-      explicitNulls = false
+        val json = Json {
+            prettyPrint = true
+            explicitNulls = false
+        }
+        println("writing reflect config to '$reflectConfigFile'")
+        reflectConfigFile.writeText(json.encodeToString(config))
     }
-    println("writing reflect config to '$reflectConfigFile'")
-    reflectConfigFile.writeText(json.encodeToString(config))
-  }
 }

@@ -7,13 +7,13 @@ class LocalSSHKeyProviderRegistration :
         LocalSSHKeyProviderConfiguration,
         LocalSSHKeyProviderRuntime,
         LocalSSHKeyProviderManager,
-    > {
-  override val supportedConfiguration = LocalSSHKeyProviderConfiguration::class
-  override val supportedRuntime = LocalSSHKeyProviderRuntime::class
+        > {
+    override val supportedConfiguration = LocalSSHKeyProviderConfiguration::class
+    override val supportedRuntime = LocalSSHKeyProviderRuntime::class
 
-  override fun createConfigurationManager() = LocalSSHKeyProviderManager()
+    override fun createConfigurationManager() = LocalSSHKeyProviderManager()
 
-  override fun createConfigurationFactory() = LocalSSHKeyProviderConfigurationFactory()
+    override fun createConfigurationFactory() = LocalSSHKeyProviderConfigurationFactory()
 
-  override val type = "ssh_key"
+    override val type = "ssh_key"
 }

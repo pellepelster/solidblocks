@@ -8,18 +8,18 @@ import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
 
 public class PostgresTest {
-  @Test
-  fun testInstall() {
-    val result =
-        dockerTestContext(DockerTestImage.DEBIAN_12)
-            .script()
-            .sources(workingDir().resolve("lib"))
-            .includes(workingDir().resolve("lib").resolve("curl.sh"))
-            .includes(workingDir().resolve("lib").resolve("postgres.sh"))
-            .step("postgres_add_repository")
-            .step("postgres_install")
-            .step("postgres_current_major_version")
-            .run()
-    assertSoftly(result) { it shouldHaveExitCode 0 }
-  }
+    @Test
+    fun testInstall() {
+        val result =
+            dockerTestContext(DockerTestImage.DEBIAN_12)
+                .script()
+                .sources(workingDir().resolve("lib"))
+                .includes(workingDir().resolve("lib").resolve("curl.sh"))
+                .includes(workingDir().resolve("lib").resolve("postgres.sh"))
+                .step("postgres_add_repository")
+                .step("postgres_install")
+                .step("postgres_current_major_version")
+                .run()
+        assertSoftly(result) { it shouldHaveExitCode 0 }
+    }
 }

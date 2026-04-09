@@ -18,46 +18,46 @@ import org.junit.jupiter.api.Test
 
 class PassSecretProvisionerTest {
 
-  @Test
-  fun testFlow() {
-    val resource = PassSecret("testCloudName/some/extra/path/secret1", 13)
-    val provisioner = PassSecretProvisioner()
+    @Test
+    fun testFlow() {
+        val resource = PassSecret("testCloudName/some/extra/path/secret1", 13)
+        val provisioner = PassSecretProvisioner()
 
-    runCommand(listOf("pass", "rm", "--force", "--recursive", "testCloudName"))
+        runCommand(listOf("pass", "rm", "--force", "--recursive", "testCloudName"))
 
-    runBlocking {
-      // before create
-      provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
-      assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
-        it!!.status shouldBe ResourceDiffStatus.missing
-      }
+        runBlocking {
+            // before create
+            provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
+                it!!.status shouldBe ResourceDiffStatus.missing
+            }
 
-      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-      val generatedSecret = provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!
-      generatedSecret.secret shouldHaveLength 13
+            provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            val generatedSecret = provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!
+            generatedSecret.secret shouldHaveLength 13
 
-      assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
-        it!!.status shouldBe ResourceDiffStatus.up_to_date
-      }
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
+                it!!.status shouldBe ResourceDiffStatus.up_to_date
+            }
 
-      provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-      val secretAfterSecondApply =
-          provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!
-      generatedSecret.secret shouldBe secretAfterSecondApply.secret
+            provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            val secretAfterSecondApply =
+                provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!
+            generatedSecret.secret shouldBe secretAfterSecondApply.secret
 
-      resource.taint()
+            resource.taint()
 
-      assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
-        it!!.status shouldBe ResourceDiffStatus.up_to_date
-      }
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
+                it!!.status shouldBe ResourceDiffStatus.up_to_date
+            }
 
-      val secretAfterTaint = provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
-      generatedSecret.secret shouldNotBe
-          secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data
+            val secretAfterTaint = provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            generatedSecret.secret shouldNotBe
+                secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data
 
-      assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
-        it!!.status shouldBe ResourceDiffStatus.up_to_date
-      }
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
+                it!!.status shouldBe ResourceDiffStatus.up_to_date
+            }
+        }
     }
-  }
 }

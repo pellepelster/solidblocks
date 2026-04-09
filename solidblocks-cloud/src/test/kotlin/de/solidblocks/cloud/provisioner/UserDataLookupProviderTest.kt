@@ -13,41 +13,41 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserDataLookupProviderTest {
 
-  @Test
-  fun testLookup() {
-    val provisioner1 = Resource1Provisioner()
-    val provisioner2 = Resource2Provisioner()
+    @Test
+    fun testLookup() {
+        val provisioner1 = Resource1Provisioner()
+        val provisioner2 = Resource2Provisioner()
 
-    runBlocking {
-      val registry =
-          ProvisionersRegistry(
-              listOf(
-                  provisioner1,
-                  provisioner2,
-                  UserDataLookupProvider(),
-              ),
-              listOf(provisioner1, provisioner2),
-          )
-      val context = TestProvisionerContext(registry)
+        runBlocking {
+            val registry =
+                ProvisionersRegistry(
+                    listOf(
+                        provisioner1,
+                        provisioner2,
+                        UserDataLookupProvider(),
+                    ),
+                    listOf(provisioner1, provisioner2),
+                )
+            val context = TestProvisionerContext(registry)
 
-      val resource1 = Resource1("resource1")
-      val resource2 = Resource2("resource2")
+            val resource1 = Resource1("resource1")
+            val resource2 = Resource2("resource2")
 
-      registry.apply<Resource1, Resource1Runtime>(resource1, context, TEST_LOG_CONTEXT)
-      registry.apply<Resource2, Resource2Runtime>(resource2, context, TEST_LOG_CONTEXT)
+            registry.apply<Resource1, Resource1Runtime>(resource1, context, TEST_LOG_CONTEXT)
+            registry.apply<Resource2, Resource2Runtime>(resource2, context, TEST_LOG_CONTEXT)
 
-      val userData =
-          UserData(
-              emptySet(),
-              {
-                val a = it.ensureLookup(resource1.asLookup())
-                val b = it.ensureLookup(resource2.asLookup())
+            val userData =
+                UserData(
+                    emptySet(),
+                    {
+                        val a = it.ensureLookup(resource1.asLookup())
+                        val b = it.ensureLookup(resource2.asLookup())
 
-                "${a.name}:${b.name}"
-              },
-          )
+                        "${a.name}:${b.name}"
+                    },
+                )
 
-      registry.lookup(userData, context)!!.userData shouldBe "resource1:resource2"
+            registry.lookup(userData, context)!!.userData shouldBe "resource1:resource2"
+        }
     }
-  }
 }

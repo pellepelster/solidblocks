@@ -11,24 +11,20 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 open class BaseGarageFsProvisioner {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  suspend fun <T> CloudProvisionerContext.withApiClients(
-      server: HetznerServerLookup,
-      adminToken: PassSecretLookup,
-      block: suspend (Result<GarageFsApi>) -> T,
-  ): T {
-    val adminToken = this.lookup(adminToken)
-    return this.withPortForward(server, 3903) {
-      if (it == null || adminToken == null) {
-        block.invoke(Error("could not establish GrarageFS connection for${server.logText()}"))
-      } else {
-        block.invoke(
-            Success(
-                GarageFsApi(adminToken.secret, "http://localhost:$it"),
-            ),
-        )
-      }
+    suspend fun <T> CloudProvisionerContext.withApiClients(server: HetznerServerLookup, adminToken: PassSecretLookup, block: suspend (Result<GarageFsApi>) -> T): T {
+        val adminToken = this.lookup(adminToken)
+        return this.withPortForward(server, 3903) {
+            if (it == null || adminToken == null) {
+                block.invoke(Error("could not establish GrarageFS connection for${server.logText()}"))
+            } else {
+                block.invoke(
+                    Success(
+                        GarageFsApi(adminToken.secret, "http://localhost:$it"),
+                    ),
+                )
+            }
+        }
     }
-  }
 }

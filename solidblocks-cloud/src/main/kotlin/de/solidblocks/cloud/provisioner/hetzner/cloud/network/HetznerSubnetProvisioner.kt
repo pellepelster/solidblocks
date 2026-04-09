@@ -20,63 +20,53 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
     ResourceLookupProvider<HetznerSubnetLookup, HetznerSubnetRuntime>,
     InfrastructureResourceProvisioner<HetznerSubnet, HetznerSubnetRuntime> {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(
-      lookup: HetznerSubnetLookup,
-      context: CloudProvisionerContext,
-  ): HetznerSubnetRuntime? {
-    val network = context.lookup(lookup.network)
+    override suspend fun lookup(lookup: HetznerSubnetLookup, context: CloudProvisionerContext): HetznerSubnetRuntime? {
+        val network = context.lookup(lookup.network)
 
-    if (network == null) {
-      logger.info { "${lookup.network.logText()} not found" }
-      return null
+        if (network == null) {
+            logger.info { "${lookup.network.logText()} not found" }
+            return null
+        }
+
+        logger.debug { "${network.logText()} has subnets '${network.subnets.joinToString(",")}'" }
+
+        return network.subnets.singleOrNull { it.subnet == lookup.name }
     }
 
-    logger.debug { "${network.logText()} has subnets '${network.subnets.joinToString(",")}'" }
+    override suspend fun apply(resource: HetznerSubnet, context: CloudProvisionerContext, log: LogContext): Result<HetznerSubnetRuntime> {
+        val network =
+            context.lookup(resource.network) ?: return Error("${resource.network.logText()} not found")
 
-    return network.subnets.singleOrNull { it.subnet == lookup.name }
-  }
+        if (network.subnets.none { it.subnet == resource.subnet }) {
+            val response =
+                api.networks.addSubnet(
+                    network.id,
+                    NetworksSubnetCreateRequest(
+                        NetworkType.cloud,
+                        resource.subnet,
+                        NetworkZone.`eu-central`,
+                    ),
+                )
+            api.networks.waitForAction(response)
+        }
 
-  override suspend fun apply(
-      resource: HetznerSubnet,
-      context: CloudProvisionerContext,
-      log: LogContext,
-  ): Result<HetznerSubnetRuntime> {
-    val network =
-        context.lookup(resource.network) ?: return Error("${resource.network.logText()} not found")
-
-    if (network.subnets.none { it.subnet == resource.subnet }) {
-      val response =
-          api.networks.addSubnet(
-              network.id,
-              NetworksSubnetCreateRequest(
-                  NetworkType.cloud,
-                  resource.subnet,
-                  NetworkZone.`eu-central`,
-              ),
-          )
-      api.networks.waitForAction(response)
+        return lookup(resource.asLookup(), context)?.let { Success(it) }
+            ?: Error<HetznerSubnetRuntime>("error creating ${resource.logText()}")
     }
 
-    return lookup(resource.asLookup(), context)?.let { Success(it) }
-        ?: Error<HetznerSubnetRuntime>("error creating ${resource.logText()}")
-  }
+    override suspend fun diff(resource: HetznerSubnet, context: CloudProvisionerContext): ResourceDiff? {
+        val network = context.lookup(resource.network) ?: return ResourceDiff(resource, missing)
 
-  override suspend fun diff(
-      resource: HetznerSubnet,
-      context: CloudProvisionerContext,
-  ): ResourceDiff? {
-    val network = context.lookup(resource.network) ?: return ResourceDiff(resource, missing)
-
-    return if (network.subnets.none { it.subnet == resource.subnet }) {
-      ResourceDiff(resource, missing)
-    } else {
-      ResourceDiff(resource, up_to_date)
+        return if (network.subnets.none { it.subnet == resource.subnet }) {
+            ResourceDiff(resource, missing)
+        } else {
+            ResourceDiff(resource, up_to_date)
+        }
     }
-  }
 
-  override val supportedLookupType: KClass<*> = HetznerSubnetLookup::class
+    override val supportedLookupType: KClass<*> = HetznerSubnetLookup::class
 
-  override val supportedResourceType: KClass<*> = HetznerSubnet::class
+    override val supportedResourceType: KClass<*> = HetznerSubnet::class
 }

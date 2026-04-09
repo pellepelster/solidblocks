@@ -21,10 +21,9 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
     ResourceLookupProvider<HetznerNetworkLookup, HetznerNetworkRuntime>,
     InfrastructureResourceProvisioner<HetznerNetwork, HetznerNetworkRuntime> {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: HetznerNetworkLookup, context: CloudProvisionerContext) =
-      api.networks.get(lookup.name)?.let { network ->
+    override suspend fun lookup(lookup: HetznerNetworkLookup, context: CloudProvisionerContext) = api.networks.get(lookup.name)?.let { network ->
         HetznerNetworkRuntime(
             network.id,
             network.name,
@@ -33,85 +32,74 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
             network.labels,
             network.subnets.map { HetznerSubnetRuntime(it.ipRange, network.id) },
         )
-      }
-
-  override suspend fun apply(
-      resource: HetznerNetwork,
-      context: CloudProvisionerContext,
-      log: LogContext,
-  ): Result<HetznerNetworkRuntime> {
-    val runtime = lookup(resource.asLookup(), context)
-
-    val network =
-        if (runtime == null) {
-          api.networks.create(
-              NetworkCreateRequest(
-                  resource.name,
-                  resource.ipRange,
-                  resource.labels,
-              ),
-          )
-          lookup(resource.asLookup(), context)
-        } else {
-          runtime
-        }
-
-    if (network == null) {
-      return Error("failed to create network")
     }
 
-    val protect = api.networks.changeDeleteProtection(network.id, resource.protected)
-    api.networks.waitForAction(protect)
+    override suspend fun apply(resource: HetznerNetwork, context: CloudProvisionerContext, log: LogContext): Result<HetznerNetworkRuntime> {
+        val runtime = lookup(resource.asLookup(), context)
 
-    api.networks.update(network.id, NetworkUpdateRequest(resource.name, resource.labels))
+        val network =
+            if (runtime == null) {
+                api.networks.create(
+                    NetworkCreateRequest(
+                        resource.name,
+                        resource.ipRange,
+                        resource.labels,
+                    ),
+                )
+                lookup(resource.asLookup(), context)
+            } else {
+                runtime
+            }
 
-    return lookup(resource.asLookup(), context)?.let { Success(it) }
-        ?: Error<HetznerNetworkRuntime>("error creating ${resource.logText()}")
-  }
-
-  override suspend fun diff(
-      resource: HetznerNetwork,
-      context: CloudProvisionerContext,
-  ): ResourceDiff? {
-    val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
-
-    val deleteProtection =
-        if (runtime.deleteProtected != resource.protected) {
-          listOf(
-              ResourceDiffItem(
-                  "delete protection",
-                  changed = true,
-                  expectedValue = resource.protected.toString(),
-                  actualValue = runtime.deleteProtected.toString(),
-              ),
-          )
-        } else {
-          emptyList()
+        if (network == null) {
+            return Error("failed to create network")
         }
 
-    val changes = createLabelDiff(resource, runtime) + deleteProtection
+        val protect = api.networks.changeDeleteProtection(network.id, resource.protected)
+        api.networks.waitForAction(protect)
 
-    return if (changes.isEmpty()) {
-      ResourceDiff(
-          resource,
-          up_to_date,
-      )
-    } else {
-      ResourceDiff(
-          resource,
-          has_changes,
-          changes = changes,
-      )
+        api.networks.update(network.id, NetworkUpdateRequest(resource.name, resource.labels))
+
+        return lookup(resource.asLookup(), context)?.let { Success(it) }
+            ?: Error<HetznerNetworkRuntime>("error creating ${resource.logText()}")
     }
-  }
 
-  override suspend fun destroy(
-      resource: HetznerNetwork,
-      context: CloudProvisionerContext,
-      logContext: LogContext,
-  ) = lookup(resource.asLookup(), context)?.let { api.networks.delete(it.id) } ?: false
+    override suspend fun diff(resource: HetznerNetwork, context: CloudProvisionerContext): ResourceDiff? {
+        val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
-  override val supportedLookupType: KClass<*> = HetznerNetworkLookup::class
+        val deleteProtection =
+            if (runtime.deleteProtected != resource.protected) {
+                listOf(
+                    ResourceDiffItem(
+                        "delete protection",
+                        changed = true,
+                        expectedValue = resource.protected.toString(),
+                        actualValue = runtime.deleteProtected.toString(),
+                    ),
+                )
+            } else {
+                emptyList()
+            }
 
-  override val supportedResourceType: KClass<*> = HetznerNetwork::class
+        val changes = createLabelDiff(resource, runtime) + deleteProtection
+
+        return if (changes.isEmpty()) {
+            ResourceDiff(
+                resource,
+                up_to_date,
+            )
+        } else {
+            ResourceDiff(
+                resource,
+                has_changes,
+                changes = changes,
+            )
+        }
+    }
+
+    override suspend fun destroy(resource: HetznerNetwork, context: CloudProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let { api.networks.delete(it.id) } ?: false
+
+    override val supportedLookupType: KClass<*> = HetznerNetworkLookup::class
+
+    override val supportedResourceType: KClass<*> = HetznerNetwork::class
 }

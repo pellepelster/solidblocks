@@ -12,38 +12,24 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LocationsListResponseWrapper(
-    val locations: List<LocationResponse>,
-    override val meta: MetaResponse,
-) : ListResponse<LocationResponse> {
-  override val list: List<LocationResponse>
-    get() = locations
+data class LocationsListResponseWrapper(val locations: List<LocationResponse>, override val meta: MetaResponse) : ListResponse<LocationResponse> {
+    override val list: List<LocationResponse>
+        get() = locations
 }
 
-@Serializable data class LocationResponseWrapper(val location: LocationResponse)
+@Serializable
+data class LocationResponseWrapper(val location: LocationResponse)
 
 @Serializable
-data class LocationResponse(
-    override val id: Long,
-    override val name: String,
-    val description: String,
-    val country: String,
-    val city: String,
-    @SerialName("network_zone") val networkZone: String,
-) : HetznerNamedResource<Long>
+data class LocationResponse(override val id: Long, override val name: String, val description: String, val country: String, val city: String, @SerialName("network_zone") val networkZone: String) :
+    HetznerNamedResource<Long>
 
 class HetznerLocationsApi(private val api: HetznerApi) : HetznerBaseResourceApi<LocationResponse> {
+    override suspend fun listPaged(page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>): LocationsListResponseWrapper =
+        api.get("v1/locations?${listQuery(page, perPage, filter, labelSelectors)}")
+            ?: throw RuntimeException("failed to list locations")
 
-  override suspend fun listPaged(
-      page: Int,
-      perPage: Int,
-      filter: Map<String, FilterValue>,
-      labelSelectors: Map<String, LabelSelectorValue>,
-  ): LocationsListResponseWrapper =
-      api.get("v1/locations?${listQuery(page, perPage, filter, labelSelectors)}")
-          ?: throw RuntimeException("failed to list locations")
+    suspend fun get(id: Long) = api.get<LocationResponseWrapper>("v1/locations/$id")?.location
 
-  suspend fun get(id: Long) = api.get<LocationResponseWrapper>("v1/locations/$id")?.location
-
-  suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
 }

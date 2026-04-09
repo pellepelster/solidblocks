@@ -8,25 +8,24 @@ import com.github.ajalt.clikt.parameters.types.file
 import de.solidblocks.cloud.CloudHelp
 
 class CloudHelpConfigurationHugoCommand : CliktCommand(name = "configuration-hugo") {
+    private val hugoFile by argument().file()
 
-  private val hugoFile by argument().file()
+    init {
+        installMordantMarkdown()
+    }
 
-  init {
-    installMordantMarkdown()
-  }
+    override fun help(context: Context) = "Solidblocks cloud configuration file documentation"
 
-  override fun help(context: Context) = "Solidblocks cloud configuration file documentation"
-
-  override fun run() {
-    hugoFile.writeText(
-        """
+    override fun run() {
+        hugoFile.writeText(
+            """
 +++
 title = 'Configuration'
 description = 'configuration file format documentation'
 +++
 ${CloudHelp().renderMarkdown(true)}
-"""
-            .trimIndent(),
-    )
-  }
+            """
+                .trimIndent(),
+        )
+    }
 }

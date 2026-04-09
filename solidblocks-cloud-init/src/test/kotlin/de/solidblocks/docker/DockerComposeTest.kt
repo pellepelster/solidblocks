@@ -4,12 +4,11 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class DockerComposeTest {
-
-  @Test
-  fun testRender() {
-    val dockerCompose =
-        ComposeFile(
-            services =
+    @Test
+    fun testRender() {
+        val dockerCompose =
+            ComposeFile(
+                services =
                 mapOf(
                     "service1" to
                         Service(
@@ -19,10 +18,10 @@ class DockerComposeTest {
                             ports = listOf(PortMapping(80, 8080)),
                         ),
                 ),
-        )
+            )
 
-    dockerCompose.toYaml() shouldBe
-        """
+        dockerCompose.toYaml() shouldBe
+            """
         services:
           "service1":
             image: "image1:latest"
@@ -36,6 +35,6 @@ class DockerComposeTest {
               source: "/data"
               target: "/foo-bar"
         """
-            .trimIndent()
-  }
+                .trimIndent()
+    }
 }

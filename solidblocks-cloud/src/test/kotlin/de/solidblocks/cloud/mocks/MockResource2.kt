@@ -6,12 +6,10 @@ import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 
 class MockResource2Runtime
 
-class MockResource2(name: String, dependsOn: Set<BaseResource> = emptySet()) :
-    BaseInfrastructureResource<MockResource2Runtime>(name, dependsOn) {
-  override val lookupType = MockResource2Lookup::class
+class MockResource2(name: String, dependsOn: Set<BaseResource> = emptySet()) : BaseInfrastructureResource<MockResource2Runtime>(name, dependsOn) {
+    override val lookupType = MockResource2Lookup::class
 }
 
-class MockResource2Lookup(name: String) :
-    InfrastructureResourceLookup<MockResource2Runtime>(name, emptySet()) {
-  override fun logText() = "custom log text '$name'"
+class MockResource2Lookup(name: String) : InfrastructureResourceLookup<MockResource2Runtime>(name, emptySet()) {
+    override fun logText() = "custom log text '$name'"
 }

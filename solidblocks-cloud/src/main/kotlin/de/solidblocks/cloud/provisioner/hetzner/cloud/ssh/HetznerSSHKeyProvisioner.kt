@@ -22,101 +22,88 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
     ResourceLookupProvider<HetznerSSHKeyLookup, HetznerSSHKeyRuntime>,
     InfrastructureResourceProvisioner<HetznerSSHKey, HetznerSSHKeyRuntime> {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: CloudProvisionerContext) =
-      api.sshKeys.get(lookup.name)?.let {
+    override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: CloudProvisionerContext) = api.sshKeys.get(lookup.name)?.let {
         HetznerSSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
-      }
+    }
 
-  suspend fun listAll() =
-      api.sshKeys.list().map {
+    suspend fun listAll() = api.sshKeys.list().map {
         HetznerSSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
-      }
+    }
 
-  override suspend fun apply(
-      resource: HetznerSSHKey,
-      context: CloudProvisionerContext,
-      log: LogContext,
-  ): Result<HetznerSSHKeyRuntime> {
-    val runtime = lookup(resource.asLookup(), context)
+    override suspend fun apply(resource: HetznerSSHKey, context: CloudProvisionerContext, log: LogContext): Result<HetznerSSHKeyRuntime> {
+        val runtime = lookup(resource.asLookup(), context)
 
-    val sshKey =
-        if (runtime == null) {
-          api.sshKeys.create(
-              SSHKeysCreateRequest(
-                  resource.name,
-                  resource.publicKey,
-                  resource.labels,
-              ),
-          )
-          lookup(resource.asLookup(), context)
-        } else {
-          runtime
+        val sshKey =
+            if (runtime == null) {
+                api.sshKeys.create(
+                    SSHKeysCreateRequest(
+                        resource.name,
+                        resource.publicKey,
+                        resource.labels,
+                    ),
+                )
+                lookup(resource.asLookup(), context)
+            } else {
+                runtime
+            }
+
+        if (sshKey == null) {
+            return Error("failed to create ssh key")
         }
 
-    if (sshKey == null) {
-      return Error("failed to create ssh key")
+        api.sshKeys.update(sshKey.id, SSHKeysUpdateRequest(resource.name, resource.labels))
+
+        return lookup(resource.asLookup(), context)?.let { Success(it) }
+            ?: Error<HetznerSSHKeyRuntime>("error creating ${resource.logText()}")
     }
 
-    api.sshKeys.update(sshKey.id, SSHKeysUpdateRequest(resource.name, resource.labels))
+    override suspend fun diff(resource: HetznerSSHKey, context: CloudProvisionerContext): ResourceDiff? {
+        val runtime = lookup(resource.asLookup(), context)
 
-    return lookup(resource.asLookup(), context)?.let { Success(it) }
-        ?: Error<HetznerSSHKeyRuntime>("error creating ${resource.logText()}")
-  }
+        if (runtime == null) {
+            val fingerprint = computeFingerprint(resource.publicKey)
+            val duplicateKey = listAll().firstOrNull { it.fingerprint == fingerprint }
 
-  override suspend fun diff(
-      resource: HetznerSSHKey,
-      context: CloudProvisionerContext,
-  ): ResourceDiff? {
-    val runtime = lookup(resource.asLookup(), context)
+            return if (duplicateKey == null) {
+                ResourceDiff(resource, missing)
+            } else {
+                ResourceDiff(
+                    resource,
+                    duplicate,
+                    duplicateErrorMessage =
+                    "another key with the fingerprint '${duplicateKey.fingerprint}' already exists (${duplicateKey.name})",
+                )
+            }
+        }
 
-    if (runtime == null) {
-      val fingerprint = computeFingerprint(resource.publicKey)
-      val duplicateKey = listAll().firstOrNull { it.fingerprint == fingerprint }
-
-      return if (duplicateKey == null) {
-        ResourceDiff(resource, missing)
-      } else {
-        ResourceDiff(
-            resource,
-            duplicate,
-            duplicateErrorMessage =
-                "another key with the fingerprint '${duplicateKey.fingerprint}' already exists (${duplicateKey.name})",
-        )
-      }
+        val changes = createLabelDiff(resource, runtime)
+        return if (changes.isEmpty()) {
+            ResourceDiff(resource, up_to_date)
+        } else {
+            ResourceDiff(resource, has_changes, changes = changes)
+        }
     }
 
-    val changes = createLabelDiff(resource, runtime)
-    return if (changes.isEmpty()) {
-      ResourceDiff(resource, up_to_date)
-    } else {
-      ResourceDiff(resource, has_changes, changes = changes)
-    }
-  }
+    override suspend fun destroy(resource: HetznerSSHKey, context: CloudProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let { api.sshKeys.delete(it.id) } ?: false
 
-  override suspend fun destroy(
-      resource: HetznerSSHKey,
-      context: CloudProvisionerContext,
-      logContext: LogContext,
-  ) = lookup(resource.asLookup(), context)?.let { api.sshKeys.delete(it.id) } ?: false
+    private fun computeFingerprint(publicKey: String): String {
+        val parts = publicKey.trim().split(Regex("\\s+"))
+        if (parts.size < 2) {
+            throw IllegalArgumentException("Invalid SSH public key format")
+        }
 
-  private fun computeFingerprint(publicKey: String): String {
-    val parts = publicKey.trim().split(Regex("\\s+"))
-    if (parts.size < 2) {
-      throw IllegalArgumentException("Invalid SSH public key format")
+        val base64Key = parts[1]
+        val keyBytes = Base64.getDecoder().decode(base64Key)
+
+        val md5 = MessageDigest.getInstance("MD5")
+        val digest = md5.digest(keyBytes)
+
+        return digest.joinToString(":") { "%02x".format(it) }
     }
 
-    val base64Key = parts[1]
-    val keyBytes = Base64.getDecoder().decode(base64Key)
+    override val supportedLookupType: KClass<*> = HetznerSSHKeyLookup::class
 
-    val md5 = MessageDigest.getInstance("MD5")
-    val digest = md5.digest(keyBytes)
-
-    return digest.joinToString(":") { "%02x".format(it) }
-  }
-
-  override val supportedLookupType: KClass<*> = HetznerSSHKeyLookup::class
-
-  override val supportedResourceType: KClass<*> = HetznerSSHKey::class
+    override val supportedResourceType: KClass<*> = HetznerSSHKey::class
 }

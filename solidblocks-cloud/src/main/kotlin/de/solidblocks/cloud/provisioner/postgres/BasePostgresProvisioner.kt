@@ -15,40 +15,32 @@ import java.sql.DriverManager
 
 open class BasePostgresProvisioner {
 
-  private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger {}
 
-  suspend fun CloudProvisionerContext.waitForAdminConnection(
-      server: HetznerServerLookup,
-      superUserPassword: PassSecretLookup,
-      log: LogContext,
-  ): Result<Connection> =
-      Waiter.longWaitForResult {
+    suspend fun CloudProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup, log: LogContext): Result<Connection> = Waiter.longWaitForResult {
         logInfo("waiting for Postgres admin connection", context = log)
         createAdminConnection(server, superUserPassword)
-      }
-
-  suspend fun CloudProvisionerContext.createAdminConnection(
-      server: HetznerServerLookup,
-      superUserPassword: PassSecretLookup,
-  ): Result<Connection> {
-    val password = this.lookup(superUserPassword)
-
-    return this.withPortForward(server, 5432) {
-      if (it == null || password == null) {
-        Error("could not establish Postgres admin connection for ${server.logText()}")
-      } else {
-        try {
-          Success(
-              DriverManager.getConnection(
-                  "jdbc:postgresql://localhost:$it/postgres",
-                  "rds",
-                  password.secret,
-              ),
-          )
-        } catch (e: Exception) {
-          Error<Connection>(e.message ?: "<unknown")
-        }
-      }
     }
-  }
+
+    suspend fun CloudProvisionerContext.createAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup): Result<Connection> {
+        val password = this.lookup(superUserPassword)
+
+        return this.withPortForward(server, 5432) {
+            if (it == null || password == null) {
+                Error("could not establish Postgres admin connection for ${server.logText()}")
+            } else {
+                try {
+                    Success(
+                        DriverManager.getConnection(
+                            "jdbc:postgresql://localhost:$it/postgres",
+                            "rds",
+                            password.secret,
+                        ),
+                    )
+                } catch (e: Exception) {
+                    Error<Connection>(e.message ?: "<unknown")
+                }
+            }
+        }
+    }
 }

@@ -13,39 +13,38 @@ import de.solidblocks.cloud.utils.Success
 data class TestConfiguration(val test1: List<Test1Configuration>, val test2: Test2Configuration)
 
 class TestConfigurationFactory : ConfigurationFactory<TestConfiguration> {
+    override val help: ConfigurationHelp
+        get() = TODO("Not yet implemented")
 
-  override val help: ConfigurationHelp
-    get() = TODO("Not yet implemented")
-
-  val test1 = ListKeyword("test1", Test1ConfigurationFactory(), KeywordHelp("TODO"))
+    val test1 = ListKeyword("test1", Test1ConfigurationFactory(), KeywordHelp("TODO"))
 
   /*
   val polymorphicList1 =
       PolymorphicListKeyword("polymorphic_list1", listOf(Test1ConfigurationFactory()), KeywordHelp("", ""))
    */
 
-  val test2 = ObjectKeyword("test2", Test2ConfigurationFactory(), KeywordHelp("TODO"))
+    val test2 = ObjectKeyword("test2", Test2ConfigurationFactory(), KeywordHelp("TODO"))
 
-  override val keywords = listOf(test1, test2)
+    override val keywords = listOf(test1, test2)
 
-  override fun parse(yaml: YamlNode): Result<TestConfiguration> {
-    val test1 =
-        when (val test1 = this@TestConfigurationFactory.test1.parse(yaml)) {
-          is Error<List<Test1Configuration>> -> return Error(test1.error)
-          is Success<List<Test1Configuration>> -> test1.data
-        }
+    override fun parse(yaml: YamlNode): Result<TestConfiguration> {
+        val test1 =
+            when (val test1 = this@TestConfigurationFactory.test1.parse(yaml)) {
+                is Error<List<Test1Configuration>> -> return Error(test1.error)
+                is Success<List<Test1Configuration>> -> test1.data
+            }
 
-    val test2 =
-        when (val test2 = this@TestConfigurationFactory.test2.parse(yaml)) {
-          is Error<Test2Configuration> -> return Error(test2.error)
-          is Success<Test2Configuration> -> test2.data
-        }
+        val test2 =
+            when (val test2 = this@TestConfigurationFactory.test2.parse(yaml)) {
+                is Error<Test2Configuration> -> return Error(test2.error)
+                is Success<Test2Configuration> -> test2.data
+            }
 
-    return Success(
-        TestConfiguration(
-            test1,
-            test2,
-        ),
-    )
-  }
+        return Success(
+            TestConfiguration(
+                test1,
+                test2,
+            ),
+        )
+    }
 }

@@ -12,16 +12,15 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
 
 class CloudHelpCommand : CliktCommand(name = "help") {
+    // private val configFile by argument().file().optional()
 
-  // private val configFile by argument().file().optional()
+    init {
+        installMordantMarkdown()
+    }
 
-  init {
-    installMordantMarkdown()
-  }
+    override fun help(context: Context) = "Solidblocks cloud help"
 
-  override fun help(context: Context) = "Solidblocks cloud help"
-
-  override fun run() {
+    override fun run() {
     /*
     val terminal = createTerminal()
 
@@ -40,27 +39,27 @@ class CloudHelpCommand : CliktCommand(name = "help") {
       printHelp(manager.help(runtime))
 
      */
-  }
-
-  companion object {
-    public fun printMarkdown(markdown: Result<String>) {
-      val terminal = createTerminal()
-      when (markdown) {
-        is Error<String> -> {
-          logError(markdown.error)
-          throw ProgramResult(1)
-        }
-
-        is Success<String> -> {
-          terminal.println(
-              Markdown(
-                  markdown.data,
-                  true,
-                  false,
-              ),
-          )
-        }
-      }
     }
-  }
+
+    companion object {
+        public fun printMarkdown(markdown: Result<String>) {
+            val terminal = createTerminal()
+            when (markdown) {
+                is Error<String> -> {
+                    logError(markdown.error)
+                    throw ProgramResult(1)
+                }
+
+                is Success<String> -> {
+                    terminal.println(
+                        Markdown(
+                            markdown.data,
+                            true,
+                            false,
+                        ),
+                    )
+                }
+            }
+        }
+    }
 }

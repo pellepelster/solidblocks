@@ -15,56 +15,56 @@ import org.junit.jupiter.api.extension.ExtendWith
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IntegrationPublicDockerTest : BaseIntegrationTest() {
 
-  @BeforeAll
-  fun setup(context: SolidblocksTestContext) {
-    init(context, true, true)
-  }
+    @BeforeAll
+    fun setup(context: SolidblocksTestContext) {
+        init(context, true, true)
+    }
 
-  @Test
-  fun testDockerAnonymousUserCanNotPullFromPrivate() {
-    val exception =
-        shouldThrow<Exception> {
-          docker
-              .pullImageCmd("$dockerHostPrivate/alpine")
-              .withTag(imageTag)
-              .exec(PullImageResultCallback())
-              .awaitCompletion()
-        }
-    exception.message shouldContain ("no basic auth credentials")
-  }
+    @Test
+    fun testDockerAnonymousUserCanNotPullFromPrivate() {
+        val exception =
+            shouldThrow<Exception> {
+                docker
+                    .pullImageCmd("$dockerHostPrivate/alpine")
+                    .withTag(imageTag)
+                    .exec(PullImageResultCallback())
+                    .awaitCompletion()
+            }
+        exception.message shouldContain ("no basic auth credentials")
+    }
 
-  @Test
-  fun testDockerAnonymousUserCanPullFromPublic() {
-    docker
-        .pullImageCmd("$dockerHostPublic/alpine")
-        .withTag(imageTag)
-        .exec(PullImageResultCallback())
-        .awaitCompletion()
-  }
+    @Test
+    fun testDockerAnonymousUserCanPullFromPublic() {
+        docker
+            .pullImageCmd("$dockerHostPublic/alpine")
+            .withTag(imageTag)
+            .exec(PullImageResultCallback())
+            .awaitCompletion()
+    }
 
-  @Test
-  fun testDockerAnonymousUserCanNotPushToPrivate() {
-    val exception =
-        shouldThrow<Exception> {
-          docker
-              .pushImageCmd("$dockerHostPrivate/alpine")
-              .withTag(imageTag)
-              .exec(PushImageResultCallback())
-              .awaitCompletion()
-        }
-    exception.message shouldContain ("Could not push image: no basic auth credentials")
-  }
+    @Test
+    fun testDockerAnonymousUserCanNotPushToPrivate() {
+        val exception =
+            shouldThrow<Exception> {
+                docker
+                    .pushImageCmd("$dockerHostPrivate/alpine")
+                    .withTag(imageTag)
+                    .exec(PushImageResultCallback())
+                    .awaitCompletion()
+            }
+        exception.message shouldContain ("Could not push image: no basic auth credentials")
+    }
 
-  @Test
-  fun testDockerAnonymousUserCanNotPushToPublic() {
-    val exception =
-        shouldThrow<Exception> {
-          docker
-              .pushImageCmd("$dockerHostPrivate/alpine")
-              .withTag(imageTag)
-              .exec(PushImageResultCallback())
-              .awaitCompletion()
-        }
-    exception.message shouldContain ("Could not push image: no basic auth credentials")
-  }
+    @Test
+    fun testDockerAnonymousUserCanNotPushToPublic() {
+        val exception =
+            shouldThrow<Exception> {
+                docker
+                    .pushImageCmd("$dockerHostPrivate/alpine")
+                    .withTag(imageTag)
+                    .exec(PushImageResultCallback())
+                    .awaitCompletion()
+            }
+        exception.message shouldContain ("Could not push image: no basic auth credentials")
+    }
 }

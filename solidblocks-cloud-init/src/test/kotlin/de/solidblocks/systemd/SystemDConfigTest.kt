@@ -4,25 +4,24 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class SystemDConfigTest {
+    @Test
+    fun testService() {
+        val config =
+            SystemDService(
+                "foo-bar",
+                Unit("foo-bar"),
+                Service(
+                    listOf("/usr/local/bin/service1", "arg1"),
+                    environment = mapOf("foo" to "bar"),
+                    limitNOFILE = 12,
+                ),
+                Install(),
+            )
 
-  @Test
-  fun testService() {
-    val config =
-        SystemDService(
-            "foo-bar",
-            Unit("foo-bar"),
-            Service(
-                listOf("/usr/local/bin/service1", "arg1"),
-                environment = mapOf("foo" to "bar"),
-                limitNOFILE = 12,
-            ),
-            Install(),
-        )
+        config.fullUnitName() shouldBe "foo-bar.service"
 
-    config.fullUnitName() shouldBe "foo-bar.service"
-
-    config.render() shouldBe
-        """
+        config.render() shouldBe
+            """
         [Unit]
         Description=foo-bar
         After=network-online.target
@@ -37,25 +36,25 @@ class SystemDConfigTest {
         WantedBy=multi-user.target
 
         """
-            .trimIndent()
-  }
+                .trimIndent()
+    }
 
-  @Test
-  fun testTimer() {
-    val config =
-        SystemDTimer(
-            "foo-bar",
-            Unit("foo-bar"),
-            Timer(
-                Daily(),
-                unit = "unit-name.service",
-            ),
-            Install(),
-        )
-    config.fullUnitName() shouldBe "foo-bar.timer"
+    @Test
+    fun testTimer() {
+        val config =
+            SystemDTimer(
+                "foo-bar",
+                Unit("foo-bar"),
+                Timer(
+                    Daily(),
+                    unit = "unit-name.service",
+                ),
+                Install(),
+            )
+        config.fullUnitName() shouldBe "foo-bar.timer"
 
-    config.render() shouldBe
-        """
+        config.render() shouldBe
+            """
         [Unit]
         Description=foo-bar
         After=network-online.target
@@ -69,6 +68,6 @@ class SystemDConfigTest {
         WantedBy=multi-user.target
 
         """
-            .trimIndent()
-  }
+                .trimIndent()
+    }
 }

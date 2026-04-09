@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Test
 
 class ListKeywordsTest {
 
-  @Test
-  fun testObjectListKeyword() {
-    val yaml =
-        yamlParse(
+    @Test
+    fun testObjectListKeyword() {
+        val yaml =
+            yamlParse(
                 """
                 list1:
                     - name: foo-bar
@@ -26,26 +26,26 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-            .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<Success<YamlNode>>()
 
-    val keyword =
-        ListKeyword(
-            "list1",
-            Test1ConfigurationFactory(),
-            TEST_KEYWORD_HELP,
-        )
+        val keyword =
+            ListKeyword(
+                "list1",
+                Test1ConfigurationFactory(),
+                TEST_KEYWORD_HELP,
+            )
 
-    val list = keyword.parse(yaml.data).shouldBeTypeOf<Success<List<Test1Configuration>>>().data
+        val list = keyword.parse(yaml.data).shouldBeTypeOf<Success<List<Test1Configuration>>>().data
 
-    list shouldHaveSize 2
-    list[0].name shouldBe "foo-bar"
-    list[1].name shouldBe "yolo2000"
-  }
+        list shouldHaveSize 2
+        list[0].name shouldBe "foo-bar"
+        list[1].name shouldBe "yolo2000"
+    }
 
-  @Test
-  fun testStringListKeyword() {
-    val yaml =
-        yamlParse(
+    @Test
+    fun testStringListKeyword() {
+        val yaml =
+            yamlParse(
                 """
                 list1:
                     - foo-bar
@@ -53,25 +53,25 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-            .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<Success<YamlNode>>()
 
-    val keyword =
-        StringListKeyword(
-            "list1",
-            TEST_KEYWORD_HELP,
-        )
+        val keyword =
+            StringListKeyword(
+                "list1",
+                TEST_KEYWORD_HELP,
+            )
 
-    val list = keyword.parse(yaml.data).shouldBeTypeOf<Success<List<String>>>().data
+        val list = keyword.parse(yaml.data).shouldBeTypeOf<Success<List<String>>>().data
 
-    list shouldHaveSize 2
-    list[0] shouldBe "foo-bar"
-    list[1] shouldBe "yolo2000"
-  }
+        list shouldHaveSize 2
+        list[0] shouldBe "foo-bar"
+        list[1] shouldBe "yolo2000"
+    }
 
-  @Test
-  fun testStringListKeywordEmpty() {
-    val yaml =
-        yamlParse(
+    @Test
+    fun testStringListKeywordEmpty() {
+        val yaml =
+            yamlParse(
                 """
                 list1:
                     - 
@@ -79,15 +79,15 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-            .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<Success<YamlNode>>()
 
-    val keyword =
-        StringListKeyword(
-            "list1",
-            TEST_KEYWORD_HELP,
-        )
+        val keyword =
+            StringListKeyword(
+                "list1",
+                TEST_KEYWORD_HELP,
+            )
 
-    keyword.parse(yaml.data).shouldBeTypeOf<Error<List<String>>>().error shouldBe
-        "expected a string at line 2 colum 6"
-  }
+        keyword.parse(yaml.data).shouldBeTypeOf<Error<List<String>>>().error shouldBe
+            "expected a string at line 2 colum 6"
+    }
 }

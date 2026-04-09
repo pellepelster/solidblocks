@@ -19,52 +19,51 @@ import de.solidblocks.utils.logError
 import kotlinx.serialization.json.Json
 
 class CloudInfoCommand : CliktCommand(name = "info") {
+    override fun help(context: Context) = "show details for a cloud configuration"
 
-  override fun help(context: Context) = "show details for a cloud configuration"
+    private val configFile by argument().file(mustExist = true)
 
-  private val configFile by argument().file(mustExist = true)
-
-  enum class Format {
-    text,
-    json,
-  }
-
-  val format by option().choice("text", "json").enum<Format>(true).default(Format.text)
-
-  override fun run() {
-    val manager = CloudManager(configFile)
-    val runtime =
-        when (val result = manager.validate()) {
-          is Error<CloudConfigurationRuntime> -> {
-            logError(result.error)
-            throw ProgramResult(1)
-          }
-
-          is Success<CloudConfigurationRuntime> -> result.data
-        }
-
-    when (format) {
-      Format.text -> {
-        when (val result = manager.info(runtime)) {
-          is Error<String> -> {
-            logError(result.error)
-            throw ProgramResult(1)
-          }
-
-          is Success<String> -> printMarkdown(result)
-        }
-      }
-
-      Format.json -> {
-        when (val result = manager.infoJson(runtime)) {
-          is Error<CloudInfo> -> {
-            logError(result.error)
-            throw ProgramResult(1)
-          }
-
-          is Success<CloudInfo> -> println(Json.encodeToString(result.data))
-        }
-      }
+    enum class Format {
+        text,
+        json,
     }
-  }
+
+    val format by option().choice("text", "json").enum<Format>(true).default(Format.text)
+
+    override fun run() {
+        val manager = CloudManager(configFile)
+        val runtime =
+            when (val result = manager.validate()) {
+                is Error<CloudConfigurationRuntime> -> {
+                    logError(result.error)
+                    throw ProgramResult(1)
+                }
+
+                is Success<CloudConfigurationRuntime> -> result.data
+            }
+
+        when (format) {
+            Format.text -> {
+                when (val result = manager.info(runtime)) {
+                    is Error<String> -> {
+                        logError(result.error)
+                        throw ProgramResult(1)
+                    }
+
+                    is Success<String> -> printMarkdown(result)
+                }
+            }
+
+            Format.json -> {
+                when (val result = manager.infoJson(runtime)) {
+                    is Error<CloudInfo> -> {
+                        logError(result.error)
+                        throw ProgramResult(1)
+                    }
+
+                    is Success<CloudInfo> -> println(Json.encodeToString(result.data))
+                }
+            }
+        }
+    }
 }

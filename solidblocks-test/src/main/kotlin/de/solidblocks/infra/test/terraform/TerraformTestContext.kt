@@ -4,46 +4,37 @@ import de.solidblocks.infra.test.TestContext
 import java.nio.file.Path
 import kotlin.io.path.exists
 
-fun terraformTestContext(dir: Path, version: String? = null, testId: String? = null) =
-    TerraformTestContext(dir, version, testId = testId)
+fun terraformTestContext(dir: Path, version: String? = null, testId: String? = null) = TerraformTestContext(dir, version, testId = testId)
 
-fun terraformTestContext(dir: String, version: String? = null, testId: String? = null) =
-    TerraformTestContext(Path.of(dir), version, testId = testId)
+fun terraformTestContext(dir: String, version: String? = null, testId: String? = null) = TerraformTestContext(Path.of(dir), version, testId = testId)
 
-class TerraformTestContext(
-    val dir: Path,
-    version: String? = null,
-    val environment: Map<String, String> = emptyMap(),
-    testId: String? = null,
-) : TestContext(testId) {
+class TerraformTestContext(val dir: Path, version: String? = null, val environment: Map<String, String> = emptyMap(), testId: String? = null) : TestContext(testId) {
+    val terraform = Terraform(dir, version, environment)
 
-  val terraform = Terraform(dir, version, environment)
-
-  init {
-    if (!dir.exists()) {
-      throw RuntimeException("Terraform dir '$dir' does not exist")
+    init {
+        if (!dir.exists()) {
+            throw RuntimeException("Terraform dir '$dir' does not exist")
+        }
+        terraform.ensureTerraformBinary()
     }
-    terraform.ensureTerraformBinary()
-  }
 
-  fun apply() = terraform.apply()
+    fun apply() = terraform.apply()
 
-  fun destroy() = terraform.destroy()
+    fun destroy() = terraform.destroy()
 
-  fun version() = terraform.version()
+    fun version() = terraform.version()
 
-  fun init() = terraform.init()
+    fun init() = terraform.init()
 
-  fun output() = terraform.output()
+    fun output() = terraform.output()
 
-  fun deleteLocalState() = terraform.deleteLocalState()
+    fun deleteLocalState() = terraform.deleteLocalState()
 
-  fun addVariable(name: String, value: Any) = terraform.addVariable(name, value)
+    fun addVariable(name: String, value: Any) = terraform.addVariable(name, value)
 
-  fun addEnvironmentVariable(name: String, value: Any) =
-      terraform.addEnvironmentVariable(name, value)
+    fun addEnvironmentVariable(name: String, value: Any) = terraform.addEnvironmentVariable(name, value)
 
-  override fun cleanUp() {
-    destroy()
-  }
+    override fun cleanUp() {
+        destroy()
+    }
 }

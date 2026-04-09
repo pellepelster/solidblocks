@@ -5,14 +5,13 @@ import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationFactory
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 
-class DockerServiceRegistration :
-    ServiceRegistration<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
-  override val supportedConfiguration = DockerServiceConfiguration::class
-  override val supportedRuntime = DockerServiceConfigurationRuntime::class
+class DockerServiceRegistration : ServiceRegistration<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
+    override val supportedConfiguration = DockerServiceConfiguration::class
+    override val supportedRuntime = DockerServiceConfigurationRuntime::class
 
-  override fun createManager() = DockerServiceManager()
+    override fun createManager() = DockerServiceManager()
 
-  override fun createConfigurationFactory() = DockerServiceConfigurationFactory()
+    override fun createConfigurationFactory() = DockerServiceConfigurationFactory()
 
-  override val type = "docker"
+    override val type = "docker"
 }

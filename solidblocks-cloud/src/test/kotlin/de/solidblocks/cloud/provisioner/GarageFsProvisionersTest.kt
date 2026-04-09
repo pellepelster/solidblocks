@@ -38,9 +38,6 @@ import io.kotest.matchers.string.shouldHaveLength
 import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.nio.file.Path
-import java.util.Locale.getDefault
-import java.util.UUID
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -48,348 +45,351 @@ import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 import org.testcontainers.utility.Base58
+import java.nio.file.Path
+import java.util.Locale.getDefault
+import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GarageFsProvisionersTest {
 
-  val garageFsContainer =
-      GenericContainer(
-              ImageFromDockerfile(
-                      "localhost/testcontainers/" + Base58.randomString(16).lowercase(getDefault()),
-                      false,
-                  )
-                  .withFileFromClasspath("Dockerfile", "garagefs/Dockerfile")
-                  .withFileFromClasspath("supervisord.conf", "garagefs/supervisord.conf")
-                  .withFileFromClasspath("garage.toml", "garagefs/garage.toml")
-                  .withFileFromClasspath("authorized_keys", "test_ed25519.key.pub"),
-          )
-          .also {
-            it.addExposedPort(22)
-            it.addExposedPort(3903)
-            it.start()
-          }
+    val garageFsContainer =
+        GenericContainer(
+            ImageFromDockerfile(
+                "localhost/testcontainers/" + Base58.randomString(16).lowercase(getDefault()),
+                false,
+            )
+                .withFileFromClasspath("Dockerfile", "garagefs/Dockerfile")
+                .withFileFromClasspath("supervisord.conf", "garagefs/supervisord.conf")
+                .withFileFromClasspath("garage.toml", "garagefs/garage.toml")
+                .withFileFromClasspath("authorized_keys", "test_ed25519.key.pub"),
+        )
+            .also {
+                it.addExposedPort(22)
+                it.addExposedPort(3903)
+                it.start()
+            }
 
-  @BeforeAll
-  fun setup() {
-    await().until { garageFsContainer.execInContainer("/garage", "status").exitCode == 0 }
+    @BeforeAll
+    fun setup() {
+        await().until { garageFsContainer.execInContainer("/garage", "status").exitCode == 0 }
 
-    runBlocking {
-      val api =
-          GarageFsApi(
-              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-              "http://localhost:${garageFsContainer.getMappedPort(3903)}",
-          )
-      val status = api.clusterApi.getClusterStatus()
-      println(status)
+        runBlocking {
+            val api =
+                GarageFsApi(
+                    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "http://localhost:${garageFsContainer.getMappedPort(3903)}",
+                )
+            val status = api.clusterApi.getClusterStatus()
+            println(status)
+        }
     }
-  }
 
-  @Test
-  fun testFlow() {
-    val serverProvisioner = mockk<HetznerServerProvisioner>()
-    coEvery { serverProvisioner.lookup(any(), any()) } returns
-        HetznerServerRuntime(
-            1,
-            "server1",
-            ServerStatus.running,
-            "debian12",
-            HetznerServerType.cx23,
-            HetznerLocation.nbg1,
-            emptyMap(),
-            emptyList(),
-            null,
-            "127.0.0.1",
-            emptyList(),
-            sshPort = garageFsContainer.getMappedPort(22),
-        )
-    coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
+    @Test
+    fun testFlow() {
+        val serverProvisioner = mockk<HetznerServerProvisioner>()
+        coEvery { serverProvisioner.lookup(any(), any()) } returns
+            HetznerServerRuntime(
+                1,
+                "server1",
+                ServerStatus.running,
+                "debian12",
+                HetznerServerType.cx23,
+                HetznerLocation.nbg1,
+                emptyMap(),
+                emptyList(),
+                null,
+                "127.0.0.1",
+                emptyList(),
+                sshPort = garageFsContainer.getMappedPort(22),
+            )
+        coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
 
-    val secretProvisioner = mockk<PassSecretProvisioner>()
-    coEvery { secretProvisioner.lookup(any(), any()) } returns
-        PassSecretRuntime(
-            "admin_token",
-            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        )
-    coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
+        val secretProvisioner = mockk<PassSecretProvisioner>()
+        coEvery { secretProvisioner.lookup(any(), any()) } returns
+            PassSecretRuntime(
+                "admin_token",
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            )
+        coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
 
-    val server =
-        HetznerServer(
-            "server1",
-            HetznerLocation.nbg1,
-            HetznerServerType.cx23,
-            UserData(emptySet(), { "" }),
-        )
+        val server =
+            HetznerServer(
+                "server1",
+                HetznerLocation.nbg1,
+                HetznerServerType.cx23,
+                UserData(emptySet(), { "" }),
+            )
 
-    val bucketProvisioner = GarageFsBucketProvisioner()
-    val accessKeyProvisioner = GarageFsAccessKeyProvisioner()
-    val permissionProvisioner = GarageFsPermissionProvisioner()
-    val layoutProvisioner = GarageFsLayoutProvisioner()
+        val bucketProvisioner = GarageFsBucketProvisioner()
+        val accessKeyProvisioner = GarageFsAccessKeyProvisioner()
+        val permissionProvisioner = GarageFsPermissionProvisioner()
+        val layoutProvisioner = GarageFsLayoutProvisioner()
 
-    val context =
-        ProvisionerContext(
-            SSHKeyUtils.loadKey(
-                TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
-            ),
-            "some_path",
-            Path.of("."),
-            "cloud1",
-            "test",
-            ProvisionersRegistry(
-                listOf(
-                    serverProvisioner,
-                    secretProvisioner,
-                    permissionProvisioner,
-                    accessKeyProvisioner,
-                    bucketProvisioner,
+        val context =
+            ProvisionerContext(
+                SSHKeyUtils.loadKey(
+                    TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
                 ),
-                listOf(
-                    serverProvisioner,
-                    secretProvisioner,
-                    permissionProvisioner,
-                    accessKeyProvisioner,
-                    bucketProvisioner,
+                "some_path",
+                Path.of("."),
+                "cloud1",
+                "test",
+                ProvisionersRegistry(
+                    listOf(
+                        serverProvisioner,
+                        secretProvisioner,
+                        permissionProvisioner,
+                        accessKeyProvisioner,
+                        bucketProvisioner,
+                    ),
+                    listOf(
+                        serverProvisioner,
+                        secretProvisioner,
+                        permissionProvisioner,
+                        accessKeyProvisioner,
+                        bucketProvisioner,
+                    ),
                 ),
-            ),
-            emptyList(),
-        )
+                emptyList(),
+            )
 
-    val adminToken = PassSecret("admin_token")
-    val bucketName = UUID.randomUUID().toString()
-    val bucket = GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), false)
-    val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)
+        val adminToken = PassSecret("admin_token")
+        val bucketName = UUID.randomUUID().toString()
+        val bucket = GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), false)
+        val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)
 
-    runBlocking {
-      val layout = GarageFsLayout(1 * 1000 * 1000, server.asLookup(), adminToken.asLookup())
+        runBlocking {
+            val layout = GarageFsLayout(1 * 1000 * 1000, server.asLookup(), adminToken.asLookup())
 
-      assertSoftly(layoutProvisioner.diff(layout, context)) {
-        it.status shouldBe ResourceDiffStatus.has_changes
-        it.changes shouldHaveSize 1
-      }
+            assertSoftly(layoutProvisioner.diff(layout, context)) {
+                it.status shouldBe ResourceDiffStatus.has_changes
+                it.changes shouldHaveSize 1
+            }
 
-      layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
-      assertSoftly(layoutProvisioner.diff(layout, context)) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
-        it.changes shouldHaveSize 0
-      }
+            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+            assertSoftly(layoutProvisioner.diff(layout, context)) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+                it.changes shouldHaveSize 0
+            }
 
-      layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
-      assertSoftly(layoutProvisioner.diff(layout, context)) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
-        it.changes shouldHaveSize 0
-      }
+            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+            assertSoftly(layoutProvisioner.diff(layout, context)) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+                it.changes shouldHaveSize 0
+            }
 
-      // check non-existing bucket
-      bucketProvisioner.lookup(bucket.asLookup(), context) shouldBe null
-      assertSoftly(bucketProvisioner.diff(bucket, context)) {
-        it.status shouldBe ResourceDiffStatus.missing
-      }
+            // check non-existing bucket
+            bucketProvisioner.lookup(bucket.asLookup(), context) shouldBe null
+            assertSoftly(bucketProvisioner.diff(bucket, context)) {
+                it.status shouldBe ResourceDiffStatus.missing
+            }
 
-      // check non-existing access key
-      accessKeyProvisioner.lookup(accessKey.asLookup(), context) shouldBe null
-      assertSoftly(accessKeyProvisioner.diff(accessKey, context)) {
-        it.status shouldBe ResourceDiffStatus.missing
-      }
+            // check non-existing access key
+            accessKeyProvisioner.lookup(accessKey.asLookup(), context) shouldBe null
+            assertSoftly(accessKeyProvisioner.diff(accessKey, context)) {
+                it.status shouldBe ResourceDiffStatus.missing
+            }
 
-      bucketProvisioner
-          .apply(bucket, context, TEST_LOG_CONTEXT)
-          .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
-          .data
-          .name shouldBe bucket.name
-      bucketProvisioner
-          .apply(bucket, context, TEST_LOG_CONTEXT)
-          .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
-          .data
-          .name shouldBe bucket.name
+            bucketProvisioner
+                .apply(bucket, context, TEST_LOG_CONTEXT)
+                .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
+                .data
+                .name shouldBe bucket.name
+            bucketProvisioner
+                .apply(bucket, context, TEST_LOG_CONTEXT)
+                .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
+                .data
+                .name shouldBe bucket.name
 
-      accessKeyProvisioner
-          .apply(accessKey, context, TEST_LOG_CONTEXT)
-          .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
-          .data
-          .name shouldBe accessKey.name
-      accessKeyProvisioner
-          .apply(accessKey, context, TEST_LOG_CONTEXT)
-          .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
-          .data
-          .name shouldBe accessKey.name
+            accessKeyProvisioner
+                .apply(accessKey, context, TEST_LOG_CONTEXT)
+                .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
+                .data
+                .name shouldBe accessKey.name
+            accessKeyProvisioner
+                .apply(accessKey, context, TEST_LOG_CONTEXT)
+                .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
+                .data
+                .name shouldBe accessKey.name
 
-      // check created bucket
-      assertSoftly(bucketProvisioner.lookup(bucket.asLookup(), context)!!) {
-        it.name shouldBe bucket.name
-      }
-      assertSoftly(bucketProvisioner.diff(bucket, context)) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
-      }
+            // check created bucket
+            assertSoftly(bucketProvisioner.lookup(bucket.asLookup(), context)!!) {
+                it.name shouldBe bucket.name
+            }
+            assertSoftly(bucketProvisioner.diff(bucket, context)) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+            }
 
-      val bucketWithWebsiteAccess =
-          GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), websiteAccess = true)
-      assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
-        it.status shouldBe ResourceDiffStatus.has_changes
-        it.changes shouldHaveSize 1
-        it.changes[0].expectedValue shouldBe true
-        it.changes[0].actualValue shouldBe false
-      }
+            val bucketWithWebsiteAccess =
+                GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), websiteAccess = true)
+            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
+                it.status shouldBe ResourceDiffStatus.has_changes
+                it.changes shouldHaveSize 1
+                it.changes[0].expectedValue shouldBe true
+                it.changes[0].actualValue shouldBe false
+            }
 
-      bucketProvisioner
-          .apply(
-              bucketWithWebsiteAccess,
-              context,
-              TEST_LOG_CONTEXT,
-          )
-          .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
-          .data
-          .name shouldBe bucket.name
-      assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
-      }
+            bucketProvisioner
+                .apply(
+                    bucketWithWebsiteAccess,
+                    context,
+                    TEST_LOG_CONTEXT,
+                )
+                .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
+                .data
+                .name shouldBe bucket.name
+            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+            }
 
-      val bucketWithWebsiteAccessDomains =
-          GarageFsBucket(
-              bucketName,
-              server.asLookup(),
-              adminToken.asLookup(),
-              websiteAccess = true,
-              websiteAccessDomains = listOf("yolo.de"),
-          )
+            val bucketWithWebsiteAccessDomains =
+                GarageFsBucket(
+                    bucketName,
+                    server.asLookup(),
+                    adminToken.asLookup(),
+                    websiteAccess = true,
+                    websiteAccessDomains = listOf("yolo.de"),
+                )
 
-      assertSoftly(
-          bucketProvisioner.diff(
-              bucketWithWebsiteAccessDomains,
-              context,
-          ),
-      ) {
-        it.status shouldBe ResourceDiffStatus.has_changes
-        it.changes shouldHaveSize 1
-        it.changes[0].expectedValue shouldBe listOf("yolo.de")
-        it.changes[0].actualValue shouldBe emptyList<String>()
-      }
+            assertSoftly(
+                bucketProvisioner.diff(
+                    bucketWithWebsiteAccessDomains,
+                    context,
+                ),
+            ) {
+                it.status shouldBe ResourceDiffStatus.has_changes
+                it.changes shouldHaveSize 1
+                it.changes[0].expectedValue shouldBe listOf("yolo.de")
+                it.changes[0].actualValue shouldBe emptyList<String>()
+            }
 
-      bucketProvisioner
-          .apply(
-              bucketWithWebsiteAccessDomains,
-              context,
-              TEST_LOG_CONTEXT,
-          )
-          .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
-          .data
-          .name shouldBe bucket.name
+            bucketProvisioner
+                .apply(
+                    bucketWithWebsiteAccessDomains,
+                    context,
+                    TEST_LOG_CONTEXT,
+                )
+                .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
+                .data
+                .name shouldBe bucket.name
 
-      assertSoftly(
-          bucketProvisioner.diff(
-              bucketWithWebsiteAccessDomains,
-              context,
-          ),
-      ) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
-        it.changes shouldHaveSize 0
-      }
+            assertSoftly(
+                bucketProvisioner.diff(
+                    bucketWithWebsiteAccessDomains,
+                    context,
+                ),
+            ) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+                it.changes shouldHaveSize 0
+            }
 
-      // check created access key
-      assertSoftly(accessKeyProvisioner.lookup(accessKey.asLookup(), context)!!) {
-        it.name shouldBe accessKey.name
-        it.secretAccessKey shouldHaveLength 64
-      }
+            // check created access key
+            assertSoftly(accessKeyProvisioner.lookup(accessKey.asLookup(), context)!!) {
+                it.name shouldBe accessKey.name
+                it.secretAccessKey shouldHaveLength 64
+            }
 
-      assertSoftly(
-          accessKeyProvisioner.diff(
-              accessKey,
-              context,
-          ),
-      ) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
-      }
+            assertSoftly(
+                accessKeyProvisioner.diff(
+                    accessKey,
+                    context,
+                ),
+            ) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+            }
 
-      val allPermission =
-          GarageFsPermission(bucket, accessKey, server, adminToken, true, true, true)
+            val allPermission =
+                GarageFsPermission(bucket, accessKey, server, adminToken, true, true, true)
 
-      assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)) {
-        it?.owner shouldBe false
-        it?.read shouldBe false
-        it?.write shouldBe false
-      }
-      permissionProvisioner
-          .apply(allPermission, context, TEST_LOG_CONTEXT)
-          .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
-          .data shouldNotBe null
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)) {
+                it?.owner shouldBe false
+                it?.read shouldBe false
+                it?.write shouldBe false
+            }
+            permissionProvisioner
+                .apply(allPermission, context, TEST_LOG_CONTEXT)
+                .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
+                .data shouldNotBe null
 
-      assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
-        it.name shouldBe "${bucket.name}.${accessKey.name}"
-        it.owner shouldBe true
-        it.read shouldBe true
-        it.write shouldBe true
-      }
-      assertSoftly(permissionProvisioner.diff(allPermission, context)) {
-        it.status shouldBe ResourceDiffStatus.up_to_date
-      }
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
+                it.name shouldBe "${bucket.name}.${accessKey.name}"
+                it.owner shouldBe true
+                it.read shouldBe true
+                it.write shouldBe true
+            }
+            assertSoftly(permissionProvisioner.diff(allPermission, context)) {
+                it.status shouldBe ResourceDiffStatus.up_to_date
+            }
 
-      val noOwnerPermission =
-          GarageFsPermission(bucket, accessKey, server, adminToken, false, true, true)
+            val noOwnerPermission =
+                GarageFsPermission(bucket, accessKey, server, adminToken, false, true, true)
 
-      assertSoftly(permissionProvisioner.diff(noOwnerPermission, context)) {
-        it.status shouldBe ResourceDiffStatus.has_changes
-        it.changes shouldHaveSize 1
-        it.changes[0].name shouldBe "owner"
-        it.changes[0].expectedValue shouldBe false
-        it.changes[0].actualValue shouldBe true
-      }
+            assertSoftly(permissionProvisioner.diff(noOwnerPermission, context)) {
+                it.status shouldBe ResourceDiffStatus.has_changes
+                it.changes shouldHaveSize 1
+                it.changes[0].name shouldBe "owner"
+                it.changes[0].expectedValue shouldBe false
+                it.changes[0].actualValue shouldBe true
+            }
 
-      permissionProvisioner
-          .apply(
-              noOwnerPermission,
-              context,
-              TEST_LOG_CONTEXT,
-          )
-          .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
-          .data shouldNotBe null
-      assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
-        it.name shouldBe "${bucket.name}.${accessKey.name}"
-        it.owner shouldBe false
-        it.read shouldBe true
-        it.write shouldBe true
-      }
+            permissionProvisioner
+                .apply(
+                    noOwnerPermission,
+                    context,
+                    TEST_LOG_CONTEXT,
+                )
+                .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
+                .data shouldNotBe null
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
+                it.name shouldBe "${bucket.name}.${accessKey.name}"
+                it.owner shouldBe false
+                it.read shouldBe true
+                it.write shouldBe true
+            }
 
-      val noOwnerNoReadPermission =
-          GarageFsPermission(bucket, accessKey, server, adminToken, false, false, true)
+            val noOwnerNoReadPermission =
+                GarageFsPermission(bucket, accessKey, server, adminToken, false, false, true)
 
-      permissionProvisioner.apply(
-          noOwnerNoReadPermission,
-          context,
-          TEST_LOG_CONTEXT,
-      ) shouldNotBe null
-      assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
-        it.name shouldBe "${bucket.name}.${accessKey.name}"
-        it.owner shouldBe false
-        it.read shouldBe false
-        it.write shouldBe true
-      }
+            permissionProvisioner.apply(
+                noOwnerNoReadPermission,
+                context,
+                TEST_LOG_CONTEXT,
+            ) shouldNotBe null
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
+                it.name shouldBe "${bucket.name}.${accessKey.name}"
+                it.owner shouldBe false
+                it.read shouldBe false
+                it.write shouldBe true
+            }
 
-      val noOwnerNoReadNoWritePermission =
-          GarageFsPermission(bucket, accessKey, server, adminToken, false, false, false)
+            val noOwnerNoReadNoWritePermission =
+                GarageFsPermission(bucket, accessKey, server, adminToken, false, false, false)
 
-      permissionProvisioner
-          .apply(
-              noOwnerNoReadNoWritePermission,
-              context,
-              TEST_LOG_CONTEXT,
-          )
-          .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
-          .data shouldNotBe null
+            permissionProvisioner
+                .apply(
+                    noOwnerNoReadNoWritePermission,
+                    context,
+                    TEST_LOG_CONTEXT,
+                )
+                .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
+                .data shouldNotBe null
 
-      assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)) {
-        it?.owner shouldBe false
-        it?.read shouldBe false
-        it?.write shouldBe false
-      }
-      permissionProvisioner
-          .apply(allPermission, context, TEST_LOG_CONTEXT)
-          .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
-          .data shouldNotBe null
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)) {
+                it?.owner shouldBe false
+                it?.read shouldBe false
+                it?.write shouldBe false
+            }
+            permissionProvisioner
+                .apply(allPermission, context, TEST_LOG_CONTEXT)
+                .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
+                .data shouldNotBe null
 
-      assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
-        it.name shouldBe "${bucket.name}.${accessKey.name}"
-        it.owner shouldBe true
-        it.read shouldBe true
-        it.write shouldBe true
-      }
+            assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
+                it.name shouldBe "${bucket.name}.${accessKey.name}"
+                it.owner shouldBe true
+                it.read shouldBe true
+                it.write shouldBe true
+            }
+        }
     }
-  }
 }

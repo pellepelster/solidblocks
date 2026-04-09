@@ -5,9 +5,8 @@ import java.nio.file.Path
 import java.security.KeyPair
 
 interface SSHKeyProviderRuntime : ProviderConfigurationRuntime {
-  val keyPair: KeyPair
-  val privateKey: Path
+    val keyPair: KeyPair
+    val privateKey: Path
 }
 
-fun List<ProviderConfigurationRuntime>.sshKeyProvider() =
-    this.filterIsInstance<SSHKeyProviderRuntime>().single()
+fun List<ProviderConfigurationRuntime>.sshKeyProvider() = this.filterIsInstance<SSHKeyProviderRuntime>().single()

@@ -7,4 +7,4 @@ interface SSHKeyProviderRegistration<
     C : SSHKeyProviderConfiguration,
     R : ProviderConfigurationRuntime,
     M : SSHKeyProviderConfigurationManager<C, R>,
-> : ProviderRegistration<C, R, M>
+    > : ProviderRegistration<C, R, M>

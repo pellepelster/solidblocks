@@ -26,68 +26,59 @@ fun sshTestContext(
     testId: String? = null,
 ): SSHTestContext = SSHTestContext(host, keyPair, username, port, testId)
 
-class SSHTestContext(
-    val host: String,
-    val keyPair: KeyPair,
-    val username: String = "root",
-    val port: Int = 22,
-    testId: String? = null,
-) : TestContext(testId) {
+class SSHTestContext(val host: String, val keyPair: KeyPair, val username: String = "root", val port: Int = 22, testId: String? = null) : TestContext(testId) {
+    init {
+        val openSSHKey = SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
 
-  init {
-    val openSSHKey = SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
+        val openSSHKeyFile = File.createTempFile("identity", ".key")
+        logInfo("writing open ssh test key for host '$host' to '${openSSHKeyFile.absolutePath}'")
+        openSSHKeyFile.writeText(openSSHKey)
+        Files.setPosixFilePermissions(
+            openSSHKeyFile.toPath(),
+            PosixFilePermissions.fromString("rw-------"),
+        )
 
-    val openSSHKeyFile = File.createTempFile("identity", ".key")
-    logInfo("writing open ssh test key for host '$host' to '${openSSHKeyFile.absolutePath}'")
-    openSSHKeyFile.writeText(openSSHKey)
-    Files.setPosixFilePermissions(
-        openSSHKeyFile.toPath(),
-        PosixFilePermissions.fromString("rw-------"),
-    )
+        val openSSHConfigFile =
+            if (testId != null) {
+                File("/tmp/$testId.config")
+            } else {
+                File.createTempFile("ssh", ".config")
+            }
 
-    val openSSHConfigFile =
-        if (testId != null) {
-          File("/tmp/$testId.config")
-        } else {
-          File.createTempFile("ssh", ".config")
-        }
-
-    logInfo("writing open ssh config for host '$host' to '${openSSHConfigFile.absolutePath}'")
-    val sshConfig =
-        """
+        logInfo("writing open ssh config for host '$host' to '${openSSHConfigFile.absolutePath}'")
+        val sshConfig =
+            """
             Host $host
                 HostName $host
                 User root
                 IdentityFile ${openSSHKeyFile.absolutePath}
                 StrictHostKeyChecking no
                 UserKnownHostsFile /dev/null
-        """
-            .trimIndent()
-    openSSHConfigFile.writeText(sshConfig)
+            """
+                .trimIndent()
+        openSSHConfigFile.writeText(sshConfig)
 
-    logInfo("run 'ssh -F ${openSSHConfigFile.absolutePath} $username@$host' to access host")
-  }
+        logInfo("run 'ssh -F ${openSSHConfigFile.absolutePath} $username@$host' to access host")
+    }
 
-  private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, username, port)
+    private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, username, port)
 
-  fun cloudInit() =
-      cloudInitTestContext(host, keyPair, username, port).also { testContexts.add(it) }
+    fun cloudInit() = cloudInitTestContext(host, keyPair, username, port).also { testContexts.add(it) }
 
-  fun command(command: String) = commandManager.sshCommand(command)
+    fun command(command: String) = commandManager.sshCommand(command)
 
-  fun fileExists(file: String) = commandManager.sshCommand("test -f $file").exitCode == 0
+    fun fileExists(file: String) = commandManager.sshCommand("test -f $file").exitCode == 0
 
-  fun filePermissions(file: String) =
-      commandManager.sshCommand("ls -ld $file | awk '{ print \$1; }'").stdout.trim()
+    fun filePermissions(file: String) = commandManager.sshCommand("ls -ld $file | awk '{ print \$1; }'").stdout.trim()
 
-  fun download(file: String) = commandManager.download(file)
+    fun download(file: String) = commandManager.download(file)
 
-  fun upload(localFile: Path, remoteFile: String) {
-    logInfo("uploading '$localFile' to '$host:$remoteFile'")
-    commandManager.upload(localFile, remoteFile)
-  }
+    fun upload(localFile: Path, remoteFile: String) {
+        logInfo("uploading '$localFile' to '$host:$remoteFile'")
+        commandManager.upload(localFile, remoteFile)
+    }
 
-  override fun cleanUp() {
-    commandManager.close()
-  }
+    override fun cleanUp() {
+        commandManager.close()
+    }
 }

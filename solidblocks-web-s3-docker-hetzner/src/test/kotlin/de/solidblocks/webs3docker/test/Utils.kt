@@ -25,23 +25,20 @@ data class S3Bucket(
 @JsonIgnoreUnknownKeys
 data class DockerUser(val username: String, val password: String)
 
-fun S3Bucket.ownerS3Client(s3Host: String) =
-    MinioClient.builder()
-        .endpoint("https://$s3Host")
-        .region("garage")
-        .credentials(this.owner_key_id, this.owner_secret_key)
-        .build()
+fun S3Bucket.ownerS3Client(s3Host: String) = MinioClient.builder()
+    .endpoint("https://$s3Host")
+    .region("garage")
+    .credentials(this.owner_key_id, this.owner_secret_key)
+    .build()
 
-fun S3Bucket.rwS3Client(s3Host: String) =
-    MinioClient.builder()
-        .endpoint("https://$s3Host")
-        .region("garage")
-        .credentials(this.rw_key_id, this.rw_secret_key)
-        .build()
+fun S3Bucket.rwS3Client(s3Host: String) = MinioClient.builder()
+    .endpoint("https://$s3Host")
+    .region("garage")
+    .credentials(this.rw_key_id, this.rw_secret_key)
+    .build()
 
-fun S3Bucket.roS3Client(s3Host: String) =
-    MinioClient.builder()
-        .endpoint("https://$s3Host")
-        .region("garage")
-        .credentials(this.ro_key_id, this.ro_secret_key)
-        .build()
+fun S3Bucket.roS3Client(s3Host: String) = MinioClient.builder()
+    .endpoint("https://$s3Host")
+    .region("garage")
+    .credentials(this.ro_key_id, this.ro_secret_key)
+    .build()

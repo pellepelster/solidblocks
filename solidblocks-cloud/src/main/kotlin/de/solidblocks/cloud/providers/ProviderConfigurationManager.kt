@@ -9,16 +9,12 @@ import kotlin.reflect.KClass
 
 data class CloudConfigurationContext(val cloudName: String, val configFileDirectory: Path)
 
-interface ProviderConfigurationManager<
-    C : ProviderConfiguration,
-    R : ProviderConfigurationRuntime,
-> {
+interface ProviderConfigurationManager<C : ProviderConfiguration, R : ProviderConfigurationRuntime> {
+    fun validate(configuration: C, context: CloudConfigurationContext, log: LogContext): Result<R>
 
-  fun validate(configuration: C, context: CloudConfigurationContext, log: LogContext): Result<R>
+    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
-  fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
+    fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
 
-  fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
-
-  val supportedConfiguration: KClass<C>
+    val supportedConfiguration: KClass<C>
 }

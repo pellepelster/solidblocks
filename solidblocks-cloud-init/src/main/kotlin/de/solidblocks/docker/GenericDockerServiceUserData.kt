@@ -38,109 +38,108 @@ class GenericDockerServiceUserData(
     val enableHttps: Boolean = false,
     val environmentVariables: Map<String, String> = emptyMap(),
 ) : ServiceUserData {
+    override fun render(): String {
+        val storageMount = "/storage/data"
+        val backupMount = "/storage/backup"
 
-  override fun render(): String {
-    val storageMount = "/storage/data"
-    val backupMount = "/storage/backup"
+        val caddyStorageDir = "$storageMount/www"
 
-    val caddyStorageDir = "$storageMount/www"
+        val caddyConfig =
+            CaddyConfig(
+                GlobalOptions(
+                    FileSystemStorage(caddyStorageDir),
+                    "info@${rootDomain ?: "localhost"}",
+                    if (enableHttps) {
+                        null
+                    } else {
+                        AutoHttps.off
+                    },
+                ),
+                ports.map { Site(":${it.key}", ReverseProxy("http://localhost:${it.value + 1024}")) },
+            )
 
-    val caddyConfig =
-        CaddyConfig(
-            GlobalOptions(
-                FileSystemStorage(caddyStorageDir),
-                "info@${rootDomain ?: "localhost"}",
-                if (enableHttps) {
-                  null
-                } else {
-                  AutoHttps.off
-                },
+        val userData = ShellScript()
+        userData.addInlineSource(UtilsLibrary)
+        userData.addInlineSource(AptLibrary)
+        userData.addInlineSource(CurlLibrary)
+        userData.addInlineSource(DockerLibrary)
+        userData.addInlineSource(LogLibrary)
+        userData.addInlineSource(PackageLibrary)
+        userData.addCommand(PackageLibrary.UpdateRepositories())
+        userData.addCommand(PackageLibrary.UpdateSystem())
+
+        userData.addInlineSource(StorageLibrary)
+        userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
+        userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
+
+        userData.addCommand(DockerLibrary.InstallDebian())
+
+        userData.addInlineSource(CaddyLibrary)
+        userData.addCommand(CaddyLibrary.Install())
+        userData.addCommand(MkDir(caddyStorageDir, "caddy"))
+        userData.addCommand(
+            WriteFile(
+                caddyConfig.render().toByteArray(),
+                "/etc/caddy/Caddyfile",
+                FilePermissions.RW_R__R__,
             ),
-            ports.map { Site(":${it.key}", ReverseProxy("http://localhost:${it.value + 1024}")) },
         )
+        userData.addCommand(SystemDLibrary.Restart("caddy"))
 
-    val userData = ShellScript()
-    userData.addInlineSource(UtilsLibrary)
-    userData.addInlineSource(AptLibrary)
-    userData.addInlineSource(CurlLibrary)
-    userData.addInlineSource(DockerLibrary)
-    userData.addInlineSource(LogLibrary)
-    userData.addInlineSource(PackageLibrary)
-    userData.addCommand(PackageLibrary.UpdateRepositories())
-    userData.addCommand(PackageLibrary.UpdateSystem())
+        val dockerWorkingDirectory = "/usr/local/etc/containers"
+        val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
+        val environment = mapOf<String, String>()
 
-    userData.addInlineSource(StorageLibrary)
-    userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
-    userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
-
-    userData.addCommand(DockerLibrary.InstallDebian())
-
-    userData.addInlineSource(CaddyLibrary)
-    userData.addCommand(CaddyLibrary.Install())
-    userData.addCommand(MkDir(caddyStorageDir, "caddy"))
-    userData.addCommand(
-        WriteFile(
-            caddyConfig.render().toByteArray(),
-            "/etc/caddy/Caddyfile",
-            FilePermissions.RW_R__R__,
-        ),
-    )
-    userData.addCommand(SystemDLibrary.Restart("caddy"))
-
-    val dockerWorkingDirectory = "/usr/local/etc/containers"
-    val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
-    val environment = mapOf<String, String>()
-
-    val dockerCompose =
-        ComposeFile(
-            services =
+        val dockerCompose =
+            ComposeFile(
+                services =
                 mapOf(
                     name to
                         Service(
                             image = dockerImage,
                             ports =
-                                ports.map {
-                                  PortMapping(
-                                      it.value,
-                                      it.value + 1024,
-                                  )
-                                },
+                            ports.map {
+                                PortMapping(
+                                    it.value,
+                                    it.value + 1024,
+                                )
+                            },
                             environment = environmentVariables,
                         ),
                 ),
-        )
-    userData.addCommand(MkDir(dockerWorkingDirectory))
-    userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
+            )
+        userData.addCommand(MkDir(dockerWorkingDirectory))
+        userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
-    val dockerSystemDConfig =
-        SystemDService(
-            name,
-            Unit(
-                "'$name' docker compose service",
-                after = listOf(Target.DOCKER_SERVICE),
-                requires = listOf(Target.DOCKER_SERVICE),
-            ),
-            Service(
-                listOf(
-                    "/usr/bin/docker",
-                    "compose",
-                    "--file",
-                    dockerComposeFile,
-                    "up",
-                    "--force-recreate",
+        val dockerSystemDConfig =
+            SystemDService(
+                name,
+                Unit(
+                    "'$name' docker compose service",
+                    after = listOf(Target.DOCKER_SERVICE),
+                    requires = listOf(Target.DOCKER_SERVICE),
                 ),
-                restart = Restart.ALWAYS,
-                environment = environment,
-                workingDirectory = dockerWorkingDirectory,
-                execDown =
+                Service(
+                    listOf(
+                        "/usr/bin/docker",
+                        "compose",
+                        "--file",
+                        dockerComposeFile,
+                        "up",
+                        "--force-recreate",
+                    ),
+                    restart = Restart.ALWAYS,
+                    environment = environment,
+                    workingDirectory = dockerWorkingDirectory,
+                    execDown =
                     listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
-            ),
-            Install(),
-        )
+                ),
+                Install(),
+            )
 
-    userData.installSystemDUnit(dockerSystemDConfig)
-    userData.addCommand(SystemDLibrary.Restart(name))
+        userData.installSystemDUnit(dockerSystemDConfig)
+        userData.addCommand(SystemDLibrary.Restart(name))
 
-    return userData.render()
-  }
+        return userData.render()
+    }
 }

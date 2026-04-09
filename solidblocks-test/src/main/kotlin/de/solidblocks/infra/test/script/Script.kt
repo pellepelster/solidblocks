@@ -19,105 +19,101 @@ import kotlin.time.Duration.Companion.seconds
 class ScriptStep(val step: String, val assertion: ((CommandRunAssertion) -> Unit)?)
 
 abstract class ScriptBuilder : Closeable {
+    val workingDir = tempDir()
 
-  val workingDir = tempDir()
+    internal val includes: MutableList<Path> = mutableListOf()
 
-  internal val includes: MutableList<Path> = mutableListOf()
+    protected val steps: MutableList<ScriptStep> = mutableListOf()
 
-  protected val steps: MutableList<ScriptStep> = mutableListOf()
+    internal var sources = mutableListOf<Path>()
 
-  internal var sources = mutableListOf<Path>()
+    internal var assertSteps = true
 
-  internal var assertSteps = true
+    internal var defaultWaitForOutput: Duration = 60.seconds
 
-  internal var defaultWaitForOutput: Duration = 60.seconds
+    internal val envs = mutableMapOf<String, String>()
 
-  internal val envs = mutableMapOf<String, String>()
+    internal val resources = mutableListOf<Closeable>()
 
-  internal val resources = mutableListOf<Closeable>()
+    internal var inheritEnv = true
 
-  internal var inheritEnv = true
-
-  fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
-    this.defaultWaitForOutput = defaultWaitForOutput
-  }
-
-  fun assertSteps(assertSteps: Boolean) = apply { this.assertSteps = assertSteps }
-
-  fun includes(vararg includes: String) = apply {
-    this.includes.addAll(includes.map { Path.of(it) })
-  }
-
-  fun includes(vararg includes: Path) = apply { this.includes.addAll(includes) }
-
-  fun String.hashedWithSha256() =
-      MessageDigest.getInstance("SHA-256").digest(toByteArray()).toHexString()
-
-  fun includes(vararg includes: URI) = apply {
-    for (include in includes) {
-      val hashedURI = include.toString().hashedWithSha256()
-      val includedURIFile = workingDir.file(hashedURI).content(include.toURL().readBytes()).create()
-      this.includes.add(includedURIFile)
+    fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
+        this.defaultWaitForOutput = defaultWaitForOutput
     }
-  }
 
-  fun inheritEnv(inheritEnv: Boolean) = apply { this.inheritEnv = inheritEnv }
+    fun assertSteps(assertSteps: Boolean) = apply { this.assertSteps = assertSteps }
 
-  fun sources(sources: DirectoryBuilder) = this.sources(sources.path)
+    fun includes(vararg includes: String) = apply {
+        this.includes.addAll(includes.map { Path.of(it) })
+    }
 
-  fun sources(sources: Path) = apply { this.sources.add(sources) }
+    fun includes(vararg includes: Path) = apply { this.includes.addAll(includes) }
 
-  fun step(step: String, assertion: ((CommandRunAssertion) -> Unit)? = null) = apply {
-    this.steps.add(ScriptStep(step, assertion))
-  }
+    fun String.hashedWithSha256() = MessageDigest.getInstance("SHA-256").digest(toByteArray()).toHexString()
 
-  protected fun buildScript(): Pair<Path, List<String>> {
-    resources.add(workingDir)
+    fun includes(vararg includes: URI) = apply {
+        for (include in includes) {
+            val hashedURI = include.toString().hashedWithSha256()
+            val includedURIFile = workingDir.file(hashedURI).content(include.toURL().readBytes()).create()
+            this.includes.add(includedURIFile)
+        }
+    }
 
-    this.sources.forEach { workingDir.copyFromDir(it) }
+    fun inheritEnv(inheritEnv: Boolean) = apply { this.inheritEnv = inheritEnv }
 
-    val sourceMappings =
-        this.includes.map { source ->
-          source to
-              workingDir.path.resolve(
-                  source
-                      .absolutePathString()
-                      .removePrefix(File.separator)
-                      .replace(File.separator, "_"),
-              )
+    fun sources(sources: DirectoryBuilder) = this.sources(sources.path)
+
+    fun sources(sources: Path) = apply { this.sources.add(sources) }
+
+    fun step(step: String, assertion: ((CommandRunAssertion) -> Unit)? = null) = apply { this.steps.add(ScriptStep(step, assertion)) }
+
+    protected fun buildScript(): Pair<Path, List<String>> {
+        resources.add(workingDir)
+
+        this.sources.forEach { workingDir.copyFromDir(it) }
+
+        val sourceMappings =
+            this.includes.map { source ->
+                source to
+                    workingDir.path.resolve(
+                        source
+                            .absolutePathString()
+                            .removePrefix(File.separator)
+                            .replace(File.separator, "_"),
+                    )
+            }
+
+        sourceMappings.forEach { sourceMapping ->
+            workingDir
+                .file(sourceMapping.second.absolutePathString())
+                .content(sourceMapping.first.readBytes())
+                .create()
         }
 
-    sourceMappings.forEach { sourceMapping ->
-      workingDir
-          .file(sourceMapping.second.absolutePathString())
-          .content(sourceMapping.first.readBytes())
-          .create()
+        val script = StringBuilder()
+
+        script.appendLine("#!/usr/bin/env bash")
+        script.appendLine("set -eu -o pipefail")
+
+        sourceMappings.forEach { script.appendLine("source ${it.second.absolutePathString()}") }
+
+        steps.forEachIndexed { index, step ->
+            script.appendLine("echo \"starting step ${index}\"")
+            script.appendLine(step.step)
+            script.appendLine("echo \"finished step ${index}\"")
+            script.appendLine("read")
+        }
+
+        val scriptFile = workingDir.file("script.sh").executable().content(script.toString()).create()
+
+        return workingDir.path to listOf(scriptFile.absolutePathString())
     }
 
-    val script = StringBuilder()
+    fun env(env: Pair<String, String>) = apply { this.envs[env.first] = env.second }
 
-    script.appendLine("#!/usr/bin/env bash")
-    script.appendLine("set -eu -o pipefail")
-
-    sourceMappings.forEach { script.appendLine("source ${it.second.absolutePathString()}") }
-
-    steps.forEachIndexed { index, step ->
-      script.appendLine("echo \"starting step ${index}\"")
-      script.appendLine(step.step)
-      script.appendLine("echo \"finished step ${index}\"")
-      script.appendLine("read")
+    override fun close() {
+        resources.forEach { it.close() }
     }
 
-    val scriptFile = workingDir.file("script.sh").executable().content(script.toString()).create()
-
-    return workingDir.path to listOf(scriptFile.absolutePathString())
-  }
-
-  fun env(env: Pair<String, String>) = apply { this.envs[env.first] = env.second }
-
-  override fun close() {
-    resources.forEach { it.close() }
-  }
-
-  abstract fun run(): CommandResult<TimestampedOutputLine>
+    abstract fun run(): CommandResult<TimestampedOutputLine>
 }

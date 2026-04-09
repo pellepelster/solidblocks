@@ -8,16 +8,15 @@ import java.security.KeyPair
 
 class SSHHealthCheck(val key: KeyPair) : HealthCheck {
 
-  override fun check(address: String, port: Int) =
-      try {
+    override fun check(address: String, port: Int) = try {
         SSHClient(address, key, port = port).use {
-          if (it.command("whoami").exitCode == 0) {
-            healthy
-          } else {
-            unhealthy
-          }
+            if (it.command("whoami").exitCode == 0) {
+                healthy
+            } else {
+                unhealthy
+            }
         }
-      } catch (e: Exception) {
+    } catch (e: Exception) {
         unhealthy
-      }
+    }
 }

@@ -8,54 +8,53 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldEndWith
 import io.kotest.matchers.string.shouldStartWith
-import java.nio.file.Files
-import kotlin.io.path.writeText
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
+import java.nio.file.Files
+import kotlin.io.path.writeText
 
 class SSHKeyUtilsTest {
+    @Test
+    fun testGenerateRsaKeyPair() {
+        assertSoftly(SSHKeyUtils.RSA.generate()) {
+            it.privateKey shouldStartWith "-----BEGIN RSA PRIVATE KEY-----"
+            it.privateKey shouldEndWith "-----END RSA PRIVATE KEY-----\n"
+            it.publicKey shouldStartWith "-----BEGIN PUBLIC KEY-----"
+            it.publicKey shouldEndWith "-----END PUBLIC KEY-----\n"
 
-  @Test
-  fun testGenerateRsaKeyPair() {
-    assertSoftly(SSHKeyUtils.RSA.generate()) {
-      it.privateKey shouldStartWith "-----BEGIN RSA PRIVATE KEY-----"
-      it.privateKey shouldEndWith "-----END RSA PRIVATE KEY-----\n"
-      it.publicKey shouldStartWith "-----BEGIN PUBLIC KEY-----"
-      it.publicKey shouldEndWith "-----END PUBLIC KEY-----\n"
+            SSHKeyUtils.RSA.publicKeyToOpenSsh(it.publicKey) shouldStartWith "ssh-rsa AAA"
+            SSHKeyUtils.RSA.privateKeyToOpenSsh(it.privateKey) shouldStartWith
+                "-----BEGIN OPENSSH PRIVATE KEY-----"
 
-      SSHKeyUtils.RSA.publicKeyToOpenSsh(it.publicKey) shouldStartWith "ssh-rsa AAA"
-      SSHKeyUtils.RSA.privateKeyToOpenSsh(it.privateKey) shouldStartWith
-          "-----BEGIN OPENSSH PRIVATE KEY-----"
-
-      val key = loadKey(it.privateKey)
-      key shouldNotBe null
-      SSHKeyUtils.RSA.privateKeyToOpenSsh(key.private) shouldStartWith
-          "-----BEGIN OPENSSH PRIVATE KEY-----"
+            val key = loadKey(it.privateKey)
+            key shouldNotBe null
+            SSHKeyUtils.RSA.privateKeyToOpenSsh(key.private) shouldStartWith
+                "-----BEGIN OPENSSH PRIVATE KEY-----"
+        }
     }
-  }
 
-  @Test
-  fun testGenerateED25519KeyPair() {
-    assertSoftly(SSHKeyUtils.ED25519.generate()) {
-      it.privateKey shouldStartWith "-----BEGIN PRIVATE KEY-----"
-      it.privateKey shouldEndWith "-----END PRIVATE KEY-----\n"
-      it.publicKey shouldStartWith "-----BEGIN PUBLIC KEY-----"
-      it.publicKey shouldEndWith "-----END PUBLIC KEY-----\n"
+    @Test
+    fun testGenerateED25519KeyPair() {
+        assertSoftly(SSHKeyUtils.ED25519.generate()) {
+            it.privateKey shouldStartWith "-----BEGIN PRIVATE KEY-----"
+            it.privateKey shouldEndWith "-----END PRIVATE KEY-----\n"
+            it.publicKey shouldStartWith "-----BEGIN PUBLIC KEY-----"
+            it.publicKey shouldEndWith "-----END PUBLIC KEY-----\n"
 
-      SSHKeyUtils.ED25519.publicKeyToOpenSsh(it.publicKey) shouldStartWith "ssh-ed25519 AAA"
-      SSHKeyUtils.ED25519.privateKeyToOpenSsh(it.privateKey) shouldStartWith
-          "-----BEGIN OPENSSH PRIVATE KEY-----"
+            SSHKeyUtils.ED25519.publicKeyToOpenSsh(it.publicKey) shouldStartWith "ssh-ed25519 AAA"
+            SSHKeyUtils.ED25519.privateKeyToOpenSsh(it.privateKey) shouldStartWith
+                "-----BEGIN OPENSSH PRIVATE KEY-----"
 
-      val key = loadKey(it.privateKey)
-      key shouldNotBe null
-      SSHKeyUtils.ED25519.privateKeyToOpenSsh(key.private) shouldStartWith
-          "-----BEGIN OPENSSH PRIVATE KEY-----"
+            val key = loadKey(it.privateKey)
+            key shouldNotBe null
+            SSHKeyUtils.ED25519.privateKeyToOpenSsh(key.private) shouldStartWith
+                "-----BEGIN OPENSSH PRIVATE KEY-----"
+        }
     }
-  }
 
-  val privateKeyOpensshEd25519 =
-      """
+    val privateKeyOpensshEd25519 =
+        """
       -----BEGIN OPENSSH PRIVATE KEY-----
       b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz
       c2gtZWQyNTUxOQAAACBXBwhdauwPrBhr/qOmL3BO4+0QH+ix7qImiUw9vjzjbwAA
@@ -64,18 +63,18 @@ class SSHKeyUtilsTest {
       gFcHCF1q7A+sGGv+o6YvcE7j7RAf6LHuoiaJTD2+PONvAAAAAAECAwQF
       -----END OPENSSH PRIVATE KEY-----
       """
-          .trimIndent()
+            .trimIndent()
 
-  val privateKeyPemEd25519 =
-      """
+    val privateKeyPemEd25519 =
+        """
       -----BEGIN PRIVATE KEY-----
       MC4CAQAwBQYDK2VwBCIEIBn1nlVFSRgVJZYvqXwQIf1AQxKOW2XklKhpDjNpxyWA
       -----END PRIVATE KEY-----
       """
-          .trimIndent()
+            .trimIndent()
 
-  val privateKeyOpensshRsa =
-      """
+    val privateKeyOpensshRsa =
+        """
       -----BEGIN OPENSSH PRIVATE KEY-----
       b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdz
       c2gtcnNhAAAAAwEAAQAAAQEA1aqOBDfzcJ+hquvudhIiEwEO4U0g2fEhJdLTSoTD
@@ -106,10 +105,10 @@ class SSHKeyUtilsTest {
       qo6Vd7y9ZvTL3nrJGGONniC+OZZTab47AAAAAAEC
       -----END OPENSSH PRIVATE KEY-----
       """
-          .trimIndent()
+            .trimIndent()
 
-  val privateKeyPemRsa =
-      """
+    val privateKeyPemRsa =
+        """
       -----BEGIN RSA PRIVATE KEY-----
       MIIEpAIBAAKCAQEA1aqOBDfzcJ+hquvudhIiEwEO4U0g2fEhJdLTSoTDeqmLk+ti
       4HKoJ4SFhsEw+IdkCVJGPI+c5nTIa7hy05lRW9kmJ9+/aQAjDqZdLGmRtHjTF2SS
@@ -138,36 +137,36 @@ class SSHKeyUtilsTest {
       f9S03Kvu7LqFVokuYMy0Y4ItdpRGZsSUXRcEKOE8TBSsfhLrdlUlCA==
       -----END RSA PRIVATE KEY-----
       """
-          .trimIndent()
+            .trimIndent()
 
-  @Test
-  fun testLoadED25519KeyPairFromPem() {
-    SSHKeyUtils.ED25519.loadFromPem("invalid") shouldBe null
-    assertSoftly(SSHKeyUtils.ED25519.loadFromPem(privateKeyPemEd25519)) {
-      it?.private?.algorithm shouldBe "Ed25519"
+    @Test
+    fun testLoadED25519KeyPairFromPem() {
+        SSHKeyUtils.ED25519.loadFromPem("invalid") shouldBe null
+        assertSoftly(SSHKeyUtils.ED25519.loadFromPem(privateKeyPemEd25519)) {
+            it?.private?.algorithm shouldBe "Ed25519"
+        }
     }
-  }
 
-  @Test
-  fun testLoadED25519KeyPairFromOpenSSH() {
-    SSHKeyUtils.ED25519.loadFromOpenSSH("invalid") shouldBe null
-    assertSoftly(SSHKeyUtils.ED25519.loadFromOpenSSH(privateKeyOpensshEd25519)!!) {
-      it.private?.algorithm shouldBe "Ed25519"
+    @Test
+    fun testLoadED25519KeyPairFromOpenSSH() {
+        SSHKeyUtils.ED25519.loadFromOpenSSH("invalid") shouldBe null
+        assertSoftly(SSHKeyUtils.ED25519.loadFromOpenSSH(privateKeyOpensshEd25519)!!) {
+            it.private?.algorithm shouldBe "Ed25519"
+        }
     }
-  }
 
-  @Test
-  fun testLoadRSAKeyPairFromPem() {
-    SSHKeyUtils.RSA.loadFromPem("invalid") shouldBe null
-    assertSoftly(SSHKeyUtils.RSA.loadFromPem(privateKeyPemRsa)) {
-      it?.private?.algorithm shouldBe "RSA"
+    @Test
+    fun testLoadRSAKeyPairFromPem() {
+        SSHKeyUtils.RSA.loadFromPem("invalid") shouldBe null
+        assertSoftly(SSHKeyUtils.RSA.loadFromPem(privateKeyPemRsa)) {
+            it?.private?.algorithm shouldBe "RSA"
+        }
     }
-  }
 
-  @Test
-  fun testIsEncryptedEd25519() {
-    val encryptedKey =
-        """
+    @Test
+    fun testIsEncryptedEd25519() {
+        val encryptedKey =
+            """
         -----BEGIN OPENSSH PRIVATE KEY-----
         b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABBv3SJoam
         DKPDyCSKxmoNtTAAAAEAAAAAEAAAAzAAAAC3NzaC1lZDI1NTE5AAAAILNszSuEBpMyM6LE
@@ -177,11 +176,11 @@ class SSHKeyUtilsTest {
         eoND2XJopCE5dphg==
         -----END OPENSSH PRIVATE KEY-----
         """
-            .trimIndent()
-    SSHKeyUtils.isEncrypted(encryptedKey) shouldBe true
+                .trimIndent()
+        SSHKeyUtils.isEncrypted(encryptedKey) shouldBe true
 
-    val unencryptedKey =
-        """
+        val unencryptedKey =
+            """
         -----BEGIN OPENSSH PRIVATE KEY-----
         b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
         QyNTUxOQAAACDiwYWAns9fmH5iFbkh4Ty1QQDLDv1DRWK3lGRhV71hdQAAAJDs9NrY7PTa
@@ -190,16 +189,16 @@ class SSHKeyUtilsTest {
         AMsO/UNFYreUZGFXvWF1AAAACXBlbGxlQGZyeQECAwQ=
         -----END OPENSSH PRIVATE KEY-----
         """
-            .trimIndent()
-    SSHKeyUtils.isEncrypted(unencryptedKey) shouldBe false
+                .trimIndent()
+        SSHKeyUtils.isEncrypted(unencryptedKey) shouldBe false
 
-    SSHKeyUtils.isEncrypted("invalid") shouldBe false
-  }
+        SSHKeyUtils.isEncrypted("invalid") shouldBe false
+    }
 
-  @Test
-  fun testIsEncryptedRSA() {
-    val encryptedKey =
-        """
+    @Test
+    fun testIsEncryptedRSA() {
+        val encryptedKey =
+            """
         -----BEGIN OPENSSH PRIVATE KEY-----
         b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABDcTgCIGq
         +FQ/Mzm23FEMNaAAAAEAAAAAEAAAGXAAAAB3NzaC1yc2EAAAADAQABAAABgQCxrTH5zaUJ
@@ -240,11 +239,11 @@ class SSHKeyUtilsTest {
         9uErRg==
         -----END OPENSSH PRIVATE KEY-----
         """
-            .trimIndent()
-    SSHKeyUtils.isEncrypted(encryptedKey) shouldBe true
+                .trimIndent()
+        SSHKeyUtils.isEncrypted(encryptedKey) shouldBe true
 
-    val unencryptedKey =
-        """
+        val unencryptedKey =
+            """
         -----BEGIN OPENSSH PRIVATE KEY-----
         b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
         NhAAAAAwEAAQAAAYEAxjxxRloOKDa1z1kPO65ozraez2n9mIc28+njhlu/RlFOeUPMmbVY
@@ -284,71 +283,71 @@ class SSHKeyUtilsTest {
         ORDUEDLlc12dEAAAAJcGVsbGVAZnJ5AQI=
         -----END OPENSSH PRIVATE KEY-----
         """
-            .trimIndent()
-    SSHKeyUtils.isEncrypted(unencryptedKey) shouldBe false
+                .trimIndent()
+        SSHKeyUtils.isEncrypted(unencryptedKey) shouldBe false
 
-    SSHKeyUtils.isEncrypted("invalid") shouldBe false
-  }
-
-  @Test
-  fun testLoadRSAKeyPairFromOpenSSH() {
-    SSHKeyUtils.RSA.loadFromOpenSSH("invalid") shouldBe null
-    assertSoftly(SSHKeyUtils.RSA.loadFromOpenSSH(privateKeyOpensshRsa)!!) {
-      it.private?.algorithm shouldBe "RSA"
+        SSHKeyUtils.isEncrypted("invalid") shouldBe false
     }
-  }
 
-  @Test
-  fun testTryLoadKeyED25519() {
-    assertSoftly(loadKey(privateKeyOpensshEd25519)) { it.private?.algorithm shouldBe "Ed25519" }
-  }
-
-  @Test
-  fun testPublicKeyToOpenSSHEd25519() {
-    val key = loadKey(privateKeyOpensshEd25519)
-    SSHKeyUtils.publicKeyToOpenSSH(key.public) shouldBe
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcHCF1q7A+sGGv+o6YvcE7j7RAf6LHuoiaJTD2+PONv"
-  }
-
-  @Test
-  fun testPublicKeyToOpenSSHRSA() {
-    val key = loadKey(privateKeyOpensshRsa)
-    SSHKeyUtils.publicKeyToOpenSSH(key.public) shouldBe
-        "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVqo4EN/Nwn6Gq6+52EiITAQ7hTSDZ8SEl0tNKhMN6qYuT62LgcqgnhIWGwTD4h2QJUkY8j5zmdMhruHLTmVFb2SYn379pACMOpl0saZG0eNMXZJIvtDN/Ojm0qJOMbMK8BAw/eg1nZovTjWFm7/HFUsMYXfpSv0hKe9jgZs9VhlskJBesHsfqjI9QICCdE85adRFSPfkhxVXgq2JvJl3kzhU31M7MnPjBfWN/kual61285ysHFKLHmgJDqmbQFnW99IYRG4CXdFWOvAGqP7KtsMZl3m5fkKDTpBl4u5R2gTkH/MXB9E8a1IFlcz20Mm0HIRg+3Q+7hsM0+1Qhsdj9"
-  }
-
-  @Test
-  fun testTryLoadKeyRSA() {
-    assertSoftly(loadKey(privateKeyOpensshRsa)) { it.private?.algorithm shouldBe "RSA" }
-  }
-
-  @Test
-  fun testGeneratedKeysWithOpenSSH() {
-    val factories = listOf(SSHKeyUtils.ED25519, SSHKeyUtils.RSA)
-    factories.forEach { factory ->
-      val sshKey = factory.generate()
-      val publicKeyFile =
-          Files.createTempFile("rsa_public", ".key").also {
-            it.writeText(factory.publicKeyToOpenSsh(sshKey.publicKey))
-          }
-
-      val sshServer =
-          GenericContainer(
-                  ImageFromDockerfile()
-                      .withFileFromClasspath("Dockerfile", "Dockerfile")
-                      .withFileFromFile("authorized_keys", publicKeyFile.toFile()),
-              )
-              .also {
-                it.addExposedPort(22)
-                it.start()
-              }
-
-      val key = loadKey(sshKey.privateKey)
-      val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
-
-      assertSoftly(client.command("whoami")) { it.exitCode shouldBe 0 }
-
-      sshServer.stop()
+    @Test
+    fun testLoadRSAKeyPairFromOpenSSH() {
+        SSHKeyUtils.RSA.loadFromOpenSSH("invalid") shouldBe null
+        assertSoftly(SSHKeyUtils.RSA.loadFromOpenSSH(privateKeyOpensshRsa)!!) {
+            it.private?.algorithm shouldBe "RSA"
+        }
     }
-  }
+
+    @Test
+    fun testTryLoadKeyED25519() {
+        assertSoftly(loadKey(privateKeyOpensshEd25519)) { it.private?.algorithm shouldBe "Ed25519" }
+    }
+
+    @Test
+    fun testPublicKeyToOpenSSHEd25519() {
+        val key = loadKey(privateKeyOpensshEd25519)
+        SSHKeyUtils.publicKeyToOpenSSH(key.public) shouldBe
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFcHCF1q7A+sGGv+o6YvcE7j7RAf6LHuoiaJTD2+PONv"
+    }
+
+    @Test
+    fun testPublicKeyToOpenSSHRSA() {
+        val key = loadKey(privateKeyOpensshRsa)
+        SSHKeyUtils.publicKeyToOpenSSH(key.public) shouldBe
+            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVqo4EN/Nwn6Gq6+52EiITAQ7hTSDZ8SEl0tNKhMN6qYuT62LgcqgnhIWGwTD4h2QJUkY8j5zmdMhruHLTmVFb2SYn379pACMOpl0saZG0eNMXZJIvtDN/Ojm0qJOMbMK8BAw/eg1nZovTjWFm7/HFUsMYXfpSv0hKe9jgZs9VhlskJBesHsfqjI9QICCdE85adRFSPfkhxVXgq2JvJl3kzhU31M7MnPjBfWN/kual61285ysHFKLHmgJDqmbQFnW99IYRG4CXdFWOvAGqP7KtsMZl3m5fkKDTpBl4u5R2gTkH/MXB9E8a1IFlcz20Mm0HIRg+3Q+7hsM0+1Qhsdj9"
+    }
+
+    @Test
+    fun testTryLoadKeyRSA() {
+        assertSoftly(loadKey(privateKeyOpensshRsa)) { it.private?.algorithm shouldBe "RSA" }
+    }
+
+    @Test
+    fun testGeneratedKeysWithOpenSSH() {
+        val factories = listOf(SSHKeyUtils.ED25519, SSHKeyUtils.RSA)
+        factories.forEach { factory ->
+            val sshKey = factory.generate()
+            val publicKeyFile =
+                Files.createTempFile("rsa_public", ".key").also {
+                    it.writeText(factory.publicKeyToOpenSsh(sshKey.publicKey))
+                }
+
+            val sshServer =
+                GenericContainer(
+                    ImageFromDockerfile()
+                        .withFileFromClasspath("Dockerfile", "Dockerfile")
+                        .withFileFromFile("authorized_keys", publicKeyFile.toFile()),
+                )
+                    .also {
+                        it.addExposedPort(22)
+                        it.start()
+                    }
+
+            val key = loadKey(sshKey.privateKey)
+            val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+
+            assertSoftly(client.command("whoami")) { it.exitCode shouldBe 0 }
+
+            sshServer.stop()
+        }
+    }
 }
