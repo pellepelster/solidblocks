@@ -16,6 +16,15 @@ themeVariant = "blcks"
 disableLandingPageButton = true
 
 [module]
+
 [[module.imports]]
 path = 'github.com/McShelby/hugo-theme-relearn'
 
+[[module.imports]]
+path = "cj.rs/gohugo-asciinema"
+
+[params.asciinema.defaults]
+theme = "solarized-light"
+loop = false
+autoPlay = false
+speed = 4.0

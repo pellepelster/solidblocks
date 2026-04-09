@@ -75,7 +75,7 @@ documentation_prepare_files
 documentation_prepare_env
 (
     cd doc
-hugo serve --baseURL /
+    hugo serve --baseURL=http://localhost:1313/
 )
 """
 
