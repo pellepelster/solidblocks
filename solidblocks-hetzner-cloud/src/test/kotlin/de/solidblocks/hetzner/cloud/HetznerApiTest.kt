@@ -54,6 +54,10 @@ class HetznerApiTest {
                 api.volumes.waitForAction(result) shouldBe true
                 api.volumes.delete(it.id)
             }
+
+            api.firewalls.list(labelSelectors = testLabels.toLabelSelectors()).forEach {
+                api.firewalls.delete(it.id)
+            }
         }
     }
 
@@ -368,6 +372,116 @@ class HetznerApiTest {
             byId.name shouldBe byName.name
 
             api.sshKeys.list().filter { it.name.startsWith("test") }.forEach { api.sshKeys.delete(it.id) }
+        }
+    }
+
+    @Test
+    fun testFirewallFlow() {
+        runBlocking {
+            val name = UUID.randomUUID().toString()
+
+            api.firewalls.get("invalid") shouldBe null
+            api.firewalls.get(0) shouldBe null
+
+            val created = api.firewalls.create(
+                FirewallCreateRequest(
+                    name,
+                    rules = listOf(
+                        FirewallRule(
+                            direction = FirewallRuleDirection.IN,
+                            protocol = FirewallRuleProtocol.TCP,
+                            port = "80",
+                            sourceIps = listOf("0.0.0.0/0", "::/0"),
+                            description = "allow http",
+                        ),
+                        FirewallRule(
+                            direction = FirewallRuleDirection.IN,
+                            protocol = FirewallRuleProtocol.TCP,
+                            port = "443",
+                            sourceIps = listOf("0.0.0.0/0", "::/0"),
+                            description = "allow https",
+                        ),
+                    ),
+                    labels = testLabels,
+                ),
+            )
+
+            assertSoftly(created.firewall) {
+                it.name shouldBe name
+                it.rules shouldHaveSize 2
+                it.labels shouldContain ("blcks.de/managed-by" to "test")
+            }
+
+            val byId = api.firewalls.get(created.firewall.id)!!
+            val byName = api.firewalls.get(name)!!
+            byId.name shouldBe name
+            byName.name shouldBe name
+
+            api.firewalls.list(labelSelectors = testLabels.toLabelSelectors()) shouldHaveAtLeastSize 1
+
+            val random = UUID.randomUUID().toString()
+            api.firewalls.update(byId.id, FirewallUpdateRequest(labels = testLabels + mapOf("foo" to random)))
+            api.firewalls.list(
+                labelSelectors = testLabels.toLabelSelectors() + mapOf("foo" to Equals(random)),
+            ) shouldHaveAtLeastSize 1
+
+            val setRulesActions = api.firewalls.setRules(
+                byId.id,
+                FirewallSetRulesRequest(
+                    listOf(
+                        FirewallRule(
+                            direction = FirewallRuleDirection.IN,
+                            protocol = FirewallRuleProtocol.ICMP,
+                            sourceIps = listOf("0.0.0.0/0", "::/0"),
+                            description = "allow icmp",
+                        ),
+                    ),
+                ),
+            )
+            api.firewalls.waitForAction(setRulesActions) shouldBe true
+
+            assertSoftly(api.firewalls.get(byId.id)!!) {
+                it.rules shouldHaveSize 1
+                it.rules[0].protocol shouldBe FirewallRuleProtocol.ICMP
+            }
+
+            val applyActions = api.firewalls.applyToResources(
+                byId.id,
+                FirewallApplyToResourcesRequest(
+                    listOf(
+                        FirewallResource(
+                            type = FirewallResourceType.LABEL_SELECTOR,
+                            labelSelector = FirewallLabelSelector("blcks.de/managed-by==test"),
+                        ),
+                    ),
+                ),
+            )
+            api.firewalls.waitForAction(applyActions) shouldBe true
+
+            assertSoftly(api.firewalls.get(byId.id)!!) {
+                it.appliedTo shouldHaveSize 1
+                it.appliedTo[0].type shouldBe FirewallResourceType.LABEL_SELECTOR
+            }
+
+            val removeActions = api.firewalls.removeFromResources(
+                byId.id,
+                FirewallRemoveFromResourcesRequest(
+                    listOf(
+                        FirewallResource(
+                            type = FirewallResourceType.LABEL_SELECTOR,
+                            labelSelector = FirewallLabelSelector("blcks.de/managed-by==test"),
+                        ),
+                    ),
+                ),
+            )
+            api.firewalls.waitForAction(removeActions) shouldBe true
+
+            assertSoftly(api.firewalls.get(byId.id)!!) {
+                it.appliedTo shouldHaveSize 0
+            }
+
+            api.firewalls.delete(byId.id) shouldBe true
+            api.firewalls.get(byId.id) shouldBe null
         }
     }
 
