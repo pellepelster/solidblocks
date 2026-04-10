@@ -90,6 +90,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Backrest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Backrest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.ChangeNetworkProtectionRequest",
         "fields": [
             {
@@ -244,6 +262,42 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ChangeVolumeProtectionRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Stanza",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Stanza$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Backup",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Backup$Companion",
         "fields": [],
         "methods": [
             {
@@ -532,6 +586,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.RepoStatus",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.RepoStatus$Companion",
         "fields": [],
         "methods": [
             {
@@ -936,6 +1008,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.pgbackrest.model.BackupArchiveRange",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.BackupArchiveRange$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cloud.provisioner.CloudInitResult",
         "fields": [
             {
@@ -946,6 +1036,24 @@
     },
     {
         "name": "de.solidblocks.cloud.provisioner.CloudInitResult$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.restic.model.ResticSummary",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.restic.model.ResticSummary$Companion",
         "fields": [],
         "methods": [
             {
@@ -1026,6 +1134,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.pgbackrest.model.DbEntry",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.DbEntry$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.garagefs.ApplyClusterLayoutRequest",
         "fields": [
             {
@@ -1054,6 +1180,24 @@
     },
     {
         "name": "de.solidblocks.docker.NetworkDefinition$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.DatabaseRef",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.DatabaseRef$Companion",
         "fields": [],
         "methods": [
             {
@@ -1188,6 +1332,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.restic.model.ResticSnapshot",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.restic.model.ResticSnapshot$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.FloatingIPsListWrapper",
         "fields": [
             {
@@ -1198,6 +1360,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.FloatingIPsListWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Lock",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Lock$Companion",
         "fields": [],
         "methods": [
             {
@@ -1440,6 +1620,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Timestamp",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Timestamp$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.docker.ComposeFile",
         "fields": [
             {
@@ -1504,6 +1702,42 @@
     },
     {
         "name": "de.solidblocks.garagefs.ListBucketsResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.ArchiveEntry",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.ArchiveEntry$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.BackupInfo",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.BackupInfo$Companion",
         "fields": [],
         "methods": [
             {
@@ -1684,6 +1918,24 @@
     },
     {
         "name": "de.solidblocks.docker.IpamConfig$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.RepositoryInfo",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.RepositoryInfo$Companion",
         "fields": [],
         "methods": [
             {
@@ -1944,6 +2196,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Lsn",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Lsn$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.docker.PullPolicy",
         "fields": [
             {
@@ -2026,6 +2296,24 @@
     },
     {
         "name": "de.solidblocks.docker.VolumeOptions$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Repo",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.Repo$Companion",
         "fields": [],
         "methods": [
             {
@@ -2124,6 +2412,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.pgbackrest.model.LockHeld",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.LockHeld$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.infra.test.cloudinit.CloudInitResultWrapper",
         "fields": [
             {
@@ -2188,6 +2494,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.ChangeLoadBalancerProtectionRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.StanzaStatus",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.pgbackrest.model.StanzaStatus$Companion",
         "fields": [],
         "methods": [
             {
