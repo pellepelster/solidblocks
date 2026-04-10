@@ -28,20 +28,13 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
-import de.solidblocks.cloud.services.CloudInfo
-import de.solidblocks.cloud.services.ServiceConfiguration
-import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.ServiceInfo
-import de.solidblocks.cloud.services.ServiceManager
-import de.solidblocks.cloud.services.ServiceRegistration
-import de.solidblocks.cloud.services.managerForService
+import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
-import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.runBlocking
 import java.io.Closeable
 import java.io.File
@@ -63,7 +56,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
     fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
         val provisioner = createProvisioner()
-        logInfo(bold("planning changes for cloud configuration '${runtime.name}'"))
+        log.info(bold("planning changes for cloud configuration '${runtime.name}'"))
         val resourceGroups = createResourceGroups()
         return@runBlocking provisioner.diff(resourceGroups, context, log)
     }
@@ -115,7 +108,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
                 is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
             }
 
-        logInfo(bold("rolling out changes for cloud configuration '${runtime.name}'"))
+        log.info(bold("rolling out changes for cloud configuration '${runtime.name}'"))
         return@runBlocking provisioner.apply(diffs, context, log.indent())
     }
 

@@ -12,8 +12,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.*
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
-import de.solidblocks.utils.logInfo
-import de.solidblocks.utils.logWarning
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class HetznerDnsRecordProvisioner(hcloudToken: String) :
@@ -89,7 +87,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                 }
 
                 if (runtime?.publicIpv4 == null) {
-                    logWarning("server ${it.logText()} has no public ip address", context = log)
+                    log.warning("server ${it.logText()} has no public ip address")
                 }
 
                 runtime?.publicIpv4
@@ -102,7 +100,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                     api.dnsRrSets(zone.name)
                         .updateTTL(resource.name, resource.type, DnsRRSetsTTLUpdateRequest(resource.ttl))
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
-                    logInfo("waiting for TTL update on ${resource.logText()}", context = log)
+                    log.info("waiting for TTL update on ${resource.logText()}")
                 }
             }
             if (!(current.values equalsIgnoreOrder serverIps)) {
@@ -119,7 +117,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                             ),
                         )
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
-                    logInfo("waiting for record update on ${resource.logText()}", context = log)
+                    log.info("waiting for record update on ${resource.logText()}")
                 }
             }
         } else {

@@ -9,8 +9,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
-import de.solidblocks.utils.logInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
@@ -37,7 +35,7 @@ class LocalSSHKeyProviderManager :
                 is Success<Path> -> result.data
             }
 
-        logDebug("found ssh key at '${sshKey.toAbsolutePath()}'", context = log)
+        log.debug("found ssh key at '${sshKey.toAbsolutePath()}'")
 
         if (SSHKeyUtils.isEncrypted(sshKey.readText())) {
             return Error("encrypted private keys are currently not supported ($sshKey)")
@@ -55,10 +53,7 @@ class LocalSSHKeyProviderManager :
             return Error("failed to load private key from '$sshKey'")
         }
 
-        logInfo(
-            "found ssh private key at '$sshKey' with type '${sshKeyPair.private.algorithm.lowercase()}'",
-            context = log,
-        )
+        log.info("found ssh private key at '$sshKey' with type '${sshKeyPair.private.algorithm.lowercase()}'")
 
         if (!checkFilePermission(sshKey)) {
             return Error(
@@ -107,7 +102,7 @@ class LocalSSHKeyProviderManager :
                 .resolve(expandTilde("${context.cloudName}.key"))
 
         if (sshKeyFile.exists()) {
-            logInfo("found ssh key '${sshKeyFile.absolutePathString()}'", context = log)
+            log.info("found ssh key '${sshKeyFile.absolutePathString()}'")
             return Success(sshKeyFile)
         }
 

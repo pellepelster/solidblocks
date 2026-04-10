@@ -11,7 +11,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.runCommand
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val path: String? = null) :
@@ -61,7 +60,7 @@ class PassSecretProvisioner(val path: String? = null) :
             return Success(current)
         }
 
-        logDebug("creating secret at '${resource.name}'", context = log)
+        log.debug("creating secret at '${resource.name}'")
 
         val secret =
             if (resource.secret == null) {

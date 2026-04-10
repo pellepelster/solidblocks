@@ -16,8 +16,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logError
-import de.solidblocks.utils.logInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 
@@ -33,20 +31,17 @@ class HetznerProviderConfigurationManager :
         if (System.getenv("HCLOUD_TOKEN") == null) {
             "environment variable 'HCLOUD_TOKEN' not set"
                 .also {
-                    logError(it, context = log)
+                    log.error(it)
                     return Error<HetznerProviderRuntime>(it)
                 }
         }
 
-        logInfo(
-            "servers default location is '${configuration.defaultLocation}' and default instance is '${configuration.defaultInstanceType}'",
-            context = log,
-        )
+        log.info("servers default location is '${configuration.defaultLocation}' and default instance is '${configuration.defaultInstanceType}'")
 
         try {
             val api = HetznerApi(System.getenv("HCLOUD_TOKEN"))
             runBlocking { api.servers.list() }
-            logInfo("provided Hetzner cloud token is valid", context = log)
+            log.info("provided Hetzner cloud token is valid")
 
             return Success(
                 HetznerProviderRuntime(
@@ -59,7 +54,7 @@ class HetznerProviderConfigurationManager :
             "provided Hetzner cloud token is not valid"
                 .also {
                     logger.error(e) { it }
-                    logError(it, context = log)
+                    log.error(it)
                     return Error<HetznerProviderRuntime>(it)
                 }
         }

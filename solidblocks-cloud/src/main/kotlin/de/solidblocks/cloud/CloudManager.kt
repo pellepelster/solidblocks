@@ -40,7 +40,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
     fun validate(): Result<CloudConfigurationRuntime> {
         var log = LogContext.default()
-        logInfo(bold("validating cloud configuration '${cloudConfigFile.absolutePath}'"), context = log)
+        log.info(bold("validating cloud configuration '${cloudConfigFile.absolutePath}'"))
         log = log.indent()
 
         // parse cloud configuration
@@ -55,7 +55,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 is Error -> return Error(result.error)
                 is Success<CloudConfiguration> -> result.data
             }
-        logInfo("parsed cloud configuration '${cloud.name}'", context = log)
+        log.info("parsed cloud configuration '${cloud.name}'")
 
         // ensure no duplicate default providers are registered
         cloud.providers
@@ -140,7 +140,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         val providers: List<ProviderConfigurationRuntime> =
             cloud.providers.map { provider ->
-                logInfo("found '${provider.type}' provider with name '${provider.name}'", context = log)
+                log.info("found '${provider.type}' provider with name '${provider.name}'")
                 log = log.indent()
 
                 val manager:
@@ -186,10 +186,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             .use {
                 val services: List<ServiceConfigurationRuntime> =
                     cloud.services.mapIndexed { index, service ->
-                        logInfo(
-                            "found '${service.type}' service with name '${service.name}'",
-                            context = log,
-                        )
+                        log.info("found '${service.type}' service with name '${service.name}'")
                         log = log.indent()
 
                         logDebug(

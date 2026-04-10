@@ -27,8 +27,6 @@ import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
-import de.solidblocks.utils.logInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -134,7 +132,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
 
             if (
                 !api.servers.waitForAction(createRequest.action) {
-                    logInfo("waiting for creation of ${resource.logText()}", context = log)
+                    log.info("waiting for creation of ${resource.logText()}")
                 }
             ) {
                 return Error(
@@ -162,7 +160,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                             ServerNetworkAttachRequest(subnet.network, resource.privateIp),
                         )
                     api.networks.waitForAction(action) {
-                        logInfo("waiting for attachment to ${subnet.logText()}", context = log)
+                        log.info("waiting for attachment to ${subnet.logText()}")
                     }
                 } catch (e: HetznerApiException) {
                     if (e.error.code != HetznerApiErrorType.SERVER_ALREADY_ATTACHED) {
@@ -173,7 +171,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         }
 
         return lookup(resource.asLookup(), context)?.let {
-            logDebug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}", context = log)
+            log.debug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}")
             Success(it)
         } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
     }
@@ -296,7 +294,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
     override suspend fun destroy(resource: HetznerServer, context: CloudProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let {
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) {
-            logInfo("waiting for deletion of ${resource.logText()}", context = logContext)
+            logContext.info("waiting for deletion of ${resource.logText()}")
         }
     } ?: false
 

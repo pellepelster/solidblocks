@@ -49,8 +49,6 @@ import de.solidblocks.garagefs.GarageFsUserData.Companion.s3AdminHost
 import de.solidblocks.garagefs.GarageFsUserData.Companion.s3Host
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
-import de.solidblocks.utils.logInfo
-import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
 
 class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
@@ -305,7 +303,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         context.list(HetznerDnsZoneLookup::class)
                     }
 
-                    logInfo("validating bucket configuration for bucket '${bucket.name}'", context = log)
+                    log.info("validating bucket configuration for bucket '${bucket.name}'")
                     bucket.publicAccessDomains.forEach { publicAccessDomain ->
                         val matchingDnsZones = dnsZones.filter { publicAccessDomain.endsWith(it.name) }
 
@@ -316,10 +314,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                                     .removeSuffix("."),
                             ] = matchingDnsZones.single().name
                         } else {
-                            logWarning(
-                                "public access domain '$publicAccessDomain' is not managed by any cloud provider, records must me manually created/updated",
-                                context = log.indent(),
-                            )
+                            log.indent().warning("public access domain '$publicAccessDomain' is not managed by any cloud provider, records must me manually created/updated")
                             manuallyManagedPublicAccessDomains.add(publicAccessDomain)
                         }
                     }

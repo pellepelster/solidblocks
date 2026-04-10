@@ -8,18 +8,16 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.commandExists
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
-import de.solidblocks.utils.logError
 
 class PassProviderManager : ProviderConfigurationManager<PassProviderConfiguration, PassProviderRuntime> {
 
     override fun validate(configuration: PassProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<PassProviderRuntime> {
         if (commandExists("pass")) {
-            logDebug("found 'pass' executable", context = log)
+            log.debug("found 'pass' executable")
         } else {
             "'pass' executable not found"
                 .also {
-                    logError(it, context = log)
+                    log.error(it)
                     return Error<PassProviderRuntime>(it)
                 }
         }

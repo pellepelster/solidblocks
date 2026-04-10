@@ -9,6 +9,14 @@ open class LogContext(val indent: Int = 0) {
 
     fun withTiming(): LogContext = TimingLogContext(TimeSource.Monotonic.markNow(), indent)
 
+    fun info(message: String) = logInfo(message, context = this)
+
+    fun warning(message: String) = logWarning(message, context = this)
+
+    fun debug(message: String) = logDebug(message, context = this)
+
+    fun error(message: String) = logError(message, context = this)
+
     companion object {
         fun default() = LogContext(0)
 

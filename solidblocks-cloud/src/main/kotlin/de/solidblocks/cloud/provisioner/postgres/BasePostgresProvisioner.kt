@@ -9,7 +9,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.DriverManager
@@ -19,7 +18,7 @@ open class BasePostgresProvisioner {
     private val logger = KotlinLogging.logger {}
 
     suspend fun CloudProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup, log: LogContext): Result<Connection> = Waiter.longWaitForResult {
-        logInfo("waiting for Postgres admin connection", context = log)
+        log.info("waiting for Postgres admin connection")
         createAdminConnection(server, superUserPassword)
     }
 

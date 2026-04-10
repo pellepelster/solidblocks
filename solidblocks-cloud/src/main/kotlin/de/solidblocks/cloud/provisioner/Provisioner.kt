@@ -23,29 +23,29 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
 
     private val logger = KotlinLogging.logger {}
 
-  /*
-  suspend fun info(
-      resourceGroups: List<ResourceGroup>,
-      context: CloudProvisionerContext,
-  ): Result<String> {
-    val result = mutableListOf<String>()
+    /*
+    suspend fun info(
+        resourceGroups: List<ResourceGroup>,
+        context: CloudProvisionerContext,
+    ): Result<String> {
+      val result = mutableListOf<String>()
 
-    for (resourceGroup in resourceGroups) {
-      val resources = resourceGroup.hierarchicalResourceList().toSet()
+      for (resourceGroup in resourceGroups) {
+        val resources = resourceGroup.hierarchicalResourceList().toSet()
 
-      for (resource in resources) {
-        try {
-          val info = registry.info(resource, context)
-          result.addAll(info)
-        } catch (e: Exception) {
-          logger.error(e) { "error creating help for ${resource.logText()}" }
+        for (resource in resources) {
+          try {
+            val info = registry.info(resource, context)
+            result.addAll(info)
+          } catch (e: Exception) {
+            logger.error(e) { "error creating help for ${resource.logText()}" }
+          }
         }
       }
-    }
 
-    return Success(result.joinToString("\n"))
-  }
-   */
+      return Success(result.joinToString("\n"))
+    }
+     */
 
     suspend fun diff(resourceGroups: List<ResourceGroup>, context: CloudProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val resourceGroupDiffs =
@@ -53,10 +53,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                 .map { resourceGroup ->
                     val resourceGroupLogContext = log.indent()
 
-                    logInfo(
-                        "planning changes for resource group ${resourceGroup.name}",
-                        context = resourceGroupLogContext,
-                    )
+                    resourceGroupLogContext.info("planning changes for resource group ${resourceGroup.name}")
                     val diffLogContext = resourceGroupLogContext.indent()
 
                     val diffs =
@@ -74,46 +71,27 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                                 )
 
                             missing ->
-                                logInfo(
-                                    bold("will create ${it.resource.logText()}"),
-                                    context = diffLogContext,
-                                )
+                                diffLogContext.info(bold("will create ${it.resource.logText()}"))
 
                             up_to_date ->
-                                logInfo(
-                                    dim("${it.resource.logText()} is up-to-date"),
-                                    context = diffLogContext,
-                                )
+                                diffLogContext.info(dim("${it.resource.logText()} is up-to-date"))
 
                             has_changes -> {
                                 if (it.needsRecreate()) {
-                                    logInfo(
-                                        bold(
-                                            "${it.resource.logText()} has breaking changes and needs to be re-created",
-                                        ),
-                                        context = diffLogContext,
-                                    )
+                                    diffLogContext.info(bold("${it.resource.logText()} has breaking changes and needs to be re-created"))
                                     it.changes.forEach {
-                                        logInfo(bold("- ${it.logText()}"), context = diffLogContext.indent())
+                                        diffLogContext.indent().info(bold("- ${it.logText()}"))
                                     }
                                 } else {
-                                    logInfo(
-                                        bold(
-                                            "${it.resource.logText()} has pending changes",
-                                        ),
-                                        context = diffLogContext,
-                                    )
+                                    diffLogContext.info(bold("${it.resource.logText()} has pending changes"))
                                     it.changes.forEach {
-                                        logInfo(bold("- ${it.logText()}"), context = diffLogContext.indent())
+                                        diffLogContext.indent().info(bold("- ${it.logText()}"))
                                     }
                                 }
                             }
 
                             parent_missing ->
-                                logInfo(
-                                    "parent resource for ${it.resource.logText()} is missing",
-                                    context = diffLogContext,
-                                )
+                                diffLogContext.info("parent resource for ${it.resource.logText()} is missing")
 
                             duplicate -> {
                                 return Error(
@@ -139,20 +117,17 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
         val result = mutableListOf<ResourceDiff>()
 
         for (resource in resources) {
-            logDebug("creating diff for ${resource.logText()}", context = log)
+            log.debug("creating diff for ${resource.logText()}")
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
                 val diff =
                     registry.diff<BaseResource>(resource, context)
                         ?: return@runBlocking Error("diff failed for ${resource.logText()} (null)")
 
-                logDebug(
-                    "diff status for ${diff.resource.logText()} is '${diff.status}'",
-                    context = log,
-                )
+                log.debug("diff status for ${diff.resource.logText()} is '${diff.status}'")
                 result.add(diff)
 
-                logDebug("finished diff for ${resource.logText()}", context = log)
+                log.debug("finished diff for ${resource.logText()}")
             } catch (e: Exception) {
                 logger.error(e) { "diff failed for ${resource.logText()}" }
 
@@ -167,7 +142,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                     if (resource.dependsOn.isEmpty()) {
                         return@runBlocking Error("diff failed for ${resource.logText()} (${e.message})")
                     } else {
-                        logWarning("diff failed for ${resource.logText()} (${e.message})", context = log)
+                        log.warning("diff failed for ${resource.logText()} (${e.message})")
                         result.add(ResourceDiff(resource, parent_missing))
                     }
                 }
@@ -212,7 +187,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                 for (diffToDestroy in diffs.filter { it.needsRecreate() }) {
                     val resource = diffToDestroy.resource
                     logger.info { "destroying ${resource.logText()}" }
-                    logInfo("destroying ${resource.logText()}", context = log)
+                    log.info("destroying ${resource.logText()}")
 
                     val result = registry.destroy<BaseResource>(resource, context, log)
                     if (!result) {
@@ -235,7 +210,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                         .filterIsInstance<BaseInfrastructureResource<*>>()
 
                 for (resource in resourcesToApply) {
-                    logInfo("applying ${resource.logText()}", context = log)
+                    log.info("applying ${resource.logText()}")
                     val applyLog = log.indent()
 
                     val result =
@@ -264,10 +239,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                                 val sshPortOpen =
                                     Waiter.waitForCondition(waitConfig) {
                                         try {
-                                            logInfo(
-                                                "waiting for SSH on endpoint '${it.address}:${it.port}'",
-                                                context = applyLog,
-                                            )
+                                            applyLog.info("waiting for SSH on endpoint '${it.address}:${it.port}'")
                                             SSHClient(it.address, context.sshKeyPair).command("whoami").exitCode == 0
                                         } catch (e: Exception) {
                                             logger.error(e) {
@@ -288,10 +260,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                                 val cloudInitFinished =
                                     Waiter.waitForCondition(waitConfig) {
                                         try {
-                                            logInfo(
-                                                "waiting for cloud-init to finish on '${it.address}:${it.port}'",
-                                                context = applyLog,
-                                            )
+                                            applyLog.info("waiting for cloud-init to finish on '${it.address}:${it.port}'")
                                             sshClient
                                                 .command("test -f /var/lib/cloud/instance/boot-finished")
                                                 .exitCode == 0
