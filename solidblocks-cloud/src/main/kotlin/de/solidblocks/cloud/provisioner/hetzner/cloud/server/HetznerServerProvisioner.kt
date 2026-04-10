@@ -27,6 +27,7 @@ import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest
 import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 

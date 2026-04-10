@@ -20,10 +20,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 
 class HetznerProviderConfigurationManager :
-    CloudResourceProviderConfigurationManager<
-        HetznerProviderConfiguration,
-        HetznerProviderRuntime,
-        > {
+    CloudResourceProviderConfigurationManager<HetznerProviderConfiguration, HetznerProviderRuntime> {
 
     private val logger = KotlinLogging.logger {}
 
