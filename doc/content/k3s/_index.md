@@ -48,7 +48,7 @@ Solidblocks is split up into three layers building up on each other
 
 ### Project structure
 
-The Terraform modules, Ansible roles and Helm charts are designed best work together when the project using them adhere to some basic best practices regarding its structure. All component are built to be executed in the order of layerns they belong to from the bottom up.
+The Terraform modules, Ansible roles and Helm charts are designed best work together when the project using them adhere to some basic best practices regarding its structure. All component are built to be executed in the order of layers they belong to from the bottom up.
 
 Each layer produces configuration files, that are fed into the next layer
 

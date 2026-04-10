@@ -15,7 +15,7 @@ A clustered PostgreSQL setup consists of at least two nodes. The [
 primary](https://www.postgresql.org/docs/current/runtime-config-replication.html#RUNTIME-CONFIG-REPLICATION-PRIMARY) ❶
 is the leading node for the cluster and also the node capable of answering read and write requests ❿. All incoming requests that alter data are stored in the Write-Ahead-Log WAL ❸. The WAL is divided into small segments that are continously transferred ❹ to an S3 compatible backup location ❺ along with the database data from full or incremental backups.
 When a [standby](https://www.postgresql.org/docs/current/runtime-config-replication.html#RUNTIME-CONFIG-REPLICATION-STANDBY) ❷
-node is created it retrieves all backup data from the S3 bucket ❻ and replays the received WAL segments on top of it. When the latest WAL segment is reached, it attaches to the primary's [replication slot](https://www.postgresql.org/docs/current/view-pg-replication-slots.html) ❼ and starts streaming all new WAL segments ❽. The standby node now has all up-to-data data from the primary ❾ and is able to answer read-only requests ⓫.
+node is created it retrieves all backup data from the S3 bucket ❻ and replays the received WAL segments on top of it. When the latest WAL segment is reached, it attaches to the primary's [replication slot](https://www.postgresql.org/docs/current/view-pg-replication-slots.html) ❼ and starts streaming all new WAL segments ❽. The standby node now has all up-to-date data from the primary ❾ and is able to answer read-only requests ⓫.
 
 ![overview](cluster.png)
 

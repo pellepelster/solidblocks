@@ -30,7 +30,7 @@ The storage path is built using the following pattern `<data_dir>/<instance_name
 | instance_name    | unique name of the database instance to support multiple instances per node if needed |
 | postgres_version | version of the PostgreSQL server                                                 |
 
-During provisioning the follwing naming conventions are used when referencing the different parts of the storage path
+During provisioning the following naming conventions are used when referencing the different parts of the storage path
 
 ```
    postgres_data_base_dir

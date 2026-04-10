@@ -21,7 +21,7 @@ The configuration is read and transformed into an internal model. This model exp
  * a VM running the PostgreSQL database
  * a disk holding the PostgreSQL data
  * a backup disk holding the database backups
- * s secret for the PostgreSQL admin user
+ * a secret for the PostgreSQL admin user
  * a DNS entry pointing to the database
  * a firewall rule restricting access to the database
  * ...
@@ -32,7 +32,7 @@ The infrastructure resources from the created model that should be running are c
 
 #### Diff to Resources
 
-The changed resource from the diff are then created or modified to achieve the desired state from the model.
+The changed resources from the diff are then created or modified to achieve the desired state from the model.
 
 
 ### Provisioning Methods

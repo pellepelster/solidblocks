@@ -34,7 +34,7 @@ The following environment variables can be used to influence the build if suppor
 
 `SKIP_TESTS` If set to `integration` resource heavy or time intensive integration tests are skipped, ideal for quick verification builds.
 
-`DOCKER_PLATFORM´ Target platform to build docker images for, defaults to `linux/amd64,linux/arm64`.
+`DOCKER_PLATFORM` Target platform to build docker images for, defaults to `linux/amd64,linux/arm64`.
 
 To run a quick local build
 

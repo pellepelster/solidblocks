@@ -18,7 +18,7 @@ To use Solidblocks `hetzner-cloud` just add the dependency to your Gradle or Mav
 ```
 
 {{% notice info %}}
-The implementation is currently driven by the needs of other projects I am working and, and does not yet fully cover all API endpoints. See development chapter on how to add missing features.
+The implementation is currently driven by the needs of other projects I am working on, and does not yet fully cover all API endpoints. See development chapter on how to add missing features.
 {{% /notice %}}
 
 

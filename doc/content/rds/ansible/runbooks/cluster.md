@@ -1,6 +1,6 @@
 +++
 title = "Cluster operations"
-description = "Failover prodecures for PostgreSQL clusters"
+description = "Failover procedures for PostgreSQL clusters"
 +++
 
 

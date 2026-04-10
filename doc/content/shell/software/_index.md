@@ -11,7 +11,7 @@ The packages will be downloaded to a local `.cache` directory, extracted to `.bi
 
 ## Usage
 
-Use the `software_ensure_*` to install the needed software and then it to the search `$PATH` via `software_set_export_path`
+Use the `software_ensure_*` to install the needed software and then add it to the search `$PATH` via `software_set_export_path`
 
 ```shell
 source "software.sh"

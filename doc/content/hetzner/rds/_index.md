@@ -29,7 +29,7 @@ For more usage examples see [Extended Usage]({{< ref "usage.md" >}})
 
 ## Operations
 
-To access the created instance use one of SSH keys that was provided via `ssh_keys`. All linux system resources include the provided `name` to make them distinguishable.
+To access the created instance use one of the SSH keys that were provided via `ssh_keys`. All linux system resources include the provided `name` to make them distinguishable.
 
 ### Show Logs
 

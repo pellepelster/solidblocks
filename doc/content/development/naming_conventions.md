@@ -28,7 +28,7 @@ The name of the resource itself typically is a concatenation of multiple of the 
 | instance_id | A unique id that can be use to make instance of an application, typically referred to by the `name` unique | `k3s-z5KyMg`, `postgres-UIf2IS` |
 | index       | A counter designating the sequential number of a resource with multiple instances                          | `k3s-1`, `postgres-002`         |
 
-The easiest strategy for naming resources would we to slap together enough uniquely identifiable attributes until
+The easiest strategy for naming resources would be to slap together enough uniquely identifiable attributes until
 collisions are not possible anymore. While this might technically work, we have to take some considerations into
 account:
 
@@ -41,7 +41,7 @@ account:
   to be globally unique
 * How do we concatenate the identifiers typically `-` is a good first approach, but depending on the context and
   involved technologies, a resource name that contains a `-` and is passed through Python might cause issues when
-  accessing deserialized YAMl/JSON structures
+  accessing deserialized YAML/JSON structures
 * It is a good practice to order the identifiers in descending scope/significance to form a hierarchy that can easily be
   navigated, `<environment>-<namespace>-<name>`
 * Resources can be contained in resource containers that many cloud providers offer to group resources together. This
@@ -73,7 +73,7 @@ account:
 
 # Metadata
 
-Clud resources often support metadata, which in most cases are labels in the form of key/value pairs. Following established K8S standards for labeling, the following best practices are a good starting point for choosing label names:
+Cloud resources often support metadata, which in most cases are labels in the form of key/value pairs. Following established K8S standards for labeling, the following best practices are a good starting point for choosing label names:
 
 * Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
 * The name segment is required and must be 63 characters or less, beginning and ending with an alphanumeric

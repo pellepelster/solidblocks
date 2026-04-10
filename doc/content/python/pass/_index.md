@@ -23,8 +23,6 @@ variable, to allow for overriding in CI environments where access to the passwor
 | nested/secret/password2 | NESTED_SECRET_PASSWORD2 |
 | secret-with-dashes3     | SECRET_WITH_DASHES3     |
 
-``
-
 ### `env_name`
 
 Override the environment variable named derived from `path`.

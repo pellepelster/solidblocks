@@ -56,7 +56,7 @@ can be shown with `pg_versions` and the versions are stored at `/usr/libexec/pos
 
 ### Version upgrades
 
-The database can be updated simply by switching to antother docker image tag, where all versions from the official PostgreSQL repository are available as described in the general [documentation](../#packages).
+The database can be updated simply by switching to another docker image tag, where all versions from the official PostgreSQL repository are available as described in the general [documentation](../#packages).
 
 For details of the update process please refer to this [part](../#version-upgrades) of the documentation, the following steps are recommended for a version upgrade:
 

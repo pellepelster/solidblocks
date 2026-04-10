@@ -125,7 +125,7 @@ ensuring database 'database1' with user 'user1'
 
 ## Backups
 
-Backups can be triggered via calling one if the following commands
+Backups can be triggered by calling one of the following commands
 
 ```shell
 docker exec instance1 /rds/bin/backup-[full|incr|diff].sh
