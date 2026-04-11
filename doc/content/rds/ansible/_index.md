@@ -1,5 +1,5 @@
 +++
-title = "Ansible"
+title = "RDS PostgreSQL Ansible"
 description = "Ansible role to install a PostgreSQL database with all batteries included backup solution powered by pgBackRest"
 overviewGroup = "rds"
 faIcon = "fa-cloud"

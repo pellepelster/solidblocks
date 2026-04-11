@@ -10,7 +10,7 @@ name: <string>
 root_domain: [string]
 
 providers:
-  - type: <hcloud|pass|ssh_key>
+  - type: <hcloud|pass|ssh_key|backup_aws_s3|backup_local>
     #...
 
 services:
@@ -69,9 +69,16 @@ Stores secrets in the [pass](https://www.passwordstore.org/) secret manager. To 
 
 type: pass
 ```
+name: [string]
 password_store_dir: [string]
 ```
 ### Keywords
+### name
+*type*: **string**, *optional*: **true**, 
+*default*: **default**
+
+Name for the provider, can be omitted if only one provider of this specific type is configured
+
 ### password_store_dir
 *type*: **string**, *optional*: **true**, 
 *default*: **\<none\>**
@@ -92,6 +99,43 @@ private_key: [string]
 *default*: **\<none\>**
 
 Path to the private key, if not set, the default SSH key paths will be tried ('~/.ssh/id_rsa', '~/.ssh/id_ecdsa', '~/.ssh/id_ecdsa_sk', '~/.ssh/id_ed25519', '~/.ssh/id_ed25519_sk')
+
+## Backup S3
+
+Provides backup of cloud data to AWS S3 buckets. During plan/apply the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set with credentials that have the permission to create new S3 Buckets, as well as IAM users and access keys. For each service a dedicated backup bucket and separate IAM credentials will be created.
+
+type: backup_aws_s3
+```
+name: [string]
+region: [string]
+```
+### Keywords
+### name
+*type*: **string**, *optional*: **true**, 
+*default*: **default**
+
+Name for the provider, can be omitted if only one provider of this specific type is configured
+
+### region
+*type*: **string**, *optional*: **true**, 
+*default*: **eu-central-1**
+
+Region where the backup bucket should be created
+
+## Backup Local
+
+Provides backup of cloud data to locally attached disk. This provider is always automatically added
+
+type: backup_local
+```
+name: [string]
+```
+### Keywords
+### name
+*type*: **string**, *optional*: **true**, 
+*default*: **default**
+
+Name for the provider, can be omitted if only one provider of this specific type is configured
 
 # Services
 

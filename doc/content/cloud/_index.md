@@ -1,7 +1,7 @@
 +++
 title = 'Cloud'
-description = 'Locally managed cloud services on bare VMs'
-overviewGroup = "cloud"
+description = 'Solidblocks Cloud is a standalone CLI tool that deploys managed services on bare virtual machines, networking and storage. No container schedulers, no cloud specific services, just plain virtual machines running services on Linux , managed via SSH.'
+overviewGroup = "main"
 faIcon = "fa-cloud"
 aliases = ["cli/cloud/"]
 +++

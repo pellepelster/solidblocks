@@ -11,6 +11,14 @@
     background-color: var(--SECONDARY-COLOR);
 }
 
+.solidblocks-blue {
+    color: #0891b2;
+}
+
+.solidblocks-blue-bg {
+    background-color: #0891b2;
+}
+
 .solidblocks-green {
     color: #2ebc6f;
 }
@@ -44,6 +52,7 @@
     display: flex;
     gap: 10px;
     flex-direction: column;
+    flex-grow: 1;
 }
 
 .component-row {
@@ -69,4 +78,8 @@
 .wide > .flex-block-wrapper {
     max-width: 90% !important;
     width: 90% !important;
+}
+
+p.bold {
+    font-weight: bold;
 }

@@ -1,6 +1,5 @@
 +++
 title = "Solidblocks"
-type = 'wide'
 +++
 
 Solidblocks is a library of reusable components for infrastructure operation, automation and developer experience. It consists of several components, each covering different infrastructure automation aspects. 

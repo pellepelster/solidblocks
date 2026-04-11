@@ -1,8 +1,8 @@
 +++
-title = "Docker"
+title = "RDS PostgreSQL Docker"
 description = "Containerized PostgreSQL database with all batteries included backup solution powered by pgBackRest"
 overviewGroup = "rds"
-faIcon = "fa-brands fa-docker"
+faIcon = "fa-cloud"
 +++
 
 Containerized [PostgreSQL](https://www.postgresql.org/) database with all batteries included backup solution

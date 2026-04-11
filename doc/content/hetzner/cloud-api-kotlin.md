@@ -2,8 +2,8 @@
 title = 'Cloud API Kotlin'
 weight = 70
 description = 'Kotlin API for the Hetzner Cloud'
-overviewGroup = "util"
-faIcon = "fa-brands fa-java"
+overviewGroup = "lib"
+faIcon = "fa-code"
 +++
 
 Solidblocks `hetzner-cloud` is Kotlin implementation for the Hetzner Cloud API.
