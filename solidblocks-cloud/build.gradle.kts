@@ -27,6 +27,9 @@ dependencies {
 
     implementation("org.postgresql:postgresql:42.7.7")
 
+    implementation("aws.sdk.kotlin:s3-jvm:1.5.26")
+    implementation("aws.sdk.kotlin:s3:1.5.26")
+
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 }

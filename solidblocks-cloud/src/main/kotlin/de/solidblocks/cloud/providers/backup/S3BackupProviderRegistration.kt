@@ -6,10 +6,10 @@ val BACKUP_S3_TYPE = "backup_s3"
 
 class S3BackupProviderRegistration :
     ProviderRegistration<
-            S3BackupProviderConfiguration,
-            S3BackupProviderRuntime,
-            S3BackupProviderManager,
-            > {
+        S3BackupProviderConfiguration,
+        S3BackupProviderRuntime,
+        S3BackupProviderManager,
+        > {
     override val supportedConfiguration = S3BackupProviderConfiguration::class
     override val supportedRuntime = S3BackupProviderRuntime::class
 

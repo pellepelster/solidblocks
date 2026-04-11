@@ -20,17 +20,14 @@ import kotlin.io.path.readText
 
 class S3BackupProviderManager :
     ProviderConfigurationManager<
-            S3BackupProviderConfiguration,
-            S3BackupProviderRuntime,
-            > {
+        S3BackupProviderConfiguration,
+        S3BackupProviderRuntime,
+        > {
 
     private val logger = KotlinLogging.logger {}
 
-    val homeDir = Path(System.getProperty("user.home"))
-
-    override fun validate(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderRuntime> {
-        return Success(S3BackupProviderRuntime(configuration.region, configuration.accessKey, configuration.secretKey))
-    }
+    override fun validate(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderRuntime> =
+        Success(S3BackupProviderRuntime(configuration.region, "TODO", "TODO"))
 
     private fun checkFilePermission(sshKey: Path): Boolean {
         val permissions = Files.getPosixFilePermissions(sshKey)

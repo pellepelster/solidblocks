@@ -24,7 +24,7 @@ class S3BackupProviderConfigurationFactory : PolymorphicConfigurationFactory<S3B
                 "Region where the backup bucket should be created",
             ),
 
-            )
+        )
 
     override val help =
         ConfigurationHelp(
@@ -40,7 +40,6 @@ class S3BackupProviderConfigurationFactory : PolymorphicConfigurationFactory<S3B
                 is Error<String> -> return Error(result.error)
                 is Success<String> -> result.data
             }
-
 
         val region =
             when (val result = region.parse(yaml)) {

@@ -25,4 +25,3 @@ val PROVIDER_NAME_KEYWORD =
             "Name for the provider, can be omitted if only one provider of this specific type is configured",
         ),
     )
-

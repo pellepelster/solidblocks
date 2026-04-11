@@ -18,10 +18,12 @@ import de.solidblocks.cloud.utils.Success
 
 class CloudConfigurationFactory(
     providerRegistrations: List<
-            ProviderRegistration<
-                    out ProviderConfiguration, out ProviderConfigurationRuntime, out ProviderConfigurationManager<*, *>,
-                    >,
+        ProviderRegistration<
+            out ProviderConfiguration,
+            out ProviderConfigurationRuntime,
+            out ProviderConfigurationManager<*, *>,
             >,
+        >,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
 ) : ConfigurationFactory<CloudConfiguration> {
 
@@ -50,7 +52,7 @@ class CloudConfigurationFactory(
         PolymorphicListKeyword(
             "providers",
             providerRegistrations.associate { it.type to it.createConfigurationFactory() }
-                    as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
+                as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
             KeywordHelp(
                 "Provider list, if two providers of the same type are configured, unique names must be provided. For a minimal configuration at least a SSH, secret and cloud provider is needed.",
             ),
@@ -61,7 +63,7 @@ class CloudConfigurationFactory(
         PolymorphicListKeyword(
             "services",
             serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
-                    as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
+                as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
             KeywordHelp("Services to create, service names must be unique across all services"),
         )
 

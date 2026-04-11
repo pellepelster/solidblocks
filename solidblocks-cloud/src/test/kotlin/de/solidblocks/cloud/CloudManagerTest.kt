@@ -49,7 +49,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-                "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key' at line 3 colum 7"
+            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key' at line 3 colum 7"
     }
 
     @Test
@@ -120,7 +120,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-                "more than one or no secret provider found (0), please register exactly one. available types are: 'pass'"
+            "more than one or no secret provider found (0), please register exactly one. available types are: 'pass'"
     }
 
     @Test
@@ -137,7 +137,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-                "more than one or no cloud provider found (0), please register exactly one. available types are: 'hcloud'"
+            "more than one or no cloud provider found (0), please register exactly one. available types are: 'hcloud'"
     }
 }
 
