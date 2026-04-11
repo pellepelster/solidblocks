@@ -1,24 +1,9 @@
 package de.solidblocks.restic
 
-import de.solidblocks.shell.CurlLibrary
-import de.solidblocks.shell.FilePermissions
-import de.solidblocks.shell.PackageLibrary
-import de.solidblocks.shell.ResticLibrary
+import de.solidblocks.shell.*
 import de.solidblocks.shell.ResticLibrary.RESTIC_CREDENTIALS_PATH
-import de.solidblocks.shell.ShellScript
-import de.solidblocks.shell.SystemDLibrary
-import de.solidblocks.shell.WriteFile
-import de.solidblocks.systemd.Daily
-import de.solidblocks.systemd.Install
-import de.solidblocks.systemd.Restart
-import de.solidblocks.systemd.Service
-import de.solidblocks.systemd.ServiceType
-import de.solidblocks.systemd.SystemDConfig
-import de.solidblocks.systemd.SystemDService
-import de.solidblocks.systemd.SystemDTimer
-import de.solidblocks.systemd.Timer
+import de.solidblocks.systemd.*
 import de.solidblocks.systemd.Unit
-import de.solidblocks.systemd.installSystemDUnit
 
 private fun String.toBackupUnitName(): String = this.removePrefix("/").removeSuffix("/").replace("/", "-")
 
@@ -48,6 +33,7 @@ fun ShellScript.installBackupUnitWithTrigger(config: SystemDConfig) {
             Install(),
         )
     installSystemDUnit(timer)
+    addCommand(SystemDLibrary.Enable(timer.fullUnitName()))
     addCommand(SystemDLibrary.Start(timer.fullUnitName()))
 }
 
@@ -96,9 +82,8 @@ fun ShellScript.resticLocalBackup(localRepository: String, repositoryPassword: S
     addCommand(ResticLibrary.WriteCredentials(repositoryPassword))
     addCommand(ResticLibrary.EnsureLocalRepo(localRepository))
     installResticStatusWrapper(localRepository, backupPath)
-    addCommand(ResticLibrary.Restore(localRepository))
-
     installBackupUnitWithTrigger(localBackupSystemDUnit(localRepository, backupPath))
+    addCommand(ResticLibrary.Restore(localRepository))
 }
 
 fun ShellScript.resticS3Backup(
@@ -113,13 +98,13 @@ fun ShellScript.resticS3Backup(
     addCommand(ResticLibrary.WriteS3Credentials(repositoryPassword, awsAccessKey, awsSecretKey))
     addCommand(ResticLibrary.EnsureS3Repo(s3Repository))
     installResticStatusWrapper(s3Repository, backupPath)
-    addCommand(ResticLibrary.Restore(s3Repository))
     installBackupUnitWithTrigger(s3BackupSystemDUnit(s3Repository, backupPath))
+    addCommand(ResticLibrary.Restore(s3Repository))
 }
 
 const val RESTIC_STATUS_COMMAND = "restic-status"
 
-fun ShellScript.installResticStatusWrapper(repository: String, backupPath: String) {
+private fun ShellScript.installResticStatusWrapper(repository: String, backupPath: String) {
     val wrapper = """
     #!/bin/env bash
     

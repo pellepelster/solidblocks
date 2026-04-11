@@ -66,7 +66,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                         it.type == distinctProvider.type && it.name == DEFAULT_NAME
                     } > 1
                 ) {
-                    return Error<CloudConfigurationRuntime>(
+                    return@validate Error<CloudConfigurationRuntime>(
                         "found more then one default for provider of type '${distinctProvider.type}'. When configuring multiple providers of the same type all non-default providers need a unique name.",
                     )
                 }

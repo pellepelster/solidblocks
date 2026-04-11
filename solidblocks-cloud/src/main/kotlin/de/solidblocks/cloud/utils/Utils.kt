@@ -8,6 +8,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+fun getEnvOrProperty(name: String) = System.getenv(name) ?: System.getProperty(name)
+
 fun commandExists(command: String) = try {
     val isWindows = System.getProperty("os.name").lowercase().contains("win")
     val checkCommand =

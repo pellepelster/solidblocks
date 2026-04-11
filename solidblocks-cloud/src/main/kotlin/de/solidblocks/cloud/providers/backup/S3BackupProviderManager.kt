@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.providers.backup
 
+import com.sun.tools.javac.jvm.ByteCodes
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
@@ -7,6 +8,7 @@ import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationFac
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.getEnvOrProperty
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,32 +21,21 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 
 class S3BackupProviderManager :
-    ProviderConfigurationManager<
-        S3BackupProviderConfiguration,
-        S3BackupProviderRuntime,
-        > {
+    ProviderConfigurationManager<S3BackupProviderConfiguration, S3BackupProviderRuntime> {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun validate(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderRuntime> =
-        Success(S3BackupProviderRuntime(configuration.region, "TODO", "TODO"))
+    override fun validate(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderRuntime> {
 
-    private fun checkFilePermission(sshKey: Path): Boolean {
-        val permissions = Files.getPosixFilePermissions(sshKey)
+        if (getEnvOrProperty("AWS_ACCESS_KEY_ID") == null) {
+            return Error("environment variable 'AWS_ACCESS_KEY_ID' not set")
+        }
 
-        val allowedPermissions =
-            setOf(
-                PosixFilePermission.OWNER_READ,
-                PosixFilePermission.OWNER_WRITE,
-            )
+        if (getEnvOrProperty("AWS_SECRET_ACCESS_KEY") == null) {
+            return Error("environment variable 'AWS_SECRET_ACCESS_KEY' not set")
+        }
 
-        return !permissions.any { it !in allowedPermissions }
-    }
-
-    fun expandTilde(path: String): String = if (path.startsWith("~")) {
-        System.getProperty("user.home") + path.substring(1)
-    } else {
-        path
+        return Success(S3BackupProviderRuntime(configuration.region, getEnvOrProperty("AWS_ACCESS_KEY_ID"), getEnvOrProperty("AWS_SECRET_ACCESS_KEY")))
     }
 
     override fun createProvisioners(runtime: S3BackupProviderRuntime) = emptyList<InfrastructureResourceProvisioner<*, *>>()

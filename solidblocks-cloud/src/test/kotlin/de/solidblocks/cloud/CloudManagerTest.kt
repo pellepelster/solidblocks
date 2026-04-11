@@ -6,6 +6,7 @@ import de.solidblocks.cloud.utils.Success
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldMatch
+import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test
 import java.io.BufferedReader
@@ -49,7 +50,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key' at line 3 colum 7"
+            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key', 'backup_aws_s3' at line 3 colum 7"
     }
 
     @Test
@@ -77,7 +78,7 @@ class CloudManagerTest {
             - type: hcloud
             - type: pass
             - type: ssh_key
-            - type: backup_s3
+            - type: backup_aws_s3
         """
                 .trimIndent()
                 .createManager()
@@ -85,6 +86,130 @@ class CloudManagerTest {
         val result = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
 
         result.data.providers shouldHaveSize 4
+    }
+
+    @Test
+    fun testDuplicateDefaultProvider() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldStartWith  "found more then one default for provider of type 'ssh_key'."
+    }
+
+    @Test
+    fun testDuplicateProviderName() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+              name: foo-bar
+            - type: ssh_key
+              name: foo-bar
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "found duplicate provider configuration for type 'ssh_key' with name 'foo-bar'."
+    }
+
+    @Test
+    fun testDuplicateServiceName() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+
+        services:
+            - type: postgresql
+              name: database1
+            - type: postgresql
+              name: database1
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "found duplicate service configuration for name 'database1'."
+    }
+
+    @Test
+    fun testMoreThanOneCloudProvider() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: hcloud
+              name: "foo-bar"
+            - type: pass
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "more than one or no cloud provider found (2), please register exactly one. available types are: 'hcloud'"
+    }
+
+    @Test
+    fun testMoreThanOneSSHKeyProvider() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+              name: "foo-bar"
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "more than one or no provider for ssh keys found (2), please register exactly one. available types are: 'ssh_key'"
+    }
+
+    @Test
+    fun testMoreThanOneSecretProvider() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: pass
+              name: "foo-bar"
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "more than one or no secret provider found (2), please register exactly one. available types are: 'pass'"
     }
 
     @Test

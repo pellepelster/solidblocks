@@ -2,7 +2,7 @@ package de.solidblocks.cloud.providers.backup
 
 import de.solidblocks.cloud.providers.ProviderRegistration
 
-val BACKUP_S3_TYPE = "backup_s3"
+val BACKUP_S3_TYPE = "backup_aws_s3"
 
 class S3BackupProviderRegistration :
     ProviderRegistration<
