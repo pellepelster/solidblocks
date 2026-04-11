@@ -1,10 +1,10 @@
-package de.solidblocks.cloud.providers.ssh
+package de.solidblocks.cloud.providers.types.backup
 
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
 
-interface SSHKeyProviderRegistration<
-    C : SSHKeyProviderConfiguration,
+interface BackupProviderRegistration<
+    C : BackupProviderConfiguration,
     R : ProviderConfigurationRuntime,
-    M : SSHKeyProviderConfigurationManager<C, R>,
+    M : BackupProviderConfigurationManager<C, R>,
     > : ProviderRegistration<C, R, M>

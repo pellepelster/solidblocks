@@ -1,10 +1,8 @@
-package de.solidblocks.cloud.providers.backup
+package de.solidblocks.cloud.providers.backup.aws
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeyword
-import de.solidblocks.cloud.configuration.StringKeywordOptional
 import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD

@@ -13,9 +13,10 @@ import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderConfigurationManager
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
+import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.managerForConfiguration
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
-import de.solidblocks.cloud.providers.ssh.sshKeyProvider
+import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
+import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
 import de.solidblocks.cloud.secret.SecretProviderConfiguration
@@ -169,7 +170,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
                 log = log.unindent()
                 runtime
-            }
+            } + listOf(LocalBackupProviderConfigurationRuntime())
 
         val registry = this.providerRegistrations.createRegistry(providers)
         val sshKeyProvider = providers.sshKeyProvider()

@@ -2,8 +2,8 @@ package de.solidblocks.cloud.providers.sshkey
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.providers.CloudConfigurationContext
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfigurationManager
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationFactory.Companion.defaultSSHKeyNames
+import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfigurationManager
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -21,17 +21,17 @@ import kotlin.io.path.readText
 class LocalSSHKeyProviderManager :
     SSHKeyProviderConfigurationManager<
         LocalSSHKeyProviderConfiguration,
-        LocalSSHKeyProviderRuntime,
+        LocalSSHKeyProviderConfigurationRuntime,
         > {
 
     private val logger = KotlinLogging.logger {}
 
     val homeDir = Path(System.getProperty("user.home"))
 
-    override fun validate(configuration: LocalSSHKeyProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<LocalSSHKeyProviderRuntime> {
+    override fun validate(configuration: LocalSSHKeyProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<LocalSSHKeyProviderConfigurationRuntime> {
         val sshKey =
             when (val result = tryFindKey(configuration, context, log)) {
-                is Error<*> -> return Error<LocalSSHKeyProviderRuntime>(result.error)
+                is Error<*> -> return Error<LocalSSHKeyProviderConfigurationRuntime>(result.error)
                 is Success<Path> -> result.data
             }
 
@@ -61,7 +61,7 @@ class LocalSSHKeyProviderManager :
             )
         }
 
-        return Success(LocalSSHKeyProviderRuntime(sshKeyPair, sshKey.toAbsolutePath()))
+        return Success(LocalSSHKeyProviderConfigurationRuntime(sshKeyPair, sshKey.toAbsolutePath()))
     }
 
     private fun checkFilePermission(sshKey: Path): Boolean {
@@ -132,7 +132,7 @@ class LocalSSHKeyProviderManager :
         return Success(sshKey)
     }
 
-    override fun createProvisioners(runtime: LocalSSHKeyProviderRuntime) = emptyList<InfrastructureResourceProvisioner<*, *>>()
+    override fun createProvisioners(runtime: LocalSSHKeyProviderConfigurationRuntime) = emptyList<InfrastructureResourceProvisioner<*, *>>()
 
     override val supportedConfiguration = LocalSSHKeyProviderConfiguration::class
 }

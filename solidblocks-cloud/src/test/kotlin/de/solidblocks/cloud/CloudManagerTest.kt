@@ -1,6 +1,8 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderConfigurationRuntime
+import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import io.kotest.matchers.collections.shouldHaveSize
@@ -50,7 +52,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key', 'backup_aws_s3' at line 3 colum 7"
+            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key', 'backup_aws_s3', 'backup_local' at line 3 colum 7"
     }
 
     @Test
@@ -84,8 +86,29 @@ class CloudManagerTest {
                 .createManager()
 
         val result = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
+        result.data.providers shouldHaveSize 5
+        result.data.backupProviderRuntimes() shouldHaveSize 2
+        result.data.backupProviderRuntimes()[0].shouldBeTypeOf<S3BackupProviderConfigurationRuntime>()
+        result.data.backupProviderRuntimes()[1].shouldBeTypeOf<LocalBackupProviderConfigurationRuntime>()
+    }
 
+    @Test
+    fun testDefaultBackupProvider() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
         result.data.providers shouldHaveSize 4
+        result.data.backupProviderRuntimes() shouldHaveSize 1
+        result.data.backupProviderRuntimes().first().shouldBeTypeOf<LocalBackupProviderConfigurationRuntime>()
     }
 
     @Test
@@ -102,7 +125,7 @@ class CloudManagerTest {
                 .createManager()
 
         val result = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
-        result.data.providers shouldHaveSize 3
+        result.data.providers shouldHaveSize 4
 
         val managerNoDefaultSSHKey =
             """

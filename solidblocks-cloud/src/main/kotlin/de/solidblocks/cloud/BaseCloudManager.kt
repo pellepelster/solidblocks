@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.providers.backup.S3BackupProviderRegistration
+import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderRegistration
+import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderRegistration
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRegistration
 import de.solidblocks.cloud.providers.pass.PassProviderRegistration
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderRegistration
@@ -19,5 +20,6 @@ abstract class BaseCloudManager {
             PassProviderRegistration(),
             LocalSSHKeyProviderRegistration(),
             S3BackupProviderRegistration(),
+            LocalBackupProviderRegistration(),
         )
 }

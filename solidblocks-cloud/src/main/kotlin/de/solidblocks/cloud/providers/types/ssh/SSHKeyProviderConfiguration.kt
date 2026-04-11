@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.providers.ssh
+package de.solidblocks.cloud.providers.types.ssh
 
 import de.solidblocks.cloud.providers.ProviderConfiguration
 

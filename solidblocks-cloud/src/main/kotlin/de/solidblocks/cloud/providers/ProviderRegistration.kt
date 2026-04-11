@@ -1,9 +1,9 @@
 package de.solidblocks.cloud.providers
 
 import de.solidblocks.cloud.configuration.ConfigurationFactory
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfiguration
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderConfigurationManager
-import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRuntime
+import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
+import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfigurationManager
+import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfigurationRuntime
 import kotlin.reflect.KClass
 
 interface ProviderRegistration<
@@ -38,8 +38,8 @@ fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
         ?: throw RuntimeException("no manager found for '${runtime::class.qualifiedName}'")
 
 @Suppress("UNCHECKED_CAST")
-fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(configuration: SSHKeyProviderConfiguration): SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderRuntime> =
+fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(configuration: SSHKeyProviderConfiguration): SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderConfigurationRuntime> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
         ?.createConfigurationManager()
-        as SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderRuntime>?
+        as SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderConfigurationRuntime>?
         ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")

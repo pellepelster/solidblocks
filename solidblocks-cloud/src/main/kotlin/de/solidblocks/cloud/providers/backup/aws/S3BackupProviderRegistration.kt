@@ -1,17 +1,17 @@
-package de.solidblocks.cloud.providers.backup
+package de.solidblocks.cloud.providers.backup.aws
 
-import de.solidblocks.cloud.providers.ProviderRegistration
+import de.solidblocks.cloud.providers.types.backup.BackupProviderRegistration
 
 val BACKUP_S3_TYPE = "backup_aws_s3"
 
 class S3BackupProviderRegistration :
-    ProviderRegistration<
+    BackupProviderRegistration<
         S3BackupProviderConfiguration,
-        S3BackupProviderRuntime,
+        S3BackupProviderConfigurationRuntime,
         S3BackupProviderManager,
         > {
     override val supportedConfiguration = S3BackupProviderConfiguration::class
-    override val supportedRuntime = S3BackupProviderRuntime::class
+    override val supportedRuntime = S3BackupProviderConfigurationRuntime::class
 
     override fun createConfigurationManager() = S3BackupProviderManager()
 

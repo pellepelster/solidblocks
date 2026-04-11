@@ -12,7 +12,7 @@ import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
-import de.solidblocks.cloud.providers.ssh.sshKeyProvider
+import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
