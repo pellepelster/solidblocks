@@ -13,6 +13,9 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.markdown
+import de.solidblocks.cloud.providers.types.backup.backupSecretResource
+import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
+import de.solidblocks.cloud.providers.types.backup.createBackupResources
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
@@ -27,21 +30,12 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.services.BackupRuntime
-import de.solidblocks.cloud.services.EndpointInfo
-import de.solidblocks.cloud.services.InstanceRuntime
-import de.solidblocks.cloud.services.ServerInfo
-import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.ServiceInfo
-import de.solidblocks.cloud.services.ServiceManager
-import de.solidblocks.cloud.services.firewall
+import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.sshConnectCommand
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -52,7 +46,6 @@ import de.solidblocks.cloudinit.garagefs.GarageFsUserData.Companion.s3Host
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import kotlinx.coroutines.runBlocking
-import kotlin.collections.plus
 
 class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
@@ -61,21 +54,17 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
     override fun status(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: CloudProvisionerContext) = markdown { }.let { Success(it) }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
+        val serverName = serverName(cloud, runtime.name)
+
         val dataVolume =
             HetznerVolume(
-                serverName(cloud, runtime.name) + "-data",
+                serverName + "-data",
                 runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 ByteSize.fromGigabytes(runtime.instance.volumeSize),
                 emptyMap(),
             )
 
-        val backupVolume =
-            HetznerVolume(
-                serverName(cloud, runtime.name) + "-backup",
-                runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-                runtime.backup.backupVolumeSizeWithDefault(runtime.instance.volumeSize),
-                emptyMap(),
-            )
+        val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
         val adminToken =
             PassSecret(
@@ -98,14 +87,11 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 allowedChars = ('a'..'f') + ('0'..'9'),
             )
 
-        val backupPassword =
-            PassSecretLookup(
-                secretPath(cloud, listOf("backup", "password")),
-            )
+        val backupPassword = backupSecretResource(cloud).asLookup()
 
         val userData =
             UserData(
-                setOf(dataVolume, backupVolume, adminToken, rpcSecret, metricsToken),
+                setOf(dataVolume, adminToken, rpcSecret, metricsToken) + backupResources.first,
                 { context ->
                     if (
                         listOf(adminToken, rpcSecret, metricsToken).any {
@@ -118,8 +104,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     GarageFsUserData(
                         runtime.name,
                         context.ensureLookup(dataVolume.asLookup()).device,
-                        context.ensureLookup(backupVolume.asLookup()).device,
-                        context.ensureLookup(backupPassword).secret,
+                        createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                         serviceRootDomain(cloud, runtime),
                         context.ensureLookup(rpcSecret.asLookup()).secret,
                         context.ensureLookup(adminToken.asLookup()).secret,
@@ -128,7 +113,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                             de.solidblocks.cloudinit.garagefs.GarageFsBucket(
                                 it.name,
                                 it.managedPublicWebAccessDomains.values.toSet() +
-                                    it.manuallyManagedPublicWebAccessDomains,
+                                        it.manuallyManagedPublicWebAccessDomains,
                             )
                         },
                         true,
@@ -141,19 +126,20 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         val server =
             HetznerServer(
-                serverName(cloud, runtime.name),
+                serverName,
                 userData = userData,
                 location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-                volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
+                volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
-                    HetznerNetworkLookup(networkName(cloud)),
-                ),
+                    HetznerSubnetLookup(
+                        DEFAULT_SERVICE_SUBNET,
+                        HetznerNetworkLookup(networkName(cloud)),
+                    ),
                 privateIp = serverIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud),
+                dependsOn = backupResources.first
             )
 
         if (cloud.rootDomain == null) {

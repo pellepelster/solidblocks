@@ -3,7 +3,6 @@ package de.solidblocks.cloud.services.docker
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.networkName
-import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.serviceLabels
@@ -13,6 +12,8 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.markdown
+import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
+import de.solidblocks.cloud.providers.types.backup.createBackupResources
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
@@ -22,7 +23,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.restic.model.parseResticSnapshotsOutput
 import de.solidblocks.cloud.services.*
@@ -86,95 +86,75 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
-        val environmentVariables =
-            runtime.links.flatMap { link ->
-                val links = cloud.services.filter { it.name == link }
-                links.flatMap {
-                    context
-                        .managerForService<ServiceConfiguration, ServiceConfigurationRuntime>(it)
-                        .linkedEnvironmentVariables(cloud, it)
-                }
+        val environmentVariables = runtime.links.flatMap { link ->
+            val links = cloud.services.filter { it.name == link }
+            links.flatMap {
+                context.managerForService<ServiceConfiguration, ServiceConfigurationRuntime>(it).linkedEnvironmentVariables(cloud, it)
             }
+        }
 
-        val dataVolume =
-            HetznerVolume(
-                serverName(cloud, runtime.name) + "-data",
-                runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-                ByteSize.fromGigabytes(runtime.instance.volumeSize),
-                emptyMap(),
-            )
+        val serverName = serverName(cloud, runtime.name)
+        val dataVolume = HetznerVolume(
+            serverName + "-data",
+            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            ByteSize.fromGigabytes(runtime.instance.volumeSize),
+            emptyMap(),
+        )
 
-        val backupVolume =
-            HetznerVolume(
-                serverName(cloud, runtime.name) + "-backup",
-                runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-                runtime.backup.backupVolumeSizeWithDefault(runtime.instance.volumeSize),
-                emptyMap(),
-            )
+        val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
-        val backupPassword =
-            PassSecretLookup(
-                secretPath(cloud, listOf("backup", "password")),
-            )
+        val userData = UserData(
+            setOf(dataVolume) + backupResources.first,
+            { context ->
+                GenericDockerServiceUserData(
+                    runtime.name,
+                    context.ensureLookup(dataVolume.asLookup()).device,
+                    createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
+                    runtime.image,
+                    runtime.endpoints.associate { 80 to it.port },
+                    serverFQDN = cloud.rootDomain?.let { "${serverName(cloud, runtime.name)}.$it" },
+                    environmentVariables = environmentVariables.associate {
+                        val value = when (it) {
+                            is EnvironmentVariableCallback -> it.value.invoke(context)
+                            is EnvironmentVariableStatic -> it.value
+                        }
 
-        val userData =
-            UserData(
-                setOf(dataVolume, backupVolume),
-                { context ->
-                    GenericDockerServiceUserData(
-                        runtime.name,
-                        context.ensureLookup(dataVolume.asLookup()).device,
-                        context.ensureLookup(backupVolume.asLookup()).device,
-                        context.ensureLookup(backupPassword).secret,
-                        runtime.image,
-                        runtime.endpoints.associate { 80 to it.port },
-                        serverFQDN = cloud.rootDomain?.let { "${serverName(cloud, runtime.name)}.$it" },
-                        environmentVariables =
-                        environmentVariables.associate {
-                            val value =
-                                when (it) {
-                                    is EnvironmentVariableCallback -> it.value.invoke(context)
-                                    is EnvironmentVariableStatic -> it.value
-                                }
+                        it.name to value
+                    },
+                ).render()
+            },
+        )
 
-                            it.name to value
-                        },
-                    )
-                        .render()
-                },
-            )
+        val server = HetznerServer(
+            serverName,
+            userData = userData,
+            location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
+            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
+            volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
+            type = cloud.hetznerProviderRuntime().defaultInstanceType,
+            subnet = HetznerSubnetLookup(
+                DEFAULT_SERVICE_SUBNET,
+                HetznerNetworkLookup(networkName(cloud)),
+            ),
+            privateIp = serverIp(runtime.index),
+            labels = serviceLabels(runtime) + cloudLabels(cloud),
+            dependsOn = backupResources.first,
+        )
 
-        val server =
-            HetznerServer(
-                serverName(cloud, runtime.name),
-                userData = userData,
-                location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-                sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-                volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
-                type = cloud.hetznerProviderRuntime().defaultInstanceType,
-                subnet =
-                HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
-                    HetznerNetworkLookup(networkName(cloud)),
-                ),
-                privateIp = serverIp(runtime.index),
-                labels = serviceLabels(runtime) + cloudLabels(cloud),
-            )
-
-        val optionalResources = if (cloud.rootDomain != null) {
-            val zone = HetznerDnsZoneLookup(cloud.rootDomain)
-            val serverDnsRecord =
-                HetznerDnsRecord(
+        val optionalResources =
+            if (cloud.rootDomain != null) {
+                val zone = HetznerDnsZoneLookup(cloud.rootDomain)
+                val serverDnsRecord = HetznerDnsRecord(
                     serverName(cloud, runtime.name),
                     zone,
                     listOf(server.asLookup()),
                 )
-            listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
-        } else {
-            listOf(runtime.firewall(cloud, listOf(80)))
-        }
+                listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
+            } else {
+                listOf(runtime.firewall(cloud, listOf(80)))
+            }
 
-        return listOf(server, dataVolume, backupVolume) + optionalResources
+        return listOf(server, dataVolume) + optionalResources + setOfNotNull(backupResources.second)
     }
 
     override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()

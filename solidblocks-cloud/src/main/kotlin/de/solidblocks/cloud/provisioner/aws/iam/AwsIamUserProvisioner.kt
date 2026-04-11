@@ -2,6 +2,8 @@ package de.solidblocks.cloud.provisioner.aws.iam
 
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.iam.IamClient
+import aws.sdk.kotlin.services.iam.createAccessKey
+import aws.sdk.kotlin.services.iam.model.CreateAccessKeyRequest
 import aws.sdk.kotlin.services.iam.model.CreateUserRequest
 import aws.sdk.kotlin.services.iam.model.DeleteAccessKeyRequest
 import aws.sdk.kotlin.services.iam.model.DeleteUserPolicyRequest
@@ -20,6 +22,9 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager
+import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager.Companion.accessKeySecretPath
+import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager.Companion.secretKeySecretPath
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -101,6 +106,22 @@ class AwsIamUserProvisioner(
         if (!exists) {
             log.info("creating IAM user '${resource.name}'")
             client.createUser(CreateUserRequest { userName = resource.name })
+
+            val keys = client.createAccessKey(CreateAccessKeyRequest {
+                userName = resource.name
+            })
+
+            when (val result = context.createSecret(accessKeySecretPath(context.environment, resource.name), keys.accessKey!!.accessKeyId)) {
+                is Error<Unit> -> return@use Error(result.error)
+                is Success<Unit> -> {
+                }
+            }
+
+            when (val result = context.createSecret(S3BackupProviderManager.secretKeySecretPath(context.environment, resource.name), keys.accessKey!!.secretAccessKey)) {
+                is Error<Unit> -> return@use Error(result.error)
+                is Success<Unit> -> {
+                }
+            }
         }
 
         log.info("updating inline policy '${resource.policyName}' for IAM user '${resource.name}'")

@@ -12,6 +12,8 @@ import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 interface ServiceConfigurationRuntime {
     val index: Int
     val name: String
+    val instance: InstanceRuntime
+    val backup: BackupRuntime
 }
 
 fun ServiceConfigurationRuntime.firewall(cloud: CloudConfigurationRuntime, ports: List<Int>) = HetznerFirewall(

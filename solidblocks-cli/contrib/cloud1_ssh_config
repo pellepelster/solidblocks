@@ -2,7 +2,7 @@ Host *
     UserKnownHostsFile /dev/null
     StrictHostKeyChecking no
     User root
-    IdentityFile /home/pelle/git/solidblocks/solidblocks-cli/contrib/test_ed25519.key
+    IdentityFile /home/pelle/git/solidblocks/solidblocks-cli/contrib/cloud1.key
 
 Host cloud1-default-database1-0
     HostName 46.224.161.199

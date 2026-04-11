@@ -168,3 +168,8 @@ export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
 """
 
+[tasks.test-preflight-check]
+run="""
+../gradlew :solidblocks-cloud-init:test  :solidblocks-shell:test  :solidblocks-ssh:test :solidblocks-utils:test :solidblocks-cli:test :solidblocks-cloud:test
+"""
+

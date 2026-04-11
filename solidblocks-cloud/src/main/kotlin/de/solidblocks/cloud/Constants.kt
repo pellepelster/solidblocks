@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.configuration.model.EnvironmentReference
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import java.nio.file.Path
 
@@ -22,7 +23,10 @@ object Constants {
     fun secretPath(configuration: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, segments: List<String>) =
         "${configuration.name}/${configuration.getDefaultEnvironment()}/${runtime.name}/${segments.joinToString("/")}"
 
+    @Deprecated("use EnvironmentReference if possible")
     fun secretPath(configuration: CloudConfigurationRuntime, segments: List<String>) = "${configuration.name}/${configuration.getDefaultEnvironment()}/${segments.joinToString("/")}"
+
+    fun secretPath(environment: EnvironmentReference, segments: List<String>) = "${environment.cloud}/${environment.environment}/${segments.joinToString("/")}"
 
     fun serviceLabels(runtime: ServiceConfigurationRuntime) = mapOf(serviceLabel to runtime.name)
 

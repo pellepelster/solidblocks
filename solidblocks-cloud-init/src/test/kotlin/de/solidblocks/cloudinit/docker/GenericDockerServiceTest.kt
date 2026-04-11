@@ -1,5 +1,7 @@
 package de.solidblocks.cloudinit.docker
 
+import de.solidblocks.cloudinit.BackupConfiguration
+import de.solidblocks.cloudinit.LocalBackupTarget
 import de.solidblocks.cloudinit.waitForSuccessfulProvisioning
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
@@ -21,12 +23,13 @@ class GenericDockerServiceTest {
         val backupVolume = hetznerTestContext.createVolume("${testContext.testId}-backup")
         val sshKey = hetznerTestContext.createSSHKey()
 
+        val backupConfiguration = BackupConfiguration("very-secret", LocalBackupTarget(backupVolume.linuxDevice))
+
         val userData =
             GenericDockerServiceUserData(
                 testContext.testId,
                 dataVolume.linuxDevice,
-                backupVolume.linuxDevice,
-                "very-secret",
+                backupConfiguration,
                 "nginx",
                 mapOf(80 to 80),
                 null,

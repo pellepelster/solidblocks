@@ -3,6 +3,7 @@ package de.solidblocks.cloud
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
+import de.solidblocks.cloud.configuration.model.EnvironmentReference
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
@@ -17,6 +18,8 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.utils.KeywordHelp
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
@@ -25,9 +28,6 @@ import kotlin.reflect.KClass
 
 class TestContextUtils
 
-val TEST_CLOUD_CONFIGURATION =
-    CloudConfiguration("testCloudName", "cloud1.test-blcks.de", emptyList(), emptyList())
-
 class TestProvisionerContext(val registry: ProvisionersRegistry, val portMappings: Map<Int, Int> = emptyMap()) : CloudProvisionerContext {
     override val sshKeyPair =
         SSHKeyUtils.loadKey(
@@ -35,16 +35,17 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
         )
 
     override val sshConfigFilePath = Path.of(".")
-    override val cloudName = "testCloudName"
+
+    override val environment = EnvironmentReference("testCloudName", "default")
 
     override fun validateDnsZone(zone: String) = TODO("Not yet implemented")
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
     override fun <
-        RuntimeType,
-        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-        > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
+            RuntimeType,
+            ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
+            > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
 
     override fun createOrGetSshClient(server: HetznerServerLookup): SSHClient {
         TODO("Not yet implemented")
@@ -55,12 +56,16 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = TODO("Not yet implemented")
 
     override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = block.invoke(portMappings[port])
+
+    val secrets = mutableMapOf<String, String>()
+
+    override suspend fun createSecret(path: String, secret: String): Result<Unit> {
+        secrets[path] = secret
+        return Success(Unit)
+    }
 }
 
-val TEST_PROVISIONER_CONTEXT =
-    TestProvisionerContext(
-        ProvisionersRegistry(),
-    )
+val TEST_PROVISIONER_CONTEXT = TestProvisionerContext(ProvisionersRegistry())
 
 data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: CloudProvisionerContext) {
 

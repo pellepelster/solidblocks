@@ -19,7 +19,7 @@ data class CloudConfigurationRuntime(
     // TODO clean up when multi provider support is needed
     fun hetznerProviderRuntime() = providers.filterIsInstance<HetznerProviderRuntime>().single()
 
-    fun backupProviderRuntimes() = providers.filterIsInstance<BackupProviderConfigurationRuntime>()
+    fun backupProviderRuntime() = providers.filterIsInstance<BackupProviderConfigurationRuntime>().single()
 
     val dnsEnabled: Boolean
         get() = rootDomain != null

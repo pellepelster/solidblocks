@@ -1,5 +1,7 @@
 package de.solidblocks.cloudinit.garagefs
 
+import de.solidblocks.cloudinit.BackupConfiguration
+import de.solidblocks.cloudinit.LocalBackupTarget
 import de.solidblocks.cloudinit.ServiceUserData
 import de.solidblocks.cloudinit.caddy.AutoHttps
 import de.solidblocks.cloudinit.caddy.CaddyConfig
@@ -7,7 +9,7 @@ import de.solidblocks.cloudinit.caddy.FileSystemStorage
 import de.solidblocks.cloudinit.caddy.GlobalOptions
 import de.solidblocks.cloudinit.caddy.ReverseProxy
 import de.solidblocks.cloudinit.caddy.Site
-import de.solidblocks.restic.resticLocalBackup
+import de.solidblocks.restic.resticBackup
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CaddyLibrary
 import de.solidblocks.shell.CurlLibrary
@@ -32,8 +34,7 @@ data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
 class GarageFsUserData(
     val serviceName: String,
     val dataDevice: String,
-    val backupDevice: String,
-    val backupPassword: String,
+    val backupConfiguration: BackupConfiguration,
     val serviceRootDomain: String,
     val rpcSecret: String,
     val adminToken: String,
@@ -74,10 +75,10 @@ class GarageFsUserData(
                         ),
                     ) + it.publicDomains.map { Site(it, ReverseProxy("http://localhost:3902")) }
                 } +
-                    listOf(
-                        Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903")),
-                        Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900")),
-                    ),
+                        listOf(
+                            Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903")),
+                            Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900")),
+                        ),
             )
 
         val userData = ShellScript()
@@ -91,7 +92,6 @@ class GarageFsUserData(
 
         userData.addInlineSource(StorageLibrary)
         userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
-        userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
 
         userData.addInlineSource(CaddyLibrary)
         userData.addCommand(CaddyLibrary.Install())
@@ -143,7 +143,7 @@ class GarageFsUserData(
         userData.installSystemDUnit(garageFsSystemDConfig)
         userData.addCommand(SystemDLibrary.Restart("garage"))
 
-        userData.resticLocalBackup("$backupMount/$serviceName", backupPassword, serviceDataDir)
+        userData.resticBackup(serviceName, backupConfiguration, serviceDataDir)
 
         return userData.render()
     }

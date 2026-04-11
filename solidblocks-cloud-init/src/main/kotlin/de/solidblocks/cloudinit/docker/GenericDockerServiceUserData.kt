@@ -1,5 +1,7 @@
 package de.solidblocks.cloudinit.docker
 
+import de.solidblocks.cloudinit.BackupConfiguration
+import de.solidblocks.cloudinit.LocalBackupTarget
 import de.solidblocks.cloudinit.ServiceUserData
 import de.solidblocks.cloudinit.caddy.AutoHttps
 import de.solidblocks.cloudinit.caddy.CaddyConfig
@@ -7,7 +9,7 @@ import de.solidblocks.cloudinit.caddy.FileSystemStorage
 import de.solidblocks.cloudinit.caddy.GlobalOptions
 import de.solidblocks.cloudinit.caddy.ReverseProxy
 import de.solidblocks.cloudinit.caddy.Site
-import de.solidblocks.restic.resticLocalBackup
+import de.solidblocks.restic.resticBackup
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CaddyLibrary
 import de.solidblocks.shell.CurlLibrary
@@ -32,8 +34,7 @@ import de.solidblocks.systemd.installSystemDUnit
 class GenericDockerServiceUserData(
     val serviceName: String,
     val dataDevice: String,
-    val backupDevice: String,
-    val backupPassword: String,
+    val backupConfiguration: BackupConfiguration,
     val dockerImage: String,
     val ports: Map<Int, Int>,
     val serverFQDN: String?,
@@ -41,7 +42,6 @@ class GenericDockerServiceUserData(
 ) : ServiceUserData {
     override fun render(): String {
         val storageMount = "/storage/data"
-        val backupMount = "/storage/backup"
         val serviceDataDir = "$storageMount/$serviceName"
         val caddyStorageDir = "$serviceDataDir/www"
 
@@ -79,7 +79,6 @@ class GenericDockerServiceUserData(
 
         userData.addInlineSource(StorageLibrary)
         userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
-        userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
 
         userData.addCommand(DockerLibrary.InstallDebian())
 
@@ -148,8 +147,7 @@ class GenericDockerServiceUserData(
 
         userData.installSystemDUnit(dockerSystemDConfig)
         userData.addCommand(SystemDLibrary.Restart(serviceName))
-
-        userData.resticLocalBackup("$backupMount/$serviceName", backupPassword, serviceDataDir)
+        userData.resticBackup(serviceName, backupConfiguration, serviceDataDir)
 
         return userData.render()
     }

@@ -1,5 +1,7 @@
 package de.solidblocks.cloudinit.garagefs
 
+import de.solidblocks.cloudinit.BackupConfiguration
+import de.solidblocks.cloudinit.LocalBackupTarget
 import de.solidblocks.cloudinit.waitForSuccessfulProvisioning
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
@@ -31,8 +33,7 @@ class GarageFsUserDataTest {
             GarageFsUserData(
                 "service1",
                 dataVolume.linuxDevice,
-                backupVolume.linuxDevice,
-                "some-password",
+                BackupConfiguration("some-password", LocalBackupTarget(backupVolume.linuxDevice)),
                 "yolo.de",
                 rpcSecret,
                 adminToken,
@@ -56,8 +57,7 @@ class GarageFsUserDataTest {
             GarageFsUserData(
                 "service1",
                 "/dev/sdb",
-                "/dev/sdc",
-                "some-password",
+                BackupConfiguration("some-password", LocalBackupTarget("/dev/sdc")),
                 "yolo.de",
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),

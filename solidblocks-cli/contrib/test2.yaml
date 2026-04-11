@@ -1,11 +1,11 @@
 ---
 name: cloud1
-root_domain: blcks-test.de
 
 providers:
   - type: pass
   - type: ssh_key
   - type: hcloud
+  - type: backup_aws_s3
 
 services:
   - type: postgresql

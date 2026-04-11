@@ -11,7 +11,9 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.configuration.model.EnvironmentReference
 import de.solidblocks.cloud.providers.ProviderRegistration
+import de.solidblocks.cloud.providers.types.backup.backupSecretResource
 import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionerContext
@@ -54,8 +56,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             runtime.providers.sshKeyProvider().keyPair,
             runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
             runtime.context.configFileDirectory,
-            runtime.name,
-            runtime.getDefaultEnvironment(),
+            EnvironmentReference(runtime.name, runtime.getDefaultEnvironment()),
             registry,
             serviceRegistrations,
         )
@@ -148,17 +149,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         val network = HetznerNetwork(networkName(runtime), DEFAULT_NETWORK)
         val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
 
-        val backupPassword =
-            PassSecret(
-                secretPath(runtime, listOf("backup", "password")),
-                length = 32,
-                allowedChars = ('a'..'f') + ('0'..'9'),
-            )
-
         val cloudResourceGroup =
             ResourceGroup(
                 "cloud '${runtime.name} base resources'",
-                listOf(sshKey, firewall, network, subnet, backupPassword),
+                listOf(sshKey, firewall, network, subnet, backupSecretResource(runtime)),
             )
 
         val serviceResourceGroups =
@@ -203,10 +197,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
         val lookups =
             providerLookups +
-                listOf(UserDataLookupProvider()) +
-                (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-                    ResourceLookupProvider<*, *>,
-                    >()
+                    listOf(UserDataLookupProvider()) +
+                    (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
+                            ResourceLookupProvider<*, *>,
+                            >()
 
         return ProvisionersRegistry(
             lookups,

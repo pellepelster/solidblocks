@@ -1,23 +1,48 @@
 package de.solidblocks.restic
 
+import de.solidblocks.cloudinit.BackupConfiguration
+import de.solidblocks.cloudinit.LocalBackupTarget
+import de.solidblocks.cloudinit.S3BackupTarget
 import de.solidblocks.shell.*
 import de.solidblocks.shell.ResticLibrary.RESTIC_CREDENTIALS_PATH
 import de.solidblocks.systemd.*
 import de.solidblocks.systemd.Unit
 
-private fun String.toBackupUnitName(): String = this.removePrefix("/").removeSuffix("/").replace("/", "-")
+const val RESTIC_STATUS_COMMAND = "restic-status"
 
-private fun String.s3SystemDUnitName() = "backup-${toBackupUnitName()}-s3"
+private fun String.systemDUnitName(serviceName: String) = "${serviceName}-backup-${this.removePrefix("/").removeSuffix("/").replace(Regex("[^a-zA-Z0-9]"), "-").lowercase()}"
 
-private fun String.localSystemDUnitName() = "backup-${toBackupUnitName()}-local"
-
-private fun ShellScript.resticCommon() {
+fun ShellScript.resticBackup(serviceName: String, backupConfig: BackupConfiguration, backupPath: String) {
     addLibSources(CurlLibrary)
     addLibSources(ResticLibrary)
 
     addInlineSource(PackageLibrary)
     addCommand(PackageLibrary.InstallPackage("jq"))
     addCommand(ResticLibrary.Install())
+
+    when (backupConfig.target) {
+        is LocalBackupTarget -> {
+            val backupMount = "/storage/backup"
+            val localRepository = "$backupMount/${serviceName}"
+            addCommand(StorageLibrary.Mount(backupConfig.target.backupDevice, backupMount))
+
+            addCommand(ResticLibrary.WriteCredentials(backupConfig.password))
+            addCommand(ResticLibrary.EnsureLocalRepo(localRepository))
+            installResticStatusWrapper(localRepository, backupPath)
+            installBackupUnitWithTrigger(localBackupSystemDUnit(serviceName, localRepository, backupPath))
+            addCommand(ResticLibrary.Restore(localRepository))
+        }
+
+        is S3BackupTarget -> {
+            val s3Repository = "s3:s3.eu-central-1.amazonaws.com/${backupConfig.target.bucket}/${serviceName}"
+
+            addCommand(ResticLibrary.WriteS3Credentials(backupConfig.password, backupConfig.target.accessKey, backupConfig.target.secretKey))
+            addCommand(ResticLibrary.EnsureS3Repo(s3Repository))
+            installResticStatusWrapper(s3Repository, backupPath)
+            installBackupUnitWithTrigger(s3BackupSystemDUnit(serviceName, s3Repository, backupPath))
+            addCommand(ResticLibrary.Restore(s3Repository))
+        }
+    }
 }
 
 fun ShellScript.installBackupUnitWithTrigger(config: SystemDConfig) {
@@ -37,8 +62,8 @@ fun ShellScript.installBackupUnitWithTrigger(config: SystemDConfig) {
     addCommand(SystemDLibrary.Start(timer.fullUnitName()))
 }
 
-fun localBackupSystemDUnit(localRepository: String, backupPath: String) = SystemDService(
-    backupPath.localSystemDUnitName(),
+fun localBackupSystemDUnit(serviceName: String, localRepository: String, backupPath: String) = SystemDService(
+    backupPath.systemDUnitName(serviceName),
     Unit("local backup for '$backupPath'", emptyList(), emptyList()),
     Service(
         listOf(
@@ -57,8 +82,8 @@ fun localBackupSystemDUnit(localRepository: String, backupPath: String) = System
     Install(),
 )
 
-fun s3BackupSystemDUnit(s3Repository: String, backupPath: String) = SystemDService(
-    backupPath.s3SystemDUnitName(),
+fun s3BackupSystemDUnit(serviceName: String, s3Repository: String, backupPath: String) = SystemDService(
+    backupPath.systemDUnitName(serviceName),
     Unit("s3 backup for '$backupPath'", emptyList(), emptyList()),
     Service(
         listOf(
@@ -77,32 +102,6 @@ fun s3BackupSystemDUnit(s3Repository: String, backupPath: String) = SystemDServi
     Install(),
 )
 
-fun ShellScript.resticLocalBackup(localRepository: String, repositoryPassword: String, backupPath: String) {
-    resticCommon()
-    addCommand(ResticLibrary.WriteCredentials(repositoryPassword))
-    addCommand(ResticLibrary.EnsureLocalRepo(localRepository))
-    installResticStatusWrapper(localRepository, backupPath)
-    installBackupUnitWithTrigger(localBackupSystemDUnit(localRepository, backupPath))
-    addCommand(ResticLibrary.Restore(localRepository))
-}
-
-fun ShellScript.resticS3Backup(
-    s3Repository: String,
-    repositoryPassword: String,
-    awsAccessKey: String,
-    awsSecretKey: String,
-    backupPath: String,
-) {
-    resticCommon()
-
-    addCommand(ResticLibrary.WriteS3Credentials(repositoryPassword, awsAccessKey, awsSecretKey))
-    addCommand(ResticLibrary.EnsureS3Repo(s3Repository))
-    installResticStatusWrapper(s3Repository, backupPath)
-    installBackupUnitWithTrigger(s3BackupSystemDUnit(s3Repository, backupPath))
-    addCommand(ResticLibrary.Restore(s3Repository))
-}
-
-const val RESTIC_STATUS_COMMAND = "restic-status"
 
 private fun ShellScript.installResticStatusWrapper(repository: String, backupPath: String) {
     val wrapper = """
@@ -119,26 +118,4 @@ private fun ShellScript.installResticStatusWrapper(repository: String, backupPat
             FilePermissions.R_XR_XR_X,
         ),
     )
-}
-
-fun ShellScript.resticLocalAndS3Backup(
-    localRepository: String,
-    s3Repository: String,
-    repositoryPassword: String,
-    awsAccessKey: String,
-    awsSecretKey: String,
-    backupPath: String,
-) {
-    resticCommon()
-
-    addCommand(ResticLibrary.WriteS3Credentials(repositoryPassword, awsAccessKey, awsSecretKey))
-
-    addCommand(ResticLibrary.EnsureLocalRepo(localRepository))
-    addCommand(ResticLibrary.EnsureS3Repo(s3Repository))
-
-    addCommand(ResticLibrary.Restore(localRepository))
-    addCommand(ResticLibrary.Restore(s3Repository))
-
-    installBackupUnitWithTrigger(localBackupSystemDUnit(localRepository, backupPath))
-    installBackupUnitWithTrigger(s3BackupSystemDUnit(s3Repository, backupPath))
 }

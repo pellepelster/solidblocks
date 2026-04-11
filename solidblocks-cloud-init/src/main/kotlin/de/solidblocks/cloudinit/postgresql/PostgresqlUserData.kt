@@ -33,7 +33,7 @@ import de.solidblocks.systemd.Timer
 import de.solidblocks.systemd.Unit
 import de.solidblocks.systemd.installSystemDUnit
 
-class PostgresqlUserData(val instanceName: String, val superUserPassword: String, val storageDevice: String, val backup: BackupConfiguration) : ServiceUserData {
+class PostgresqlUserData(val instanceName: String, val superUserPassword: String, val storageDevice: String, val backupConfiguration: BackupConfiguration) : ServiceUserData {
 
     companion object {
         val BACKUP_STATUS_COMMAND = "pgbackrest-status"
@@ -59,11 +59,11 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
         userData.addInlineSource(StorageLibrary)
         userData.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
 
-        if (backup.target is LocalBackupTarget) {
-            userData.addCommand(StorageLibrary.Mount(backup.target.backupDevice, backupMount))
+        if (backupConfiguration.target is LocalBackupTarget) {
+            userData.addCommand(StorageLibrary.Mount(backupConfiguration.target.backupDevice, backupMount))
         }
 
-        val backupEnvironment = when (backup.target) {
+        val backupEnvironment = when (backupConfiguration.target) {
             is LocalBackupTarget -> mapOf(
                 "DB_BACKUP_LOCAL" to "1",
                 "DB_BACKUP_ENCRYPTION_PASSPHRASE" to superUserPassword,
@@ -71,14 +71,14 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
 
             is S3BackupTarget -> mapOf(
                 "DB_BACKUP_S3" to "1",
-                "DB_BACKUP_S3_BUCKET" to backup.target.bucket,
-                "DB_BACKUP_S3_ACCESS_KEY" to backup.target.accessKey,
-                "DB_BACKUP_S3_SECRET_KEY" to backup.target.secretKey,
+                "DB_BACKUP_S3_BUCKET" to backupConfiguration.target.bucket,
+                "DB_BACKUP_S3_ACCESS_KEY" to backupConfiguration.target.accessKey,
+                "DB_BACKUP_S3_SECRET_KEY" to backupConfiguration.target.secretKey,
                 "DB_BACKUP_ENCRYPTION_PASSPHRASE" to superUserPassword,
             )
         }
 
-        val backupMounts = when (backup.target) {
+        val backupMounts = when (backupConfiguration.target) {
             is LocalBackupTarget -> listOf(
                 Mount(MountType.bind, backupMount, backupMount),
             )
@@ -88,7 +88,7 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
 
         userData.addCommand(DockerLibrary.InstallDebian())
         userData.addCommand(MkDir("/storage/data", "10000", "10000"))
-        if (backup.target is LocalBackupTarget) {
+        if (backupConfiguration.target is LocalBackupTarget) {
             userData.addCommand(MkDir(backupMount, "10000", "10000"))
         }
 

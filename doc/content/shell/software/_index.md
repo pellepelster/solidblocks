@@ -53,9 +53,6 @@ Installs [HashiCorp Terraform](https://www.terraform.io/) version {{% env "TERRA
 ### `software_ensure_shellcheck(version = {{% env "SHELLCHECK_VERSION" %}}, checksum)` {#software_ensure_shellcheck}
 Installs [ShellCheck](https://www.shellcheck.net/) shell script analysis tool version {{% env "SHELLCHECK_VERSION" %}}
 
-### `software_ensure_shellcheck(version = {{% env "S3CMD_VERSION" %}}, checksum)` {#software_ensure_s3cmd}
-Installs [s3cmd](https://s3tools.org/s3cmd) s3 cli {{% env "S3CMD_VERSION" %}}
-
 ### `software_hashicorp_ensure(product, version, checksum)` {#software_hashicorp_ensure}
 Generic wrapper for downloading HashiCorp tools built around the convention that product distributions are available at https://releases.hashicorp.com/${product}/${version}/${product}_${product}_linux_amd64.zip and the downloaded
 zip contains an executable named `${product}` which will be written to `${bin_dir}`.

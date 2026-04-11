@@ -86,14 +86,12 @@ class CloudManagerTest {
                 .createManager()
 
         val result = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
-        result.data.providers shouldHaveSize 5
-        result.data.backupProviderRuntimes() shouldHaveSize 2
-        result.data.backupProviderRuntimes()[0].shouldBeTypeOf<S3BackupProviderConfigurationRuntime>()
-        result.data.backupProviderRuntimes()[1].shouldBeTypeOf<LocalBackupProviderConfigurationRuntime>()
+        result.data.providers shouldHaveSize 4
+        result.data.backupProviderRuntime().shouldBeTypeOf<S3BackupProviderConfigurationRuntime>()
     }
 
     @Test
-    fun testDefaultBackupProvider() {
+    fun testNoBackupProvider() {
         val manager =
             """
         name: cloud1
@@ -105,10 +103,8 @@ class CloudManagerTest {
                 .trimIndent()
                 .createManager()
 
-        val result = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
-        result.data.providers shouldHaveSize 4
-        result.data.backupProviderRuntimes() shouldHaveSize 1
-        result.data.backupProviderRuntimes().first().shouldBeTypeOf<LocalBackupProviderConfigurationRuntime>()
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+        result.error shouldBe "more than one or no provider for backups found (0), please register exactly one. available types are: 'backup_aws_s3', 'backup_local'"
     }
 
     @Test
@@ -120,6 +116,7 @@ class CloudManagerTest {
             - type: hcloud
             - type: pass
             - type: ssh_key
+            - type: backup_local
         """
                 .trimIndent()
                 .createManager()
@@ -134,6 +131,7 @@ class CloudManagerTest {
             - type: hcloud
             - type: pass
             - type: ssh_key
+            - type: backup_local
         """
                 .trimIndent()
                 .createManager("some-other.key")
@@ -254,6 +252,7 @@ class CloudManagerTest {
         providers:
             - type: hcloud
             - type: pass
+            - type: backup_local
             - type: pass
               name: "foo-bar"
             - type: ssh_key
@@ -274,6 +273,7 @@ class CloudManagerTest {
         providers:
             - type: hcloud
             - type: pass
+            - type: backup_local
             - type: ssh_key
               private_key: "test_ssh_open_permissions.key"
         """
@@ -291,6 +291,7 @@ class CloudManagerTest {
         name: cloud1
         providers:
             - type: hcloud
+            - type: backup_local
             - type: ssh_key
               private_key: "test_ssh.key"
         """

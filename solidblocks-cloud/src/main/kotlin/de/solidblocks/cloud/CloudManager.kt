@@ -7,6 +7,7 @@ import de.solidblocks.cloud.configuration.ConfigurationParser
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
+import de.solidblocks.cloud.configuration.model.EnvironmentReference
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
 import de.solidblocks.cloud.providers.DEFAULT_NAME
@@ -15,6 +16,7 @@ import de.solidblocks.cloud.providers.ProviderConfigurationManager
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.managerForConfiguration
+import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
@@ -119,6 +121,20 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             )
         }
 
+        /** validate that exactly one backup provider is configured */
+        val backupProviders = cloud.providers.filterIsInstance<BackupProviderConfiguration>()
+        if (backupProviders.count() != 1) {
+            return Error<CloudConfigurationRuntime>(
+                "more than one or no provider for backups found (${backupProviders.count()}), please register exactly one. available types are: ${
+                    providerRegistrations.filter {
+                        BackupProviderConfiguration::class.java.isAssignableFrom(
+                            it.supportedConfiguration.java,
+                        )
+                    }.joinToString(", ") { "'${it.type}'" }
+                }",
+            )
+        }
+
         /** validate that exactly one secret provider is configured */
         val secretProviders = cloud.providers.filterIsInstance<SecretProviderConfiguration>()
         if (secretProviders.count() != 1) {
@@ -145,7 +161,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 log = log.indent()
 
                 val manager:
-                    ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                        ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                     providerRegistrations.managerForConfiguration(provider)
 
                 logDebug(
@@ -170,7 +186,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
                 log = log.unindent()
                 runtime
-            } + listOf(LocalBackupProviderConfigurationRuntime())
+            }
 
         val registry = this.providerRegistrations.createRegistry(providers)
         val sshKeyProvider = providers.sshKeyProvider()
@@ -179,8 +195,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             sshKeyProvider.keyPair,
             sshKeyProvider.privateKey.absolutePathString(),
             configurationContext.configFileDirectory,
-            cloud.name,
-            cloud.getDefaultEnvironment(),
+            EnvironmentReference(cloud.name, cloud.getDefaultEnvironment()),
             registry,
             serviceRegistrations,
         )
