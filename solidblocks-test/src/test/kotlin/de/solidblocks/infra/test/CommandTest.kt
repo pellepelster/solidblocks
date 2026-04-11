@@ -89,7 +89,7 @@ public class CommandTest {
 
     @ParameterizedTest
     @FieldSource("contexts")
-    fun testSucessRunAndResult(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
+    fun testSuccessRunAndResult(context: CommandTestContext<CommandBuilder, ScriptBuilder>) {
         runBlocking {
             val run = context.command(getCommandPath("command-success.sh")).run()
 

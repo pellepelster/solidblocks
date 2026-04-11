@@ -6,6 +6,7 @@ import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.CloudResourceProviderConfigurationManager
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
@@ -66,6 +67,7 @@ class HetznerProviderConfigurationManager :
         HetznerSSHKeyProvisioner(runtime.cloudToken),
         HetznerNetworkProvisioner(runtime.cloudToken),
         HetznerSubnetProvisioner(runtime.cloudToken),
+        HetznerFirewallProvisioner(runtime.cloudToken),
     )
         as List<InfrastructureResourceProvisioner<*, *>>
 

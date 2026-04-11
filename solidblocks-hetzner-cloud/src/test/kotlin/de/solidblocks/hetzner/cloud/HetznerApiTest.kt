@@ -387,14 +387,14 @@ class HetznerApiTest {
                 FirewallCreateRequest(
                     name,
                     rules = listOf(
-                        FirewallRule(
+                        HetznerFirewallRule(
                             direction = FirewallRuleDirection.IN,
                             protocol = FirewallRuleProtocol.TCP,
                             port = "80",
                             sourceIps = listOf("0.0.0.0/0", "::/0"),
                             description = "allow http",
                         ),
-                        FirewallRule(
+                        HetznerFirewallRule(
                             direction = FirewallRuleDirection.IN,
                             protocol = FirewallRuleProtocol.TCP,
                             port = "443",
@@ -429,7 +429,7 @@ class HetznerApiTest {
                 byId.id,
                 FirewallSetRulesRequest(
                     listOf(
-                        FirewallRule(
+                        HetznerFirewallRule(
                             direction = FirewallRuleDirection.IN,
                             protocol = FirewallRuleProtocol.ICMP,
                             sourceIps = listOf("0.0.0.0/0", "::/0"),

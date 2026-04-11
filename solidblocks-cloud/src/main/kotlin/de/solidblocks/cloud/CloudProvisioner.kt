@@ -2,6 +2,8 @@ package de.solidblocks.cloud
 
 import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
+import de.solidblocks.cloud.Constants.cloudLabels
+import de.solidblocks.cloud.Constants.firewallName
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.sshKeyName
@@ -20,6 +22,7 @@ import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProv
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayoutProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewall
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -32,6 +35,9 @@ import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
+import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
+import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
@@ -115,7 +121,30 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     private fun createResourceGroups(): List<ResourceGroup> {
         val publicKey =
             SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
-        val sshKey = HetznerSSHKey(sshKeyName(runtime), publicKey, emptyMap())
+
+        val sshKey = HetznerSSHKey(sshKeyName(runtime), publicKey, cloudLabels(runtime))
+
+        val firewall = HetznerFirewall(
+            firewallName(runtime, "ssh"),
+            listOf(
+                HetznerFirewallRule(
+                    direction = FirewallRuleDirection.IN,
+                    protocol = FirewallRuleProtocol.TCP,
+                    port = "22",
+                    sourceIps = listOf("0.0.0.0/0", "::/0"),
+                    description = "allow SSH",
+                ),
+                HetznerFirewallRule(
+                    direction = FirewallRuleDirection.IN,
+                    protocol = FirewallRuleProtocol.ICMP,
+                    sourceIps = listOf("0.0.0.0/0", "::/0"),
+                    description = "allow ICMP",
+                )
+            ),
+            cloudLabels(runtime),
+            cloudLabels(runtime),
+        )
+
         val network = HetznerNetwork(networkName(runtime), DEFAULT_NETWORK)
         val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
 
@@ -129,7 +158,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         val cloudResourceGroup =
             ResourceGroup(
                 "cloud '${runtime.name} base resources'",
-                listOf(sshKey, network, subnet, backupPassword),
+                listOf(sshKey, firewall, network, subnet, backupPassword),
             )
 
         val serviceResourceGroups =
@@ -174,10 +203,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
         val lookups =
             providerLookups +
-                listOf(UserDataLookupProvider()) +
-                (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-                    ResourceLookupProvider<*, *>,
-                    >()
+                    listOf(UserDataLookupProvider()) +
+                    (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
+                            ResourceLookupProvider<*, *>,
+                            >()
 
         return ProvisionersRegistry(
             lookups,

@@ -53,6 +53,8 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>) = TODO("Not yet implemented")
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = TODO("Not yet implemented")
+
+    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = block.invoke(portMappings[port])
 }
 
 val TEST_PROVISIONER_CONTEXT =

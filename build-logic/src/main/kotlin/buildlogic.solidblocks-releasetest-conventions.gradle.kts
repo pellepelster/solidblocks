@@ -18,7 +18,7 @@ val releaseTestRuntimeOnly by configurations.getting
 
 configurations.create("releaseTest").extendsFrom(configurations.runtimeOnly.get())
 
-val integrationTest = tasks.register<Test>("releaseTest") {
+val releaseTest = tasks.register<Test>("releaseTest") {
     description = "Runs release tests."
     group = "verification"
 

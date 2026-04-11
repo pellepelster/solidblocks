@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.utils
 
-import de.solidblocks.cloud.Constants.defaultLabels
+import de.solidblocks.cloud.Constants.cloudLabels
 import java.security.MessageDigest
 
 @Suppress("ktlint:standard:property-naming")
@@ -8,7 +8,7 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
 
     companion object {
         fun forCloud(cloud: String) = HetznerLabels().also {
-            defaultLabels(cloud).forEach { (key, value) -> it.safeStore(key, value) }
+            cloudLabels(cloud).forEach { (key, value) -> it.safeStore(key, value) }
         }
     }
 

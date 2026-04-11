@@ -7,7 +7,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewall
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallRuntime
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.hetzner.cloud.resources.FirewallRule
+import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.infra.test.SolidblocksTest
@@ -25,7 +25,7 @@ import java.util.*
 @ExtendWith(SolidblocksTest::class)
 class HetznerFirewallProvisionerTest {
 
-    private val httpRule = FirewallRule(
+    private val httpRule = HetznerFirewallRule(
         direction = FirewallRuleDirection.IN,
         protocol = FirewallRuleProtocol.TCP,
         port = "80",
@@ -33,7 +33,7 @@ class HetznerFirewallProvisionerTest {
         description = "allow http",
     )
 
-    private val httpsRule = FirewallRule(
+    private val httpsRule = HetznerFirewallRule(
         direction = FirewallRuleDirection.IN,
         protocol = FirewallRuleProtocol.TCP,
         port = "443",
@@ -41,7 +41,7 @@ class HetznerFirewallProvisionerTest {
         description = "allow https",
     )
 
-    private val icmpRule = FirewallRule(
+    private val icmpRule = HetznerFirewallRule(
         direction = FirewallRuleDirection.IN,
         protocol = FirewallRuleProtocol.ICMP,
         sourceIps = listOf("0.0.0.0/0", "::/0"),
@@ -55,7 +55,7 @@ class HetznerFirewallProvisionerTest {
 
         val provisioner = HetznerFirewallProvisioner(System.getenv("HCLOUD_TOKEN"))
 
-        val resource = HetznerFirewall(name, listOf(httpRule, httpsRule), hetzner.defaultLabels)
+        val resource = HetznerFirewall(name, listOf(httpRule, httpsRule), hetzner.defaultLabels, emptyMap())
 
         runBlocking {
             provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
@@ -79,7 +79,7 @@ class HetznerFirewallProvisionerTest {
                 it.changes.shouldBeEmpty()
             }
 
-            val resourceWithNewRules = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels)
+            val resourceWithNewRules = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels, emptyMap())
 
             assertSoftly(provisioner.diff(resourceWithNewRules, TEST_PROVISIONER_CONTEXT)) {
                 it.status shouldBe ResourceDiffStatus.has_changes
@@ -104,7 +104,7 @@ class HetznerFirewallProvisionerTest {
                 it.changes.shouldBeEmpty()
             }
 
-            val resourceWithNewLabel = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels + mapOf("foo" to "bar"))
+            val resourceWithNewLabel = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels + mapOf("foo" to "bar"), emptyMap())
 
             assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)) {
                 it.status shouldBe ResourceDiffStatus.has_changes
@@ -120,7 +120,7 @@ class HetznerFirewallProvisionerTest {
                 it.changes.shouldBeEmpty()
             }
 
-            val resourceWithUpdatedLabel = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels + mapOf("foo" to "bar2"))
+            val resourceWithUpdatedLabel = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels + mapOf("foo" to "bar2"), emptyMap())
 
             assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)) {
                 it.status shouldBe ResourceDiffStatus.has_changes

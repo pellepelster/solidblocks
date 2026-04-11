@@ -47,6 +47,8 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
 
     fun env(env: Pair<String, String>) = apply { this.envs[env.first] = env.second }
 
+    fun env(name: String, value: String) = env(name to value)
+
     fun inheritEnv(inheritEnv: Boolean) = apply { this.inheritEnv = inheritEnv }
 
     fun env(envs: Map<String, String>) = apply { this.envs.putAll(envs) }

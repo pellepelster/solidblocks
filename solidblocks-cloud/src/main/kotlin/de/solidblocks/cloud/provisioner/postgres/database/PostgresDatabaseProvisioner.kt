@@ -40,7 +40,7 @@ class PostgresDatabaseProvisioner :
     }
 
     private suspend fun lookupInternal(lookup: PostgresDatabaseLookup, context: CloudProvisionerContext): Result<PostgresDatabaseRuntime?> =
-        when (val result = context.createAdminConnection(lookup.server, lookup.superUserPassword)) {
+        when (val result = context.createConnection(lookup.server, lookup.superUserPassword)) {
             is Error<Connection> -> Error<PostgresDatabaseRuntime?>(result.error)
             is Success<Connection> ->
                 result.data

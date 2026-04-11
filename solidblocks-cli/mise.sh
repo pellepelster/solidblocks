@@ -21,30 +21,6 @@ function divider_footer() {
   echo ""
 }
 
-function task_test_hetzner_nuke {
-  export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
-
-  divider_header "--help"
-  integration_test_blcks_wrapper --help
-  divider_footer
-
-  divider_header "hetzner --help"
-  integration_test_blcks_wrapper hetzner --help
-  divider_footer
-
-  divider_header "hetzner nuke --help"
-  integration_test_blcks_wrapper hetzner nuke --help
-  divider_footer
-
-  divider_header "hetzner nuke"
-  integration_test_blcks_wrapper hetzner nuke
-  divider_footer
-
-  divider_header "hetzner nuke --do-nuke"
-  integration_test_blcks_wrapper hetzner nuke --do-nuke
-  divider_footer
-}
-
 function task_test_hetzner_asg {
   if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
     echo "skipping integration tests"

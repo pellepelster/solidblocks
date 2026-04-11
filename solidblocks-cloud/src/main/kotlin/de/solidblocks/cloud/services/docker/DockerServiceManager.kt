@@ -1,18 +1,21 @@
 package de.solidblocks.cloud.services.docker
 
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
+import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.markdown
-import de.solidblocks.cloud.pgbackrest.model.parsePgBackRestInfoOutput
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -22,28 +25,12 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.restic.model.parseResticSnapshotsOutput
-import de.solidblocks.cloud.services.BackupRuntime
-import de.solidblocks.cloud.services.EndpointInfo
-import de.solidblocks.cloud.services.EnvironmentVariableCallback
-import de.solidblocks.cloud.services.EnvironmentVariableStatic
-import de.solidblocks.cloud.services.InstanceRuntime
-import de.solidblocks.cloud.services.ServerInfo
-import de.solidblocks.cloud.services.ServiceConfiguration
-import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.ServiceInfo
-import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfigurationRuntime
-import de.solidblocks.cloud.services.sshConnectCommand
-import de.solidblocks.cloud.utils.ByteSize
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.formatBytes
-import de.solidblocks.cloud.utils.formatLocale
+import de.solidblocks.cloud.utils.*
 import de.solidblocks.docker.GenericDockerServiceUserData
-import de.solidblocks.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.restic.RESTIC_STATUS_COMMAND
 import de.solidblocks.utils.LogContext
 import java.time.Duration
@@ -92,8 +79,9 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         }.let { Success(it) }
     }
 
+
     fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext) = if (cloud.dnsEnabled == true) {
-        TODO()
+        "http://${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
     } else {
         "http://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.publicIpv4 ?: "<unknown>"}"
     }
@@ -139,19 +127,19 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                         context.ensureLookup(dataVolume.asLookup()).device,
                         context.ensureLookup(backupVolume.asLookup()).device,
                         context.ensureLookup(backupPassword).secret,
-                        cloud.rootDomain,
                         runtime.image,
                         runtime.endpoints.associate { 80 to it.port },
+                        serverFQDN = cloud.rootDomain?.let { "${serverName(cloud, runtime.name)}.${it}" },
                         environmentVariables =
-                        environmentVariables.associate {
-                            val value =
-                                when (it) {
-                                    is EnvironmentVariableCallback -> it.value.invoke(context)
-                                    is EnvironmentVariableStatic -> it.value
-                                }
+                            environmentVariables.associate {
+                                val value =
+                                    when (it) {
+                                        is EnvironmentVariableCallback -> it.value.invoke(context)
+                                        is EnvironmentVariableStatic -> it.value
+                                    }
 
-                            it.name to value
-                        },
+                                it.name to value
+                            },
                     )
                         .render()
                 },
@@ -166,14 +154,28 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                 volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
-                    HetznerNetworkLookup(networkName(cloud)),
-                ),
+                    HetznerSubnetLookup(
+                        DEFAULT_SERVICE_SUBNET,
+                        HetznerNetworkLookup(networkName(cloud)),
+                    ),
                 privateIp = serverIp(runtime.index),
+                labels = serviceLabels(runtime) + cloudLabels(cloud)
             )
 
-        return listOf(server, dataVolume, backupVolume)
+        val optionalResources = if (cloud.rootDomain != null) {
+            val zone = HetznerDnsZoneLookup(cloud.rootDomain)
+            val serverDnsRecord =
+                HetznerDnsRecord(
+                    serverName(cloud, runtime.name),
+                    zone,
+                    listOf(server.asLookup()),
+                )
+            listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
+        } else {
+            listOf(runtime.firewall(cloud, listOf(80)))
+        }
+
+        return listOf(server, dataVolume, backupVolume) + optionalResources
     }
 
     override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()
@@ -195,6 +197,14 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             if (configuration.name == link) {
                 return Error("service can not be linked with itself '$link' -> '$link'")
             }
+        }
+
+        if (configuration.endpoints.size > 1) {
+            return Error("more than one endpoint is currently not supported for service '${configuration.name}'")
+        }
+
+        if (configuration.endpoints.size < 1) {
+            return Error("no endpoint configured for service '${configuration.name}'")
         }
 
         configuration.endpoints.forEach { endpoint ->

@@ -84,16 +84,7 @@ terraform apply -auto-approve
 
 [tasks.test-integration]
 run = """
-#!/usr/bin/env bash
-set -eu -o pipefail
-
-if [[ "${SKIP_TESTS:-}" =~ .*integration.* ]]; then
-    echo "skipped integration tests"
-    exit 0
-fi
-
-source mise.sh
-task_test_hetzner_nuke
+${ROOT_PROJECT}/gradlew :$(basename $PWD):testIntegration
 """
 
 [tasks.test]

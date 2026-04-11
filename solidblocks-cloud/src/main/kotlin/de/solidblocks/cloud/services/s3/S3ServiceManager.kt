@@ -1,10 +1,12 @@
 package de.solidblocks.cloud.services.s3
 
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
+import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -34,7 +36,7 @@ import de.solidblocks.cloud.services.ServerInfo
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
-import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
+import de.solidblocks.cloud.services.firewall
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
@@ -50,6 +52,7 @@ import de.solidblocks.garagefs.GarageFsUserData.Companion.s3Host
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import kotlinx.coroutines.runBlocking
+import kotlin.collections.plus
 
 class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
@@ -125,7 +128,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                             de.solidblocks.garagefs.GarageFsBucket(
                                 it.name,
                                 it.managedPublicWebAccessDomains.values.toSet() +
-                                    it.manuallyManagedPublicWebAccessDomains,
+                                        it.manuallyManagedPublicWebAccessDomains,
                             )
                         },
                         true,
@@ -133,6 +136,8 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         .render()
                 },
             )
+
+        val firewall = runtime.firewall(cloud, listOf(80, 443))
 
         val server =
             HetznerServer(
@@ -143,11 +148,12 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
-                    HetznerNetworkLookup(networkName(cloud)),
-                ),
+                    HetznerSubnetLookup(
+                        DEFAULT_SERVICE_SUBNET,
+                        HetznerNetworkLookup(networkName(cloud)),
+                    ),
                 privateIp = serverIp(runtime.index),
+                labels = serviceLabels(runtime) + cloudLabels(cloud)
             )
 
         if (cloud.rootDomain == null) {
@@ -155,7 +161,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         }
 
         val zone = HetznerDnsZoneLookup(cloud.rootDomain)
-        val rootDomain =
+        val serverDnsRecord =
             HetznerDnsRecord(
                 serverName(cloud, runtime.name),
                 zone,
@@ -181,7 +187,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                             listOf(server.asLookup()),
                         )
                     }
-                } + listOf(rootDomain, catchAllDomain)
+                } + listOf(serverDnsRecord, catchAllDomain)
 
         val layout =
             GarageFsLayout(
@@ -250,10 +256,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 secret = { s3Host(serviceRootDomain(cloud, runtime)) },
             )
 
-        return listOf(server, dataVolume, adminToken, rpcSecret, metricsToken, layout) +
-            bucketResources +
-            listOf(s3HostSecret) +
-            dnsResources
+        return listOf(s3HostSecret, firewall, server, dataVolume, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()

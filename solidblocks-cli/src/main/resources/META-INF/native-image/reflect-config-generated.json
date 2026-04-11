@@ -234,6 +234,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallServerReference",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallServerReference$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerHealthCheckResponse",
         "fields": [
             {
@@ -648,6 +666,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallLabelSelector",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallLabelSelector$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.CertificatesListWrapper",
         "fields": [
             {
@@ -972,6 +1008,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallCreateResponseWrapper",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallCreateResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.docker.Condition",
         "fields": [
             {
@@ -1054,6 +1108,24 @@
     },
     {
         "name": "de.solidblocks.cloud.restic.model.ResticSummary$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallSetRulesRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallSetRulesRequest$Companion",
         "fields": [],
         "methods": [
             {
@@ -1162,6 +1234,24 @@
     },
     {
         "name": "de.solidblocks.garagefs.ApplyClusterLayoutRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallResponseWrapper",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallResponseWrapper$Companion",
         "fields": [],
         "methods": [
             {
@@ -1450,6 +1540,24 @@
     },
     {
         "name": "de.solidblocks.garagefs.BucketLocalAliasResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallApplyToResourcesRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallApplyToResourcesRequest$Companion",
         "fields": [],
         "methods": [
             {
@@ -1872,6 +1980,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallResource",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallResource$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.garagefs.CreateBucketRequest",
         "fields": [
             {
@@ -1954,6 +2080,24 @@
     },
     {
         "name": "de.solidblocks.cloud.services.ServiceInfo$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallCreateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallCreateRequest$Companion",
         "fields": [],
         "methods": [
             {
@@ -2628,6 +2772,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallUpdateRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallUpdateRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsRecordsUpdateRequest",
         "fields": [
             {
@@ -2790,6 +2952,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsTTLUpdateRequest",
         "fields": [
             {
@@ -2800,6 +2980,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsTTLUpdateRequest$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallRemoveFromResourcesRequest",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.FirewallRemoveFromResourcesRequest$Companion",
         "fields": [],
         "methods": [
             {

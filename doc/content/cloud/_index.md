@@ -36,18 +36,32 @@ curl ${ENDPOINT}/hello
 ```
 
 **see it in action**
-{{< asciicast src="/cloud/casts/quickstart.cast" poster="npt:0:04" autoPlay=true loop=true >}}
+{{< asciicast src="/cloud/casts/quickstart.cast" >}}
 
 
 ## Features
 
 ## Simplicity
 
-Solidblocks Cloud tries to avoid complexity in the deployed services where possible to make the deployed systems easier to understand, debug and maintain. All VMs are provisioned with Debian as underlying operating systems and SystemD as service manager. Management happens over SSH and that’s it. A human can step in at any time.    
+Solidblocks Cloud is designed to avoid complexity in the deployed services where possible, to make the deployed virtual machines easier to understand, debug and maintain. All VMs are provisioned with Debian as underlying operating systems and SystemD as service manager. Management happens over SSH and that’s it. A human can step in at any time.    
 
 ## Secret handling
 
+Strong credentials are generated for all deployed services and automatically added to the configured secret provider backend. Rotating a password becomes as easy as updating the secret and triggering a new apply.
+
+{{< asciicast src="/cloud/casts/quickstart_secrets.cast" >}}
+
+
+## DNS and Certificates
+
+If the configured cloud provider supports DNS, switching to DNS based endpoints secured by SSL certificates instead of IP addresses is as easy as adding the `root_domain` to the config file.
+
+{{< asciicast src="/cloud/casts/quickstart_dns.cast" >}}
+
+
 ## Backup & Restore
+
+To protect your data, Solidblocks includes automatic backup and restore functionality. 
 
 ## Help
 

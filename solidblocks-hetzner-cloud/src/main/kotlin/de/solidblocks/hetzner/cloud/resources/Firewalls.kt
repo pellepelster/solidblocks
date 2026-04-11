@@ -61,14 +61,16 @@ data class FirewallResource(
 )
 
 @Serializable
-data class FirewallRule(
+data class HetznerFirewallRule(
     val direction: FirewallRuleDirection,
     @SerialName("source_ips") val sourceIps: List<String> = emptyList(),
     @SerialName("destination_ips") val destinationIps: List<String> = emptyList(),
     val protocol: FirewallRuleProtocol,
     val port: String? = null,
     val description: String? = null,
-)
+) {
+    fun logText() = "${protocol}/${direction} ${sourceIps.joinToString(", ")} -> ${destinationIps.joinToString(", ")}: ${port}"
+}
 
 @Serializable
 data class FirewallResponse
@@ -76,7 +78,7 @@ data class FirewallResponse
 constructor(
     override val id: Long,
     override val name: String,
-    val rules: List<FirewallRule> = emptyList(),
+    val rules: List<HetznerFirewallRule> = emptyList(),
     @SerialName("applied_to") val appliedTo: List<FirewallResource> = emptyList(),
     val labels: Map<String, String> = emptyMap(),
     @Serializable(with = InstantSerializer::class) val created: Instant,
@@ -94,7 +96,7 @@ data class FirewallsListWrapper(val firewalls: List<FirewallResponse>, override 
 @Serializable
 data class FirewallCreateRequest(
     val name: String,
-    val rules: List<FirewallRule> = emptyList(),
+    val rules: List<HetznerFirewallRule> = emptyList(),
     @SerialName("apply_to") val applyTo: List<FirewallResource> = emptyList(),
     val labels: Map<String, String> = emptyMap(),
 )
@@ -106,7 +108,7 @@ data class FirewallCreateResponseWrapper(val firewall: FirewallResponse, val act
 data class FirewallUpdateRequest(val name: String? = null, val labels: Map<String, String>? = null)
 
 @Serializable
-data class FirewallSetRulesRequest(val rules: List<FirewallRule>)
+data class FirewallSetRulesRequest(val rules: List<HetznerFirewallRule>)
 
 @Serializable
 data class FirewallApplyToResourcesRequest(@SerialName("apply_to") val applyTo: List<FirewallResource>)

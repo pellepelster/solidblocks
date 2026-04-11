@@ -13,6 +13,8 @@ object Constants {
 
     fun networkName(configuration: CloudConfigurationRuntime) = "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
+    fun firewallName(configuration: CloudConfigurationRuntime, name: String) = "${configuration.name}-${configuration.getDefaultEnvironment()}-${name}"
+
     fun serverName(configuration: CloudConfigurationRuntime, name: String, index: Int = 0) = "${configuration.name}-${configuration.getDefaultEnvironment()}-$name-$index"
 
     fun serviceDnsName(service: ServiceConfigurationRuntime) = service.name
@@ -22,9 +24,20 @@ object Constants {
 
     fun secretPath(configuration: CloudConfigurationRuntime, segments: List<String>) = "${configuration.name}/${configuration.getDefaultEnvironment()}/${segments.joinToString("/")}"
 
+    fun serviceLabels(runtime: ServiceConfigurationRuntime) = mapOf(serviceLabel to runtime.name)
+
+    fun cloudLabels(cloud: CloudConfigurationRuntime) = cloudLabels(cloud.name)
+
+    fun cloudLabels(cloudName: String) = mapOf(
+        managedByLabel to "blcks",
+        cloudLabel to cloudName,
+    )
+
     const val namespace: String = "blcks.de"
 
     const val managedByLabel: String = "$namespace/managed-by"
+
+    const val serviceLabel: String = "$namespace/service"
 
     const val versionLabel: String = "$namespace/version"
 
@@ -34,11 +47,6 @@ object Constants {
 
     const val userDataLabel: String = "$namespace/user-data"
 
-    fun defaultLabels(cloud: String) = mapOf(
-        managedByLabel to "blcks",
-        cloudLabel to cloud,
-        versionLabel to solidblocksVersion(),
-    )
 
     fun solidblocksVersion() = "0.0.0"
 

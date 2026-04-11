@@ -3,7 +3,6 @@ package de.solidblocks.cloud.provisioner.postgres
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
-import de.solidblocks.cloud.provisioner.withPortForward
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -19,11 +18,11 @@ open class BasePostgresProvisioner {
 
     suspend fun CloudProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup, log: LogContext): Result<Connection> = Waiter.longWaitForResult {
         log.info("waiting for Postgres admin connection")
-        createAdminConnection(server, superUserPassword)
+        createConnection(server, superUserPassword)
     }
 
-    suspend fun CloudProvisionerContext.createAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup): Result<Connection> {
-        val password = this.lookup(superUserPassword)
+    suspend fun CloudProvisionerContext.createConnection(server: HetznerServerLookup, userPassword: PassSecretLookup, userName: String = "rds"): Result<Connection> {
+        val password = this.lookup(userPassword)
 
         return this.withPortForward(server, 5432) {
             if (it == null || password == null) {
@@ -33,7 +32,7 @@ open class BasePostgresProvisioner {
                     Success(
                         DriverManager.getConnection(
                             "jdbc:postgresql://localhost:$it/postgres",
-                            "rds",
+                            userName,
                             password.secret,
                         ),
                     )

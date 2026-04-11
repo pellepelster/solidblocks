@@ -33,38 +33,32 @@ class PostgresUserProvisioner :
             } else {
                 val changes = mutableListOf<ResourceDiffItem>()
 
-                when (
-                    val result =
-                        context.createAdminConnection(resource.server, resource.superUserPassword)
-                ) {
-                    is Error<Connection> -> Error<PostgresUserRuntime?>(result.error)
-                    is Success<Connection> -> {
-                        val url = result.data.metaData.url
+                context.withPortForward(resource.server, 5432) {
+                    if (it == null) {
+                        return@withPortForward ResourceDiff(resource, unknown)
+                    }
 
-                        val passwordValid =
-                            try {
-                                DriverManager.getConnection(
-                                    url,
-                                    resource.name,
-                                    context.ensureLookup(resource.password).secret,
-                                )
-                                    .use { true }
-                            } catch (e: PSQLException) {
-                                if (e.sqlState == "28P01") {
-                                    false
-                                } else {
-                                    true
-                                }
-                            }
-
-                        if (!passwordValid) {
-                            changes.add(
-                                ResourceDiffItem(
-                                    "password",
-                                    changed = true,
-                                ),
-                            )
+                    val passwordValid = try {
+                        DriverManager.getConnection(
+                            "jdbc:postgresql://localhost:$it/postgres",
+                            resource.name,
+                            context.ensureLookup(resource.password).secret,
+                        ).use { true }
+                    } catch (e: PSQLException) {
+                        if (e.sqlState == "28P01") {
+                            false
+                        } else {
+                            true
                         }
+                    }
+
+                    if (!passwordValid) {
+                        changes.add(
+                            ResourceDiffItem(
+                                "password",
+                                changed = true,
+                            ),
+                        )
                     }
                 }
 
@@ -78,7 +72,7 @@ class PostgresUserProvisioner :
     }
 
     private suspend fun lookupInternal(lookup: PostgresUserLookup, context: CloudProvisionerContext): Result<PostgresUserRuntime?> =
-        when (val result = context.createAdminConnection(lookup.server, lookup.superUserPassword)) {
+        when (val result = context.createConnection(lookup.server, lookup.superUserPassword)) {
             is Error<Connection> -> Error<PostgresUserRuntime?>(result.error)
             is Success<Connection> ->
                 result.data

@@ -5,39 +5,36 @@ import de.solidblocks.cloud.Constants.userDataLabel
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.joinToStringOrEmpty
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.HetznerLabels
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest
+import de.solidblocks.hetzner.cloud.resources.ServerUpdateRequest
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
-class HetznerServerProvisioner(val hcloudToken: String) :
+class HetznerServerProvisioner(hcloudToken: String) : BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerServerLookup, HetznerServerRuntime>,
     InfrastructureResourceProvisioner<HetznerServer, HetznerServerRuntime> {
 
     private val logger = KotlinLogging.logger {}
-
-    val api = HetznerApi(hcloudToken)
 
     override suspend fun lookup(lookup: HetznerServerLookup, context: CloudProvisionerContext) = api.servers.get(lookup.name)?.let {
         HetznerServerRuntime(
@@ -61,35 +58,38 @@ class HetznerServerProvisioner(val hcloudToken: String) :
     override suspend fun apply(resource: HetznerServer, context: CloudProvisionerContext, log: LogContext): Result<HetznerServerRuntime> {
         var server = lookup(resource.asLookup(), context)
 
+        val sshKeys =
+            resource.sshKeys.map {
+                context.lookup(it)
+                    ?: return Error<HetznerServerRuntime>("failed to lookup ${it.logText()}")
+            }
+
+        val volumes =
+            resource.volumes.map {
+                val volume =
+                    context.lookup(it)
+                        ?: return Error<HetznerServerRuntime>("failed to resolve ${it.logText()}")
+
+                /*
+                if (volume.server != null) {
+                    return Error<HetznerServerRuntime>(
+                        "${it.logText()} already attached to server ${volume.server}",
+                    )
+                }*/
+
+                volume
+            }
+
+        val userData = context.ensureLookup(resource.userData)
+
+        val labels = HetznerLabels().let {
+            it.addHashedLabel(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
+            it.addHashedLabel(userDataLabel, userData.userData)
+            it.rawLabels()
+        } + resource.labels
+
         if (server == null) {
             logger.info { "server '${resource.name}' not found, creating" }
-
-            val sshKeys =
-                resource.sshKeys.map {
-                    context.lookup(it)
-                        ?: return Error<HetznerServerRuntime>("failed to lookup ${it.logText()}")
-                }
-
-            val volumes =
-                resource.volumes.map {
-                    val volume =
-                        context.lookup(it)
-                            ?: return Error<HetznerServerRuntime>("failed to resolve ${it.logText()}")
-
-                    if (volume.server != null) {
-                        return Error<HetznerServerRuntime>(
-                            "volume ${it.logText()} already attached to server ${volume.server}",
-                        )
-                    }
-
-                    volume
-                }
-
-            val userData = context.ensureLookup(resource.userData)
-
-            val labels = HetznerLabels()
-            labels.addHashedLabel(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
-            labels.addHashedLabel(userDataLabel, userData.userData)
 
             logDebug(
                 "using ssh key(s): ${
@@ -127,7 +127,7 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                     userData = userData.userData,
                     sshKeys = sshKeys.map { it.id },
                     volumes = volumes.map { it.id },
-                    labels = labels.rawLabels(),
+                    labels = labels,
                 )
             val createRequest = api.servers.create(request)
 
@@ -147,6 +147,8 @@ class HetznerServerProvisioner(val hcloudToken: String) :
         if (server == null) {
             return Error("server creation failed")
         }
+
+        api.servers.update(server.id, ServerUpdateRequest(resource.name, labels))
 
         if (resource.subnet != null) {
             val subnet =
@@ -193,6 +195,8 @@ class HetznerServerProvisioner(val hcloudToken: String) :
             val sshKeysHash =
                 labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
 
+            changes.addAll(createLabelDiff(resource, runtime))
+
             if (!sshKeysHash.matches) {
                 changes.add(
                     ResourceDiffItem(
@@ -235,13 +239,13 @@ class HetznerServerProvisioner(val hcloudToken: String) :
                         resource,
                         has_changes,
                         changes =
-                        listOf(
-                            ResourceDiffItem(
-                                "user data checksum",
-                                triggersRecreate = true,
-                                changed = true,
+                            listOf(
+                                ResourceDiffItem(
+                                    "user data checksum",
+                                    triggersRecreate = true,
+                                    changed = true,
+                                ),
                             ),
-                        ),
                     )
             val userDataHash =
                 labels.hashLabelMatches(

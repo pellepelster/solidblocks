@@ -29,6 +29,8 @@ dependencies {
 
     implementation("aws.sdk.kotlin:s3-jvm:1.5.26")
     implementation("aws.sdk.kotlin:s3:1.5.26")
+    implementation("aws.sdk.kotlin:iam-jvm:1.5.26")
+    implementation("aws.sdk.kotlin:iam:1.5.26")
 
     implementation("org.slf4j:slf4j-jdk14:2.0.17")
 
@@ -36,6 +38,33 @@ dependencies {
     testImplementation("org.reflections:reflections:0.10.2")
     testImplementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+}
+
+val integrationTest = sourceSets.create("integrationTest") {
+    compileClasspath += sourceSets["test"].compileClasspath
+    runtimeClasspath += sourceSets["test"].runtimeClasspath
+}
+
+tasks.register<Test>("testIntegration") {
+    testClassesDirs = integrationTest.output.classesDirs
+    classpath = integrationTest.runtimeClasspath
+
+    useJUnitPlatform()
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+
+    environment(
+        mapOf(
+            "HCLOUD_TOKEN" to providers.of(PassSecretValueSource::class) {
+                this.parameters.path.set("solidblocks/hetzner/test/hcloud_api_token")
+                this.parameters.environment.set("HCLOUD_TOKEN")
+            }.get(),
+        )
+    )
+
 }
 
 val generateTask = tasks.register<Test>("generate") {

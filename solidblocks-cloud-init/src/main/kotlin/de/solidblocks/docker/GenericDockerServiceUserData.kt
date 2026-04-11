@@ -34,10 +34,9 @@ class GenericDockerServiceUserData(
     val dataDevice: String,
     val backupDevice: String,
     val backupPassword: String,
-    val rootDomain: String?,
     val dockerImage: String,
     val ports: Map<Int, Int>,
-    val enableHttps: Boolean = false,
+    val serverFQDN: String?,
     val environmentVariables: Map<String, String> = emptyMap(),
 ) : ServiceUserData {
     override fun render(): String {
@@ -50,14 +49,22 @@ class GenericDockerServiceUserData(
             CaddyConfig(
                 GlobalOptions(
                     FileSystemStorage(caddyStorageDir),
-                    "info@${rootDomain ?: "localhost"}",
-                    if (enableHttps) {
+                    serverFQDN?.let { "info@${it}" },
+                    if (serverFQDN != null) {
                         null
                     } else {
                         AutoHttps.off
                     },
                 ),
-                ports.map { Site(":${it.key}", ReverseProxy("http://localhost:${it.value + 1024}")) },
+                if (serverFQDN == null) {
+                    ports.map {
+                        Site(":${it.key}", ReverseProxy("http://localhost:${it.value + 1024}"))
+                    }
+                } else {
+                    ports.map {
+                        Site(serverFQDN, ReverseProxy("http://localhost:${it.value + 1024}"))
+                    }
+                }
             )
 
         val userData = ShellScript()
@@ -95,20 +102,20 @@ class GenericDockerServiceUserData(
         val dockerCompose =
             ComposeFile(
                 services =
-                mapOf(
-                    serviceName to
-                        Service(
-                            image = dockerImage,
-                            ports =
-                            ports.map {
-                                PortMapping(
-                                    it.value,
-                                    it.value + 1024,
-                                )
-                            },
-                            environment = environmentVariables,
-                        ),
-                ),
+                    mapOf(
+                        serviceName to
+                                Service(
+                                    image = dockerImage,
+                                    ports =
+                                        ports.map {
+                                            PortMapping(
+                                                it.value,
+                                                it.value + 1024,
+                                            )
+                                        },
+                                    environment = environmentVariables,
+                                ),
+                    ),
             )
         userData.addCommand(MkDir(dockerWorkingDirectory))
         userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
@@ -134,7 +141,7 @@ class GenericDockerServiceUserData(
                     environment = environment,
                     workingDirectory = dockerWorkingDirectory,
                     execDown =
-                    listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
+                        listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
                 ),
                 Install(),
             )

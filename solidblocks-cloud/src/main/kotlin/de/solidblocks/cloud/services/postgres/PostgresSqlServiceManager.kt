@@ -1,10 +1,13 @@
 package de.solidblocks.cloud.services.postgres
 
+import de.solidblocks.cloud.Constants
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
+import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
@@ -48,6 +51,7 @@ import de.solidblocks.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMM
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.collections.plus
 
 class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 
@@ -92,21 +96,21 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             ),
         )
     } +
-        listOf(
-            EnvironmentVariableCallback(
-                sanitizeEnvironmentVariables("DATABASE_HOST"),
-                "host address for service '${runtime.name}'",
-                {
-                    it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
-                        .privateIpv4 ?: throw RuntimeException("no private ip address found")
-                },
-            ),
-            EnvironmentVariableStatic(
-                sanitizeEnvironmentVariables("DATABASE_PORT"),
-                "database port for service '${runtime.name}'",
-                "5432",
-            ),
-        )
+            listOf(
+                EnvironmentVariableCallback(
+                    sanitizeEnvironmentVariables("DATABASE_HOST"),
+                    "host address for service '${runtime.name}'",
+                    {
+                        it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
+                            .privateIpv4 ?: throw RuntimeException("no private ip address found")
+                    },
+                ),
+                EnvironmentVariableStatic(
+                    sanitizeEnvironmentVariables("DATABASE_PORT"),
+                    "database port for service '${runtime.name}'",
+                    "5432",
+                ),
+            )
 
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext) = Success(
         ServiceInfo(
@@ -117,11 +121,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     )
 
     fun endpoint(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
-        if (cloud.dnsEnabled == true) {
-            TODO()
-        } else {
-            "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.privateIpv4 ?: "<unknown>"}/${database.name}"
-        }
+        "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.privateIpv4 ?: "<unknown>"}/${database.name}"
 
     override fun infoText(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
         markdown {
@@ -186,11 +186,12 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
-                    HetznerNetworkLookup(networkName(cloud)),
-                ),
+                    HetznerSubnetLookup(
+                        DEFAULT_SERVICE_SUBNET,
+                        HetznerNetworkLookup(networkName(cloud)),
+                    ),
                 privateIp = serverIp(runtime.index),
+                labels = serviceLabels(runtime) + cloudLabels(cloud)
             )
 
         val databaseResources =

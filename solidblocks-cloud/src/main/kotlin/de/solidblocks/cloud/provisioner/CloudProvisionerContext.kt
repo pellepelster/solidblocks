@@ -37,14 +37,8 @@ interface CloudProvisionerContext {
     suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType>
 
     fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R>
-}
 
-suspend fun <T> CloudProvisionerContext.withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = try {
-    createOrGetSshClient(server)
-        .portForward(port) { block.invoke(it) }
-} catch (e: Exception) {
-    logger.error(e) { "could not connect to server $server" }
-    block.invoke(null)
+    suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T
 }
 
 data class ProvisionerContext(
@@ -63,9 +57,9 @@ data class ProvisionerContext(
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
     override fun <
-        RuntimeType,
-        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-        > ensureLookup(lookup: ResourceLookupType): RuntimeType =
+            RuntimeType,
+            ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
+            > ensureLookup(lookup: ResourceLookupType): RuntimeType =
         registry.lookup(lookup, this).let {
             if (it == null) {
                 logger.error { "could not find resource ${lookup.logText()}" }
@@ -97,6 +91,13 @@ data class ProvisionerContext(
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType> = registry.list(clazz)
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = serviceRegistrations.managerForService(runtime)
+
+    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = try {
+        createOrGetSshClient(server).portForward(port) { block.invoke(it) }
+    } catch (e: Exception) {
+        logger.error(e) { "could not connect to server $server" }
+        block.invoke(null)
+    }
 
     override fun close() {
         sshClients.forEach {

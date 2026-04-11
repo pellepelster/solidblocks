@@ -1,5 +1,7 @@
 ---
 name: cloud1
+# to add dns based endpoints and ssl certificates just add a root domain
+root_domain: blcks-test.de
 
 providers:
   # use pass password manager for secret storage

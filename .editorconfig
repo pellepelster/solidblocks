@@ -6,5 +6,6 @@ ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_e
 #ktlint_standard_argument-list-wrapping = disabled
 #ktlint_standard_parameter-list-wrapping = disabled
 ktlint_standard_type-constraint-wrapping = disabled
+ktlint_standard_type-argument-list-wrapping = disabled
 ktlint_standard_class-signature = disabled
 max_line_length = 210
