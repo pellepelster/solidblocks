@@ -13,7 +13,8 @@ enum class Restart(var target: String) {
     ON_ABNORMAL("on-abnormal"),
     ON_WATCHDOG("on-watchdog"),
     ON_ABORT("on-abort"),
-    ALWAYS("always");
+    ALWAYS("always"),
+    ;
 
     override fun toString(): String = target
 }

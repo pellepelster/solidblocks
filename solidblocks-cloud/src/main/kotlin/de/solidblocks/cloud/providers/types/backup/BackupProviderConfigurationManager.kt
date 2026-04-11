@@ -23,9 +23,9 @@ import de.solidblocks.cloudinit.LocalBackupTarget
 import de.solidblocks.cloudinit.S3BackupTarget
 
 interface BackupProviderConfigurationManager<
-        C : BackupProviderConfiguration,
-        R : ProviderConfigurationRuntime,
-        > : ProviderConfigurationManager<C, R>
+    C : BackupProviderConfiguration,
+    R : ProviderConfigurationRuntime,
+    > : ProviderConfigurationManager<C, R>
 
 fun backupSecretResource(runtime: CloudConfigurationRuntime) = PassSecret(
     secretPath(runtime, listOf("backup", "password")),
@@ -38,17 +38,17 @@ fun createBackupResources(
     cloud: CloudConfigurationRuntime,
     serverName: String,
     service: ServiceConfigurationRuntime,
-    environment: EnvironmentReference
+    environment: EnvironmentReference,
 ): Pair<Set<BaseInfrastructureResource<out BaseInfrastructureResourceRuntime>>, HetznerVolume?> {
     val bucketName = S3BackupProviderManager.bucketName(environment, service)
     val iamUserName = S3BackupProviderManager.iamUserName(environment, service)
 
     return when (runtime) {
         is S3BackupProviderConfigurationRuntime -> {
-            val bucketArn = "arn:aws:s3:::${bucketName}"
+            val bucketArn = "arn:aws:s3:::$bucketName"
             setOf(
                 AwsS3Bucket(bucketName, runtime.region),
-                AwsIamUser(iamUserName, S3BackupProviderManager.backupBucketPolicy(bucketArn))
+                AwsIamUser(iamUserName, S3BackupProviderManager.backupBucketPolicy(bucketArn)),
             ) to null
         }
 
@@ -62,7 +62,6 @@ fun createBackupResources(
             setOf(backupVolume) to backupVolume
         }
     }
-
 }
 
 fun createBackupConfiguration(
@@ -70,7 +69,7 @@ fun createBackupConfiguration(
     cloud: CloudConfigurationRuntime,
     service: ServiceConfigurationRuntime,
     context: CloudProvisionerContext,
-    backupVolume: HetznerVolume?
+    backupVolume: HetznerVolume?,
 ): BackupConfiguration {
     val backupPassword = backupSecretResource(cloud).asLookup()
     val bucketName = S3BackupProviderManager.bucketName(context.environment, service)
@@ -79,11 +78,12 @@ fun createBackupConfiguration(
     return when (runtime) {
         is S3BackupProviderConfigurationRuntime -> {
             BackupConfiguration(
-                context.ensureLookup(backupPassword).secret, S3BackupTarget(
+                context.ensureLookup(backupPassword).secret,
+                S3BackupTarget(
                     bucketName,
                     context.ensureLookup(PassSecretLookup(S3BackupProviderManager.accessKeySecretPath(context.environment, iamUserName))).secret,
-                    context.ensureLookup(PassSecretLookup(S3BackupProviderManager.secretKeySecretPath(context.environment, iamUserName))).secret
-                )
+                    context.ensureLookup(PassSecretLookup(S3BackupProviderManager.secretKeySecretPath(context.environment, iamUserName))).secret,
+                ),
             )
         }
 

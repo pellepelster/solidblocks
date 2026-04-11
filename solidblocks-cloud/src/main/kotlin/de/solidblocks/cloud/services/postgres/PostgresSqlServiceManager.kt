@@ -100,21 +100,21 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             ),
         )
     } +
-            listOf(
-                EnvironmentVariableCallback(
-                    sanitizeEnvironmentVariables("DATABASE_HOST"),
-                    "host address for service '${runtime.name}'",
-                    {
-                        it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
-                            .privateIpv4 ?: throw RuntimeException("no private ip address found")
-                    },
-                ),
-                EnvironmentVariableStatic(
-                    sanitizeEnvironmentVariables("DATABASE_PORT"),
-                    "database port for service '${runtime.name}'",
-                    "5432",
-                ),
-            )
+        listOf(
+            EnvironmentVariableCallback(
+                sanitizeEnvironmentVariables("DATABASE_HOST"),
+                "host address for service '${runtime.name}'",
+                {
+                    it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
+                        .privateIpv4 ?: throw RuntimeException("no private ip address found")
+                },
+            ),
+            EnvironmentVariableStatic(
+                sanitizeEnvironmentVariables("DATABASE_PORT"),
+                "database port for service '${runtime.name}'",
+                "5432",
+            ),
+        )
 
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext) = Success(
         ServiceInfo(
@@ -171,7 +171,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                         runtime.name,
                         context.ensureLookup(superUserPassword.asLookup()).secret,
                         context.ensureLookup(dataVolume.asLookup()).device,
-                        createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second)
+                        createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     ).render()
                 },
             )
@@ -185,10 +185,10 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                    HetznerSubnetLookup(
-                        DEFAULT_SERVICE_SUBNET,
-                        HetznerNetworkLookup(networkName(cloud)),
-                    ),
+                HetznerSubnetLookup(
+                    DEFAULT_SERVICE_SUBNET,
+                    HetznerNetworkLookup(networkName(cloud)),
+                ),
                 privateIp = serverIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud),
             )

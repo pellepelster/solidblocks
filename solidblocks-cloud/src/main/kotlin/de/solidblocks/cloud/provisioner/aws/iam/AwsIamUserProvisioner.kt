@@ -107,9 +107,11 @@ class AwsIamUserProvisioner(
             log.info("creating IAM user '${resource.name}'")
             client.createUser(CreateUserRequest { userName = resource.name })
 
-            val keys = client.createAccessKey(CreateAccessKeyRequest {
-                userName = resource.name
-            })
+            val keys = client.createAccessKey(
+                CreateAccessKeyRequest {
+                    userName = resource.name
+                },
+            )
 
             when (val result = context.createSecret(accessKeySecretPath(context.environment, resource.name), keys.accessKey!!.accessKeyId)) {
                 is Error<Unit> -> return@use Error(result.error)

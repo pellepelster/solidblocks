@@ -79,7 +79,7 @@ class ResticUserDataTest {
         val sshRestore = serverRestore.ssh()
         sshRestore.fileExists("/storage/data/foo-bar/file.txt") shouldBe true
         sshRestore.download("/storage/data/foo-bar/file.txt") shouldBe
-                (randomContent + "\n").toByteArray()
+            (randomContent + "\n").toByteArray()
     }
 
     @Test
@@ -95,10 +95,12 @@ class ResticUserDataTest {
         val dataVolume1 = hetzner.createVolume("${hetzner.testId}-data1")
 
         val backupConfiguration = BackupConfiguration(
-            repoPassword, S3BackupTarget(
-                bucket, getenv("AWS_ACCESS_KEY_ID"),
-                getenv("AWS_SECRET_ACCESS_KEY")
-            )
+            repoPassword,
+            S3BackupTarget(
+                bucket,
+                getenv("AWS_ACCESS_KEY_ID"),
+                getenv("AWS_SECRET_ACCESS_KEY"),
+            ),
         )
 
         val userData = ShellScript()

@@ -58,7 +58,7 @@ class S3BackupProviderManager :
 
     override fun createProvisioners(runtime: S3BackupProviderConfigurationRuntime) = listOf(
         AwsS3BucketProvisioner(runtime.accessKey, runtime.secretKey, runtime.region),
-        AwsIamUserProvisioner(runtime.accessKey, runtime.secretKey)
+        AwsIamUserProvisioner(runtime.accessKey, runtime.secretKey),
     ) as List<InfrastructureResourceProvisioner<*, *>>
 
     override val supportedConfiguration = S3BackupProviderConfiguration::class

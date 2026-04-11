@@ -89,28 +89,28 @@ class GarageFsProvisionersTest {
     fun testFlow() {
         val serverProvisioner = mockk<HetznerServerProvisioner>()
         coEvery { serverProvisioner.lookup(any(), any()) } returns
-                HetznerServerRuntime(
-                    1,
-                    "server1",
-                    ServerStatus.running,
-                    "debian12",
-                    HetznerServerType.cx23,
-                    HetznerLocation.nbg1,
-                    emptyMap(),
-                    emptyList(),
-                    null,
-                    "127.0.0.1",
-                    emptyList(),
-                    sshPort = garageFsContainer.getMappedPort(22),
-                )
+            HetznerServerRuntime(
+                1,
+                "server1",
+                ServerStatus.running,
+                "debian12",
+                HetznerServerType.cx23,
+                HetznerLocation.nbg1,
+                emptyMap(),
+                emptyList(),
+                null,
+                "127.0.0.1",
+                emptyList(),
+                sshPort = garageFsContainer.getMappedPort(22),
+            )
         coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
 
         val secretProvisioner = mockk<PassSecretProvisioner>()
         coEvery { secretProvisioner.lookup(any(), any()) } returns
-                PassSecretRuntime(
-                    "admin_token",
-                    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                )
+            PassSecretRuntime(
+                "admin_token",
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            )
         coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
 
         val server =

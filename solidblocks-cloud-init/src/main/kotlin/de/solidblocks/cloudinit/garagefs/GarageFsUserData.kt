@@ -75,10 +75,10 @@ class GarageFsUserData(
                         ),
                     ) + it.publicDomains.map { Site(it, ReverseProxy("http://localhost:3902")) }
                 } +
-                        listOf(
-                            Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903")),
-                            Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900")),
-                        ),
+                    listOf(
+                        Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903")),
+                        Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900")),
+                    ),
             )
 
         val userData = ShellScript()

@@ -43,9 +43,9 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
     override fun <
-            RuntimeType,
-            ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-            > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
+        RuntimeType,
+        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
+        > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
 
     override fun createOrGetSshClient(server: HetznerServerLookup): SSHClient {
         TODO("Not yet implemented")

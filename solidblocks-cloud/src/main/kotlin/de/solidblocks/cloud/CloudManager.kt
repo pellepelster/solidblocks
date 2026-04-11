@@ -161,7 +161,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 log = log.indent()
 
                 val manager:
-                        ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                    ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                     providerRegistrations.managerForConfiguration(provider)
 
                 logDebug(

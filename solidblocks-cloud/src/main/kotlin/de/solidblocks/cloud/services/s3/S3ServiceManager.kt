@@ -113,7 +113,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                             de.solidblocks.cloudinit.garagefs.GarageFsBucket(
                                 it.name,
                                 it.managedPublicWebAccessDomains.values.toSet() +
-                                        it.manuallyManagedPublicWebAccessDomains,
+                                    it.manuallyManagedPublicWebAccessDomains,
                             )
                         },
                         true,
@@ -133,13 +133,13 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                    HetznerSubnetLookup(
-                        DEFAULT_SERVICE_SUBNET,
-                        HetznerNetworkLookup(networkName(cloud)),
-                    ),
+                HetznerSubnetLookup(
+                    DEFAULT_SERVICE_SUBNET,
+                    HetznerNetworkLookup(networkName(cloud)),
+                ),
                 privateIp = serverIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud),
-                dependsOn = backupResources.first
+                dependsOn = backupResources.first,
             )
 
         if (cloud.rootDomain == null) {
