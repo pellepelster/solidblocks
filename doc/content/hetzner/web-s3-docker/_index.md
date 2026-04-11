@@ -20,7 +20,7 @@ the [Hetzner Cloud API](https://www.hetzner.com/news/dns-beta/).
 # Usage Example
 
 ```terraform
-{{% include "/snippets/web-s3-docker-kitchen-sink/main.tf" %}}
+{{% include-safe "/snippets/web-s3-docker-kitchen-sink/main.tf" %}}
 ```
 
 # Configuration

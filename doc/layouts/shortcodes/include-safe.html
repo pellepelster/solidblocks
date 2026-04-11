@@ -1,0 +1,5 @@
+{{- $file := .Get 0 -}}
+{{- if not (os.FileExists $file) -}}
+{{- errorf "include-safe: file '%s' not found (page: %s)" $file .Page.File.Path -}}
+{{- end -}}
+{{- partial "shortcodes/include.html" (dict "page" .Page "file" $file) -}}

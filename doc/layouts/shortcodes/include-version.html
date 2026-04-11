@@ -1,4 +1,5 @@
-{{- partial "shortcodes/include.html" (dict
-"page"             .Page
-"file"             (printf (.Get 0) (getenv "SOLIDBLOCKS_VERSION"))
-) }}
+{{- $file := printf (.Get 0) (getenv "SOLIDBLOCKS_VERSION") -}}
+{{- if not (os.FileExists (printf "content%s" $file)) -}}
+{{- errorf "include-version: file '%s' not found (page: %s)" $file .Page.File.Path -}}
+{{- end -}}
+{{- partial "shortcodes/include.html" (dict "page" .Page "file" $file) -}}

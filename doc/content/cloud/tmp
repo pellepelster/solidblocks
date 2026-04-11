@@ -4,7 +4,7 @@ The configuration file is the central source of truth for all deployments. It is
 
 **example**
 ```yaml
-{{% include "/snippets/cloud-minimial-example.yml" %}}
+{{% include-safe "/snippets/cloud-minimial-example.yml" %}}
 ```
 
 To see what the model looks like and which resources would be created/changed by an apply, run

@@ -14,7 +14,7 @@ To use Solidblocks `hetzner-cloud` just add the dependency to your Gradle or Mav
 
 ### build.gradle.kts
 ```kotlin
-{{% include "/snippets/solidblocks-hetzner-cloud-example/build.gradle.kts" %}}
+{{% include-safe "/snippets/solidblocks-hetzner-cloud-example/build.gradle.kts" %}}
 ```
 
 {{% notice info %}}
@@ -27,7 +27,7 @@ The implementation is currently driven by the needs of other projects I am worki
 The library supports Kotlin coroutines, thus all API calls must be made from a coroutine context. The root api has to be initialized using a Hetzner cloud api token, from there all supports resources are available grouped by resource type.
 
 ```kotlin
-{{% include "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/BasicUsage.kt" %}}
+{{% include-safe "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/BasicUsage.kt" %}}
 ```
 
 ### Create and Get
@@ -35,7 +35,7 @@ The library supports Kotlin coroutines, thus all API calls must be made from a c
 All resources support listing, as well as filtering by resource attributes or labels
 
 ```kotlin
-{{% include "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/CreateAndGetResources.kt" %}}
+{{% include-safe "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/CreateAndGetResources.kt" %}}
 ```
 
 ### Listing and Filtering
@@ -43,7 +43,7 @@ All resources support listing, as well as filtering by resource attributes or la
 All resources support resource creation and retrieval by name and id.
 
 ```kotlin
-{{% include "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/Filtering.kt" %}}
+{{% include-safe "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/Filtering.kt" %}}
 ```
 
 ### Actions
@@ -51,7 +51,7 @@ All resources support resource creation and retrieval by name and id.
 Waiters are available for resources that are created or updated asynchronosly
 
 ```kotlin
-{{% include "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/WaitForActions.kt" %}}
+{{% include-safe "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/WaitForActions.kt" %}}
 ```
 
 ### Exceptions
@@ -59,5 +59,5 @@ Waiters are available for resources that are created or updated asynchronosly
 For failing API calls the exception `HetznerApiException` provides type access to the underlying Hetzner error.
 
 ```kotlin
-{{% include "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/Exceptions.kt" %}}
+{{% include-safe "/snippets/solidblocks-hetzner-cloud-example/src/main/kotlin/de/solidblocks/hetzner/Exceptions.kt" %}}
 ```

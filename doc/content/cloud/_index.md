@@ -21,7 +21,7 @@ ssh-keygen -t ed25519 -f cloud1.key -q -N ""
 
 **create configuration `cloud1.yaml`**  
 ```yaml
-{{% include "/snippets/quickstart.yaml" %}}
+{{% include-safe "/snippets/quickstart.yaml" %}}
 ```
 
 **apply configuration**

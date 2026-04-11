@@ -13,14 +13,14 @@ Given a folder containing Terraform files, like for example
 
 ##### /module1/main.tf
 ```terraform
-{{% include "snippets/solidblocks-test-example/src/test/resources/module1/main.tf" %}}
+{{% include-safe "snippets/solidblocks-test-example/src/test/resources/module1/main.tf" %}}
 ```
 
 The resources described in this file can be created using the Terraform test context
 
 ##### Test a terraform setup
 ```kotlin
-{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test/terraform/TerraformContext.kt" %}}
+{{% include-safe "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test/terraform/TerraformContext.kt" %}}
 ```
 
 ##### Options
@@ -28,5 +28,5 @@ The resources described in this file can be created using the Terraform test con
 The following options can be set to configure the Terraform process
 
 ```kotlin
-{{% include "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test//terraform/TerraformOptions.kt" %}}
+{{% include-safe "snippets/solidblocks-test-example/src/test/kotlin/de/solidblocks/test//terraform/TerraformOptions.kt" %}}
 ```
