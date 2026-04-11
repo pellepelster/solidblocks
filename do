@@ -51,19 +51,6 @@ function task_build {
     task_build_documentation
 }
 
-function task_test_init_aws {
-  (
-    export AWS_REGION="eu-central-1"
-    export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/admin/access_key_id)}"
-    export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/admin/secret_access_key)}"
-
-    cd "${DIR}/contrib/terraform/test"
-    terraform init -upgrade -migrate-state
-    terraform apply -auto-approve
-    terraform output
-    terraform output test_access_key_secret
-  )
-}
 
 function task_clean_hetzner {
   export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
@@ -170,7 +157,6 @@ case ${ARG} in
   clean-hetzner) task_clean_hetzner "$@" ;;
   clean-gcloud) task_clean_gcloud "$@" ;;
   clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
-  test-init-aws) task_test_init_aws "$@" ;;
   test) task_test "$@" ;;
   release) task_release "$@" ;;
   release-prepare) task_release_prepare "$@" ;;

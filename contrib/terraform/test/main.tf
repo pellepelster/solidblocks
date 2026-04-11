@@ -34,30 +34,36 @@ data "aws_iam_policy_document" "solidblocks_test_s3" {
   }
 }
 
-data "aws_iam_policy_document" "solidblocks_test_dynamodb" {
-  statement {
-    effect    = "Allow"
-    actions   = ["dynamodb:*"]
-    resources = ["arn:aws:dynamodb:*:*:table/test-*"]
-  }
-  statement {
-    effect    = "Allow"
-    actions   = ["dynamodb:List*"]
-    resources = ["arn:aws:dynamodb:*:*:table/*"]
-  }
+data "aws_iam_policy_document" "solidblocks_test_iam" {
   statement {
     effect = "Allow"
-    actions = ["dynamodb:List*",
-      "dynamodb:Describe*"
+    actions = [
+      "iam:CreateUser",
+      "iam:DeleteUser",
+      "iam:GetUser",
+      "iam:ListUsers",
+      "iam:PutUserPolicy",
+      "iam:GetUserPolicy",
+      "iam:DeleteUserPolicy",
+      "iam:ListUserPolicies",
+      "iam:CreateAccessKey",
+      "iam:DeleteAccessKey",
+      "iam:ListAccessKeys",
     ]
-    resources = ["arn:aws:dynamodb:*:*:table/"]
+    resources = ["arn:aws:iam::*:user/test-*"]
   }
 }
 
-resource "aws_iam_user_policy" "solidblocks" {
-  name   = "test-blcks"
+resource "aws_iam_user_policy" "solidblocks_test_s3" {
+  name   = "test-blcks-s3"
   user   = aws_iam_user.solidblocks_test.name
   policy = data.aws_iam_policy_document.solidblocks_test_s3.json
+}
+
+resource "aws_iam_user_policy" "solidblocks_test_iam" {
+  name   = "test-blcks-iam"
+  user   = aws_iam_user.solidblocks_test.name
+  policy = data.aws_iam_policy_document.solidblocks_test_iam.json
 }
 
 

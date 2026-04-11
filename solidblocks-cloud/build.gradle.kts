@@ -29,6 +29,8 @@ dependencies {
 
     implementation("aws.sdk.kotlin:s3-jvm:1.5.26")
     implementation("aws.sdk.kotlin:s3:1.5.26")
+    implementation("aws.sdk.kotlin:iam-jvm:1.5.26")
+    implementation("aws.sdk.kotlin:iam:1.5.26")
 
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
