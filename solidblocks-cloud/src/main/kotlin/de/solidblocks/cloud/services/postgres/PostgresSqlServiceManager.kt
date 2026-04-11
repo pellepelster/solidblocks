@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.services.postgres
 
-import de.solidblocks.cloud.Constants
 import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.networkName
@@ -46,12 +45,11 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.formatBytes
 import de.solidblocks.cloud.utils.formatLocale
-import de.solidblocks.postgresql.PostgresqlUserData
-import de.solidblocks.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
+import de.solidblocks.cloudinit.postgresql.PostgresqlUserData
+import de.solidblocks.cloudinit.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import java.time.Duration
-import kotlin.collections.plus
 
 class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 
@@ -168,12 +166,11 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 setOf(dataVolume, backupVolume, superUserPassword),
                 { context ->
                     PostgresqlUserData(
-                        context.ensureLookup(dataVolume.asLookup()).device,
-                        context.ensureLookup(backupVolume.asLookup()).device,
                         runtime.name,
                         context.ensureLookup(superUserPassword.asLookup()).secret,
-                    )
-                        .render()
+                        context.ensureLookup(dataVolume.asLookup()).device,
+                        context.ensureLookup(backupVolume.asLookup()).device,
+                    ).render()
                 },
             )
 

@@ -1,4 +1,4 @@
-package de.solidblocks.docker
+package de.solidblocks.cloudinit.docker
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration

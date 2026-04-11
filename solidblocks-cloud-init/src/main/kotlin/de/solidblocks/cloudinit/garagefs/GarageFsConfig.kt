@@ -1,4 +1,4 @@
-package de.solidblocks.garagefs
+package de.solidblocks.cloudinit.garagefs
 
 class GarageFsConfig(val baseDataDir: String, val rpcSecret: String, val adminToken: String, val metricsToken: String, val s3ApiFqdn: String, val s3WebFqdn: String) {
     val metaDataDir = "$baseDataDir/meta"

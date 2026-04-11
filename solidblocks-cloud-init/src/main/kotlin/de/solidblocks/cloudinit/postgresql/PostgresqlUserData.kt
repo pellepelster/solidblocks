@@ -1,14 +1,39 @@
-package de.solidblocks.postgresql
+package de.solidblocks.cloudinit.postgresql
 
+import de.solidblocks.cloudinit.BackupConfiguration
+import de.solidblocks.cloudinit.LocalBackupTarget
+import de.solidblocks.cloudinit.S3BackupTarget
 import de.solidblocks.cloudinit.ServiceUserData
-import de.solidblocks.docker.*
-import de.solidblocks.shell.*
-import de.solidblocks.systemd.*
+import de.solidblocks.cloudinit.docker.ComposeFile
+import de.solidblocks.cloudinit.docker.Mount
+import de.solidblocks.cloudinit.docker.MountType
+import de.solidblocks.cloudinit.docker.PortMapping
+import de.solidblocks.cloudinit.docker.toYaml
+import de.solidblocks.shell.AptLibrary
+import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.DockerLibrary
+import de.solidblocks.shell.FilePermissions
+import de.solidblocks.shell.LogLibrary
+import de.solidblocks.shell.MkDir
+import de.solidblocks.shell.PackageLibrary
+import de.solidblocks.shell.ShellScript
+import de.solidblocks.shell.StorageLibrary
+import de.solidblocks.shell.SystemDLibrary
+import de.solidblocks.shell.UtilsLibrary
+import de.solidblocks.shell.WriteFile
+import de.solidblocks.systemd.Daily
+import de.solidblocks.systemd.Install
+import de.solidblocks.systemd.Restart
 import de.solidblocks.systemd.Service
+import de.solidblocks.systemd.ServiceType
+import de.solidblocks.systemd.SystemDService
+import de.solidblocks.systemd.SystemDTimer
 import de.solidblocks.systemd.Target
+import de.solidblocks.systemd.Timer
 import de.solidblocks.systemd.Unit
+import de.solidblocks.systemd.installSystemDUnit
 
-class PostgresqlUserData(val storageDevice: String, val backupDevice: String, val instanceName: String, val superUserPassword: String) : ServiceUserData {
+class PostgresqlUserData(val instanceName: String, val superUserPassword: String, val storageDevice: String, val backup: BackupConfiguration) : ServiceUserData {
 
     companion object {
         val BACKUP_STATUS_COMMAND = "pgbackrest-status"
@@ -33,11 +58,39 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
 
         userData.addInlineSource(StorageLibrary)
         userData.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
-        userData.addCommand(StorageLibrary.Mount(backupDevice, backupMount))
+
+        if (backup.target is LocalBackupTarget) {
+            userData.addCommand(StorageLibrary.Mount(backup.target.backupDevice, backupMount))
+        }
+
+        val backupEnvironment = when (backup.target) {
+            is LocalBackupTarget -> mapOf(
+                "DB_BACKUP_LOCAL" to "1",
+                "DB_BACKUP_ENCRYPTION_PASSPHRASE" to superUserPassword,
+            )
+
+            is S3BackupTarget -> mapOf(
+                "DB_BACKUP_S3" to "1",
+                "DB_BACKUP_S3_BUCKET" to backup.target.bucket,
+                "DB_BACKUP_S3_ACCESS_KEY" to backup.target.accessKey,
+                "DB_BACKUP_S3_SECRET_KEY" to backup.target.secretKey,
+                "DB_BACKUP_ENCRYPTION_PASSPHRASE" to superUserPassword,
+            )
+        }
+
+        val backupMounts = when (backup.target) {
+            is LocalBackupTarget -> listOf(
+                Mount(MountType.bind, backupMount, backupMount),
+            )
+
+            else -> emptyList()
+        }
 
         userData.addCommand(DockerLibrary.InstallDebian())
         userData.addCommand(MkDir("/storage/data", "10000", "10000"))
-        userData.addCommand(MkDir("/storage/backup", "10000", "10000"))
+        if (backup.target is LocalBackupTarget) {
+            userData.addCommand(MkDir(backupMount, "10000", "10000"))
+        }
 
         val dockerWorkingDirectory = "/etc/docker/$instanceName"
         val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
@@ -48,19 +101,17 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
                 services =
                 mapOf(
                     instanceName to
-                        de.solidblocks.docker.Service(
+                        de.solidblocks.cloudinit.docker.Service(
                             image = "ghcr.io/pellepelster/solidblocks-rds-postgresql:17-v0.4.15",
                             environment =
                             mapOf(
                                 "DB_INSTANCE_NAME" to instanceName,
-                                "DB_BACKUP_LOCAL" to "1",
                                 "DB_ADMIN_PASSWORD" to superUserPassword,
-                            ),
+                            ) + backupEnvironment,
                             volumes =
                             listOf(
                                 Mount(MountType.bind, storageMount, "/storage/data"),
-                                Mount(MountType.bind, backupMount, "/storage/backup"),
-                            ),
+                            ) + backupMounts,
                             ports =
                             listOf(
                                 PortMapping(
@@ -141,7 +192,6 @@ class PostgresqlUserData(val storageDevice: String, val backupDevice: String, va
             )
         userData.installSystemDUnit(timer)
         userData.addCommand(SystemDLibrary.Start(timer.fullUnitName()))
-
         userData.addCommand(SystemDLibrary.Restart(instanceName))
 
         val wrapper = """

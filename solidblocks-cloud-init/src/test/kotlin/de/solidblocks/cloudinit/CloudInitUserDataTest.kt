@@ -84,7 +84,7 @@ fun HetznerServerTestContext.waitForSuccessfulProvisioning() {
     val cloudInitContext = this.cloudInit()
     cloudInitContext.printOutputLogOnTestFailure()
 
-    await().atMost(2, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
+    await().atMost(5, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
         cloudInitContext.isFinished()
     }
     cloudInitContext.result()?.hasErrors shouldBe false

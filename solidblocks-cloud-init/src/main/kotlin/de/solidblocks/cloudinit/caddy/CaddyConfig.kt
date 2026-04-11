@@ -1,4 +1,4 @@
-package de.solidblocks.caddy
+package de.solidblocks.cloudinit.caddy
 
 import java.io.StringWriter
 

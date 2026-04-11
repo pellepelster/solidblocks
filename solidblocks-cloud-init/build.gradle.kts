@@ -19,6 +19,7 @@ dependencies {
 
     testImplementation("org.awaitility:awaitility:4.2.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation("org.postgresql:postgresql:42.7.3")
 }
 
 val cloudInitBaseName = "blcks-cloud-init"

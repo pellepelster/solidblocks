@@ -15,6 +15,7 @@ import java.time.Duration
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
 class SSHClient(val host: String, val keyPair: KeyPair, val username: String = "root", val port: Int = 22) : Closeable {
@@ -33,12 +34,12 @@ class SSHClient(val host: String, val keyPair: KeyPair, val username: String = "
             it.start()
         }
 
-    val timeout = Duration.ofSeconds(10)
+    val verifyTimeout = Duration.ofSeconds(10)
 
     var session =
-        client.connect(username, host, port).verify(timeout).session.also {
+        client.connect(username, host, port).verify(verifyTimeout).session.also {
             it.addPublicKeyIdentity(keyPair)
-            it.auth().verify(timeout)
+            it.auth().verify(verifyTimeout)
         }
 
     fun download(file: String): ByteArray? {
@@ -54,18 +55,18 @@ class SSHClient(val host: String, val keyPair: KeyPair, val username: String = "
     }
 
     @OptIn(ExperimentalTime::class)
-    fun command(command: String): SSHCommandResult {
+    fun command(command: String, timeout: kotlin.time.Duration = 1.minutes): SSHCommandResult {
         ByteArrayOutputStream().use { stdErr ->
             ByteArrayOutputStream().use { stdOut ->
                 session.createExecChannel(command).use { channel ->
                     val start = Clock.System.now()
                     channel.out = stdOut
                     channel.err = stdErr
-                    channel.open().verify(timeout)
+                    channel.open().verify(verifyTimeout)
 
                     channel.waitFor(
                         EnumSet.of(ClientChannelEvent.CLOSED),
-                        TimeUnit.SECONDS.toMillis(10),
+                        timeout.inWholeMilliseconds,
                     )
 
                     return SSHCommandResult(

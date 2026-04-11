@@ -1,12 +1,12 @@
-package de.solidblocks.garagefs
+package de.solidblocks.cloudinit.garagefs
 
-import de.solidblocks.caddy.AutoHttps
-import de.solidblocks.caddy.CaddyConfig
-import de.solidblocks.caddy.FileSystemStorage
-import de.solidblocks.caddy.GlobalOptions
-import de.solidblocks.caddy.ReverseProxy
-import de.solidblocks.caddy.Site
 import de.solidblocks.cloudinit.ServiceUserData
+import de.solidblocks.cloudinit.caddy.AutoHttps
+import de.solidblocks.cloudinit.caddy.CaddyConfig
+import de.solidblocks.cloudinit.caddy.FileSystemStorage
+import de.solidblocks.cloudinit.caddy.GlobalOptions
+import de.solidblocks.cloudinit.caddy.ReverseProxy
+import de.solidblocks.cloudinit.caddy.Site
 import de.solidblocks.restic.resticLocalBackup
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CaddyLibrary

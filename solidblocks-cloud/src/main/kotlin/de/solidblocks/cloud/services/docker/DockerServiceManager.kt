@@ -30,7 +30,7 @@ import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfigurationRuntime
 import de.solidblocks.cloud.utils.*
-import de.solidblocks.docker.GenericDockerServiceUserData
+import de.solidblocks.cloudinit.docker.GenericDockerServiceUserData
 import de.solidblocks.restic.RESTIC_STATUS_COMMAND
 import de.solidblocks.utils.LogContext
 import java.time.Duration

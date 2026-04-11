@@ -1,4 +1,4 @@
-package de.solidblocks.garagefs
+package de.solidblocks.cloudinit.garagefs
 
 import de.solidblocks.cloudinit.waitForSuccessfulProvisioning
 import de.solidblocks.infra.test.SolidblocksTest

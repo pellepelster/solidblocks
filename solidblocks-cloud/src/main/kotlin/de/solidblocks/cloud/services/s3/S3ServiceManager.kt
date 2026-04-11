@@ -46,9 +46,9 @@ import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.garagefs.GarageFsUserData
-import de.solidblocks.garagefs.GarageFsUserData.Companion.s3AdminHost
-import de.solidblocks.garagefs.GarageFsUserData.Companion.s3Host
+import de.solidblocks.cloudinit.garagefs.GarageFsUserData
+import de.solidblocks.cloudinit.garagefs.GarageFsUserData.Companion.s3AdminHost
+import de.solidblocks.cloudinit.garagefs.GarageFsUserData.Companion.s3Host
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import kotlinx.coroutines.runBlocking
@@ -125,7 +125,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         context.ensureLookup(adminToken.asLookup()).secret,
                         context.ensureLookup(metricsToken.asLookup()).secret,
                         runtime.buckets.map {
-                            de.solidblocks.garagefs.GarageFsBucket(
+                            de.solidblocks.cloudinit.garagefs.GarageFsBucket(
                                 it.name,
                                 it.managedPublicWebAccessDomains.values.toSet() +
                                     it.manuallyManagedPublicWebAccessDomains,

@@ -17,7 +17,7 @@ import java.lang.System.getenv
 import java.util.*
 
 @ExtendWith(SolidblocksTest::class)
-class ResticDisasterRecoveryTest {
+class ResticUserDataTest {
     @Test
     fun testRecoveryFromLocal(context: SolidblocksTestContext) {
         val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN").toString())

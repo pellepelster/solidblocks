@@ -1,4 +1,4 @@
-package de.solidblocks.docker
+package de.solidblocks.cloudinit.docker
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test

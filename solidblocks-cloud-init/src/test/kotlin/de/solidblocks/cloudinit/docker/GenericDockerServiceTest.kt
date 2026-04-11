@@ -1,47 +1,48 @@
-package de.solidblocks.postgres
+package de.solidblocks.cloudinit.docker
 
 import de.solidblocks.cloudinit.waitForSuccessfulProvisioning
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
-import de.solidblocks.postgresql.PostgresqlUserData
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration.ofSeconds
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 @ExtendWith(SolidblocksTest::class)
-class PostgresqlUserDataTest {
+class GenericDockerServiceTest {
     @Test
     @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
-    fun testFlow(testContext: SolidblocksTestContext) {
+    fun testIntegration(testContext: SolidblocksTestContext) {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
-        val dataVolume = hetznerTestContext.createVolume("${hetznerTestContext.testId}-data")
-        val backupVolume = hetznerTestContext.createVolume("${hetznerTestContext.testId}-backup")
+        val dataVolume = hetznerTestContext.createVolume("${testContext.testId}-data")
+        val backupVolume = hetznerTestContext.createVolume("${testContext.testId}-backup")
         val sshKey = hetznerTestContext.createSSHKey()
 
         val userData =
-            PostgresqlUserData(
+            GenericDockerServiceUserData(
+                testContext.testId,
                 dataVolume.linuxDevice,
                 backupVolume.linuxDevice,
-                "instance1",
                 "very-secret",
+                "nginx",
+                mapOf(80 to 80),
+                null,
             )
 
         val serverTestContext =
             hetznerTestContext.createServer(
                 userData.render(),
                 sshKey,
-                volumes = listOf(backupVolume.id, dataVolume.id),
+                volumes = listOf(dataVolume.id, backupVolume.id),
             )
 
         serverTestContext.waitForSuccessfulProvisioning()
 
         await().atMost(5, TimeUnit.MINUTES).pollInterval(ofSeconds(5)).until {
-            serverTestContext.host().portIsOpen(5432)
+            serverTestContext.host().portIsOpen(80)
         }
     }
 }
