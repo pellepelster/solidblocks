@@ -115,16 +115,16 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
 
         if (fw == null) {
             return Error("error applying ${resource.logText()}")
-
         }
 
         return try {
             api.firewalls.applyToResources(
-                fw.id, FirewallApplyToResourcesRequest(
+                fw.id,
+                FirewallApplyToResourcesRequest(
                     listOf(
-                        FirewallResource(FirewallResourceType.LABEL_SELECTOR, labelSelector = FirewallLabelSelector(resource.appliedToLabels.map { "${it.key}=${it.value}" }.joinToString(",")))
-                    )
-                )
+                        FirewallResource(FirewallResourceType.LABEL_SELECTOR, labelSelector = FirewallLabelSelector(resource.appliedToLabels.map { "${it.key}=${it.value}" }.joinToString(","))),
+                    ),
+                ),
             )
 
             Success(fw)

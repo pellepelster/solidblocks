@@ -12,9 +12,8 @@ open class BaseHetznerProvisioner(val hcloudToken: String) {
     fun createLabelDiff(
         resource: BaseLabeledInfrastructureResource<*>,
         runtime: BaseLabeledInfrastructureResourceRuntime,
-        ignoredLabelPrefixes: List<String> = listOf("${Constants.namespace}/ssh-keys", "${Constants.namespace}/user-data")
+        ignoredLabelPrefixes: List<String> = listOf("${Constants.namespace}/ssh-keys", "${Constants.namespace}/user-data"),
     ): List<ResourceDiffItem> {
-
         val resourceLabels = resource.labels.filter { ignoredLabelPrefixes.none { prefix -> it.key.startsWith(prefix) } }
         val runtimeLabels = runtime.labels.filter { ignoredLabelPrefixes.none { prefix -> it.key.startsWith(prefix) } }
 

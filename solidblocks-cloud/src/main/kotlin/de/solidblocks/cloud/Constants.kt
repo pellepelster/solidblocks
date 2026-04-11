@@ -13,7 +13,7 @@ object Constants {
 
     fun networkName(configuration: CloudConfigurationRuntime) = "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
-    fun firewallName(configuration: CloudConfigurationRuntime, name: String) = "${configuration.name}-${configuration.getDefaultEnvironment()}-${name}"
+    fun firewallName(configuration: CloudConfigurationRuntime, name: String) = "${configuration.name}-${configuration.getDefaultEnvironment()}-$name"
 
     fun serverName(configuration: CloudConfigurationRuntime, name: String, index: Int = 0) = "${configuration.name}-${configuration.getDefaultEnvironment()}-$name-$index"
 
@@ -46,7 +46,6 @@ object Constants {
     const val sshKeysLabel: String = "$namespace/ssh-keys"
 
     const val userDataLabel: String = "$namespace/user-data"
-
 
     fun solidblocksVersion() = "0.0.0"
 

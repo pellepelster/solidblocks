@@ -7,6 +7,7 @@ import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeywordOptional
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
+import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -30,11 +31,11 @@ class PassProviderConfigurationFactory : PolymorphicConfigurationFactory<PassPro
             "Stores secrets in the [pass](https://www.passwordstore.org/) secret manager. To ensure that the store is setup correctly a temporary secret will be created and deleted during the configuration validation phase.",
         )
 
-    override val keywords = listOf<Keyword<*>>(passwordStoreDir)
+    override val keywords = listOf<Keyword<*>>(PROVIDER_NAME_KEYWORD, passwordStoreDir)
 
     override fun parse(yaml: YamlNode): Result<PassProviderConfiguration> {
         val name =
-            when (val name = yaml.getOptionalString("name", DEFAULT_NAME)) {
+            when (val name = PROVIDER_NAME_KEYWORD.parse(yaml)) {
                 is Error<String> -> return Error(name.error)
                 is Success<String> -> name.data
             }

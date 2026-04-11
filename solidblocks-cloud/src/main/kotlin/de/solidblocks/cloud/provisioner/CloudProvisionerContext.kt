@@ -57,9 +57,9 @@ data class ProvisionerContext(
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
     override fun <
-            RuntimeType,
-            ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-            > ensureLookup(lookup: ResourceLookupType): RuntimeType =
+        RuntimeType,
+        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
+        > ensureLookup(lookup: ResourceLookupType): RuntimeType =
         registry.lookup(lookup, this).let {
             if (it == null) {
                 logger.error { "could not find resource ${lookup.logText()}" }

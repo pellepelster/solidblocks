@@ -21,14 +21,14 @@ class IntegrationTest {
         assertSoftly(context.local().command(blcksCommand).runResult()) { result ->
             result shouldHaveExitCode 0
             listOf("cloud", "hetzner", "github", "docs", "terraform", "tofu").forEach {
-                result stdoutShouldMatch ".*${it}.*"
+                result stdoutShouldMatch ".*$it.*"
             }
         }
     }
 
     @Test
     fun testNuke(context: SolidblocksTestContext) {
-        assertSoftly(context.local().command("${blcksCommand}", "hetzner", "nuke", "--do-nuke").timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()) { result ->
+        assertSoftly(context.local().command("$blcksCommand", "hetzner", "nuke", "--do-nuke").timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()) { result ->
             result shouldHaveExitCode 0
         }
     }

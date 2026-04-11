@@ -6,6 +6,7 @@ import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
+import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -14,16 +15,6 @@ import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
 class HetznerProviderConfigurationFactory : PolymorphicConfigurationFactory<HetznerProviderConfiguration>() {
-
-    val name =
-        StringKeywordOptionalWithDefault(
-            "name",
-            NONE,
-            DEFAULT_NAME,
-            KeywordHelp(
-                "Name for the provider, can be omitted if only one provider of this specific type is configured",
-            ),
-        )
 
     val defaultLocation =
         StringKeywordOptionalWithDefault(
@@ -51,11 +42,11 @@ class HetznerProviderConfigurationFactory : PolymorphicConfigurationFactory<Hetz
             "Provides Hetzner Cloud based infrastructure resources. An API key with read/write access must be provided via the environment variable `HCLOUD_TOKEN`.",
         )
 
-    override val keywords = listOf(name, defaultLocation, defaultInstanceType)
+    override val keywords = listOf(PROVIDER_NAME_KEYWORD, defaultLocation, defaultInstanceType)
 
     override fun parse(yaml: YamlNode): Result<HetznerProviderConfiguration> {
         val name =
-            when (val result = name.parse(yaml)) {
+            when (val result = PROVIDER_NAME_KEYWORD.parse(yaml)) {
                 is Error<String> -> return Error(result.error)
                 is Success<String> -> result.data
             }

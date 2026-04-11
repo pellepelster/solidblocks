@@ -2,6 +2,8 @@ package de.solidblocks.cloud.providers.sshkey
 
 import de.solidblocks.cloud.providers.ssh.SSHKeyProviderRegistration
 
+val SSH_KEY_TYPE = "ssh_key"
+
 class LocalSSHKeyProviderRegistration :
     SSHKeyProviderRegistration<
         LocalSSHKeyProviderConfiguration,
@@ -15,5 +17,5 @@ class LocalSSHKeyProviderRegistration :
 
     override fun createConfigurationFactory() = LocalSSHKeyProviderConfigurationFactory()
 
-    override val type = "ssh_key"
+    override val type = SSH_KEY_TYPE
 }

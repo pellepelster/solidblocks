@@ -69,7 +69,7 @@ data class HetznerFirewallRule(
     val port: String? = null,
     val description: String? = null,
 ) {
-    fun logText() = "${protocol}/${direction} ${sourceIps.joinToString(", ")} -> ${destinationIps.joinToString(", ")}: ${port}"
+    fun logText() = "$protocol/$direction ${sourceIps.joinToString(", ")} -> ${destinationIps.joinToString(", ")}: $port"
 }
 
 @Serializable

@@ -30,7 +30,8 @@ import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
-class HetznerServerProvisioner(hcloudToken: String) : BaseHetznerProvisioner(hcloudToken),
+class HetznerServerProvisioner(hcloudToken: String) :
+    BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerServerLookup, HetznerServerRuntime>,
     InfrastructureResourceProvisioner<HetznerServer, HetznerServerRuntime> {
 
@@ -239,13 +240,13 @@ class HetznerServerProvisioner(hcloudToken: String) : BaseHetznerProvisioner(hcl
                         resource,
                         has_changes,
                         changes =
-                            listOf(
-                                ResourceDiffItem(
-                                    "user data checksum",
-                                    triggersRecreate = true,
-                                    changed = true,
-                                ),
+                        listOf(
+                            ResourceDiffItem(
+                                "user data checksum",
+                                triggersRecreate = true,
+                                changed = true,
                             ),
+                        ),
                     )
             val userDataHash =
                 labels.hashLabelMatches(

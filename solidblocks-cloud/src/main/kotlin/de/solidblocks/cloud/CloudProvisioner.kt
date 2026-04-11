@@ -139,7 +139,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
                     protocol = FirewallRuleProtocol.ICMP,
                     sourceIps = listOf("0.0.0.0/0", "::/0"),
                     description = "allow ICMP",
-                )
+                ),
             ),
             cloudLabels(runtime),
             cloudLabels(runtime),
@@ -203,10 +203,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
         val lookups =
             providerLookups +
-                    listOf(UserDataLookupProvider()) +
-                    (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-                            ResourceLookupProvider<*, *>,
-                            >()
+                listOf(UserDataLookupProvider()) +
+                (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
+                    ResourceLookupProvider<*, *>,
+                    >()
 
         return ProvisionersRegistry(
             lookups,

@@ -7,9 +7,9 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewall
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallRuntime
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
+import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly

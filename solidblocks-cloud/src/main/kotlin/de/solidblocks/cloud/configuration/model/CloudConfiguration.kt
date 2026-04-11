@@ -7,7 +7,4 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 
 data class CloudConfiguration(val name: String, val rootDomain: String?, val providers: List<ProviderConfiguration>, val services: List<ServiceConfiguration>) {
     fun getDefaultEnvironment() = DEFAULT_NAME
-
-    // TODO clean up when multi provider support is needed
-    fun hetznerProviderConfig() = providers.filterIsInstance<HetznerProviderConfiguration>().single()
 }

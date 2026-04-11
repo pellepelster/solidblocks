@@ -79,7 +79,6 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         }.let { Success(it) }
     }
 
-
     fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext) = if (cloud.dnsEnabled == true) {
         "http://${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
     } else {
@@ -129,17 +128,17 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                         context.ensureLookup(backupPassword).secret,
                         runtime.image,
                         runtime.endpoints.associate { 80 to it.port },
-                        serverFQDN = cloud.rootDomain?.let { "${serverName(cloud, runtime.name)}.${it}" },
+                        serverFQDN = cloud.rootDomain?.let { "${serverName(cloud, runtime.name)}.$it" },
                         environmentVariables =
-                            environmentVariables.associate {
-                                val value =
-                                    when (it) {
-                                        is EnvironmentVariableCallback -> it.value.invoke(context)
-                                        is EnvironmentVariableStatic -> it.value
-                                    }
+                        environmentVariables.associate {
+                            val value =
+                                when (it) {
+                                    is EnvironmentVariableCallback -> it.value.invoke(context)
+                                    is EnvironmentVariableStatic -> it.value
+                                }
 
-                                it.name to value
-                            },
+                            it.name to value
+                        },
                     )
                         .render()
                 },
@@ -154,12 +153,12 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                 volumes = setOf(dataVolume.asLookup(), backupVolume.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                    HetznerSubnetLookup(
-                        DEFAULT_SERVICE_SUBNET,
-                        HetznerNetworkLookup(networkName(cloud)),
-                    ),
+                HetznerSubnetLookup(
+                    DEFAULT_SERVICE_SUBNET,
+                    HetznerNetworkLookup(networkName(cloud)),
+                ),
                 privateIp = serverIp(runtime.index),
-                labels = serviceLabels(runtime) + cloudLabels(cloud)
+                labels = serviceLabels(runtime) + cloudLabels(cloud),
             )
 
         val optionalResources = if (cloud.rootDomain != null) {

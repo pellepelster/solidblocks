@@ -21,7 +21,6 @@ import kotlinx.serialization.json.Json
 class CloudStatusCommand : CliktCommand(name = "status") {
     override fun help(context: Context) = "show cloud runtime status"
 
-    
     private val configFile by argument().file(mustExist = true)
 
     override fun run() {
