@@ -89,6 +89,37 @@ class CloudManagerTest {
     }
 
     @Test
+    fun testDefaultToCloudSSHKey() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>()
+        result.data.providers shouldHaveSize 3
+
+        val managerNoDefaultSSHKey =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager("some-other.key")
+
+        val error = managerNoDefaultSSHKey.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+        error.error shouldStartWith "encrypted private keys are currently not supported"
+    }
+
+    @Test
     fun testDuplicateDefaultProvider() {
         val manager =
             """
@@ -104,7 +135,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldStartWith  "found more then one default for provider of type 'ssh_key'."
+        result.error shouldStartWith "found more then one default for provider of type 'ssh_key'."
     }
 
     @Test
@@ -266,7 +297,7 @@ class CloudManagerTest {
     }
 }
 
-fun String.createManager(): CloudManager {
+fun String.createManager(sshKeyName: String = "cloud1.key"): CloudManager {
     val tempDir = Files.createTempDirectory("test")
 
     val rawSshKey =
@@ -278,7 +309,7 @@ fun String.createManager(): CloudManager {
             .use(BufferedReader::readText)
 
     tempDir.resolve("test_ssh_open_permissions.key").writeText(rawSshKey)
-    tempDir.resolve("test_ssh.key").also {
+    tempDir.resolve(sshKeyName).also {
         it.writeText(rawSshKey)
         it.toAbsolutePath().setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
     }

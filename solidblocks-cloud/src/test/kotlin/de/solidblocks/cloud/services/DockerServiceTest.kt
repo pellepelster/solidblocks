@@ -31,8 +31,10 @@ class DockerServiceTest {
         services:
             - name: service1
               type: docker
+              image: image1
             - name: service2
               type: docker
+              image: image2
               links:
                 - service1
         """
@@ -69,7 +71,7 @@ class DockerServiceTest {
                         "image2",
                         InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
                         BackupConfig(16, 7),
-                        emptyList(),
+                        listOf(DockerServiceEndpointConfiguration(8080)),
                         listOf("docker1"),
                     ),
                 ),
@@ -80,7 +82,7 @@ class DockerServiceTest {
                 "image1",
                 InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
                 BackupConfig(16, 7),
-                emptyList(),
+                listOf(DockerServiceEndpointConfiguration(8080)),
                 listOf("docker2"),
             )
 
@@ -110,7 +112,7 @@ class DockerServiceTest {
                 "image11",
                 InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
                 BackupConfig(16, 7),
-                emptyList(),
+                listOf(DockerServiceEndpointConfiguration(8080)),
                 listOf("docker3"),
             )
 
@@ -135,7 +137,7 @@ class DockerServiceTest {
                 "image1",
                 InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
                 BackupConfig(16, 7),
-                emptyList(),
+                listOf(DockerServiceEndpointConfiguration(8080)),
                 listOf("docker1"),
             )
         val cloud =
@@ -180,6 +182,32 @@ class DockerServiceTest {
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
-        result.error shouldBe "duplicated port config for port '8080' for service 'docker1'"
+        result.error shouldBe "more than one endpoint is currently not supported for service 'docker1'"
+    }
+
+    @Test
+    fun testNoEndpointConfig() {
+        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), emptyList())
+        val configuration =
+            DockerServiceConfiguration(
+                "docker1",
+                "image1",
+                InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+                BackupConfig(16, 7),
+                emptyList(),
+                emptyList(),
+            )
+
+        val result =
+            DockerServiceManager()
+                .validateConfiguration(
+                    2,
+                    cloud,
+                    configuration,
+                    TEST_PROVISIONER_CONTEXT,
+                    TEST_LOG_CONTEXT,
+                )
+                .shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
+        result.error shouldBe "no endpoint configured for service 'docker1'"
     }
 }

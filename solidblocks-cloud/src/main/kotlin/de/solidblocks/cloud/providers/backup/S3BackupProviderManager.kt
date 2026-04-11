@@ -26,7 +26,6 @@ class S3BackupProviderManager :
     private val logger = KotlinLogging.logger {}
 
     override fun validate(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderRuntime> {
-
         if (getEnvOrProperty("AWS_ACCESS_KEY_ID") == null) {
             return Error("environment variable 'AWS_ACCESS_KEY_ID' not set")
         }

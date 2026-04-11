@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.firewall
 
-import de.solidblocks.cloud.Constants
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
@@ -57,10 +56,10 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
                 ResourceDiffItem(
                     "rules",
                     changed = true,
-                    expectedValue = resource.rules.joinToStringOrEmpty {
+                    expectedValue = resource.rules.joinToStringOrEmpty("; ") {
                         it.logText()
                     },
-                    actualValue = runtime.rules.joinToStringOrEmpty {
+                    actualValue = runtime.rules.joinToStringOrEmpty("; ") {
                         it.logText()
                     },
                 ),
@@ -111,30 +110,26 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
             }
         }
 
-        val fw = lookup(resource.asLookup(), context)
+        val fw = lookup(resource.asLookup(), context) ?: return Error("error applying ${resource.logText()}")
 
-        if (fw == null) {
-            return Error("error applying ${resource.logText()}")
-        }
-
-        return try {
-            api.firewalls.applyToResources(
-                fw.id,
-                FirewallApplyToResourcesRequest(
-                    listOf(
-                        FirewallResource(FirewallResourceType.LABEL_SELECTOR, labelSelector = FirewallLabelSelector(resource.appliedToLabels.map { "${it.key}=${it.value}" }.joinToString(","))),
+        if (resource.appliedToLabels.isNotEmpty()) {
+            try {
+                api.firewalls.applyToResources(
+                    fw.id,
+                    FirewallApplyToResourcesRequest(
+                        listOf(
+                            FirewallResource(FirewallResourceType.LABEL_SELECTOR, labelSelector = FirewallLabelSelector(resource.appliedToLabels.map { "${it.key}=${it.value}" }.joinToString(","))),
+                        ),
                     ),
-                ),
-            )
-
-            Success(fw)
-        } catch (e: HetznerApiException) {
-            if (e.error.code == HetznerApiErrorType.FIREWALL_ALREADY_APPLIED) {
-                Success(fw)
-            } else {
-                Error(e.error.message)
+                )
+            } catch (e: HetznerApiException) {
+                if (e.error.code != HetznerApiErrorType.FIREWALL_ALREADY_APPLIED) {
+                    return Error(e.error.message)
+                }
             }
         }
+
+        return Success(fw)
     }
 
     override suspend fun destroy(resource: HetznerFirewall, context: CloudProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let { api.firewalls.delete(it.id) } ?: false

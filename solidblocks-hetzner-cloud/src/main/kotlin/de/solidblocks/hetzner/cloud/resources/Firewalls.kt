@@ -69,7 +69,23 @@ data class HetznerFirewallRule(
     val port: String? = null,
     val description: String? = null,
 ) {
-    fun logText() = "$protocol/$direction ${sourceIps.joinToString(", ")} -> ${destinationIps.joinToString(", ")}: $port"
+    fun logText() = if (direction == FirewallRuleDirection.IN) {
+        "${sourceIps.joinToString(", ") { "'$it'" }} -> ${
+            if (protocol == FirewallRuleProtocol.ICMP) {
+                "ICMP"
+            } else {
+                "$protocol/${port ?: "<none>"}"
+            }
+        }"
+    } else {
+        "${sourceIps.joinToString(", ") { "'$it'" }} -> ${destinationIps.joinToString(", ") { "'$it'" }} ${
+            if (protocol == FirewallRuleProtocol.ICMP) {
+                "ICMP"
+            } else {
+                "$protocol/${port ?: "<none>"}"
+            }
+        }"
+    }
 }
 
 @Serializable

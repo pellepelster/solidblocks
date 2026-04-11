@@ -110,7 +110,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
                         if (it.isEmpty()) {
                             "<none>"
                         } else {
-                            it.joinToString(", ") { "${it.id} (${it.id})" }
+                            it.joinToString(", ") { "${it.name} (${it.id})" }
                         }
                     }
                 }",

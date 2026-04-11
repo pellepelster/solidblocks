@@ -85,8 +85,8 @@ class HetznerFirewallProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "rules"
-                it.changes[0].expectedValue shouldBe 1
-                it.changes[0].actualValue shouldBe 2
+                it.changes[0].expectedValue shouldBe "'0.0.0.0/0', '::/0' -> ICMP"
+                it.changes[0].actualValue shouldBe "'0.0.0.0/0', '::/0' -> TCP/80; '0.0.0.0/0', '::/0' -> TCP/443"
             }
 
             provisioner
