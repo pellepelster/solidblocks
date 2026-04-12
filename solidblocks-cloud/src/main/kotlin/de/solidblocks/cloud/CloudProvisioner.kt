@@ -194,10 +194,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
         val lookups =
             providerLookups +
-                    listOf(UserDataLookupProvider()) +
-                    (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-                            ResourceLookupProvider<*, *>,
-                            >()
+                listOf(UserDataLookupProvider()) +
+                (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
+                    ResourceLookupProvider<*, *>,
+                    >()
 
         return ProvisionersRegistry(
             lookups,

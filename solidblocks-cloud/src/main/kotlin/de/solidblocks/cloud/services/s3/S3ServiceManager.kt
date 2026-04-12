@@ -325,7 +325,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             runtime.name,
             listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
             listOf(
-                EndpointInfo("s3","https://${s3Host(serviceRootDomain(cloud, runtime))}"),
+                EndpointInfo("s3", "https://${s3Host(serviceRootDomain(cloud, runtime))}"),
                 EndpointInfo("admin", "https://${s3AdminHost(serviceRootDomain(cloud, runtime))}"),
             ),
         ),

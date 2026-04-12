@@ -61,13 +61,12 @@ If the configured cloud provider supports DNS, switching to DNS based endpoints 
 
 ## Backup & Restore
 
-To protect your data, Solidblocks includes automatic backup and restore functionality. 
+To protect your data, Solidblocks includes automatic backup and restore functionality. Besides backup to locally attached disks backups can also be written to AWS S3 buckets, allowing for a complete disaster recovery of the system state from only S3. 
+
+{{< asciicast src="/cloud/casts/quickstart_s3.cast" >}}
 
 ## Help
 
-* ssh access
-* connect to db help
+Context-sensitive information and error messages help connecting to the deployed services.
 
-## Status
-
-* show backup status
+{{< asciicast src="/cloud/casts/quickstart_help.cast" >}}

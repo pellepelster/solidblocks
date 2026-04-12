@@ -44,10 +44,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
 
-    private fun superUserPasswordSecret(
-        cloud: CloudConfigurationRuntime,
-        runtime: PostgresSqlServiceConfigurationRuntime
-    ): PassSecret = PassSecret(secretPath(cloud, runtime, listOf("superuser", "password")))
+    private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): PassSecret = PassSecret(secretPath(cloud, runtime, listOf("superuser", "password")))
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
         val result = context.createOrGetSshClient(HetznerServerLookup(serverName(cloud, runtime.name))).command(BACKUP_STATUS_COMMAND)
@@ -88,21 +85,21 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             ),
         )
     } +
-            listOf(
-                EnvironmentVariableCallback(
-                    sanitizeEnvironmentVariables("DATABASE_HOST"),
-                    "host address for service '${runtime.name}'",
-                    {
-                        it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
-                            .privateIpv4 ?: throw RuntimeException("no private ip address found")
-                    },
-                ),
-                EnvironmentVariableStatic(
-                    sanitizeEnvironmentVariables("DATABASE_PORT"),
-                    "database port for service '${runtime.name}'",
-                    "5432",
-                ),
-            )
+        listOf(
+            EnvironmentVariableCallback(
+                sanitizeEnvironmentVariables("DATABASE_HOST"),
+                "host address for service '${runtime.name}'",
+                {
+                    it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
+                        .privateIpv4 ?: throw RuntimeException("no private ip address found")
+                },
+            ),
+            EnvironmentVariableStatic(
+                sanitizeEnvironmentVariables("DATABASE_PORT"),
+                "database port for service '${runtime.name}'",
+                "5432",
+            ),
+        )
 
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext) = Success(
         ServiceInfo(
@@ -123,9 +120,9 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             h1("Service '${runtime.name}'")
 
             h2("Servers")
-            text("to access server **${serverName}** via SSH, run")
+            text("to access server **$serverName** via SSH, run")
             codeBlock(
-                "ssh -F ${sshConfigFilePath} ${serverName}",
+                "ssh -F $sshConfigFilePath $serverName",
             )
 
             h2("Endpoints")
@@ -138,8 +135,8 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             text("to open a tunnel to the database run")
             codeBlock(
                 """
-                ssh -F ${sshConfigFilePath} -L 5432:localhost:5432 ${serverName}
-                """.trimIndent()
+                ssh -F $sshConfigFilePath -L 5432:localhost:5432 $serverName
+                """.trimIndent(),
             )
             text("\n")
 
@@ -148,7 +145,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 """
                 ${superUserPasswordSecret(cloud, runtime).shellExportCommand("PGPASSWORD")}
                 psql --host localhost --user rds postgres
-                """.trimIndent()
+                """.trimIndent(),
             )
 
             text("\n")
@@ -159,9 +156,8 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                     """
                 ${defaultDatabaseUserPassword(cloud, runtime, it).shellExportCommand("PGPASSWORD")}
                 psql --host localhost --user ${defaultDatabaseUserName(cloud, runtime, it)} ${it.name}
-                """.trimIndent()
+                    """.trimIndent(),
                 )
-
             }
 
             /*
@@ -209,13 +205,13 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                    HetznerSubnetLookup(
-                        DEFAULT_SERVICE_SUBNET,
-                        HetznerNetworkLookup(networkName(cloud)),
-                    ),
+                HetznerSubnetLookup(
+                    DEFAULT_SERVICE_SUBNET,
+                    HetznerNetworkLookup(networkName(cloud)),
+                ),
                 privateIp = serverIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud),
-                dependsOn = backupResources.first
+                dependsOn = backupResources.first,
             )
 
         val databaseResources =
@@ -293,4 +289,3 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     override val supportedRuntime = PostgresSqlServiceConfigurationRuntime::class
 }
-

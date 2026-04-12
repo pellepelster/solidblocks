@@ -40,14 +40,14 @@ class IntegrationTest {
 
     @Test
     fun testCloudLocalBackup(context: SolidblocksTestContext) {
-        val cloudConfig = Path.of(ClassLoader.getSystemResource("test1.yaml").toURI());
+        val cloudConfig = Path.of(ClassLoader.getSystemResource("test1.yaml").toURI())
 
         assertSoftly(context.local().command("$blcksCommand", "hetzner", "nuke", "--do-nuke").timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()) { result ->
             result shouldHaveExitCode 0
         }
 
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "plan", cloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()
+            context.local().command("$blcksCommand", "cloud", "plan", cloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             listOf(
@@ -68,7 +68,7 @@ class IntegrationTest {
         }
 
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "apply", cloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()
+            context.local().command("$blcksCommand", "cloud", "apply", cloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             result stdoutShouldContain "ssh config file for cloud 'cloud1' written to"

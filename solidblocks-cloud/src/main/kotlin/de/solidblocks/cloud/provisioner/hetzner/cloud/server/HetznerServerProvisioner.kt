@@ -67,18 +67,8 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
         val volumes =
             resource.volumes.map {
-                val volume =
-                    context.lookup(it)
-                        ?: return Error<HetznerServerRuntime>("failed to resolve ${it.logText()}")
-
-                /*
-                if (volume.server != null) {
-                    return Error<HetznerServerRuntime>(
-                        "${it.logText()} already attached to server ${volume.server}",
-                    )
-                }*/
-
-                volume
+                context.lookup(it)
+                    ?: return Error<HetznerServerRuntime>("failed to resolve ${it.logText()}")
             }
 
         val userData = context.ensureLookup(resource.userData)
@@ -234,20 +224,28 @@ class HetznerServerProvisioner(hcloudToken: String) :
                 )
             }
 
-            val userData =
+            val userData = try {
                 context.lookup(resource.userData)
-                    ?: return ResourceDiff(
-                        resource,
-                        has_changes,
-                        changes =
-                        listOf(
-                            ResourceDiffItem(
-                                "user data checksum",
-                                triggersRecreate = true,
-                                changed = true,
-                            ),
+            } catch (e: Exception) {
+                // TODO create test
+                logger.warn { "to lookup ${resource.userData.logText()}" }
+                null
+            }
+
+            if (userData == null) {
+                return ResourceDiff(
+                    resource,
+                    has_changes,
+                    changes =
+                    listOf(
+                        ResourceDiffItem(
+                            "user data checksum",
+                            triggersRecreate = true,
+                            changed = true,
                         ),
-                    )
+                    ),
+                )
+            }
             val userDataHash =
                 labels.hashLabelMatches(
                     userDataLabel,

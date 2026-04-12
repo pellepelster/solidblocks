@@ -20,7 +20,11 @@ class PassSecretProvisionerTest {
 
     @Test
     fun testFlow() {
-        val resource = PassSecret("testCloudName/some/extra/path/secret1", 13)
+        val secretPath = "testCloudName/some/extra/path/secret1"
+        val resource = PassSecret(secretPath, 13)
+        val newSecret = PassSecret(secretPath, secret = {
+            "new-secret"
+        })
         val provisioner = PassSecretProvisioner()
 
         runCommand(listOf("pass", "rm", "--force", "--recursive", "testCloudName"))
@@ -38,6 +42,10 @@ class PassSecretProvisionerTest {
 
             assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
                 it!!.status shouldBe ResourceDiffStatus.up_to_date
+            }
+
+            assertSoftly(provisioner.diff(newSecret, TEST_PROVISIONER_CONTEXT)) {
+                it!!.status shouldBe ResourceDiffStatus.has_changes
             }
 
             provisioner.apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
@@ -59,13 +67,11 @@ class PassSecretProvisionerTest {
                 it!!.status shouldBe ResourceDiffStatus.up_to_date
             }
 
-            val newSecret = PassSecret("testCloudName/some/extra/path/secret1", secret = {
-                "new-secret"
-            })
-
+            /**
+             * overwrite secret
+             */
             provisioner.apply(newSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
             provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)?.secret shouldBe "new-secret"
-
         }
     }
 }

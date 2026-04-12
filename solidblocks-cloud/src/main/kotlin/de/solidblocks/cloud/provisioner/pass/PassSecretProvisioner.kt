@@ -2,6 +2,8 @@ package de.solidblocks.cloud.provisioner.pass
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
@@ -22,10 +24,16 @@ class PassSecretProvisioner(val path: String? = null) :
     override suspend fun diff(resource: PassSecret, context: CloudProvisionerContext): ResourceDiff? {
         val runtime = lookup(resource.asLookup(), context)
 
-        return if (runtime != null) {
-            ResourceDiff(resource, up_to_date)
+        if (runtime != null) {
+            resource.secret?.also {
+                if (runtime.secret != it.invoke(context)) {
+                    return ResourceDiff(resource, has_changes)
+                }
+            }
+
+            return ResourceDiff(resource, up_to_date)
         } else {
-            ResourceDiff(resource, missing)
+            return ResourceDiff(resource, missing)
         }
     }
 
@@ -56,7 +64,7 @@ class PassSecretProvisioner(val path: String? = null) :
     override suspend fun apply(resource: PassSecret, context: CloudProvisionerContext, log: LogContext): Result<PassSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
-        if (current != null && !resource.tainted) {
+        if (current != null && !resource.tainted && resource.secret == null) {
             return Success(current)
         }
 
