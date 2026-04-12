@@ -6,6 +6,7 @@ import io.kotest.matchers.*
 import io.kotest.matchers.comparables.gt
 import io.kotest.matchers.comparables.lt
 import io.kotest.matchers.string.match
+import io.kotest.matchers.string.shouldContain
 import kotlin.time.Duration
 
 fun haveExitCode(exitCode: Int) = Matcher<CommandResult<*>> { value ->
@@ -78,5 +79,15 @@ infix fun CommandResult<*>.outputShouldBe(expected: String): CommandResult<*> {
 
 infix fun CommandResult<*>.stderrShouldMatch(regex: String): CommandResult<*> {
     this.stderr should match(regex.toRegex(setOf(RegexOption.MULTILINE, RegexOption.DOT_MATCHES_ALL)))
+    return this
+}
+
+infix fun CommandResult<*>.stderrShouldContain(substring: String): CommandResult<*> {
+    this.stderr shouldContain substring
+    return this
+}
+
+infix fun CommandResult<*>.stdoutShouldContain(substring: String): CommandResult<*> {
+    this.stdout shouldContain substring
     return this
 }

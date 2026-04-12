@@ -5,6 +5,7 @@ providers:
   - type: pass
   - type: ssh_key
   - type: hcloud
+  - type: backup_local
 
 services:
   - type: postgresql
