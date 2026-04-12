@@ -41,7 +41,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         ServiceInfo(
             runtime.name,
             listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
-            listOf(EndpointInfo(endpoint(cloud, runtime, context))),
+            listOf(EndpointInfo("web", endpoint(cloud, runtime, context))),
         ),
     )
 

@@ -68,6 +68,7 @@ class GenericDockerServiceUserData(
             )
 
         val userData = ShellScript()
+
         userData.addInlineSource(UtilsLibrary)
         userData.addInlineSource(AptLibrary)
         userData.addInlineSource(CurlLibrary)

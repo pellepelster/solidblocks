@@ -15,7 +15,6 @@ import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.markdown
 import de.solidblocks.cloud.pgbackrest.model.parsePgBackRestInfoOutput
-import de.solidblocks.cloud.providers.types.backup.backupSecretResource
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
@@ -26,31 +25,15 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.services.BackupRuntime
-import de.solidblocks.cloud.services.EndpointInfo
-import de.solidblocks.cloud.services.EnvironmentVariableCallback
-import de.solidblocks.cloud.services.EnvironmentVariableStatic
-import de.solidblocks.cloud.services.InstanceRuntime
-import de.solidblocks.cloud.services.ServerInfo
-import de.solidblocks.cloud.services.ServiceInfo
-import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseUsersConfigurationRuntime
-import de.solidblocks.cloud.services.sshConnectCommand
-import de.solidblocks.cloud.utils.ByteSize
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.formatBytes
-import de.solidblocks.cloud.utils.formatLocale
-import de.solidblocks.cloudinit.BackupConfiguration
-import de.solidblocks.cloudinit.LocalBackupTarget
+import de.solidblocks.cloud.utils.*
 import de.solidblocks.cloudinit.postgresql.PostgresqlUserData
 import de.solidblocks.cloudinit.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.utils.LogContext
@@ -60,6 +43,11 @@ import java.time.Duration
 class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
+
+    private fun superUserPasswordSecret(
+        cloud: CloudConfigurationRuntime,
+        runtime: PostgresSqlServiceConfigurationRuntime
+    ): PassSecret = PassSecret(secretPath(cloud, runtime, listOf("superuser", "password")))
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
         val result = context.createOrGetSshClient(HetznerServerLookup(serverName(cloud, runtime.name))).command(BACKUP_STATUS_COMMAND)
@@ -100,45 +88,81 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             ),
         )
     } +
-        listOf(
-            EnvironmentVariableCallback(
-                sanitizeEnvironmentVariables("DATABASE_HOST"),
-                "host address for service '${runtime.name}'",
-                {
-                    it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
-                        .privateIpv4 ?: throw RuntimeException("no private ip address found")
-                },
-            ),
-            EnvironmentVariableStatic(
-                sanitizeEnvironmentVariables("DATABASE_PORT"),
-                "database port for service '${runtime.name}'",
-                "5432",
-            ),
-        )
+            listOf(
+                EnvironmentVariableCallback(
+                    sanitizeEnvironmentVariables("DATABASE_HOST"),
+                    "host address for service '${runtime.name}'",
+                    {
+                        it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
+                            .privateIpv4 ?: throw RuntimeException("no private ip address found")
+                    },
+                ),
+                EnvironmentVariableStatic(
+                    sanitizeEnvironmentVariables("DATABASE_PORT"),
+                    "database port for service '${runtime.name}'",
+                    "5432",
+                ),
+            )
 
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext) = Success(
         ServiceInfo(
             runtime.name,
             listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
-            runtime.databases.map { EndpointInfo(endpoint(cloud, runtime, context, it)) },
+            runtime.databases.map { EndpointInfo("jdbc", jdbcEndpoint(cloud, runtime, context, it)) },
         ),
     )
 
-    fun endpoint(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
+    fun jdbcEndpoint(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
         "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.privateIpv4 ?: "<unknown>"}/${database.name}"
 
     override fun infoText(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
         markdown {
+            val sshConfigFilePath = Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.environment.cloud))
+            val serverName = serverName(cloud, runtime.name)
+
             h1("Service '${runtime.name}'")
 
             h2("Servers")
-            text("to access server **${serverName(cloud, runtime.name)}** via SSH, run")
+            text("to access server **${serverName}** via SSH, run")
             codeBlock(
-                "ssh -F ${Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.environment.cloud))} ${serverName(cloud, runtime.name)}",
+                "ssh -F ${sshConfigFilePath} ${serverName}",
             )
 
             h2("Endpoints")
-            list { runtime.databases.forEach { text(endpoint(cloud, runtime, context, it)) } }
+            list {
+                runtime.databases.forEach { item("JDBC: ${jdbcEndpoint(cloud, runtime, context, it)}") }
+            }
+
+            h2("Database")
+
+            text("to open a tunnel to the database run")
+            codeBlock(
+                """
+                ssh -F ${sshConfigFilePath} -L 5432:localhost:5432 ${serverName}
+                """.trimIndent()
+            )
+            text("\n")
+
+            text("connect to the database **postgres**")
+            codeBlock(
+                """
+                ${superUserPasswordSecret(cloud, runtime).shellExportCommand("PGPASSWORD")}
+                psql --host localhost --user rds postgres
+                """.trimIndent()
+            )
+
+            text("\n")
+
+            runtime.databases.forEach {
+                text("connect to the database **${it.name}** run")
+                codeBlock(
+                    """
+                ${defaultDatabaseUserPassword(cloud, runtime, it).shellExportCommand("PGPASSWORD")}
+                psql --host localhost --user ${defaultDatabaseUserName(cloud, runtime, it)} ${it.name}
+                """.trimIndent()
+                )
+
+            }
 
             /*
             table {
@@ -161,7 +185,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
-        val superUserPassword = PassSecret(secretPath(cloud, runtime, listOf("superuser", "password")))
+        val superUserPassword = superUserPasswordSecret(cloud, runtime)
 
         val userData =
             UserData(
@@ -185,12 +209,13 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
-                    HetznerNetworkLookup(networkName(cloud)),
-                ),
+                    HetznerSubnetLookup(
+                        DEFAULT_SERVICE_SUBNET,
+                        HetznerNetworkLookup(networkName(cloud)),
+                    ),
                 privateIp = serverIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud),
+                dependsOn = backupResources.first
             )
 
         val databaseResources =
@@ -268,3 +293,4 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     override val supportedRuntime = PostgresSqlServiceConfigurationRuntime::class
 }
+

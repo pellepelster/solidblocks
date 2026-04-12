@@ -58,6 +58,14 @@ class PassSecretProvisionerTest {
             assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
                 it!!.status shouldBe ResourceDiffStatus.up_to_date
             }
+
+            val newSecret = PassSecret("testCloudName/some/extra/path/secret1", secret = {
+                "new-secret"
+            })
+
+            provisioner.apply(newSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)?.secret shouldBe "new-secret"
+
         }
     }
 }

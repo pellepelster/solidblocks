@@ -7,7 +7,7 @@ import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import kotlinx.serialization.Serializable
 import java.nio.file.Path
 
-@Serializable data class EndpointInfo(val url: String)
+@Serializable data class EndpointInfo(val type: String, val url: String)
 
 @Serializable data class ServerInfo(val sshConnectCommand: String)
 

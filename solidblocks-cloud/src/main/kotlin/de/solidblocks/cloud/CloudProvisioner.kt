@@ -5,7 +5,6 @@ import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.firewallName
 import de.solidblocks.cloud.Constants.networkName
-import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
@@ -29,7 +28,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
-import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
@@ -51,15 +49,14 @@ import kotlin.io.path.absolutePathString
 class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegistrations: List<ServiceRegistration<*, *>>, val providerRegistrations: List<ProviderRegistration<*, *, *>>) : Closeable {
     val registry = createRegistry()
 
-    val context =
-        ProvisionerContext(
-            runtime.providers.sshKeyProvider().keyPair,
-            runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
-            runtime.context.configFileDirectory,
-            EnvironmentReference(runtime.name, runtime.getDefaultEnvironment()),
-            registry,
-            serviceRegistrations,
-        )
+    val context = ProvisionerContext(
+        runtime.providers.sshKeyProvider().keyPair,
+        runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
+        runtime.context.configFileDirectory,
+        EnvironmentReference(runtime.name, runtime.getDefaultEnvironment()),
+        registry,
+        serviceRegistrations,
+    )
 
     fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
         val provisioner = createProvisioner()
@@ -197,10 +194,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
         val lookups =
             providerLookups +
-                listOf(UserDataLookupProvider()) +
-                (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-                    ResourceLookupProvider<*, *>,
-                    >()
+                    listOf(UserDataLookupProvider()) +
+                    (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
+                            ResourceLookupProvider<*, *>,
+                            >()
 
         return ProvisionersRegistry(
             lookups,

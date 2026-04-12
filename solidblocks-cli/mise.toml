@@ -101,6 +101,13 @@ run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
 [tasks.release-prepare]
 run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+(
+  cd casts
+  asciinema cat cloud1.yaml.cast ssh-keygen.cast blcks_apply.cast call_endpoint.cast > ${ROOT_PROJECT}/doc/content/cloud/casts/quickstart.cast
+  asciinema cat dns_activate.cast dns_blcks_apply.cast dns_call_endpoint.cast > ${ROOT_PROJECT}/doc/content/cloud/casts/quickstart_dns.cast
+)
 ${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration-hugo ${ROOT_PROJECT}/doc/content/cloud/configuration.md"
 """
 

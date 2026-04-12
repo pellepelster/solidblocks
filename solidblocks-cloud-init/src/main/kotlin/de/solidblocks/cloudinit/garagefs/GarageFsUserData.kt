@@ -50,7 +50,6 @@ class GarageFsUserData(
 
     override fun render(): String {
         val storageMount = "/storage/data"
-        val backupMount = "/storage/backup"
         val serviceDataDir = "$storageMount/$serviceName"
         val caddyDataDir = "$serviceDataDir/www"
         val garageFsDataDir = "$serviceDataDir/garage"
@@ -82,6 +81,7 @@ class GarageFsUserData(
             )
 
         val userData = ShellScript()
+
         userData.addInlineSource(UtilsLibrary)
         userData.addInlineSource(AptLibrary)
         userData.addInlineSource(CurlLibrary)
