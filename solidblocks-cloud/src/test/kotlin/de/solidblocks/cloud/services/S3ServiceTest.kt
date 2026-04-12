@@ -96,8 +96,8 @@ class S3ServiceTest {
                                 "bucket1",
                                 false,
                                 listOf(
-                                    S3ServiceBucketAccessKeyConfiguration("name1"),
-                                    S3ServiceBucketAccessKeyConfiguration("name1"),
+                                    S3ServiceBucketAccessKeyConfiguration("name1", true, true, true),
+                                    S3ServiceBucketAccessKeyConfiguration("name1", true, true, true),
                                 ),
                                 emptyList(),
                             ),

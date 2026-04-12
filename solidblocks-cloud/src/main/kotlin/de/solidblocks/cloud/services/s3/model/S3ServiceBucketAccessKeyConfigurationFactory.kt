@@ -66,6 +66,24 @@ class S3ServiceBucketAccessKeyConfigurationFactory : ConfigurationFactory<S3Serv
                 is Success<String> -> result.data
             }
 
-        return Success(S3ServiceBucketAccessKeyConfiguration(name))
+        val owner =
+            when (val result = owner.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<Boolean> -> result.data
+            }
+
+        val read =
+            when (val result = read.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<Boolean> -> result.data
+            }
+
+        val write =
+            when (val result = write.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<Boolean> -> result.data
+            }
+
+        return Success(S3ServiceBucketAccessKeyConfiguration(name, owner, read, write))
     }
 }

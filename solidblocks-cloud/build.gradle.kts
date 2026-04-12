@@ -17,7 +17,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
 
-    implementation("org.jgrapht:jgrapht-core:1.5.1")
+    implementation("org.jgrapht:jgrapht-core:1.5.3")
+    //implementation("org.jgrapht:jgrapht-io:1.5.3")
+
     implementation("com.charleskorn.kaml:kaml:0.83.0")
 
     implementation("io.ktor:ktor-client-resources:3.1.2")

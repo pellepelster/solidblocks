@@ -71,11 +71,12 @@ function task_clean_aws {
     --force
 }
 
-function task_test_init_aws {
+function task_test_init_dev {
   (
     export AWS_REGION="eu-central-1"
     export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-$(pass solidblocks/aws/admin/access_key_id)}"
     export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-$(pass solidblocks/aws/admin/secret_access_key)}"
+    export GITHUB_TOKEN="${GITHUB_TOKEN:-$(pass github/pellepelster/pat/admin)}"
 
     cd "contrib/terraform/test"
     terraform init -upgrade -migrate-state

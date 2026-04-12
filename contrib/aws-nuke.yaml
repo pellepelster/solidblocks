@@ -11,7 +11,8 @@ presets:
       IAMUserPolicyAttachment:
         - "admin -> AdministratorAccess"
       IAMUserPolicy:
-        - "test-blcks -> test-blcks"
+        - "test-blcks-iam -> test-blcks-iam"
+        - "test-blcks-s3 -> test-blcks-s3"
       IAMUserAccessKey:
         - "admin -> AKIA5VENMCB5IINZHWEO"
         - "test-blcks -> AKIA5VENMCB5G27HDC6O"

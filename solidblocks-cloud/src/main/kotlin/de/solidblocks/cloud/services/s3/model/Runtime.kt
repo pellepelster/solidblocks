@@ -12,7 +12,7 @@ data class S3ServiceBucketConfigurationRuntime(
     val manuallyManagedPublicWebAccessDomains: Set<String>,
 )
 
-data class S3ServiceBucketAccessKeyConfigurationRuntime(val name: String)
+data class S3ServiceBucketAccessKeyConfigurationRuntime(val name: String, val owner: Boolean, val read: Boolean, val write: Boolean)
 
 data class S3ServiceConfigurationRuntime(
     override val index: Int,

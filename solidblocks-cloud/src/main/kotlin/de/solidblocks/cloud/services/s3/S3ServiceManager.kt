@@ -87,8 +87,6 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 allowedChars = ('a'..'f') + ('0'..'9'),
             )
 
-        val backupPassword = backupSecretResource(cloud).asLookup()
-
         val userData =
             UserData(
                 setOf(dataVolume, adminToken, rpcSecret, metricsToken) + backupResources.first,
@@ -201,23 +199,23 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         secretPath(cloud, runtime, listOf(accessKeyRuntime.name)),
                         server,
                         adminToken,
-                        setOf(layout),
+                        setOf(bucket),
                     )
                 bucketResources.add(accessKey)
 
                 bucketResources.add(
                     PassSecret(
-                        secretPath(cloud, runtime, listOf(accessKeyRuntime.name, "secret_key")),
+                        secretPath(cloud, runtime, listOf(bucket.name, accessKeyRuntime.name, "secret_key")),
                         secret = { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
-                        dependsOn = setOf(accessKey),
+                        dependsOn = setOf(accessKey.asLookup()),
                     ),
                 )
 
                 bucketResources.add(
                     PassSecret(
-                        secretPath(cloud, runtime, listOf(accessKeyRuntime.name, "access_key")),
+                        secretPath(cloud, runtime, listOf(bucket.name, accessKeyRuntime.name, "access_key")),
                         secret = { it.ensureLookup(accessKey.asLookup()).id },
-                        dependsOn = setOf(accessKey),
+                        dependsOn = setOf(accessKey.asLookup()),
                     ),
                 )
 
@@ -230,7 +228,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         true,
                         true,
                         true,
-                        setOf(layout),
+                        setOf(bucket),
                     )
                 bucketResources.add(permission)
             }
@@ -291,8 +289,12 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     val dnsZones: List<HetznerDnsZoneRuntime> = runBlocking {
                         context.list(HetznerDnsZoneLookup::class)
                     }
-
                     log.info("validating bucket configuration for bucket '${bucket.name}'")
+                    val bucketLog = log.indent()
+                    bucket.accessKeys.forEach { accessKey ->
+                        bucketLog.info("found access key config '${accessKey.name}'")
+                    }
+
                     bucket.publicAccessDomains.forEach { publicAccessDomain ->
                         val matchingDnsZones = dnsZones.filter { publicAccessDomain.endsWith(it.name) }
 
@@ -303,7 +305,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                                     .removeSuffix("."),
                             ] = matchingDnsZones.single().name
                         } else {
-                            log.indent().warning("public access domain '$publicAccessDomain' is not managed by any cloud provider, records must me manually created/updated")
+                            bucketLog.indent().warning("public access domain '$publicAccessDomain' is not managed by any cloud provider, records must me manually created/updated")
                             manuallyManagedPublicAccessDomains.add(publicAccessDomain)
                         }
                     }
@@ -311,7 +313,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     S3ServiceBucketConfigurationRuntime(
                         bucket.name,
                         bucket.publicAccess,
-                        bucket.accessKeys.map { S3ServiceBucketAccessKeyConfigurationRuntime(it.name) },
+                        bucket.accessKeys.map { S3ServiceBucketAccessKeyConfigurationRuntime(it.name, it.owner, it.read, it.write) },
                         managedPublicAccessDomains,
                         manuallyManagedPublicAccessDomains,
                     )

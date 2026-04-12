@@ -130,15 +130,15 @@ set -eu -o pipefail
 HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token) blcks hetzner nuke --do-nuke
 """
 
-[tasks.init-aws]
+[tasks.init-dev]
+description="initialize cloud accounts for development and integrations"
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
 source mise.sh
-task_test_init_aws
+task_test_init_dev
 """
-
 
 [tasks.release-artifacts]
 run = """

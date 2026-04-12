@@ -10,6 +10,8 @@ import org.jgrapht.Graph
 import org.jgrapht.graph.DefaultDirectedGraph
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.traverse.TopologicalOrderIterator
+import java.io.StringWriter
+import java.io.Writer
 import java.util.*
 
 fun Map<ResourceGroup, List<ResourceDiff>>.allDiffs() = this.flatMap { it.value }
@@ -43,7 +45,9 @@ fun List<BaseResource>.hierarchicalResourceList(): List<BaseResource> {
     val orderIterator = TopologicalOrderIterator(graph)
 
     val result = ArrayList<BaseResource>()
-    orderIterator.forEachRemaining { result.add(it) }
+    orderIterator.forEachRemaining {
+        result.add(it)
+    }
     result.reverse()
 
     return result
