@@ -225,9 +225,9 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         accessKey,
                         server,
                         adminToken,
-                        true,
-                        true,
-                        true,
+                        accessKeyRuntime.owner,
+                        accessKeyRuntime.read,
+                        accessKeyRuntime.write,
                         setOf(bucket),
                     )
                 bucketResources.add(permission)
