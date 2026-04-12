@@ -144,8 +144,8 @@ jobs:
           cp ./blcks ./solidblocks-cli/blcks
       - name: Test Integration
         shell: bash
-        working-directory: solidblocks-cli/
-        run: mise run :test-integration
+        run: ./gradlew :solidblocks-cli:testIntegration
+
 
   solidblocks-shell:
     runs-on: ubuntu-24.04
