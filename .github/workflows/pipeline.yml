@@ -130,15 +130,9 @@ jobs:
           experimental: true
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
-      - name: Install terraform
-        uses: hashicorp/setup-terraform@v3
       - name: Rename blcks
         shell: bash
         run: |
-          if [[ "${BUILD_FAST:-}" == "true" ]]; then
-            exit 0
-          fi
-
           find ./solidblocks-cli-${{ matrix.job.target }} -name "blcks-cli-*.zip" -exec unzip {} \;
           chmod +x ./blcks
           cp ./blcks ./solidblocks-cli/blcks
