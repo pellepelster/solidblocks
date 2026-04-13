@@ -62,9 +62,9 @@ fun generateRandomString(length: Int = 12): String {
     return (1..length).map { chars.random() }.joinToString("")
 }
 
-fun generateTestId(length: Int = 12) = generateRandomString(length).generateTestId(length)
+fun generateTestId(length: Int = 12) = generateRandomString(length).generateStableTestId(length)
 
-fun String.generateTestId(length: Int = 12): String {
+fun String.generateStableTestId(length: Int = 12): String {
     val digest = MessageDigest.getInstance("SHA-256")
     val alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     val base = alphanumeric.length

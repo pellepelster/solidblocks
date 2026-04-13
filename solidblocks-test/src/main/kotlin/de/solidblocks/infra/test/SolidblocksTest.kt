@@ -16,7 +16,7 @@ public class SolidblocksTest :
     override fun supportsParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext) = parameterContext.parameter.type == SolidblocksTestContext::class.java
 
     override fun resolveParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext) = contexts.getOrPut(extensionContext.uniqueId) {
-        val testId = extensionContext.uniqueId.generateTestId()
+        val testId = generateTestId()
         logInfo("creating test context with id '$testId' for '${extensionContext.uniqueId}'")
         SolidblocksTestContext(testId)
     }
