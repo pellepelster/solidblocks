@@ -37,7 +37,7 @@ set -eu -o pipefail
 terraform fmt -recursive
 """
 
-[tasks.test:integration]
+[tasks."test:integration"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -55,7 +55,7 @@ task_test_helm
 curl --fail hello-world-cluster1.blcks.de &> /dev/null
 """
 
-[tasks.test:integration:dual]
+[tasks."test:integration:dual"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail

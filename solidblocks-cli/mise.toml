@@ -29,7 +29,7 @@ chmod +x blcks
 zip --junk-paths "build/blcks-cli-${BUILD_TARGET}-v${VERSION}.zip" blcks
 """
 
-[tasks.build-jvm-all]
+[tasks."build:jvm:all"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -56,7 +56,7 @@ rm -rf build
 rm -rf blcks
 """
 
-[tasks.install-local]
+[tasks."install:local"]
 depends = ["build:native"]
 run = """
 #!/usr/bin/env bash
@@ -94,7 +94,7 @@ ${ROOT_PROJECT}/gradlew :$(basename $PWD):test
 """
 
 [tasks.build]
-depends=["build-jvm-all", "build:native"]
+depends=["build:jvm:all", "build:native"]
 
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
@@ -147,7 +147,7 @@ done
 #rm -rf ${TEMP_DIR}
 """
 
-[tasks.preflight-check]
+[tasks."preflight:check"]
 run = [
     { task = "clean" },
     { task = "format" },

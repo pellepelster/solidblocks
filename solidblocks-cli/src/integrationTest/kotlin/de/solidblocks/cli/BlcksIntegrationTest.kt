@@ -27,7 +27,6 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 @ExtendWith(SolidblocksTest::class)
-@DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
 class BlcksIntegrationTest {
     val blcksCommand = Path.of(".").resolve("blcks")
 
@@ -49,6 +48,7 @@ class BlcksIntegrationTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
     fun testMinimalAndDnsCloudConfig(context: SolidblocksTestContext) {
         val test1CloudConfig = Path.of(ClassLoader.getSystemResource("test1.yaml").toURI())
         val test2CloudConfig = Path.of(ClassLoader.getSystemResource("test2.yaml").toURI())
