@@ -18,7 +18,7 @@ import java.util.*
 public class CurlTest {
     @Test
     fun testRetriesDownload(wmRuntimeInfo: WireMockRuntimeInfo) {
-        val reponse = UUID.randomUUID().toString()
+        val response = UUID.randomUUID().toString()
 
         stubFor(
             get("/download-test")
@@ -42,7 +42,7 @@ public class CurlTest {
             get("/download-test-success")
                 .inScenario("curl_retry")
                 .whenScenarioStateIs("download_success")
-                .willReturn(aResponse().withBody("${reponse}\n").withStatus(200)),
+                .willReturn(aResponse().withBody("${response}\n").withStatus(200)),
         )
 
         val result =
@@ -57,7 +57,7 @@ public class CurlTest {
 
         assertSoftly(result) {
             it shouldHaveExitCode 0
-            it stdoutShouldMatch ".*response=$reponse.*"
+            it stdoutShouldMatch ".*response=$response.*"
         }
     }
 
