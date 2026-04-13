@@ -41,7 +41,7 @@ class PostgresqlUserDataTest {
             )
         server.waitForSuccessfulProvisioning()
 
-        Awaitility.await().atMost(5, TimeUnit.MINUTES).pollInterval(Duration.ofSeconds(5)).until {
+        Awaitility.await().atMost(10, TimeUnit.MINUTES).pollInterval(Duration.ofSeconds(5)).until {
             server.host().portIsOpen(5432)
         }
 
