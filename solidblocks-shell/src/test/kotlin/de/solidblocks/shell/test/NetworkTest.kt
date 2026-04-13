@@ -11,7 +11,7 @@ public class NetworkTest {
     @Test
     fun testNetworkWaitForPortOpen() {
         val result =
-            dockerTestContext(DockerTestImage.DEBIAN_10)
+            dockerTestContext(DockerTestImage.DEBIAN_11)
                 .script()
                 .sources(workingDir().resolve("lib"))
                 .includes(workingDir().resolve("lib").resolve("network.sh"))

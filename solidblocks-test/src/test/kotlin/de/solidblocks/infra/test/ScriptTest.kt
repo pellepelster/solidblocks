@@ -80,7 +80,7 @@ public class ScriptTest {
         val file = UUID.randomUUID()
 
         val result =
-            dockerTestContext(DockerTestImage.DEBIAN_10)
+            dockerTestContext(DockerTestImage.DEBIAN_11)
                 .script()
                 .includes(include1)
                 .step("echo \"content\" > /tmp/$file") {

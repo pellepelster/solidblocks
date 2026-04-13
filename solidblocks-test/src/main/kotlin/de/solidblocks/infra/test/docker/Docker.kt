@@ -44,14 +44,14 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeSource
 
 enum class DockerTestImage {
-    DEBIAN_10 {
-        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-debian-10:latest"
-    },
     DEBIAN_11 {
         override fun toString() = "ghcr.io/pellepelster/solidblocks-test-debian-11:latest"
     },
     DEBIAN_12 {
         override fun toString() = "ghcr.io/pellepelster/solidblocks-test-debian-12:latest"
+    },
+    DEBIAN_13 {
+        override fun toString() = "ghcr.io/pellepelster/solidblocks-test-debian-13:latest"
     },
     UBUNTU_20 {
         override fun toString() = "ghcr.io/pellepelster/solidblocks-test-ubuntu-20.04:latest"

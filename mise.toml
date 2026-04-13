@@ -19,6 +19,9 @@ go="1.26.0"
 
 [env]
 ROOT_PROJECT="{{config_root}}"
+DOCKER_REGISTRY="ghcr.io"
+DOCKER_REPOSITORY="pellepelster"
+DOCKER_API_VERSION = "1.48"
 GRADLE_OPTS="${GRADLE_OPTS:-} --enable-native-access=ALL-UNNAMED"
 VERSION = """
 {%- if get_env(name='GITHUB_REF', default='none') == 'none' -%}
@@ -44,11 +47,6 @@ VERSION = """
     {%- endif -%}
 {%- endif -%}
 """
-
-DOCKER_API_VERSION = "1.48"
-
-DOCKER_REGISTRY="ghcr.io"
-DOCKER_REPOSITORY="pellepelster"
 
 [tasks."documentation:build"]
 run = """
@@ -128,10 +126,11 @@ task_clean_aws
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
+
 HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token) blcks hetzner nuke --do-nuke
 """
 
-[tasks."init:dev"]
+[tasks."init:env"]
 description="initialize cloud accounts for development and integrations"
 run = """
 #!/usr/bin/env bash

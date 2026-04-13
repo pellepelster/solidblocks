@@ -16,7 +16,7 @@ public class DownloadTest {
         val filename = UUID.randomUUID().toString()
 
         val result =
-            dockerTestContext(DockerTestImage.DEBIAN_10)
+            dockerTestContext(DockerTestImage.DEBIAN_11)
                 .script()
                 .sources(workingDir().resolve("lib"))
                 .includes(workingDir().resolve("lib").resolve("download.sh"))

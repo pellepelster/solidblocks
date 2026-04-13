@@ -144,8 +144,8 @@ public class CommandSnippets {
             DockerTestImage.UBUNTU_22,
             DockerTestImage.UBUNTU_24,
             DockerTestImage.DEBIAN_11,
-            DockerTestImage.DEBIAN_11,
             DockerTestImage.DEBIAN_12,
+            DockerTestImage.DEBIAN_13,
         )
             .forEach {
                 val result = testContext.docker(it).command("whoami").runResult()
