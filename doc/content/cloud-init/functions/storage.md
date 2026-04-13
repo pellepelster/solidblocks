@@ -1,7 +1,7 @@
 ---
 title: Storage
-weight: 20
 description: Utilities for storage handling
+draft: true
 ---
 
 Utilities for storage handling

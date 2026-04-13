@@ -1,6 +1,5 @@
 ---
 title: Hetzner
-weight: 50
 description: A collection of infrastructure components for the Hetzner Cloud
 ---
 

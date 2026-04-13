@@ -75,11 +75,10 @@
     margin-top: 0.5rem;
 }
 
-.wide > .flex-block-wrapper {
-    max-width: 90% !important;
-    width: 90% !important;
-}
-
 p.bold {
     font-weight: bold;
+}
+
+.logo-title {
+    visibility: collapse;
 }

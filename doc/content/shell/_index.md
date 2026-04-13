@@ -1,6 +1,5 @@
 +++
 title = "Shell"
-weight = 10
 description = "Reusable shell functions for infrastructure automation and developer experience"
 overviewGroup = "shell"
 faIcon = "fa-terminal"

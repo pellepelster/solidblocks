@@ -2,7 +2,6 @@
 title = "Development"
 description = "Guide for development of Solidblocks"
 overviewGroup = "dev"
-weight = 200
 +++
 
 ## Repository Structure
