@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.1
+
+* add Solidblock [Cloud](https://pellepelster.github.io/solidblocks/cloud/) 
+
 ## v0.4.14
 
 * lower min. Java version for libraries to 21 
