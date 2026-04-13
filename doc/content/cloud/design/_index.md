@@ -1,5 +1,5 @@
 +++
-title = 'Design'
+title = 'Design & Development'
 +++
 
 The overall design of Solidblocks cloud is led by the following rules
@@ -22,19 +22,16 @@ Solidblocks cloud uses a cyclic process starting with a high level `configuratio
 
 ## Provisioning Process
 
-The provisioning process is divided into multiple steps
-
-![Provisioning Process](../provisioning_process.excalidraw.png)
+![Provisioning Process](provisioning_process.excalidraw.png)
 
 #### Configuration to model
 
-The configuration is read and transformed into an internal model. This model expands the configuration into the different infrastructure components that are needed to fulfill the requested service configuration. E.g. a service of the type `postgres` is built from:
- * a VM running the PostgreSQL database
- * a disk holding the PostgreSQL data
- * a backup disk holding the database backups
- * a secret for the PostgreSQL admin user
- * a DNS entry pointing to the database
- * a firewall rule restricting access to the database
+The configuration is read and transformed into an internal model. This model expands the configuration into the different infrastructure components that are needed to fulfill the requested service configuration. E.g. a service of the type `docker` is built from:
+ * a VM running the service
+ * a disk holding the services data
+ * a backup disk holding the data backups
+ * a DNS entry pointing to the service
+ * a firewall rule restricting access to the service
  * ...
 
 #### Running state to diff
@@ -49,7 +46,7 @@ The changed resources from the diff are then created or modified to achieve the 
 ### Provisioning Methods
 
 
-![Provisioning Methods](../provisioning_methods.excalidraw.png)
+![Provisioning Methods](provisioning_methods.excalidraw.png)
 
 Different methodologies are used to provision services. 
 
@@ -67,7 +64,8 @@ If needed VM management tasks are executed over SSH. This could be service start
 
 #### ❸ Service Configuration
 
-When the service is started and if needed further configuration is done on the services API using an SSH tunnel to prevent potential sensitive APIs from being exposed on the internet. This could for example be the creation of users and schemas on a database. 
+When the VM is started via cloud init, all further service configuration is done via an SSH tunnel port forward to prevent potential sensitive APIs from being exposed on the internet. This could for example be the creation of users and schemas on a database. 
+
 
 ### Resource Identity
 The model and the created resources are linked using a predictable resource names. E.g. for the cloud named `cloud1` and the service `webservice1` the resource name for the virtual machine will be `cloud1-default-webservice1-0` following the pattern `<cloud_name>-<envrionment_name>-<service_name>-<index>`
@@ -79,15 +77,95 @@ Environment (`<envrionment_name>`) and multiple instance support (`<index>`) are
 
 ### Providers
 
-Providers enable Solidblocks cloud to create all the needed resources like virtual machines, storage volumes, DNS entries or secrets to implement a service. For a minimal cloud configuration at three different provider types are needed:
+Providers enable Solidblocks cloud to create all the needed resources like virtual machines, storage volumes, DNS entries or secrets to implement a service. For a minimal cloud configuration at least one of the four different provider types is needed:
 
 * **SSH key provider**
-  Used to load SSH keys that are used for cloud VM management.
+  Used to load SSH keys that are used for cloud VM management via SSH.
 
-* **Secret Provider** To provision and manage services, secrets are needed for API keys, database users, etc. The secret provider is used to store and retrieve secrets by a secret path.
+* **Secret Provider** To provision and manage services, secrets are needed for API keys, database users, etc. The secret provider is used to store and retrieve secrets.
 
 * **Cloud Provider** The cloud provider implements the creation of the needed cloud resources like virtual machines, storage volumes, firewall, etc.
 
-### Services
+* **Backup Provider** Manages the resources needed to store and retrieve backups for disaster recovery purposes.
 
-Services are created using high level service definitions. For example given a service with the type `postgresql` will instruct Solidblocks cloud to create a VM with a data and backup disk, install PostgreSQL, setup backup and recovery and create all needed database users.
+## Development
+
+This chapter gives an overview over the internal structure and core concepts of the Solidblocks Cloud project sources
+
+### Configuration Parsing
+
+`de.solidblocks.cloud.configuration.ConfigurationFactory`s are used to transform the configuration YAML into `*Configuration` data objects. Each factory defines a list of keywords that it understands where each `de.solidblocks.cloud.configuration.Keyword` includes name, constraints (range, max length, optional, etc.) and a help that is used to validate the configuration YAML and generate a help for the configuration file format.
+For polymorphic lists that can contain different types, the `type` keyword is used to find the appropriate `ConfigurationFactory`.
+
+```kotlin
+interface ConfigurationFactory<T> {
+    val help: ConfigurationHelp
+    val keywords: List<Keyword<*>>
+    fun parse(yaml: YamlNode): Result<T>
+}
+```
+
+```
+---                     | RootConfigurationFactory
+name: cloud1            | StringKeyword("name")
+                        |
+services:               | PolymorphicListKeyword("services") 
+  - type: service_a     | PolymorphicConfigurationFactory("service_a)
+    name: service1      | StringKeyword("name")
+  - type: service_b     | PolymorphicConfigurationFactory("service_b)
+    name: service2      | StringKeyword("name")
+    options:            | PolymorphicListKeyword("options")
+      - type: option1   | PolymorphicConfigurationFactory("option1)
+        name: foo       | StringKeyword("name")
+      - type: option2   | PolymorphicConfigurationFactory("option2)
+        name: bar       | StringKeyword("name")
+```
+
+### Configuration Validation
+
+When the whole configuration YAML is parsed, the resulting `*Configuration` data objects are validated by
+
+* `de.solidblocks.cloud.CloudManager.validate`
+* `de.solidblocks.cloud.providers.ProviderManager.validateConfiguration`
+* `de.solidblocks.cloud.services.ServiceManager.validateConfiguration`
+
+During validation the data is also enriched (e.g. some providers take parts of their configuration from environment variables) and transformed into `*ConfigurationRuntime` data objects which are the objects all later processing and provisioning happens on.
+
+### Service and Provider Registrations
+
+All the different `ConfigurationFactory`s, `ProviderManager`s and `ServiceManager`s manager are registered and linked by `de.solidblocks.cloud.providers.ProviderRegistration` respectively `de.solidblocks.cloud.services.ServiceRegistration` registrations that define
+
+* the `type` of the specific provider or service used to lookup factories during YAML parsing
+* what kind of `*Configuration` class it understands
+* what kind of `*ConfigurationRuntime` class it understands
+* which `ConfigurationFactory` to use for parsing
+* which `ProvidderManager`/`ServiceManager` to use
+
+### Infrastructure Provisioners
+
+Each type of resource that is handled like VMs, storage volumes or database users is defined by a triple of the following classes
+
+* `de.solidblocks.cloud.api.resources.BaseInfrastructureResource(name, dependsOn, ...)`
+  * defines the desired state of the resource
+* `de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime(name, ...)`
+  * represents the currently running state of the resource
+* `de.solidblocks.cloud.api.resources.InfrastructureResourceLookup(name, dependsOn, ...)`
+  * key for looking up a resource
+
+all types share the `name` attribute which is used to link the model to the running resources (see Resource Identity). 
+
+The heavy lifting of resource provisioning and configuration is then handled by 
+
+* `de.solidblocks.cloud.api.InfrastructureResourceProvisioner.diff(resource, ...)`
+  * takes a desired resource state and calculates the diff against the current runtime state 
+* `de.solidblocks.cloud.api.InfrastructureResourceProvisioner.apply(resource, ...)`
+  * diverges the current runtime state towards the desired resource state  
+* `de.solidblocks.cloud.api.ResourceLookupProvider.lookup(lookup, ...)`
+  * get the current runtime state for a resource
+  
+The orchestration of all provisioners happens in `de.solidblocks.cloud.provisioner.Provisioner` where the plan and apply phases are planned.  
+
+### Resource Creation and Cloud-Init
+
+The aforementioned resources are created by the services `de.solidblocks.cloud.services.ServiceManager.createResources(...)` building up on the available `InfrastructureResourceProvisioner`s. The Userdata scripts for VM provisioning via Cloud-Init are generated from the type-safe script and configuration file builders from `de.solidblocks.shell`.
+

@@ -11,7 +11,7 @@ class PostgresSqlServiceRegistration : ServiceRegistration<PostgresSqlServiceCon
 
     override fun createManager() = PostgresSqlServiceManager()
 
-    override fun createConfigurationFactory() = PostgresSqlServiceConfigurationFactory()
+    override fun createFactory() = PostgresSqlServiceConfigurationFactory()
 
     override val type = "postgresql"
 }

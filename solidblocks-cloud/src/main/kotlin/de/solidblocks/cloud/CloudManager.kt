@@ -12,15 +12,15 @@ import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
 import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.providers.ProviderConfiguration
-import de.solidblocks.cloud.providers.ProviderConfigurationManager
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
+import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.providers.managerForConfiguration
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
+import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
-import de.solidblocks.cloud.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.CloudInfo
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
@@ -160,7 +160,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 log = log.indent()
 
                 val manager:
-                    ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                    ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                     providerRegistrations.managerForConfiguration(provider)
 
                 logDebug(
@@ -169,7 +169,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 )
 
                 val runtime =
-                    when (val result = manager.validate(provider, configurationContext, log)) {
+                    when (val result = manager.validateConfiguration(provider, configurationContext, log)) {
                         is Error<ProviderConfigurationRuntime> -> {
                             return Error<CloudConfigurationRuntime>(result.error)
                         }

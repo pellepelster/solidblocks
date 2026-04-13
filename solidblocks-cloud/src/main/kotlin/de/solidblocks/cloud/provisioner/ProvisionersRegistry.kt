@@ -98,14 +98,14 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
 
         fun List<ProviderRegistration<*, *, *>>.createProvisioners(providers: List<ProviderConfigurationRuntime>): List<InfrastructureResourceProvisioner<*, *>> = providers.flatMap {
             val manager:
-                ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                 this.managerForRuntime(it)
             manager.createProvisioners(it)
         }
 
         fun List<ProviderRegistration<*, *, *>>.createLookups(providers: List<ProviderConfigurationRuntime>) = providers.flatMap {
             val manager:
-                ProviderConfigurationManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                 this.managerForRuntime(it)
             manager.createLookupProviders(it)
         }

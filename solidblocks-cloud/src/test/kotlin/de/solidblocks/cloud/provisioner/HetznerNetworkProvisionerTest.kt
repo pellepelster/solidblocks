@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner
 
-import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
-import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
+import de.solidblocks.cloud.Constants.defaultNetwork
+import de.solidblocks.cloud.Constants.defaultServiceSubnet
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
@@ -32,7 +32,7 @@ class HetznerNetworkProvisionerTest {
         val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN"))
 
         val name = UUID.randomUUID().toString()
-        val resource = HetznerNetwork(name, DEFAULT_NETWORK, hetzner.defaultLabels)
+        val resource = HetznerNetwork(name, defaultNetwork, hetzner.defaultLabels)
         val networkProvisioner = HetznerNetworkProvisioner(System.getenv("HCLOUD_TOKEN"))
         val subnetProvisioner = HetznerSubnetProvisioner(System.getenv("HCLOUD_TOKEN"))
 
@@ -44,7 +44,7 @@ class HetznerNetworkProvisionerTest {
         val context = TestProvisionerContext(registry)
 
         runBlocking {
-            val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, resource.asLookup())
+            val subnet = HetznerSubnet(defaultServiceSubnet, resource.asLookup())
 
             assertSoftly(subnetProvisioner.diff(subnet, context)!!) {
                 it.status shouldBe ResourceDiffStatus.missing

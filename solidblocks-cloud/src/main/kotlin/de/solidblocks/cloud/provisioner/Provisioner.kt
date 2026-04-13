@@ -1,7 +1,12 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.duplicate
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.parent_missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.hierarchicalResourceList
@@ -14,7 +19,11 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.*
+import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.bold
+import de.solidblocks.utils.dim
+import de.solidblocks.utils.logError
+import de.solidblocks.utils.logWarning
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -22,30 +31,6 @@ import kotlinx.serialization.json.Json
 class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.WaitConfig = Waiter.LONG_WAIT) {
 
     private val logger = KotlinLogging.logger {}
-
-    /*
-    suspend fun info(
-        resourceGroups: List<ResourceGroup>,
-        context: CloudProvisionerContext,
-    ): Result<String> {
-      val result = mutableListOf<String>()
-
-      for (resourceGroup in resourceGroups) {
-        val resources = resourceGroup.hierarchicalResourceList().toSet()
-
-        for (resource in resources) {
-          try {
-            val info = registry.info(resource, context)
-            result.addAll(info)
-          } catch (e: Exception) {
-            logger.error(e) { "error creating help for ${resource.logText()}" }
-          }
-        }
-      }
-
-      return Success(result.joinToString("\n"))
-    }
-     */
 
     suspend fun diff(resourceGroups: List<ResourceGroup>, context: CloudProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val resourceGroupDiffs =

@@ -6,5 +6,5 @@ import de.solidblocks.cloud.providers.ProviderRegistration
 interface SSHKeyProviderRegistration<
     C : SSHKeyProviderConfiguration,
     R : ProviderConfigurationRuntime,
-    M : SSHKeyProviderConfigurationManager<C, R>,
+    M : SSHKeyProviderManager<C, R>,
     > : ProviderRegistration<C, R, M>

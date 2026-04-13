@@ -2,13 +2,13 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
-import de.solidblocks.cloud.equalsIgnoreOrder
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.hetzner.cloud.resources.*
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
@@ -65,6 +65,8 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             )
         }
 
+        changes.addAll(createLabelDiff(resource, runtime))
+
         if (changes.isNotEmpty()) {
             ResourceDiff(resource, has_changes, changes = changes)
         } else {
@@ -114,6 +116,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                             resource.type,
                             DnsRRSetsRecordsUpdateRequest(
                                 serverIps.map { DnsRRSetRecord(it) },
+                                labels = resource.labels,
                             ),
                         )
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
@@ -135,6 +138,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                 resource.type,
                 ttl = resource.ttl,
                 serverIps.map { DnsRRSetRecord(it) },
+                labels = resource.labels,
             ),
         )
 

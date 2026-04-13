@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(project(":solidblocks-utils"))
     implementation(project(":solidblocks-ssh"))
+    implementation(project(":solidblocks-shell"))
     implementation(project(":solidblocks-hetzner-cloud"))
     implementation(project(":solidblocks-cloud-init"))
     implementation(project(":solidblocks-garagefs"))
@@ -18,7 +19,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
 
     implementation("org.jgrapht:jgrapht-core:1.5.3")
-    //implementation("org.jgrapht:jgrapht-io:1.5.3")
 
     implementation("com.charleskorn.kaml:kaml:0.83.0")
 

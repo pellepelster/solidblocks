@@ -4,14 +4,14 @@ import de.solidblocks.cloud.configuration.ConfigurationFactory
 import kotlin.reflect.KClass
 
 interface ServiceRegistration<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
+
+    val type: String
+
     val supportedConfiguration: KClass<C>
     val supportedRuntime: KClass<R>
 
     fun createManager(): ServiceManager<C, R>
-
-    fun createConfigurationFactory(): ConfigurationFactory<C>
-
-    val type: String
+    fun createFactory(): ConfigurationFactory<C>
 }
 
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.managerForService(runtime: R): ServiceManager<C, R> =

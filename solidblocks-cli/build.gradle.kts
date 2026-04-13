@@ -38,6 +38,7 @@ dependencies {
     testImplementation("org.reflections:reflections:0.10.2")
     testImplementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation("com.jayway.jsonpath:json-path:2.9.0")
 }
 
 val integrationTest = sourceSets.create("integrationTest") {

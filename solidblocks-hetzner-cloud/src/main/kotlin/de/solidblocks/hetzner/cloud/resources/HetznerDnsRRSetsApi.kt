@@ -44,7 +44,7 @@ data class DnsRRSetRecord(val value: String, val comment: String? = null)
 data class DnsRRSetsCreateRequest(val name: String, val type: RRType, val ttl: Int, val records: List<DnsRRSetRecord>, val labels: Map<String, String> = emptyMap())
 
 @Serializable
-data class DnsRRSetsRecordsUpdateRequest(val records: List<DnsRRSetRecord>)
+data class DnsRRSetsRecordsUpdateRequest(val records: List<DnsRRSetRecord>, val labels: Map<String, String> = emptyMap())
 
 @Serializable
 data class DnsRRSetsUpdateRequest(val labels: Map<String, String> = emptyMap())

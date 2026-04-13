@@ -1,17 +1,18 @@
 package de.solidblocks.cloud.services.docker
 
-import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.cloudLabels
+import de.solidblocks.cloud.Constants.defaultServiceSubnet
+import de.solidblocks.cloud.Constants.dnsRecordLabels
 import de.solidblocks.cloud.Constants.networkName
-import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
+import de.solidblocks.cloud.Constants.volumeLabels
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.markdown
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
@@ -24,16 +25,18 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.restic.model.parseResticSnapshotsOutput
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfigurationRuntime
 import de.solidblocks.cloud.utils.*
-import de.solidblocks.cloudinit.docker.GenericDockerServiceUserData
-import de.solidblocks.restic.RESTIC_STATUS_COMMAND
+import de.solidblocks.cloud.utils.markdown
+import de.solidblocks.cloudinit.GenericDockerServiceUserData
+import de.solidblocks.cloudinit.RESTIC_STATUS_COMMAND
+import de.solidblocks.shell.restic.parseResticSnapshotsOutput
 import de.solidblocks.utils.LogContext
 import java.time.Duration
+import kotlin.collections.plus
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
 
@@ -80,7 +83,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     }
 
     fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext) = if (cloud.dnsEnabled == true) {
-        "http://${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
+        "https://${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
     } else {
         "http://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.publicIpv4 ?: "<unknown>"}"
     }
@@ -98,7 +101,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             serverName + "-data",
             runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             ByteSize.fromGigabytes(runtime.instance.volumeSize),
-            emptyMap(),
+            volumeLabels(runtime) + cloudLabels(cloud),
         )
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
@@ -133,10 +136,10 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
-                DEFAULT_SERVICE_SUBNET,
+                defaultServiceSubnet,
                 HetznerNetworkLookup(networkName(cloud)),
             ),
-            privateIp = serverIp(runtime.index),
+            privateIp = serverPrivateIp(runtime.index),
             labels = serviceLabels(runtime) + cloudLabels(cloud),
             dependsOn = backupResources.first,
         )
@@ -148,6 +151,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                     serverName(cloud, runtime.name),
                     zone,
                     listOf(server.asLookup()),
+                    labels = dnsRecordLabels(runtime) + cloudLabels(cloud),
                 )
                 listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
             } else {

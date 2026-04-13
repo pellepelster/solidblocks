@@ -114,7 +114,7 @@ source mise.sh
 task_release ${usage_version}
 """
 
-[tasks.clean-aws]
+[tasks."clean:aws"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -123,14 +123,14 @@ source mise.sh
 task_clean_aws
 """
 
-[tasks.clean-hetzner]
+[tasks."clean:hetzner"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token) blcks hetzner nuke --do-nuke
 """
 
-[tasks.init-dev]
+[tasks."init:dev"]
 description="initialize cloud accounts for development and integrations"
 run = """
 #!/usr/bin/env bash

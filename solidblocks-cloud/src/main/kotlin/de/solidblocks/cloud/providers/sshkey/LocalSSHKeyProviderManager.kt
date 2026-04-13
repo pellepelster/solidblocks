@@ -3,7 +3,7 @@ package de.solidblocks.cloud.providers.sshkey
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationFactory.Companion.defaultSSHKeyNames
-import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfigurationManager
+import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderManager
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -19,7 +19,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 
 class LocalSSHKeyProviderManager :
-    SSHKeyProviderConfigurationManager<
+    SSHKeyProviderManager<
         LocalSSHKeyProviderConfiguration,
         LocalSSHKeyProviderConfigurationRuntime,
         > {
@@ -28,7 +28,7 @@ class LocalSSHKeyProviderManager :
 
     val homeDir = Path(System.getProperty("user.home"))
 
-    override fun validate(configuration: LocalSSHKeyProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<LocalSSHKeyProviderConfigurationRuntime> {
+    override fun validateConfiguration(configuration: LocalSSHKeyProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<LocalSSHKeyProviderConfigurationRuntime> {
         val sshKey =
             when (val result = tryFindKey(configuration, context, log)) {
                 is Error<*> -> return Error<LocalSSHKeyProviderConfigurationRuntime>(result.error)

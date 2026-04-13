@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.9.0")
     testImplementation("org.slf4j:slf4j-simple:2.0.13")
 }
 

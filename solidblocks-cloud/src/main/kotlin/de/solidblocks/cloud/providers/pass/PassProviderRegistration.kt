@@ -6,9 +6,9 @@ class PassProviderRegistration : ProviderRegistration<PassProviderConfiguration,
     override val supportedConfiguration = PassProviderConfiguration::class
     override val supportedRuntime = PassProviderRuntime::class
 
-    override fun createConfigurationManager() = PassProviderManager()
+    override fun createManager() = PassProviderManager()
 
-    override fun createConfigurationFactory() = PassProviderConfigurationFactory()
+    override fun createFactory() = PassProviderConfigurationFactory()
 
     override val type = "pass"
 }

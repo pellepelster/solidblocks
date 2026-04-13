@@ -1,20 +1,19 @@
 package de.solidblocks.cloud.services.postgres
 
-import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.cloudLabels
+import de.solidblocks.cloud.Constants.defaultServiceSubnet
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.secretPath
-import de.solidblocks.cloud.Constants.serverIp
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeyName
+import de.solidblocks.cloud.Constants.volumeLabels
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.markdown
-import de.solidblocks.cloud.pgbackrest.model.parsePgBackRestInfoOutput
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
@@ -34,11 +33,14 @@ import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurat
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseUsersConfigurationRuntime
 import de.solidblocks.cloud.utils.*
-import de.solidblocks.cloudinit.postgresql.PostgresqlUserData
-import de.solidblocks.cloudinit.postgresql.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
+import de.solidblocks.cloud.utils.markdown
+import de.solidblocks.cloudinit.PostgresqlUserData
+import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
+import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.collections.plus
 
 class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 
@@ -122,7 +124,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             h2("Servers")
             text("to access server **$serverName** via SSH, run")
             codeBlock(
-                "ssh -F $sshConfigFilePath $serverName",
+                "ssh -F ${sshConfigFilePath.toAbsolutePath()} $serverName",
             )
 
             h2("Endpoints")
@@ -135,7 +137,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             text("to open a tunnel to the database run")
             codeBlock(
                 """
-                ssh -F $sshConfigFilePath -L 5432:localhost:5432 $serverName
+                ssh -F ${sshConfigFilePath.toAbsolutePath()} -L 5432:localhost:5432 $serverName
                 """.trimIndent(),
             )
             text("\n")
@@ -176,7 +178,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 serverName + "-data",
                 runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 ByteSize.fromGigabytes(runtime.instance.volumeSize),
-                emptyMap(),
+                volumeLabels(runtime) + cloudLabels(cloud),
             )
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
@@ -206,10 +208,10 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
                 HetznerSubnetLookup(
-                    DEFAULT_SERVICE_SUBNET,
+                    defaultServiceSubnet,
                     HetznerNetworkLookup(networkName(cloud)),
                 ),
-                privateIp = serverIp(runtime.index),
+                privateIp = serverPrivateIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud),
                 dependsOn = backupResources.first,
             )

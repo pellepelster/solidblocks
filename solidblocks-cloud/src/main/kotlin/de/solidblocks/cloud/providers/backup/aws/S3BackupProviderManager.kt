@@ -2,11 +2,9 @@ package de.solidblocks.cloud.providers.backup.aws
 
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.EnvironmentReference
 import de.solidblocks.cloud.providers.CloudConfigurationContext
-import de.solidblocks.cloud.providers.types.backup.BackupProviderConfigurationManager
-import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUser
+import de.solidblocks.cloud.providers.types.backup.BackupProviderManager
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUserProvisioner
 import de.solidblocks.cloud.provisioner.aws.s3.AwsS3BucketProvisioner
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
@@ -18,7 +16,7 @@ import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class S3BackupProviderManager :
-    BackupProviderConfigurationManager<S3BackupProviderConfiguration, S3BackupProviderConfigurationRuntime> {
+    BackupProviderManager<S3BackupProviderConfiguration, S3BackupProviderConfigurationRuntime> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -44,7 +42,7 @@ class S3BackupProviderManager :
         """.trimIndent()
     }
 
-    override fun validate(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderConfigurationRuntime> {
+    override fun validateConfiguration(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderConfigurationRuntime> {
         if (getEnvOrProperty("AWS_ACCESS_KEY_ID") == null) {
             return Error("environment variable 'AWS_ACCESS_KEY_ID' not set")
         }

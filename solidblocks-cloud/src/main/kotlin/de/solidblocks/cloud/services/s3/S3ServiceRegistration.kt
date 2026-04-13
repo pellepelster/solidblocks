@@ -11,7 +11,7 @@ class S3ServiceRegistration : ServiceRegistration<S3ServiceConfiguration, S3Serv
 
     override fun createManager() = S3ServiceManager()
 
-    override fun createConfigurationFactory() = S3ServiceConfigurationFactory()
+    override fun createFactory() = S3ServiceConfigurationFactory()
 
     override val type = "s3"
 }

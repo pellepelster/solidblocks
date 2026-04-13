@@ -11,7 +11,7 @@ class DockerServiceRegistration : ServiceRegistration<DockerServiceConfiguration
 
     override fun createManager() = DockerServiceManager()
 
-    override fun createConfigurationFactory() = DockerServiceConfigurationFactory()
+    override fun createFactory() = DockerServiceConfigurationFactory()
 
     override val type = "docker"
 }

@@ -8,6 +8,24 @@ import java.nio.file.Path
 @Suppress("ktlint:standard:property-naming")
 object Constants {
 
+    const val namespace: String = "blcks.de"
+
+    const val managedByLabel: String = "$namespace/managed-by"
+
+    const val serviceLabel: String = "$namespace/service"
+
+    const val versionLabel: String = "$namespace/version"
+
+    const val cloudLabel: String = "$namespace/cloud"
+
+    const val sshKeysLabel: String = "$namespace/ssh-keys"
+
+    const val userDataLabel: String = "$namespace/user-data"
+
+    const val defaultNetwork = "10.0.0.0/8"
+
+    const val defaultServiceSubnet = "10.0.1.0/24"
+
     fun sshConfigFilePath(configFileDirectory: Path, cloudName: String) = configFileDirectory.resolve("${cloudName}_ssh_config")
 
     fun sshKeyName(configuration: CloudConfigurationRuntime) = "${configuration.name}-${configuration.getDefaultEnvironment()}"
@@ -30,6 +48,10 @@ object Constants {
 
     fun serviceLabels(runtime: ServiceConfigurationRuntime) = mapOf(serviceLabel to runtime.name)
 
+    fun volumeLabels(runtime: ServiceConfigurationRuntime) = mapOf(serviceLabel to runtime.name)
+
+    fun dnsRecordLabels(runtime: ServiceConfigurationRuntime) = mapOf(serviceLabel to runtime.name)
+
     fun cloudLabels(cloud: CloudConfigurationRuntime) = cloudLabels(cloud.name)
 
     fun cloudLabels(cloudName: String) = mapOf(
@@ -37,25 +59,7 @@ object Constants {
         cloudLabel to cloudName,
     )
 
-    const val namespace: String = "blcks.de"
-
-    const val managedByLabel: String = "$namespace/managed-by"
-
-    const val serviceLabel: String = "$namespace/service"
-
-    const val versionLabel: String = "$namespace/version"
-
-    const val cloudLabel: String = "$namespace/cloud"
-
-    const val sshKeysLabel: String = "$namespace/ssh-keys"
-
-    const val userDataLabel: String = "$namespace/user-data"
-
     fun solidblocksVersion() = "0.0.0"
 
-    const val DEFAULT_NETWORK = "10.0.0.0/8"
-
-    const val DEFAULT_SERVICE_SUBNET = "10.0.1.0/24"
-
-    fun serverIp(index: Int) = "10.0.1.${index + 1}"
+    fun serverPrivateIp(index: Int) = "10.0.1.${index + 1}"
 }

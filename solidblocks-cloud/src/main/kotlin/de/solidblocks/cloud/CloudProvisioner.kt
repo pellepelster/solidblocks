@@ -1,8 +1,8 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.Constants.DEFAULT_NETWORK
-import de.solidblocks.cloud.Constants.DEFAULT_SERVICE_SUBNET
 import de.solidblocks.cloud.Constants.cloudLabels
+import de.solidblocks.cloud.Constants.defaultNetwork
+import de.solidblocks.cloud.Constants.defaultServiceSubnet
 import de.solidblocks.cloud.Constants.firewallName
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.sshKeyName
@@ -143,8 +143,8 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             cloudLabels(runtime),
         )
 
-        val network = HetznerNetwork(networkName(runtime), DEFAULT_NETWORK)
-        val subnet = HetznerSubnet(DEFAULT_SERVICE_SUBNET, network.asLookup())
+        val network = HetznerNetwork(networkName(runtime), defaultNetwork)
+        val subnet = HetznerSubnet(defaultServiceSubnet, network.asLookup())
 
         val cloudResourceGroup =
             ResourceGroup(

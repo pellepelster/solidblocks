@@ -13,9 +13,9 @@ class S3BackupProviderRegistration :
     override val supportedConfiguration = S3BackupProviderConfiguration::class
     override val supportedRuntime = S3BackupProviderConfigurationRuntime::class
 
-    override fun createConfigurationManager() = S3BackupProviderManager()
+    override fun createManager() = S3BackupProviderManager()
 
-    override fun createConfigurationFactory() = S3BackupProviderConfigurationFactory()
+    override fun createFactory() = S3BackupProviderConfigurationFactory()
 
     override val type = BACKUP_S3_TYPE
 }

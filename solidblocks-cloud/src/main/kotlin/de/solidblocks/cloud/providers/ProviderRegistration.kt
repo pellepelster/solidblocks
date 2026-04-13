@@ -2,44 +2,40 @@ package de.solidblocks.cloud.providers
 
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
-import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfigurationManager
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfigurationRuntime
+import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderManager
 import kotlin.reflect.KClass
 
-interface ProviderRegistration<
-    C : ProviderConfiguration,
-    R : ProviderConfigurationRuntime,
-    M : ProviderConfigurationManager<C, R>,
-    > {
+interface ProviderRegistration<C : ProviderConfiguration, R : ProviderConfigurationRuntime, M : ProviderManager<C, R>> {
+
+    val type: String
+
     val supportedConfiguration: KClass<C>
     val supportedRuntime: KClass<R>
 
-    fun createConfigurationManager(): M
-
-    fun createConfigurationFactory(): ConfigurationFactory<C>
-
-    val type: String
+    fun createManager(): M
+    fun createFactory(): ConfigurationFactory<C>
 }
 
 @Suppress("UNCHECKED_CAST")
 fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
     ProviderRegistration<*, *, *>,
-    >.managerForConfiguration(configuration: C): ProviderConfigurationManager<C, R> =
+    >.managerForConfiguration(configuration: C): ProviderManager<C, R> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
-        ?.createConfigurationManager() as ProviderConfigurationManager<C, R>?
+        ?.createManager() as ProviderManager<C, R>?
         ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")
 
 @Suppress("UNCHECKED_CAST")
 fun <C : ProviderConfiguration, R : ProviderConfigurationRuntime> List<
     ProviderRegistration<*, *, *>,
-    >.managerForRuntime(runtime: R): ProviderConfigurationManager<C, R> =
-    this.singleOrNull { it.supportedRuntime == runtime::class }?.createConfigurationManager()
-        as ProviderConfigurationManager<C, R>?
+    >.managerForRuntime(runtime: R): ProviderManager<C, R> =
+    this.singleOrNull { it.supportedRuntime == runtime::class }?.createManager()
+        as ProviderManager<C, R>?
         ?: throw RuntimeException("no manager found for '${runtime::class.qualifiedName}'")
 
 @Suppress("UNCHECKED_CAST")
-fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(configuration: SSHKeyProviderConfiguration): SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderConfigurationRuntime> =
+fun List<ProviderRegistration<*, *, *>>.managerForConfiguration(configuration: SSHKeyProviderConfiguration): SSHKeyProviderManager<SSHKeyProviderConfiguration, SSHKeyProviderConfigurationRuntime> =
     this.singleOrNull { it.supportedConfiguration == configuration::class }
-        ?.createConfigurationManager()
-        as SSHKeyProviderConfigurationManager<SSHKeyProviderConfiguration, SSHKeyProviderConfigurationRuntime>?
+        ?.createManager()
+        as SSHKeyProviderManager<SSHKeyProviderConfiguration, SSHKeyProviderConfigurationRuntime>?
         ?: throw RuntimeException("no manager found for '${configuration::class.qualifiedName}'")

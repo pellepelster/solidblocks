@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.providers.pass
 
-import de.solidblocks.cloud.secret.SecretProviderConfiguration
+import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 
 class PassProviderConfiguration(override val name: String) : SecretProviderConfiguration {
     override val type = "pass"

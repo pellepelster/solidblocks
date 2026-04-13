@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.providers.pass
 
 import de.solidblocks.cloud.providers.CloudConfigurationContext
-import de.solidblocks.cloud.providers.ProviderConfigurationManager
+import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -9,9 +9,9 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.commandExists
 import de.solidblocks.utils.LogContext
 
-class PassProviderManager : ProviderConfigurationManager<PassProviderConfiguration, PassProviderRuntime> {
+class PassProviderManager : ProviderManager<PassProviderConfiguration, PassProviderRuntime> {
 
-    override fun validate(configuration: PassProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<PassProviderRuntime> {
+    override fun validateConfiguration(configuration: PassProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<PassProviderRuntime> {
         if (commandExists("pass")) {
             log.debug("found 'pass' executable")
         } else {

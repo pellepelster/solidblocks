@@ -13,9 +13,9 @@ class LocalBackupProviderRegistration :
     override val supportedConfiguration = LocalBackupProviderConfiguration::class
     override val supportedRuntime = LocalBackupProviderConfigurationRuntime::class
 
-    override fun createConfigurationManager() = LocalBackupProviderManager()
+    override fun createManager() = LocalBackupProviderManager()
 
-    override fun createConfigurationFactory() = LocalBackupProviderConfigurationFactory()
+    override fun createFactory() = LocalBackupProviderConfigurationFactory()
 
     override val type = BACKUP_LOCAL_TYPE
 }

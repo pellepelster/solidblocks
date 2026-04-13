@@ -1,11 +1,20 @@
 package de.solidblocks.cloud
 
-import org.xbill.DNS.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.xbill.DNS.ARecord
+import org.xbill.DNS.DClass
 import org.xbill.DNS.Message.newQuery
+import org.xbill.DNS.Name
+import org.xbill.DNS.Record
+import org.xbill.DNS.Resolver
+import org.xbill.DNS.Section
+import org.xbill.DNS.SimpleResolver
+import org.xbill.DNS.Type
 
 data class DnsRecord(val resolver: String, val name: String, val values: List<String>)
 
 class DnsService {
+    private val logger = KotlinLogging.logger {}
 
     val dnsServers =
         listOf(
@@ -30,10 +39,17 @@ class DnsService {
 
     private inline fun <reified T : Record> getRecords(resolver: Resolver, name: String, type: Int): List<T> {
         val queryRecord = Record.newRecord(Name.fromString(name), type, DClass.IN)
-        return resolver
-            .send(newQuery(queryRecord))
-            .getSectionRRsets(Section.ANSWER)
-            .flatMap { it.rrs() }
-            .filterIsInstance<T>()
+        return try {
+            resolver
+                .send(newQuery(queryRecord))
+                .getSectionRRsets(Section.ANSWER)
+                .flatMap { it.rrs() }
+                .filterIsInstance<T>()
+        } catch (e: Exception) {
+            logger.error(e) {
+                "failed to resolve '$name/$type'"
+            }
+            emptyList()
+        }
     }
 }

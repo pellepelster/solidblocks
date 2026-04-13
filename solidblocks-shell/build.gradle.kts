@@ -22,6 +22,9 @@ sourceSets {
 }
 
 dependencies {
+    implementation(project(":solidblocks-utils"))
+    implementation("com.charleskorn.kaml:kaml:0.83.0")
+
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.wiremock:wiremock:3.9.1")
     releaseTestImplementation(project(":solidblocks-test"))

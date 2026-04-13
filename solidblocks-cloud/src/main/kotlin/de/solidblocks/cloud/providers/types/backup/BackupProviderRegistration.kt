@@ -6,5 +6,5 @@ import de.solidblocks.cloud.providers.ProviderRegistration
 interface BackupProviderRegistration<
     C : BackupProviderConfiguration,
     R : ProviderConfigurationRuntime,
-    M : BackupProviderConfigurationManager<C, R>,
+    M : BackupProviderManager<C, R>,
     > : ProviderRegistration<C, R, M>

@@ -1,18 +1,11 @@
 package de.solidblocks.cloud.services
 
-import de.solidblocks.cloud.Constants.cloudLabels
-import de.solidblocks.cloud.Constants.firewallName
-import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
-import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewall
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
-import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
-import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 

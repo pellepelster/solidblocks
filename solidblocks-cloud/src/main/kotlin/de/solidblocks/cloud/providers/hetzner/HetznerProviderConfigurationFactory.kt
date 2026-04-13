@@ -2,10 +2,8 @@ package de.solidblocks.cloud.providers.hetzner
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp

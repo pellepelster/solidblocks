@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.documentation
 
 import de.solidblocks.cloud.configuration.*
-import de.solidblocks.cloud.markdown
+import de.solidblocks.cloud.utils.markdown
 import kotlin.text.appendLine
 
 class DocumentationGenerator(val hugo: Boolean = false) {

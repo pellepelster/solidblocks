@@ -8,15 +8,15 @@ class HetznerProviderRegistration :
     CloudResourceProviderRegistration<
         HetznerProviderConfiguration,
         HetznerProviderRuntime,
-        HetznerProviderConfigurationManager,
+        HetznerProviderManager,
         > {
 
     override val supportedConfiguration = HetznerProviderConfiguration::class
     override val supportedRuntime = HetznerProviderRuntime::class
 
-    override fun createConfigurationManager() = HetznerProviderConfigurationManager()
+    override fun createManager() = HetznerProviderManager()
 
-    override fun createConfigurationFactory() = HetznerProviderConfigurationFactory()
+    override fun createFactory() = HetznerProviderConfigurationFactory()
 
     override val type = HETZNER_PROVIDER_TYPE
 }

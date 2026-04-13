@@ -6,8 +6,8 @@ import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAM
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.ProviderConfiguration
-import de.solidblocks.cloud.providers.ProviderConfigurationManager
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
+import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceRegistration
@@ -21,7 +21,7 @@ class CloudConfigurationFactory(
         ProviderRegistration<
             out ProviderConfiguration,
             out ProviderConfigurationRuntime,
-            out ProviderConfigurationManager<*, *>,
+            out ProviderManager<*, *>,
             >,
         >,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
@@ -51,7 +51,7 @@ class CloudConfigurationFactory(
     val providers =
         PolymorphicListKeyword(
             "providers",
-            providerRegistrations.associate { it.type to it.createConfigurationFactory() }
+            providerRegistrations.associate { it.type to it.createFactory() }
                 as Map<String, PolymorphicConfigurationFactory<ProviderConfiguration>>,
             KeywordHelp(
                 "Provider list, if two providers of the same type are configured, unique names must be provided. For a minimal configuration at least a SSH, secret and cloud provider is needed.",
@@ -62,7 +62,7 @@ class CloudConfigurationFactory(
     val services =
         PolymorphicListKeyword(
             "services",
-            serviceRegistrations.associate { it.type to it.createConfigurationFactory() }
+            serviceRegistrations.associate { it.type to it.createFactory() }
                 as Map<String, PolymorphicConfigurationFactory<ServiceConfiguration>>,
             KeywordHelp("Services to create, service names must be unique across all services"),
         )

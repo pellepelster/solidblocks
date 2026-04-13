@@ -3,7 +3,6 @@ package de.solidblocks.cloudinit
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.generateRandomString
-import de.solidblocks.restic.resticBackup
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.StorageLibrary
