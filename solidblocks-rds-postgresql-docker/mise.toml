@@ -4,7 +4,7 @@ env_shell_expand = true
 [env]
 TEMP_DIR=".temp"
 DOCKER_IMAGE_NAME="solidblocks-rds-postgresql"
-POSTGRES_VERSIONS="14 15 16 17 18"
+POSTGRES_VERSIONS="${POSTGRES_VERSIONS:-14 15 16 17 18}"
 CACHE_DIR=".cache"
 
 [tasks.build-14]
@@ -99,6 +99,13 @@ done
 """
 
 [tasks.build]
-run = [
-    { tasks = [ "build-14", "build-15", "build-16", "build-17", "build-18" ] }
-]
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+source mise.sh
+
+for postgres_version in ${POSTGRES_VERSIONS}; do
+    task_build ${VERSION} ${postgres_version}
+done
+"""

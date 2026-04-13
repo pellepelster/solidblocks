@@ -2,6 +2,7 @@ experimental_monorepo_root = true
 
 [settings]
 env_shell_expand = true
+jobs = 1
 
 [monorepo]
 config_roots = [

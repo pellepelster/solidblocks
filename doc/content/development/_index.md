@@ -41,6 +41,7 @@ To run a quick local build
 export BUILD_FAST="true"
 export SKIP_TESTS="integration"
 export DOCKER_PLATFORM="linux/amd64"
+export POSTGRES_VERSIONS="18"
 mise //...:build
 mise //...:test
 ```
