@@ -34,14 +34,6 @@ function task_clean {
   ${DIR}/../gradlew :solidblocks-test:clean
 }
 
-function task_release_test {
-  (
-    cd "${DIR}/snippets/solidblocks-test-gradle"
-    ./gradlew clean
-    ./gradlew testClasses
-  )
-}
-
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -53,7 +45,5 @@ case ${arg} in
   clean) task_clean "$@" ;;
   test) task_test "$@" ;;
   test-prepare) task_test_prepare "$@" ;;
-  release-artifacts) task_release_artifacts ;;
-  release-test) task_release_test ;;
   *) task_usage ;;
 esac

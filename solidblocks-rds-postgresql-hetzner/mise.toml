@@ -149,7 +149,7 @@ source ${MISE_CONFIG_ROOT}/mise.sh
 task_test_jumphost_ssh
 """
 
-[tasks.release-prepare]
+[tasks."release:prepare"]
 usage = """
 arg "<version>" env="VERSION"
 """

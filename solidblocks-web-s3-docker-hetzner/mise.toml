@@ -33,7 +33,7 @@ run = """
   ${ROOT_PROJECT}/gradlew :$(basename $PWD):check
 """
 
-[tasks.release-prepare]
+[tasks."release:prepare"]
 usage = """
 arg "<version>" env="VERSION"
 """

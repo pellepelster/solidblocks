@@ -11,7 +11,7 @@ run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):check"
 
 
-[tasks.release-test]
+[tasks."release:test"]
 usage = """
 arg "<version>" env="VERSION"
 """

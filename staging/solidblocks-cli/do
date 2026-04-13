@@ -93,7 +93,6 @@ shift || true
 case ${arg} in
   build) task_build "$@" ;;
   test) task_test "$@" ;;
-  test-integration) task_test_integration "$@" ;;
   format) ;;
   clean) task_clean "$@" ;;
   *) task_usage ;;

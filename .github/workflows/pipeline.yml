@@ -217,7 +217,7 @@ jobs:
       - name: Build
         run: mise :build
       - name: Test Integration
-        run: mise :test-integration
+        run: mise :test:integration
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -570,7 +570,7 @@ jobs:
           ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYPASSWORD }}
           ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
           ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
-        run: mise //...:release-artifacts
+        run: mise //...:release:artifacts
       - name: Release Artifacts
         uses: softprops/action-gh-release@v1
         with:
@@ -621,7 +621,7 @@ jobs:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
       - name: Build Documentation
-        run: mise documentation-build
+        run: mise documentation:build
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact

@@ -59,10 +59,6 @@ function task_clean {
   rm -rf "${DIR}/build"
 }
 
-function task_release_test () {
-  ${DIR}/../gradlew :solidblocks-web-s3-docker-hetzner:releaseTest
-}
-
 arg=${1:-}
 shift || true
 case ${arg} in
@@ -70,7 +66,5 @@ case ${arg} in
   test-provision) task_test_provision "$@" ;;
   test-ssh) task_test_ssh "$@" ;;
   test) task_test "$@" ;;
-  release-artifacts) ;;
-  release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

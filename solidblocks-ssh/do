@@ -25,7 +25,5 @@ shift || true
 case ${arg} in
   test) task_test "$@" ;;
   clean) task_clean "$@" ;;
-  release-artifacts) ;;
-  release-test);;
   *) task_usage ;;
 esac

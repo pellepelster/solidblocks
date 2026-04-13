@@ -120,9 +120,6 @@ function task_release {
   # ensure terraform-docs is available
   terraform-docs --version
 
-  task_release_prepare ${VERSION}
-  task_release_check ${VERSION}
-
   git tag -a "${VERSION}" -m "${VERSION}"
   git push --tags
 }
@@ -159,8 +156,6 @@ case ${ARG} in
   clean-cloud-resources) task_clean_hetzner && task_clean_aws "$@" ;;
   test) task_test "$@" ;;
   release) task_release "$@" ;;
-  release-prepare) task_release_prepare "$@" ;;
-  release-check) task_release_check "$@" ;;
   renovate) task_renovate "$@" ;;
   *) task_usage ;;
 esac

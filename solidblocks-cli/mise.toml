@@ -1,7 +1,7 @@
 [tools]
 graalvm = "24.0.2"
 
-[tasks.build-native]
+[tasks."build:native"]
 usage = '''
 arg "<target>" help="target platform" default="linux-amd64" {
   choices "linux-amd64" "darwin-amd64" "darwin-arm64" "windows-amd64"
@@ -57,7 +57,7 @@ rm -rf blcks
 """
 
 [tasks.install-local]
-depends = ["build-native"]
+depends = ["build:native"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -65,7 +65,7 @@ set -eu -o pipefail
 cp blcks ~/bin/blcks
 """
 
-[tasks.test-integration-prepare]
+[tasks."test:integration:prepare"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -82,7 +82,7 @@ terraform init -upgrade
 terraform apply -auto-approve
 """
 
-[tasks.test-integration]
+[tasks."test:integration"]
 run = """
 ${ROOT_PROJECT}/gradlew :$(basename $PWD):testIntegration
 """
@@ -94,12 +94,12 @@ ${ROOT_PROJECT}/gradlew :$(basename $PWD):test
 """
 
 [tasks.build]
-depends=["build-jvm-all", "build-native"]
+depends=["build-jvm-all", "build:native"]
 
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
-[tasks.release-prepare]
+[tasks."release:prepare"]
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -113,7 +113,7 @@ set -eu -o pipefail
 ${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration-hugo ${ROOT_PROJECT}/doc/content/cloud/configuration.md"
 """
 
-[tasks.release-test]
+[tasks."release:test"]
 usage = """
 arg "<version>" env="VERSION"
 """
@@ -153,32 +153,13 @@ run = [
     { task = "format" },
     { task = "build" },
     { task = "test" },
-    { task = "test-integration-prepare" },
-    { task = "test-integration" },
+    { task = "test:integration:prepare" },
+    { task = "test:integration" },
 ]
 
-[tasks.preflight-check-native]
-run = [
-    { task = "build-native" },
-    { task = "preflight-check-native-run" },
-]
-
-[tasks.preflight-check-native-run]
-run="""
-export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
-export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
-./blcks cloud apply contrib/test1.yml
-"""
-
-[tasks.reachability-metadata-generate]
+[tasks."reachability:metadata:generate"]
 run="""
 export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
 export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
 """
-
-[tasks.test-preflight-check]
-run="""
-../gradlew :solidblocks-cloud-init:test  :solidblocks-shell:test  :solidblocks-ssh:test :solidblocks-utils:test :solidblocks-cli:test :solidblocks-cloud:test
-"""
-

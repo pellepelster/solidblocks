@@ -10,7 +10,7 @@ docker compose build
 docker compose up
 """
 
-[tasks.release-artifacts]
+[tasks."release:artifacts"]
 run = """
 docker push ghcr.io/pellepelster/solidblocks-hello-world:latest
 """

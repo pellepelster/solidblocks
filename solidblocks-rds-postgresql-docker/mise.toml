@@ -73,7 +73,7 @@ rm -rf test/terraform/*.tfstate.backup
 rm -rf test/terraform/*.lock.hcl
 """
 
-[tasks.release-artifacts]
+[tasks."release:artifacts"]
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -84,7 +84,7 @@ for postgres_version in ${POSTGRES_VERSIONS}; do
 done
 """
 
-[tasks.release-test]
+[tasks."release:test"]
 usage = """
 arg "<version>" env="VERSION"
 """

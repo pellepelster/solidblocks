@@ -49,7 +49,7 @@ DOCKER_API_VERSION = "1.48"
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 
-[tasks.documentation-build]
+[tasks."documentation:build"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -65,7 +65,7 @@ documentation_prepare_env
 )
 """
 
-[tasks.documentation-serve]
+[tasks."documentation:serve"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -87,7 +87,7 @@ echo " BUILD_FAST: '${BUILD_FAST}'"
 echo "GRADLE_OPTS: '${GRADLE_OPTS}'"
 """
 
-[tasks.release-check]
+[tasks."release:check"]
 usage = """
 arg "<version>" env="VERSION"
 """
@@ -140,7 +140,7 @@ source mise.sh
 task_test_init_dev
 """
 
-[tasks.release-artifacts]
+[tasks."release:artifacts"]
 run = """
 #!/usr/bin/env bash
 set -eu -o pipefail

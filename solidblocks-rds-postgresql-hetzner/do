@@ -141,23 +141,6 @@ function task_test_snippets_private_network () {
   terraform_wrapper "snippets/hetzner-postgres-rds-private-network/storage" destroy -auto-approve
 }
 
-function task_release_test  {
-  echo "================================================================================"
-  echo "snippets_local"
-  echo "================================================================================"
-  task_test_snippets_local
-
-  #echo "================================================================================"
-  #echo "snippets_private_network"
-  #echo "================================================================================"
-  #task_test_snippets_private_network
-
-  #echo "================================================================================"
-  #echo "snippets_s3"
-  #echo "================================================================================"
-  #task_test_snippets_s3
-}
-
 function test_wait_for_ssh() {
   local counter=0
   while ! task_test_ssh whoami && [[ ${counter} -lt 21 ]];  do
@@ -905,7 +888,5 @@ case ${arg} in
   test-ssh-jumphost) task_test_jumphost_ssh "$@" ;;
   test-snippets) task_test_snippets "$@" ;;
   test-snippet-ssh) task_test_snippets_ssh "$@" ;;
-  release-artifacts) ;;
-  release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

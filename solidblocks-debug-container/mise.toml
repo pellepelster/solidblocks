@@ -35,7 +35,7 @@ run = "rm -rf build"
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
-[tasks.release-artifacts]
+[tasks."release:artifacts"]
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -43,7 +43,7 @@ set -eu -o pipefail
 docker buildx imagetools create -t "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:v${VERSION}" "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/${DOCKER_IMAGE_NAME}:v${VERSION}-snapshot"
 """
 
-[tasks.release-test]
+[tasks."release:test"]
 usage = """
 arg "<version>" env="VERSION"
 """

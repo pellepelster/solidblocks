@@ -28,7 +28,7 @@ mkdir -p "build"
     "blcks/utils"
 """
 
-[tasks.release-prepare]
+[tasks."release:prepare"]
 usage = """
 arg "<version>" env="VERSION"
 """

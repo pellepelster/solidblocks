@@ -55,10 +55,6 @@ function task_clean {
   rm -rf "${DIR}/build"
 }
 
-function task_release_test {
-  ${DIR}/../gradlew :solidblocks-shell:releaseTest
-}
-
 function task_usage {
   echo "Usage: $0 ..."
   exit 1
@@ -71,8 +67,5 @@ case ${arg} in
   clean) task_clean "$@" ;;
   demo) task_demo"$@" ;;
   test) task_test "$@" ;;
-  test-integration) task_test_integration "$@" ;;
-  release-artifacts) ;;
-  release-test) task_release_test "$@" ;;
   *) task_usage ;;
 esac

@@ -209,7 +209,7 @@ set -eu -o pipefail
 terraform fmt -recursive
 """
 
-[tasks.release-prepare]
+[tasks."release:prepare"]
 usage = """
 arg "<version>" env="VERSION"
 """

@@ -22,9 +22,9 @@ Common for all `mise.toml` files are the following tasks:
 * `mise :test` Run all tests for the component
 * `mise :clean` Clean up ephemeral resources like local files and cloud resources
 * `mise :format` Apply formatters and linters to all sourcecode of the component
-* `mise :release-prepare` prepare a release, commonly used to insert correct version numbers into documentation and code snippets  
-* `mise :release-test` run tests against released artifacts, commonly used to verify that the code snippets work  
-* `mise :release-artifacts` releases additional artifacts, e.g. a tested docker image without the `-rc` version postfix
+* `mise :release:prepare` prepare a release, commonly used to insert correct version numbers into documentation and code snippets  
+* `mise :release:test` run tests against released artifacts, commonly used to verify that the code snippets work  
+* `mise :release:artifacts` releases additional artifacts, e.g. a tested docker image without the `-rc` version postfix
 
 ## Conventions
 
@@ -48,7 +48,7 @@ mise //...:test
 
 ## Documentation
 
-The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after running `mise :documentation-build` they can be included like this:
+The documentation is based on [hugo](https://gohugo.io/). Each component contributing source code snippets to the documentation should do so by adding the snippets to the components `build/snippets` folder, so after running `mise :documentation:build` they can be included like this:
 
 ```shell
 {{%/* include "/snippets/shell-bootstrap-solidblocks.sh" */%}}
@@ -66,8 +66,8 @@ Solidblocks uses semver compliant versioning, where the release version is deriv
 ```shell
 export VERSION=<version> 
 mise //...:build
-mise //...:release-prepare
-mise //...:release-check
+mise //...:release:prepare
+mise //...:release:check
 mise //...:release
 ```
 
@@ -82,7 +82,7 @@ when all artifacts are released, verify deployment
 
 ```shell
 export VERSION=<version> 
-mise //...:release-test
+mise //...:release:test
 ```
 
 ### Docker Artifacts
