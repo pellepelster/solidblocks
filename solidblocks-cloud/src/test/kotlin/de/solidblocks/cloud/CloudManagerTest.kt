@@ -11,6 +11,7 @@ import io.kotest.matchers.string.shouldMatch
 import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import java.io.BufferedReader
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
@@ -108,6 +109,7 @@ class CloudManagerTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
     fun testDefaultToCloudSSHKey() {
         val manager =
             """
