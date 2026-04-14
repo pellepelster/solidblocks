@@ -22,12 +22,14 @@ class PassProviderManager : ProviderManager<PassProviderConfiguration, PassProvi
                 }
         }
 
-        val configCheckSecretPath = ".blcks-test"
-        val configCheckSecret = UUID.randomUUID().toString()
-
         val passwordStoreDir = if (configuration.passwordStoreDir == null) {
-            log.info("no password store directory configured, using default '${DEFAULT_PASS_DIR}'")
-            DEFAULT_PASS_DIR
+            if (System.getenv("PASSWORD_STORE_DIR") == null) {
+                log.info("no password store directory configured, using default '${DEFAULT_PASS_DIR}'")
+                DEFAULT_PASS_DIR
+            } else {
+                log.info("using password store directory from environment variable 'PASSWORD_STORE_DIR' (${System.getenv("PASSWORD_STORE_DIR")})")
+                System.getenv("PASSWORD_STORE_DIR")
+            }
         } else {
             log.info("using password store directory '${configuration.passwordStoreDir}'")
 
@@ -37,6 +39,13 @@ class PassProviderManager : ProviderManager<PassProviderConfiguration, PassProvi
 
             configuration.passwordStoreDir
         }
+
+        if (getEnvOrProperty("BLCKS_PASS_PROVIDER_SKIP_VALIDATION") != null) {
+            return Success(PassProviderRuntime(passwordStoreDir))
+        }
+
+        val configCheckSecretPath = ".blcks-test"
+        val configCheckSecret = UUID.randomUUID().toString()
 
         log.info("verifying pass configuration by writing and reading secret '$configCheckSecretPath'")
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.2
+* improve validation for pass secret provider 
+* fix false positive for Hetzner DNS record diffs 
+
 ## v0.5.1
 
 * add Solidblock [Cloud](https://pellepelster.github.io/solidblocks/cloud/) 

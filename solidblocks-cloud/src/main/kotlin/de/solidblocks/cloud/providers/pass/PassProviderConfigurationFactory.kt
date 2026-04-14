@@ -28,7 +28,7 @@ class PassProviderConfigurationFactory : PolymorphicConfigurationFactory<PassPro
     override val help =
         ConfigurationHelp(
             "Pass",
-            "Stores secrets in the [pass](https://www.passwordstore.org/) secret manager. To ensure that the store is setup correctly a temporary secret will be created and deleted during the configuration validation phase.",
+            "Stores secrets in the [pass](https://www.passwordstore.org/) secret manager. To ensure that the store is setup correctly a temporary secret will be created and deleted during the configuration validation phase. The validation can be skipped by setting the environment variable 'BLCKS_PASS_PROVIDER_SKIP_VALIDATION'",
         )
 
     override val keywords = listOf<Keyword<*>>(PROVIDER_NAME_KEYWORD, passwordStoreDir)
