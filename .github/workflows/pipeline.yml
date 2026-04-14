@@ -294,6 +294,8 @@ jobs:
     defaults:
       run:
         working-directory: solidblocks-cloud
+    env:
+      BLCKS_PASS_PROVIDER_SKIP_VALIDATION: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -309,7 +311,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: solidblocks-test
+          name: solidblocks-cloud
           path: |
             **/build/reports/tests
 
