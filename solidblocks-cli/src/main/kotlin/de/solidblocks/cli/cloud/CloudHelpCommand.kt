@@ -12,7 +12,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
 
 class CloudHelpCommand : CliktCommand(name = "help") {
-    // private val configFile by argument().file().optional()
 
     init {
         installMordantMarkdown()
@@ -21,24 +20,6 @@ class CloudHelpCommand : CliktCommand(name = "help") {
     override fun help(context: Context) = "Solidblocks cloud help"
 
     override fun run() {
-    /*
-    val terminal = createTerminal()
-
-      val manager = CloudManager(configFile!!)
-      val runtime =
-          when (val result = manager.validate()) {
-            is Error<CloudConfigurationRuntime> -> {
-              logError(result.error)
-              throw ProgramResult(1)
-            }
-
-            is Success<CloudConfigurationRuntime> -> result.data
-          }
-
-      terminal.println()
-      printHelp(manager.help(runtime))
-
-     */
     }
 
     companion object {

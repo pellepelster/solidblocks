@@ -14,7 +14,7 @@ class CloudHelpConfigurationHugoCommand : CliktCommand(name = "configuration-hug
         installMordantMarkdown()
     }
 
-    override fun help(context: Context) = "Solidblocks cloud configuration file documentation"
+    override fun help(context: Context) = "generate a cloud configuration file documentation for Hugo"
 
     override fun run() {
         hugoFile.writeText(
