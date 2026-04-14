@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 class ResourcesTest {
 
     @Test
-    fun testLookupTypes() {
+    fun testLookupTypesMatchResource() {
         val mock1 = MockResource1("name1")
         val mock1Lookup = MockResource1Lookup("name1")
 

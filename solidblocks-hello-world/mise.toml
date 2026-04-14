@@ -23,3 +23,15 @@ run = [
     { task = "build" },
     { task = "test" },
 ]
+
+[tasks."release:test"]
+usage = """
+arg "<version>" env="VERSION"
+"""
+run="""
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+echo "pulling '${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-hello-world:latest'"
+docker pull "${DOCKER_REGISTRY}/${DOCKER_REPOSITORY}/solidblocks-hello-world:latest"
+"""

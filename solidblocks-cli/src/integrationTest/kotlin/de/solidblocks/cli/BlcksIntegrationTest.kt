@@ -20,7 +20,9 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.PosixFilePermission
 import kotlin.io.path.absolutePathString
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -52,10 +54,17 @@ class BlcksIntegrationTest {
     fun testMinimalAndDnsCloudConfig(context: SolidblocksTestContext) {
         val test1CloudConfig = Path.of(ClassLoader.getSystemResource("test1.yaml").toURI())
         val test2CloudConfig = Path.of(ClassLoader.getSystemResource("test2.yaml").toURI())
+        val cloud1Key = Path.of(ClassLoader.getSystemResource("cloud1.key").toURI())
 
         assertSoftly(context.local().command("$blcksCommand", "hetzner", "nuke", "--do-nuke").timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()) { result ->
             result shouldHaveExitCode 0
         }
+
+        val permissions = setOf(
+            PosixFilePermission.OWNER_READ,
+            PosixFilePermission.OWNER_WRITE,
+        )
+        Files.setPosixFilePermissions(cloud1Key, permissions)
 
         /**
          * plan minimal cloud
@@ -119,14 +128,27 @@ class BlcksIntegrationTest {
             val whoAmI = context.local().command(*"$sshConnectCommand whoami".split(" ").toTypedArray()).runResult()
             whoAmI.stdout.trim() shouldBe "root"
 
+            /**
+             * wait until http endpoint is alive
+             */
+            await().pollDelay(30.seconds.toJavaDuration()).pollInterval(1.minutes.toJavaDuration()).atMost(5.minutes.toJavaDuration()).until {
+                try {
+                    logInfo("waiting for https endpoint")
+                    callEndpoint(webEndpoint).contains("visitor")
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
+
             val oldVisitorCounter: Int = JsonPath.read(
                 callEndpoint(webEndpoint),
-                "$['counter']",
+                "$['visitor']",
             )
 
             val newVisitorCounter: Int = JsonPath.read(
                 callEndpoint(webEndpoint),
-                "$['counter']",
+                "$['visitor']",
             )
 
             newVisitorCounter shouldBe oldVisitorCounter + 1
@@ -161,7 +183,7 @@ class BlcksIntegrationTest {
         val dnsService = DnsService()
 
         /**
-         * wait until at least 6 resolver have the DSN record to ensure caddy can retrieve certificates
+         * wait until at least 6 resolver have the DNS record to ensure caddy can retrieve certificates
          */
         await().atMost(5.minutes.toJavaDuration()).until {
             dnsService.tryResolveARecords("cloud1-default-service1-0.blcks-test.de.").filter { it.values.isNotEmpty() }.count() >= 6
@@ -178,11 +200,11 @@ class BlcksIntegrationTest {
         /**
          * verify new endpoint starts with https
          */
-        val webEndpoint = JsonPath.read<List<String>>(
+        val sslEndpoint = JsonPath.read<List<String>>(
             infoResult.stdout,
             "$['services'][?(@.name == 'service1')]['endpoints'][?(@.type == 'web')].url",
         ).first()
-        webEndpoint shouldStartWith "https://"
+        sslEndpoint shouldStartWith "https://"
 
         /**
          * wait until https endpoint is alive
@@ -190,7 +212,7 @@ class BlcksIntegrationTest {
         await().pollDelay(30.seconds.toJavaDuration()).pollInterval(1.minutes.toJavaDuration()).atMost(5.minutes.toJavaDuration()).until {
             try {
                 logInfo("waiting for https endpoint")
-                callEndpoint(webEndpoint).contains("counter")
+                callEndpoint(sslEndpoint).contains("visitor")
                 true
             } catch (e: Exception) {
                 /**
@@ -201,23 +223,23 @@ class BlcksIntegrationTest {
             }
         }
 
+        val oldVisitorCounter: Int = JsonPath.read(
+            callEndpoint(sslEndpoint),
+            "$['visitor']",
+        )
+
         /**
          * call new endpoint to ensure everything still works
          */
-        val oldVisitorCounter: Int = JsonPath.read(
-            callEndpoint(webEndpoint),
-            "$['counter']",
+        val newVisitorCounter: Int = JsonPath.read(
+            callEndpoint(sslEndpoint),
+            "$['visitor']",
         )
 
         /**
          * verify old data is still there
          */
-        oldVisitorCounter shouldBeGreaterThan 1
-
-        val newVisitorCounter: Int = JsonPath.read(
-            callEndpoint(webEndpoint),
-            "$['counter']",
-        )
+        newVisitorCounter shouldBeGreaterThan 1
         newVisitorCounter shouldBe oldVisitorCounter + 1
     }
 
