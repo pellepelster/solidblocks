@@ -289,6 +289,30 @@ jobs:
           path: |
             **/build/reports/tests
 
+  solidblocks-cloud:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: solidblocks-cloud
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Mise setup
+        uses: jdx/mise-action@v3
+        with:
+          experimental: true
+      - name: Build
+        run: mise :build
+      - name: Test
+        run: mise :test
+      - name: Archive Test Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solidblocks-test
+          path: |
+            **/build/reports/tests
+
   solidblocks-cloud-init:
     runs-on: ubuntu-24.04
     defaults:
@@ -500,6 +524,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: ${{ always() }}
     needs:
+      - solidblocks-cloud
       - solidblocks-cloud-init
       - solidblocks-rds-postgresql-docker
       - solidblocks-rds-postgresql-test
@@ -524,6 +549,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
+      - solidblocks-cloud
       - solidblocks-shell
       - solidblocks-cloud-init
       - solidblocks-rds-postgresql-docker

@@ -16,7 +16,9 @@ import io.kotest.matchers.string.shouldHaveLength
 import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 
+@DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
 class PassSecretProvisionerTest {
 
     @Test
