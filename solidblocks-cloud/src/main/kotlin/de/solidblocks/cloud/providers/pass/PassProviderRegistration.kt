@@ -2,6 +2,8 @@ package de.solidblocks.cloud.providers.pass
 
 import de.solidblocks.cloud.providers.ProviderRegistration
 
+val PASS_PROVIDER_TYPE = "pass"
+
 class PassProviderRegistration : ProviderRegistration<PassProviderConfiguration, PassProviderRuntime, PassProviderManager> {
     override val supportedConfiguration = PassProviderConfiguration::class
     override val supportedRuntime = PassProviderRuntime::class
@@ -10,5 +12,5 @@ class PassProviderRegistration : ProviderRegistration<PassProviderConfiguration,
 
     override fun createFactory() = PassProviderConfigurationFactory()
 
-    override val type = "pass"
+    override val type = PASS_PROVIDER_TYPE
 }

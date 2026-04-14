@@ -31,11 +31,25 @@ fun commandExists(command: String) = try {
 
 data class CommandResult(val exitCode: Int, val stdout: String, val stderr: String)
 
-fun runCommand(command: List<String>, stdin: String? = null) = try {
+fun CommandResult?.asResult(description: String): Result<CommandResult> {
+    if (this == null) {
+        return Error("$description failed with unknown reason (timeout?)")
+    }
+
+    if (exitCode != 0) {
+        return Error("$description failed with exit code $exitCode, stderr was: '$stderr', stdout was: $stdout")
+    }
+
+    return Success(this)
+}
+
+fun runCommand(command: List<String>, stdin: String? = null, env: Map<String, String> = emptyMap()) = try {
     val isWindows = System.getProperty("os.name").lowercase().contains("win")
 
-    val process = ProcessBuilder(command).start()
+    val pb = ProcessBuilder(command)
+    pb.environment().putAll(env)
 
+    val process = pb.start()
     if (stdin != null) {
         process.outputStream.use { output ->
             output.write(stdin.toByteArray())

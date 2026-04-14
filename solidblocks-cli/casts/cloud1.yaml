@@ -1,7 +1,7 @@
 ---
 name: cloud1
 # to add dns based endpoints and ssl certificates just add a root domain
-root_domain: blcks-test.de
+#root_domain: blcks-test.de
 
 providers:
   # use pass password manager for secret storage
@@ -11,8 +11,8 @@ providers:
   # use Hetzner cloud to create resources like VMs, storage, networking
   - type: hcloud
   # backups can also be stored in AWS S3 buckets
-  - type: backup_aws_s3
-#  - type: backup_local
+#  - type: backup_aws_s3
+  - type: backup_local
 
 services:
   # spin up a Postgresql database

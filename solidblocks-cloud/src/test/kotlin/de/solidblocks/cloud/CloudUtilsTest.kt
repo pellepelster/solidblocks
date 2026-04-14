@@ -3,23 +3,14 @@ package de.solidblocks.cloud
 import de.solidblocks.cloud.mocks.MockResource1
 import de.solidblocks.cloud.mocks.MockResource1Lookup
 import de.solidblocks.cloud.mocks.MockResource2Lookup
-import de.solidblocks.cloud.utils.ByteSize
-import de.solidblocks.cloud.utils.commandExists
-import de.solidblocks.cloud.utils.equalsIgnoreOrder
-import de.solidblocks.cloud.utils.formatBytes
-import de.solidblocks.cloud.utils.formatLocale
-import de.solidblocks.cloud.utils.getEnvOrProperty
-import de.solidblocks.cloud.utils.joinToStringOrEmpty
-import de.solidblocks.cloud.utils.runCommand
+import de.solidblocks.cloud.utils.*
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldNotBeEmpty
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.Duration
-import java.time.Instant
-import java.time.ZoneId
-import java.util.UUID
+import java.util.*
 
 class CloudUtilsTest {
 
@@ -55,7 +46,17 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testInvalid() {
+    fun testCommandEnvironment() {
+        val random = UUID.randomUUID().toString()
+        assertSoftly(runCommand(listOf("env"), env = mapOf("RANDOM_VAR" to random))) {
+            it?.exitCode shouldBe 0
+            it?.stdout shouldContain "RANDOM_VAR=${random}\n"
+            it?.stderr shouldBe ""
+        }
+    }
+
+    @Test
+    fun testInvalidCommand() {
         runCommand(listOf("invalid")) shouldBe null
     }
 

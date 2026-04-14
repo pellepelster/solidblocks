@@ -40,6 +40,12 @@ class PassProviderConfigurationFactory : PolymorphicConfigurationFactory<PassPro
                 is Success<String> -> name.data
             }
 
-        return Success(PassProviderConfiguration(name))
+        val passwordStoreDir =
+            when (val name = passwordStoreDir.parse(yaml)) {
+                is Error<String?> -> return Error(name.error)
+                is Success<String?> -> name.data
+            }
+
+        return Success(PassProviderConfiguration(name, passwordStoreDir))
     }
 }

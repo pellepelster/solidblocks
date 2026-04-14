@@ -4,6 +4,7 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.EnvironmentReference
+import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
@@ -66,6 +67,8 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
 }
 
 val TEST_PROVISIONER_CONTEXT = TestProvisionerContext(ProvisionersRegistry())
+
+val TEST_CLOUD_CONFIGURATION_CONTEXT = CloudConfigurationContext("cloud1", Path.of("tmp"))
 
 data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: CloudProvisionerContext) {
 
