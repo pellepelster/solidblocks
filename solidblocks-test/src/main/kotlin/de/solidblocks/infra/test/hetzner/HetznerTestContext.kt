@@ -132,7 +132,11 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
                     .list(labelSelectors = defaultLabels.toLabelSelectors())
                     .forEach {
                         logInfo("cleaning up dns record '${it.name}/${it.type}'")
-                        api.dnsRrSets(zone.id.toString()).delete(it.id, it.type)
+                        try {
+                            api.dnsRrSets(zone.id.toString()).delete(it.id, it.type)
+                        } catch (e: Exception) {
+                            logWarning("failed to clean up dns record '${it.name}/${it.type}'")
+                        }
                     }
             }
 

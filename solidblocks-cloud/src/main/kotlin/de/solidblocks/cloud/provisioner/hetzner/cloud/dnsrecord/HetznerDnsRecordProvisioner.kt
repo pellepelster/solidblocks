@@ -32,6 +32,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             record.rrset.ttl,
             zone.name,
             record.rrset.records.map { it.value },
+            record.rrset.labels,
         )
     }
 

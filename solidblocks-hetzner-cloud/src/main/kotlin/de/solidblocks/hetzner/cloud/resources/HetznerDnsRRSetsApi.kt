@@ -66,6 +66,7 @@ data class DnsRrSetResponse(
     val ttl: Int? = null,
     override val protection: HetznerChangeProtectionResponse,
     val records: List<DnsRRSetRecord>,
+    val labels: Map<String, String>,
 ) : HetznerChangeProtectedResource<String>
 
 class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: String) : HetznerBaseResourceApi<DnsRrSetResponse> {
