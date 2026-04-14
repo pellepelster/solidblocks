@@ -71,8 +71,8 @@ class AwsIamUserProvisionerTest {
                 .shouldBeTypeOf<Success<*>>()
 
             TEST_PROVISIONER_CONTEXT.secrets.entries shouldHaveSize 2
-            TEST_PROVISIONER_CONTEXT.secrets["testCloudName/default/aws/$name/secret_key"] shouldHaveLength 40
-            TEST_PROVISIONER_CONTEXT.secrets["testCloudName/default/aws/$name/access_key"] shouldHaveLength 20
+            TEST_PROVISIONER_CONTEXT.secrets["testCloudName/default/aws/users/$name/secret_key"] shouldHaveLength 40
+            TEST_PROVISIONER_CONTEXT.secrets["testCloudName/default/aws/users/$name/access_key"] shouldHaveLength 20
 
             assertSoftly(provisioner.lookup(AwsIamUser(name, readOnlyPolicy(bucketArn)).asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
                 it.name shouldBe name
