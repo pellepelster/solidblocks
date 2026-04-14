@@ -40,7 +40,7 @@ class CloudUtilsTest {
     fun testCommand() {
         assertSoftly(runCommand(listOf("whoami"))) {
             it?.exitCode shouldBe 0
-            it?.stdout shouldBe "pelle\n"
+            it?.stdout shouldBe "${System.getProperty("user.name")}\n"
             it?.stderr shouldBe ""
         }
     }

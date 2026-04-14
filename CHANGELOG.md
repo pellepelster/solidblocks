@@ -2,6 +2,7 @@
 
 ## v0.5.2
 * improve validation for pass secret provider 
+* add option to skip pass provider config validation
 * fix false positive for Hetzner DNS record diffs 
 
 ## v0.5.1
