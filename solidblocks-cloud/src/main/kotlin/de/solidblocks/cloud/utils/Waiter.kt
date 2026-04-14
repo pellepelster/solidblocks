@@ -12,6 +12,8 @@ object Waiter {
 
     data class WaitConfig(val maxIterations: Int = 10, val wait: Duration = 2.seconds)
 
+    public val SHORT_WAIT = WaitConfig(10, 1.seconds)
+
     public val DEFAULT_WAIT = WaitConfig(30, 1.seconds)
 
     public val LONG_WAIT = WaitConfig(90, 5.seconds)

@@ -11,7 +11,7 @@ interface InfrastructureResourceProvisioner<ResourceType, RuntimeType> {
 
     suspend fun apply(resource: ResourceType, context: CloudProvisionerContext, log: LogContext): Result<RuntimeType> = TODO("Not yet implemented")
 
-    suspend fun destroy(resource: ResourceType, context: CloudProvisionerContext, logContext: LogContext): Boolean = TODO("Not yet implemented")
+    suspend fun destroy(resource: ResourceType, context: CloudProvisionerContext, log: LogContext): Boolean = TODO("Not yet implemented")
 
     suspend fun destroyAll(context: CloudProvisionerContext): Boolean = TODO("Not yet implemented")
 

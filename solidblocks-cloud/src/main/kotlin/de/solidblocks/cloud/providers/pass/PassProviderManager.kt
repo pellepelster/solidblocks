@@ -12,16 +12,6 @@ import kotlin.io.path.exists
 class PassProviderManager : ProviderManager<PassProviderConfiguration, PassProviderRuntime> {
 
     override fun validateConfiguration(configuration: PassProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<PassProviderRuntime> {
-        if (commandExists("pass")) {
-            log.debug("found 'pass' executable")
-        } else {
-            "'pass' executable not found"
-                .also {
-                    log.error(it)
-                    return Error<PassProviderRuntime>(it)
-                }
-        }
-
         val passwordStoreDir = if (configuration.passwordStoreDir == null) {
             if (System.getenv("PASSWORD_STORE_DIR") == null) {
                 log.info("no password store directory configured, using default '${DEFAULT_PASS_DIR}'")
@@ -41,7 +31,18 @@ class PassProviderManager : ProviderManager<PassProviderConfiguration, PassProvi
         }
 
         if (getEnvOrProperty("BLCKS_PASS_PROVIDER_SKIP_VALIDATION") != null) {
+            log.info("skipping password provider validation, using password store directory '${configuration.passwordStoreDir}'")
             return Success(PassProviderRuntime(passwordStoreDir))
+        }
+
+        if (commandExists("pass")) {
+            log.debug("found 'pass' executable")
+        } else {
+            "'pass' executable not found"
+                .also {
+                    log.error(it)
+                    return Error<PassProviderRuntime>(it)
+                }
         }
 
         val configCheckSecretPath = ".blcks-test"

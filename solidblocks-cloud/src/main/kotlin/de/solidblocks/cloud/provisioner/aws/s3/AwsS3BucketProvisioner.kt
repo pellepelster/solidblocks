@@ -32,6 +32,9 @@ import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.Waiter
+import de.solidblocks.cloud.utils.Waiter.waitForCondition
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
@@ -91,6 +94,15 @@ class AwsS3BucketProvisioner(
                     }
                 },
             )
+
+            waitForCondition(Waiter.SHORT_WAIT) {
+                try {
+                    log.info("waiting for creation of bucket '${resource.name}'...")
+                    lookup(resource.asLookup(), context) != null
+                } catch (e: Exception) {
+                    false
+                }
+            }
         }
 
         client.putPublicAccessBlock(
@@ -109,7 +121,7 @@ class AwsS3BucketProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(resource: AwsS3Bucket, context: CloudProvisionerContext, logContext: LogContext): Boolean {
+    override suspend fun destroy(resource: AwsS3Bucket, context: CloudProvisionerContext, log: LogContext): Boolean {
         s3Client().use { client ->
             try {
                 var truncated = true
@@ -140,6 +152,15 @@ class AwsS3BucketProvisioner(
                 }
 
                 client.deleteBucket(DeleteBucketRequest { bucket = resource.name })
+
+                waitForCondition(Waiter.SHORT_WAIT) {
+                    try {
+                        log.info("waiting for deletion of bucket '${resource.name}'...")
+                        lookup(resource.asLookup(), context) == null
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
             } catch (e: NoSuchBucket) {
                 return false
             }
