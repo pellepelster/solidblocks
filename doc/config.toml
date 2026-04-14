@@ -30,4 +30,4 @@ autoPlay = false
 speed = 4.0
 
 [params.logo]
-src = '/images/logo.png'
+src = 'images/logo.png'

@@ -36,7 +36,7 @@ curl ${ENDPOINT}/hello
 ```
 
 **see it in action**
-{{< asciicast src="/cloud/casts/quickstart.cast" >}}
+{{< asciicast src="cloud/casts/quickstart.cast" >}}
 
 
 ## Features
@@ -49,24 +49,24 @@ Solidblocks Cloud is designed to avoid complexity in the deployed services where
 
 Strong credentials are generated for all deployed services and automatically added to the configured secret provider backend. Rotating a password becomes as easy as updating the secret and triggering a new apply.
 
-{{< asciicast src="/cloud/casts/quickstart_secrets.cast" >}}
+{{< asciicast src="cloud/casts/quickstart_secrets.cast" >}}
 
 
 ## DNS and Certificates
 
 If the configured cloud provider supports DNS, switching to DNS based endpoints secured by SSL certificates instead of IP addresses is as easy as adding the `root_domain` to the config file.
 
-{{< asciicast src="/cloud/casts/quickstart_dns.cast" >}}
+{{< asciicast src="cloud/casts/quickstart_dns.cast" >}}
 
 
 ## Backup & Restore
 
 To protect your data, Solidblocks includes automatic backup and restore functionality. Besides backup to locally attached disks backups can also be written to AWS S3 buckets, allowing for a complete disaster recovery of the system state from only S3. 
 
-{{< asciicast src="/cloud/casts/quickstart_s3.cast" >}}
+{{< asciicast src="cloud/casts/quickstart_s3.cast" >}}
 
 ## Help
 
 Context-sensitive information and error messages help connecting to the deployed services.
 
-{{< asciicast src="/cloud/casts/quickstart_help.cast" >}}
+{{< asciicast src="cloud/casts/quickstart_help.cast" >}}
