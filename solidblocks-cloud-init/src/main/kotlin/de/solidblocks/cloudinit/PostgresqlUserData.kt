@@ -98,7 +98,7 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
                 mapOf(
                     instanceName to
                         Service(
-                            image = "ghcr.io/pellepelster/solidblocks-rds-postgresql:17-v0.5.1",
+                            image = "ghcr.io/pellepelster/solidblocks-rds-postgresql:17-v0.5.2",
                             environment =
                             mapOf(
                                 "DB_INSTANCE_NAME" to instanceName,
