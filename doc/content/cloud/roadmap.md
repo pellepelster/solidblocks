@@ -17,7 +17,13 @@ A loose collection of future ideas and features, if you are interested in a part
 * MySQL/MariaDB
 * pull images from private docker registries for docker service
 * support service scaling and loadbalancers
+* build agents for gitlab/github/...
 
+## Monitoring
+* automatic configuration for observability platforms
+  * Kibana/Grafana
+  * Elasticsearch
+  
 ## Secret providers
 
 * add support for onepassword
