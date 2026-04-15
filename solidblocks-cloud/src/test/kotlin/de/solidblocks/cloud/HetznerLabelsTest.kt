@@ -1,14 +1,10 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.Constants.cloudLabel
-import de.solidblocks.cloud.Constants.managedByLabel
-import de.solidblocks.cloud.Constants.solidblocksVersion
-import de.solidblocks.cloud.Constants.versionLabel
 import de.solidblocks.cloud.utils.HetznerLabels
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -16,16 +12,16 @@ import org.junit.jupiter.api.TestInstance
 class HetznerLabelsTest {
     @Test
     fun hasDefaultLabels() {
-        val labels = HetznerLabels.forCloud("test")
+        val labels = HetznerLabels.Companion.forCloud("test")
         labels.labels() shouldHaveSize 3
-        labels.labels()[cloudLabel] shouldBe "test"
-        labels.labels()[managedByLabel] shouldBe "blcks"
-        labels.labels()[versionLabel] shouldBe solidblocksVersion()
+        labels.labels()[Constants.cloudLabel] shouldBe "test"
+        labels.labels()[Constants.managedByLabel] shouldBe "blcks"
+        labels.labels()[Constants.versionLabel] shouldBe Constants.solidblocksVersion()
     }
 
     @Test
     fun testAddHashedLabel() {
-        val labels = HetznerLabels.forCloud("test")
+        val labels = HetznerLabels.Companion.forCloud("test")
 
         labels.addHashedLabel("hash-test", "hallo welt")
         labels.labels()["hash-test"] shouldBe
@@ -38,7 +34,7 @@ class HetznerLabelsTest {
 
     @Test
     fun testLabelExportImport() {
-        val labels = HetznerLabels.forCloud("test")
+        val labels = HetznerLabels.Companion.forCloud("test")
 
         labels.addHashedLabel("hash-test", "hallo welt")
         labels.addHashedLabel("long-test", "A".repeat(124))
@@ -55,7 +51,7 @@ class HetznerLabelsTest {
 
     @Test
     fun testMaxLabelValue() {
-        val labels = HetznerLabels.forCloud("test")
+        val labels = HetznerLabels.Companion.forCloud("test")
         labels.addLabel("label1", "A".repeat(124))
 
         labels.labels() shouldHaveSize 4
@@ -69,9 +65,9 @@ class HetznerLabelsTest {
 
     @Test
     fun testTooLongLabelValue() {
-        val labels = HetznerLabels.forCloud("test")
+        val labels = HetznerLabels.Companion.forCloud("test")
 
-        assertThrows(
+        Assertions.assertThrows(
             RuntimeException::class.java,
         ) {
             labels.addLabel("label1", "A".repeat(125))
@@ -80,9 +76,9 @@ class HetznerLabelsTest {
 
     @Test
     fun testUnderscoreInKey() {
-        val labels = HetznerLabels.forCloud("test")
+        val labels = HetznerLabels.Companion.forCloud("test")
 
-        assertThrows(
+        Assertions.assertThrows(
             RuntimeException::class.java,
         ) {
             labels.addLabel("label_1", "value1")

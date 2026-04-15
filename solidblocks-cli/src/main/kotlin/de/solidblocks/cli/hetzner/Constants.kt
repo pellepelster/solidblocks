@@ -1,5 +1,9 @@
 package de.solidblocks.cli.hetzner
 
+import de.solidblocks.hetzner.cloud.model.HetznerNamedResource
+import de.solidblocks.hetzner.cloud.pascalCaseToWhiteSpace
+import kotlin.reflect.KClass
+
 object Constants {
     const val NAMESPACE_LABEL = "blcks.de"
 
@@ -13,3 +17,7 @@ object Constants {
 
     const val DEPLOYMENT_ID_LABEL = "${NAMESPACE_LABEL}/deployment-id"
 }
+
+fun HetznerNamedResource<*>.logText() = "${this::class.pascalCaseToWhiteSpace()} '${name ?: "<no name>"}' ($id)"
+
+fun KClass<out HetznerNamedResource<*>>.pascalCaseToWhiteSpace() = this.simpleName!!.removeSuffix("Response").pascalCaseToWhiteSpace().lowercase()

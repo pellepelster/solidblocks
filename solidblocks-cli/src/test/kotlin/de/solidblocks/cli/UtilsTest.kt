@@ -1,6 +1,6 @@
-package de.solidblocks.hetzner.cloud
+package de.solidblocks.cli
 
-import de.solidblocks.hetzner.cloud.model.pascalCaseToWhiteSpace
+import de.solidblocks.cli.hetzner.pascalCaseToWhiteSpace
 import de.solidblocks.hetzner.cloud.resources.FloatingIpResponse
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

@@ -1,5 +1,6 @@
 package de.solidblocks.cli.hetzner.nuke
 
+import de.solidblocks.cli.hetzner.logText
 import de.solidblocks.hetzner.cloud.*
 import de.solidblocks.hetzner.cloud.model.*
 import de.solidblocks.hetzner.cloud.resources.*
@@ -25,51 +26,37 @@ class HetznerNuker(hcloudToken: String) {
             api.images,
             api.certificates,
             api.dnsZones,
-        )
-            .map { resourceApi ->
-                if (resourceApi is HetznerDnsZonesApi) {
-                    resourceApi
-                        .list()
-                        .flatMap { zone ->
-                            api.dnsRrSets(zone.name)
-                                .list()
-                                .filter { it.type != RRType.SOA && it.type != RRType.NS }
-                                .map { set ->
-                                    logInfo("would delete ${set.logText()} from ${zone.logText()}")
-                                    1
-                                }
-                        }
-                        .sum()
+        ).map { resourceApi ->
+            if (resourceApi is HetznerDnsZonesApi) {
+                resourceApi.list().flatMap { zone ->
+                    api.dnsRrSets(zone.name).list().filter { it.type != RRType.SOA && it.type != RRType.NS }.map { set ->
+                        logInfo("would delete ${set.logText()} from ${zone.logText()}")
+                        1
+                    }
+                }.sum()
+            } else {
+                if (resourceApi is HetznerImagesApi) {
+                    resourceApi.list(listOf(ImageTypeFilter(ImageType.snapshot))).map {
+                        logInfo("would delete ${it.logText()}")
+                        1
+                    }.sum()
                 } else {
-                    val filter =
-                        if (resourceApi is HetznerImagesApi) {
-                            mapOf("type" to FilterValue.Equals(ImageType.snapshot.name.lowercase()))
-                        } else {
-                            emptyMap()
-                        }
-
-                    resourceApi
-                        .list(filter)
-                        .map {
-                            logInfo("would delete ${it.logText()}")
-                            1
-                        }
-                        .sum()
+                    resourceApi.list().map {
+                        logInfo("would delete ${it.logText()}")
+                        1
+                    }.sum()
                 }
             }
-    }
-        .sum()
+        }
+    }.sum()
 
     fun nuke() = runBlocking {
         api.dnsZones.list().flatMap { zone ->
             val rrSetsApi = api.dnsRrSets(zone.name)
-            rrSetsApi
-                .list()
-                .filter { it.type != RRType.SOA && it.type != RRType.NS }
-                .map { set ->
-                    logInfo("deleting ${set.logText()} from ${zone.logText()}")
-                    rrSetsApi.delete(set.name, set.type)
-                }
+            rrSetsApi.list().filter { it.type != RRType.SOA && it.type != RRType.NS }.map { set ->
+                logInfo("deleting ${set.logText()} from ${zone.logText()}")
+                rrSetsApi.delete(set.name, set.type)
+            }
         }
 
         api.servers.list().forEach { server ->
@@ -96,97 +83,91 @@ class HetznerNuker(hcloudToken: String) {
             api.placementGroups,
             api.images,
             api.certificates,
-        )
-            .forEach { resourceApi ->
-                val filter =
-                    if (resourceApi is HetznerImagesApi) {
-                        mapOf("type" to FilterValue.Equals(ImageType.snapshot.name.lowercase()))
-                    } else {
-                        emptyMap()
-                    }
+        ).forEach { resourceApi ->
+            val list = if (resourceApi is HetznerImagesApi) {
+                resourceApi.list(listOf(ImageTypeFilter(ImageType.snapshot)))
+            } else {
+                resourceApi.list()
+            }
 
-                resourceApi.list(filter).forEach {
-                    if (it is VolumeResponse && it.server != null) {
-                        try {
-                            api.waitForAction(
-                                {
-                                    logInfo("detaching volume ${it.logText()} from server ${it.server}")
-                                    api.volumes.detach(it.id)
-                                },
-                                { api.volumes.action(it) },
-                            )
-                        } catch (e: HetznerApiException) {
-                            if (e.error.code == HetznerApiErrorType.LOCKED) {
-                                logWarning("skipping locked volume ${it.logText()}")
-                            }
-                        }
-                    }
-
-                    if (
-                        resourceApi is HetznerProtectedResourceApi<*, *> &&
-                        it is HetznerDeleteProtectedResource &&
-                        it.protection.delete
-                    ) {
+            list.forEach {
+                if (it is VolumeResponse && it.server != null) {
+                    try {
                         api.waitForAction(
                             {
-                                logInfo("disabling protection for ${it.logText()}")
-                                resourceApi.changeDeleteProtection(it.id, false)
+                                logInfo("detaching volume ${it.logText()} from server ${it.server}")
+                                api.volumes.detach(it.id)
                             },
-                            { resourceApi.action(it) },
+                            { api.volumes.action(it) },
                         )
-                    }
-
-                    if (resourceApi is HetznerAssignedResourceApi && it is HetznerAssignedResource) {
-                        if (it.isAssigned) {
-                            try {
-                                val actionResponse = resourceApi.unassign(it.id)
-                                if (actionResponse != null) {
-                                    api.waitForAction(
-                                        {
-                                            logInfo("unassigning ${it.logText()}")
-                                            actionResponse
-                                        },
-                                        { resourceApi.action(it) },
-                                    )
-                                }
-                            } catch (e: HetznerApiException) {
-                                if (e.error.code == HetznerApiErrorType.NOT_FOUND) {
-                                    logWarning(
-                                        "skipping unassigning of '${it.logText()}' because backend returned '${e.error.code}'",
-                                    )
-                                }
-                            }
+                    } catch (e: HetznerApiException) {
+                        if (e.error.code == HetznerApiErrorType.LOCKED) {
+                            logWarning("skipping locked volume ${it.logText()}")
                         }
-                    }
-
-                    if (resourceApi is HetznerDeleteResourceApi<*, *>) {
-                        logInfo("deleting ${it.logText()}")
-                        try {
-                            if (!resourceApi.delete(it.id)) {
-                                logError("deleting ${it.logText()} failed")
-                            }
-                        } catch (e: HetznerApiException) {
-                            when (e.error.code) {
-                                HetznerApiErrorType.NOT_FOUND,
-                                HetznerApiErrorType.SERVER_NOT_STOPPED,
-                                -> {
-                                    logWarning(
-                                        "skipping deletion of '${it.logText()} because backend returned '${e.error.code}'",
-                                    )
-                                }
-
-                                else -> {
-                                    throw e
-                                }
-                            }
-                        }
-                    }
-
-                    if (resourceApi is HetznerDeleteWithActionResourceApi<*, *>) {
-                        logInfo("deleting ${it.logText()}")
-                        api.waitForAction({ resourceApi.delete(it.id) }, { resourceApi.action(it) })
                     }
                 }
+
+                if (resourceApi is HetznerProtectedResourceApi<*, *, *> && it is HetznerDeleteProtectedResource && it.protection.delete) {
+                    api.waitForAction(
+                        {
+                            logInfo("disabling protection for ${it.logText()}")
+                            resourceApi.changeDeleteProtection(it.id, false)
+                        },
+                        { resourceApi.action(it) },
+                    )
+                }
+
+                if (resourceApi is HetznerAssignedResourceApi && it is HetznerAssignedResource) {
+                    if (it.isAssigned) {
+                        try {
+                            val actionResponse = resourceApi.unassign(it.id)
+                            if (actionResponse != null) {
+                                api.waitForAction(
+                                    {
+                                        logInfo("unassigning ${it.logText()}")
+                                        actionResponse
+                                    },
+                                    { resourceApi.action(it) },
+                                )
+                            }
+                        } catch (e: HetznerApiException) {
+                            if (e.error.code == HetznerApiErrorType.NOT_FOUND) {
+                                logWarning(
+                                    "skipping unassigning of '${it.logText()}' because backend returned '${e.error.code}'",
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (resourceApi is HetznerDeleteResourceApi<*, *, *>) {
+                    logInfo("deleting ${it.logText()}")
+                    try {
+                        if (!resourceApi.delete(it.id)) {
+                            logError("deleting ${it.logText()} failed")
+                        }
+                    } catch (e: HetznerApiException) {
+                        when (e.error.code) {
+                            HetznerApiErrorType.NOT_FOUND,
+                            HetznerApiErrorType.SERVER_NOT_STOPPED,
+                            -> {
+                                logWarning(
+                                    "skipping deletion of '${it.logText()} because backend returned '${e.error.code}'",
+                                )
+                            }
+
+                            else -> {
+                                throw e
+                            }
+                        }
+                    }
+                }
+
+                if (resourceApi is HetznerDeleteWithActionResourceApi<*, *, *>) {
+                    logInfo("deleting ${it.logText()}")
+                    api.waitForAction({ resourceApi.delete(it.id) }, { resourceApi.action(it) })
+                }
             }
+        }
     }
 }

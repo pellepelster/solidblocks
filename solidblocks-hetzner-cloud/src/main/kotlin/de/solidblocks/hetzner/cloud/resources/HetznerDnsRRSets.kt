@@ -3,7 +3,7 @@ package de.solidblocks.hetzner.cloud.resources
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerBaseResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.BaseFilter
 import de.solidblocks.hetzner.cloud.model.HetznerChangeProtectedResource
 import de.solidblocks.hetzner.cloud.model.HetznerChangeProtectionResponse
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
@@ -11,6 +11,10 @@ import de.solidblocks.hetzner.cloud.model.ListResponse
 import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+open class DnsRRSetFilter(attribute: String, value: String) : BaseFilter(attribute, value)
+
+class DnsRRSetNameFilter(name: String) : DnsRRSetFilter("name", name)
 
 @Serializable
 data class DnsRRSetsListResponseWrapper(val rrsets: List<DnsRrSetResponse>, override val meta: MetaResponse) : ListResponse<DnsRrSetResponse> {
@@ -41,13 +45,13 @@ enum class RRType {
 data class DnsRRSetRecord(val value: String, val comment: String? = null)
 
 @Serializable
-data class DnsRRSetsCreateRequest(val name: String, val type: RRType, val ttl: Int, val records: List<DnsRRSetRecord>, val labels: Map<String, String> = emptyMap())
+data class DnsRRSetsCreateRequest(val name: String, val type: RRType, val ttl: Int, val records: List<DnsRRSetRecord>, val labels: Map<String, String>? = null)
 
 @Serializable
-data class DnsRRSetsRecordsUpdateRequest(val records: List<DnsRRSetRecord>, val labels: Map<String, String> = emptyMap())
+data class DnsRRSetsRecordsUpdateRequest(val records: List<DnsRRSetRecord>, val labels: Map<String, String>? = null)
 
 @Serializable
-data class DnsRRSetsUpdateRequest(val labels: Map<String, String> = emptyMap())
+data class DnsRRSetsUpdateRequest(val labels: Map<String, String>? = null)
 
 @Serializable
 data class DnsRRSetsTTLUpdateRequest(val ttl: Int)
@@ -69,8 +73,8 @@ data class DnsRrSetResponse(
     val labels: Map<String, String>,
 ) : HetznerChangeProtectedResource<String>
 
-class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: String) : HetznerBaseResourceApi<DnsRrSetResponse> {
-    override suspend fun listPaged(page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>): DnsRRSetsListResponseWrapper = api.get(
+class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: String) : HetznerBaseResourceApi<DnsRrSetResponse, DnsRRSetFilter> {
+    override suspend fun listPaged(page: Int, perPage: Int, filter: List<DnsRRSetFilter>, labelSelectors: Map<String, LabelSelectorValue>): DnsRRSetsListResponseWrapper = api.get(
         "v1/zones/$dnsZoneReference/rrsets?${listQuery(page, perPage, filter, labelSelectors)}",
     ) ?: throw RuntimeException("failed to list dns rr sets")
 

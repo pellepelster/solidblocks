@@ -1,8 +1,6 @@
 package de.solidblocks.hetzner.cloud.model
 
-import de.solidblocks.hetzner.cloud.pascalCaseToWhiteSpace
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 
 interface HetznerDeleteProtectedResource<ID> : HetznerNamedResource<ID> {
     val protection: HetznerDeleteProtectionResponse
@@ -44,18 +42,11 @@ sealed class LabelSelectorValue {
 
 public fun Map<String, String>.toLabelSelectors() = this.entries.associate { it.key to LabelSelectorValue.Equals(it.value) }
 
-sealed class FilterValue {
-    data class Equals(val value: Any) : FilterValue() {
-        override val query: String
-            get() = value.toString()
-    }
-
-    abstract val query: String
+open class BaseFilter(val attribute: String, val value: String) {
+    fun queryPart() = "$attribute=$value"
 }
 
-fun KClass<out HetznerNamedResource<*>>.pascalCaseToWhiteSpace() = this.simpleName!!.removeSuffix("Response").pascalCaseToWhiteSpace().lowercase()
-
-fun HetznerNamedResource<*>.logText() = "${this::class.pascalCaseToWhiteSpace()} '${name ?: "<no name>"}' ($id)"
+enum class Architecture { x86, arm }
 
 enum class HetznerLocation {
     fsn1,

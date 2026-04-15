@@ -1,7 +1,7 @@
 package de.solidblocks.hetzner.cloud
 
 import de.solidblocks.hetzner.cloud.Constants.defaultPageSize
-import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.BaseFilter
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorWrapper
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
@@ -10,15 +10,18 @@ import de.solidblocks.hetzner.cloud.model.ListResponse
 import de.solidblocks.hetzner.cloud.resources.ActionResponseWrapper
 import de.solidblocks.hetzner.cloud.resources.ActionStatus
 import de.solidblocks.hetzner.cloud.resources.HetznerCertificatesApi
+import de.solidblocks.hetzner.cloud.resources.HetznerDatacentersApi
 import de.solidblocks.hetzner.cloud.resources.HetznerDnsRRSetsApi
 import de.solidblocks.hetzner.cloud.resources.HetznerDnsZonesApi
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallsApi
 import de.solidblocks.hetzner.cloud.resources.HetznerFloatingIpsApi
 import de.solidblocks.hetzner.cloud.resources.HetznerImagesApi
+import de.solidblocks.hetzner.cloud.resources.HetznerIsosApi
 import de.solidblocks.hetzner.cloud.resources.HetznerLoadBalancersApi
 import de.solidblocks.hetzner.cloud.resources.HetznerLocationsApi
 import de.solidblocks.hetzner.cloud.resources.HetznerNetworksApi
 import de.solidblocks.hetzner.cloud.resources.HetznerPlacementGroupsApi
+import de.solidblocks.hetzner.cloud.resources.HetznerPricingApi
 import de.solidblocks.hetzner.cloud.resources.HetznerPrimaryIpsApi
 import de.solidblocks.hetzner.cloud.resources.HetznerSSHKeysApi
 import de.solidblocks.hetzner.cloud.resources.HetznerServerTypesApi
@@ -52,18 +55,21 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 suspend fun <T> retryUtil(
-    block: suspend () -> T,
+    block: suspend () -> T?,
     condition: (T) -> Boolean,
     times: Int = 40,
     initialDelay: Long = 1000,
     maxDelay: Long = 5000,
     factor: Double = 2.0,
-): T {
+): T? {
     var currentDelay = initialDelay
 
     repeat(times - 1) {
         try {
             val result = block()
+            if (result == null) {
+                return null
+            }
 
             if (condition(result)) {
                 return result
@@ -81,7 +87,7 @@ suspend fun <T> retryUtil(
     return block()
 }
 
-fun listQuery(page: Int = 0, perPage: Int = 25, filter: Map<String, FilterValue>, labelSelector: Map<String, LabelSelectorValue>): String {
+fun listQuery(page: Int = 0, perPage: Int = 25, filter: List<BaseFilter>, labelSelector: Map<String, LabelSelectorValue>): String {
     val labelSelector =
         if (labelSelector.isNotEmpty()) {
             "label_selector=${
@@ -93,7 +99,7 @@ fun listQuery(page: Int = 0, perPage: Int = 25, filter: Map<String, FilterValue>
             null
         }
 
-    val filter = filter.entries.joinToString("&") { "${it.key}=${it.value.query}" }
+    val filter = filter.joinToString("&") { it.queryPart() }
     val page = "page=$page"
     val perPage = "per_page=$perPage"
 
@@ -115,6 +121,9 @@ public class HetznerApi(hcloudToken: String) {
     val primaryIps = HetznerPrimaryIpsApi(this)
     val placementGroups = HetznerPlacementGroupsApi(this)
     val images = HetznerImagesApi(this)
+    val datacenters = HetznerDatacentersApi(this)
+    val isos = HetznerIsosApi(this)
+    val pricing = HetznerPricingApi(this)
 
     fun dnsRrSets(dnsZoneReference: String) = HetznerDnsRRSetsApi(this, dnsZoneReference)
 
@@ -158,7 +167,9 @@ public class HetznerApi(hcloudToken: String) {
     internal suspend inline fun <reified T> post(path: String, data: Any? = null): T = client
         .post(path) {
             contentType(ContentType.Application.Json)
-            data?.let { this.setBody(it) }
+            data?.let {
+                this.setBody(it)
+            }
         }
         .handle<T>()
 
@@ -219,30 +230,32 @@ public class HetznerApi(hcloudToken: String) {
         throw HetznerApiException(error.error, this.request.url)
     }
 
-    fun waitForAction(action: suspend () -> ActionResponseWrapper, getAction: suspend (Long) -> ActionResponseWrapper) = runBlocking {
+    fun waitForAction(action: suspend () -> ActionResponseWrapper, getAction: suspend (Long) -> ActionResponseWrapper?) = runBlocking {
         val response = action.invoke()
 
         val result =
             retryUtil(
                 block = { getAction.invoke(response.action.id) },
                 condition = { it.action.status == ActionStatus.SUCCESS },
-            )
+            ) ?: return@runBlocking true
 
         result.action.status == ActionStatus.SUCCESS
     }
 
-    fun waitForAction(id: Long, logCallback: ((String) -> Unit)?, getAction: suspend (Long) -> ActionResponseWrapper) = runBlocking {
+    fun waitForAction(id: Long, logCallback: ((String) -> Unit)?, getAction: suspend (Long) -> ActionResponseWrapper?) = runBlocking {
         val result =
             retryUtil(
                 block = {
                     getAction.invoke(id).also {
-                        logCallback?.invoke(
-                            "waiting for '${it.action.command}' to finish current status is '${it.action.status.name.lowercase()}'",
-                        )
+                        if (it != null) {
+                            logCallback?.invoke(
+                                "waiting for '${it.action.command}' to finish current status is '${it.action.status.name.lowercase()}'",
+                            )
+                        }
                     }
                 },
                 condition = { it.action.status == ActionStatus.SUCCESS },
-            )
+            ) ?: return@runBlocking true
 
         result.action.status == ActionStatus.SUCCESS
     }
@@ -252,14 +265,14 @@ public fun HttpStatusCode.isNotFound(): Boolean = value == 404
 
 public fun HttpStatusCode.isBadRequest(): Boolean = value in (400 until 500)
 
-suspend fun <T> handlePaginatedList(
-    filter: Map<String, FilterValue>,
+suspend fun <T, P : BaseFilter> handlePaginatedList(
+    filter: List<P>,
     labelSelectors: Map<String, LabelSelectorValue>,
     block:
     suspend (
         page: Int,
         perPage: Int,
-        filter: Map<String, FilterValue>,
+        list: List<P>,
         labelSelectors: Map<String, LabelSelectorValue>,
     ) -> ListResponse<T>,
 ): List<T> {

@@ -5,7 +5,6 @@ import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
-import de.solidblocks.hetzner.cloud.model.logText
 import de.solidblocks.hetzner.cloud.model.toLabelSelectors
 import de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
@@ -171,7 +170,7 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
                     api.volumes.delete(it.id)
                 } catch (e: HetznerApiException) {
                     if (e.error.code == HetznerApiErrorType.LOCKED) {
-                        logWarning("skipping locked volume ${it.logText()}")
+                        logWarning("skipping locked volume ${it.name}")
                     }
                 }
             }
@@ -201,6 +200,7 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
                         location ?: defaultLocation,
                         VolumeFormat.ext4,
                         labels = defaultLabels,
+                        automount = false,
                     ),
                 )
                 .volume

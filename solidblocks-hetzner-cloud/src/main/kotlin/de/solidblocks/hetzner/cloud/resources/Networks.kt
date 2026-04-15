@@ -4,7 +4,12 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.*
+import de.solidblocks.hetzner.cloud.model.BaseFilter
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectedResource
+import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse
+import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
+import de.solidblocks.hetzner.cloud.model.ListResponse
+import de.solidblocks.hetzner.cloud.model.MetaResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -16,6 +21,10 @@ enum class NetworkType {
 enum class NetworkZone {
     `eu-central`,
 }
+
+open class NetworkFilter(attribute: String, value: String) : BaseFilter(attribute, value)
+
+class NetworkNameFilter(name: String) : NetworkFilter("name", name)
 
 @Serializable
 data class NetworkUpdateRequest(val name: String? = null, val labels: Map<String, String>? = null)
@@ -38,6 +47,18 @@ data class NetworkCreateRequest(
 
 @Serializable
 data class NetworksSubnetCreateRequest(val type: NetworkType, @SerialName("ip_range") val ipRange: String, @SerialName("network_zone") val networkZone: NetworkZone)
+
+@Serializable
+data class NetworksSubnetDeleteRequest(@SerialName("ip_range") val ipRange: String, @SerialName("network_zone") val networkZone: NetworkZone)
+
+@Serializable
+data class NetworksAddRouteRequest(val destination: String, val gateway: String)
+
+@Serializable
+data class NetworksDeleteRouteRequest(val destination: String, val gateway: String)
+
+@Serializable
+data class NetworksChangeIpRangeRequest(@SerialName("ip_range") val ipRange: String)
 
 @Serializable
 data class NetworksListResponseWrapper(val networks: List<NetworkResponse>, override val meta: MetaResponse) : ListResponse<NetworkResponse> {
@@ -74,9 +95,9 @@ data class NetworkResponse(
 data class NetworkSubnetResponse(val type: NetworkType, @SerialName("ip_range") val ipRange: String, @SerialName("network_zone") val networkZone: NetworkZone, val gateway: String)
 
 class HetznerNetworksApi(private val api: HetznerApi) :
-    HetznerDeleteResourceApi<Long, NetworkResponse>,
-    HetznerProtectedResourceApi<Long, NetworkResponse> {
-    override suspend fun listPaged(page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>): NetworksListResponseWrapper =
+    HetznerDeleteResourceApi<Long, NetworkResponse, NetworkFilter>,
+    HetznerProtectedResourceApi<Long, NetworkResponse, NetworkFilter> {
+    override suspend fun listPaged(page: Int, perPage: Int, filter: List<NetworkFilter>, labelSelectors: Map<String, LabelSelectorValue>): NetworksListResponseWrapper =
         api.get("v1/networks?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list networks")
 
@@ -84,11 +105,31 @@ class HetznerNetworksApi(private val api: HetznerApi) :
 
     suspend fun get(id: Long) = api.get<NetworkResponseWrapper>("v1/networks/$id")?.network
 
-    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+    suspend fun get(name: String) = list(listOf(NetworkNameFilter(name))).singleOrNull()
 
     suspend fun create(request: NetworkCreateRequest) = api.post<NetworkResponseWrapper>("v1/networks", request)
 
     suspend fun addSubnet(network: Long, request: NetworksSubnetCreateRequest) = api.post<ActionResponseWrapper>("v1/networks/$network/actions/add_subnet", request)
+
+    suspend fun deleteSubnet(network: Long, request: NetworksSubnetDeleteRequest): ActionResponseWrapper = api.post(
+        "v1/networks/$network/actions/delete_subnet",
+        request,
+    ) ?: throw RuntimeException("failed to delete subnet from network '$network'")
+
+    suspend fun addRoute(network: Long, request: NetworksAddRouteRequest): ActionResponseWrapper = api.post(
+        "v1/networks/$network/actions/add_route",
+        request,
+    ) ?: throw RuntimeException("failed to add route to network '$network'")
+
+    suspend fun deleteRoute(network: Long, request: NetworksDeleteRouteRequest): ActionResponseWrapper = api.post(
+        "v1/networks/$network/actions/delete_route",
+        request,
+    ) ?: throw RuntimeException("failed to delete route from network '$network'")
+
+    suspend fun changeIpRange(network: Long, request: NetworksChangeIpRangeRequest): ActionResponseWrapper = api.post(
+        "v1/networks/$network/actions/change_ip_range",
+        request,
+    ) ?: throw RuntimeException("failed to change IP range for network '$network'")
 
     override suspend fun changeDeleteProtection(id: Long, delete: Boolean): ActionResponseWrapper = api.post("v1/networks/$id/actions/change_protection", ChangeNetworkProtectionRequest(delete))
         ?: throw RuntimeException("failed to change network protection")

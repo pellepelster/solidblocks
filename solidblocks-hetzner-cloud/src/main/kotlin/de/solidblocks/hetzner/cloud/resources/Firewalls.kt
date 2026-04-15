@@ -4,7 +4,7 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.InstantSerializer
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.BaseFilter
 import de.solidblocks.hetzner.cloud.model.HetznerNamedResource
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue
 import de.solidblocks.hetzner.cloud.model.ListResponse
@@ -103,6 +103,10 @@ constructor(
 @Serializable
 data class FirewallResponseWrapper(val firewall: FirewallResponse)
 
+open class FirewallFilter(attribute: String, value: String) : BaseFilter(attribute, value)
+
+class FirewallNameFilter(name: String) : FirewallFilter("name", name)
+
 @Serializable
 data class FirewallsListWrapper(val firewalls: List<FirewallResponse>, override val meta: MetaResponse) : ListResponse<FirewallResponse> {
     override val list: List<FirewallResponse>
@@ -114,7 +118,7 @@ data class FirewallCreateRequest(
     val name: String,
     val rules: List<HetznerFirewallRule> = emptyList(),
     @SerialName("apply_to") val applyTo: List<FirewallResource> = emptyList(),
-    val labels: Map<String, String> = emptyMap(),
+    val labels: Map<String, String>? = null,
 )
 
 @Serializable
@@ -132,14 +136,14 @@ data class FirewallApplyToResourcesRequest(@SerialName("apply_to") val applyTo: 
 @Serializable
 data class FirewallRemoveFromResourcesRequest(@SerialName("remove_from") val removeFrom: List<FirewallResource>)
 
-class HetznerFirewallsApi(private val api: HetznerApi) : HetznerDeleteResourceApi<Long, FirewallResponse> {
-    override suspend fun listPaged(page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>): FirewallsListWrapper =
+class HetznerFirewallsApi(private val api: HetznerApi) : HetznerDeleteResourceApi<Long, FirewallResponse, FirewallFilter> {
+    override suspend fun listPaged(page: Int, perPage: Int, filter: List<FirewallFilter>, labelSelectors: Map<String, LabelSelectorValue>): FirewallsListWrapper =
         api.get("v1/firewalls?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list firewalls")
 
     suspend fun get(id: Long) = api.get<FirewallResponseWrapper>("v1/firewalls/$id")?.firewall
 
-    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+    suspend fun get(name: String) = list(listOf(FirewallNameFilter(name))).singleOrNull()
 
     suspend fun create(request: FirewallCreateRequest) = api.post<FirewallCreateResponseWrapper>("v1/firewalls", request)
 

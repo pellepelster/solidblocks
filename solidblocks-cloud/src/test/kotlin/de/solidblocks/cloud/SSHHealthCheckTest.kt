@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.healthcheck
+package de.solidblocks.cloud
 
 import de.solidblocks.cloud.api.health.HealthStatus
 import de.solidblocks.cloud.health.SSHHealthCheck

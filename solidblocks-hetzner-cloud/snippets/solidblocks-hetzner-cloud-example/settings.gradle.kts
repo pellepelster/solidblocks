@@ -3,3 +3,11 @@ plugins {
 }
 
 rootProject.name = "solidblocks-hetzner-cloud-example"
+
+/*
+includeBuild("../../../") {
+  dependencySubstitution {
+    substitute(module("de.solidblocks:hetzner-cloud")).using(project(":solidblocks-hetzner-cloud"))
+  }
+}
+*/
