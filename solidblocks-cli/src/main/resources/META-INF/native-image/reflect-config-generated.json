@@ -2070,24 +2070,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerResponse",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerResponse$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.cloud.services.EndpointInfo",
         "fields": [
             {
@@ -2098,6 +2080,24 @@
     },
     {
         "name": "de.solidblocks.cloud.services.EndpointInfo$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.LoadBalancerResponse$Companion",
         "fields": [],
         "methods": [
             {
