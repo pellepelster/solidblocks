@@ -31,11 +31,11 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.SHORT_WAIT
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.Waiter
-import de.solidblocks.cloud.utils.Waiter.WaitConfig
-import de.solidblocks.cloud.utils.Waiter.waitForCondition
-import de.solidblocks.ssh.SSHClient
+import de.solidblocks.cloud.utils.WaitConfig
+import de.solidblocks.cloud.utils.waitForCondition
+import de.solidblocks.cloud.utils.waitForConsecutive
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.seconds
@@ -97,7 +97,7 @@ class AwsS3BucketProvisioner(
                 },
             )
 
-            Waiter.waitForConsecutive(WaitConfig(15, 2.seconds), 3) {
+            WaitConfig(15, 2.seconds).waitForConsecutive(3) {
                 try {
                     log.info("waiting for creation of bucket '${resource.name}'...")
                     lookup(resource.asLookup(), context)
@@ -155,7 +155,7 @@ class AwsS3BucketProvisioner(
 
                 client.deleteBucket(DeleteBucketRequest { bucket = resource.name })
 
-                waitForCondition(Waiter.SHORT_WAIT) {
+                SHORT_WAIT.waitForCondition {
                     try {
                         log.info("waiting for deletion of bucket '${resource.name}'...")
                         lookup(resource.asLookup(), context) == null

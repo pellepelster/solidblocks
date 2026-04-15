@@ -15,9 +15,11 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.Waiter
+import de.solidblocks.cloud.utils.WaitConfig
+import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
@@ -28,7 +30,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 
-class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.WaitConfig = Waiter.LONG_WAIT) {
+class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig = LONG_WAIT) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -222,7 +224,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                         when (it.protocol) {
                             EndpointProtocol.ssh -> {
                                 val sshPortOpen =
-                                    Waiter.waitForCondition(waitConfig) {
+                                    waitConfig.waitForCondition {
                                         try {
                                             applyLog.info("waiting for SSH on endpoint '${it.address}:${it.port}'")
                                             SSHClient(it.address, context.sshKeyPair).command("whoami").exitCode == 0
@@ -243,7 +245,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: Waiter.Wai
                                 val sshClient = SSHClient(it.address, context.sshKeyPair)
 
                                 val cloudInitFinished =
-                                    Waiter.waitForCondition(waitConfig) {
+                                    waitConfig.waitForCondition {
                                         try {
                                             applyLog.info("waiting for cloud-init to finish on '${it.address}:${it.port}'")
                                             sshClient

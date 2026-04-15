@@ -11,7 +11,7 @@ import de.solidblocks.cloud.provisioner.mock.Resource1Provisioner
 import de.solidblocks.cloud.provisioner.mock.Resource2
 import de.solidblocks.cloud.provisioner.mock.Resource2Provisioner
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.Waiter
+import de.solidblocks.cloud.utils.WaitConfig
 import io.kotest.assertions.assertSoftly
 import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldHaveSize
@@ -31,7 +31,7 @@ class ProvisionerTest {
                         emptyList(),
                         listOf(Resource1Provisioner(), Resource2Provisioner()),
                     ),
-                    Waiter.WaitConfig(1, 1.seconds),
+                    WaitConfig(1, 1.seconds),
                 )
 
             val resource1 = Resource1("test1")
@@ -86,7 +86,7 @@ class ProvisionerTest {
             val provisioner =
                 Provisioner(
                     ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    Waiter.WaitConfig(1, 1.seconds),
+                    WaitConfig(1, 1.seconds),
                 )
 
             val resource2ForceRecreateChange = Resource2("force_recreate_change", setOf())

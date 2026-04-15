@@ -9,14 +9,14 @@ import kotlin.time.Duration
 
 class WaiterTest {
 
-    private val noDelay = Waiter.WaitConfig(maxIterations = 10, wait = Duration.ZERO)
+    private val noDelay = WaitConfig(maxIterations = 10, wait = Duration.ZERO)
 
     @Test
     fun `waitFor returns first non-null result`(): Unit = runTest {
         val callback = mockk<suspend () -> String?>()
         coEvery { callback() } returnsMany listOf(null, null, "found")
 
-        val result = Waiter.waitFor(noDelay, callback)
+        val result = noDelay.waitFor(callback)
 
         result shouldBe "found"
     }
@@ -26,7 +26,7 @@ class WaiterTest {
         val callback = mockk<suspend () -> String?>()
         coEvery { callback() } returns "immediate"
 
-        val result = Waiter.waitFor(noDelay, callback)
+        val result = noDelay.waitFor(callback)
 
         result shouldBe "immediate"
     }
@@ -36,18 +36,18 @@ class WaiterTest {
         val callback = mockk<suspend () -> String?>()
         coEvery { callback() } returns null
 
-        val result = Waiter.waitFor(noDelay, callback)
+        val result = noDelay.waitFor(callback)
 
         result shouldBe null
     }
 
     @Test
     fun `waitFor returns null when maxIterations is exhausted before non-null result`(): Unit = runTest {
-        val config = Waiter.WaitConfig(maxIterations = 3, wait = Duration.ZERO)
+        val config = WaitConfig(maxIterations = 3, wait = Duration.ZERO)
         val callback = mockk<suspend () -> String?>()
         coEvery { callback() } returnsMany listOf(null, null, null, "too-late")
 
-        val result = Waiter.waitFor(config, callback)
+        val result = config.waitFor(callback)
 
         result shouldBe null
     }
@@ -57,7 +57,7 @@ class WaiterTest {
         val callback = mockk<suspend () -> String?>()
         coEvery { callback() } returnsMany listOf(null, "a", "b", "c")
 
-        val result = Waiter.waitForConsecutive(noDelay, 3, callback)
+        val result = noDelay.waitForConsecutive(3, callback)
 
         result shouldBe "c"
     }
@@ -67,7 +67,7 @@ class WaiterTest {
         val callback = mockk<suspend () -> String?>()
         coEvery { callback() } returnsMany listOf("a", "b", null, "x", "y", "z")
 
-        val result = Waiter.waitForConsecutive(noDelay, 3, callback)
+        val result = noDelay.waitForConsecutive(3, callback)
 
         result shouldBe "z"
     }
@@ -78,7 +78,7 @@ class WaiterTest {
         // alternates null / value, so streak never reaches 3
         coEvery { callback() } returnsMany listOf("a", "b", null, "x", "y", null, "p", "q", null, "r")
 
-        val result = Waiter.waitForConsecutive(noDelay, 3, callback)
+        val result = noDelay.waitForConsecutive(3, callback)
 
         result shouldBe null
     }
@@ -88,7 +88,7 @@ class WaiterTest {
         val callback = mockk<suspend () -> Int?>()
         coEvery { callback() } returnsMany listOf(null, null, 42)
 
-        val result = Waiter.waitForConsecutive(noDelay, 1, callback)
+        val result = noDelay.waitForConsecutive(1, callback)
 
         result shouldBe 42
     }
@@ -98,7 +98,7 @@ class WaiterTest {
         val callback = mockk<suspend () -> String?>()
         coEvery { callback() } returns null
 
-        val result = Waiter.waitForConsecutive(noDelay, 2, callback)
+        val result = noDelay.waitForConsecutive(2, callback)
 
         result shouldBe null
     }

@@ -4,9 +4,10 @@ import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.Waiter
+import de.solidblocks.cloud.utils.waitForResult
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
@@ -16,7 +17,7 @@ open class BasePostgresProvisioner {
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun CloudProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup, log: LogContext): Result<Connection> = Waiter.longWaitForResult {
+    suspend fun CloudProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup, log: LogContext): Result<Connection> = LONG_WAIT.waitForResult {
         log.info("waiting for Postgres admin connection")
         createConnection(server, superUserPassword)
     }
