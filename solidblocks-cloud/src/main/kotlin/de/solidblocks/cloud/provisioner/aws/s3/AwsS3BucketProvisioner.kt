@@ -47,6 +47,8 @@ class AwsS3BucketProvisioner(
 ) : ResourceLookupProvider<AwsS3BucketLookup, AwsS3BucketRuntime>,
     InfrastructureResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime> {
 
+    val waitConfig = WaitConfig(15, 2.seconds)
+
     override suspend fun lookup(lookup: AwsS3BucketLookup, context: CloudProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->
         try {
             client.headBucket(HeadBucketRequest { bucket = lookup.name })
@@ -97,7 +99,7 @@ class AwsS3BucketProvisioner(
                 },
             )
 
-            WaitConfig(15, 2.seconds).waitForConsecutive(3) {
+            waitConfig.waitForConsecutive(3) {
                 try {
                     log.info("waiting for creation of bucket '${resource.name}'...")
                     lookup(resource.asLookup(), context)
@@ -155,12 +157,12 @@ class AwsS3BucketProvisioner(
 
                 client.deleteBucket(DeleteBucketRequest { bucket = resource.name })
 
-                SHORT_WAIT.waitForCondition {
+                waitConfig.waitForConsecutive(3) {
                     try {
                         log.info("waiting for deletion of bucket '${resource.name}'...")
-                        lookup(resource.asLookup(), context) == null
+                        lookup(resource.asLookup(), context)
                     } catch (e: Exception) {
-                        false
+                        null
                     }
                 }
             } catch (e: NoSuchBucket) {
