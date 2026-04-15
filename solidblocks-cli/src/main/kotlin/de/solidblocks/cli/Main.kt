@@ -47,7 +47,7 @@ fun main(args: Array<String>) {
             CloudPlanCommand(),
             CloudInfoCommand(),
             CloudHelpCommand().also {
-                it.subcommands(CloudHelpConfigurationCommand(), CloudHelpConfigurationHugoCommand())
+                it.subcommands(CloudHelpConfigurationCommand())
             },
             CloudSSHConfigCommand(),
         )

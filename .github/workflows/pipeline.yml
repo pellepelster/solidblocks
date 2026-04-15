@@ -314,6 +314,7 @@ jobs:
           name: solidblocks-cloud
           path: |
             **/build/reports/tests
+            solidblocks-cloud/build/*.schema.json
 
   solidblocks-cloud-init:
     runs-on: ubuntu-24.04
@@ -611,7 +612,7 @@ jobs:
             solidblocks-ansible/blcks-*
             solidblocks-web-s3-docker-hetzner/snippets/*
             solidblocks-web-s3-docker-hetzner/blcks-terraform-hcloud-web-s3-docker-*.zip
-  
+            solidblocks-cloud/*.schema.json
 
   documentation:
     needs:

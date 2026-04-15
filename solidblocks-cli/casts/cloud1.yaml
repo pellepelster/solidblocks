@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./cloud1.schema.json
 ---
 name: cloud1
 # to add dns based endpoints and ssl certificates just add a root domain

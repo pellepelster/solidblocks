@@ -32,7 +32,7 @@ blcks cloud apply cloud1.yaml
 **access the deployed service**
 ```shell
 export ENDPOINT=$(blcks cloud info cloud1.yaml --format json | jq -r '.services[] | select(.name == "service1").endpoints | first | .url')
-curl ${ENDPOINT}/hello
+curl ${ENDPOINT}
 ```
 
 **see it in action**

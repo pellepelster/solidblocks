@@ -93,8 +93,11 @@ export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0
 ${ROOT_PROJECT}/gradlew :$(basename $PWD):test
 """
 
+[tasks."generate:json-schema"]
+run="${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args=\"cloud help configuration --format json-schema\" > build/blcks-cloud.schema.json"
+
 [tasks.build]
-depends=["build:jvm:all", "build:native"]
+depends=["generate:json-schema", "build:jvm:all", "build:native"]
 
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
@@ -110,7 +113,7 @@ set -eu -o pipefail
   asciinema cat s3_backup_activate.cast s3_blcks_apply.cast  s3_blcks_nuke.cast s3_blcks_restore_comment.cast s3_blcks_restore.cast s3_blcks_restore_call_endpoint_comment.cast s3_blcks_restore_call_endpoint.cast > ${ROOT_PROJECT}/doc/content/cloud/casts/quickstart_s3.cast
   cat blcks_help.cast > ${ROOT_PROJECT}/doc/content/cloud/casts/quickstart_help.cast
 )
-${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration-hugo ${ROOT_PROJECT}/doc/content/cloud/configuration.md"
+${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration --format hugo > ${ROOT_PROJECT}/doc/content/cloud/configuration.md"
 """
 
 [tasks."release:test"]

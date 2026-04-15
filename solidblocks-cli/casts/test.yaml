@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=./cloud1.schema.json
+
+---
+name: "ddd"
+
+providers:
+  - type: hcloud
+  - type: ssh_key
+
+services:
+  - type: docker
+    image: sss
+    name: "sss"
