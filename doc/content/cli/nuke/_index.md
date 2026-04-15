@@ -18,6 +18,12 @@ faIcon = "fa-bomb"
 Be aware that `blcks hetzner nuke` is a very destructive operation, hence you have to be very careful while using it. Otherwise, you might delete production data.
 {{% /notice %}}
 
+
+**see it in action**
+
+{{< asciicast src="nuke.cast" >}}
+
+
 ## Usage
 
 `blcks hetzner nuke` is available as a command in the [Solidblocks CLI](/cli). The Hetzner cloud API token can be provided as argument `--hetzner-token` or via environment variable `HCLOUD_TOKEN`.

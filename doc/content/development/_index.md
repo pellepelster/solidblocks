@@ -75,6 +75,10 @@ mise //...:release
 
 Release Maven artifacts at https://central.sonatype.com/publishing/deployments
 
+### JSON
+
+Release JSON schemas
+
 
 ### Verify
 
