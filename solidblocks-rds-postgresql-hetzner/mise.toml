@@ -22,9 +22,6 @@ mkdir -p "${MISE_CONFIG_ROOT}/build/snippets"
     zip -r "${MISE_CONFIG_ROOT}/build/snippets/blcks-terraform-rds-postgresql-hetzner-snippet-s3-backup-v${VERSION}.zip" hetzner-postgres-rds-hetzner-s3-backup/**/*.tf
 )
 
-terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hide modules --output-file "${MISE_CONFIG_ROOT}/modules/rds-postgresql/README.md"
-terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hide modules --output-file "${MISE_CONFIG_ROOT}/../doc/content/hetzner/rds/_index.md"
-
 (
   cd "${MISE_CONFIG_ROOT}/modules/rds-postgresql"
   zip -r "${MISE_CONFIG_ROOT}/build/blcks-terraform-rds-postgresql-hetzner-v${VERSION}.zip" *
@@ -164,4 +161,7 @@ terraform_replace_module_version "snippets/hetzner-postgres-rds-private-network/
 terraform_replace_module_version "snippets/hetzner-postgres-rds-s3-backup/instance/main.tf" v${usage_version}
 terraform_replace_module_version "snippets/hetzner-postgres-rds-hetzner-s3-backup/instance/main.tf" v${usage_version}
 terraform_replace_variable_default 'solidblocks_rds_version' "modules/rds-postgresql/variables.tf" v${usage_version}
+
+terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hide modules --output-file "${MISE_CONFIG_ROOT}/modules/rds-postgresql/README.md"
+terraform-docs markdown table "${MISE_CONFIG_ROOT}/modules/rds-postgresql" --hide modules --output-file "${MISE_CONFIG_ROOT}/../doc/content/hetzner/rds/_index.md"
 """
