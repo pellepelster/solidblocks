@@ -8,7 +8,7 @@ run = "rm -rf build"
 
 [tasks.build]
 run = """
-#TODO move to gradle build generate task
+# TODO move to gradle build generate task
 docker run  -v $(pwd):/src hairyhenderson/gomplate:stable -d "vendors=https://raw.githubusercontent.com/watson/ci-info/master/vendors.json?type=application/array+json" -f /src/lib-templates/ci.sh.template > "lib/ci.sh"
 ${ROOT_PROJECT}/gradlew :$(basename $PWD):assemble
 """

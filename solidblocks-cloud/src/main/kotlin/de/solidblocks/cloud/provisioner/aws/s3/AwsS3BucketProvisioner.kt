@@ -33,10 +33,12 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.Waiter
+import de.solidblocks.cloud.utils.Waiter.WaitConfig
 import de.solidblocks.cloud.utils.Waiter.waitForCondition
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
+import kotlin.time.Duration.Companion.seconds
 
 class AwsS3BucketProvisioner(
     private val accessKeyId: String,
@@ -95,12 +97,12 @@ class AwsS3BucketProvisioner(
                 },
             )
 
-            waitForCondition(Waiter.SHORT_WAIT) {
+            Waiter.waitForConsecutive(WaitConfig(15, 2.seconds), 3) {
                 try {
                     log.info("waiting for creation of bucket '${resource.name}'...")
-                    lookup(resource.asLookup(), context) != null
+                    lookup(resource.asLookup(), context)
                 } catch (e: Exception) {
-                    false
+                    null
                 }
             }
         }

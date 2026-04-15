@@ -94,10 +94,11 @@ ${ROOT_PROJECT}/gradlew :$(basename $PWD):test
 """
 
 [tasks."generate:json-schema"]
-run="${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args=\"cloud help configuration --format json-schema\" > build/blcks-cloud.schema.json"
+depends=["build:native"]
+run="./blcks cloud help configuration --format json-schema > build/blcks-cloud.schema.json"
 
 [tasks.build]
-depends=["generate:json-schema", "build:jvm:all", "build:native"]
+depends=["build:jvm:all", "build:native"]
 
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"

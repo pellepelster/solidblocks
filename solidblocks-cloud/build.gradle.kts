@@ -36,4 +36,5 @@ dependencies {
 
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }

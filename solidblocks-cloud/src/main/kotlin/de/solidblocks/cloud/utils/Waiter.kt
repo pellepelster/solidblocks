@@ -18,11 +18,22 @@ object Waiter {
 
     public val LONG_WAIT = WaitConfig(90, 5.seconds)
 
-    suspend fun <T> waitFor(config: WaitConfig, callback: suspend () -> T?): T? {
+    suspend fun <T> waitFor(config: WaitConfig, callback: suspend () -> T?) = waitForConsecutive(config, 1, callback)
+
+    suspend fun <T> waitForConsecutive(config: WaitConfig, consecutiveCount: Int = 1, callback: suspend () -> T?): T? {
+        var streak = 0
+        var lastResult: T? = null
         repeat(config.maxIterations) {
             val result = callback()
             if (result != null) {
-                return result
+                streak++
+                lastResult = result
+                if (streak >= consecutiveCount) {
+                    return lastResult
+                }
+            } else {
+                streak = 0
+                lastResult = null
             }
             delay(config.wait)
         }
