@@ -65,9 +65,7 @@ Solidblocks uses semver compliant versioning, where the release version is deriv
 ### Trigger CI build
 ```shell
 export VERSION=<version> 
-mise //...:build
-mise //...:release:prepare
-mise //...:release:check
+mise //...:build && mise //...:release:prepare && mise //...:release:check
 mise //...:release
 ```
 

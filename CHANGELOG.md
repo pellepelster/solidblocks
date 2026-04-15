@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.5.3
+* add JSON schema for cloud config [auto-completion](https://pellepelster.github.io/solidblocks/cloud/usage/) 
+
 ## v0.5.2
 * improve validation for pass secret provider 
 * add option to skip pass provider config validation
