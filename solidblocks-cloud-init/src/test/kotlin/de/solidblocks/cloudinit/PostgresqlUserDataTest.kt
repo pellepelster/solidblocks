@@ -1,12 +1,10 @@
 package de.solidblocks.cloudinit
 
-import de.solidblocks.cloudinit.PostgresqlUserData
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.matchers.shouldBe
 import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 import java.sql.DriverManager
 import java.time.Duration
@@ -16,7 +14,6 @@ import java.util.concurrent.TimeUnit
 class PostgresqlUserDataTest {
 
     @Test
-    @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
     fun testLocalBackupAndRestore(testContext: SolidblocksTestContext) {
         val hetzner = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
@@ -92,7 +89,6 @@ class PostgresqlUserDataTest {
     }
 
     @Test
-    @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
     fun testS3BackupAndRestore(testContext: SolidblocksTestContext) {
         val hetzner = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 

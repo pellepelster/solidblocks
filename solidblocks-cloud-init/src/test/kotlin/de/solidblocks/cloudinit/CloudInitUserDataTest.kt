@@ -19,7 +19,6 @@ import kotlin.io.path.writeText
 @ExtendWith(SolidblocksTest::class)
 class CloudInitUserDataTest {
     @Test
-    @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
     fun testIntegration(testContext: SolidblocksTestContext) {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 

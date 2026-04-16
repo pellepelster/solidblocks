@@ -15,7 +15,6 @@ class GarageFsUserDataTest {
     }
 
     @Test
-    @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
     fun testIntegration(context: SolidblocksTestContext) {
         val hetznerContext = context.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 

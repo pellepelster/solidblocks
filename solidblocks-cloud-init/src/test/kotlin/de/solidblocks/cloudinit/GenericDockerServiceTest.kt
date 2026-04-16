@@ -1,11 +1,9 @@
 package de.solidblocks.cloudinit
 
-import de.solidblocks.cloudinit.GenericDockerServiceUserData
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Duration
 import java.util.concurrent.TimeUnit
@@ -13,7 +11,6 @@ import java.util.concurrent.TimeUnit
 @ExtendWith(SolidblocksTest::class)
 class GenericDockerServiceTest {
     @Test
-    @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
     fun testIntegration(testContext: SolidblocksTestContext) {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
