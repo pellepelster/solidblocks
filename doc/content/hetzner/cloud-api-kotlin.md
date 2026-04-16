@@ -17,11 +17,6 @@ To use Solidblocks `hetzner-cloud` just add the dependency to your Gradle or Mav
 {{% include-safe "/snippets/solidblocks-hetzner-cloud-example/build.gradle.kts" %}}
 ```
 
-{{% notice info %}}
-The implementation is currently driven by the needs of other projects I am working on, and does not yet fully cover all API endpoints. See development chapter on how to add missing features.
-{{% /notice %}}
-
-
 ### Basics
 
 The library supports Kotlin coroutines, thus all API calls must be made from a coroutine context. The root api has to be initialized using a Hetzner cloud api token, from there all supports resources are available grouped by resource type.

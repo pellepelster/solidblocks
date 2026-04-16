@@ -12,12 +12,16 @@ import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
+import de.solidblocks.cloud.utils.DEFAULT_WAIT
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.HetznerLabels
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.cloud.utils.joinToStringOrEmpty
+import de.solidblocks.cloud.utils.waitFor
+import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
@@ -29,6 +33,7 @@ import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
+import kotlin.time.Duration.Companion.seconds
 
 class HetznerServerProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
@@ -299,6 +304,11 @@ class HetznerServerProvisioner(hcloudToken: String) :
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) {
             logContext.info("waiting for deletion of ${resource.logText()}")
+        }
+
+        WaitConfig(10, 2.seconds).waitForCondition {
+            logContext.info("waiting for deletion of ${resource.logText()}")
+            api.volumes.list().none { it.server == it.id }
         }
     } ?: false
 
