@@ -1,9 +1,9 @@
 package de.solidblocks.hetzner
 
 import de.solidblocks.hetzner.cloud.HetznerApi
-import de.solidblocks.hetzner.cloud.model.FilterValue
 import de.solidblocks.hetzner.cloud.model.LabelSelectorValue.Equals
 import de.solidblocks.hetzner.cloud.resources.ImageType
+import de.solidblocks.hetzner.cloud.resources.ImageTypeFilter
 import kotlinx.coroutines.runBlocking
 
 fun Filtering() {
@@ -14,7 +14,7 @@ fun Filtering() {
         api.images.list()
 
         // filter by image type
-        api.images.list(mapOf("type" to FilterValue.Equals(ImageType.app)))
+        api.images.list(listOf(ImageTypeFilter(ImageType.app)))
 
         // filter by label
         api.servers.list(labelSelectors = mapOf("label1" to Equals("foo-bar")))

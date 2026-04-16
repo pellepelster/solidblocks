@@ -241,6 +241,10 @@ class BlcksIntegrationTest {
          */
         newVisitorCounter shouldBeGreaterThan 1
         newVisitorCounter shouldBe oldVisitorCounter + 1
+
+        assertSoftly(context.local().command("$blcksCommand", "hetzner", "nuke", "--do-nuke").timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()) { result ->
+            result shouldHaveExitCode 0
+        }
     }
 
     private fun callEndpoint(endpoint: String): String {

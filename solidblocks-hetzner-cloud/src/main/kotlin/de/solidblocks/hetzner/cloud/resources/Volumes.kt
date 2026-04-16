@@ -5,7 +5,7 @@ import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
 import de.solidblocks.hetzner.cloud.InstantSerializer
 import de.solidblocks.hetzner.cloud.listQuery
-import de.solidblocks.hetzner.cloud.model.FilterValue
+import de.solidblocks.hetzner.cloud.model.BaseFilter
 import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectedResource
 import de.solidblocks.hetzner.cloud.model.HetznerDeleteProtectionResponse
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
@@ -16,6 +16,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+open class VolumeFilter(attribute: String, value: String) : BaseFilter(attribute, value)
+
+class VolumeNameFilter(name: String) : VolumeFilter("name", name)
+
+class VolumeStatusFilter(status: VolumeStatus) : VolumeFilter("status", status.toString())
 
 enum class VolumeFormat {
     ext4,
@@ -31,7 +37,7 @@ data class VolumeCreateRequest(
     val size: Int,
     val location: HetznerLocation,
     @SerialName("format") val format: VolumeFormat,
-    val automount: Boolean = false,
+    val automount: Boolean,
     val labels: Map<String, String>? = null,
 )
 
@@ -62,10 +68,16 @@ constructor(
 @Serializable
 data class ChangeVolumeProtectionRequest(val delete: Boolean, val rebuild: Boolean? = null)
 
+@Serializable
+data class VolumeAttachRequest(val server: Long, val automount: Boolean)
+
+@Serializable
+data class VolumeResizeRequest(val size: Int)
+
 class HetznerVolumesApi(private val api: HetznerApi) :
-    HetznerDeleteResourceApi<Long, VolumeResponse>,
-    HetznerProtectedResourceApi<Long, VolumeResponse> {
-    override suspend fun listPaged(page: Int, perPage: Int, filter: Map<String, FilterValue>, labelSelectors: Map<String, LabelSelectorValue>): VolumesListWrapper =
+    HetznerDeleteResourceApi<Long, VolumeResponse, VolumeFilter>,
+    HetznerProtectedResourceApi<Long, VolumeResponse, VolumeFilter> {
+    override suspend fun listPaged(page: Int, perPage: Int, filter: List<VolumeFilter>, labelSelectors: Map<String, LabelSelectorValue>): VolumesListWrapper =
         api.get("v1/volumes?${listQuery(page, perPage, filter, labelSelectors)}")
             ?: throw RuntimeException("failed to list volumes")
 
@@ -74,13 +86,23 @@ class HetznerVolumesApi(private val api: HetznerApi) :
 
     suspend fun detach(id: Long): ActionResponseWrapper = api.post("v1/volumes/$id/actions/detach") ?: throw RuntimeException("failed to detach volume")
 
+    suspend fun attach(id: Long, serverId: Long, automount: Boolean = false): ActionResponseWrapper = api.post(
+        "v1/volumes/$id/actions/attach",
+        VolumeAttachRequest(serverId, automount),
+    ) ?: throw RuntimeException("failed to attach volume")
+
+    suspend fun resize(id: Long, size: Int): ActionResponseWrapper = api.post(
+        "v1/volumes/$id/actions/resize",
+        VolumeResizeRequest(size),
+    ) ?: throw RuntimeException("failed to resize volume")
+
     override suspend fun action(id: Long): ActionResponseWrapper = api.get("v1/volumes/actions/$id") ?: throw RuntimeException("failed to get volume action")
 
     override suspend fun delete(id: Long) = api.delete("v1/volumes/$id")
 
     suspend fun get(id: Long) = api.get<VolumeResponseWrapper>("v1/volumes/$id")?.volume
 
-    suspend fun get(name: String) = list(mapOf("name" to FilterValue.Equals(name))).singleOrNull()
+    suspend fun get(name: String) = list(listOf(VolumeNameFilter(name))).singleOrNull()
 
     suspend fun create(request: VolumeCreateRequest): VolumeResponseWrapper = api.post<VolumeResponseWrapper>("v1/volumes", request)
 
