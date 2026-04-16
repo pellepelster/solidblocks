@@ -12,16 +12,15 @@ import org.junit.jupiter.api.TestInstance
 class HetznerLabelsTest {
     @Test
     fun hasDefaultLabels() {
-        val labels = HetznerLabels.Companion.forCloud("test")
-        labels.labels() shouldHaveSize 3
+        val labels = HetznerLabels.forCloud("test")
+        labels.labels() shouldHaveSize 2
         labels.labels()[Constants.cloudLabel] shouldBe "test"
         labels.labels()[Constants.managedByLabel] shouldBe "blcks"
-        labels.labels()[Constants.versionLabel] shouldBe Constants.solidblocksVersion()
     }
 
     @Test
     fun testAddHashedLabel() {
-        val labels = HetznerLabels.Companion.forCloud("test")
+        val labels = HetznerLabels.forCloud("test")
 
         labels.addHashedLabel("hash-test", "hallo welt")
         labels.labels()["hash-test"] shouldBe
@@ -34,7 +33,7 @@ class HetznerLabelsTest {
 
     @Test
     fun testLabelExportImport() {
-        val labels = HetznerLabels.Companion.forCloud("test")
+        val labels = HetznerLabels.forCloud("test")
 
         labels.addHashedLabel("hash-test", "hallo welt")
         labels.addHashedLabel("long-test", "A".repeat(124))
@@ -51,10 +50,10 @@ class HetznerLabelsTest {
 
     @Test
     fun testMaxLabelValue() {
-        val labels = HetznerLabels.Companion.forCloud("test")
+        val labels = HetznerLabels.forCloud("test")
         labels.addLabel("label1", "A".repeat(124))
 
-        labels.labels() shouldHaveSize 4
+        labels.labels() shouldHaveSize 3
         labels.labels()["label1"] shouldBe "A".repeat(124)
 
         labels.rawLabels()["label1_0"] shouldBe
@@ -65,7 +64,7 @@ class HetznerLabelsTest {
 
     @Test
     fun testTooLongLabelValue() {
-        val labels = HetznerLabels.Companion.forCloud("test")
+        val labels = HetznerLabels.forCloud("test")
 
         Assertions.assertThrows(
             RuntimeException::class.java,
@@ -76,7 +75,7 @@ class HetznerLabelsTest {
 
     @Test
     fun testUnderscoreInKey() {
-        val labels = HetznerLabels.Companion.forCloud("test")
+        val labels = HetznerLabels.forCloud("test")
 
         Assertions.assertThrows(
             RuntimeException::class.java,
