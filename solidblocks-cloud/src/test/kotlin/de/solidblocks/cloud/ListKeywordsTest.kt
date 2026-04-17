@@ -24,7 +24,9 @@ class ListKeywordsTest {
                 """
                 list1:
                     - name: foo-bar
+                      number1: 1
                     - name: yolo2000
+                      number1: 2
                 """
                     .trimIndent(),
             )

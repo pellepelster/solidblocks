@@ -23,7 +23,7 @@ class SSHHealthCheckTest {
                 it.start()
             }
 
-    val ed25519Key = SSHHealthCheckTest::class.java.getResource("/test_ed25519.key").readText()
+    val ed25519Key = SSHHealthCheckTest::class.java.getResource("/test_ed25519.key")!!.readText()
     val key = SSHKeyUtils.loadKey(ed25519Key)
 
     @Test

@@ -27,7 +27,7 @@ class Test2ConfigurationFactory : ConfigurationFactory<Test2Configuration> {
             }
 
         val number =
-            when (val result = yaml.getNumber("number", 12)) {
+            when (val result = yaml.getNumber("number1", 12)) {
                 is Error<Number> -> return Error(result.error)
                 is Success<Number> -> result.data
             }
