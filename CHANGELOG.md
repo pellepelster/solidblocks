@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.4
+* wait for AWS bucket creation/deletion before continuing with provisioning
+* fix label update for DNS records
+* implement missing resources for Hetzner cloud Kotlin lib
+
 ## v0.5.3
 * add JSON schema for cloud config [auto-completion](https://pellepelster.github.io/solidblocks/cloud/usage/) 
 
