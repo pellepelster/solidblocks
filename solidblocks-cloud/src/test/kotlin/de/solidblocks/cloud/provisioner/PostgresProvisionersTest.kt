@@ -13,6 +13,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
+import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseRuntime
@@ -122,9 +123,9 @@ class PostgresProvisionersTest {
                 portMappings = mapOf(5432 to postgresContainer.getMappedPort(5432)),
             )
 
-        val superUserPassword = PassSecret("super_user_password")
-        val password1 = PassSecret("password1")
-        val password2 = PassSecret("password2")
+        val superUserPassword = PassSecret("super_user_password", RandomSecret())
+        val password1 = PassSecret("password1", RandomSecret())
+        val password2 = PassSecret("password2", RandomSecret())
 
         runBlocking {
             val username = UUID.randomUUID().toString()

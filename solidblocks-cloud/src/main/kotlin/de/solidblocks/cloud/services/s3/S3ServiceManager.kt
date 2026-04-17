@@ -29,7 +29,10 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLooku
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
+import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.pass.RandomSecret
+import de.solidblocks.cloud.provisioner.pass.StaticSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.BackupRuntime
 import de.solidblocks.cloud.services.EndpointInfo
@@ -52,6 +55,7 @@ import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.GarageFsUserData
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3AdminHost
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3Host
+import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import kotlinx.coroutines.runBlocking
@@ -76,20 +80,40 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         val adminToken = PassSecret(
             secretPath(cloud, runtime, listOf("garage", "admin_token")),
-            length = 64,
-            allowedChars = ('a'..'f') + ('0'..'9'),
+            RandomSecret(
+                length = 64,
+                allowedChars = ('a'..'f') + ('0'..'9'),
+            ),
         )
 
         val rpcSecret = PassSecret(
             secretPath(cloud, runtime, listOf("garage", "rpc_secret")),
-            length = 64,
-            allowedChars = ('a'..'f') + ('0'..'9'),
+            RandomSecret(
+                length = 64,
+                allowedChars = ('a'..'f') + ('0'..'9'),
+            ),
         )
 
         val metricsToken = PassSecret(
             secretPath(cloud, runtime, listOf("garage", "metrics_token")),
-            length = 64,
-            allowedChars = ('a'..'f') + ('0'..'9'),
+            RandomSecret(
+                length = 64,
+                allowedChars = ('a'..'f') + ('0'..'9'),
+            ),
+        )
+
+        val sshIdentityRsaSecret = PassSecret(
+            secretPath(cloud, runtime, listOf("hosts", serverName, "ssh_identity_rsa")),
+            OneTimeGeneratedSecret {
+                SSHKeyUtils.RSA.generate().privateKey
+            },
+        )
+
+        val sshIdentityED25519Secret = PassSecret(
+            secretPath(cloud, runtime, listOf("hosts", serverName, "ssh_identity_ed25519")),
+            OneTimeGeneratedSecret {
+                SSHKeyUtils.ED25519.generate().privateKey
+            },
         )
 
         val userData = UserData(
@@ -199,16 +223,16 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
                 bucketResources.add(
                     PassSecret(
-                        secretPath(cloud, runtime, listOf(bucket.name, accessKeyRuntime.name, "secret_key")),
-                        secret = { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
+                        secretPath(cloud, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "secret_key")),
+                        StaticSecret { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
                         dependsOn = setOf(accessKey.asLookup()),
                     ),
                 )
 
                 bucketResources.add(
                     PassSecret(
-                        secretPath(cloud, runtime, listOf(bucket.name, accessKeyRuntime.name, "access_key")),
-                        secret = { it.ensureLookup(accessKey.asLookup()).id },
+                        secretPath(cloud, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "access_key")),
+                        StaticSecret { it.ensureLookup(accessKey.asLookup()).id },
                         dependsOn = setOf(accessKey.asLookup()),
                     ),
                 )
@@ -229,10 +253,10 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         val s3HostSecret = PassSecret(
             secretPath(cloud, runtime, listOf("endpoints", "s3_host")),
-            secret = { s3Host(serviceRootDomain(cloud, runtime)) },
+            StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
         )
 
-        return listOf(s3HostSecret, firewall, server, dataVolume, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources
+        return listOf(sshIdentityRsaSecret, sshIdentityED25519Secret, s3HostSecret, firewall, server, dataVolume, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()
@@ -356,8 +380,8 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
             codeBlock(
                 """
-            export ACCESS_KEY="$(pass ${secretPath(cloud, runtime, listOf(it.name, "access_key"))})"
-            export SECRET_KEY="$(pass ${secretPath(cloud, runtime, listOf(it.name, "secret_key"))})"
+            export ACCESS_KEY="$(pass ${secretPath(cloud, runtime, listOf("buckets", it.name, "access_key"))})"
+            export SECRET_KEY="$(pass ${secretPath(cloud, runtime, listOf("buckets", it.name, "secret_key"))})"
             export S3_HOST="$(pass ${secretPath(cloud, runtime, listOf("endpoints", "s3_host"))})"
 
             s3cmd --host-bucket "%(bucket).${'$'}{S3_HOST} \

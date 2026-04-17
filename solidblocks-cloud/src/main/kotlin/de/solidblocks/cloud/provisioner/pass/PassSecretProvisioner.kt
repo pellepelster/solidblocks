@@ -24,16 +24,18 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
     override suspend fun diff(resource: PassSecret, context: CloudProvisionerContext): ResourceDiff {
         val runtime = lookup(resource.asLookup(), context)
 
-        if (runtime != null) {
-            resource.secret?.also {
-                if (runtime.secret != it.invoke(context)) {
-                    return ResourceDiff(resource, has_changes)
+        return if (runtime != null) {
+            when (val secretGenerator = resource.secretGenerator) {
+                is StaticSecret -> if (runtime.secret != secretGenerator.generate(context)) {
+                    ResourceDiff(resource, has_changes)
+                } else {
+                    ResourceDiff(resource, up_to_date)
                 }
-            }
 
-            return ResourceDiff(resource, up_to_date)
+                else -> ResourceDiff(resource, up_to_date)
+            }
         } else {
-            return ResourceDiff(resource, missing)
+            ResourceDiff(resource, missing)
         }
     }
 
@@ -59,24 +61,15 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         return null
     }
 
-    private fun generateSecret(length: Int, allowedChars: List<Char>) = (1..length).map { allowedChars.random() }.joinToString("")
-
     override suspend fun apply(resource: PassSecret, context: CloudProvisionerContext, log: LogContext): Result<PassSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
-        if (current != null && !resource.tainted && resource.secret == null) {
+        if (current != null && !resource.tainted && resource.secretGenerator.isEphemeral()) {
             return Success(current)
         }
 
         log.debug("creating secret at '${resource.name}'")
-
-        val secret =
-            if (resource.secret == null) {
-                generateSecret(resource.length, resource.allowedChars)
-            } else {
-                resource.secret(context)
-            }
-
+        val secret = resource.secretGenerator.generate(context)
         when (val result = passInsert(resource.name, secret, passwordStoreDir).asResult("pass insert")) {
             is Error<CommandResult> -> Error<PassSecretRuntime>(result.error)
             is Success<CommandResult> -> {}

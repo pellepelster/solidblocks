@@ -23,6 +23,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
+import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.garagefs.GarageFsApi
@@ -153,7 +154,7 @@ class GarageFsProvisionersTest {
                 emptyList(),
             )
 
-        val adminToken = PassSecret("admin_token")
+        val adminToken = PassSecret("admin_token", RandomSecret())
         val bucketName = UUID.randomUUID().toString()
         val bucket = GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), false)
         val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)

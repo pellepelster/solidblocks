@@ -18,6 +18,7 @@ import de.solidblocks.cloud.provisioner.aws.s3.AwsS3Bucket
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
+import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloudinit.BackupConfiguration
 import de.solidblocks.cloudinit.LocalBackupTarget
@@ -30,8 +31,10 @@ interface BackupProviderManager<
 
 fun backupSecretResource(runtime: CloudConfigurationRuntime) = PassSecret(
     secretPath(runtime, listOf("backup", "password")),
-    length = 32,
-    allowedChars = ('a'..'f') + ('0'..'9'),
+    RandomSecret(
+        length = 32,
+        allowedChars = ('a'..'f') + ('0'..'9'),
+    ),
 )
 
 fun createBackupResources(

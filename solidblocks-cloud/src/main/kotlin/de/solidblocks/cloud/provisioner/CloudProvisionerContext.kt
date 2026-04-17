@@ -5,6 +5,7 @@ import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentReference
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
+import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
 import de.solidblocks.cloud.services.ServiceConfiguration
@@ -106,9 +107,12 @@ data class ProvisionerContext(
     }
 
     override suspend fun createSecret(path: String, secret: String): Result<Unit> {
-        val secret = PassSecret(path, secret = {
-            secret
-        })
+        val secret = PassSecret(
+            path,
+            OneTimeGeneratedSecret(secret = {
+                secret
+            }),
+        )
 
         return when (val result: Result<PassSecretRuntime> = registry.apply(secret, this, LogContext())) {
             is Error<PassSecretRuntime> -> Error(result.error)
