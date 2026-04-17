@@ -112,6 +112,6 @@ class SerializationConfigGenerator {
             explicitNulls = false
         }
         println("writing reflect config to '$reflectConfigFile'")
-        reflectConfigFile.writeText(json.encodeToString(config))
+        reflectConfigFile.writeText(json.encodeToString(config.sortedBy { it.name }))
     }
 }
