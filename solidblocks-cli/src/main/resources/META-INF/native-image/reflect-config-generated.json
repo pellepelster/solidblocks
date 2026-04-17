@@ -1224,6 +1224,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetCreateResponseWrapper",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetCreateResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetRecord",
         "fields": [
             {
@@ -1242,6 +1260,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetResponseWrapper",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest",
         "fields": [
             {
@@ -1252,24 +1288,6 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateRequest$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateResponseWrapper",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.DnsRRSetsCreateResponseWrapper$Companion",
         "fields": [],
         "methods": [
             {

@@ -106,6 +106,13 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                     log.info("waiting for TTL update on ${resource.logText()}")
                 }
             }
+
+            api.dnsRrSets(zone.name).update(
+                resource.name,
+                resource.type,
+                DnsRRSetsUpdateRequest(resource.labels),
+            )
+
             if (!(current.values equalsIgnoreOrder serverIps)) {
                 logger.info {
                     "updating ${resource.name}/${resource.type} values to ${serverIps.joinToString(",")}"
@@ -117,7 +124,6 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                             resource.type,
                             DnsRRSetsRecordsUpdateRequest(
                                 serverIps.map { DnsRRSetRecord(it) },
-                                labels = resource.labels,
                             ),
                         )
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {

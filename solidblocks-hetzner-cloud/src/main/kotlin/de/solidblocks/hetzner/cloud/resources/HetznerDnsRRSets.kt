@@ -48,7 +48,7 @@ data class DnsRRSetRecord(val value: String, val comment: String? = null)
 data class DnsRRSetsCreateRequest(val name: String, val type: RRType, val ttl: Int, val records: List<DnsRRSetRecord>, val labels: Map<String, String>? = null)
 
 @Serializable
-data class DnsRRSetsRecordsUpdateRequest(val records: List<DnsRRSetRecord>, val labels: Map<String, String>? = null)
+data class DnsRRSetsRecordsUpdateRequest(val records: List<DnsRRSetRecord>)
 
 @Serializable
 data class DnsRRSetsUpdateRequest(val labels: Map<String, String>? = null)
@@ -57,7 +57,10 @@ data class DnsRRSetsUpdateRequest(val labels: Map<String, String>? = null)
 data class DnsRRSetsTTLUpdateRequest(val ttl: Int)
 
 @Serializable
-data class DnsRRSetsCreateResponseWrapper(@SerialName("rrset") val rrset: DnsRrSetResponse, @SerialName("action") val action: ActionResponse)
+data class DnsRRSetCreateResponseWrapper(@SerialName("rrset") val rrset: DnsRrSetResponse, @SerialName("action") val action: ActionResponse)
+
+@Serializable
+data class DnsRRSetResponseWrapper(@SerialName("rrset") val rrset: DnsRrSetResponse)
 
 @Serializable
 data class DnsRRSetsResponseWrapper(@SerialName("rrset") val rrset: DnsRrSetResponse)
@@ -78,7 +81,7 @@ class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: Str
         "v1/zones/$dnsZoneReference/rrsets?${listQuery(page, perPage, filter, labelSelectors)}",
     ) ?: throw RuntimeException("failed to list dns rr sets")
 
-    suspend fun create(request: DnsRRSetsCreateRequest): DnsRRSetsCreateResponseWrapper = api.post<DnsRRSetsCreateResponseWrapper>("v1/zones/$dnsZoneReference/rrsets", request)
+    suspend fun create(request: DnsRRSetsCreateRequest): DnsRRSetCreateResponseWrapper = api.post<DnsRRSetCreateResponseWrapper>("v1/zones/$dnsZoneReference/rrsets", request)
 
     suspend fun updateTTL(name: String, type: RRType, request: DnsRRSetsTTLUpdateRequest) = api.post<ActionResponseWrapper>(
         "v1/zones/$dnsZoneReference/rrsets/$name/$type/actions/change_ttl",
@@ -87,6 +90,11 @@ class HetznerDnsRRSetsApi(private val api: HetznerApi, val dnsZoneReference: Str
 
     suspend fun updateRecords(name: String, type: RRType, request: DnsRRSetsRecordsUpdateRequest) = api.post<ActionResponseWrapper>(
         "v1/zones/$dnsZoneReference/rrsets/$name/$type/actions/set_records",
+        request,
+    )
+
+    suspend fun update(name: String, type: RRType, request: DnsRRSetsUpdateRequest) = api.put<DnsRRSetResponseWrapper>(
+        "v1/zones/$dnsZoneReference/rrsets/$name/$type",
         request,
     )
 
