@@ -8,8 +8,10 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.getNumber
+import de.solidblocks.cloud.utils.getOptionalString
+import de.solidblocks.cloud.utils.getString
 
-data class Test2Configuration(val number1: Number)
+data class Test2Configuration(val name: String, val number1: Number)
 
 class Test2ConfigurationFactory : ConfigurationFactory<Test2Configuration> {
     override val help: ConfigurationHelp
@@ -18,12 +20,18 @@ class Test2ConfigurationFactory : ConfigurationFactory<Test2Configuration> {
     override val keywords = emptyList<SimpleKeyword<*>>()
 
     override fun parse(yaml: YamlNode): Result<Test2Configuration> {
-        val number1 =
-            when (val number = yaml.getNumber("number1", 12)) {
-                is Error<Number> -> return Error(number.error)
-                is Success<Number> -> number.data
+        val name =
+            when (val result = yaml.getOptionalString("name", "foo-bar")) {
+                is Error<String> -> return Error(result.error)
+                is Success<String> -> result.data
             }
 
-        return Success(Test2Configuration(number1))
+        val number =
+            when (val result = yaml.getNumber("number", 12)) {
+                is Error<Number> -> return Error(result.error)
+                is Success<Number> -> result.data
+            }
+
+        return Success(Test2Configuration(name, number))
     }
 }
