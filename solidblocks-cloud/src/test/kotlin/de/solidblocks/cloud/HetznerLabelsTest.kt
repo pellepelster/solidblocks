@@ -5,6 +5,7 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -75,9 +76,9 @@ class HetznerLabelsTest {
 
     @Test
     fun testUnderscoreInKey() {
-        val labels = HetznerLabels.forCloud("test")
+        val labels = HetznerLabels()
 
-        Assertions.assertThrows(
+        assertThrows(
             RuntimeException::class.java,
         ) {
             labels.addLabel("label_1", "value1")

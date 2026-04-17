@@ -4,9 +4,6 @@ test -f "${_DIR}/utils.sh" && source "${_DIR}/utils.sh"
 
 # see https://pellepelster.github.io/solidblocks/shell/file/#file_extract_to_directory
 function file_extract_to_directory {
-    ensure_command "unzip"
-    ensure_command "tar"
-
     local compressed_file=${1}
     local target_dir=${2}
 

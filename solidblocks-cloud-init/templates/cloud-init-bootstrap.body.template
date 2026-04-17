@@ -5,10 +5,11 @@ export SOLIDBLOCKS_BASE_URL="${SOLIDBLOCKS_BASE_URL:-https://github.com}"
 export SOLIDBLOCKS_CLOUD_INIT_URL="${SOLIDBLOCKS_CLOUD_INIT_URL:-${SOLIDBLOCKS_BASE_URL}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/blcks-cloud-init-${SOLIDBLOCKS_VERSION}.zip}"
 
 function solidblocks_bootstrap_cloud_init() {
-  package_update_repositories
-  package_ensure_package "curl"
-  package_ensure_package "unzip"
-  package_ensure_package "ca-certificates"
+  apt_update_repositories
+
+  apt_ensure_package "curl"
+  apt_ensure_package "unzip"
+  apt_ensure_package "ca-certificates"
 
   groupadd solidblocks
   useradd solidblocks -g solidblocks

@@ -22,8 +22,8 @@ fun ShellScript.resticBackup(serviceName: String, backupConfig: BackupConfigurat
     addLibSources(CurlLibrary)
     addLibSources(ResticLibrary)
 
-    addInlineSource(PackageLibrary)
-    addCommand(PackageLibrary.InstallPackage("jq"))
+    addInlineSource(AptLibrary)
+    addCommand(AptLibrary.InstallPackage("jq"))
     addCommand(ResticLibrary.Install())
 
     when (backupConfig.target) {

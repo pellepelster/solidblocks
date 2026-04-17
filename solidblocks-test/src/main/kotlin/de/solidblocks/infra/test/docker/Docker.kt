@@ -9,7 +9,8 @@ import com.github.dockerjava.api.model.Mount
 import com.github.dockerjava.api.model.MountType
 import com.github.dockerjava.api.model.PullResponseItem
 import de.solidblocks.infra.test.CommandTestContext
-import de.solidblocks.infra.test.Constants.dockerTestImageLabels
+import de.solidblocks.infra.test.TestConstants
+import de.solidblocks.infra.test.TestConstants.dockerTestImageLabels
 import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
@@ -64,14 +65,14 @@ enum class DockerTestImage {
     },
 }
 
-class DockerCommandBuilder(private val image: DockerTestImage, command: Array<String>) : CommandBuilder(command) {
-    private var dockerPullTimout = 5.minutes
+class DockerCommandBuilder(private val image: DockerTestImage, command: Array<String>, timeout: Duration) : CommandBuilder(command, timeout) {
+    private var dockerPullTimeout = 5.minutes
 
     private var sourceDir: Path? = null
 
     private var tempDirs = mutableListOf<Closeable>()
 
-    fun dockerPullTimeout(timeout: Duration) = apply { this.dockerPullTimout = timeout }
+    fun dockerPullTimeout(timeout: Duration) = apply { this.dockerPullTimeout = timeout }
 
     fun sourceDir(sourceDir: Path) = apply { this.sourceDir = sourceDir }
 
@@ -200,7 +201,8 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
             override fun close() {
                 try {
                     dockerClient.stopContainerCmd(createContainer.id).withTimeout(0).exec()
-                } catch (e: NotModifiedException) {}
+                } catch (e: NotModifiedException) {
+                }
 
                 dockerClient.removeContainerCmd(createContainer.id)
             }
@@ -222,7 +224,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                     }
                 },
             )
-            .awaitCompletion(dockerPullTimout.inWholeSeconds, TimeUnit.SECONDS)
+            .awaitCompletion(dockerPullTimeout.inWholeSeconds, TimeUnit.SECONDS)
     }
 
     private suspend fun waitForExitCode(dockerClient: DockerClient, execId: String): InspectExecResponse {
@@ -235,18 +237,18 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
     }
 }
 
-class DockerTestContext(testId: String? = null, private val image: DockerTestImage) :
+class DockerTestContext(testId: String? = null, private val image: DockerTestImage, val timeout: Duration) :
     TestContext(testId),
     CommandTestContext<DockerCommandBuilder, DockerScriptBuilder> {
     private val resources = mutableListOf<Closeable>()
 
-    override fun command(vararg command: String) = DockerCommandBuilder(image, command.toList().toTypedArray()).apply { resources.add(this) }
+    override fun command(vararg command: String) = DockerCommandBuilder(image, command.toList().toTypedArray(), timeout).apply { resources.add(this) }
 
-    override fun command(command: Path): DockerCommandBuilder = DockerCommandBuilder(image, listOf(command.absolutePathString()).toTypedArray()).apply {
+    override fun command(command: Path): DockerCommandBuilder = DockerCommandBuilder(image, listOf(command.absolutePathString()).toTypedArray(), timeout).apply {
         resources.add(this)
     }
 
-    override fun script() = DockerScriptBuilder(image).apply { resources.add(this) }
+    override fun script() = DockerScriptBuilder(image, timeout).apply { resources.add(this) }
 
     override fun toString(): String = "DockerTestContext()"
 
@@ -255,4 +257,4 @@ class DockerTestContext(testId: String? = null, private val image: DockerTestIma
     }
 }
 
-fun dockerTestContext(image: DockerTestImage, testId: String? = null) = DockerTestContext(testId, image)
+fun dockerTestContext(image: DockerTestImage, testId: String? = null, timeout: Duration = TestConstants.defaultTimeout) = DockerTestContext(testId, image, timeout)

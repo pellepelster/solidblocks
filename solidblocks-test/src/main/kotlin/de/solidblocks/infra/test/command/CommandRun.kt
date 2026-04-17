@@ -66,7 +66,7 @@ class CommandRun(
     private val result: Deferred<ProcessResult>,
     private val output: List<TimestampedOutputLine>,
     private val assertionsResult: Deferred<List<Unit>>,
-    private val defaultWaitForOutput: Duration,
+    private val timeout: Duration,
 ) {
     fun result() = runBlocking {
         assertionsResult.await()
@@ -77,7 +77,7 @@ class CommandRun(
         CommandResult(processResult.exitCode, processResult.runtime, output)
     }
 
-    fun waitForOutput(regex: String, timeout: Duration = defaultWaitForOutput, answer: (() -> String)? = null) = runBlocking {
+    fun waitForOutput(regex: String, timeout: Duration = this@CommandRun.timeout, answer: (() -> String)? = null) = runBlocking {
         waitForOutputMatcher(context, OutputMatcher(regex.toRegex(), timeout, answer), output, stdin)
     }
 }

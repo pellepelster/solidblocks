@@ -1,8 +1,8 @@
-package de.solidblocks.cli
+package de.solidblocks.cloud
 
-import de.solidblocks.cli.mock.TestConfiguration
-import de.solidblocks.cli.mock.TestConfigurationFactory
 import de.solidblocks.cloud.configuration.ConfigurationParser
+import de.solidblocks.cloud.mocks.TestConfiguration
+import de.solidblocks.cloud.mocks.TestConfigurationFactory
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import io.kotest.matchers.collections.shouldHaveSize

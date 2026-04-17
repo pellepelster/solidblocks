@@ -3,8 +3,6 @@ _DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 test -f "${_DIR}/utils.sh" && source "${_DIR}/utils.sh"
 
 function docker_mapped_tcp_port() {
-  ensure_command "jq"
-
   local name=${1:-}
   local port=${2:-}
 
@@ -16,10 +14,10 @@ function docker_ensure_network() {
   local name=${1:-}
 
   if [[ -z "$(docker network ls --quiet --filter "Name=${name}")" ]]; then
-    log_echo_info "creating docker network '${name}'"
+    echo "creating docker network '${name}'"
     docker network create "${name}"
   else
-    log_echo_info "docker network '${name}' already exists"
+    echo "docker network '${name}' already exists"
   fi
 
 }
@@ -28,7 +26,7 @@ function docker_remove_network() {
   local name=${1:-}
 
   if [[ -n "$(docker network ls --quiet --filter "Name=${name}")" ]]; then
-    log_echo_info "removing docker network '${name}'"
+    echo "removing docker network '${name}'"
     docker network remove "${name}"
   fi
 }

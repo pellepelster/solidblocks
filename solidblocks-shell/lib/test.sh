@@ -52,8 +52,6 @@ function test_assert_file_exists {
 }
 
 function test_assert_json {
-    ensure_command "jq"
-
     local description=${1:-}
     local expected=${2:-}
     local path=${3:-}

@@ -63,7 +63,7 @@ public class ScriptTest {
         val result =
             localTestContext()
                 .script()
-                .defaultWaitForOutput(5.seconds)
+                .timeout(5.seconds)
                 .includes(include1)
                 .step("echo \"content\" > /tmp/$file") {
                     it.fileExists("/tmp/$file") shouldBe true
@@ -100,7 +100,7 @@ public class ScriptTest {
             shouldThrow<RuntimeException> {
                 localTestContext()
                     .script()
-                    .defaultWaitForOutput(5.seconds)
+                    .timeout(5.seconds)
                     .includes(include)
                     .step("echo \${invalid}")
                     .run()

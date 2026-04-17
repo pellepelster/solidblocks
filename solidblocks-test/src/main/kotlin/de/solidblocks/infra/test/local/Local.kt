@@ -1,4 +1,5 @@
 import de.solidblocks.infra.test.CommandTestContext
+import de.solidblocks.infra.test.TestConstants
 import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.command.CommandBuilder
 import de.solidblocks.infra.test.command.CommandRunner
@@ -22,10 +23,11 @@ import java.nio.charset.Charset
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
+import kotlin.time.Duration
 import kotlin.time.TimeSource
 import kotlin.time.TimeSource.Monotonic.markNow
 
-class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
+class LocalCommandBuilder(command: Array<String>, timeout: Duration = TestConstants.defaultTimeout) : CommandBuilder(command, timeout) {
     private val runners = mutableListOf<CommandRunner>()
 
     private fun killProcessAndWait(process: Process) {
@@ -145,7 +147,7 @@ class LocalCommandBuilder(command: Array<String>) : CommandBuilder(command) {
     }
 }
 
-class LocalTestContext(testId: String? = null) :
+class LocalTestContext(testId: String? = null, val timeout: Duration) :
     TestContext(testId),
     CommandTestContext<LocalCommandBuilder, LocalScriptBuilder> {
     private val resources = mutableListOf<Closeable>()
@@ -156,7 +158,7 @@ class LocalTestContext(testId: String? = null) :
         resources.add(this)
     }
 
-    override fun script() = LocalScriptBuilder().apply { resources.add(this) }
+    override fun script() = LocalScriptBuilder(timeout).apply { resources.add(this) }
 
     override fun toString(): String = "LocalTestContext()"
 
@@ -165,4 +167,4 @@ class LocalTestContext(testId: String? = null) :
     }
 }
 
-fun localTestContext(testId: String? = null) = LocalTestContext(testId)
+fun localTestContext(testId: String? = null, timeout: Duration = TestConstants.defaultTimeout) = LocalTestContext(testId, timeout)

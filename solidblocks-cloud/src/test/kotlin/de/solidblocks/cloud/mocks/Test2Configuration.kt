@@ -1,4 +1,4 @@
-package de.solidblocks.cli.mock
+package de.solidblocks.cloud.mocks
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ConfigurationFactory

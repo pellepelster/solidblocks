@@ -61,7 +61,7 @@ class PlacementGroupApiTest {
 
             val updated = api.placementGroups.update(created.placementGroup.id, PlacementGroupUpdateRequest(labels = testLabels + mapOf("extra" to "value")))
             updated shouldNotBe null
-            updated!!.placementGroup.labels["extra"] shouldBe "value"
+            updated.placementGroup.labels?.get("extra") shouldBe "value"
 
             val listed = api.placementGroups.list(labelSelectors = testLabels.toLabelSelectors())
             listed shouldHaveAtLeastSize 1

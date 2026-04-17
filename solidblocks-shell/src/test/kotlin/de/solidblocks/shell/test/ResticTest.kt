@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.lang.System.getenv
 import java.util.UUID
+import kotlin.time.Duration.Companion.minutes
 
 @ExtendWith(SolidblocksTest::class)
 public class ResticTest {
@@ -73,6 +74,7 @@ public class ResticTest {
         val result =
             dockerTestContext(DockerTestImage.DEBIAN_12)
                 .script()
+                .timeout(3.minutes)
                 .sources(workingDir().resolve("lib"))
                 .includes(workingDir().resolve("lib").resolve("curl.sh"))
                 .includes(workingDir().resolve("lib").resolve("restic.sh"))

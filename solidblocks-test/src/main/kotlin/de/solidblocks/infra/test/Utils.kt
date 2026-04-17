@@ -8,10 +8,15 @@ import java.math.BigInteger
 import java.net.URI
 import java.security.MessageDigest
 import java.text.DecimalFormat
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
-object Constants {
+object TestConstants {
     val dockerTestImageLabels = mapOf("managed-by" to "solidblocks-test")
+
     val durationFormat = DecimalFormat("000.000")
+
+    val defaultTimeout: Duration = 60.seconds
 }
 
 fun createDockerClient(): DockerClient {

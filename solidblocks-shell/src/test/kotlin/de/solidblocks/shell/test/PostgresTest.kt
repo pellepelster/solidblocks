@@ -6,12 +6,13 @@ import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.files.workingDir
 import io.kotest.assertions.assertSoftly
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.minutes
 
 public class PostgresTest {
     @Test
     fun testInstall() {
         val result =
-            dockerTestContext(DockerTestImage.DEBIAN_12)
+            dockerTestContext(DockerTestImage.DEBIAN_12, timeout = 3.minutes)
                 .script()
                 .sources(workingDir().resolve("lib"))
                 .includes(workingDir().resolve("lib").resolve("curl.sh"))

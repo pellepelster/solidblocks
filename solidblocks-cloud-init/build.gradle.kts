@@ -67,7 +67,6 @@ val generate = tasks.register("generate") {
             shellLibDir.resolve("log.sh"),
             shellLibDir.resolve("curl.sh"),
             shellLibDir.resolve("apt.sh"),
-            shellLibDir.resolve("package.sh")
         )
 
         val sha256256Sum = cloudInitZip.get().asFile.readBytes().hashedWithSha256()

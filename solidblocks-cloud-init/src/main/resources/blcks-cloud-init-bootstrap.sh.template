@@ -165,31 +165,6 @@ function apt_ensure_package {
 	fi
 }
 
-################################################################
-# package.sh
-################################################################
-_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-test -f "${_DIR}/apt.sh" && source "${_DIR}/apt.sh"
-
-function package_update_system() {
-  if which apt >/dev/null 2>&1; then
-    apt_update_system
-  fi
-}
-
-function package_update_repositories() {
-  if which apt >/dev/null 2>&1; then
-    apt_update_repositories
-  fi
-}
-
-function package_ensure_package() {
-  if which apt >/dev/null 2>&1; then
-    apt_ensure_package $@
-  fi
-}
-
 
 export SOLIDBLOCKS_DIR="${SOLIDBLOCKS_DIR:-/solidblocks}"
 export SOLIDBLOCKS_VERSION="${SOLIDBLOCKS_VERSION:-v0.0.0}"
@@ -198,10 +173,11 @@ export SOLIDBLOCKS_BASE_URL="${SOLIDBLOCKS_BASE_URL:-https://github.com}"
 export SOLIDBLOCKS_CLOUD_INIT_URL="${SOLIDBLOCKS_CLOUD_INIT_URL:-${SOLIDBLOCKS_BASE_URL}/pellepelster/solidblocks/releases/download/${SOLIDBLOCKS_VERSION}/blcks-cloud-init-${SOLIDBLOCKS_VERSION}.zip}"
 
 function solidblocks_bootstrap_cloud_init() {
-  package_update_repositories
-  package_ensure_package "curl"
-  package_ensure_package "unzip"
-  package_ensure_package "ca-certificates"
+  apt_update_repositories
+
+  apt_ensure_package "curl"
+  apt_ensure_package "unzip"
+  apt_ensure_package "ca-certificates"
 
   groupadd solidblocks
   useradd solidblocks -g solidblocks

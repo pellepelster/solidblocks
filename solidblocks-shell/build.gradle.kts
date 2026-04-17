@@ -27,6 +27,7 @@ dependencies {
 
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.wiremock:wiremock:3.9.1")
+    testImplementation("org.slf4j:slf4j-simple:2.0.13")
     releaseTestImplementation(project(":solidblocks-test"))
 }
 

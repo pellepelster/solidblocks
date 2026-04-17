@@ -15,6 +15,7 @@ import localTestContext
 import java.io.Closeable
 import java.nio.file.Path
 import java.security.KeyPair
+import kotlin.time.Duration
 
 class SolidblocksTestContext(testId: String) : TestContext(testId) {
     private var cleanupAfterTest: Boolean = true
@@ -25,14 +26,14 @@ class SolidblocksTestContext(testId: String) : TestContext(testId) {
 
     fun createTempDir() = tempDir().also { tempDirs.add(it) }
 
-    fun local() = localTestContext(testId).also {
+    fun local(timeout: Duration = TestConstants.defaultTimeout) = localTestContext(testId, timeout).also {
         testContexts.add(it)
         tempDirs.add(it)
     }
 
     fun aws() = awsTestContext(testId).also { testContexts.add(it) }
 
-    fun docker(image: DockerTestImage) = dockerTestContext(image, testId).also {
+    fun docker(image: DockerTestImage) = dockerTestContext(image, testId, TestConstants.defaultTimeout).also {
         testContexts.add(it)
         tempDirs.add(it)
     }

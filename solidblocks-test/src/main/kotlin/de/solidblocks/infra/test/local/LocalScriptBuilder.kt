@@ -5,17 +5,18 @@ import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.infra.test.script.ScriptBuilder
 import kotlinx.coroutines.runBlocking
 import localTestContext
+import kotlin.time.Duration
 
-class LocalScriptBuilder : ScriptBuilder() {
+class LocalScriptBuilder(timeout: Duration) : ScriptBuilder(timeout) {
     override fun run(): CommandResult<TimestampedOutputLine> = runBlocking {
         val buildScript = buildScript()
         val command =
-            localTestContext()
+            localTestContext(timeout = timeout)
                 .command(*buildScript.second.toTypedArray())
                 .workingDir(buildScript.first)
                 .env(envs)
                 .inheritEnv(inheritEnv)
-                .defaultWaitForOutput(defaultWaitForOutput)
+                .timeout(timeout)
 
         if (assertSteps) {
             steps.forEachIndexed { index, step ->

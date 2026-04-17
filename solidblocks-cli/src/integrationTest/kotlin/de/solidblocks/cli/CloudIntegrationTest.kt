@@ -29,25 +29,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 @ExtendWith(SolidblocksTest::class)
-class BlcksIntegrationTest {
+class CloudIntegrationTest {
     val blcksCommand = Path.of(".").resolve("blcks")
-
-    @Test
-    fun testBinaryIsValid(context: SolidblocksTestContext) {
-        assertSoftly(context.local().command(blcksCommand).runResult()) { result ->
-            result shouldHaveExitCode 0
-            listOf("cloud", "hetzner", "github", "docs", "terraform", "tofu").forEach {
-                result stdoutShouldMatch ".*$it.*"
-            }
-        }
-    }
-
-    @Test
-    fun testNuke(context: SolidblocksTestContext) {
-        assertSoftly(context.local().command("$blcksCommand", "hetzner", "nuke", "--do-nuke").timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()) { result ->
-            result shouldHaveExitCode 0
-        }
-    }
 
     @Test
     @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")

@@ -98,8 +98,6 @@ function software_ensure_restic {
   local version=${1:-$RESTIC_VERSION}
   local checksum=${2:-$RESTIC_CHECKSUM}
 
-  ensure_command "bunzip2"
-
   software_ensure_dirs
 
   download_and_verify_checksum "https://github.com/restic/restic/releases/download/v${RESTIC_VERSION}/restic_${RESTIC_VERSION}_linux_amd64.bz2" "${CACHE_DIR}/restic_${RESTIC_VERSION}_linux_amd64.bz2" "${RESTIC_CHECKSUM}"

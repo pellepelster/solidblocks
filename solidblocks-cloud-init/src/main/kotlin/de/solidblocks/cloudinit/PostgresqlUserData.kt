@@ -4,13 +4,10 @@ import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CurlLibrary
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
-import de.solidblocks.shell.LogLibrary
 import de.solidblocks.shell.MkDir
-import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
-import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.shell.WriteFile
 import de.solidblocks.shell.docker.ComposeFile
 import de.solidblocks.shell.docker.Mount
@@ -41,17 +38,13 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
 
         val userData = ShellScript()
 
-        userData.addInlineSource(UtilsLibrary)
-
         userData.addInlineSource(AptLibrary)
         userData.addInlineSource(CurlLibrary)
+        userData.addInlineSource(AptLibrary)
+        userData.addCommand(AptLibrary.UpdateRepositories())
+        userData.addCommand(AptLibrary.UpdateSystem())
+
         userData.addInlineSource(DockerLibrary)
-        userData.addInlineSource(LogLibrary)
-
-        userData.addInlineSource(PackageLibrary)
-        userData.addCommand(PackageLibrary.UpdateRepositories())
-        userData.addCommand(PackageLibrary.UpdateSystem())
-
         userData.addInlineSource(StorageLibrary)
         userData.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
 

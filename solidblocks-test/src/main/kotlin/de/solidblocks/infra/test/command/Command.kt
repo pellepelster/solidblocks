@@ -1,5 +1,6 @@
 package de.solidblocks.infra.test.command
 
+import de.solidblocks.infra.test.TestConstants
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
@@ -15,6 +16,7 @@ import java.io.Closeable
 import java.nio.file.Path
 import java.util.*
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 data class CommandResult<O : OutputLine>(val exitCode: Int, val runtime: Duration, private val internalOutput: List<O>) {
@@ -32,14 +34,11 @@ data class CommandResult<O : OutputLine>(val exitCode: Int, val runtime: Duratio
 
 data class ProcessResult(val exitCode: Int, val runtime: Duration)
 
-abstract class CommandBuilder(protected var command: Array<String>) : Closeable {
-    protected var timeout: Duration = 60.seconds
+abstract class CommandBuilder(protected var command: Array<String>, var timeout: Duration) : Closeable {
 
     protected var workingDir: Path? = null
 
     protected val assertions: Queue<(CommandRunAssertion) -> Unit> = LinkedList()
-
-    private var defaultWaitForOutput: Duration = 60.seconds
 
     private var envs = mutableMapOf<String, String>()
 
@@ -52,10 +51,6 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
     fun inheritEnv(inheritEnv: Boolean) = apply { this.inheritEnv = inheritEnv }
 
     fun env(envs: Map<String, String>) = apply { this.envs.putAll(envs) }
-
-    fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
-        this.defaultWaitForOutput = defaultWaitForOutput
-    }
 
     fun workingDir(workingDir: Path) = apply { this.workingDir = workingDir }
 
@@ -73,7 +68,7 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
         val assertionsResult = async {
             assertions.map {
                 it.invoke(
-                    CommandRunAssertion(context, commandRunner, stdin, output, defaultWaitForOutput),
+                    CommandRunAssertion(context, commandRunner, stdin, output, timeout),
                 )
             }
         }
@@ -98,7 +93,7 @@ abstract class CommandBuilder(protected var command: Array<String>) : Closeable 
             result,
             output,
             assertionsResult,
-            defaultWaitForOutput,
+            timeout,
         )
     }
 

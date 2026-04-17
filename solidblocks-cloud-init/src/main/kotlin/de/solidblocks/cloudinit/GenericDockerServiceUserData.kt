@@ -5,13 +5,10 @@ import de.solidblocks.shell.CaddyLibrary
 import de.solidblocks.shell.CurlLibrary
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
-import de.solidblocks.shell.LogLibrary
 import de.solidblocks.shell.MkDir
-import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.SystemDLibrary
-import de.solidblocks.shell.UtilsLibrary
 import de.solidblocks.shell.WriteFile
 import de.solidblocks.shell.caddy.AutoHttps
 import de.solidblocks.shell.caddy.CaddyConfig
@@ -68,18 +65,14 @@ class GenericDockerServiceUserData(
 
         val userData = ShellScript()
 
-        userData.addInlineSource(UtilsLibrary)
         userData.addInlineSource(AptLibrary)
         userData.addInlineSource(CurlLibrary)
-        userData.addInlineSource(DockerLibrary)
-        userData.addInlineSource(LogLibrary)
-        userData.addInlineSource(PackageLibrary)
-        userData.addCommand(PackageLibrary.UpdateRepositories())
-        userData.addCommand(PackageLibrary.UpdateSystem())
+        userData.addCommand(AptLibrary.UpdateRepositories())
+        userData.addCommand(AptLibrary.UpdateSystem())
 
+        userData.addInlineSource(DockerLibrary)
         userData.addInlineSource(StorageLibrary)
         userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
-
         userData.addCommand(DockerLibrary.InstallDebian())
 
         userData.addInlineSource(CaddyLibrary)

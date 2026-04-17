@@ -1,6 +1,11 @@
 package de.solidblocks.cli
 
-import de.solidblocks.cli.hetzner.asg.*
+import de.solidblocks.cli.hetzner.asg.AsgRotateStatus
+import de.solidblocks.cli.hetzner.asg.HetznerAsg
+import de.solidblocks.cli.hetzner.asg.ImageReference
+import de.solidblocks.cli.hetzner.asg.LoadBalancerReference
+import de.solidblocks.cli.hetzner.asg.LocationReference
+import de.solidblocks.cli.hetzner.asg.ServerTypeReference
 import de.solidblocks.hetzner.cloud.HetznerApi
 import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldContain
@@ -8,7 +13,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
-import java.util.*
+import java.util.UUID
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime

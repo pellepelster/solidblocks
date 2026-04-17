@@ -52,7 +52,7 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-rm -rf build
+${ROOT_PROJECT}/gradlew clean :$(basename $PWD):testIntegration
 rm -rf blcks
 """
 
@@ -151,19 +151,23 @@ done
 #rm -rf ${TEMP_DIR}
 """
 
-[tasks."preflight:check"]
-run = [
-    { task = "clean" },
-    { task = "format" },
-    { task = "build" },
-    { task = "test" },
-    { task = "test:integration:prepare" },
-    { task = "test:integration" },
-]
-
 [tasks."reachability:metadata:generate"]
 run="""
 export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
 export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
+"""
+
+
+[tasks."test:preflight"]
+depends = [
+    "clean",
+    "build",
+    "test",
+    "build:native",
+    "test:integration:prepare",
+]
+run = """
+unset SKIP_TESTS
+${ROOT_PROJECT}/gradlew :$(basename $PWD):testIntegration
 """

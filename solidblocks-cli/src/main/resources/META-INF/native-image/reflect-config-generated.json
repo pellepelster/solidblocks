@@ -1098,24 +1098,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.shell.docker.Service",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.shell.docker.Service$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.hetzner.cloud.resources.FloatingIpCreateResponseWrapper",
         "fields": [
             {
@@ -1126,6 +1108,24 @@
     },
     {
         "name": "de.solidblocks.hetzner.cloud.resources.FloatingIpCreateResponseWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.shell.docker.Service",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.shell.docker.Service$Companion",
         "fields": [],
         "methods": [
             {
@@ -3204,24 +3204,6 @@
         ]
     },
     {
-        "name": "de.solidblocks.hetzner.cloud.resources.NetworksListResponseWrapper",
-        "fields": [
-            {
-                "name": "Companion"
-            }
-        ],
-        "methods": []
-    },
-    {
-        "name": "de.solidblocks.hetzner.cloud.resources.NetworksListResponseWrapper$Companion",
-        "fields": [],
-        "methods": [
-            {
-                "name": "serializer"
-            }
-        ]
-    },
-    {
         "name": "de.solidblocks.garagefs.ClusterStatusNodeResponse",
         "fields": [
             {
@@ -3232,6 +3214,24 @@
     },
     {
         "name": "de.solidblocks.garagefs.ClusterStatusNodeResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworksListResponseWrapper",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.hetzner.cloud.resources.NetworksListResponseWrapper$Companion",
         "fields": [],
         "methods": [
             {

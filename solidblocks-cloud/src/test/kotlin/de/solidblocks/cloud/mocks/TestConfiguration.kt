@@ -1,4 +1,4 @@
-package de.solidblocks.cli.mock
+package de.solidblocks.cloud.mocks
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ConfigurationFactory
@@ -17,11 +17,6 @@ class TestConfigurationFactory : ConfigurationFactory<TestConfiguration> {
         get() = TODO("Not yet implemented")
 
     val test1 = ListKeyword("test1", Test1ConfigurationFactory(), KeywordHelp("TODO"))
-
-  /*
-  val polymorphicList1 =
-      PolymorphicListKeyword("polymorphic_list1", listOf(Test1ConfigurationFactory()), KeywordHelp("", ""))
-   */
 
     val test2 = ObjectKeyword("test2", Test2ConfigurationFactory(), KeywordHelp("TODO"))
 

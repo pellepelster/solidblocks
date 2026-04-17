@@ -6,7 +6,6 @@ import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.DockerLibrary
-import de.solidblocks.shell.PackageLibrary
 import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.StorageLibrary
 import io.kotest.assertions.assertSoftly
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Files
 import kotlin.io.path.writeText
+import kotlin.time.Duration.Companion.minutes
 
 @ExtendWith(SolidblocksTest::class)
 public class ShellScriptTest {
@@ -26,14 +26,9 @@ public class ShellScriptTest {
         script.addInlineSource(DockerLibrary)
         script.addInlineSource(AptLibrary)
 
-        /** library sources are written to ShellScript.LIB_SOURCES_PATH and sources from there */
-        script.addLibSources(PackageLibrary)
-
-        script.addCommand(PackageLibrary.UpdateRepositories())
-        script.addCommand(PackageLibrary.InstallPackage("jq"))
+        script.addCommand(AptLibrary.UpdateRepositories())
+        script.addCommand(AptLibrary.InstallPackage("jq"))
         script.addCommand(DockerLibrary.InstallDebian())
-
-        val rawScript = script.render()
 
         val tempDir = Files.createTempDirectory("test")
         tempDir.resolve("script.sh").writeText(script.render())
@@ -41,6 +36,7 @@ public class ShellScriptTest {
         val result =
             dockerTestContext(DockerTestImage.DEBIAN_12)
                 .script()
+                .timeout(3.minutes)
                 .sources(tempDir)
                 .includes(tempDir.resolve("script.sh"))
                 .run()

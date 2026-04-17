@@ -8,10 +8,10 @@ function network_wait_for_port_open() {
   local port="${2:-}"
   local period="${3:-1}"
 
-  log_info "waiting for open port on '${host}:${port}'"
+  echo "waiting for open port on '${host}:${port}'"
   while ! nc -z ${host} ${port}; do
-    log_info "...still waiting for port '${host}:${port}' to open..."
+    echo "...still waiting for port '${host}:${port}' to open..."
     sleep ${period}
   done
-  log_info "port '${host}:${port}' is open"
+  echo "port '${host}:${port}' is open"
 }

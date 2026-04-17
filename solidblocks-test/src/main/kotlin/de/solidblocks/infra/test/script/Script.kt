@@ -14,11 +14,10 @@ import java.security.MessageDigest
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.readBytes
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 class ScriptStep(val step: String, val assertion: ((CommandRunAssertion) -> Unit)?)
 
-abstract class ScriptBuilder : Closeable {
+abstract class ScriptBuilder(var timeout: Duration) : Closeable {
     val workingDir = tempDir()
 
     internal val includes: MutableList<Path> = mutableListOf()
@@ -29,16 +28,14 @@ abstract class ScriptBuilder : Closeable {
 
     internal var assertSteps = true
 
-    internal var defaultWaitForOutput: Duration = 60.seconds
-
     internal val envs = mutableMapOf<String, String>()
 
     internal val resources = mutableListOf<Closeable>()
 
     internal var inheritEnv = true
 
-    fun defaultWaitForOutput(defaultWaitForOutput: Duration) = apply {
-        this.defaultWaitForOutput = defaultWaitForOutput
+    fun timeout(timeout: Duration) = apply {
+        this.timeout = timeout
     }
 
     fun assertSteps(assertSteps: Boolean) = apply { this.assertSteps = assertSteps }
