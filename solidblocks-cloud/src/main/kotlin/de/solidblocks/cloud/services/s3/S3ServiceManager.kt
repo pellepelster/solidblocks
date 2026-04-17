@@ -375,23 +375,27 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         h2("Usage examples")
 
-        runtime.buckets.forEach {
-            bold("Bucket '${it.name}' with access key '${it.name}'")
+        runtime.buckets.forEach { bucket ->
 
-            codeBlock(
-                """
-            export ACCESS_KEY="$(pass ${secretPath(cloud, runtime, listOf("buckets", it.name, "access_key"))})"
-            export SECRET_KEY="$(pass ${secretPath(cloud, runtime, listOf("buckets", it.name, "secret_key"))})"
+            bucket.accessKeys.forEach { accessKey ->
+
+                bold("Bucket '${bucket.name}' with access key '${bucket.name}'")
+
+                codeBlock(
+                    """
+            export ACCESS_KEY="$(pass ${secretPath(cloud, runtime, listOf("buckets", bucket.name, accessKey.name, "access_key"))})"
+            export SECRET_KEY="$(pass ${secretPath(cloud, runtime, listOf("buckets", bucket.name, accessKey.name, "secret_key"))})"
             export S3_HOST="$(pass ${secretPath(cloud, runtime, listOf("endpoints", "s3_host"))})"
 
             s3cmd --host-bucket "%(bucket).${'$'}{S3_HOST} \
                 --host ${'$'}{S3_HOST} \
                 --access_key ${'$'}{ACCESS_KEY} \
                 --secret_key ${'$'}{SECRET_KEY} \
-                ls s3://${it.name}
+                ls s3://${bucket.name}
 
-                """.trimIndent(),
-            )
+                    """.trimIndent(),
+                )
+            }
         }
         // TODO add upload example sync --no-mime-magic --guess-mime-type
     }.let { Success(it) }
