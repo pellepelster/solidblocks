@@ -34,7 +34,8 @@ class NukeIntegrationTest {
 
     @Test
     fun testNuke(context: SolidblocksTestContext) {
-        val testbed = NukeIntegrationTest::class.java.getResource("/nuke-testbed").path
+        val testbed = Path.of(NukeIntegrationTest::class.java.getResource("/nuke-testbed").toURI())
+
         val terraform = context.terraform(testbed)
         terraform.init()
         terraform.apply()
