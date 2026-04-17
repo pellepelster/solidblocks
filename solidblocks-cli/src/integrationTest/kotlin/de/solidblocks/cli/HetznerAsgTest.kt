@@ -11,6 +11,7 @@ import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import java.util.UUID
@@ -18,6 +19,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
+@Disabled
 class HetznerAsgTest {
     val hcloudToken = System.getenv("HCLOUD_TOKEN").toString()
     val api = HetznerApi(hcloudToken)

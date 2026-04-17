@@ -52,6 +52,8 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
+pass rm -rf cloud1 || true
+
 ${ROOT_PROJECT}/gradlew clean :$(basename $PWD):testIntegration
 rm -rf blcks
 """
@@ -157,7 +159,6 @@ export HCLOUD_TOKEN=$(pass solidblocks/hetzner/test/hcloud_api_token)
 export JAVA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}/mise/installs/graalvm/24.0.2/
 ../gradlew -Pagent run --args="cloud apply contrib/test1.yml"
 """
-
 
 [tasks."test:preflight"]
 depends = [

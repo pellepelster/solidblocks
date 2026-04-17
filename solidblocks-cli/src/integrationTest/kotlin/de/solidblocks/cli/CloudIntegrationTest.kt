@@ -84,6 +84,15 @@ class CloudIntegrationTest {
         }
 
         /**
+         * apply again
+         */
+        assertSoftly(
+            context.local().command("$blcksCommand", "cloud", "apply", test1CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+        ) { result ->
+            result shouldHaveExitCode 0
+        }
+
+        /**
          * assert endpoint can be called and ssh connect command works
          */
         assertSoftly(

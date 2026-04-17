@@ -256,7 +256,8 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
         )
 
-        return listOf(sshIdentityRsaSecret, sshIdentityED25519Secret, s3HostSecret, firewall, server, dataVolume, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources
+        // sshIdentityRsaSecret, sshIdentityED25519Secret,
+        return listOf(s3HostSecret, firewall, server, dataVolume, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()
