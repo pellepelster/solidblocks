@@ -157,7 +157,7 @@ class AwsS3BucketProvisioner(
 
                 client.deleteBucket(DeleteBucketRequest { bucket = resource.name })
 
-                waitConfig.waitForConsecutive(3) {
+                WaitConfig(60, 2.seconds).waitForConsecutive(3) {
                     try {
                         log.info("waiting for deletion of bucket '${resource.name}'...")
                         lookup(resource.asLookup(), context)
