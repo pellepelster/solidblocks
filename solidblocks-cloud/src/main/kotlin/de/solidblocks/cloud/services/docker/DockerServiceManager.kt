@@ -54,7 +54,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             h1("Service '${runtime.name}'")
 
             h2("Servers")
-            text("to access server **${serverName(cloud, runtime.name)}** via SSH, run")
+            text("to access server **${serverName(cloud.environment, runtime.name)}** via SSH, run")
             codeBlock(sshConnectCommand(context, cloud, runtime))
 
             h2("Endpoints")
@@ -63,7 +63,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
-        val result = context.createOrGetSshClient(HetznerServerLookup(serverName(cloud, runtime.name))).command(RESTIC_STATUS_COMMAND)
+        val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name)).command(RESTIC_STATUS_COMMAND)
         if (result.exitCode != 0) {
             return Error<String>("command failed '${result.stdErr}'")
         }
@@ -84,9 +84,9 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     }
 
     fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext) = if (cloud.dnsEnabled == true) {
-        "https://${serverName(cloud, runtime.name)}.${cloud.rootDomain}"
+        "https://${serverName(cloud.environment, runtime.name)}.${cloud.rootDomain}"
     } else {
-        "http://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.publicIpv4 ?: "<unknown>"}"
+        "http://${context.lookup(HetznerServerLookup(serverName(cloud.environment, runtime.name)))?.publicIpv4 ?: "<unknown>"}"
     }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
@@ -97,7 +97,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             }
         }
 
-        val serverName = serverName(cloud, runtime.name)
+        val serverName = serverName(cloud.environment, runtime.name)
 
         val defaultResources = this.createDefaultResources(cloud, runtime)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
@@ -111,7 +111,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     runtime.image,
                     runtime.endpoints.associate { 80 to it.port },
-                    serverFQDN = cloud.rootDomain?.let { "${serverName(cloud, runtime.name)}.$it" },
+                    serverFQDN = cloud.rootDomain?.let { "${serverName(cloud.environment, runtime.name)}.$it" },
                     environmentVariables = environmentVariables.associate {
                         val value = when (it) {
                             is EnvironmentVariableCallback -> it.value.invoke(context)
@@ -131,25 +131,25 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             serverName,
             userData = userData,
             location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
+            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
             volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
                 defaultServiceSubnet,
-                HetznerNetworkLookup(networkName(cloud)),
+                HetznerNetworkLookup(networkName(cloud.environment)),
             ),
             privateIp = serverPrivateIp(runtime.index),
-            labels = serviceLabels(runtime) + cloudLabels(cloud),
+            labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
             dependsOn = backupResources.first,
         )
 
         val optionalResources = if (cloud.rootDomain != null) {
             val zone = HetznerDnsZoneLookup(cloud.rootDomain)
             val serverDnsRecord = HetznerDnsRecord(
-                serverName(cloud, runtime.name),
+                serverName(cloud.environment, runtime.name),
                 zone,
                 listOf(server.asLookup()),
-                labels = dnsRecordLabels(runtime) + cloudLabels(cloud),
+                labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment),
             )
             listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
         } else {

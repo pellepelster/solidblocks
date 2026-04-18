@@ -61,7 +61,7 @@ class SSHTestContext(val host: String, val keyPair: KeyPair, val username: Strin
         logInfo("run 'ssh -F ${openSSHConfigFile.absolutePath} $username@$host' to access host")
     }
 
-    private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, username, port)
+    private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, null, username, port)
 
     fun cloudInit() = cloudInitTestContext(host, keyPair, username, port).also { testContexts.add(it) }
 

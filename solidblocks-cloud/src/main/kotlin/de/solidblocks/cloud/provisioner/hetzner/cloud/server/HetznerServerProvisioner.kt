@@ -56,7 +56,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
                 .mapNotNull { context.lookup(HetznerVolumeLookup(it.name)) },
             it.privateNetwork.firstOrNull()?.ip,
             it.publicNetwork?.ipv4?.ip,
-            it.publicNetwork?.ipv4?.ip?.let { listOf(Endpoint(it, 22, EndpointProtocol.ssh)) }
+            it.publicNetwork?.ipv4?.ip?.let { listOf(Endpoint(lookup.name, it, 22, EndpointProtocol.ssh)) }
                 ?: emptyList(),
         )
     }

@@ -16,6 +16,7 @@ import de.solidblocks.infra.test.host.hostTestContext
 import de.solidblocks.infra.test.ssh.sshTestContext
 import de.solidblocks.infra.test.testLabels
 import de.solidblocks.ssh.SSHKeyUtils
+import de.solidblocks.ssh.toPem
 import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
@@ -35,7 +36,7 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
 
     val api = HetznerApi(hcloudToken)
 
-    val testSSHhKey = SSHKeyUtils.ED25519.generate()
+    val testSSHhKey = SSHKeyUtils.ED25519.generate().toPem()
 
     val defaultLabels = testLabels(this.testId)
 

@@ -3,6 +3,7 @@ package de.solidblocks.ssh.test
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.SSHKeyUtils.loadKey
+import de.solidblocks.ssh.toPem
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -17,7 +18,7 @@ import kotlin.io.path.writeText
 class SSHKeyUtilsTest {
     @Test
     fun testGenerateRsaKeyPair() {
-        assertSoftly(SSHKeyUtils.RSA.generate()) {
+        assertSoftly(SSHKeyUtils.RSA.generate().toPem()) {
             it.privateKey shouldStartWith "-----BEGIN RSA PRIVATE KEY-----"
             it.privateKey shouldEndWith "-----END RSA PRIVATE KEY-----\n"
             it.publicKey shouldStartWith "-----BEGIN PUBLIC KEY-----"
@@ -36,7 +37,7 @@ class SSHKeyUtilsTest {
 
     @Test
     fun testGenerateED25519KeyPair() {
-        assertSoftly(SSHKeyUtils.ED25519.generate()) {
+        assertSoftly(SSHKeyUtils.ED25519.generate().toPem()) {
             it.privateKey shouldStartWith "-----BEGIN PRIVATE KEY-----"
             it.privateKey shouldEndWith "-----END PRIVATE KEY-----\n"
             it.publicKey shouldStartWith "-----BEGIN PUBLIC KEY-----"
@@ -325,7 +326,7 @@ class SSHKeyUtilsTest {
     fun testGeneratedKeysWithOpenSSH() {
         val factories = listOf(SSHKeyUtils.ED25519, SSHKeyUtils.RSA)
         factories.forEach { factory ->
-            val sshKey = factory.generate()
+            val sshKey = factory.generate().toPem()
             val publicKeyFile =
                 Files.createTempFile("rsa_public", ".key").also {
                     it.writeText(factory.publicKeyToOpenSsh(sshKey.publicKey))
@@ -343,7 +344,8 @@ class SSHKeyUtilsTest {
                     }
 
             val key = loadKey(sshKey.privateKey)
-            val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+
+            val client = SSHClient(sshServer.host, key, null, port = sshServer.getMappedPort(22))
 
             assertSoftly(client.command("whoami")) { it.exitCode shouldBe 0 }
 

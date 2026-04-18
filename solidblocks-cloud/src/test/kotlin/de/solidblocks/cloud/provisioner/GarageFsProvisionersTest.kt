@@ -3,7 +3,7 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestContextUtils
 import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.configuration.model.EnvironmentReference
+import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyRuntime
@@ -134,7 +134,7 @@ class GarageFsProvisionersTest {
                 ),
                 "some_path",
                 Path.of("."),
-                EnvironmentReference("cloud1", "default"),
+                EnvironmentContext("cloud1", "default"),
                 ProvisionersRegistry(
                     listOf(
                         serverProvisioner,

@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner.pass
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
@@ -26,10 +27,21 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
 
         return if (runtime != null) {
             when (val secretGenerator = resource.secretGenerator) {
-                is StaticSecret -> if (runtime.secret != secretGenerator.generate(context)) {
-                    ResourceDiff(resource, has_changes)
-                } else {
-                    ResourceDiff(resource, up_to_date)
+                is StaticSecret -> {
+                    val secret = try {
+                        secretGenerator.generate(context)
+                    } catch (e: Exception) {
+                        logger.error(e) { "failed to generate secret" }
+                        null
+                    }
+
+                    if (secret == null) {
+                        ResourceDiff(resource, unknown)
+                    } else if (runtime.secret != secret) {
+                        ResourceDiff(resource, has_changes)
+                    } else {
+                        ResourceDiff(resource, up_to_date)
+                    }
                 }
 
                 else -> ResourceDiff(resource, up_to_date)

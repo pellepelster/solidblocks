@@ -1,8 +1,9 @@
 package de.solidblocks.cloud.services
 
+import de.solidblocks.cloud.Constants
 import de.solidblocks.cloud.Constants.cloudLabels
-import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.volumeLabels
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -12,7 +13,6 @@ import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.ssh.SSHKeyUtils
@@ -56,19 +56,21 @@ data class DefaultServerResources(val dataVolume: HetznerVolume, val sshIdentity
 }
 
 fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime): DefaultServerResources {
-    val serverName = serverName(cloud, runtime.name)
+    val serverName = serverName(cloud.environment, runtime.name)
 
     val sshIdentityRsaSecret = PassSecret(
-        secretPath(cloud, listOf("hosts", serverName, "ssh_host_key_rsa")),
+        sshHostPrivateKeySecretPath(cloud.environment, serverName, Constants.SshHostKeyType.rsa),
         OneTimeGeneratedSecret {
-            SSHKeyUtils.RSA.generate().privateKey
+            val keyPair = SSHKeyUtils.RSA.generate()
+            SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
         },
     )
 
     val sshIdentityED25519Secret = PassSecret(
-        secretPath(cloud, listOf("hosts", serverName, "ssh_host_key_ed25519")),
+        sshHostPrivateKeySecretPath(cloud.environment, serverName, Constants.SshHostKeyType.ed25519),
         OneTimeGeneratedSecret {
-            SSHKeyUtils.ED25519.generate().privateKey
+            val keyPair = SSHKeyUtils.ED25519.generate()
+            SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
         },
     )
 
@@ -76,7 +78,7 @@ fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime
         serverName + "-data",
         runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
         ByteSize.fromGigabytes(runtime.instance.volumeSize),
-        volumeLabels(runtime) + cloudLabels(cloud),
+        volumeLabels(runtime) + cloudLabels(cloud.environment),
     )
 
     return DefaultServerResources(dataVolume, sshIdentityRsaSecret, sshIdentityED25519Secret)

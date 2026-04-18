@@ -2,7 +2,7 @@ package de.solidblocks.cloud.providers.backup.aws
 
 import de.solidblocks.cloud.Constants.secretPath
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.configuration.model.EnvironmentReference
+import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.types.backup.BackupProviderManager
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUserProvisioner
@@ -21,13 +21,14 @@ class S3BackupProviderManager :
     private val logger = KotlinLogging.logger {}
 
     companion object {
-        fun secretKeySecretPath(environment: EnvironmentReference, userName: String) = secretPath(environment, listOf("aws", "users", userName, "secret_key"))
 
-        fun accessKeySecretPath(environment: EnvironmentReference, userName: String) = secretPath(environment, listOf("aws", "users", userName, "access_key"))
+        fun secretKeySecretPath(environment: EnvironmentContext, userName: String) = secretPath(environment, listOf("aws", "users", userName, "secret_key"))
 
-        fun bucketName(environment: EnvironmentReference, runtime: ServiceConfigurationRuntime) = "${environment.cloud}-${environment.environment}-${runtime.name}-backup"
+        fun accessKeySecretPath(environment: EnvironmentContext, userName: String) = secretPath(environment, listOf("aws", "users", userName, "access_key"))
 
-        fun iamUserName(environment: EnvironmentReference, runtime: ServiceConfigurationRuntime) = "${environment.cloud}-${environment.environment}-${runtime.name}"
+        fun bucketName(environment: EnvironmentContext, runtime: ServiceConfigurationRuntime) = "${environment.cloud}-${environment.environment}-${runtime.name}-backup"
+
+        fun iamUserName(environment: EnvironmentContext, runtime: ServiceConfigurationRuntime) = "${environment.cloud}-${environment.environment}-${runtime.name}"
         fun backupBucketPolicy(bucketArn: String) = """
         {
           "Version": "2012-10-17",

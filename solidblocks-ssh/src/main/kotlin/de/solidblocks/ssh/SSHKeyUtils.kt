@@ -8,8 +8,6 @@ import java.security.PublicKey
 import java.security.Security
 import kotlin.io.encoding.Base64
 
-data class KeyPairRaw(val privateKey: String, val publicKey: String)
-
 object SSHKeyUtils {
     val RSA = RSAKeyFactory
 

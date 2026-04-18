@@ -3,6 +3,8 @@ package de.solidblocks.ssh
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.sshd.client.SshClient
 import org.apache.sshd.client.channel.ClientChannelEvent
+import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier
+import org.apache.sshd.client.keyverifier.RequiredServerKeyVerifier
 import org.apache.sshd.common.keyprovider.KeyIdentityProvider
 import org.apache.sshd.common.util.net.SshdSocketAddress
 import org.apache.sshd.scp.client.ScpClientCreator
@@ -11,14 +13,14 @@ import java.io.Closeable
 import java.net.ServerSocket
 import java.nio.file.Path
 import java.security.KeyPair
+import java.security.PublicKey
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
-class SSHClient(val host: String, val keyPair: KeyPair, val username: String = "root", val port: Int = 22) : Closeable {
+class SSHClient(val host: String, val keyPair: KeyPair, val hostKey: PublicKey?, val username: String = "root", val port: Int = 22) : Closeable {
     private val logger = KotlinLogging.logger {}
 
     data class SSHCommandResult(val stdOut: String, val stdErr: String, val exitCode: Int)
@@ -29,7 +31,11 @@ class SSHClient(val host: String, val keyPair: KeyPair, val username: String = "
 
     val client =
         SshClient.setUpDefaultClient().also {
-            it.serverKeyVerifier = TrustAllKeyVerifier()
+            it.serverKeyVerifier = if (hostKey == null) {
+                AcceptAllServerKeyVerifier.INSTANCE
+            } else {
+                RequiredServerKeyVerifier(hostKey)
+            }
             it.keyIdentityProvider = KeyIdentityProvider.wrapKeyPairs(keyPair)
             it.start()
         }

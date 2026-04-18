@@ -26,17 +26,11 @@ import java.util.*
 object ED25519KeyFactory : SSHKeyFactory() {
     private val logger = KotlinLogging.logger {}
 
-    override fun generate(): KeyPairRaw {
+    override fun generate(): KeyPair {
         val generator = KeyPairGenerator.getInstance("Ed25519")
         val keyPair = generator.generateKeyPair()
 
-        val privateKey = keyPair.private
-        val publicKey = keyPair.public
-
-        return KeyPairRaw(
-            toPemString("PRIVATE KEY", privateKey.encoded),
-            toPemString("PUBLIC KEY", publicKey.encoded),
-        )
+        return keyPair
     }
 
     override fun publicKeyToOpenSsh(key: String): String {

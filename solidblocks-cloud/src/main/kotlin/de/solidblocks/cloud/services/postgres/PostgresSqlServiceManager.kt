@@ -49,12 +49,12 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
 
     private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): PassSecret = PassSecret(
-        secretPath(cloud, runtime, listOf("superuser", "password")),
+        secretPath(cloud.environment, runtime, listOf("superuser", "password")),
         RandomSecret(),
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
-        val result = context.createOrGetSshClient(HetznerServerLookup(serverName(cloud, runtime.name))).command(BACKUP_STATUS_COMMAND)
+        val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name)).command(BACKUP_STATUS_COMMAND)
         if (result.exitCode != 0) {
             return Error<String>("command failed '${result.stdErr}'")
         }
@@ -97,7 +97,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 sanitizeEnvironmentVariables("DATABASE_HOST"),
                 "host address for service '${runtime.name}'",
                 {
-                    it.ensureLookup(HetznerServerLookup(serverName(cloud, runtime.name)))
+                    it.ensureLookup(HetznerServerLookup(serverName(cloud.environment, runtime.name)))
                         .privateIpv4 ?: throw RuntimeException("no private ip address found")
                 },
             ),
@@ -117,12 +117,12 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     )
 
     fun jdbcEndpoint(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
-        "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud, runtime.name)))?.privateIpv4 ?: "<unknown>"}/${database.name}"
+        "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud.environment, runtime.name)))?.privateIpv4 ?: "<unknown>"}/${database.name}"
 
     override fun infoText(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
         markdown {
-            val sshConfigFilePath = Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.environment.cloud))
-            val serverName = serverName(cloud, runtime.name)
+            val sshConfigFilePath = Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.environment))
+            val serverName = serverName(cloud.environment, runtime.name)
 
             h1("Service '${runtime.name}'")
 
@@ -176,7 +176,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     )
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
-        val serverName = serverName(cloud, runtime.name)
+        val serverName = serverName(cloud.environment, runtime.name)
 
         val defaultResources = createDefaultResources(cloud, runtime)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
@@ -204,16 +204,16 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 serverName,
                 userData = userData,
                 location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-                sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
+                sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
                 volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
                 HetznerSubnetLookup(
                     defaultServiceSubnet,
-                    HetznerNetworkLookup(networkName(cloud)),
+                    HetznerNetworkLookup(networkName(cloud.environment)),
                 ),
                 privateIp = serverPrivateIp(runtime.index),
-                labels = serviceLabels(runtime) + cloudLabels(cloud),
+                labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
                 dependsOn = backupResources.first,
             )
 
@@ -243,7 +243,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     }
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
-        PassSecret(secretPath(cloud, runtime, listOf(database.name, "password")), RandomSecret())
+        PassSecret(secretPath(cloud.environment, runtime, listOf(database.name, "password")), RandomSecret())
 
     fun defaultDatabaseUserName(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) = database.name
 

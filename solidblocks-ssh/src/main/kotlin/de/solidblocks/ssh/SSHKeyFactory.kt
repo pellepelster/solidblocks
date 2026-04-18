@@ -1,5 +1,7 @@
 package de.solidblocks.ssh
 
+import de.solidblocks.ssh.ED25519KeyFactory.toJCAPem
+import de.solidblocks.ssh.ED25519KeyFactory.toPemString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo
@@ -17,13 +19,16 @@ import org.bouncycastle.util.io.pem.PemWriter
 import java.io.StringReader
 import java.io.StringWriter
 import java.security.*
+import java.security.interfaces.RSAPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
+
+data class KeyPairPem(val privateKey: String, val publicKey: String)
 
 abstract class SSHKeyFactory {
     private val logger = KotlinLogging.logger {}
 
-    abstract fun generate(): KeyPairRaw
+    abstract fun generate(): KeyPair
 
     abstract fun publicKeyToOpenSsh(key: String): String
 
@@ -108,7 +113,7 @@ abstract class SSHKeyFactory {
         return toPemString("OPENSSH PRIVATE KEY", opensshPrivateKey)
     }
 
-    fun privateKeyToOpenSsh(key: PrivateKey) = privateKeyToOpenSsh(key.toPem())
+    fun privateKeyToOpenSsh(key: PrivateKey) = privateKeyToOpenSsh(key.toJCAPem())
 
     fun String.readObject() = PEMParser(StringReader(this)).use { it.readObject() }
 
@@ -119,7 +124,7 @@ abstract class SSHKeyFactory {
         return toPemString("PRIVATE KEY", keyInfo.encoded)
     }
 
-    fun Key.toPem() = StringWriter().use { sw ->
+    fun Key.toJCAPem() = StringWriter().use { sw ->
         JcaPEMWriter(sw).use { pw -> pw.writeObject(this) }
         sw.toString()
     }
@@ -127,5 +132,21 @@ abstract class SSHKeyFactory {
     fun toPemString(type: String, encoded: ByteArray) = StringWriter().use { sw ->
         PemWriter(sw).use { pw -> pw.writeObject(PemObject(type, encoded)) }
         sw.toString()
+    }
+}
+
+fun KeyPair.toPem() = when (this.private) {
+    is RSAPrivateKey -> {
+        KeyPairPem(
+            this.private.toJCAPem(),
+            this.public.toJCAPem(),
+        )
+    }
+
+    else -> {
+        KeyPairPem(
+            toPemString("PRIVATE KEY", this.private.encoded),
+            toPemString("PUBLIC KEY", this.public.encoded),
+        )
     }
 }

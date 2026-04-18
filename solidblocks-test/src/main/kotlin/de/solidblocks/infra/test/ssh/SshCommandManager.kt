@@ -7,11 +7,12 @@ import de.solidblocks.ssh.SSHClient
 import java.io.Closeable
 import java.nio.file.Path
 import java.security.KeyPair
+import java.security.PublicKey
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-class SshCommandManager(val host: String, val keyPair: KeyPair, val username: String = "root", val port: Int = 22) : Closeable {
-    val sshClient = SSHClient(host, keyPair, username, port)
+class SshCommandManager(val host: String, val keyPair: KeyPair, val hostKey: PublicKey?, val username: String = "root", val port: Int = 22) : Closeable {
+    val sshClient = SSHClient(host, keyPair, hostKey, username, port)
 
     @OptIn(ExperimentalTime::class)
     fun sshCommand(command: String): CommandResult<OutputLine> {

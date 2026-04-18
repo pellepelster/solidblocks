@@ -8,6 +8,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
 import org.bouncycastle.util.io.pem.PemReader
 import java.io.StringReader
 import java.security.KeyFactory
+import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
@@ -15,10 +16,11 @@ import java.util.*
 object RSAKeyFactory : SSHKeyFactory() {
     private val logger = KotlinLogging.logger {}
 
-    override fun generate(): KeyPairRaw {
+    override fun generate(): KeyPair {
         val generator = KeyPairGenerator.getInstance("RSA", "BC").also { it.initialize(4096) }
         val keyPair = generator.generateKeyPair()
-        return KeyPairRaw(keyPair.private.toPem(), keyPair.public.toPem())
+        // return KeyPairRaw(keyPair.private.toPem(), keyPair.public.toPem())
+        return keyPair
     }
 
     override fun publicKeyToOpenSsh(key: String): String {

@@ -17,7 +17,7 @@ interface ServiceConfigurationRuntime {
 }
 
 fun ServiceConfigurationRuntime.firewall(cloud: CloudConfigurationRuntime, ports: List<Int>) = HetznerFirewall(
-    firewallName(cloud, this.name),
+    firewallName(cloud.environment, this.name),
     ports.map {
         HetznerFirewallRule(
             direction = FirewallRuleDirection.IN,
@@ -27,6 +27,6 @@ fun ServiceConfigurationRuntime.firewall(cloud: CloudConfigurationRuntime, ports
             description = "HTTP",
         )
     },
-    cloudLabels(cloud),
+    cloudLabels(cloud.environment),
     serviceLabels(this),
 )

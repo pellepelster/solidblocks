@@ -99,7 +99,7 @@ class LocalSSHKeyProviderManager :
         val sshKeyFile =
             context.configFileDirectory
                 .toAbsolutePath()
-                .resolve(expandTilde("${context.cloudName}.key"))
+                .resolve(expandTilde("${context.environment.cloud}.key"))
 
         if (sshKeyFile.exists()) {
             log.info("found ssh key '${sshKeyFile.absolutePathString()}'")

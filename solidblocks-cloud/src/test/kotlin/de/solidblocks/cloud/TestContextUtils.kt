@@ -2,8 +2,7 @@ package de.solidblocks.cloud
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
-import de.solidblocks.cloud.configuration.model.CloudConfiguration
-import de.solidblocks.cloud.configuration.model.EnvironmentReference
+import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.Provisioner
@@ -37,7 +36,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
 
     override val sshConfigFilePath = Path.of(".")
 
-    override val environment = EnvironmentReference("testCloudName", "default")
+    override val environment = EnvironmentContext("testCloudName", "default")
 
     override fun validateDnsZone(zone: String) = TODO("Not yet implemented")
 
@@ -48,7 +47,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
         ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
         > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
 
-    override fun createOrGetSshClient(server: HetznerServerLookup): SSHClient {
+    override fun createOrGetSshClient(serverName: String): SSHClient {
         TODO("Not yet implemented")
     }
 
@@ -68,7 +67,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
 
 val TEST_PROVISIONER_CONTEXT = TestProvisionerContext(ProvisionersRegistry())
 
-val TEST_CLOUD_CONFIGURATION_CONTEXT = CloudConfigurationContext("cloud1", Path.of("tmp"))
+val TEST_CLOUD_CONFIGURATION_CONTEXT = CloudConfigurationContext(EnvironmentContext("cloud1", "default"), Path.of("tmp"))
 
 data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: CloudProvisionerContext) {
 

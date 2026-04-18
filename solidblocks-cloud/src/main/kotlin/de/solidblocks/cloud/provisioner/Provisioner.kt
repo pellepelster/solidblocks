@@ -226,8 +226,9 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
                                 val sshPortOpen =
                                     waitConfig.waitForCondition {
                                         try {
-                                            applyLog.info("waiting for SSH on endpoint '${it.address}:${it.port}'")
-                                            SSHClient(it.address, context.sshKeyPair).command("whoami").exitCode == 0
+                                            applyLog.info("waiting for SSH on endpoint on ${it.serverName} (${it.address}:${it.port})")
+                                            val client = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
+                                            client.command("whoami").exitCode == 0
                                         } catch (e: Exception) {
                                             logger.error(e) {
                                                 "error waiting for '${it.protocol}' endpoint ${it.address}:${it.port}"
@@ -242,11 +243,10 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
                                     )
                                 }
 
-                                val sshClient = SSHClient(it.address, context.sshKeyPair)
-
                                 val cloudInitFinished =
                                     waitConfig.waitForCondition {
                                         try {
+                                            val sshClient = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
                                             applyLog.info("waiting for cloud-init to finish on '${it.address}:${it.port}'")
                                             sshClient
                                                 .command("test -f /var/lib/cloud/instance/boot-finished")
@@ -262,6 +262,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
                                     )
                                 }
 
+                                val sshClient = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
                                 val result = sshClient.command("cat /var/lib/cloud/data/status.json")
 
                                 if (result.exitCode != 0) {

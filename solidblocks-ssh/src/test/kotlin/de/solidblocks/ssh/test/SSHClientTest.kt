@@ -31,7 +31,7 @@ class SSHClientTest {
 
     val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key")!!.readText()
     val key = SSHKeyUtils.loadKey(ed25519Key)
-    val client = SSHClient(sshServer.host, key, port = sshServer.getMappedPort(22))
+    val client = SSHClient(sshServer.host, key, null, port = sshServer.getMappedPort(22))
 
     @Test
     fun testDownload() {

@@ -1,14 +1,13 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.Constants.sshConfigFilePath
-import de.solidblocks.cloud.Constants.sshKnownHosts
+import de.solidblocks.cloud.Constants.DEFAULT_ENVIRONMENT
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.configuration.model.EnvironmentReference
+import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
 import de.solidblocks.cloud.providers.DEFAULT_NAME
@@ -151,7 +150,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         val configurationContext =
             CloudConfigurationContext(
-                cloud.name,
+                EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
                 cloudConfigFile.toPath().toAbsolutePath().toFile().parentFile.toPath(),
             )
 
@@ -195,7 +194,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             sshKeyProvider.keyPair,
             sshKeyProvider.privateKey.absolutePathString(),
             configurationContext.configFileDirectory,
-            EnvironmentReference(cloud.name, cloud.getDefaultEnvironment()),
+            EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
             registry,
             serviceRegistrations,
         )
@@ -236,7 +235,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 val runtime =
                     CloudConfigurationRuntime(
                         configurationContext,
-                        cloud.name,
+                        EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
                         cloud.rootDomain,
                         providers,
                         services,
@@ -279,26 +278,15 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     // TODO integration test for generated ssh config
     fun writeSshConfig(runtime: CloudConfigurationRuntime): Result<Unit> {
         CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-            val sshConfigFile =
-                sshConfigFilePath(
-                    runtime.context.configFileDirectory,
-                    runtime.name,
-                )
-            val sshKnownHosts =
-                sshKnownHosts(
-                    runtime.context.configFileDirectory,
-                    runtime.name,
-                )
-
-            when (val result = it.createSSHConfig(sshConfigFile.toFile(), sshKnownHosts.toFile())) {
-                is Error<Unit> -> return result
-                is Success<Unit> -> {
+            when (val result = it.createSSHConfig()) {
+                is Error<String> -> return Error<Unit>(result.error)
+                is Success<String> -> {
                     logInfo(
                         bold(
-                            "ssh config file for cloud '${runtime.name}' written to '${sshConfigFile.toAbsolutePath()}', use 'ssh -F ${sshConfigFile.toAbsolutePath()} <host>' to access the VMs",
+                            "ssh config file for cloud '${runtime.environment.cloud}' written to '${result.data}', use 'ssh -F ${result.data} <host>' to access the VMs",
                         ),
                     )
-                    return result
+                    return Success(Unit)
                 }
             }
         }

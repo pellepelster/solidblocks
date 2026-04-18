@@ -5,17 +5,17 @@ import de.solidblocks.cloud.Constants.defaultNetwork
 import de.solidblocks.cloud.Constants.defaultServiceSubnet
 import de.solidblocks.cloud.Constants.firewallName
 import de.solidblocks.cloud.Constants.networkName
-import de.solidblocks.cloud.Constants.secretPath
+import de.solidblocks.cloud.Constants.sshConfigFilePath
+import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.sshKeyName
+import de.solidblocks.cloud.Constants.sshKnownHosts
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.configuration.model.EnvironmentReference
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.types.backup.backupSecretResource
 import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
@@ -29,7 +29,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewall
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
-import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
@@ -48,9 +47,9 @@ import de.solidblocks.utils.bold
 import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
 import java.io.Closeable
-import java.io.File
 import java.io.StringWriter
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.writeText
 
 class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegistrations: List<ServiceRegistration<*, *>>, val providerRegistrations: List<ProviderRegistration<*, *, *>>) : Closeable {
     val registry = createRegistry()
@@ -59,14 +58,14 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         runtime.providers.sshKeyProvider().keyPair,
         runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
         runtime.context.configFileDirectory,
-        EnvironmentReference(runtime.name, runtime.getDefaultEnvironment()),
+        runtime.environment,
         registry,
         serviceRegistrations,
     )
 
     fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
         val provisioner = createProvisioner()
-        log.info(bold("planning changes for cloud configuration '${runtime.name}'"))
+        log.info(bold("planning changes for cloud configuration '${runtime.environment.cloud}'"))
         val resourceGroups = createResourceGroups()
         return@runBlocking provisioner.diff(resourceGroups, context, log)
     }
@@ -118,7 +117,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
                 is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
             }
 
-        log.info(bold("rolling out changes for cloud configuration '${runtime.name}'"))
+        log.info(bold("rolling out changes for cloud configuration '${runtime.environment.cloud}'"))
         return@runBlocking provisioner.apply(diffs, context, log.indent())
     }
 
@@ -126,10 +125,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         val publicKey =
             SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
 
-        val sshKey = HetznerSSHKey(sshKeyName(runtime), publicKey, cloudLabels(runtime))
+        val sshKey = HetznerSSHKey(sshKeyName(runtime.environment), publicKey, cloudLabels(runtime.environment))
 
         val firewall = HetznerFirewall(
-            firewallName(runtime, "ssh"),
+            firewallName(runtime.environment, "ssh"),
             listOf(
                 HetznerFirewallRule(
                     direction = FirewallRuleDirection.IN,
@@ -145,16 +144,16 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
                     description = "allow ICMP",
                 ),
             ),
-            cloudLabels(runtime),
-            cloudLabels(runtime),
+            cloudLabels(runtime.environment),
+            cloudLabels(runtime.environment),
         )
 
-        val network = HetznerNetwork(networkName(runtime), defaultNetwork)
+        val network = HetznerNetwork(networkName(runtime.environment), defaultNetwork)
         val subnet = HetznerSubnet(defaultServiceSubnet, network.asLookup())
 
         val cloudResourceGroup =
             ResourceGroup(
-                "cloud '${runtime.name} base resources'",
+                "cloud '${runtime.environment.cloud} base resources'",
                 listOf(sshKey, firewall, network, subnet, backupSecretResource(runtime)),
             )
 
@@ -211,13 +210,25 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         )
     }
 
-    fun createSSHConfig(sshConfigFile: File, sshKnownHostsFile: File): Result<Unit> {
+    fun createSSHConfig(): Result<String> {
+        val sshConfigFile =
+            sshConfigFilePath(
+                runtime.context.configFileDirectory,
+                runtime.environment,
+            )
+
+        val sshKnownHostsFile =
+            sshKnownHosts(
+                runtime.context.configFileDirectory,
+                runtime.environment,
+            )
+
         val resourceGroups = createResourceGroups()
 
         val sshConfig = StringWriter()
         sshConfig.appendLine("Host *")
-        sshConfig.appendLine("  UserKnownHostsFile ${sshKnownHostsFile.absolutePath}")
-        sshConfig.appendLine("  StrictHostKeyChecking no")
+        sshConfig.appendLine("  UserKnownHostsFile ${sshKnownHostsFile.absolutePathString()}")
+        sshConfig.appendLine("  StrictHostKeyChecking yes")
         sshConfig.appendLine("  User root")
         sshConfig.appendLine("  IdentityFile ${context.sshKeyAbsolutePath}")
         sshConfig.appendLine("")
@@ -230,25 +241,37 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             servers.mapNotNull { context.lookup(it.asLookup()) }.map { it.name to it.publicIpv4 }
 
         serversIps.forEach {
-            val rsaSecretPath = secretPath(context.environment, listOf("hosts", it.first, "ssh_host_key_rsa"))
-            val secret = context.lookup(PassSecretLookup(rsaSecretPath))
+            val rsaSecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, Constants.SshHostKeyType.rsa)
+            val rsaSecret = context.lookup(PassSecretLookup(rsaSecretPath))
 
-            if (secret != null) {
-                val keyPair = SSHKeyUtils.loadKey(secret.secret)
+            val ed25519SecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, Constants.SshHostKeyType.ed25519)
+            val ed25519Secret = context.lookup(PassSecretLookup(ed25519SecretPath))
+
+            if (rsaSecret != null) {
+                val keyPair = SSHKeyUtils.loadKey(rsaSecret.secret)
                 sshKnownHosts.appendLine("${it.second} ${SSHKeyUtils.publicKeyToOpenSSH(keyPair.public)}")
             } else {
                 logWarning("failed to lookup secret for known hosts from '$rsaSecretPath'")
             }
 
-            sshConfig.appendLine("Host ${it.first}\n    HostName ${it.second}\n")
+            if (ed25519Secret != null) {
+                val keyPair = SSHKeyUtils.loadKey(ed25519Secret.secret)
+                sshKnownHosts.appendLine("${it.second} ${SSHKeyUtils.publicKeyToOpenSSH(keyPair.public)}")
+            } else {
+                logWarning("failed to lookup secret for known hosts from '$ed25519SecretPath'")
+            }
+
+            sshConfig.appendLine("Host ${it.first}")
+            sshConfig.appendLine("  HostName ${it.second}")
+            sshConfig.appendLine("")
         }
 
         return try {
             sshConfigFile.writeText(sshConfig.toString())
             sshKnownHostsFile.writeText(sshKnownHosts.toString())
-            Success(Unit)
+            Success(sshConfigFile.absolutePathString())
         } catch (e: Exception) {
-            Error<Unit>(e.message ?: "unknown error")
+            Error<String>(e.message ?: "unknown error")
         }
     }
 

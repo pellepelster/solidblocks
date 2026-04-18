@@ -6,7 +6,7 @@ import de.solidblocks.cloud.Constants.volumeLabels
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.configuration.model.EnvironmentReference
+import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderConfigurationRuntime
@@ -30,7 +30,7 @@ interface BackupProviderManager<
     > : ProviderManager<C, R>
 
 fun backupSecretResource(runtime: CloudConfigurationRuntime) = PassSecret(
-    secretPath(runtime, listOf("backup", "password")),
+    secretPath(runtime.environment, listOf("backup", "password")),
     RandomSecret(
         length = 32,
         allowedChars = ('a'..'f') + ('0'..'9'),
@@ -42,7 +42,7 @@ fun createBackupResources(
     cloud: CloudConfigurationRuntime,
     serverName: String,
     service: ServiceConfigurationRuntime,
-    environment: EnvironmentReference,
+    environment: EnvironmentContext,
 ): Pair<Set<BaseInfrastructureResource<out BaseInfrastructureResourceRuntime>>, HetznerVolume?> {
     val bucketName = S3BackupProviderManager.bucketName(environment, service)
     val iamUserName = S3BackupProviderManager.iamUserName(environment, service)
@@ -61,7 +61,7 @@ fun createBackupResources(
                 serverName + "-backup",
                 service.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 service.backup.backupVolumeSizeWithDefault(service.instance.volumeSize),
-                volumeLabels(service) + cloudLabels(cloud),
+                volumeLabels(service) + cloudLabels(cloud.environment),
             )
             setOf(backupVolume) to backupVolume
         }

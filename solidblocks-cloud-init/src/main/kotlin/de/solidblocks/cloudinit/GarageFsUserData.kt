@@ -1,28 +1,11 @@
 package de.solidblocks.cloudinit
 
-import de.solidblocks.shell.AptLibrary
-import de.solidblocks.shell.CaddyLibrary
-import de.solidblocks.shell.CurlLibrary
-import de.solidblocks.shell.FilePermissions
-import de.solidblocks.shell.GarageLibrary
-import de.solidblocks.shell.MkDir
-import de.solidblocks.shell.ShellScript
-import de.solidblocks.shell.StorageLibrary
-import de.solidblocks.shell.SystemDLibrary
-import de.solidblocks.shell.WriteFile
-import de.solidblocks.shell.caddy.AutoHttps
-import de.solidblocks.shell.caddy.CaddyConfig
-import de.solidblocks.shell.caddy.FileSystemStorage
-import de.solidblocks.shell.caddy.GlobalOptions
-import de.solidblocks.shell.caddy.ReverseProxy
-import de.solidblocks.shell.caddy.Site
+import de.solidblocks.shell.*
+import de.solidblocks.shell.caddy.*
 import de.solidblocks.shell.garagefs.GarageFsConfig
-import de.solidblocks.shell.systemd.Install
-import de.solidblocks.shell.systemd.Service
-import de.solidblocks.shell.systemd.SystemDService
+import de.solidblocks.shell.systemd.*
 import de.solidblocks.shell.systemd.Unit
-import de.solidblocks.shell.systemd.installSystemDUnit
-import de.solidblocks.shell.toCloudInit
+import java.util.UUID
 
 data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
 
@@ -83,6 +66,7 @@ class GarageFsUserData(
         shellScript.addCommand(AptLibrary.UpdateSystem())
 
         shellScript.addLibrary(StorageLibrary)
+        shellScript.addCommand(UtilsLibrary.Comment(UUID.randomUUID().toString()))
         shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
 
         shellScript.addLibrary(CaddyLibrary)
