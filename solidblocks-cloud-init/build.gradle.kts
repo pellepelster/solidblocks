@@ -12,6 +12,7 @@ version = "v${System.getenv("VERSION") ?: "0.0.0"}"
 
 dependencies {
     implementation(project(":solidblocks-shell"))
+    implementation(project(":solidblocks-ssh"))
     implementation("com.charleskorn.kaml:kaml:0.83.0")
 
     testImplementation("org.slf4j:slf4j-simple:2.0.13")

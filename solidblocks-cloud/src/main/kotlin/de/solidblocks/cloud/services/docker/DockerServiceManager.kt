@@ -34,6 +34,7 @@ import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.GenericDockerServiceUserData
 import de.solidblocks.cloudinit.RESTIC_STATUS_COMMAND
 import de.solidblocks.shell.restic.parseResticSnapshotsOutput
+import de.solidblocks.shell.toCloudInit
 import de.solidblocks.utils.LogContext
 import java.time.Duration
 import kotlin.collections.plus
@@ -97,21 +98,16 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         }
 
         val serverName = serverName(cloud, runtime.name)
-        val dataVolume = HetznerVolume(
-            serverName + "-data",
-            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-            ByteSize.fromGigabytes(runtime.instance.volumeSize),
-            volumeLabels(runtime) + cloudLabels(cloud),
-        )
 
+        val defaultResources = this.createDefaultResources(cloud, runtime)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
         val userData = UserData(
-            setOf(dataVolume) + backupResources.first,
+            setOf(defaultResources.dataVolume) + backupResources.first,
             { context ->
                 GenericDockerServiceUserData(
                     runtime.name,
-                    context.ensureLookup(dataVolume.asLookup()).device,
+                    context.ensureLookup(defaultResources.dataVolume.asLookup()).device,
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     runtime.image,
                     runtime.endpoints.associate { 80 to it.port },
@@ -124,6 +120,9 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
 
                         it.name to value
                     },
+                ).shellScript().toCloudInit(
+                    context.ensureLookup(defaultResources.sshIdentityRsaSecret.asLookup()).secret,
+                    context.ensureLookup(defaultResources.sshIdentityED25519Secret.asLookup()).secret,
                 ).render()
             },
         )
@@ -133,7 +132,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             userData = userData,
             location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-            volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
+            volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
                 defaultServiceSubnet,
@@ -144,21 +143,20 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             dependsOn = backupResources.first,
         )
 
-        val optionalResources =
-            if (cloud.rootDomain != null) {
-                val zone = HetznerDnsZoneLookup(cloud.rootDomain)
-                val serverDnsRecord = HetznerDnsRecord(
-                    serverName(cloud, runtime.name),
-                    zone,
-                    listOf(server.asLookup()),
-                    labels = dnsRecordLabels(runtime) + cloudLabels(cloud),
-                )
-                listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
-            } else {
-                listOf(runtime.firewall(cloud, listOf(80)))
-            }
+        val optionalResources = if (cloud.rootDomain != null) {
+            val zone = HetznerDnsZoneLookup(cloud.rootDomain)
+            val serverDnsRecord = HetznerDnsRecord(
+                serverName(cloud, runtime.name),
+                zone,
+                listOf(server.asLookup()),
+                labels = dnsRecordLabels(runtime) + cloudLabels(cloud),
+            )
+            listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
+        } else {
+            listOf(runtime.firewall(cloud, listOf(80)))
+        }
 
-        return listOf(server, dataVolume) + optionalResources + setOfNotNull(backupResources.second)
+        return listOf(server) + optionalResources + setOfNotNull(backupResources.second) + defaultResources.list()
     }
 
     override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()

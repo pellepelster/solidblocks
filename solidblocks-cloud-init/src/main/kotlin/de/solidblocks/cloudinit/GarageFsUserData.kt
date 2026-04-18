@@ -22,6 +22,7 @@ import de.solidblocks.shell.systemd.Service
 import de.solidblocks.shell.systemd.SystemDService
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
+import de.solidblocks.shell.toCloudInit
 
 data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
 
@@ -42,7 +43,7 @@ class GarageFsUserData(
         fun s3AdminHost(serviceRootDomain: String) = "s3-admin.$serviceRootDomain"
     }
 
-    override fun render(): String {
+    override fun shellScript(): ShellScript {
         val storageMount = "/storage/data"
         val serviceDataDir = "$storageMount/$serviceName"
         val caddyDataDir = "$serviceDataDir/www"
@@ -74,28 +75,27 @@ class GarageFsUserData(
                     ),
             )
 
-        val userData = ShellScript()
+        val shellScript = ShellScript()
 
-        userData.addInlineSource(AptLibrary)
-        userData.addInlineSource(CurlLibrary)
-        userData.addInlineSource(AptLibrary)
-        userData.addCommand(AptLibrary.UpdateRepositories())
-        userData.addCommand(AptLibrary.UpdateSystem())
+        shellScript.addLibrary(CurlLibrary)
+        shellScript.addLibrary(AptLibrary)
+        shellScript.addCommand(AptLibrary.UpdateRepositories())
+        shellScript.addCommand(AptLibrary.UpdateSystem())
 
-        userData.addInlineSource(StorageLibrary)
-        userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
 
-        userData.addInlineSource(CaddyLibrary)
-        userData.addCommand(CaddyLibrary.Install())
-        userData.addCommand(MkDir(caddyDataDir, "caddy"))
-        userData.addCommand(
+        shellScript.addLibrary(CaddyLibrary)
+        shellScript.addCommand(CaddyLibrary.Install())
+        shellScript.addCommand(MkDir(caddyDataDir, "caddy"))
+        shellScript.addCommand(
             WriteFile(
                 caddyConfig.render().toByteArray(),
                 "/etc/caddy/Caddyfile",
                 FilePermissions.RW_R__R__,
             ),
         )
-        userData.addCommand(SystemDLibrary.Restart("caddy"))
+        shellScript.addCommand(SystemDLibrary.Restart("caddy"))
 
         val garageFsConfig =
             GarageFsConfig(
@@ -120,23 +120,23 @@ class GarageFsUserData(
                 Install(),
             )
 
-        userData.addInlineSource(GarageLibrary)
-        userData.addCommand(GarageLibrary.Install())
-        userData.addCommand(
+        shellScript.addLibrary(GarageLibrary)
+        shellScript.addCommand(GarageLibrary.Install())
+        shellScript.addCommand(
             WriteFile(
                 garageFsConfig.render().toByteArray(),
                 "/etc/garage.toml",
                 FilePermissions.RW_R__R__,
             ),
         )
-        userData.addCommand(MkDir(garageFsConfig.dataDir))
-        userData.addCommand(MkDir(garageFsConfig.metaDataDir))
+        shellScript.addCommand(MkDir(garageFsConfig.dataDir))
+        shellScript.addCommand(MkDir(garageFsConfig.metaDataDir))
 
-        userData.installSystemDUnit(garageFsSystemDConfig)
-        userData.addCommand(SystemDLibrary.Restart("garage"))
+        shellScript.installSystemDUnit(garageFsSystemDConfig)
+        shellScript.addCommand(SystemDLibrary.Restart("garage"))
 
-        userData.resticBackup(serviceName, backupConfiguration, serviceDataDir)
+        shellScript.resticBackup(serviceName, backupConfiguration, serviceDataDir)
 
-        return userData.render()
+        return shellScript
     }
 }

@@ -38,6 +38,7 @@ import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.PostgresqlUserData
 import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
+import de.solidblocks.shell.toCloudInit
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import java.time.Duration
@@ -177,27 +178,23 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
         val serverName = serverName(cloud, runtime.name)
 
-        val dataVolume =
-            HetznerVolume(
-                serverName + "-data",
-                runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-                ByteSize.fromGigabytes(runtime.instance.volumeSize),
-                volumeLabels(runtime) + cloudLabels(cloud),
-            )
-
+        val defaultResources = createDefaultResources(cloud, runtime)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
         val superUserPassword = superUserPasswordSecret(cloud, runtime)
 
         val userData =
             UserData(
-                setOf(dataVolume, superUserPassword) + backupResources.first,
+                setOf(defaultResources.dataVolume, superUserPassword) + backupResources.first,
                 { context ->
                     PostgresqlUserData(
                         runtime.name,
                         context.ensureLookup(superUserPassword.asLookup()).secret,
-                        context.ensureLookup(dataVolume.asLookup()).device,
+                        context.ensureLookup(defaultResources.dataVolume.asLookup()).device,
                         createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
+                    ).shellScript().toCloudInit(
+                        context.ensureLookup(defaultResources.sshIdentityRsaSecret.asLookup()).secret,
+                        context.ensureLookup(defaultResources.sshIdentityED25519Secret.asLookup()).secret,
                     ).render()
                 },
             )
@@ -208,7 +205,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 userData = userData,
                 location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-                volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
+                volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
                 HetznerSubnetLookup(
@@ -242,7 +239,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 )
             }
 
-        return listOf(server, dataVolume) + databaseResources + backupResources.first
+        return listOf(server) + databaseResources + backupResources.first + defaultResources.list()
     }
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =

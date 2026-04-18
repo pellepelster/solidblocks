@@ -1,6 +1,6 @@
 package de.solidblocks.shell
 
-interface LibraryCommand {
+interface ShellCommand {
     fun commands(): List<String>
 
     fun toShell() = commands().joinToString("\n")

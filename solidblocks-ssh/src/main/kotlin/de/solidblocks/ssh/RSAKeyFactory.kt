@@ -17,7 +17,6 @@ object RSAKeyFactory : SSHKeyFactory() {
 
     override fun generate(): KeyPairRaw {
         val generator = KeyPairGenerator.getInstance("RSA", "BC").also { it.initialize(4096) }
-
         val keyPair = generator.generateKeyPair()
         return KeyPairRaw(keyPair.private.toPem(), keyPair.public.toPem())
     }

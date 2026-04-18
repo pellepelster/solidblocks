@@ -26,6 +26,7 @@ import de.solidblocks.shell.systemd.SystemDService
 import de.solidblocks.shell.systemd.Target
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
+import de.solidblocks.shell.toCloudInit
 
 class GenericDockerServiceUserData(
     val serviceName: String,
@@ -36,7 +37,7 @@ class GenericDockerServiceUserData(
     val serverFQDN: String?,
     val environmentVariables: Map<String, String> = emptyMap(),
 ) : ServiceUserData {
-    override fun render(): String {
+    override fun shellScript(): ShellScript {
         val storageMount = "/storage/data"
         val serviceDataDir = "$storageMount/$serviceName"
         val caddyStorageDir = "$serviceDataDir/www"
@@ -63,29 +64,29 @@ class GenericDockerServiceUserData(
                 },
             )
 
-        val userData = ShellScript()
+        val shellScript = ShellScript()
 
-        userData.addInlineSource(AptLibrary)
-        userData.addInlineSource(CurlLibrary)
-        userData.addCommand(AptLibrary.UpdateRepositories())
-        userData.addCommand(AptLibrary.UpdateSystem())
+        shellScript.addLibrary(AptLibrary)
+        shellScript.addLibrary(CurlLibrary)
+        shellScript.addCommand(AptLibrary.UpdateRepositories())
+        shellScript.addCommand(AptLibrary.UpdateSystem())
 
-        userData.addInlineSource(DockerLibrary)
-        userData.addInlineSource(StorageLibrary)
-        userData.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
-        userData.addCommand(DockerLibrary.InstallDebian())
+        shellScript.addLibrary(DockerLibrary)
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
+        shellScript.addCommand(DockerLibrary.InstallDebian())
 
-        userData.addInlineSource(CaddyLibrary)
-        userData.addCommand(CaddyLibrary.Install())
-        userData.addCommand(MkDir(caddyStorageDir, "caddy"))
-        userData.addCommand(
+        shellScript.addLibrary(CaddyLibrary)
+        shellScript.addCommand(CaddyLibrary.Install())
+        shellScript.addCommand(MkDir(caddyStorageDir, "caddy"))
+        shellScript.addCommand(
             WriteFile(
                 caddyConfig.render().toByteArray(),
                 "/etc/caddy/Caddyfile",
                 FilePermissions.Companion.RW_R__R__,
             ),
         )
-        userData.addCommand(SystemDLibrary.Restart("caddy"))
+        shellScript.addCommand(SystemDLibrary.Restart("caddy"))
 
         val dockerWorkingDirectory = "/usr/local/etc/containers"
         val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
@@ -109,8 +110,8 @@ class GenericDockerServiceUserData(
                         ),
                 ),
             )
-        userData.addCommand(MkDir(dockerWorkingDirectory))
-        userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
+        shellScript.addCommand(MkDir(dockerWorkingDirectory))
+        shellScript.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
         val dockerSystemDConfig =
             SystemDService(
@@ -138,10 +139,10 @@ class GenericDockerServiceUserData(
                 Install(),
             )
 
-        userData.installSystemDUnit(dockerSystemDConfig)
-        userData.addCommand(SystemDLibrary.Restart(serviceName))
-        userData.resticBackup(serviceName, backupConfiguration, serviceDataDir)
+        shellScript.installSystemDUnit(dockerSystemDConfig)
+        shellScript.addCommand(SystemDLibrary.Restart(serviceName))
+        shellScript.resticBackup(serviceName, backupConfiguration, serviceDataDir)
 
-        return userData.render()
+        return shellScript
     }
 }

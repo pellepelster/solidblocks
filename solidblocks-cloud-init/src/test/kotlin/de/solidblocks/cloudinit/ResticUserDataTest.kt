@@ -27,18 +27,18 @@ class ResticUserDataTest {
 
         val backupPath = "/storage/data/foo-bar"
 
-        val userData = ShellScript()
-        userData.addInlineSource(StorageLibrary)
-        userData.addInlineSource(AptLibrary)
-        userData.addCommand(AptLibrary.UpdateRepositories())
-        userData.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
+        val shellScript = ShellScript()
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addLibrary(AptLibrary)
+        shellScript.addCommand(AptLibrary.UpdateRepositories())
+        shellScript.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
 
         val backupConfiguration = BackupConfiguration(repoPassword, LocalBackupTarget(backupVolume.linuxDevice))
-        userData.resticBackup("repo1", backupConfiguration, backupPath)
+        shellScript.resticBackup("repo1", backupConfiguration, backupPath)
 
         val server =
             hetzner.createServer(
-                userData.render(),
+                shellScript.render(),
                 sshKey,
                 volumes = listOf(dataVolume1.id, backupVolume.id),
             )
@@ -61,8 +61,8 @@ class ResticUserDataTest {
         val dataVolume2 = hetzner.createVolume("${hetzner.testId}-data2")
 
         val userDataRestore = ShellScript()
-        userDataRestore.addInlineSource(StorageLibrary)
-        userDataRestore.addInlineSource(AptLibrary)
+        userDataRestore.addLibrary(StorageLibrary)
+        userDataRestore.addLibrary(AptLibrary)
         userDataRestore.addCommand(AptLibrary.UpdateRepositories())
         userDataRestore.addCommand(StorageLibrary.Mount(dataVolume2.linuxDevice, "/storage/data"))
         userDataRestore.resticBackup("repo1", backupConfiguration, backupPath)
@@ -102,15 +102,15 @@ class ResticUserDataTest {
             ),
         )
 
-        val userData = ShellScript()
-        userData.addInlineSource(StorageLibrary)
-        userData.addInlineSource(AptLibrary)
-        userData.addCommand(AptLibrary.UpdateRepositories())
-        userData.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
+        val shellScript = ShellScript()
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addLibrary(AptLibrary)
+        shellScript.addCommand(AptLibrary.UpdateRepositories())
+        shellScript.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
 
         val s3Repository = "s3:s3.eu-central-1.amazonaws.com/$bucket/${generateRandomString(5)}"
 
-        userData.resticBackup(
+        shellScript.resticBackup(
             "repo1",
             backupConfiguration,
             "/data/foo-bar/",
@@ -118,7 +118,7 @@ class ResticUserDataTest {
 
         val server =
             hetzner.createServer(
-                userData.render(),
+                shellScript.render(),
                 sshKey,
                 volumes = listOf(dataVolume1.id),
             )
@@ -138,13 +138,13 @@ class ResticUserDataTest {
         // re-create server with new data disk
         val dataVolume2 = hetzner.createVolume("${hetzner.testId}-data2")
 
-        val userDataRestore = ShellScript()
-        userDataRestore.addInlineSource(StorageLibrary)
-        userDataRestore.addInlineSource(AptLibrary)
-        userData.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
+        val shellSCriptRestore = ShellScript()
+        shellSCriptRestore.addLibrary(StorageLibrary)
+        shellSCriptRestore.addLibrary(AptLibrary)
+        shellScript.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
 
-        userDataRestore.addCommand(AptLibrary.UpdateRepositories())
-        userDataRestore.resticBackup(
+        shellSCriptRestore.addCommand(AptLibrary.UpdateRepositories())
+        shellSCriptRestore.resticBackup(
             "repo1",
             backupConfiguration,
             "/data/foo-bar/",
@@ -152,7 +152,7 @@ class ResticUserDataTest {
 
         val serverRestore =
             hetzner.createServer(
-                userDataRestore.render(),
+                shellSCriptRestore.render(),
                 sshKey,
                 volumes = listOf(dataVolume2.id),
             )

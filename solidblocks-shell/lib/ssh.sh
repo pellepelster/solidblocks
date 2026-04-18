@@ -43,4 +43,5 @@ EOF
 
 function ssh_setup() {
   ssh_server_config > /etc/ssh/sshd_config
+  systemctl restart sshd
 }

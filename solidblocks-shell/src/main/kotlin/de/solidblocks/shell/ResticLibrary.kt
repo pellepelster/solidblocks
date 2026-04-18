@@ -5,19 +5,19 @@ object ResticLibrary : ShellLibrary {
 
     const val RESTIC_CREDENTIALS_PATH = "/etc/restic/credentials"
 
-    class Install : LibraryCommand {
+    class Install : ShellCommand {
         override fun commands() = listOf("restic_install")
     }
 
-    class EnsureLocalRepo(val repository: String) : LibraryCommand {
+    class EnsureLocalRepo(val repository: String) : ShellCommand {
         override fun commands() = listOf("restic_ensure_local_repo '$repository'")
     }
 
-    class EnsureS3Repo(val repository: String) : LibraryCommand {
+    class EnsureS3Repo(val repository: String) : ShellCommand {
         override fun commands() = listOf("restic_ensure_s3_repo '$repository'")
     }
 
-    class WriteS3Credentials(val password: String, val accessKey: String, val secretKey: String) : LibraryCommand {
+    class WriteS3Credentials(val password: String, val accessKey: String, val secretKey: String) : ShellCommand {
         override fun commands() = MkDir("/etc/restic/").commands() +
             WriteFile(
                 """
@@ -33,7 +33,7 @@ object ResticLibrary : ShellLibrary {
                 .commands()
     }
 
-    class WriteCredentials(val password: String) : LibraryCommand {
+    class WriteCredentials(val password: String) : ShellCommand {
         override fun commands() = MkDir("/etc/restic/").commands() +
             WriteFile(
                 """
@@ -47,11 +47,11 @@ object ResticLibrary : ShellLibrary {
                 .commands()
     }
 
-    class Backup(val repository: String, val directory: String) : LibraryCommand {
+    class Backup(val repository: String, val directory: String) : ShellCommand {
         override fun commands() = listOf("restic_backup '$repository' '$directory'")
     }
 
-    class Restore(val repository: String) : LibraryCommand {
+    class Restore(val repository: String) : ShellCommand {
         override fun commands() = listOf("restic_restore '$repository'")
     }
 }

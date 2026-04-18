@@ -1,6 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.Constants.sshConfigFilePath
+import de.solidblocks.cloud.Constants.sshKnownHosts
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.configuration.ConfigurationParser
@@ -275,6 +276,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         }
     }
 
+    // TODO integration test for generated ssh config
     fun writeSshConfig(runtime: CloudConfigurationRuntime): Result<Unit> {
         CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
             val sshConfigFile =
@@ -282,8 +284,13 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                     runtime.context.configFileDirectory,
                     runtime.name,
                 )
+            val sshKnownHosts =
+                sshKnownHosts(
+                    runtime.context.configFileDirectory,
+                    runtime.name,
+                )
 
-            when (val result = it.createSSHConfig(sshConfigFile.toFile())) {
+            when (val result = it.createSSHConfig(sshConfigFile.toFile(), sshKnownHosts.toFile())) {
                 is Error<Unit> -> return result
                 is Success<Unit> -> {
                     logInfo(

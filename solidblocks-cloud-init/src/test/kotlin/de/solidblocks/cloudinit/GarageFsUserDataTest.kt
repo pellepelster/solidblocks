@@ -2,8 +2,8 @@ package de.solidblocks.cloudinit
 
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
+import de.solidblocks.shell.toCloudInit
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.UUID
 
@@ -39,7 +39,7 @@ class GarageFsUserDataTest {
 
         val serverContext =
             hetznerContext.createServer(
-                userData.render(),
+                userData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(dataVolume.id, backupVolume.id),
             )
@@ -48,7 +48,7 @@ class GarageFsUserDataTest {
     }
 
     @Test
-    fun testRender() {
+    fun testShellScript() {
         println(
             GarageFsUserData(
                 "service1",
@@ -60,7 +60,7 @@ class GarageFsUserDataTest {
                 UUID.randomUUID().toString(),
                 emptyList(),
             )
-                .render(),
+                .shellScript(),
         )
     }
 }

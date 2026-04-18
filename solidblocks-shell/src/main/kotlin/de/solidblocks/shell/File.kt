@@ -2,7 +2,10 @@ package de.solidblocks.shell
 
 import kotlin.io.encoding.Base64
 
-class WriteFile(val content: ByteArray, val path: String, val permissions: FilePermissions = FilePermissions()) : LibraryCommand {
+/**
+ * writing files form scripts should be a dedicated object, so it can be picked up by cloud-init write_file
+ */
+class WriteFile(val content: ByteArray, val path: String, val permissions: FilePermissions = FilePermissions()) : ShellCommand {
     override fun commands() = listOf(
         "touch $path",
         "chmod ${permissions.renderChmod()} $path",
@@ -10,7 +13,7 @@ class WriteFile(val content: ByteArray, val path: String, val permissions: FileP
     )
 }
 
-data class MkDir(val dir: String, val owner: String? = null, val group: String? = null) : LibraryCommand {
+data class MkDir(val dir: String, val owner: String? = null, val group: String? = null) : ShellCommand {
     override fun commands() = listOf("mkdir -p $dir") +
         (if (owner != null) listOf("chown $owner $dir") else emptyList()) +
         (if (group != null) listOf("chgrp $group $dir") else emptyList())

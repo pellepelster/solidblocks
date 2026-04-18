@@ -2,6 +2,7 @@ package de.solidblocks.cloudinit
 
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
+import de.solidblocks.shell.toCloudInit
 import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -32,7 +33,7 @@ class GenericDockerServiceTest {
 
         val serverTestContext =
             hetznerTestContext.createServer(
-                userData.render(),
+                userData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(dataVolume.id, backupVolume.id),
             )

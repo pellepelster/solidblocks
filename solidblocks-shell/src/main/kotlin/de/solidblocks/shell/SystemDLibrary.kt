@@ -1,19 +1,19 @@
 package de.solidblocks.shell
 
 object SystemDLibrary {
-    data class Restart(val unit: String) : LibraryCommand {
+    data class Restart(val unit: String) : ShellCommand {
         override fun commands() = listOf("systemctl restart $unit")
     }
 
-    data class Enable(val unit: String) : LibraryCommand {
+    data class Enable(val unit: String) : ShellCommand {
         override fun commands() = listOf("systemctl enable $unit")
     }
 
-    data class Start(val unit: String) : LibraryCommand {
+    data class Start(val unit: String) : ShellCommand {
         override fun commands() = listOf("systemctl start $unit")
     }
 
-    class DaemonReload : LibraryCommand {
+    class DaemonReload : ShellCommand {
         override fun commands() = listOf("systemctl daemon-reload")
     }
 }

@@ -19,10 +19,10 @@ const val RESTIC_STATUS_COMMAND = "restic-status"
 private fun String.systemDUnitName(serviceName: String) = "$serviceName-backup-${this.removePrefix("/").removeSuffix("/").replace(Regex("[^a-zA-Z0-9]"), "-").lowercase()}"
 
 fun ShellScript.resticBackup(serviceName: String, backupConfig: BackupConfiguration, backupPath: String) {
-    addLibSources(CurlLibrary)
-    addLibSources(ResticLibrary)
+    addLibrary(CurlLibrary)
+    addLibrary(ResticLibrary)
 
-    addInlineSource(AptLibrary)
+    addLibrary(AptLibrary)
     addCommand(AptLibrary.InstallPackage("jq"))
     addCommand(ResticLibrary.Install())
 

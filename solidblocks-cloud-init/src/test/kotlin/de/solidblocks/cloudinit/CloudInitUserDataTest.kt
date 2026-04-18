@@ -4,11 +4,11 @@ import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.hetzner.HetznerServerTestContext
 import de.solidblocks.shell.*
+import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Files
 import java.time.Duration.ofSeconds
@@ -19,7 +19,7 @@ import kotlin.io.path.writeText
 @ExtendWith(SolidblocksTest::class)
 class CloudInitUserDataTest {
     @Test
-    fun testIntegration(testContext: SolidblocksTestContext) {
+    fun testShellScriptIntegration(testContext: SolidblocksTestContext) {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val volume = hetznerTestContext.createVolume()
@@ -27,14 +27,14 @@ class CloudInitUserDataTest {
 
         val randomContent = UUID.randomUUID().toString()
 
-        val cloudInitUserData = ShellScript()
-        cloudInitUserData.addInlineSource(StorageLibrary)
-        cloudInitUserData.addCommand(StorageLibrary.Mount(volume.linuxDevice, "/storage/data"))
-        cloudInitUserData.addCommand(WriteFile(randomContent.toByteArray(), "/tmp/foo-bar"))
+        val shellScript = ShellScript()
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addCommand(StorageLibrary.Mount(volume.linuxDevice, "/storage/data"))
+        shellScript.addCommand(WriteFile(randomContent.toByteArray(), "/tmp/foo-bar"))
 
         val serverTestContext =
             hetznerTestContext.createServer(
-                cloudInitUserData.render(),
+                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(volume.id),
             )
@@ -54,7 +54,53 @@ class CloudInitUserDataTest {
 
         val recreatedServerTestContext =
             hetznerTestContext.createServer(
-                cloudInitUserData.render(),
+                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
+                sshKey,
+                volumes = listOf(volume.id),
+            )
+        recreatedServerTestContext.waitForSuccessfulProvisioning()
+
+        sshContext = recreatedServerTestContext.ssh()
+        sshContext.download("/storage/data/$randomUUID.txt") shouldBe randomUUID.toByteArray()
+    }
+
+    @Test
+    fun testCloudInitIntegration(testContext: SolidblocksTestContext) {
+        val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
+
+        val volume = hetznerTestContext.createVolume()
+        val sshKey = hetznerTestContext.createSSHKey()
+
+        val randomContent = UUID.randomUUID().toString()
+
+        val shellScript = ShellScript()
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addCommand(StorageLibrary.Mount(volume.linuxDevice, "/storage/data"))
+        shellScript.addCommand(WriteFile(randomContent.toByteArray(), "/tmp/foo-bar"))
+
+        val serverTestContext =
+            hetznerTestContext.createServer(
+                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
+                sshKey,
+                volumes = listOf(volume.id),
+            )
+        serverTestContext.waitForSuccessfulProvisioning()
+        var sshContext = serverTestContext.ssh()
+
+        sshContext.fileExists("/tmp/foo-bar") shouldBe true
+        sshContext.filePermissions("/tmp/foo-bar") shouldBe "-rw-------"
+        sshContext.download("/tmp/foo-bar") shouldBe randomContent.toByteArray()
+
+        val randomUUID = UUID.randomUUID().toString()
+
+        val randomFile = Files.createTempFile("random", ".txt").also { it.writeText(randomUUID) }
+        sshContext.upload(randomFile.toAbsolutePath(), "/storage/data/$randomUUID.txt")
+        sshContext.download("/storage/data/$randomUUID.txt") shouldBe randomUUID.toByteArray()
+        hetznerTestContext.destroyServer(serverTestContext)
+
+        val recreatedServerTestContext =
+            hetznerTestContext.createServer(
+                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(volume.id),
             )
@@ -70,6 +116,18 @@ class CloudInitUserDataTest {
             ShellScript::class.java.getResource("/blcks-cloud-init-bootstrap.sh.template").readText()
         template shouldContain "__CLOUD_INIT_VARIABLES__"
         template shouldContain "__CLOUD_INIT_SCRIPT__"
+    }
+
+    @Test
+    fun testRender() {
+        val cloudInit = CloudInit()
+
+        SSHKeyUtils.RSA.generate()
+
+        cloudInit.privateKeyRsa = RSA_PRIVATE_KEY
+        cloudInit.privateKeyEd25519 = ED25519_PRIVATE_KEY
+
+        println(cloudInit.render())
     }
 }
 

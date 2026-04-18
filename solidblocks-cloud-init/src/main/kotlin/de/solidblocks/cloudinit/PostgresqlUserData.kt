@@ -25,6 +25,7 @@ import de.solidblocks.shell.systemd.Target
 import de.solidblocks.shell.systemd.Timer
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
+import de.solidblocks.shell.toCloudInit
 
 class PostgresqlUserData(val instanceName: String, val superUserPassword: String, val storageDevice: String, val backupConfiguration: BackupConfiguration) : ServiceUserData {
 
@@ -32,24 +33,24 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
         val BACKUP_STATUS_COMMAND = "pgbackrest-status"
     }
 
-    override fun render(): String {
+    override fun shellScript(): ShellScript {
         val storageMount = "/storage/data"
         val backupMount = "/storage/backup"
 
-        val userData = ShellScript()
+        val shellScript = ShellScript()
 
-        userData.addInlineSource(AptLibrary)
-        userData.addInlineSource(CurlLibrary)
-        userData.addInlineSource(AptLibrary)
-        userData.addCommand(AptLibrary.UpdateRepositories())
-        userData.addCommand(AptLibrary.UpdateSystem())
+        shellScript.addLibrary(AptLibrary)
+        shellScript.addLibrary(CurlLibrary)
+        shellScript.addLibrary(AptLibrary)
+        shellScript.addCommand(AptLibrary.UpdateRepositories())
+        shellScript.addCommand(AptLibrary.UpdateSystem())
 
-        userData.addInlineSource(DockerLibrary)
-        userData.addInlineSource(StorageLibrary)
-        userData.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
+        shellScript.addLibrary(DockerLibrary)
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
 
         if (backupConfiguration.target is LocalBackupTarget) {
-            userData.addCommand(StorageLibrary.Mount(backupConfiguration.target.backupDevice, backupMount))
+            shellScript.addCommand(StorageLibrary.Mount(backupConfiguration.target.backupDevice, backupMount))
         }
 
         val backupEnvironment = when (backupConfiguration.target) {
@@ -75,10 +76,10 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
             else -> emptyList()
         }
 
-        userData.addCommand(DockerLibrary.InstallDebian())
-        userData.addCommand(MkDir("/storage/data", "10000", "10000"))
+        shellScript.addCommand(DockerLibrary.InstallDebian())
+        shellScript.addCommand(MkDir("/storage/data", "10000", "10000"))
         if (backupConfiguration.target is LocalBackupTarget) {
-            userData.addCommand(MkDir(backupMount, "10000", "10000"))
+            shellScript.addCommand(MkDir(backupMount, "10000", "10000"))
         }
 
         val dockerWorkingDirectory = "/etc/docker/$instanceName"
@@ -111,8 +112,8 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
                         ),
                 ),
             )
-        userData.addCommand(MkDir(dockerWorkingDirectory))
-        userData.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
+        shellScript.addCommand(MkDir(dockerWorkingDirectory))
+        shellScript.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
 
         val dockerSystemDConfig =
             SystemDService(
@@ -140,7 +141,7 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
                 Install(),
             )
 
-        userData.installSystemDUnit(dockerSystemDConfig)
+        shellScript.installSystemDUnit(dockerSystemDConfig)
 
         val backupFullSystemDConfig =
             SystemDService(
@@ -167,7 +168,7 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
                 Install(),
             )
 
-        userData.installSystemDUnit(backupFullSystemDConfig)
+        shellScript.installSystemDUnit(backupFullSystemDConfig)
 
         val timer =
             SystemDTimer(
@@ -179,16 +180,16 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
                 ),
                 Install(),
             )
-        userData.installSystemDUnit(timer)
-        userData.addCommand(SystemDLibrary.Start(timer.fullUnitName()))
-        userData.addCommand(SystemDLibrary.Restart(instanceName))
+        shellScript.installSystemDUnit(timer)
+        shellScript.addCommand(SystemDLibrary.Start(timer.fullUnitName()))
+        shellScript.addCommand(SystemDLibrary.Restart(instanceName))
 
         val wrapper = """
     #!/bin/env bash
     docker compose -f $dockerComposeFile exec --no-tty $instanceName /rds/bin/backup-info.sh --output=json
         """.trimIndent()
 
-        userData.addCommand(
+        shellScript.addCommand(
             WriteFile(
                 wrapper.toByteArray(),
                 "/usr/local/bin/$BACKUP_STATUS_COMMAND",
@@ -196,6 +197,6 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
             ),
         )
 
-        return userData.render()
+        return shellScript
     }
 }

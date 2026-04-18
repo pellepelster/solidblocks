@@ -2,6 +2,7 @@ package de.solidblocks.cloudinit
 
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
+import de.solidblocks.shell.toCloudInit
 import io.kotest.matchers.shouldBe
 import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
@@ -32,7 +33,7 @@ class PostgresqlUserDataTest {
 
         val server =
             hetzner.createServer(
-                userData.render(),
+                userData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(backupVolume.id, dataVolume1.id),
             )
@@ -74,7 +75,7 @@ class PostgresqlUserDataTest {
 
         val recreatedServer =
             hetzner.createServer(
-                recreatedUserData.render(),
+                recreatedUserData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(backupVolume.id, dataVolume2.id),
             )
@@ -115,7 +116,7 @@ class PostgresqlUserDataTest {
 
         val server =
             hetzner.createServer(
-                userData.render(),
+                userData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(dataVolume1.id),
             )
@@ -157,7 +158,7 @@ class PostgresqlUserDataTest {
 
         val recreatedServer =
             hetzner.createServer(
-                recreatedUserData.render(),
+                recreatedUserData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
                 sshKey,
                 volumes = listOf(dataVolume2.id),
             )

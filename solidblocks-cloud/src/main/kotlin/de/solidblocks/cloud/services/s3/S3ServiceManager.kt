@@ -41,6 +41,7 @@ import de.solidblocks.cloud.services.ServerInfo
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.createDefaultResources
 import de.solidblocks.cloud.services.firewall
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
@@ -55,6 +56,7 @@ import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.GarageFsUserData
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3AdminHost
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3Host
+import de.solidblocks.shell.toCloudInit
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
@@ -69,12 +71,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
         val serverName = serverName(cloud, runtime.name)
 
-        val dataVolume = HetznerVolume(
-            serverName + "-data",
-            runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-            ByteSize.fromGigabytes(runtime.instance.volumeSize),
-            volumeLabels(runtime) + cloudLabels(cloud),
-        )
+        val defaultResources = this.createDefaultResources(cloud, runtime)
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
@@ -102,22 +99,8 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             ),
         )
 
-        val sshIdentityRsaSecret = PassSecret(
-            secretPath(cloud, runtime, listOf("hosts", serverName, "ssh_identity_rsa")),
-            OneTimeGeneratedSecret {
-                SSHKeyUtils.RSA.generate().privateKey
-            },
-        )
-
-        val sshIdentityED25519Secret = PassSecret(
-            secretPath(cloud, runtime, listOf("hosts", serverName, "ssh_identity_ed25519")),
-            OneTimeGeneratedSecret {
-                SSHKeyUtils.ED25519.generate().privateKey
-            },
-        )
-
         val userData = UserData(
-            setOf(dataVolume, adminToken, rpcSecret, metricsToken) + backupResources.first,
+            setOf(defaultResources.dataVolume, adminToken, rpcSecret, metricsToken) + backupResources.first,
             { context ->
                 if (listOf(adminToken, rpcSecret, metricsToken).any {
                         context.lookup(it.asLookup()) == null
@@ -128,7 +111,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
                 GarageFsUserData(
                     runtime.name,
-                    context.ensureLookup(dataVolume.asLookup()).device,
+                    context.ensureLookup(defaultResources.dataVolume.asLookup()).device,
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     serviceRootDomain(cloud, runtime),
                     context.ensureLookup(rpcSecret.asLookup()).secret,
@@ -141,6 +124,9 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         )
                     },
                     true,
+                ).shellScript().toCloudInit(
+                    context.ensureLookup(defaultResources.sshIdentityRsaSecret.asLookup()).secret,
+                    context.ensureLookup(defaultResources.sshIdentityED25519Secret.asLookup()).secret,
                 ).render()
             },
         )
@@ -152,7 +138,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             userData = userData,
             location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud))),
-            volumes = setOf(dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
+            volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
                 defaultServiceSubnet,
@@ -256,8 +242,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
         )
 
-        // sshIdentityRsaSecret, sshIdentityED25519Secret,
-        return listOf(s3HostSecret, firewall, server, dataVolume, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources
+        return listOf(s3HostSecret, firewall, server, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources + defaultResources.list()
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()

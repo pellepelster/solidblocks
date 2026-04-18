@@ -28,18 +28,26 @@ object Constants {
 
     fun sshConfigFilePath(configFileDirectory: Path, cloudName: String) = configFileDirectory.resolve("${cloudName}_ssh_config")
 
+    fun sshKnownHosts(configFileDirectory: Path, cloudName: String) = configFileDirectory.resolve("${cloudName}_known_hosts")
+
     fun sshKeyName(configuration: CloudConfigurationRuntime) = "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
     fun networkName(configuration: CloudConfigurationRuntime) = "${configuration.name}-${configuration.getDefaultEnvironment()}"
 
     fun firewallName(configuration: CloudConfigurationRuntime, name: String) = "${configuration.name}-${configuration.getDefaultEnvironment()}-$name"
 
+    @Deprecated("use 'EnvironmentReference'")
     fun serverName(configuration: CloudConfigurationRuntime, name: String, index: Int = 0) = "${configuration.name}-${configuration.getDefaultEnvironment()}-$name-$index"
+
+    fun serverName(environment: EnvironmentReference, name: String, index: Int = 0) = "${environment.cloud}-${environment.environment}-$name-$index"
 
     fun serviceDnsName(service: ServiceConfigurationRuntime) = service.name
 
     fun secretPath(configuration: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, segments: List<String>) =
         "${configuration.name}/${configuration.getDefaultEnvironment()}/${runtime.name}/${segments.joinToString("/")}"
+
+    fun secretPath(environment: EnvironmentReference, runtime: ServiceConfigurationRuntime, segments: List<String>) =
+        "${environment.cloud}/${environment.environment}/${runtime.name}/${segments.joinToString("/")}"
 
     @Deprecated("use EnvironmentReference if possible")
     fun secretPath(configuration: CloudConfigurationRuntime, segments: List<String>) = "${configuration.name}/${configuration.getDefaultEnvironment()}/${segments.joinToString("/")}"

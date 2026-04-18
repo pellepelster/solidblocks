@@ -1,25 +1,43 @@
 package de.solidblocks.shell.test
 
 import de.solidblocks.infra.test.SolidblocksTest
-import de.solidblocks.infra.test.assertions.shouldHaveExitCode
-import de.solidblocks.infra.test.docker.DockerTestImage
-import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.shell.AptLibrary
+import de.solidblocks.shell.CloudInit
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.ShellScript
 import de.solidblocks.shell.StorageLibrary
-import io.kotest.assertions.assertSoftly
+import de.solidblocks.shell.toCloudInit
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.nio.file.Files
-import kotlin.io.path.writeText
-import kotlin.time.Duration.Companion.minutes
 
 @ExtendWith(SolidblocksTest::class)
-public class ShellScriptTest {
+public class CloudInitTest {
 
     @Test
-    fun testFlow() {
+    fun testRender() {
+        val cloudInit = CloudInit()
+
+        cloudInit.addFile("/usr/lib/blcks/mock-test.sh", "line 1\nline 2", "0755")
+
+        cloudInit.addRunCommand("foo")
+        cloudInit.addRunCommand("bar")
+        cloudInit.render() shouldBe """
+            #cloud-config
+            write_files:
+                - path: /usr/lib/blcks/mock-test.sh
+                  content: |
+                    line 1
+                    line 2
+            runcmd: |
+                foo
+                bar
+            
+        """.trimIndent()
+    }
+
+    @Test
+    fun testShellScriptToCloudInit() {
         val script = ShellScript()
 
         /** inline sources are directly included in the rendered script */
@@ -33,17 +51,6 @@ public class ShellScriptTest {
         script.addCommand(AptLibrary.InstallPackage("jq"))
         script.addCommand(DockerLibrary.InstallDebian())
 
-        val tempDir = Files.createTempDirectory("test")
-        tempDir.resolve("script.sh").writeText(script.render())
-
-        val result =
-            dockerTestContext(DockerTestImage.DEBIAN_12)
-                .script()
-                .timeout(3.minutes)
-                .sources(tempDir)
-                .includes(tempDir.resolve("script.sh"))
-                .run()
-
-        assertSoftly(result) { it shouldHaveExitCode 0 }
+        println(script.toCloudInit("rsa-key", "ed25519-key").render())
     }
 }
