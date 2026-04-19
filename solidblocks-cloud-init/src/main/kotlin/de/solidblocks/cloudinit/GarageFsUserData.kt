@@ -66,7 +66,6 @@ class GarageFsUserData(
         shellScript.addCommand(AptLibrary.UpdateSystem())
 
         shellScript.addLibrary(StorageLibrary)
-        shellScript.addCommand(UtilsLibrary.Comment(UUID.randomUUID().toString()))
         shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
 
         shellScript.addLibrary(CaddyLibrary)

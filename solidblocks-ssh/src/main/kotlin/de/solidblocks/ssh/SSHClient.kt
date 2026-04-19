@@ -5,6 +5,7 @@ import org.apache.sshd.client.SshClient
 import org.apache.sshd.client.channel.ClientChannelEvent
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier
 import org.apache.sshd.client.keyverifier.RequiredServerKeyVerifier
+import org.apache.sshd.client.session.ClientSession
 import org.apache.sshd.common.keyprovider.KeyIdentityProvider
 import org.apache.sshd.common.util.net.SshdSocketAddress
 import org.apache.sshd.scp.client.ScpClientCreator

@@ -17,10 +17,8 @@ object RSAKeyFactory : SSHKeyFactory() {
     private val logger = KotlinLogging.logger {}
 
     override fun generate(): KeyPair {
-        val generator = KeyPairGenerator.getInstance("RSA", "BC").also { it.initialize(4096) }
-        val keyPair = generator.generateKeyPair()
-        // return KeyPairRaw(keyPair.private.toPem(), keyPair.public.toPem())
-        return keyPair
+        val generator = KeyPairGenerator.getInstance("RSA", "BC").also { it.initialize(2048) }
+        return generator.generateKeyPair()
     }
 
     override fun publicKeyToOpenSsh(key: String): String {

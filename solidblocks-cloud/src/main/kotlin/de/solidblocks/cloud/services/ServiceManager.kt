@@ -16,6 +16,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.ssh.SSHKeyUtils
+import de.solidblocks.ssh.toPem
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
@@ -62,7 +63,8 @@ fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime
         sshHostPrivateKeySecretPath(cloud.environment, serverName, Constants.SshHostKeyType.rsa),
         OneTimeGeneratedSecret {
             val keyPair = SSHKeyUtils.RSA.generate()
-            SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
+            // TODO for some reason ssh-keygen -yf refuses to derive public key from private openssh RSA key
+            keyPair.toPem().privateKey
         },
     )
 

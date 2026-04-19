@@ -9,6 +9,7 @@ import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
@@ -30,7 +31,9 @@ class SSHClientTest {
             }
 
     val ed25519Key = SSHClientTest::class.java.getResource("/test_ed25519.key")!!.readText()
+    val invalidEd25519Key = SSHClientTest::class.java.getResource("/test_ed25519_invalid.key")!!.readText()
     val key = SSHKeyUtils.loadKey(ed25519Key)
+    val invalidKey = SSHKeyUtils.loadKey(invalidEd25519Key)
     val client = SSHClient(sshServer.host, key, null, port = sshServer.getMappedPort(22))
 
     @Test
@@ -39,6 +42,14 @@ class SSHClientTest {
         val ed25519KeyPublic =
             SSHClientTest::class.java.getResource("/test_ed25519.key.pub")!!.readText()
         file shouldBe ed25519KeyPublic.toByteArray()
+    }
+
+    @Test
+    fun testInvalid() {
+        val exception = assertThrows<Exception> {
+            SSHClient(sshServer.host, invalidKey, null, port = sshServer.getMappedPort(22))
+        }
+        exception.message shouldContain "No more authentication methods available"
     }
 
     @Test
