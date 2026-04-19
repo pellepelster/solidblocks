@@ -107,12 +107,17 @@ class GarageFsProvisionersTest {
         coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
 
         val secretProvisioner = mockk<PassSecretProvisioner>()
-        coEvery { secretProvisioner.lookup(any(), any()) } returns
+        coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.lookup(match { it.name == "admin_token" }, any()) } returns
             PassSecretRuntime(
                 "admin_token",
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             )
-        coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.lookup(match { it.name == "cloud1/default/hosts/server1/ssh_host_key_ed25519" }, any()) } returns
+            PassSecretRuntime(
+                "cloud1/default/hosts/server1/ssh_host_key_ed25519",
+                GarageFsProvisionersTest::class.java.getResource("/test_ed25519.key")!!.readText(),
+            )
 
         val server =
             HetznerServer(

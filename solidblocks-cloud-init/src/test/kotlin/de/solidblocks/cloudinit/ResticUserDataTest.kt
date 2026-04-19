@@ -17,7 +17,7 @@ class ResticUserDataTest {
     @Test
     fun testRecoveryFromLocal(context: SolidblocksTestContext) {
         val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN").toString())
-        val sshKey = hetzner.createSSHKey()
+        val sshKey = hetzner.createED25519SshKey()
 
         val dataVolume1 = hetzner.createVolume("${hetzner.testId}-data1")
         val backupVolume = hetzner.createVolume("${hetzner.testId}-backup")
@@ -39,7 +39,7 @@ class ResticUserDataTest {
         val server =
             hetzner.createServer(
                 shellScript.render(),
-                sshKey,
+                listOf(sshKey),
                 volumes = listOf(dataVolume1.id, backupVolume.id),
             )
         server.waitForSuccessfulProvisioning()
@@ -70,7 +70,7 @@ class ResticUserDataTest {
         val serverRestore =
             hetzner.createServer(
                 userDataRestore.render(),
-                sshKey,
+                listOf(sshKey),
                 volumes = listOf(dataVolume2.id, backupVolume.id),
             )
         serverRestore.waitForSuccessfulProvisioning()
@@ -86,7 +86,7 @@ class ResticUserDataTest {
         val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val bucket = context.aws().createBucket()
-        val sshKey = hetzner.createSSHKey()
+        val sshKey = hetzner.createED25519SshKey()
 
         val randomContent = UUID.randomUUID().toString()
         val repoPassword = UUID.randomUUID().toString()
@@ -119,7 +119,7 @@ class ResticUserDataTest {
         val server =
             hetzner.createServer(
                 shellScript.render(),
-                sshKey,
+                listOf(sshKey),
                 volumes = listOf(dataVolume1.id),
             )
         server.waitForSuccessfulProvisioning()
@@ -153,7 +153,7 @@ class ResticUserDataTest {
         val serverRestore =
             hetzner.createServer(
                 shellSCriptRestore.render(),
-                sshKey,
+                listOf(sshKey),
                 volumes = listOf(dataVolume2.id),
             )
         serverRestore.waitForSuccessfulProvisioning()

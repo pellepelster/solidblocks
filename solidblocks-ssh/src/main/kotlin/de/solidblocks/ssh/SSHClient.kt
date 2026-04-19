@@ -7,6 +7,7 @@ import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier
 import org.apache.sshd.client.keyverifier.RequiredServerKeyVerifier
 import org.apache.sshd.client.session.ClientSession
 import org.apache.sshd.common.keyprovider.KeyIdentityProvider
+import org.apache.sshd.common.signature.BuiltinSignatures
 import org.apache.sshd.common.util.net.SshdSocketAddress
 import org.apache.sshd.scp.client.ScpClientCreator
 import java.io.ByteArrayOutputStream
@@ -36,6 +37,22 @@ class SSHClient(val host: String, val keyPair: KeyPair, val hostKey: PublicKey?,
                 AcceptAllServerKeyVerifier.INSTANCE
             } else {
                 RequiredServerKeyVerifier(hostKey)
+            }
+
+            when (keyPair.keyType()) {
+                KeyType.rsa -> {
+                    it.signatureFactories = listOf(
+                        BuiltinSignatures.rsaSHA256,
+                        BuiltinSignatures.rsaSHA512,
+                    )
+                }
+
+                KeyType.ed25519 -> {
+                    it.signatureFactories = listOf(
+                        BuiltinSignatures.ed25519,
+                        BuiltinSignatures.sk_ssh_ed25519,
+                    )
+                }
             }
             it.keyIdentityProvider = KeyIdentityProvider.wrapKeyPairs(keyPair)
             it.start()

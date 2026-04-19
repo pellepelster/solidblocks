@@ -3,6 +3,7 @@ package de.solidblocks.cloud
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.ssh.KeyType
 import java.nio.file.Path
 
 @Suppress("ktlint:standard:property-naming")
@@ -47,7 +48,7 @@ object Constants {
 
     fun secretPath(environment: EnvironmentContext, segments: List<String>) = "${environment.cloud}/${environment.environment}/${segments.joinToString("/")}"
 
-    fun sshHostPrivateKeySecretPath(environment: EnvironmentContext, serverName: String, type: SshHostKeyType) = secretPath(environment, listOf("hosts", serverName, "ssh_host_key_$type"))
+    fun sshHostPrivateKeySecretPath(environment: EnvironmentContext, serverName: String, type: KeyType) = secretPath(environment, listOf("hosts", serverName, "ssh_host_key_$type"))
 
     fun serviceLabels(runtime: ServiceConfigurationRuntime) = mapOf(serviceLabel to runtime.name)
 
@@ -65,9 +66,4 @@ object Constants {
     fun solidblocksVersion() = "0.0.0"
 
     fun serverPrivateIp(index: Int) = "10.0.1.${index + 1}"
-
-    enum class SshHostKeyType {
-        rsa,
-        ed25519,
-    }
 }

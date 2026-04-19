@@ -41,6 +41,8 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
+import de.solidblocks.ssh.KeyType
+import de.solidblocks.ssh.SSHKeyFactory
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
@@ -241,10 +243,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             servers.mapNotNull { context.lookup(it.asLookup()) }.map { it.name to it.publicIpv4 }
 
         serversIps.forEach {
-            val rsaSecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, Constants.SshHostKeyType.rsa)
+            val rsaSecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, KeyType.rsa)
             val rsaSecret = context.lookup(PassSecretLookup(rsaSecretPath))
 
-            val ed25519SecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, Constants.SshHostKeyType.ed25519)
+            val ed25519SecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, KeyType.ed25519)
             val ed25519Secret = context.lookup(PassSecretLookup(ed25519SecretPath))
 
             if (rsaSecret != null) {

@@ -19,6 +19,7 @@ import de.solidblocks.cloud.services.managerForService
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
@@ -85,7 +86,7 @@ data class ProvisionerContext(
     }
 
     private fun getOpenSshHostPublicKey(serverName: String): PublicKey? {
-        val secretPath = sshHostPrivateKeySecretPath(environment, serverName, Constants.SshHostKeyType.ed25519)
+        val secretPath = sshHostPrivateKeySecretPath(environment, serverName, KeyType.ed25519)
         logger.info { "loading ssh host key from '$secretPath'" }
         val secret = lookup(PassSecretLookup(secretPath))
         return secret?.secret?.let { SSHKeyUtils.loadKey(it).public }

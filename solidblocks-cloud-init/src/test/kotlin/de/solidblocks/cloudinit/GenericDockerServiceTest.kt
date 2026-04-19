@@ -17,7 +17,7 @@ class GenericDockerServiceTest {
 
         val dataVolume = hetznerTestContext.createVolume("${testContext.testId}-data")
         val backupVolume = hetznerTestContext.createVolume("${testContext.testId}-backup")
-        val sshKey = hetznerTestContext.createSSHKey()
+        val sshKey = hetznerTestContext.createED25519SshKey()
 
         val backupConfiguration = BackupConfiguration("very-secret", LocalBackupTarget(backupVolume.linuxDevice))
 
@@ -33,8 +33,8 @@ class GenericDockerServiceTest {
 
         val serverTestContext =
             hetznerTestContext.createServer(
-                userData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
-                sshKey,
+                userData.shellScript().toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
+                listOf(sshKey),
                 volumes = listOf(dataVolume.id, backupVolume.id),
             )
 

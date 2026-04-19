@@ -3,7 +3,9 @@ package de.solidblocks.ssh.test
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.ssh.SSHClient
+import de.solidblocks.ssh.SSHKeyFactory
 import de.solidblocks.ssh.SSHKeyUtils
+import de.solidblocks.ssh.toPem
 import io.kotest.assertions.assertSoftly
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
@@ -19,11 +21,20 @@ import kotlin.io.path.writeText
 
 @ExtendWith(SolidblocksTest::class)
 class SSHClientTest {
+
+    val rsaHostKey = SSHKeyUtils.RSA.generate()
+    val rsHostKeyPem = rsaHostKey.toPem()
+
+    val ed25519HostKey = SSHKeyUtils.ED25519.generate()
+    val ed25519HostKeyPem = ed25519HostKey.toPem()
+
     val sshServer =
         GenericContainer(
             ImageFromDockerfile()
                 .withFileFromClasspath("Dockerfile", "Dockerfile")
-                .withFileFromClasspath("authorized_keys", "test_ed25519.key.pub"),
+                .withFileFromClasspath("authorized_keys", "test_ed25519.key.pub")
+                .withFileFromString("ssh_host_rsa_key", rsHostKeyPem.privateKey)
+                .withFileFromString("ssh_host_ed25519_key", SSHKeyUtils.privateKeyToOpenSsh(ed25519HostKey.private)),
         )
             .also {
                 it.addExposedPort(22)

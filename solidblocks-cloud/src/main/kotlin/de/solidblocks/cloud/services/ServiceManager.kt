@@ -15,6 +15,7 @@ import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Result
+import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.toPem
 import de.solidblocks.utils.LogContext
@@ -60,7 +61,7 @@ fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime
     val serverName = serverName(cloud.environment, runtime.name)
 
     val sshIdentityRsaSecret = PassSecret(
-        sshHostPrivateKeySecretPath(cloud.environment, serverName, Constants.SshHostKeyType.rsa),
+        sshHostPrivateKeySecretPath(cloud.environment, serverName, KeyType.rsa),
         OneTimeGeneratedSecret {
             val keyPair = SSHKeyUtils.RSA.generate()
             // TODO for some reason ssh-keygen -yf refuses to derive public key from private openssh RSA key
@@ -69,7 +70,7 @@ fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime
     )
 
     val sshIdentityED25519Secret = PassSecret(
-        sshHostPrivateKeySecretPath(cloud.environment, serverName, Constants.SshHostKeyType.ed25519),
+        sshHostPrivateKeySecretPath(cloud.environment, serverName, KeyType.ed25519),
         OneTimeGeneratedSecret {
             val keyPair = SSHKeyUtils.ED25519.generate()
             SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)

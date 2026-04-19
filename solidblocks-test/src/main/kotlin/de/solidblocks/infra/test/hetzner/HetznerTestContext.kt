@@ -36,7 +36,11 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
 
     val api = HetznerApi(hcloudToken)
 
-    val testSSHhKey = SSHKeyUtils.ED25519.generate().toPem()
+    val ed25519Key = SSHKeyUtils.ED25519.generate()
+    val ed25519KeyPem = ed25519Key.toPem()
+
+    val rsaKey = SSHKeyUtils.RSA.generate()
+    val rsaKeyPem = rsaKey.toPem()
 
     val defaultLabels = testLabels(this.testId)
 
@@ -60,7 +64,7 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
 
     fun createServer(
         userData: String,
-        sshKey: Long,
+        sshKeys: List<Long>,
         location: HetznerLocation? = null,
         type: HetznerServerType = HetznerServerType.cx23,
         image: String = "debian-13",
@@ -75,7 +79,7 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
                 location ?: defaultLocation,
                 type,
                 image,
-                sshKeys = listOf(sshKey),
+                sshKeys = sshKeys,
                 userData = userData,
                 labels = defaultLabels,
                 volumes = volumes,
@@ -101,19 +105,33 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
         HetznerServerTestContext(
             newServer.server.id,
             newServer.server.publicNetwork!!.ipv4!!.ip,
-            testSSHhKey.privateKey,
+            ed25519KeyPem.privateKey,
         )
             .also { testContexts.add(it) }
     }
 
-    fun createSSHKey(name: String? = null): Long = runBlocking {
-        val resourceName = name ?: testId
+    fun createED25519SshKey(name: String? = null): Long = runBlocking {
+        val resourceName = name ?: "$testId-ed25519"
         logInfo("creating ssh-key '$resourceName'")
         val newSSHKey =
             api.sshKeys.create(
                 SSHKeysCreateRequest(
-                    testId,
-                    SSHKeyUtils.ED25519.publicKeyToOpenSsh(testSSHhKey.publicKey),
+                    resourceName,
+                    SSHKeyUtils.ED25519.publicKeyToOpenSsh(ed25519KeyPem.publicKey),
+                    defaultLabels,
+                ),
+            )
+        newSSHKey.sshKey.id
+    }
+
+    fun createRsaSsshKey(name: String? = null): Long = runBlocking {
+        val resourceName = name ?: "$testId-rsa"
+        logInfo("creating ssh-key '$resourceName'")
+        val newSSHKey =
+            api.sshKeys.create(
+                SSHKeysCreateRequest(
+                    resourceName,
+                    SSHKeyUtils.RSA.publicKeyToOpenSsh(rsaKeyPem.publicKey),
                     defaultLabels,
                 ),
             )

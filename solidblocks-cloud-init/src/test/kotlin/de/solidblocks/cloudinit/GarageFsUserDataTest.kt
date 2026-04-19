@@ -20,7 +20,7 @@ class GarageFsUserDataTest {
 
         val dataVolume = hetznerContext.createVolume("${context.testId}-data")
         val backupVolume = hetznerContext.createVolume("${context.testId}-backup")
-        val sshKey = hetznerContext.createSSHKey()
+        val sshKey = hetznerContext.createED25519SshKey()
 
         val rpcSecret = getRandomString(64)
         val adminToken = getRandomString(64)
@@ -39,8 +39,8 @@ class GarageFsUserDataTest {
 
         val serverContext =
             hetznerContext.createServer(
-                userData.shellScript().toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
-                sshKey,
+                userData.shellScript().toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
+                listOf(sshKey),
                 volumes = listOf(dataVolume.id, backupVolume.id),
             )
 

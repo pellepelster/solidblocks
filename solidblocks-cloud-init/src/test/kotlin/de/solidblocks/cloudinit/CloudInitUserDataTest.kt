@@ -4,6 +4,7 @@ import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.hetzner.HetznerServerTestContext
 import de.solidblocks.shell.*
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -23,7 +24,7 @@ class CloudInitUserDataTest {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val volume = hetznerTestContext.createVolume()
-        val sshKey = hetznerTestContext.createSSHKey()
+        val sshKey = hetznerTestContext.createED25519SshKey()
 
         val randomContent = UUID.randomUUID().toString()
 
@@ -34,8 +35,8 @@ class CloudInitUserDataTest {
 
         val serverTestContext =
             hetznerTestContext.createServer(
-                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
-                sshKey,
+                shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
+                listOf(sshKey),
                 volumes = listOf(volume.id),
             )
         serverTestContext.waitForSuccessfulProvisioning()
@@ -54,8 +55,8 @@ class CloudInitUserDataTest {
 
         val recreatedServerTestContext =
             hetznerTestContext.createServer(
-                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
-                sshKey,
+                shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
+                listOf(sshKey),
                 volumes = listOf(volume.id),
             )
         recreatedServerTestContext.waitForSuccessfulProvisioning()
@@ -69,7 +70,8 @@ class CloudInitUserDataTest {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val volume = hetznerTestContext.createVolume()
-        val sshKey = hetznerTestContext.createSSHKey()
+        val ed25519SshKey = hetznerTestContext.createED25519SshKey()
+        val rsaSshKey = hetznerTestContext.createRsaSsshKey()
 
         val randomContent = UUID.randomUUID().toString()
 
@@ -80,12 +82,24 @@ class CloudInitUserDataTest {
 
         val serverTestContext =
             hetznerTestContext.createServer(
-                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
-                sshKey,
+                shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
+                listOf(ed25519SshKey, rsaSshKey),
                 volumes = listOf(volume.id),
             )
         serverTestContext.waitForSuccessfulProvisioning()
         var sshContext = serverTestContext.ssh()
+
+        /**
+         * ensure the public keys for the host keys could be derived without an issue
+         */
+        val outputLog = serverTestContext.cloudInit().outputLog()
+        outputLog shouldContain "ssh-keygen -yf /etc/ssh/ssh_host_rsa_key"
+        outputLog shouldContain "o=ssh-rsa"
+        outputLog shouldContain "ssh-keygen -yf /etc/ssh/ssh_host_ed25519_key"
+        outputLog shouldContain "o=ssh-ed25519"
+
+        SSHClient(sshContext.host, SSHKeyUtils.loadKey(hetznerTestContext.ed25519KeyPem.privateKey), ED25519_KEY.public).command("whoami").stdOut.trim() shouldBe "root"
+        SSHClient(sshContext.host, SSHKeyUtils.loadKey(hetznerTestContext.rsaKeyPem.privateKey), RSA_KEY.public).command("whoami").stdOut.trim() shouldBe "root"
 
         sshContext.fileExists("/tmp/foo-bar") shouldBe true
         sshContext.filePermissions("/tmp/foo-bar") shouldBe "-rw-------"
@@ -100,8 +114,8 @@ class CloudInitUserDataTest {
 
         val recreatedServerTestContext =
             hetznerTestContext.createServer(
-                shellScript.toCloudInit(RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY).render(),
-                sshKey,
+                shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
+                listOf(ed25519SshKey, rsaSshKey),
                 volumes = listOf(volume.id),
             )
         recreatedServerTestContext.waitForSuccessfulProvisioning()
@@ -122,9 +136,7 @@ class CloudInitUserDataTest {
     fun testRender() {
         val cloudInit = CloudInit()
 
-        SSHKeyUtils.RSA.generate()
-
-        cloudInit.privateKeyRsa = RSA_PRIVATE_KEY
+        cloudInit.privateKeyRsa = RSA_KEY_PEM.privateKey
         cloudInit.privateKeyEd25519 = ED25519_PRIVATE_KEY
 
         println(cloudInit.render())
@@ -144,5 +156,6 @@ fun HetznerServerTestContext.waitForSuccessfulProvisioning() {
     await().atMost(5, TimeUnit.MINUTES).pollInterval(ofSeconds(10)).until {
         cloudInitContext.isFinished()
     }
+
     cloudInitContext.result()?.hasErrors shouldBe false
 }

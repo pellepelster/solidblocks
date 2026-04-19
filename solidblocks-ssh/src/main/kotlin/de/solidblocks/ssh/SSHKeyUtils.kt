@@ -3,9 +3,12 @@ package de.solidblocks.ssh
 import org.bouncycastle.crypto.util.OpenSSHPublicKeyUtil
 import org.bouncycastle.crypto.util.PublicKeyFactory
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Security
+import java.security.interfaces.EdECKey
+import java.security.interfaces.RSAKey
 import kotlin.io.encoding.Base64
 
 object SSHKeyUtils {
@@ -51,4 +54,15 @@ object SSHKeyUtils {
     )
         .firstNotNullOfOrNull { it.invoke() }
         ?: throw RuntimeException("could not convert private key")
+}
+
+enum class KeyType {
+    rsa,
+    ed25519,
+}
+
+fun KeyPair.keyType() = when (this.private) {
+    is RSAKey -> KeyType.rsa
+    is EdECKey -> KeyType.ed25519
+    else -> throw RuntimeException("unsupported key type '${this.javaClass.name}'")
 }
