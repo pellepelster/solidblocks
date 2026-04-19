@@ -26,12 +26,13 @@ public class CloudInitTest {
             #cloud-config
             write_files:
                 - path: /usr/lib/blcks/mock-test.sh
+                  permissions: 0755
                   content: |
                     line 1
                     line 2
-            runcmd: |
-                foo
-                bar
+            runcmd:
+              - foo
+              - bar
             
         """.trimIndent()
     }
