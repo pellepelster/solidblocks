@@ -8,6 +8,7 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.SSHKeyUtils
+import de.solidblocks.ssh.keyType
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
@@ -58,6 +59,14 @@ class LocalSSHKeyProviderManager :
         if (!checkFilePermission(sshKey)) {
             return Error(
                 "permissions for ssh key '${sshKey.absolutePathString()}' are too open, should be owner r/w only",
+            )
+        }
+
+        try {
+            sshKeyPair.keyType()
+        } catch (e: Exception) {
+            return Error(
+                "unsupported key type '${sshKey.absolutePathString()}'",
             )
         }
 

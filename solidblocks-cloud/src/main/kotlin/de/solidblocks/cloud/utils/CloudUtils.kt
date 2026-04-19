@@ -9,6 +9,8 @@ import java.time.format.FormatStyle
 
 fun getEnvOrProperty(name: String) = System.getenv(name) ?: System.getProperty(name)
 
+fun getPropertyOrEnv(name: String) = System.getProperty(name) ?: System.getenv(name)
+
 fun commandExists(command: String) = try {
     val isWindows = System.getProperty("os.name").lowercase().contains("win")
     val checkCommand =

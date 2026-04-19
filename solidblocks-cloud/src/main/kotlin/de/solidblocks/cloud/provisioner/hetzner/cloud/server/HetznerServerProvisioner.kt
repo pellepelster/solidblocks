@@ -190,7 +190,6 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
             val sshKeysHash =
                 labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
-
             changes.addAll(createLabelDiff(resource, runtime))
 
             if (!sshKeysHash.matches) {

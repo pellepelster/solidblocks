@@ -1,0 +1,22 @@
+---
+name: cloud2
+root_domain: blcks-test.de
+
+providers:
+  - type: pass
+  - type: ssh_key
+  - type: hcloud
+  - type: backup_local
+
+services:
+  - type: postgresql
+    name: database1
+    databases:
+      - name: hello-world
+  - type: docker
+    name: service1
+    image: ghcr.io/pellepelster/solidblocks-hello-world:latest
+    endpoints:
+      - container_port: 8080
+    links:
+      - database1
