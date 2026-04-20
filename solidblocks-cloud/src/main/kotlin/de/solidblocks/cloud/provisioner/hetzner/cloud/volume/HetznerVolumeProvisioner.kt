@@ -3,9 +3,13 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.volume
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -24,7 +28,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerVolumeLookup, context: CloudProvisionerContext) = api.volumes.get(lookup.name)?.let {
+    override suspend fun lookup(lookup: HetznerVolumeLookup, context: ProvisionerContext) = api.volumes.get(lookup.name)?.let {
         HetznerVolumeRuntime(
             it.id,
             it.name,
@@ -35,7 +39,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun apply(resource: HetznerVolume, context: CloudProvisionerContext, log: LogContext): Result<HetznerVolumeRuntime> {
+    override suspend fun apply(resource: HetznerVolume, context: ProvisionerApplyContext, log: LogContext): Result<HetznerVolumeRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
         logger.info { "creating volume '${resource.name}' with size ${resource.size.gigabytes()}" }
@@ -69,7 +73,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
             ?: Error<HetznerVolumeRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerVolume, context: CloudProvisionerContext): ResourceDiff? {
+    override suspend fun diff(resource: HetznerVolume, context: ProvisionerDiffContext): ResourceDiff? {
         val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
         val deleteProtection =
@@ -102,7 +106,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(resource: HetznerVolume, context: CloudProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let { api.volumes.delete(it.id) } ?: false
+    override suspend fun destroy(resource: HetznerVolume, context: ProvisionerContext, log: LogContext) = lookup(resource.asLookup(), context)?.let { api.volumes.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerVolumeLookup::class
 

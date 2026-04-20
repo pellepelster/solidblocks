@@ -2,7 +2,6 @@ package de.solidblocks.cloud
 
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderConfigurationRuntime
-import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import io.kotest.matchers.collections.shouldHaveSize
@@ -204,6 +203,26 @@ class CloudManagerTest {
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
         result.error shouldBe "found duplicate service configuration for name 'database1'."
+    }
+
+    @Test
+    fun testInvalidRootDomain() {
+        val manager =
+            """
+        name: cloud1
+        root_domain: yolo.de
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: backup_local
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "no zone found for root domain 'yolo.de', please make sure that the zone can be managed by the configured cloud provider"
     }
 
     @Test

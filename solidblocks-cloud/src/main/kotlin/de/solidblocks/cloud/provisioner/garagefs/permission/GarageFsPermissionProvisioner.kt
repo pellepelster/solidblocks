@@ -5,7 +5,9 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -24,7 +26,7 @@ class GarageFsPermissionProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun lookupInternal(lookup: GarageFsPermissionLookup, context: CloudProvisionerContext): Result<GarageFsPermissionRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
+    suspend fun lookupInternal(lookup: GarageFsPermissionLookup, context: ProvisionerContext): Result<GarageFsPermissionRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
             is Error<GarageFsApi> -> Error(apis.error)
             is Success<GarageFsApi> -> {
@@ -51,12 +53,12 @@ class GarageFsPermissionProvisioner :
         }
     }
 
-    override suspend fun lookup(lookup: GarageFsPermissionLookup, context: CloudProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: GarageFsPermissionLookup, context: ProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsPermissionRuntime?> -> null
         is Success<GarageFsPermissionRuntime?> -> result.data
     }
 
-    override suspend fun apply(resource: GarageFsPermission, context: CloudProvisionerContext, log: LogContext): Result<GarageFsPermissionRuntime> {
+    override suspend fun apply(resource: GarageFsPermission, context: ProvisionerApplyContext, log: LogContext): Result<GarageFsPermissionRuntime> {
         val bucket =
             context.lookup(resource.bucket.asLookup())
                 ?: return Error<GarageFsPermissionRuntime>("${resource.bucket.logText()} not found")
@@ -92,7 +94,7 @@ class GarageFsPermissionProvisioner :
             ?: Error<GarageFsPermissionRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: GarageFsPermission, context: CloudProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
+    override suspend fun diff(resource: GarageFsPermission, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsPermissionRuntime?> -> ResourceDiff(resource, unknown)
         is Success<GarageFsPermissionRuntime?> -> {
             if (result.data == null) {

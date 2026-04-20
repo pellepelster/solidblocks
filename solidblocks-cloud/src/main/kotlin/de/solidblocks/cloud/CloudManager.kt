@@ -19,8 +19,9 @@ import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
-import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
+import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.services.CloudInfo
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
@@ -190,7 +191,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val registry = this.providerRegistrations.createRegistry(providers)
         val sshKeyProvider = providers.sshKeyProvider()
 
-        ProvisionerContext(
+        ProvisionerContextImpl(
             sshKeyProvider.keyPair,
             sshKeyProvider.privateKey.absolutePathString(),
             configurationContext.configFileDirectory,
@@ -246,9 +247,12 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                             "no configuration found for '${CloudConfigurationFactory.rootDomain.name}', created services will only be reachable via IP address. Depending on the service this may lead to limited functionality.",
                         )
                     } else {
-                        when (val result = it.context.validateDnsZone(runtime.rootDomain)) {
-                            is Error<*> -> return Error<CloudConfigurationRuntime>(result.error)
-                            else -> {}
+                        val lookup = it.context.lookup(HetznerDnsZoneLookup(runtime.rootDomain))
+
+                        if (lookup == null) {
+                            return Error<CloudConfigurationRuntime>(
+                                "no zone found for root domain '${runtime.rootDomain}', please make sure that the zone can be managed by the configured cloud provider",
+                            )
                         }
                     }
 

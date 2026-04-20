@@ -4,7 +4,9 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -22,7 +24,7 @@ class GarageFsAccessKeyProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: GarageFsAccessKey, context: CloudProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
+    override suspend fun diff(resource: GarageFsAccessKey, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsAccessKeyRuntime?> -> ResourceDiff(resource, unknown)
         is Success<GarageFsAccessKeyRuntime?> -> {
             if (result.data == null) {
@@ -33,38 +35,37 @@ class GarageFsAccessKeyProvisioner :
         }
     }
 
-    override suspend fun lookup(lookup: GarageFsAccessKeyLookup, context: CloudProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: GarageFsAccessKeyLookup, context: ProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsAccessKeyRuntime?> -> null
         is Success<GarageFsAccessKeyRuntime?> -> result.data
     }
 
-    suspend fun lookupInternal(lookup: GarageFsAccessKeyLookup, context: CloudProvisionerContext): Result<GarageFsAccessKeyRuntime?> =
-        context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
-            when (apis) {
-                is Error<GarageFsApi> -> Error(apis.error)
-                is Success<GarageFsApi> -> {
-                    val accessKey = apis.data.accessKeyApi.listKeys().firstOrNull { it.name == lookup.name }
+    suspend fun lookupInternal(lookup: GarageFsAccessKeyLookup, context: ProvisionerContext): Result<GarageFsAccessKeyRuntime?> = context.withApiClients(lookup.server, lookup.adminToken.asLookup()) { apis ->
+        when (apis) {
+            is Error<GarageFsApi> -> Error(apis.error)
+            is Success<GarageFsApi> -> {
+                val accessKey = apis.data.accessKeyApi.listKeys().firstOrNull { it.name == lookup.name }
 
-                    if (accessKey == null) {
-                        logger.warn { "access key '${lookup.name}' not found" }
-                        return@withApiClients Success(null)
-                    }
+                if (accessKey == null) {
+                    logger.warn { "access key '${lookup.name}' not found" }
+                    return@withApiClients Success(null)
+                }
 
-                    val keyInfo = apis.data.accessKeyApi.getKeyInfo(accessKey.id, showSecretKey = true)
+                val keyInfo = apis.data.accessKeyApi.getKeyInfo(accessKey.id, showSecretKey = true)
 
-                    if (keyInfo.secretAccessKey == null) {
-                        logger.error { "secret access key not set" }
-                        Success(null)
-                    } else {
-                        Success(
-                            GarageFsAccessKeyRuntime(lookup.name, accessKey.id, keyInfo.secretAccessKey!!),
-                        )
-                    }
+                if (keyInfo.secretAccessKey == null) {
+                    logger.error { "secret access key not set" }
+                    Success(null)
+                } else {
+                    Success(
+                        GarageFsAccessKeyRuntime(lookup.name, accessKey.id, keyInfo.secretAccessKey!!),
+                    )
                 }
             }
         }
+    }
 
-    override suspend fun apply(resource: GarageFsAccessKey, context: CloudProvisionerContext, log: LogContext): Result<GarageFsAccessKeyRuntime> {
+    override suspend fun apply(resource: GarageFsAccessKey, context: ProvisionerApplyContext, log: LogContext): Result<GarageFsAccessKeyRuntime> {
         val runtime =
             when (val result = lookupInternal(resource.asLookup(), context)) {
                 is Error<GarageFsAccessKeyRuntime?> ->

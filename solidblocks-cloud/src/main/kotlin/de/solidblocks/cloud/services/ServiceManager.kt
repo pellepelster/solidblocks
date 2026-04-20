@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.services
 
-import de.solidblocks.cloud.Constants
 import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
@@ -9,7 +8,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
@@ -25,7 +24,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 
     fun linkedEnvironmentVariables(cloud: CloudConfigurationRuntime, runtime: R): List<BaseEnvironmentVariable> = emptyList()
 
-    fun createResources(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>>
+    fun createResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): List<BaseInfrastructureResource<*>>
 
     fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 
@@ -33,15 +32,15 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
         index: Int,
         cloud: CloudConfiguration,
         configuration: C,
-        context: CloudProvisionerContext,
+        context: ProvisionerContext,
         log: LogContext,
     ): Result<R>
 
-    fun infoText(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): Result<String>
+    fun infoText(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<String>
 
-    fun status(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): Result<String>
+    fun status(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<String>
 
-    fun infoJson(cloud: CloudConfigurationRuntime, runtime: R, context: CloudProvisionerContext): Result<ServiceInfo>
+    fun infoJson(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<ServiceInfo>
 
     val supportedConfiguration: KClass<C>
 

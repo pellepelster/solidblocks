@@ -12,9 +12,10 @@ import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager
 import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderConfigurationRuntime
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUser
 import de.solidblocks.cloud.provisioner.aws.s3.AwsS3Bucket
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
@@ -72,7 +73,7 @@ fun createBackupConfiguration(
     runtime: BackupProviderConfigurationRuntime,
     cloud: CloudConfigurationRuntime,
     service: ServiceConfigurationRuntime,
-    context: CloudProvisionerContext,
+    context: ProvisionerContext,
     backupVolume: HetznerVolume?,
 ): BackupConfiguration {
     val backupPassword = backupSecretResource(cloud).asLookup()

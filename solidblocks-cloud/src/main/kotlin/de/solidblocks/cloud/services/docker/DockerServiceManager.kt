@@ -8,14 +8,14 @@ import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
-import de.solidblocks.cloud.Constants.volumeLabels
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
@@ -23,7 +23,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLooku
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
@@ -41,7 +40,7 @@ import kotlin.collections.plus
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
 
-    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext) = Success(
+    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext) = Success(
         ServiceInfo(
             runtime.name,
             listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
@@ -49,7 +48,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         ),
     )
 
-    override fun infoText(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
+    override fun infoText(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): Result<String> = Success(
         markdown {
             h1("Service '${runtime.name}'")
 
@@ -62,7 +61,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         },
     )
 
-    override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
+    override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): Result<String> {
         val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name)).command(RESTIC_STATUS_COMMAND)
         if (result.exitCode != 0) {
             return Error<String>("command failed '${result.stdErr}'")
@@ -83,13 +82,13 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         }.let { Success(it) }
     }
 
-    fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext) = if (cloud.dnsEnabled == true) {
+    fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext) = if (cloud.dnsEnabled == true) {
         "https://${serverName(cloud.environment, runtime.name)}.${cloud.rootDomain}"
     } else {
         "http://${context.lookup(HetznerServerLookup(serverName(cloud.environment, runtime.name)))?.publicIpv4 ?: "<unknown>"}"
     }
 
-    override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
+    override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
         val environmentVariables = runtime.links.flatMap { link ->
             val links = cloud.services.filter { it.name == link }
             links.flatMap {
@@ -165,7 +164,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         index: Int,
         cloud: CloudConfiguration,
         configuration: DockerServiceConfiguration,
-        context: CloudProvisionerContext,
+        context: ProvisionerContext,
         log: LogContext,
     ): Result<DockerServiceConfigurationRuntime> {
         configuration.links.forEach { link ->

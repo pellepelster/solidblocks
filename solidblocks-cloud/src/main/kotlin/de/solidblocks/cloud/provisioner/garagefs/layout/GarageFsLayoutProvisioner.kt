@@ -7,7 +7,9 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -28,7 +30,7 @@ class GarageFsLayoutProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: GarageFsLayout, context: CloudProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
+    override suspend fun diff(resource: GarageFsLayout, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
         is Success<GarageFsLayoutRuntime> -> {
             context.withApiClients(resource.server, resource.adminToken) { apis ->
@@ -64,12 +66,12 @@ class GarageFsLayoutProvisioner :
         }
     }
 
-    override suspend fun lookup(lookup: GarageFsLayoutLookup, context: CloudProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: GarageFsLayoutLookup, context: ProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsLayoutRuntime> -> null
         is Success<GarageFsLayoutRuntime> -> result.data
     }
 
-    suspend fun lookupInternal(lookup: GarageFsLayoutLookup, context: CloudProvisionerContext): Result<GarageFsLayoutRuntime> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
+    suspend fun lookupInternal(lookup: GarageFsLayoutLookup, context: ProvisionerContext): Result<GarageFsLayoutRuntime> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
             is Error<GarageFsApi> -> Error(apis.error)
             is Success<GarageFsApi> -> {
@@ -79,7 +81,7 @@ class GarageFsLayoutProvisioner :
         }
     }
 
-    override suspend fun apply(resource: GarageFsLayout, context: CloudProvisionerContext, log: LogContext): Result<GarageFsLayoutRuntime> {
+    override suspend fun apply(resource: GarageFsLayout, context: ProvisionerApplyContext, log: LogContext): Result<GarageFsLayoutRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
         context.withApiClients(resource.server, resource.adminToken) {

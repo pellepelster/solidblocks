@@ -6,7 +6,14 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
-import de.solidblocks.cloud.providers.*
+import de.solidblocks.cloud.providers.ProviderConfiguration
+import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
+import de.solidblocks.cloud.providers.ProviderManager
+import de.solidblocks.cloud.providers.ProviderRegistration
+import de.solidblocks.cloud.providers.managerForRuntime
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -42,7 +49,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> apply(resource: ResourceType, context: CloudProvisionerContext, log: LogContext): Result<RuntimeType> {
+    suspend fun <ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime> apply(resource: ResourceType, context: ProvisionerApplyContext, log: LogContext): Result<RuntimeType> {
         val provisioner = provisioner(resource)
         logger.info {
             "creating ${resource.logText()} using provisioner ${provisioner::class.qualifiedName}"
@@ -50,18 +57,18 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
         return provisioner.apply(resource, context, log) as Result<RuntimeType>
     }
 
-    suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: CloudProvisionerContext): ResourceDiff? = provisioner(resource).diff(resource, context)
+    suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = provisioner(resource).diff(resource, context)
 
-  /*
-  suspend fun <ResourceType : BaseResource> info(
-      resource: ResourceType,
-      context: CloudProvisionerContext,
-  ): List<String> = provisioner(resource).info(resource, context)
-   */
+    /*
+    suspend fun <ResourceType : BaseResource> info(
+        resource: ResourceType,
+        context: CloudProvisionerContext,
+    ): List<String> = provisioner(resource).info(resource, context)
+     */
 
-    suspend fun <ResourceType : BaseResource> destroy(resource: ResourceType, context: CloudProvisionerContext, logContext: LogContext): Boolean = provisioner(resource).destroy(resource, context, logContext)
+    suspend fun <ResourceType : BaseResource> destroy(resource: ResourceType, context: ProvisionerContext, log: LogContext): Boolean = provisioner(resource).destroy(resource, context, log)
 
-    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: CloudProvisionerContext): RuntimeType? = runBlocking {
+    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: ProvisionerContext): RuntimeType? = runBlocking {
         val provider =
             resourceLookupProviders.firstOrNull {
                 it.supportedLookupType.java.isAssignableFrom(lookup::class.java)

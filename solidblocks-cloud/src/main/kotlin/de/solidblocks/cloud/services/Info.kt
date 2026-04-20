@@ -3,9 +3,8 @@ package de.solidblocks.cloud.services
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import kotlinx.serialization.Serializable
-import java.nio.file.Path
 
 @Serializable data class EndpointInfo(val type: String, val url: String)
 
@@ -16,5 +15,5 @@ data class ServiceInfo(val name: String, val servers: List<ServerInfo>, val endp
 
 @Serializable data class CloudInfo(val services: List<ServiceInfo>)
 
-fun sshConnectCommand(context: CloudProvisionerContext, cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime): String =
+fun sshConnectCommand(context: ProvisionerContext, cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime): String =
     "ssh -F ${sshConfigFilePath(context.sshConfigFilePath, context.environment).toAbsolutePath()} ${serverName(cloud.environment, runtime.name)}"

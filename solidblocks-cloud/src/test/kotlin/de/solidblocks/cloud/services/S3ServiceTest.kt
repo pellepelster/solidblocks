@@ -3,7 +3,7 @@ package de.solidblocks.cloud.services
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.services.s3.S3ServiceManager
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfiguration
@@ -63,7 +63,7 @@ class S3ServiceTest {
                             S3ServiceBucketConfiguration("bucket1", false, emptyList(), emptyList()),
                         ),
                     ),
-                    mockk<CloudProvisionerContext>(),
+                    mockk<ProvisionerContext>(),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Error<Unit>>()
@@ -103,7 +103,7 @@ class S3ServiceTest {
                             ),
                         ),
                     ),
-                    mockk<CloudProvisionerContext>(),
+                    mockk<ProvisionerContext>(),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Error<Unit>>()

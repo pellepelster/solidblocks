@@ -9,20 +9,19 @@ import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeyName
-import de.solidblocks.cloud.Constants.volumeLabels
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
@@ -53,7 +52,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         RandomSecret(),
     )
 
-    override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> {
+    override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): Result<String> {
         val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name)).command(BACKUP_STATUS_COMMAND)
         if (result.exitCode != 0) {
             return Error<String>("command failed '${result.stdErr}'")
@@ -108,7 +107,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             ),
         )
 
-    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext) = Success(
+    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext) = Success(
         ServiceInfo(
             runtime.name,
             listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
@@ -116,10 +115,10 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         ),
     )
 
-    fun jdbcEndpoint(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
+    fun jdbcEndpoint(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
         "jdbc:postgresql://${context.lookup(HetznerServerLookup(serverName(cloud.environment, runtime.name)))?.privateIpv4 ?: "<unknown>"}/${database.name}"
 
-    override fun infoText(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): Result<String> = Success(
+    override fun infoText(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): Result<String> = Success(
         markdown {
             val sshConfigFilePath = Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.environment))
             val serverName = serverName(cloud.environment, runtime.name)
@@ -175,7 +174,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         },
     )
 
-    override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: CloudProvisionerContext): List<BaseInfrastructureResource<*>> {
+    override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
         val serverName = serverName(cloud.environment, runtime.name)
 
         val defaultResources = createDefaultResources(cloud, runtime)
@@ -253,7 +252,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         index: Int,
         cloud: CloudConfiguration,
         configuration: PostgresSqlServiceConfiguration,
-        context: CloudProvisionerContext,
+        context: ProvisionerContext,
         log: LogContext,
     ): Result<PostgresSqlServiceConfigurationRuntime> {
         configuration.databases.forEach { database ->

@@ -10,6 +10,8 @@ import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.Constants.sshKnownHosts
 import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
@@ -17,10 +19,11 @@ import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.types.backup.backupSecretResource
 import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.Provisioner
-import de.solidblocks.cloud.provisioner.ProvisionerContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createLookups
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createProvisioners
+import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayoutProvisioner
@@ -34,7 +37,13 @@ import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
-import de.solidblocks.cloud.services.*
+import de.solidblocks.cloud.services.CloudInfo
+import de.solidblocks.cloud.services.ServiceConfiguration
+import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceInfo
+import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.ServiceRegistration
+import de.solidblocks.cloud.services.managerForService
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -42,7 +51,6 @@ import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 import de.solidblocks.ssh.KeyType
-import de.solidblocks.ssh.SSHKeyFactory
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
@@ -56,7 +64,7 @@ import kotlin.io.path.writeText
 class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegistrations: List<ServiceRegistration<*, *>>, val providerRegistrations: List<ProviderRegistration<*, *, *>>) : Closeable {
     val registry = createRegistry()
 
-    val context = ProvisionerContext(
+    val context = ProvisionerContextImpl(
         runtime.providers.sshKeyProvider().keyPair,
         runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
         runtime.context.configFileDirectory,
@@ -120,7 +128,14 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             }
 
         log.info(bold("rolling out changes for cloud configuration '${runtime.environment.cloud}'"))
-        return@runBlocking provisioner.apply(diffs, context, log.indent())
+        val pendingResourceChanges = diffs.flatMap { it.value.map { it.resource } }
+
+        return@runBlocking if (diffs.entries.flatMap { it.value }.filter { it.status != up_to_date }.isNotEmpty()) {
+            provisioner.apply(diffs, ProvisionerDiffContextImpl(pendingResourceChanges, context), log.indent())
+        } else {
+            log.indent().info("no pending changes")
+            Success(Unit)
+        }
     }
 
     private fun createResourceGroups(): List<ResourceGroup> {

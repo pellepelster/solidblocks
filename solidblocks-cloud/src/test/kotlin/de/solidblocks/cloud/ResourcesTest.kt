@@ -24,6 +24,18 @@ class ResourcesTest {
     }
 
     @Test
+    fun testEquality() {
+        val mock11 = MockResource1("name1")
+        val mock12 = MockResource1("name1")
+
+        val mock21 = MockResource2("name1")
+        val mock22 = MockResource2("name1")
+
+        (mock11 == mock12) shouldBe true
+        (mock11 == mock21) shouldBe false
+    }
+
+    @Test
     fun testHierarchicalResourceList() {
         val mock1 = MockResource1("name1")
         val mock1Lookup1 = MockResource1Lookup("name1")

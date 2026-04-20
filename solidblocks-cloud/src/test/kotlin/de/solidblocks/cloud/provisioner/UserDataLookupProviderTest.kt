@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.mock.*
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider

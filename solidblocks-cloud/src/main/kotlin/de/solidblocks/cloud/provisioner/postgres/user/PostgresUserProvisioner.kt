@@ -3,9 +3,15 @@ package de.solidblocks.cloud.provisioner.postgres.user
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -15,8 +21,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.postgresql.util.PSQLException
 import java.sql.Connection
 import java.sql.DriverManager
-import kotlin.let
-import kotlin.use
 
 class PostgresUserProvisioner :
     BasePostgresProvisioner(),
@@ -25,7 +29,7 @@ class PostgresUserProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: PostgresUser, context: CloudProvisionerContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
+    override suspend fun diff(resource: PostgresUser, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<PostgresUserRuntime?> -> ResourceDiff(resource, unknown)
         is Success<PostgresUserRuntime?> -> {
             if (result.data == null) {
@@ -71,7 +75,7 @@ class PostgresUserProvisioner :
         }
     }
 
-    private suspend fun lookupInternal(lookup: PostgresUserLookup, context: CloudProvisionerContext): Result<PostgresUserRuntime?> =
+    private suspend fun lookupInternal(lookup: PostgresUserLookup, context: ProvisionerContext): Result<PostgresUserRuntime?> =
         when (val result = context.createConnection(lookup.server, lookup.superUserPassword)) {
             is Error<Connection> -> Error<PostgresUserRuntime?>(result.error)
             is Success<Connection> ->
@@ -92,7 +96,7 @@ class PostgresUserProvisioner :
                     }
         }
 
-    override suspend fun apply(resource: PostgresUser, context: CloudProvisionerContext, log: LogContext): Result<PostgresUserRuntime> {
+    override suspend fun apply(resource: PostgresUser, context: ProvisionerApplyContext, log: LogContext): Result<PostgresUserRuntime> {
         val password = context.ensureLookup(resource.password)
 
         when (
@@ -120,7 +124,7 @@ class PostgresUserProvisioner :
         return Success(lookup(resource.asLookup(), context)!!)
     }
 
-    override suspend fun lookup(lookup: PostgresUserLookup, context: CloudProvisionerContext): PostgresUserRuntime? = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: PostgresUserLookup, context: ProvisionerContext): PostgresUserRuntime? = when (val result = lookupInternal(lookup, context)) {
         is Error<PostgresUserRuntime?> -> null
         is Success<PostgresUserRuntime?> -> result.data
     }

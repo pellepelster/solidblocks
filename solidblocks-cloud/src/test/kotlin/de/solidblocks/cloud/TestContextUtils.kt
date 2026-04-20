@@ -1,12 +1,13 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
@@ -28,7 +29,7 @@ import kotlin.reflect.KClass
 
 class TestContextUtils
 
-class TestProvisionerContext(val registry: ProvisionersRegistry, val portMappings: Map<Int, Int> = emptyMap()) : CloudProvisionerContext {
+class TestProvisionerContext(val registry: ProvisionersRegistry, val portMappings: Map<Int, Int> = emptyMap()) : ProvisionerApplyContext {
     override val sshKeyPair =
         SSHKeyUtils.loadKey(
             TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
@@ -38,14 +39,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
 
     override val environment = EnvironmentContext("testCloudName", "default")
 
-    override fun validateDnsZone(zone: String) = TODO("Not yet implemented")
-
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
-
-    override fun <
-        RuntimeType,
-        ResourceLookupType : InfrastructureResourceLookup<RuntimeType>,
-        > ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this)!!
 
     override fun createOrGetSshClient(serverName: String): SSHClient {
         TODO("Not yet implemented")
@@ -63,13 +57,17 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
         secrets[path] = secret
         return Success(Unit)
     }
+
+    override fun hasPendingChange(resource: BaseResource): Boolean {
+        TODO("Not yet implemented")
+    }
 }
 
 val TEST_PROVISIONER_CONTEXT = TestProvisionerContext(ProvisionersRegistry())
 
 val TEST_CLOUD_CONFIGURATION_CONTEXT = CloudConfigurationContext(EnvironmentContext("cloud1", "default"), Path.of("tmp"))
 
-data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: CloudProvisionerContext) {
+data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: ProvisionerApplyContext) {
 
     companion object {
         fun create(hcloudToken: String): HetznerTestContext {

@@ -14,6 +14,10 @@ import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.Result
@@ -34,20 +38,22 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun diff(resourceGroups: List<ResourceGroup>, context: CloudProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
+    fun diff(resourceGroups: List<ResourceGroup>, context: ProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
+        val changedResources = mutableListOf<BaseInfrastructureResource<*>>()
         val resourceGroupDiffs =
             resourceGroups
                 .map { resourceGroup ->
                     val resourceGroupLogContext = log.indent()
 
-                    resourceGroupLogContext.info("planning changes for resource group ${resourceGroup.name}")
+                    resourceGroupLogContext.info(bold("planning changes for resource group ${resourceGroup.name}"))
                     val diffLogContext = resourceGroupLogContext.indent()
 
                     val diffs =
-                        when (val result = diff(resourceGroup, context, diffLogContext)) {
+                        when (val result = diff(resourceGroup, ProvisionerDiffContextImpl(changedResources, context), diffLogContext)) {
                             is Error<List<ResourceDiff>> -> return Error(result.error)
                             is Success<List<ResourceDiff>> -> result.data
                         }
+                    changedResources.addAll(diffs.filter { it.status != up_to_date }.map { it.resource })
 
                     diffs.forEach {
                         when (it.status) {
@@ -96,7 +102,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
         return Success(resourceGroupDiffs)
     }
 
-    private fun diff(resourceGroup: ResourceGroup, context: CloudProvisionerContext, log: LogContext): Result<List<ResourceDiff>> = runBlocking {
+    private fun diff(resourceGroup: ResourceGroup, context: ProvisionerDiffContext, log: LogContext): Result<List<ResourceDiff>> = runBlocking {
         logger.info { "creating diff for ${resourceGroup.logText()}" }
 
         val resources =
@@ -139,7 +145,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
         return@runBlocking Success(result.toList())
     }
 
-    suspend fun apply(resources: List<BaseResource>, context: CloudProvisionerContext, log: LogContext): Result<Unit> {
+    suspend fun apply(resources: List<BaseResource>, context: ProvisionerApplyContext, log: LogContext): Result<Unit> {
         val success =
             resources
                 .map { resource ->
@@ -166,7 +172,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
         }
     }
 
-    fun apply(resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>, context: CloudProvisionerContext, log: LogContext): Result<Unit> {
+    fun apply(resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>, context: ProvisionerApplyContext, log: LogContext): Result<Unit> {
         return runBlocking {
             resourceGroupDiffs.map { (resourceGroup, diffs) ->
                 logger.info { "rolling out changes for ${resourceGroup.logText()}" }

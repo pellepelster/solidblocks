@@ -3,7 +3,9 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.network
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -22,7 +24,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerSubnetLookup, context: CloudProvisionerContext): HetznerSubnetRuntime? {
+    override suspend fun lookup(lookup: HetznerSubnetLookup, context: ProvisionerContext): HetznerSubnetRuntime? {
         val network = context.lookup(lookup.network)
 
         if (network == null) {
@@ -35,7 +37,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
         return network.subnets.singleOrNull { it.subnet == lookup.name }
     }
 
-    override suspend fun apply(resource: HetznerSubnet, context: CloudProvisionerContext, log: LogContext): Result<HetznerSubnetRuntime> {
+    override suspend fun apply(resource: HetznerSubnet, context: ProvisionerApplyContext, log: LogContext): Result<HetznerSubnetRuntime> {
         val network =
             context.lookup(resource.network) ?: return Error("${resource.network.logText()} not found")
 
@@ -56,7 +58,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
             ?: Error<HetznerSubnetRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerSubnet, context: CloudProvisionerContext): ResourceDiff? {
+    override suspend fun diff(resource: HetznerSubnet, context: ProvisionerDiffContext): ResourceDiff? {
         val network = context.lookup(resource.network) ?: return ResourceDiff(resource, missing)
 
         return if (network.subnets.none { it.subnet == resource.subnet }) {

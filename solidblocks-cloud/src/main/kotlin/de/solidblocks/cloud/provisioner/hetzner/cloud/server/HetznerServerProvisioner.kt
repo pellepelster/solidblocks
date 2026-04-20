@@ -5,14 +5,19 @@ import de.solidblocks.cloud.Constants.userDataLabel
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
+import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
-import de.solidblocks.cloud.utils.DEFAULT_WAIT
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.HetznerLabels
 import de.solidblocks.cloud.utils.Result
@@ -20,7 +25,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.cloud.utils.joinToStringOrEmpty
-import de.solidblocks.cloud.utils.waitFor
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
@@ -42,7 +46,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerServerLookup, context: CloudProvisionerContext) = api.servers.get(lookup.name)?.let {
+    override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) = api.servers.get(lookup.name)?.let {
         HetznerServerRuntime(
             it.id,
             it.name,
@@ -61,7 +65,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun apply(resource: HetznerServer, context: CloudProvisionerContext, log: LogContext): Result<HetznerServerRuntime> {
+    override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext, log: LogContext): Result<HetznerServerRuntime> {
         var server = lookup(resource.asLookup(), context)
 
         val sshKeys =
@@ -151,7 +155,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
                 context.lookup(resource.subnet)
                     ?: return Error("subnet '${resource.subnet.name}' not found")
 
-            if (resource.privateIp != null) {
+            if (resource.privateIp != null && server.privateIpv4 == null) {
                 try {
                     val action =
                         api.servers.attachToNetwork(
@@ -175,7 +179,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
         } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerServer, context: CloudProvisionerContext): ResourceDiff? {
+    override suspend fun diff(resource: HetznerServer, context: ProvisionerDiffContext): ResourceDiff? {
         val runtime = lookup(resource.asLookup(), context)
 
         return if (runtime != null) {
@@ -191,6 +195,25 @@ class HetznerServerProvisioner(hcloudToken: String) :
             val sshKeysHash =
                 labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
             changes.addAll(createLabelDiff(resource, runtime))
+
+            val debug = context as ProvisionerDiffContextImpl
+            debug.pendingChanges.forEach {
+                println("===========================")
+                println(it)
+            }
+
+            val sshKeyHasPendingChanges = resource.sshKeys.any { context.hasPendingChange(it) }
+            if (sshKeyHasPendingChanges) {
+                changes.add(
+                    ResourceDiffItem(
+                        "ssh keys",
+                        triggersRecreate = true,
+                        changed = true,
+                        expectedValue = "<known after apply>",
+                        actualValue = sshKeysHash.actualValue,
+                    ),
+                )
+            }
 
             if (!sshKeysHash.matches) {
                 changes.add(
@@ -299,14 +322,14 @@ class HetznerServerProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(resource: HetznerServer, context: CloudProvisionerContext, logContext: LogContext) = lookup(resource.asLookup(), context)?.let {
+    override suspend fun destroy(resource: HetznerServer, context: ProvisionerContext, log: LogContext) = lookup(resource.asLookup(), context)?.let {
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) {
-            logContext.info("waiting for deletion of ${resource.logText()}")
+            log.info("waiting for deletion of ${resource.logText()}")
         }
 
         WaitConfig(10, 2.seconds).waitForCondition {
-            logContext.info("waiting for deletion of ${resource.logText()}")
+            log.info("waiting for deletion of ${resource.logText()}")
             api.volumes.list().none { it.server == it.id }
         }
     } ?: false

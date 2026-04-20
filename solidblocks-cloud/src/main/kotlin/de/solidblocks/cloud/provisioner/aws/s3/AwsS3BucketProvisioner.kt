@@ -3,24 +3,18 @@ package de.solidblocks.cloud.provisioner.aws.s3
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.BucketLocationConstraint
-import aws.sdk.kotlin.services.s3.model.BucketVersioningStatus
 import aws.sdk.kotlin.services.s3.model.CreateBucketConfiguration
 import aws.sdk.kotlin.services.s3.model.CreateBucketRequest
 import aws.sdk.kotlin.services.s3.model.Delete
 import aws.sdk.kotlin.services.s3.model.DeleteBucketRequest
 import aws.sdk.kotlin.services.s3.model.DeleteObjectsRequest
-import aws.sdk.kotlin.services.s3.model.GetBucketVersioningRequest
-import aws.sdk.kotlin.services.s3.model.GetPublicAccessBlockRequest
 import aws.sdk.kotlin.services.s3.model.HeadBucketRequest
 import aws.sdk.kotlin.services.s3.model.ListObjectVersionsRequest
 import aws.sdk.kotlin.services.s3.model.NoSuchBucket
 import aws.sdk.kotlin.services.s3.model.NotFound
 import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.model.PublicAccessBlockConfiguration
-import aws.sdk.kotlin.services.s3.model.PutBucketVersioningRequest
 import aws.sdk.kotlin.services.s3.model.PutPublicAccessBlockRequest
-import aws.sdk.kotlin.services.s3.model.S3Exception
-import aws.sdk.kotlin.services.s3.model.VersioningConfiguration
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
@@ -28,13 +22,13 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.SHORT_WAIT
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.WaitConfig
-import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.cloud.utils.waitForConsecutive
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
@@ -49,7 +43,7 @@ class AwsS3BucketProvisioner(
 
     val waitConfig = WaitConfig(15, 2.seconds)
 
-    override suspend fun lookup(lookup: AwsS3BucketLookup, context: CloudProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->
+    override suspend fun lookup(lookup: AwsS3BucketLookup, context: ProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->
         try {
             client.headBucket(HeadBucketRequest { bucket = lookup.name })
         } catch (e: NotFound) {
@@ -64,7 +58,7 @@ class AwsS3BucketProvisioner(
         )
     }
 
-    override suspend fun diff(resource: AwsS3Bucket, context: CloudProvisionerContext): ResourceDiff {
+    override suspend fun diff(resource: AwsS3Bucket, context: ProvisionerDiffContext): ResourceDiff {
         val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
         val changes = mutableListOf<ResourceDiffItem>()
@@ -76,7 +70,7 @@ class AwsS3BucketProvisioner(
         }
     }
 
-    override suspend fun apply(resource: AwsS3Bucket, context: CloudProvisionerContext, log: LogContext): Result<AwsS3BucketRuntime> = s3Client().use { client ->
+    override suspend fun apply(resource: AwsS3Bucket, context: ProvisionerApplyContext, log: LogContext): Result<AwsS3BucketRuntime> = s3Client().use { client ->
         val exists = try {
             client.headBucket(HeadBucketRequest { bucket = resource.name })
             true
@@ -125,7 +119,7 @@ class AwsS3BucketProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(resource: AwsS3Bucket, context: CloudProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(resource: AwsS3Bucket, context: ProvisionerContext, log: LogContext): Boolean {
         s3Client().use { client ->
             try {
                 var truncated = true

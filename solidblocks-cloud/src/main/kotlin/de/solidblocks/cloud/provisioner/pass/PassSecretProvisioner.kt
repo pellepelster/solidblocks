@@ -2,10 +2,14 @@ package de.solidblocks.cloud.provisioner.pass
 
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.utils.CommandResult
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -22,7 +26,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: PassSecret, context: CloudProvisionerContext): ResourceDiff {
+    override suspend fun diff(resource: PassSecret, context: ProvisionerDiffContext): ResourceDiff {
         val runtime = lookup(resource.asLookup(), context)
 
         return if (runtime != null) {
@@ -51,7 +55,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         }
     }
 
-    override suspend fun lookup(lookup: PassSecretLookup, context: CloudProvisionerContext): PassSecretRuntime? {
+    override suspend fun lookup(lookup: PassSecretLookup, context: ProvisionerContext): PassSecretRuntime? {
         val result = passShow(lookup.name, passwordStoreDir)
 
         if (result == null) {
@@ -73,7 +77,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         return null
     }
 
-    override suspend fun apply(resource: PassSecret, context: CloudProvisionerContext, log: LogContext): Result<PassSecretRuntime> {
+    override suspend fun apply(resource: PassSecret, context: ProvisionerApplyContext, log: LogContext): Result<PassSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !resource.tainted && resource.secretGenerator.isEphemeral()) {

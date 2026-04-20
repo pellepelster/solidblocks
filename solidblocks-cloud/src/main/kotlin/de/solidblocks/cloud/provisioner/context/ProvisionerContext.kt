@@ -1,11 +1,10 @@
-package de.solidblocks.cloud.provisioner
+package de.solidblocks.cloud.provisioner.context
 
-import de.solidblocks.cloud.Constants
 import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
+import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
@@ -32,22 +31,18 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-interface CloudProvisionerContext {
+interface ProvisionerContext {
     val sshKeyPair: KeyPair
     val sshConfigFilePath: Path
     val environment: EnvironmentContext
 
-    fun validateDnsZone(zone: String): Result<String>
-
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType?
-
-    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ensureLookup(lookup: ResourceLookupType): RuntimeType
-
-    fun createOrGetSshClient(serverName: String): SSHClient
 
     suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType>
 
     fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R>
+
+    fun createOrGetSshClient(serverName: String): SSHClient
 
     // TODO find a more elegant solution that is also testable
     suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T
@@ -55,35 +50,19 @@ interface CloudProvisionerContext {
     suspend fun createSecret(path: String, secret: String): Result<Unit>
 }
 
-data class ProvisionerContext(
+data class ProvisionerContextImpl(
     override val sshKeyPair: KeyPair,
     val sshKeyAbsolutePath: String,
     override val sshConfigFilePath: Path,
     override val environment: EnvironmentContext,
     val registry: ProvisionersRegistry,
     val serviceRegistrations: List<ServiceRegistration<*, *>>,
-) : CloudProvisionerContext,
+) : ProvisionerContext,
     Closeable {
 
     val sshClients = mutableMapOf<String, SSHClient>()
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
-
-    override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ensureLookup(lookup: ResourceLookupType): RuntimeType = registry.lookup(lookup, this).let {
-        it ?: throw RuntimeException("could not find resource ${lookup.logText()}")
-    }
-
-    // TODO
-    override fun validateDnsZone(zone: String): Result<String> {
-        val domainLookup = registry.lookup(HetznerDnsZoneLookup(zone), this)
-        return if (domainLookup == null) {
-            Error(
-                "no zone found for root domain '$zone', please make sure that the zone can be managed by the configured cloud provider",
-            )
-        } else {
-            Success(zone)
-        }
-    }
 
     private fun getOpenSshHostPublicKey(serverName: String): PublicKey? {
         val secretPath = sshHostPrivateKeySecretPath(environment, serverName, KeyType.ed25519)
@@ -123,7 +102,7 @@ data class ProvisionerContext(
             }),
         )
 
-        return when (val result: Result<PassSecretRuntime> = registry.apply(secret, this, LogContext())) {
+        return when (val result: Result<PassSecretRuntime> = registry.apply(secret, ProvisionerDiffContextImpl(emptyList(), this), LogContext())) {
             is Error<PassSecretRuntime> -> Error(result.error)
             is Success<PassSecretRuntime> -> Success(Unit)
         }
@@ -137,4 +116,8 @@ data class ProvisionerContext(
 
         sshClients.clear()
     }
+}
+
+fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ProvisionerContext.ensureLookup(lookup: ResourceLookupType): RuntimeType = this.lookup(lookup).let {
+    it ?: throw RuntimeException("could not find resource ${lookup.logText()}")
 }

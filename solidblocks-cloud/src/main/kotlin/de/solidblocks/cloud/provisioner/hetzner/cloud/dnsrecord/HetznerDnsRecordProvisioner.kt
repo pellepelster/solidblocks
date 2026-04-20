@@ -2,13 +2,16 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
+import de.solidblocks.cloud.utils.joinToStringOrEmpty
 import de.solidblocks.hetzner.cloud.resources.*
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
@@ -21,7 +24,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerDnsRecordLookup, context: CloudProvisionerContext): HetznerDnsRecordRuntime? {
+    override suspend fun lookup(lookup: HetznerDnsRecordLookup, context: ProvisionerContext): HetznerDnsRecordRuntime? {
         val zone = context.lookup(lookup.zone) ?: return null
 
         val record = api.dnsRrSets(zone.name).get(lookup.name, RRType.A) ?: return null
@@ -36,7 +39,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun diff(resource: HetznerDnsRecord, context: CloudProvisionerContext) = lookup(resource.asLookup(), context)?.let { runtime ->
+    override suspend fun diff(resource: HetznerDnsRecord, context: ProvisionerDiffContext) = lookup(resource.asLookup(), context)?.let { runtime ->
         val changes = mutableListOf<ResourceDiffItem>()
 
         if (runtime.ttl != resource.ttl) {
@@ -60,8 +63,8 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                     false,
                     false,
                     true,
-                    expectedValue = expectedValues.joinToString(","),
-                    actualValue = runtime.values.joinToString(","),
+                    expectedValue = expectedValues.joinToStringOrEmpty(empty = "<known after apply>") { it },
+                    actualValue = runtime.values.joinToStringOrEmpty(empty = "<known after apply>") { it },
                 ),
             )
         }
@@ -75,7 +78,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         }
     } ?: ResourceDiff(resource, missing)
 
-    override suspend fun apply(resource: HetznerDnsRecord, context: CloudProvisionerContext, log: LogContext): Result<HetznerDnsRecordRuntime> {
+    override suspend fun apply(resource: HetznerDnsRecord, context: ProvisionerApplyContext, log: LogContext): Result<HetznerDnsRecordRuntime> {
         val current = lookup(resource.asLookup(), context)
         val zone =
             context.lookup(resource.asLookup().zone)

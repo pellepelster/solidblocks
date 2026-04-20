@@ -3,9 +3,13 @@ package de.solidblocks.cloud.provisioner.mock
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -20,9 +24,9 @@ class Resource2Provisioner :
 
     val resources = mutableMapOf<String, Resource2>()
 
-    override suspend fun lookup(lookup: Resource2Lookup, context: CloudProvisionerContext) = resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
+    override suspend fun lookup(lookup: Resource2Lookup, context: ProvisionerContext) = resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
 
-    override suspend fun diff(resource: Resource2, context: CloudProvisionerContext): ResourceDiff? = if (resource.name == "throw_exception_on_diff") {
+    override suspend fun diff(resource: Resource2, context: ProvisionerDiffContext): ResourceDiff? = if (resource.name == "throw_exception_on_diff") {
         throw RuntimeException()
     } else if (resource.name == "force_recreate_change") {
         ResourceDiff(
@@ -35,7 +39,7 @@ class Resource2Provisioner :
             ?: ResourceDiff(resource, missing)
     }
 
-    override suspend fun apply(resource: Resource2, context: CloudProvisionerContext, log: LogContext): Result<Resource2Runtime> {
+    override suspend fun apply(resource: Resource2, context: ProvisionerApplyContext, log: LogContext): Result<Resource2Runtime> {
         appliedResources.add(resource.name)
         resources[resource.name] = resource
 
@@ -51,7 +55,7 @@ class Resource2Provisioner :
 
     fun isApplied(name: String) = appliedResources.contains(name)
 
-    override suspend fun destroy(resource: Resource2, context: CloudProvisionerContext, logContext: LogContext): Boolean {
+    override suspend fun destroy(resource: Resource2, context: ProvisionerContext, log: LogContext): Boolean {
         destroyedResources.add(resource.name)
         return true
     }

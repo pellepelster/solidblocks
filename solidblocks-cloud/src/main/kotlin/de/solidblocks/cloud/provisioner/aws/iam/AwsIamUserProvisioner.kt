@@ -2,7 +2,6 @@ package de.solidblocks.cloud.provisioner.aws.iam
 
 import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
 import aws.sdk.kotlin.services.iam.IamClient
-import aws.sdk.kotlin.services.iam.createAccessKey
 import aws.sdk.kotlin.services.iam.model.CreateAccessKeyRequest
 import aws.sdk.kotlin.services.iam.model.CreateUserRequest
 import aws.sdk.kotlin.services.iam.model.DeleteAccessKeyRequest
@@ -10,7 +9,6 @@ import aws.sdk.kotlin.services.iam.model.DeleteUserPolicyRequest
 import aws.sdk.kotlin.services.iam.model.DeleteUserRequest
 import aws.sdk.kotlin.services.iam.model.GetUserPolicyRequest
 import aws.sdk.kotlin.services.iam.model.GetUserRequest
-import aws.sdk.kotlin.services.iam.model.IamException
 import aws.sdk.kotlin.services.iam.model.ListAccessKeysRequest
 import aws.sdk.kotlin.services.iam.model.ListUserPoliciesRequest
 import aws.sdk.kotlin.services.iam.model.NoSuchEntityException
@@ -24,8 +22,9 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager.Companion.accessKeySecretPath
-import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager.Companion.secretKeySecretPath
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -42,7 +41,7 @@ class AwsIamUserProvisioner(
 
     private val json = Json { prettyPrint = false }
 
-    override suspend fun lookup(lookup: AwsIamUserLookup, context: CloudProvisionerContext): AwsIamUserRuntime? = iamClient().use { client ->
+    override suspend fun lookup(lookup: AwsIamUserLookup, context: ProvisionerContext): AwsIamUserRuntime? = iamClient().use { client ->
         val user = try {
             client.getUser(GetUserRequest { userName = lookup.name }).user
         } catch (e: NoSuchEntityException) {
@@ -72,7 +71,7 @@ class AwsIamUserProvisioner(
         )
     }
 
-    override suspend fun diff(resource: AwsIamUser, context: CloudProvisionerContext): ResourceDiff {
+    override suspend fun diff(resource: AwsIamUser, context: ProvisionerDiffContext): ResourceDiff {
         val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
 
         val changes = mutableListOf<ResourceDiffItem>()
@@ -95,7 +94,7 @@ class AwsIamUserProvisioner(
         }
     }
 
-    override suspend fun apply(resource: AwsIamUser, context: CloudProvisionerContext, log: LogContext): Result<AwsIamUserRuntime> = iamClient().use { client ->
+    override suspend fun apply(resource: AwsIamUser, context: ProvisionerApplyContext, log: LogContext): Result<AwsIamUserRuntime> = iamClient().use { client ->
         val exists = try {
             client.getUser(GetUserRequest { userName = resource.name })
             true
@@ -139,7 +138,7 @@ class AwsIamUserProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(resource: AwsIamUser, context: CloudProvisionerContext, logContext: LogContext): Boolean {
+    override suspend fun destroy(resource: AwsIamUser, context: ProvisionerContext, log: LogContext): Boolean {
         iamClient().use { client ->
             try {
                 val policies = client.listUserPolicies(ListUserPoliciesRequest { userName = resource.name }).policyNames

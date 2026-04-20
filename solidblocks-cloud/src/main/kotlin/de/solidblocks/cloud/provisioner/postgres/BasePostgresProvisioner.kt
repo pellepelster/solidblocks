@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.provisioner.postgres
 
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.utils.Error
@@ -17,12 +17,12 @@ open class BasePostgresProvisioner {
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun CloudProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup, log: LogContext): Result<Connection> = LONG_WAIT.waitForResult {
+    suspend fun ProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: PassSecretLookup, log: LogContext): Result<Connection> = LONG_WAIT.waitForResult {
         log.info("waiting for Postgres admin connection")
         createConnection(server, superUserPassword)
     }
 
-    suspend fun CloudProvisionerContext.createConnection(server: HetznerServerLookup, userPassword: PassSecretLookup, userName: String = "rds"): Result<Connection> {
+    suspend fun ProvisionerContext.createConnection(server: HetznerServerLookup, userPassword: PassSecretLookup, userName: String = "rds"): Result<Connection> {
         val password = this.lookup(userPassword)
 
         return this.withPortForward(server, 5432) {

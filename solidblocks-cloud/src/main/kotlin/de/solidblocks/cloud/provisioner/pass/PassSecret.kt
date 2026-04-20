@@ -2,10 +2,10 @@ package de.solidblocks.cloud.provisioner.pass
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseResource
-import de.solidblocks.cloud.provisioner.CloudProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 
 sealed class SecretGenerator() {
-    abstract fun generate(context: CloudProvisionerContext): String
+    abstract fun generate(context: ProvisionerContext): String
     abstract fun isEphemeral(): Boolean
 }
 
@@ -13,17 +13,17 @@ class RandomSecret(
     val length: Int = 32,
     val allowedChars: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9'),
 ) : SecretGenerator() {
-    override fun generate(context: CloudProvisionerContext) = (1..length).map { allowedChars.random() }.joinToString("")
+    override fun generate(context: ProvisionerContext) = (1..length).map { allowedChars.random() }.joinToString("")
     override fun isEphemeral() = true
 }
 
-class OneTimeGeneratedSecret(val secret: (CloudProvisionerContext) -> String) : SecretGenerator() {
-    override fun generate(context: CloudProvisionerContext) = secret.invoke(context)
+class OneTimeGeneratedSecret(val secret: (ProvisionerContext) -> String) : SecretGenerator() {
+    override fun generate(context: ProvisionerContext) = secret.invoke(context)
     override fun isEphemeral() = true
 }
 
-class StaticSecret(val secret: (CloudProvisionerContext) -> String) : SecretGenerator() {
-    override fun generate(context: CloudProvisionerContext) = secret.invoke(context)
+class StaticSecret(val secret: (ProvisionerContext) -> String) : SecretGenerator() {
+    override fun generate(context: ProvisionerContext) = secret.invoke(context)
     override fun isEphemeral() = false
 }
 

@@ -4,6 +4,8 @@ import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestContextUtils
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyRuntime
@@ -133,7 +135,7 @@ class GarageFsProvisionersTest {
         val layoutProvisioner = GarageFsLayoutProvisioner()
 
         val context =
-            ProvisionerContext(
+            ProvisionerContextImpl(
                 SSHKeyUtils.loadKey(
                     TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
                 ),
@@ -167,53 +169,53 @@ class GarageFsProvisionersTest {
         runBlocking {
             val layout = GarageFsLayout(1 * 1000 * 1000, server.asLookup(), adminToken.asLookup())
 
-            assertSoftly(layoutProvisioner.diff(layout, context)) {
+            assertSoftly(layoutProvisioner.diff(layout, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
             }
 
-            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
-            assertSoftly(layoutProvisioner.diff(layout, context)) {
+            layoutProvisioner.apply(layout, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT) shouldNotBe null
+            assertSoftly(layoutProvisioner.diff(layout, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes shouldHaveSize 0
             }
 
-            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
-            assertSoftly(layoutProvisioner.diff(layout, context)) {
+            layoutProvisioner.apply(layout, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT) shouldNotBe null
+            assertSoftly(layoutProvisioner.diff(layout, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes shouldHaveSize 0
             }
 
             // check non-existing bucket
             bucketProvisioner.lookup(bucket.asLookup(), context) shouldBe null
-            assertSoftly(bucketProvisioner.diff(bucket, context)) {
+            assertSoftly(bucketProvisioner.diff(bucket, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
             // check non-existing access key
             accessKeyProvisioner.lookup(accessKey.asLookup(), context) shouldBe null
-            assertSoftly(accessKeyProvisioner.diff(accessKey, context)) {
+            assertSoftly(accessKeyProvisioner.diff(accessKey, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
             bucketProvisioner
-                .apply(bucket, context, TEST_LOG_CONTEXT)
+                .apply(bucket, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
                 .name shouldBe bucket.name
             bucketProvisioner
-                .apply(bucket, context, TEST_LOG_CONTEXT)
+                .apply(bucket, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
                 .name shouldBe bucket.name
 
             accessKeyProvisioner
-                .apply(accessKey, context, TEST_LOG_CONTEXT)
+                .apply(accessKey, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
                 .data
                 .name shouldBe accessKey.name
             accessKeyProvisioner
-                .apply(accessKey, context, TEST_LOG_CONTEXT)
+                .apply(accessKey, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
                 .data
                 .name shouldBe accessKey.name
@@ -222,13 +224,13 @@ class GarageFsProvisionersTest {
             assertSoftly(bucketProvisioner.lookup(bucket.asLookup(), context)!!) {
                 it.name shouldBe bucket.name
             }
-            assertSoftly(bucketProvisioner.diff(bucket, context)) {
+            assertSoftly(bucketProvisioner.diff(bucket, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
             val bucketWithWebsiteAccess =
                 GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), websiteAccess = true)
-            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
+            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].expectedValue shouldBe true
@@ -238,13 +240,13 @@ class GarageFsProvisionersTest {
             bucketProvisioner
                 .apply(
                     bucketWithWebsiteAccess,
-                    context,
+                    ProvisionerDiffContextImpl(emptyList(), context),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
                 .name shouldBe bucket.name
-            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
+            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
@@ -260,7 +262,7 @@ class GarageFsProvisionersTest {
             assertSoftly(
                 bucketProvisioner.diff(
                     bucketWithWebsiteAccessDomains,
-                    context,
+                    ProvisionerDiffContextImpl(emptyList(), context),
                 ),
             ) {
                 it.status shouldBe ResourceDiffStatus.has_changes
@@ -272,7 +274,7 @@ class GarageFsProvisionersTest {
             bucketProvisioner
                 .apply(
                     bucketWithWebsiteAccessDomains,
-                    context,
+                    ProvisionerDiffContextImpl(emptyList(), context),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
@@ -282,7 +284,7 @@ class GarageFsProvisionersTest {
             assertSoftly(
                 bucketProvisioner.diff(
                     bucketWithWebsiteAccessDomains,
-                    context,
+                    ProvisionerDiffContextImpl(emptyList(), context),
                 ),
             ) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
@@ -298,7 +300,7 @@ class GarageFsProvisionersTest {
             assertSoftly(
                 accessKeyProvisioner.diff(
                     accessKey,
-                    context,
+                    ProvisionerDiffContextImpl(emptyList(), context),
                 ),
             ) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
@@ -313,7 +315,7 @@ class GarageFsProvisionersTest {
                 it?.write shouldBe false
             }
             permissionProvisioner
-                .apply(allPermission, context, TEST_LOG_CONTEXT)
+                .apply(allPermission, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data shouldNotBe null
 
@@ -323,14 +325,14 @@ class GarageFsProvisionersTest {
                 it.read shouldBe true
                 it.write shouldBe true
             }
-            assertSoftly(permissionProvisioner.diff(allPermission, context)) {
+            assertSoftly(permissionProvisioner.diff(allPermission, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
             val noOwnerPermission =
                 GarageFsPermission(bucket, accessKey, server, adminToken, false, true, true)
 
-            assertSoftly(permissionProvisioner.diff(noOwnerPermission, context)) {
+            assertSoftly(permissionProvisioner.diff(noOwnerPermission, ProvisionerDiffContextImpl(emptyList(), context))) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "owner"
@@ -341,7 +343,7 @@ class GarageFsProvisionersTest {
             permissionProvisioner
                 .apply(
                     noOwnerPermission,
-                    context,
+                    ProvisionerDiffContextImpl(emptyList(), context),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
@@ -358,7 +360,7 @@ class GarageFsProvisionersTest {
 
             permissionProvisioner.apply(
                 noOwnerNoReadPermission,
-                context,
+                ProvisionerDiffContextImpl(emptyList(), context),
                 TEST_LOG_CONTEXT,
             ) shouldNotBe null
             assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
@@ -374,7 +376,7 @@ class GarageFsProvisionersTest {
             permissionProvisioner
                 .apply(
                     noOwnerNoReadNoWritePermission,
-                    context,
+                    ProvisionerDiffContextImpl(emptyList(), context),
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
@@ -386,7 +388,7 @@ class GarageFsProvisionersTest {
                 it?.write shouldBe false
             }
             permissionProvisioner
-                .apply(allPermission, context, TEST_LOG_CONTEXT)
+                .apply(allPermission, ProvisionerDiffContextImpl(emptyList(), context), TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
                 .data shouldNotBe null
 
