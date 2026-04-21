@@ -15,7 +15,7 @@ open class BaseGarageFsProvisioner {
 
     suspend fun <T> ProvisionerContext.withApiClients(server: HetznerServerLookup, adminToken: PassSecretLookup, block: suspend (Result<GarageFsApi>) -> T): T {
         val adminToken = this.lookup(adminToken)
-        return this.withPortForward(server, 3903) {
+        return this.createOrGetSshClient(server.name).portForward(3903) {
             if (it == null || adminToken == null) {
                 block.invoke(Error("could not establish GarageFS connection for${server.logText()}"))
             } else {

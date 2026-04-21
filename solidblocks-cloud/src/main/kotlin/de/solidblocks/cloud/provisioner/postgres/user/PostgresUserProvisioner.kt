@@ -37,9 +37,9 @@ class PostgresUserProvisioner :
             } else {
                 val changes = mutableListOf<ResourceDiffItem>()
 
-                context.withPortForward(resource.server, 5432) {
+                context.createOrGetSshClient(resource.server.name).portForward(5432) {
                     if (it == null) {
-                        return@withPortForward ResourceDiff(resource, unknown)
+                        return@portForward ResourceDiff(resource, unknown)
                     }
 
                     val passwordValid = try {

@@ -25,7 +25,7 @@ open class BasePostgresProvisioner {
     suspend fun ProvisionerContext.createConnection(server: HetznerServerLookup, userPassword: PassSecretLookup, userName: String = "rds"): Result<Connection> {
         val password = this.lookup(userPassword)
 
-        return this.withPortForward(server, 5432) {
+        return this.createOrGetSshClient(server.name).portForward(5432) {
             if (it == null || password == null) {
                 Error("could not establish Postgres admin connection for ${server.logText()}")
             } else {

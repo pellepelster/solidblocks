@@ -45,6 +45,8 @@ class LocalSSHKeyProviderManagerTest {
     @Test
     fun testKeyPermissionsTooOpen() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_ed25519.key").toURI().path
+        Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-rw-rw-"))
+
         val result = provider.validateConfiguration(
             LocalSSHKeyProviderConfiguration("localsshprovider1", sshKeyPath.toString()),
             CloudConfigurationContext(EnvironmentContext("cloud1", "default"), tempDir),

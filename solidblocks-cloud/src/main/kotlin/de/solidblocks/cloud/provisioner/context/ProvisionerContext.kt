@@ -44,9 +44,6 @@ interface ProvisionerContext {
 
     fun createOrGetSshClient(serverName: String): SSHClient
 
-    // TODO find a more elegant solution that is also testable
-    suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T
-
     suspend fun createSecret(path: String, secret: String): Result<Unit>
 }
 
@@ -86,13 +83,6 @@ data class ProvisionerContextImpl(
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType> = registry.list(clazz)
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = serviceRegistrations.managerForService(runtime)
-
-    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = try {
-        createOrGetSshClient(server.name).portForward(port) { block.invoke(it) }
-    } catch (e: Exception) {
-        logger.error(e) { "could not connect to server $server" }
-        block.invoke(null)
-    }
 
     override suspend fun createSecret(path: String, secret: String): Result<Unit> {
         val secret = PassSecret(

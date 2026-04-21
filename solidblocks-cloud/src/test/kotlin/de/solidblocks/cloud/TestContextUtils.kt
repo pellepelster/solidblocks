@@ -8,6 +8,7 @@ import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
@@ -29,7 +30,7 @@ import kotlin.reflect.KClass
 
 class TestContextUtils
 
-class TestProvisionerContext(val registry: ProvisionersRegistry, val portMappings: Map<Int, Int> = emptyMap()) : ProvisionerApplyContext {
+class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: SSHClient? = null) : ProvisionerApplyContext {
     override val sshKeyPair =
         SSHKeyUtils.loadKey(
             TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
@@ -41,15 +42,11 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
-    override fun createOrGetSshClient(serverName: String): SSHClient {
-        TODO("Not yet implemented")
-    }
+    override fun createOrGetSshClient(serverName: String) = sshClient ?: TODO("Not yet implemented")
 
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>) = TODO("Not yet implemented")
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = TODO("Not yet implemented")
-
-    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = block.invoke(portMappings[port])
 
     val secrets = mutableMapOf<String, String>()
 
@@ -58,9 +55,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val portMapping
         return Success(Unit)
     }
 
-    override fun hasPendingChange(resource: BaseResource): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasPendingChange(resource: BaseResource) = false
 }
 
 val TEST_PROVISIONER_CONTEXT = TestProvisionerContext(ProvisionersRegistry())

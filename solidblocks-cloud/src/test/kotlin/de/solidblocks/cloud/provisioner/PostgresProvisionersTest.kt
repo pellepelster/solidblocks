@@ -2,18 +2,12 @@ package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
-import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
-import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
-import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
-import de.solidblocks.cloud.provisioner.pass.RandomSecret
+import de.solidblocks.cloud.provisioner.pass.*
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseRuntime
@@ -25,11 +19,13 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
+import de.solidblocks.ssh.SSHClient
 import io.kotest.assertions.assertSoftly
 import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.mockk.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.awaitility.Awaitility.await
@@ -103,6 +99,13 @@ class PostgresProvisionersTest {
         val userProvisioner = PostgresUserProvisioner()
         val databaseProvisioner = PostgresDatabaseProvisioner()
 
+        val sshClient = mockk<SSHClient>()
+        coEvery {
+            sshClient.portForward<Any>(remotePort = 5432, localPort = any(), block = captureLambda())
+        } coAnswers {
+            lambda<suspend (Int?) -> Any>().coInvoke(postgresContainer.getMappedPort(5432))
+        }
+
         val context =
             TestProvisionerContext(
                 registry =
@@ -120,7 +123,7 @@ class PostgresProvisionersTest {
                         databaseProvisioner,
                     ),
                 ),
-                portMappings = mapOf(5432 to postgresContainer.getMappedPort(5432)),
+                sshClient,
             )
 
         val superUserPassword = PassSecret("super_user_password", RandomSecret())

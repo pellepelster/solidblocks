@@ -82,8 +82,8 @@ class SSHClientTest {
     @Test
     fun testPortForwarding(testContext: SolidblocksTestContext) {
         runBlocking {
-            client.portForward(22, 1234) { testContext.host("localhost").portIsOpen(it) shouldBe true }
-            client.portForward(22) { testContext.host("localhost").portIsOpen(it) shouldBe true }
+            client.portForward(22, 1234) { testContext.host("localhost").portIsOpen(it!!) shouldBe true }
+            client.portForward(22) { testContext.host("localhost").portIsOpen(it!!) shouldBe true }
         }
     }
 

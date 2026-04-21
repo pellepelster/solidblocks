@@ -196,12 +196,6 @@ class HetznerServerProvisioner(hcloudToken: String) :
                 labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
             changes.addAll(createLabelDiff(resource, runtime))
 
-            val debug = context as ProvisionerDiffContextImpl
-            debug.pendingChanges.forEach {
-                println("===========================")
-                println(it)
-            }
-
             val sshKeyHasPendingChanges = resource.sshKeys.any { context.hasPendingChange(it) }
             if (sshKeyHasPendingChanges) {
                 changes.add(

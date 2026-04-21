@@ -109,12 +109,13 @@ class SSHClient(val host: String, val keyPair: KeyPair, val hostKey: PublicKey?,
         }
     }
 
-    suspend fun <T> portForward(remotePort: Int, localPort: Int? = null, block: suspend (Int) -> T): T {
+    suspend fun <T> portForward(remotePort: Int, localPort: Int? = null, block: suspend (Int?) -> T) = try {
         val port = localPort ?: findAvailablePort()
-
         session.createLocalPortForwardingTracker(port, SshdSocketAddress("localhost", remotePort)).use {
-            return block.invoke(port)
+            block.invoke(port)
         }
+    } catch (e: Exception) {
+        block.invoke(null)
     }
 
     override fun close() {

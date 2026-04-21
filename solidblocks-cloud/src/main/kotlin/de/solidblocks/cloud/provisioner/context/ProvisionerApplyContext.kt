@@ -30,8 +30,8 @@ class ProvisionerDiffContextImpl(val pendingChanges: List<BaseInfrastructureReso
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType> = context.list(clazz)
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = context.managerForService(runtime)
-    override fun createOrGetSshClient(serverName: String): SSHClient = createOrGetSshClient(serverName)
 
-    override suspend fun <T> withPortForward(server: HetznerServerLookup, port: Int, block: suspend (Int?) -> T): T = context.withPortForward(server, port, block)
+    override fun createOrGetSshClient(serverName: String): SSHClient = context.createOrGetSshClient(serverName)
+
     override suspend fun createSecret(path: String, secret: String): Result<Unit> = context.createSecret(path, secret)
 }
