@@ -127,12 +127,11 @@ public class HetznerApi(hcloudToken: String) {
 
     fun dnsRrSets(dnsZoneReference: String) = HetznerDnsRRSetsApi(this, dnsZoneReference)
 
-    internal val client =
-        createHttpClient(
-            "https://api.hetzner.cloud",
-            hcloudToken,
-            System.getenv("BLCKS_DEBUG") != null,
-        )
+    internal val client = createHttpClient(
+        "https://api.hetzner.cloud",
+        hcloudToken,
+        System.getenv("BLCKS_DEBUG") != null,
+    )
 
     class SolidblocksHttpLogger : Logger {
         override fun log(message: String) {
