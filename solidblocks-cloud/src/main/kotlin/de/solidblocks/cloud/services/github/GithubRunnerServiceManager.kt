@@ -147,7 +147,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         GithubRunnerServiceConfigurationRuntime(
             index,
             configuration.name,
-            listOf(configuration.labels), // TODO
+            configuration.labels,
             InstanceRuntime.fromConfig(configuration.instance),
         ),
     )

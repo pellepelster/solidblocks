@@ -30,6 +30,7 @@ class GithubProviderManager : ProviderManager<GithubProviderConfiguration, Githu
             .removePrefix("github.com/")
 
         val parts = cleaned.split("/").filter { it.isNotBlank() }
+
         val gitHubUrl = when (parts.size) {
             1 -> GitHubUrlRuntime.Organization(parts[0])
             2 -> GitHubUrlRuntime.Repository(username = parts[0], repo = parts[1])

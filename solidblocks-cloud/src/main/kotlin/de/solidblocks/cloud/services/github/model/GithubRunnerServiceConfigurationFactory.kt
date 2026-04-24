@@ -4,6 +4,7 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeywordOptional
+import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.InstanceConfigurationFactory
@@ -16,11 +17,10 @@ import de.solidblocks.cloud.utils.Success
 class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<GithubRunnerServiceConfiguration>() {
 
     val labels =
-        StringKeywordOptional(
+        StringListKeyword(
             "labels",
-            NONE,
             KeywordHelp(
-                "Comma-separated list of runner labels used to route workflow jobs to this runner (e.g. `self-hosted,linux,x64`).",
+                "list of runner labels used to route workflow jobs to this runner",
             ),
         )
 
@@ -44,8 +44,8 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
 
         val labels =
             when (val result = labels.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String?> -> result.data ?: ""
+                is Error<List<String>> -> return Error(result.error)
+                is Success<List<String>> -> result.data
             }
 
         val instance =
@@ -54,6 +54,6 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
                 is Success<InstanceConfig> -> result.data
             }
 
-        return Success(GithubRunnerServiceConfiguration(name, labels, instance))
+        return Success(GithubRunnerServiceConfiguration(name, instance, labels))
     }
 }

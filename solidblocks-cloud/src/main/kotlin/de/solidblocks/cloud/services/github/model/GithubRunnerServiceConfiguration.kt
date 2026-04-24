@@ -5,8 +5,8 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 
 data class GithubRunnerServiceConfiguration(
     override val name: String,
-    val labels: String,
     val instance: InstanceConfig,
+    val labels: List<String>,
 ) : ServiceConfiguration {
     override val type = "github_runner"
 }
