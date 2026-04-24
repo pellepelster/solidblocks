@@ -20,6 +20,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLooku
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.provisioner.userdata.UserDataResult
+import de.solidblocks.cloud.provisioner.userdata.toResult
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.github.model.GithubRunnerServiceConfiguration
 import de.solidblocks.cloud.services.github.model.GithubRunnerServiceConfigurationRuntime
@@ -92,10 +94,9 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                 githubUrl = githubUrl.toUrl(),
                 runnerToken = runnerToken,
                 runnerLabels = runtime.labels,
-            ).shellScript().toCloudInit(
-                it.ensureLookup(defaultResources.sshIdentityRsaSecret.asLookup()).secret,
-                it.ensureLookup(defaultResources.sshIdentityED25519Secret.asLookup()).secret,
-            ).render()
+                packages = runtime.packages,
+                runtime.allowSudo,
+            ).toResult(context, defaultResources)
         }
 
         val server = HetznerServer(
@@ -148,6 +149,8 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             index,
             configuration.name,
             configuration.labels,
+            configuration.packages,
+            configuration.allowSudo,
             InstanceRuntime.fromConfig(configuration.instance),
         ),
     )

@@ -6,6 +6,7 @@ import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.mock.*
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
+import de.solidblocks.cloud.provisioner.userdata.UserDataResult
 import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -44,7 +45,7 @@ class UserDataLookupProviderTest {
                         val a = it.ensureLookup(resource1.asLookup())
                         val b = it.ensureLookup(resource2.asLookup())
 
-                        "${a.name}:${b.name}"
+                        UserDataResult("${a.name}:${b.name}", "${a.name}:${b.name}")
                     },
                 )
 

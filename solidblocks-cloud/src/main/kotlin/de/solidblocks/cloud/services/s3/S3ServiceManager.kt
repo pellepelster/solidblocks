@@ -32,6 +32,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.pass.StaticSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.provisioner.userdata.toResult
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
@@ -108,10 +109,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         )
                     },
                     true,
-                ).shellScript().toCloudInit(
-                    context.ensureLookup(defaultResources.sshIdentityRsaSecret.asLookup()).secret,
-                    context.ensureLookup(defaultResources.sshIdentityED25519Secret.asLookup()).secret,
-                ).render()
+                ).toResult(context, defaultResources)
             },
         )
 

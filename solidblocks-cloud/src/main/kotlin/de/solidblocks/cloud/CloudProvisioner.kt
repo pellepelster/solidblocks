@@ -56,6 +56,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.writeText
 
 class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegistrations: List<ServiceRegistration<*, *>>, val providerRegistrations: List<ProviderRegistration<*, *, *>>) : Closeable {
+
     val registry = createRegistry()
 
     val context = ProvisionerContextImpl(
@@ -168,6 +169,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
                 setOf(cloudResourceGroup),
             )
         }
+
         return listOf(cloudResourceGroup) + serviceResourceGroups
     }
 

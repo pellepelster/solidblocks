@@ -9,6 +9,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.provisioner.userdata.UserDataResult
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
@@ -76,7 +77,7 @@ class HetznerServerProvisionerTest {
                     HetznerServerType.cx23,
                     sshKeys = setOf(sshKey1.asLookup()),
                     volumes = setOf(volume.asLookup()),
-                    userData = UserData(emptySet(), { "" }),
+                    userData = UserData(emptySet(), { UserDataResult("", "") }),
                     labels = hetzner.defaultLabels,
                 )
 
@@ -104,7 +105,7 @@ class HetznerServerProvisionerTest {
                             HetznerServerType.cx23,
                             sshKeys = setOf(sshKey1.asLookup()),
                             volumes = setOf(volume.asLookup()),
-                            userData = UserData(emptySet(), { "" }),
+                            userData = UserData(emptySet(), { UserDataResult("", "") }),
                             image = "debian-99",
                             labels = hetzner.defaultLabels,
                         ),
@@ -127,7 +128,7 @@ class HetznerServerProvisionerTest {
                             HetznerServerType.cx23,
                             sshKeys = setOf(sshKey1.asLookup(), sshKey2.asLookup()),
                             volumes = setOf(volume.asLookup()),
-                            userData = UserData(emptySet(), { "" }),
+                            userData = UserData(emptySet(), { UserDataResult("", "") }),
                             labels = hetzner.defaultLabels,
                         ),
                         testContext.context,
@@ -154,7 +155,7 @@ class HetznerServerProvisionerTest {
                         HetznerServerType.cx23,
                         sshKeys = setOf(sshKey1.asLookup()),
                         volumes = setOf(volume.asLookup()),
-                        userData = UserData(emptySet(), { "" }),
+                        userData = UserData(emptySet(), { UserDataResult("", "") }),
                         labels = hetzner.defaultLabels,
                         subnet = subnet.asLookup(),
                         privateIp = "10.0.1.1",

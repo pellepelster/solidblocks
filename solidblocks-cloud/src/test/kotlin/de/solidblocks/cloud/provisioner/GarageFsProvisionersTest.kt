@@ -27,6 +27,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
 import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.provisioner.userdata.UserDataResult
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
@@ -126,7 +127,7 @@ class GarageFsProvisionersTest {
                 "server1",
                 HetznerLocation.nbg1,
                 HetznerServerType.cx23,
-                UserData(emptySet(), { "" }),
+                UserData(emptySet(), { UserDataResult("", "") }),
             )
 
         val bucketProvisioner = GarageFsBucketProvisioner()

@@ -8,7 +8,7 @@ class UserDataLookupProvider : ResourceLookupProvider<UserData, UserDataRuntime>
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: UserData, context: ProvisionerContext) = lookup.block.invoke(context)?.let { UserDataRuntime(it) }
+    override suspend fun lookup(lookup: UserData, context: ProvisionerContext) = lookup.block.invoke(context)?.let { UserDataRuntime(it.userData, it.ephemeralUserData) }
 
     override val supportedLookupType = UserData::class
 }

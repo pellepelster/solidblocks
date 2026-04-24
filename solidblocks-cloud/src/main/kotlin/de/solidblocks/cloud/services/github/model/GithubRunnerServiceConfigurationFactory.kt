@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.services.github.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.configuration.OptionalBooleanKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeywordOptional
@@ -24,6 +25,23 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
             ),
         )
 
+    val packages =
+        StringListKeyword(
+            "packages",
+            KeywordHelp(
+                "extra packages to install on machine provisioning",
+            ),
+        )
+
+    val allowSudo =
+        OptionalBooleanKeyword(
+            "allow_sudo",
+            KeywordHelp(
+                "allow sudo commands for the GitHub runner user",
+            ),
+            false,
+        )
+
     override val help =
         ConfigurationHelp(
             "GitHub Runner",
@@ -33,7 +51,7 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
         )
 
     override val keywords =
-        listOf(SERVICE_NAME_KEYWORD, labels) + InstanceConfigurationFactory.keywords
+        listOf(SERVICE_NAME_KEYWORD, labels, packages) + InstanceConfigurationFactory.keywords
 
     override fun parse(yaml: YamlNode): Result<GithubRunnerServiceConfiguration> {
         val name =
@@ -48,12 +66,24 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
                 is Success<List<String>> -> result.data
             }
 
+        val packages =
+            when (val result = packages.parse(yaml)) {
+                is Error<List<String>> -> return Error(result.error)
+                is Success<List<String>> -> result.data
+            }
+
+        val allowSudo =
+            when (val result = allowSudo.parse(yaml)) {
+                is Error<Boolean> -> return Error(result.error)
+                is Success<Boolean> -> result.data
+            }
+
         val instance =
             when (val result = InstanceConfigurationFactory.parse(yaml)) {
                 is Error<InstanceConfig> -> return Error(result.error)
                 is Success<InstanceConfig> -> result.data
             }
 
-        return Success(GithubRunnerServiceConfiguration(name, instance, labels))
+        return Success(GithubRunnerServiceConfiguration(name, instance, labels, packages, allowSudo))
     }
 }

@@ -76,7 +76,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
         val labels = HetznerLabels().let {
             it.addHashedLabel(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
-            it.addHashedLabel(userDataLabel, userData.userData)
+            it.addHashedLabel(userDataLabel, userData.ephemeralUserData)
             it.rawLabels()
         } + resource.labels
 
@@ -260,7 +260,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
             val userDataHash =
                 labels.hashLabelMatches(
                     userDataLabel,
-                    userData.userData,
+                    userData.ephemeralUserData,
                 )
 
             if (!userDataHash.matches) {

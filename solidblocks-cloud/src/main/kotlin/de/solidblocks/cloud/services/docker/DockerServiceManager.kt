@@ -24,6 +24,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.provisioner.userdata.UserDataResult
+import de.solidblocks.cloud.provisioner.userdata.toResult
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
@@ -119,10 +121,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
 
                         it.name to value
                     },
-                ).shellScript().toCloudInit(
-                    context.ensureLookup(defaultResources.sshIdentityRsaSecret.asLookup()).secret,
-                    context.ensureLookup(defaultResources.sshIdentityED25519Secret.asLookup()).secret,
-                ).render()
+                ).toResult(context, defaultResources)
             },
         )
 

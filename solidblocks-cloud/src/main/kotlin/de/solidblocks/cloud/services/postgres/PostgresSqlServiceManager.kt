@@ -27,6 +27,7 @@ import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.provisioner.userdata.toResult
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
@@ -185,16 +186,13 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         val userData =
             UserData(
                 setOf(defaultResources.dataVolume, superUserPassword) + backupResources.first,
-                { context ->
+                {
                     PostgresqlUserData(
                         runtime.name,
-                        context.ensureLookup(superUserPassword.asLookup()).secret,
-                        context.ensureLookup(defaultResources.dataVolume.asLookup()).device,
+                        it.ensureLookup(superUserPassword.asLookup()).secret,
+                        it.ensureLookup(defaultResources.dataVolume.asLookup()).device,
                         createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
-                    ).shellScript().toCloudInit(
-                        context.ensureLookup(defaultResources.sshIdentityRsaSecret.asLookup()).secret,
-                        context.ensureLookup(defaultResources.sshIdentityED25519Secret.asLookup()).secret,
-                    ).render()
+                    ).toResult(it, defaultResources)
                 },
             )
 

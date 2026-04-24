@@ -15,6 +15,7 @@ import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserRuntime
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.provisioner.userdata.UserDataResult
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
@@ -93,7 +94,7 @@ class PostgresProvisionersTest {
                 "server1",
                 HetznerLocation.nbg1,
                 HetznerServerType.cx23,
-                UserData(emptySet(), { "" }),
+                UserData(emptySet(), { UserDataResult("", "") }),
             )
 
         val userProvisioner = PostgresUserProvisioner()

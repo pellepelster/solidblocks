@@ -18,6 +18,8 @@ class GithubRunnerUserDataTest {
             "https://github.com/pellepelster/solidblocks",
             "AAEYLRLYTXITHVJNQLXFKCDJ5IDYS",
             listOf("label1", "label2"),
+            listOf("zip"),
+            false,
         )
 
         val serverContext =
