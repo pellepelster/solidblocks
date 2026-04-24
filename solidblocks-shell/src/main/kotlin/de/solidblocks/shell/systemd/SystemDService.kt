@@ -65,6 +65,8 @@ class SystemDService(override val name: String, val unit: Unit, val service: Ser
         sw.appendLine("ExecStart=${service.execStart.joinToString(" ")}")
         service.stateDirectory?.let { sw.appendLine("StateDirectory=$it") }
         service.workingDirectory?.let { sw.appendLine("WorkingDirectory=$it") }
+        service.user?.let { sw.appendLine("User=$it") }
+        service.group?.let { sw.appendLine("Group=$it") }
         service.restart?.let { sw.appendLine("Restart=$it") }
         service.limitNOFILE?.let { sw.appendLine("LimitNOFILE=$it") }
         sw.appendLine()
@@ -134,6 +136,8 @@ class Service(
     val environment: Map<String, String> = emptyMap(),
     val environmentFiles: List<String> = emptyList(),
     val workingDirectory: String? = null,
+    val user: String? = null,
+    val group: String? = null,
     val stateDirectory: String? = null,
     val limitNOFILE: Int? = null,
     val execDown: List<String>? = null,
@@ -160,4 +164,8 @@ fun ShellScript.installSystemDUnit(config: SystemDConfig) {
     )
     addCommand(SystemDLibrary.DaemonReload())
     addCommand(SystemDLibrary.Enable(config.fullUnitName()))
+}
+
+fun ShellScript.startSystemDUnit(config: SystemDConfig) {
+    addCommand(SystemDLibrary.Start(config.fullUnitName()))
 }

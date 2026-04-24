@@ -48,9 +48,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 }
 
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceManager<C, R> =
-    this.single { it.supportedConfiguration == service::class }.createManager()
-        as ServiceManager<C, R>?
-        ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")
+    this.single { it.supportedConfiguration == service::class }.createManager() as ServiceManager<C, R>? ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")
 
 data class DefaultServerResources(val dataVolume: HetznerVolume, val sshIdentityRsaSecret: PassSecret, val sshIdentityED25519Secret: PassSecret) {
     fun list() = listOf(dataVolume, sshIdentityRsaSecret, sshIdentityED25519Secret)

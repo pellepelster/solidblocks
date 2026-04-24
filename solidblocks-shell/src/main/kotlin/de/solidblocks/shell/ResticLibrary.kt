@@ -42,9 +42,8 @@ object ResticLibrary : ShellLibrary {
                     .trimIndent()
                     .toByteArray(Charsets.UTF_8),
                 RESTIC_CREDENTIALS_PATH,
-                FilePermissions.RW_R__R__,
-            )
-                .commands()
+                FilePermissions.RW_______,
+            ).commands()
     }
 
     class Backup(val repository: String, val directory: String) : ShellCommand {

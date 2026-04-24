@@ -1,3 +1,20 @@
+function github_runner_start_script() {
+  local install_dir="${1:-}"
+  cat <<EOF
+#!/bin/env bash
+
+if [[ ! -f "${install_dir}/.runner" ]]; then
+  ${install_dir}/config.sh \
+    --url "\${GITHUB_URL}" \
+    --token "\${RUNNER_TOKEN}" \
+    --name "\${RUNNER_NAME}" \
+    --labels "\${RUNNER_LABELS:-}" \
+    --unattended
+fi
+exec ${install_dir}/run.sh
+EOF
+}
+
 function github_runner_install() {
   local install_dir="/home/github-runner"
   local version="2.333.1"
@@ -9,6 +26,9 @@ function github_runner_install() {
 
   tar -xvzf /tmp/actions-runner-linux-x64-${version}.tar.gz -C "${install_dir}"
   rm -f /tmp/actions-runner-linux-x64-${version}.tar.gz
-  chown -R github-runner:github-runner "${install_dir}"
   "${install_dir}/bin/installdependencies.sh"
+
+  github_runner_start_script ${install_dir} > "${install_dir}/start_runner.sh"
+  chmod +x "${install_dir}/start_runner.sh"
+  chown -R github-runner:github-runner "${install_dir}"
 }

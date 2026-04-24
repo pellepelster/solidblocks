@@ -59,13 +59,6 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
 
     suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = provisioner(resource).diff(resource, context)
 
-    /*
-    suspend fun <ResourceType : BaseResource> info(
-        resource: ResourceType,
-        context: CloudProvisionerContext,
-    ): List<String> = provisioner(resource).info(resource, context)
-     */
-
     suspend fun <ResourceType : BaseResource> destroy(resource: ResourceType, context: ProvisionerContext, log: LogContext): Boolean = provisioner(resource).destroy(resource, context, log)
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: ProvisionerContext): RuntimeType? = runBlocking {

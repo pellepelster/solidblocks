@@ -5,27 +5,17 @@ import de.solidblocks.cloud.Constants.userDataLabel
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.HetznerLabels
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.WaitConfig
-import de.solidblocks.cloud.utils.equalsIgnoreOrder
-import de.solidblocks.cloud.utils.joinToStringOrEmpty
-import de.solidblocks.cloud.utils.waitForCondition
+import de.solidblocks.cloud.utils.*
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
@@ -34,7 +24,6 @@ import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest
 import de.solidblocks.hetzner.cloud.resources.ServerUpdateRequest
 import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.logDebug
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.seconds
@@ -66,8 +55,11 @@ class HetznerServerProvisioner(hcloudToken: String) :
     }
 
     override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext, log: LogContext): Result<HetznerServerRuntime> {
-        var server = lookup(resource.asLookup(), context)
+        if (resource.preApplyHook != null) {
+            resource.preApplyHook.invoke(log)
+        }
 
+        var server = lookup(resource.asLookup(), context)
         val sshKeys =
             resource.sshKeys.map {
                 context.lookup(it)
@@ -91,7 +83,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
         if (server == null) {
             logger.info { "server '${resource.name}' not found, creating" }
 
-            logDebug(
+            log.debug(
                 "using ssh key(s): ${
                     sshKeys.let {
                         if (it.isEmpty()) {
@@ -101,9 +93,8 @@ class HetznerServerProvisioner(hcloudToken: String) :
                         }
                     }
                 }",
-                context = log,
             )
-            logDebug(
+            log.debug(
                 "using volume(s): ${
                     volumes.let {
                         if (it.isEmpty()) {
@@ -113,7 +104,6 @@ class HetznerServerProvisioner(hcloudToken: String) :
                         }
                     }
                 }",
-                context = log,
             )
             logger.info {
                 "creating server '${resource.name}' with ssh keys ${sshKeys.joinToString(", ") { "${it.name} (${it.id})" }}"

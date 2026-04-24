@@ -20,7 +20,6 @@ class PostgresqlUserDataTest {
 
         val dataVolume1 = hetzner.createVolume("${hetzner.testId}-data1")
         val backupVolume = hetzner.createVolume("${hetzner.testId}-backup")
-        val sshKey = hetzner.createED25519SshKey()
 
         val backupConfiguration = BackupConfiguration("very-secret", LocalBackupTarget(backupVolume.linuxDevice))
         val userData =
@@ -34,7 +33,6 @@ class PostgresqlUserDataTest {
         val server =
             hetzner.createServer(
                 userData.shellScript().toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(sshKey),
                 volumes = listOf(backupVolume.id, dataVolume1.id),
             )
         server.waitForSuccessfulProvisioning()
@@ -76,7 +74,6 @@ class PostgresqlUserDataTest {
         val recreatedServer =
             hetzner.createServer(
                 recreatedUserData.shellScript().toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(sshKey),
                 volumes = listOf(backupVolume.id, dataVolume2.id),
             )
         recreatedServer.waitForSuccessfulProvisioning()
@@ -94,7 +91,6 @@ class PostgresqlUserDataTest {
         val hetzner = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val dataVolume1 = hetzner.createVolume("${hetzner.testId}-data1")
-        val sshKey = hetzner.createED25519SshKey()
 
         val bucket = testContext.aws().createBucket()
 
@@ -117,7 +113,6 @@ class PostgresqlUserDataTest {
         val server =
             hetzner.createServer(
                 userData.shellScript().toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(sshKey),
                 volumes = listOf(dataVolume1.id),
             )
         server.waitForSuccessfulProvisioning()
@@ -159,7 +154,6 @@ class PostgresqlUserDataTest {
         val recreatedServer =
             hetzner.createServer(
                 recreatedUserData.shellScript().toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(sshKey),
                 volumes = listOf(dataVolume2.id),
             )
         recreatedServer.waitForSuccessfulProvisioning()

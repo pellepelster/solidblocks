@@ -39,7 +39,7 @@ permissions:
 
 jobs:
   info:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -142,7 +142,7 @@ jobs:
 
 
   solidblocks-shell:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-shell
@@ -174,7 +174,7 @@ jobs:
            solidblocks-shell/build/snippets/*
 
   solidblocks-do-python:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-do-python
@@ -197,7 +197,7 @@ jobs:
             solidblocks-do-python/build/blcks_do*
 
   solidblocks-k3s-ansible:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-k3s-ansible
@@ -220,7 +220,7 @@ jobs:
             solidblocks-k3s-ansible/build/blcks-k3s-*
 
   solidblocks-ansible:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-ansible
@@ -243,7 +243,7 @@ jobs:
             solidblocks-ansible/build/blcks-*
 
   solidblocks-rds-postgresql-ansible:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-rds-postgresql-ansible
@@ -264,7 +264,7 @@ jobs:
             solidblocks-rds-postgresql-ansible/build/*
 
   solidblocks-test:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-test
@@ -290,7 +290,7 @@ jobs:
             **/build/reports/tests
 
   solidblocks-cloud:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-cloud
@@ -317,7 +317,7 @@ jobs:
             solidblocks-cloud/build/*.schema.json
 
   solidblocks-cloud-init:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-cloud-init
@@ -342,7 +342,7 @@ jobs:
             solidblocks-cloud-init/build/blcks-cloud-init-bootstrap.sh
 
   solidblocks-rds-postgresql-hetzner:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-rds-postgresql-hetzner
@@ -368,7 +368,7 @@ jobs:
             solidblocks-rds-postgresql-hetzner/build/blcks-terraform-rds-postgresql-hetzner-*.zip
 
   solidblocks-web-s3-docker-hetzner:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-web-s3-docker-hetzner
@@ -390,7 +390,7 @@ jobs:
             solidblocks-web-s3-docker-hetzner/build/blcks-terraform-hcloud-web-s3-docker-*.zip
 
   solidblocks-rds-postgresql-hetzner-test:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     needs:
       - solidblocks-rds-postgresql-hetzner
       - solidblocks-rds-postgresql-docker
@@ -417,7 +417,7 @@ jobs:
 
   solidblocks-debug-container:
     name: solidblocks-debug-container
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     defaults:
       run:
         working-directory: solidblocks-debug-container
@@ -461,7 +461,7 @@ jobs:
           - { version: 16 }
           - { version: 17 }
           - { version: 18 }
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -497,7 +497,7 @@ jobs:
           key: ${{ runner.os }}-docker-layers
 
   solidblocks-rds-postgresql-test:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     needs:
       - solidblocks-rds-postgresql-docker
     steps:
@@ -524,7 +524,7 @@ jobs:
             **/build/reports/tests
 
   clean-cloud-resources:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     if: ${{ always() }}
     needs:
       - solidblocks-cloud
@@ -549,7 +549,7 @@ jobs:
           ./blcks hetzner nuke --do-nuke
 
   release:
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - solidblocks-cloud
@@ -630,7 +630,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-24.04
+    runs-on: [ self-hosted, ubuntu-24.04 ]
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout

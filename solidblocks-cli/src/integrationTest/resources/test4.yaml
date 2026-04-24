@@ -1,0 +1,14 @@
+---
+name: cloud4
+
+providers:
+  - type: pass
+  - type: ssh_key
+  - type: hcloud
+  - type: backup_local
+  - type: github
+    github_url: https://github.com/pellepelster/solidblocks
+
+services:
+  - type: github_runner
+    name: runner1

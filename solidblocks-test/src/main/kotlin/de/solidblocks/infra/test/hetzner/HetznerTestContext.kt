@@ -20,6 +20,10 @@ import de.solidblocks.ssh.toPem
 import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
+import java.security.KeyPair
 
 fun hetznerTestContext(hcloudToken: String, testId: String) = HetznerTestContext(hcloudToken, testId)
 
@@ -36,11 +40,11 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
 
     val api = HetznerApi(hcloudToken)
 
-    val ed25519Key = SSHKeyUtils.ED25519.generate()
-    val ed25519KeyPem = ed25519Key.toPem()
-
     val rsaKey = SSHKeyUtils.RSA.generate()
     val rsaKeyPem = rsaKey.toPem()
+
+    val ed25519Key = SSHKeyUtils.ED25519.generate()
+    val ed25519KeyPem = ed25519Key.toPem()
 
     val defaultLabels = testLabels(this.testId)
 
@@ -64,7 +68,6 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
 
     fun createServer(
         userData: String,
-        sshKeys: List<Long>,
         location: HetznerLocation? = null,
         type: HetznerServerType = HetznerServerType.cx23,
         image: String = "debian-13",
@@ -72,6 +75,8 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
         volumes: List<Long>? = null,
     ): HetznerServerTestContext = runBlocking {
         val resourceName = name ?: testId
+
+        val sshKeys = listOf(ensureED25519SSHKey(), ensureRsaSSHKey())
 
         val request =
             ServerCreateRequest(
@@ -105,37 +110,76 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
         HetznerServerTestContext(
             newServer.server.id,
             newServer.server.publicNetwork!!.ipv4!!.ip,
-            ed25519KeyPem.privateKey,
+            rsaKeyPem.privateKey,
         )
-            .also { testContexts.add(it) }
+            .also {
+                createSSHConfig(it.host, ed25519Key)
+                testContexts.add(it)
+            }
     }
 
-    fun createED25519SshKey(name: String? = null): Long = runBlocking {
+    private fun createSSHConfig(host: String, keyPair: KeyPair) {
+        val openSSHKey = SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
+
+        val identityFile = File.createTempFile("identity", ".key")
+        logInfo("writing open ssh test key for host '$host' to '${identityFile.absolutePath}'")
+        identityFile.writeText(openSSHKey)
+        Files.setPosixFilePermissions(
+            identityFile.toPath(),
+            PosixFilePermissions.fromString("rw-------"),
+        )
+
+        val openSSHConfigFile = File("/tmp/$testId.config")
+
+        logInfo("writing open ssh config for host '$host' to '${openSSHConfigFile.absolutePath}'")
+        val sshConfig =
+            """
+            Host *
+                User root
+                IdentityFile ${identityFile.absolutePath}
+                StrictHostKeyChecking no
+                IdentitiesOnly yes
+                UserKnownHostsFile /dev/null
+            """
+                .trimIndent()
+        openSSHConfigFile.writeText(sshConfig)
+
+        logInfo("run 'ssh -F ${openSSHConfigFile.absolutePath} root@$host' to access host")
+    }
+
+    private fun ensureED25519SSHKey(name: String? = null): Long = runBlocking {
         val resourceName = name ?: "$testId-ed25519"
         logInfo("creating ssh-key '$resourceName'")
-        val newSSHKey =
+        val current = api.sshKeys.get(resourceName)
+        return@runBlocking if (current == null) {
             api.sshKeys.create(
                 SSHKeysCreateRequest(
                     resourceName,
                     SSHKeyUtils.ED25519.publicKeyToOpenSsh(ed25519KeyPem.publicKey),
                     defaultLabels,
                 ),
-            )
-        newSSHKey.sshKey.id
+            ).sshKey.id
+        } else {
+            current.id
+        }
     }
 
-    fun createRsaSsshKey(name: String? = null): Long = runBlocking {
+    private fun ensureRsaSSHKey(name: String? = null): Long = runBlocking {
         val resourceName = name ?: "$testId-rsa"
         logInfo("creating ssh-key '$resourceName'")
-        val newSSHKey =
+
+        val current = api.sshKeys.get(resourceName)
+        return@runBlocking if (current == null) {
             api.sshKeys.create(
                 SSHKeysCreateRequest(
                     resourceName,
                     SSHKeyUtils.RSA.publicKeyToOpenSsh(rsaKeyPem.publicKey),
                     defaultLabels,
                 ),
-            )
-        newSSHKey.sshKey.id
+            ).sshKey.id
+        } else {
+            current.id
+        }
     }
 
     override fun cleanUp() {

@@ -1,0 +1,10 @@
+Host *
+  User root
+  IdentityFile /home/pelle/git/solidblocks/solidblocks-cli/src/integrationTest/resources/cloud4.key
+  UserKnownHostsFile /home/pelle/git/solidblocks/solidblocks-cli/src/integrationTest/resources/cloud4_default_known_hosts
+  StrictHostKeyChecking yes
+  IdentitiesOnly yes
+
+Host cloud4-default-runner1-0
+  HostName 49.13.7.17
+

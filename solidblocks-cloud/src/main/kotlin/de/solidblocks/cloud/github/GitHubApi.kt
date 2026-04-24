@@ -6,6 +6,8 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.java.Java
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -53,6 +55,19 @@ class GitHubApi(token: String) {
             contentType(ContentType.Application.Json)
             data?.let { setBody(it) }
         }.handle()
+
+    internal suspend inline fun <reified T> get(path: String): T = client.get(path).handle()
+
+    internal suspend fun delete(path: String) {
+        val response = client.delete(path)
+        if (!response.status.isSuccess()) {
+            if (response.status == HttpStatusCode.UnprocessableEntity || response.status.value in (400 until 500)) {
+                val error: GitHubApiError = response.body()
+                throw GitHubApiException(error)
+            }
+            throw RuntimeException("unexpected response HTTP ${response.status} (${response.bodyAsText()})")
+        }
+    }
 
     internal suspend inline fun <reified T> HttpResponse.handle(): T {
         if (status.isSuccess()) {

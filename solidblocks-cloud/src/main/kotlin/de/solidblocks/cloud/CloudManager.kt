@@ -8,13 +8,7 @@ import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
-import de.solidblocks.cloud.providers.CloudConfigurationContext
-import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
-import de.solidblocks.cloud.providers.DEFAULT_NAME
-import de.solidblocks.cloud.providers.ProviderConfiguration
-import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
-import de.solidblocks.cloud.providers.ProviderManager
-import de.solidblocks.cloud.providers.managerForConfiguration
+import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
@@ -22,21 +16,13 @@ import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
 import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
-import de.solidblocks.cloud.services.CloudInfo
-import de.solidblocks.cloud.services.ServiceConfiguration
-import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.ServiceManager
-import de.solidblocks.cloud.services.forService
+import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.utils.LogContext
-import de.solidblocks.utils.bold
-import de.solidblocks.utils.logDebug
-import de.solidblocks.utils.logInfo
-import de.solidblocks.utils.logSuccess
-import de.solidblocks.utils.logWarning
+import de.solidblocks.utils.*
 import java.io.File
+import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
@@ -164,9 +150,8 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                     ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                     providerRegistrations.managerForConfiguration(provider)
 
-                logDebug(
+                log.debug(
                     "validating configuration for '${provider.type}' provider '${provider.name}'",
-                    context = log,
                 )
 
                 val runtime =
@@ -176,9 +161,8 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                         }
 
                         is Success<ProviderConfigurationRuntime> -> {
-                            logDebug(
+                            log.debug(
                                 "configuration for '${provider.type}' provider '${provider.name}' is valid",
-                                context = log,
                             )
                             result.data
                         }
@@ -205,9 +189,8 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                         log.info("found '${service.type}' service with name '${service.name}'")
                         log = log.indent()
 
-                        logDebug(
+                        log.debug(
                             "validating configuration for '${service.type}' service '${service.name}'",
-                            context = log,
                         )
 
                         val manager: ServiceManager<ServiceConfiguration, ServiceConfigurationRuntime> =
@@ -221,9 +204,8 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                                     return Error<CloudConfigurationRuntime>(result.error)
 
                                 is Success<ServiceConfigurationRuntime> -> {
-                                    logDebug(
+                                    log.debug(
                                         "configuration for '${service.type}' service '${service.name}' is valid",
-                                        context = log,
                                     )
                                     result.data
                                 }
@@ -283,11 +265,12 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     fun writeSshConfig(runtime: CloudConfigurationRuntime): Result<Unit> {
         CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
             when (val result = it.createSSHConfig()) {
-                is Error<String> -> return Error<Unit>(result.error)
-                is Success<String> -> {
+                is Error<Path> -> return Error<Unit>(result.error)
+                is Success<Path> -> {
+                    val path = Path.of(".").toAbsolutePath().relativize(result.data)
                     logInfo(
                         bold(
-                            "ssh config file for cloud '${runtime.environment.cloud}' written to '${result.data}', use 'ssh -F ${result.data} <host>' to access the VMs",
+                            "ssh config file for cloud '${runtime.environment.cloud}' written to '$path', use 'ssh -F $path <host>' to access the VMs",
                         ),
                     )
                     return Success(Unit)

@@ -27,39 +27,6 @@ fun sshTestContext(
 ): SSHTestContext = SSHTestContext(host, keyPair, username, port, testId)
 
 class SSHTestContext(val host: String, val keyPair: KeyPair, val username: String = "root", val port: Int = 22, testId: String? = null) : TestContext(testId) {
-    init {
-        val openSSHKey = SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
-
-        val openSSHKeyFile = File.createTempFile("identity", ".key")
-        logInfo("writing open ssh test key for host '$host' to '${openSSHKeyFile.absolutePath}'")
-        openSSHKeyFile.writeText(openSSHKey)
-        Files.setPosixFilePermissions(
-            openSSHKeyFile.toPath(),
-            PosixFilePermissions.fromString("rw-------"),
-        )
-
-        val openSSHConfigFile =
-            if (testId != null) {
-                File("/tmp/$testId.config")
-            } else {
-                File.createTempFile("ssh", ".config")
-            }
-
-        logInfo("writing open ssh config for host '$host' to '${openSSHConfigFile.absolutePath}'")
-        val sshConfig =
-            """
-            Host $host
-                HostName $host
-                User root
-                IdentityFile ${openSSHKeyFile.absolutePath}
-                StrictHostKeyChecking no
-                UserKnownHostsFile /dev/null
-            """
-                .trimIndent()
-        openSSHConfigFile.writeText(sshConfig)
-
-        logInfo("run 'ssh -F ${openSSHConfigFile.absolutePath} $username@$host' to access host")
-    }
 
     private val commandManager: SshCommandManager = SshCommandManager(host, keyPair, null, username, port)
 

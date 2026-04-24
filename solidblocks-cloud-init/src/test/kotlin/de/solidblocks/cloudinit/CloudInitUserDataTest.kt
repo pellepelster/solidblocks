@@ -24,7 +24,6 @@ class CloudInitUserDataTest {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val volume = hetznerTestContext.createVolume()
-        val sshKey = hetznerTestContext.createED25519SshKey()
 
         val randomContent = UUID.randomUUID().toString()
 
@@ -36,7 +35,6 @@ class CloudInitUserDataTest {
         val serverTestContext =
             hetznerTestContext.createServer(
                 shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(sshKey),
                 volumes = listOf(volume.id),
             )
         serverTestContext.waitForSuccessfulProvisioning()
@@ -56,7 +54,6 @@ class CloudInitUserDataTest {
         val recreatedServerTestContext =
             hetznerTestContext.createServer(
                 shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(sshKey),
                 volumes = listOf(volume.id),
             )
         recreatedServerTestContext.waitForSuccessfulProvisioning()
@@ -70,8 +67,6 @@ class CloudInitUserDataTest {
         val hetznerTestContext = testContext.hetzner(System.getenv("HCLOUD_TOKEN").toString())
 
         val volume = hetznerTestContext.createVolume()
-        val ed25519SshKey = hetznerTestContext.createED25519SshKey()
-        val rsaSshKey = hetznerTestContext.createRsaSsshKey()
 
         val randomContent = UUID.randomUUID().toString()
 
@@ -83,7 +78,6 @@ class CloudInitUserDataTest {
         val serverTestContext =
             hetznerTestContext.createServer(
                 shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(ed25519SshKey, rsaSshKey),
                 volumes = listOf(volume.id),
             )
         serverTestContext.waitForSuccessfulProvisioning()
@@ -115,7 +109,6 @@ class CloudInitUserDataTest {
         val recreatedServerTestContext =
             hetznerTestContext.createServer(
                 shellScript.toCloudInit(RSA_KEY_PEM.privateKey, ED25519_PRIVATE_KEY).render(),
-                listOf(ed25519SshKey, rsaSshKey),
                 volumes = listOf(volume.id),
             )
         recreatedServerTestContext.waitForSuccessfulProvisioning()
