@@ -1,7 +1,7 @@
 package de.solidblocks.shell
 
 object UserLibrary {
-    class Install : ShellCommand {
-        override fun commands() = listOf("garage_install")
+    class AddUserToGroup(val user: String, val group: String) : ShellCommand {
+        override fun commands() = listOf(" usermod -aG $group $user")
     }
 }

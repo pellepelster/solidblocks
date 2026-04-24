@@ -37,7 +37,7 @@ abstract class PassSecretValueSource : ValueSource<String, PassSecretValueSource
                 standardOutput = output
             }
 
-            return String(output.toByteArray(), Charset.defaultCharset()).trim()
+            String(output.toByteArray(), Charset.defaultCharset()).trim()
         }
     }
 }

@@ -71,9 +71,9 @@ class GenericDockerServiceUserData(
         shellScript.addCommand(AptLibrary.UpdateRepositories())
         shellScript.addCommand(AptLibrary.UpdateSystem())
 
-        shellScript.addLibrary(DockerLibrary)
         shellScript.addLibrary(StorageLibrary)
         shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
+        shellScript.addLibrary(DockerLibrary)
         shellScript.addCommand(DockerLibrary.InstallDebian())
 
         shellScript.addLibrary(CaddyLibrary)

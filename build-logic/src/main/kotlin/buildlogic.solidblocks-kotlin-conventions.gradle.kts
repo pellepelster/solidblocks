@@ -47,10 +47,6 @@ tasks.test {
                 this.parameters.path.set("solidblocks/hetzner/test/hcloud_api_token")
                 this.parameters.environment.set("HCLOUD_TOKEN")
             }.get(),
-            "GITHUB_TOKEN" to providers.of(PassSecretValueSource::class) {
-                this.parameters.path.set("solidblocks/github/test/pat")
-                this.parameters.environment.set("GITHUB_TOKEN")
-            }.get(),
             "GCP_SERVICE_ACCOUNT_KEY" to providers.of(PassSecretValueSource::class) {
                 this.parameters.path.set("solidblocks/gcp/test/service_account_key")
                 this.parameters.environment.set("GCP_SERVICE_ACCOUNT_KEY")

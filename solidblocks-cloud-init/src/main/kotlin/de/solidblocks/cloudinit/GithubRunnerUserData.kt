@@ -2,8 +2,10 @@ package de.solidblocks.cloudinit
 
 import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CurlLibrary
+import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.GithubLibrary
 import de.solidblocks.shell.ShellScript
+import de.solidblocks.shell.UserLibrary
 import de.solidblocks.shell.systemd.Install
 import de.solidblocks.shell.systemd.Restart
 import de.solidblocks.shell.systemd.Service
@@ -34,7 +36,10 @@ class GithubRunnerUserData(
         shellScript.addCommand(AptLibrary.UpdateSystem())
         shellScript.addCommand(AptLibrary.InstallPackage("curl"))
         shellScript.addCommand(AptLibrary.InstallPackage("ca-certificates"))
+        shellScript.addLibrary(DockerLibrary)
+        shellScript.addCommand(DockerLibrary.InstallDebian())
         shellScript.addCommand(GithubLibrary.InstallRunner())
+        shellScript.addCommand(UserLibrary.AddUserToGroup("github-runner", "docker"))
 
         val systemDService = SystemDService(
             runnerName,
