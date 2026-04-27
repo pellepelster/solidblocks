@@ -29,6 +29,7 @@ enum class HetznerApiErrorType {
     UNAVAILABLE,
     SERVER_ALREADY_ATTACHED,
     FIREWALL_ALREADY_APPLIED,
+    IP_NOT_AVAILABLE,
 }
 
 @Serializable

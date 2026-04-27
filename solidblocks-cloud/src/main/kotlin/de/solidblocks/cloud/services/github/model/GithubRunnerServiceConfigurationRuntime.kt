@@ -10,6 +10,7 @@ class GithubRunnerServiceConfigurationRuntime(
     val labels: List<String>,
     val packages: List<String>,
     val allowSudo: Boolean,
+    val scale: Int,
     override val instance: InstanceRuntime,
 ) : ServiceConfigurationRuntime {
     override val backup = BackupRuntime(null, 0)

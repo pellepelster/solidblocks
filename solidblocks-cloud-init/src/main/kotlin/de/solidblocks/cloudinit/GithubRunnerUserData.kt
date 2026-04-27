@@ -24,6 +24,7 @@ class GithubRunnerUserData(
     val runnerLabels: List<String>,
     val packages: List<String>,
     val allowSudo: Boolean,
+    val distributor: Distributor,
 ) : ServiceUserData {
 
     private val runnerUser = "github-runner"
@@ -57,7 +58,10 @@ class GithubRunnerUserData(
             shellScript.addCommand(AptLibrary.InstallPackage(it))
         }
         shellScript.addLibrary(DockerLibrary)
-        shellScript.addCommand(DockerLibrary.InstallDebian())
+        when (distributor) {
+            Distributor.debian -> shellScript.addCommand(DockerLibrary.InstallDebian())
+            Distributor.ubuntu -> shellScript.addCommand(DockerLibrary.InstallUbuntu())
+        }
         shellScript.addCommand(GithubLibrary.InstallRunner())
 
         val runnerUsername = "github-runner"
@@ -88,7 +92,7 @@ class GithubRunnerUserData(
                     "RUNNER_NAME" to variables.runnerName,
                     "RUNNER_LABELS" to variables.runnerLabels.joinToString(","),
 
-                ),
+                    ),
             ),
             Install(Target.MULTI_USER_TARGET),
         )

@@ -6,4 +6,8 @@ object DockerLibrary : ShellLibrary {
     class InstallDebian : ShellCommand {
         override fun commands() = listOf("docker_install_debian")
     }
+
+    class InstallUbuntu : ShellCommand {
+        override fun commands() = listOf("docker_install_ubuntu")
+    }
 }

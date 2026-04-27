@@ -54,8 +54,8 @@ data class DefaultServerResources(val dataVolume: HetznerVolume, val sshIdentity
     fun list() = listOf(dataVolume, sshIdentityRsaSecret, sshIdentityED25519Secret)
 }
 
-fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime): DefaultServerResources {
-    val serverName = serverName(cloud.environment, runtime.name)
+fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): DefaultServerResources {
+    val serverName = serverName(cloud.environment, runtime.name, index)
 
     val sshIdentityRsaSecret = PassSecret(
         sshHostPrivateKeySecretPath(cloud.environment, serverName, KeyType.rsa),

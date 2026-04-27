@@ -1,6 +1,9 @@
 package de.solidblocks.cloud.services.github.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.configuration.NumberConstraints
+import de.solidblocks.cloud.configuration.NumberKeywordOptional
+import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.OptionalBooleanKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
@@ -42,6 +45,16 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
             false,
         )
 
+    val scale =
+        NumberKeywordOptionalWithDefault(
+            "scale",
+            NumberConstraints(10, 0),
+            KeywordHelp(
+                "Number if runner instances to create",
+            ),
+            1,
+        )
+
     override val help =
         ConfigurationHelp(
             "GitHub Runner",
@@ -51,7 +64,7 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
         )
 
     override val keywords =
-        listOf(SERVICE_NAME_KEYWORD, labels, packages) + InstanceConfigurationFactory.keywords
+        listOf(SERVICE_NAME_KEYWORD, labels, scale, packages) + InstanceConfigurationFactory.keywords
 
     override fun parse(yaml: YamlNode): Result<GithubRunnerServiceConfiguration> {
         val name =
@@ -78,12 +91,18 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
                 is Success<Boolean> -> result.data
             }
 
+        val scale =
+            when (val result = scale.parse(yaml)) {
+                is Error<Int> -> return Error(result.error)
+                is Success<Int> -> result.data
+            }
+
         val instance =
             when (val result = InstanceConfigurationFactory.parse(yaml)) {
                 is Error<InstanceConfig> -> return Error(result.error)
                 is Success<InstanceConfig> -> result.data
             }
 
-        return Success(GithubRunnerServiceConfiguration(name, instance, labels, packages, allowSudo))
+        return Success(GithubRunnerServiceConfiguration(name, instance, labels, packages, allowSudo, scale))
     }
 }

@@ -49,14 +49,14 @@ import kotlinx.coroutines.runBlocking
 
 class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
-    private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud.environment, runtime.name)}.${cloud.rootDomain}"
+    private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud.environment, runtime.name, 0)}.${cloud.rootDomain}"
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext) = markdown { }.let { Success(it) }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
-        val serverName = serverName(cloud.environment, runtime.name)
+        val serverName = serverName(cloud.environment, runtime.name, 0)
 
-        val defaultResources = this.createDefaultResources(cloud, runtime)
+        val defaultResources = this.createDefaultResources(cloud, runtime, 0)
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
@@ -137,13 +137,13 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         val zone = HetznerDnsZoneLookup(cloud.rootDomain)
         val serverDnsRecord = HetznerDnsRecord(
-            serverName(cloud.environment, runtime.name),
+            serverName(cloud.environment, runtime.name, 0),
             zone,
             listOf(server.asLookup()),
             labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment),
         )
 
-        val catchAllDomain = HetznerDnsRecord("*.${serverName(cloud.environment, runtime.name)}", zone, listOf(server.asLookup()), labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment))
+        val catchAllDomain = HetznerDnsRecord("*.${serverName(cloud.environment, runtime.name, 0)}", zone, listOf(server.asLookup()), labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment))
         val dnsResources = runtime.buckets.flatMap { it.managedPublicWebAccessDomains.entries }.map {
             if (it.key.isEmpty()) {
                 HetznerDnsRecord(
@@ -306,7 +306,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext) = Success(
         ServiceInfo(
             runtime.name,
-            listOf(ServerInfo(sshConnectCommand(context, cloud, runtime))),
+            listOf(ServerInfo(sshConnectCommand(context, cloud, runtime, 0))),
             listOf(
                 EndpointInfo("s3", "https://${s3Host(serviceRootDomain(cloud, runtime))}"),
                 EndpointInfo("admin", "https://${s3AdminHost(serviceRootDomain(cloud, runtime))}"),
@@ -316,9 +316,9 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
     override fun infoText(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext) = markdown {
         h2("Servers")
-        text("to access server **${serverName(cloud.environment, runtime.name)}** via SSH, run")
+        text("to access server **${serverName(cloud.environment, runtime.name, 0)}** via SSH, run")
         codeBlock(
-            sshConnectCommand(context, cloud, runtime),
+            sshConnectCommand(context, cloud, runtime, 0),
         )
 
         h2("Endpoints")

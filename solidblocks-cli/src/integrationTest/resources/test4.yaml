@@ -13,6 +13,7 @@ services:
   - type: github_runner
     name: runner1
     allow_sudo: true
+    scale: 1
     labels:
       - self-hosted
       - ubuntu-24.04

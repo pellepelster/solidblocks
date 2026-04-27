@@ -1,6 +1,5 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.ssh.KeyType
@@ -18,6 +17,8 @@ object Constants {
     const val serviceLabel: String = "$namespace/service"
 
     const val versionLabel: String = "$namespace/version"
+
+    const val indexLabel: String = "$namespace/index"
 
     const val cloudLabel: String = "$namespace/cloud"
 
@@ -39,7 +40,7 @@ object Constants {
 
     fun firewallName(environment: EnvironmentContext, name: String) = "${environment.cloud}-${environment.environment}-$name"
 
-    fun serverName(environment: EnvironmentContext, name: String, index: Int = 0) = "${environment.cloud}-${environment.environment}-$name-$index"
+    fun serverName(environment: EnvironmentContext, name: String, index: Int) = "${environment.cloud}-${environment.environment}-$name-$index"
 
     fun serviceDnsName(service: ServiceConfigurationRuntime) = service.name
 
@@ -57,6 +58,8 @@ object Constants {
     fun dnsRecordLabels(runtime: ServiceConfigurationRuntime) = mapOf(serviceLabel to runtime.name)
 
     fun cloudLabels(environment: EnvironmentContext) = cloudLabels(environment.cloud)
+
+    fun indexLabels(index: Int) = mapOf(indexLabel to index.toString())
 
     fun cloudLabels(cloudName: String) = mapOf(
         managedByLabel to "blcks",

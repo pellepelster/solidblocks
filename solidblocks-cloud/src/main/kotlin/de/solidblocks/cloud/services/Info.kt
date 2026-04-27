@@ -15,5 +15,5 @@ data class ServiceInfo(val name: String, val servers: List<ServerInfo>, val endp
 
 @Serializable data class CloudInfo(val services: List<ServiceInfo>)
 
-fun sshConnectCommand(context: ProvisionerContext, cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime): String =
-    "ssh -F ${sshConfigFilePath(context.sshConfigFilePath, context.environment).toAbsolutePath()} ${serverName(cloud.environment, runtime.name)}"
+fun sshConnectCommand(context: ProvisionerContext, cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): String =
+    "ssh -F ${sshConfigFilePath(context.sshConfigFilePath, context.environment).toAbsolutePath()} ${serverName(cloud.environment, runtime.name, index)}"
