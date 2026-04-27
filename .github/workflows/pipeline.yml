@@ -36,6 +36,7 @@ permissions:
   id-token: write
   contents: write
   packages: write
+  checks: write
 
 jobs:
   info:
@@ -139,6 +140,12 @@ jobs:
       - name: Test Integration
         shell: bash
         run: ./gradlew :solidblocks-cli:testIntegration
+      - name: Publish JUnit Results
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/build/test-results/**/*.xml'
+          check_name: junit-solidblocks-cli-test-${{ matrix.job.target }}
 
 
   solidblocks-shell:
@@ -165,6 +172,12 @@ jobs:
         run: mise :build
       - name: Test
         run: mise :test
+      - name: Publish JUnit Results
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/build/test-results/**/*.xml'
+          check_name: junit-solidblocks-shell
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -281,6 +294,12 @@ jobs:
         run: mise :build
       - name: Test
         run: mise :test
+      - name: Publish JUnit Results
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/build/test-results/**/*.xml'
+          check_name: junit-solidblocks-test
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -307,6 +326,12 @@ jobs:
         run: mise :build
       - name: Test
         run: mise :test
+      - name: Publish JUnit Results
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/build/test-results/**/*.xml'
+          check_name: junit-solidblocks-cloud
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -442,6 +467,12 @@ jobs:
         run: mise :build
       - name: Test
         run: mise :test
+      - name: Publish JUnit Results
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/build/test-results/**/*.xml'
+          check_name: junit-solidblocks-debug-container
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -515,6 +546,12 @@ jobs:
           experimental: true
       - name: Test
         run: mise //solidblocks-rds-postgresql-docker:test
+      - name: Publish JUnit Results
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '**/build/test-results/**/*.xml'
+          check_name: junit-solidblocks-rds-postgresql-test
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
