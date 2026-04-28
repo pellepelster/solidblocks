@@ -6,7 +6,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 
 class PostgresUser(name: String, val password: PassSecretLookup, val server: HetznerServerLookup, val superUserPassword: PassSecretLookup) : BaseInfrastructureResource<PostgresUserRuntime>(name, emptySet()) {
 
-    fun asLookup() = PostgresUserLookup(name, server, superUserPassword)
+    override fun asLookup() = PostgresUserLookup(name, server, superUserPassword)
 
     override fun logText() = "Postgres user '$name'"
 

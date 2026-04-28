@@ -10,7 +10,6 @@ import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
@@ -19,8 +18,6 @@ import de.solidblocks.cloud.providers.github.GitHubUrlRuntime
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Organization
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Repository
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -99,7 +96,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                     runnerLabels = runtime.labels,
                     packages = runtime.packages,
                     runtime.allowSudo,
-                    Distributor.ubuntu
+                    Distributor.ubuntu,
                 ).toResult(context, defaultResources)
             }
 
@@ -144,10 +141,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         return servers
     }
 
-    override fun cleanupResources(
-        cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime,
-        context: ProvisionerContext, log: LogContext
-    ): Result<Unit> {
+    override fun cleanupResources(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: ProvisionerContext, log: LogContext): Result<Unit> {
         val (githubUrl, githubApi, runnerToken) = getGithub(cloud)
 
         runBlocking {
@@ -181,7 +175,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             servers.filter { it.name.startsWith(serverNamePrefix) }.forEach { server ->
                 if (server.name !in serverNames) {
                     log.info("removing ${server.logText()}")
-                    context.destroy(server)
+                    context.destroy(HetznerServerLookup(server.name), log)
                 }
             }
         }
@@ -189,7 +183,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         return Success(Unit)
     }
 
-    override fun createProvisioners(runtime: GithubRunnerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()
+    override fun createProvisioners(runtime: GithubRunnerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()
 
     override fun validateConfiguration(
         index: Int,

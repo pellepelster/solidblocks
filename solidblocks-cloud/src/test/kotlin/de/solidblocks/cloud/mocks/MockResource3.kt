@@ -8,6 +8,8 @@ class MockResource3Runtime
 
 class MockResource3(name: String, dependsOn: Set<BaseResource> = emptySet()) : BaseInfrastructureResource<MockResource3Runtime>(name, dependsOn) {
     override val lookupType = MockResource3Lookup::class
+
+    override fun asLookup() = MockResource3Lookup(name)
 }
 
 class MockResource3Lookup(name: String) : InfrastructureResourceLookup<MockResource3Runtime>(name, emptySet())

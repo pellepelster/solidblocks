@@ -20,7 +20,7 @@ class GithubRunnerUserDataTest {
             listOf("label1", "label2"),
             listOf("zip"),
             false,
-            Distributor.debian
+            Distributor.debian,
         )
 
         val serverContext =

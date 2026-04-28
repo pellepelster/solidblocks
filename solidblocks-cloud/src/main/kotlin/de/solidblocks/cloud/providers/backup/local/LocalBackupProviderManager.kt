@@ -14,7 +14,7 @@ class LocalBackupProviderManager :
 
     override fun validateConfiguration(configuration: LocalBackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext) = Success(LocalBackupProviderConfigurationRuntime())
 
-    override fun createProvisioners(runtime: LocalBackupProviderConfigurationRuntime) = emptyList<InfrastructureResourceProvisioner<*, *>>()
+    override fun createProvisioners(runtime: LocalBackupProviderConfigurationRuntime) = emptyList<InfrastructureResourceProvisioner<*, *, *>>()
 
     override val supportedConfiguration = LocalBackupProviderConfiguration::class
 }

@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 class HetznerSubnetProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerSubnetLookup, HetznerSubnetRuntime>,
-    InfrastructureResourceProvisioner<HetznerSubnet, HetznerSubnetRuntime> {
+    InfrastructureResourceProvisioner<HetznerSubnet, HetznerSubnetRuntime, HetznerSubnetLookup> {
 
     private val logger = KotlinLogging.logger {}
 

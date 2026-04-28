@@ -37,7 +37,7 @@ class AwsIamUserProvisioner(
     private val accessKeyId: String,
     private val secretAccessKey: String,
 ) : ResourceLookupProvider<AwsIamUserLookup, AwsIamUserRuntime>,
-    InfrastructureResourceProvisioner<AwsIamUser, AwsIamUserRuntime> {
+    InfrastructureResourceProvisioner<AwsIamUser, AwsIamUserRuntime, AwsIamUserLookup> {
 
     private val json = Json { prettyPrint = false }
 
@@ -138,30 +138,30 @@ class AwsIamUserProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(resource: AwsIamUser, context: ProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(lookup: AwsIamUserLookup, context: ProvisionerContext, log: LogContext): Boolean {
         iamClient().use { client ->
             try {
-                val policies = client.listUserPolicies(ListUserPoliciesRequest { userName = resource.name }).policyNames
+                val policies = client.listUserPolicies(ListUserPoliciesRequest { userName = lookup.name }).policyNames
                 policies.forEach { policyName ->
                     client.deleteUserPolicy(
                         DeleteUserPolicyRequest {
-                            userName = resource.name
+                            userName = lookup.name
                             this.policyName = policyName
                         },
                     )
                 }
 
-                val keys = client.listAccessKeys(ListAccessKeysRequest { userName = resource.name }).accessKeyMetadata
+                val keys = client.listAccessKeys(ListAccessKeysRequest { userName = lookup.name }).accessKeyMetadata
                 keys.forEach { key ->
                     client.deleteAccessKey(
                         DeleteAccessKeyRequest {
-                            userName = resource.name
+                            userName = lookup.name
                             accessKeyId = key.accessKeyId
                         },
                     )
                 }
 
-                client.deleteUser(DeleteUserRequest { userName = resource.name })
+                client.deleteUser(DeleteUserRequest { userName = lookup.name })
             } catch (e: NoSuchEntityException) {
                 return false
             }

@@ -157,7 +157,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         return listOf(server) + optionalResources + setOfNotNull(backupResources.second) + defaultResources.list()
     }
 
-    override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()
+    override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()
 
     override fun validateConfiguration(
         index: Int,

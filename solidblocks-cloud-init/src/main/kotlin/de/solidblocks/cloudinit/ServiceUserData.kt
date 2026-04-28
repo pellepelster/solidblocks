@@ -7,8 +7,7 @@ interface ServiceUserData {
     fun ephemeralScript(): ShellScript = shellScript()
 }
 
-
 enum class Distributor {
     debian,
-    ubuntu
+    ubuntu,
 }

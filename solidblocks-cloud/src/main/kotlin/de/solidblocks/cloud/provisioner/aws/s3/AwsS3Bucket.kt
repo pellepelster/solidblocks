@@ -7,7 +7,7 @@ class AwsS3Bucket(
     val region: String,
 ) : BaseInfrastructureResource<AwsS3BucketRuntime>(name, emptySet()) {
 
-    fun asLookup() = AwsS3BucketLookup(name)
+    override fun asLookup() = AwsS3BucketLookup(name)
 
     override fun logText() = "S3 bucket '$name'"
 

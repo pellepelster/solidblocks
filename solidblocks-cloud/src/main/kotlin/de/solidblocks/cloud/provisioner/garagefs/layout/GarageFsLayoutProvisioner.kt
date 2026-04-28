@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
 class GarageFsLayoutProvisioner :
     BaseGarageFsProvisioner(),
     ResourceLookupProvider<GarageFsLayoutLookup, GarageFsLayoutRuntime>,
-    InfrastructureResourceProvisioner<GarageFsLayout, GarageFsLayoutRuntime> {
+    InfrastructureResourceProvisioner<GarageFsLayout, GarageFsLayoutRuntime, GarageFsLayoutLookup> {
 
     private val logger = KotlinLogging.logger {}
 

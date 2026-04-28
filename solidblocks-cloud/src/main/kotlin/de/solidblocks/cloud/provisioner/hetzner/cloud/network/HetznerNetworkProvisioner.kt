@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
 class HetznerNetworkProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerNetworkLookup, HetznerNetworkRuntime>,
-    InfrastructureResourceProvisioner<HetznerNetwork, HetznerNetworkRuntime> {
+    InfrastructureResourceProvisioner<HetznerNetwork, HetznerNetworkRuntime, HetznerNetworkLookup> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -99,7 +99,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(resource: HetznerNetwork, context: ProvisionerContext, log: LogContext) = lookup(resource.asLookup(), context)?.let { api.networks.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerNetworkLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.networks.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerNetworkLookup::class
 

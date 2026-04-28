@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 class HetznerServerProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerServerLookup, HetznerServerRuntime>,
-    InfrastructureResourceProvisioner<HetznerServer, HetznerServerRuntime> {
+    InfrastructureResourceProvisioner<HetznerServer, HetznerServerRuntime, HetznerServerLookup> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -102,7 +102,18 @@ class HetznerServerProvisioner(hcloudToken: String) :
                     volumes = volumes.map { it.id },
                     labels = labels,
                 )
-            val createRequest = api.servers.create(request)
+
+            val createRequest = try {
+                api.servers.create(request)
+            } catch (e: HetznerApiException) {
+                when (e.error.code) {
+                    HetznerApiErrorType.RESOURCE_UNAVAILABLE -> {
+                        return Error<HetznerServerRuntime>("server type '${resource.type}' currently not available")
+                    }
+
+                    else -> throw e
+                }
+            }
 
             if (
                 !api.servers.waitForAction(createRequest.action) {
@@ -231,13 +242,13 @@ class HetznerServerProvisioner(hcloudToken: String) :
                     resource,
                     has_changes,
                     changes =
-                        listOf(
-                            ResourceDiffItem(
-                                "user data checksum",
-                                triggersRecreate = true,
-                                changed = true,
-                            ),
+                    listOf(
+                        ResourceDiffItem(
+                            "user data checksum",
+                            triggersRecreate = true,
+                            changed = true,
                         ),
+                    ),
                 )
             }
             val userDataHash =
@@ -289,14 +300,14 @@ class HetznerServerProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(resource: HetznerServer, context: ProvisionerContext, log: LogContext) = lookup(resource.asLookup(), context)?.let {
+    override suspend fun destroy(lookup: HetznerServerLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let {
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) {
-            log.info("waiting for deletion of ${resource.logText()}")
+            log.info("waiting for deletion of ${lookup.logText()}")
         }
 
         WaitConfig(10, 2.seconds).waitForCondition {
-            log.info("waiting for deletion of ${resource.logText()}")
+            log.info("waiting for deletion of ${lookup.logText()}")
             api.volumes.list().none { it.server == it.id }
         }
     } ?: false

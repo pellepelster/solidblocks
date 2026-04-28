@@ -20,32 +20,31 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 
-class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvider<*, *>> = emptyList(), val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *>> = emptyList()) {
+class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvider<*, *>> = emptyList(), val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList()) {
 
     private val logger = KotlinLogging.logger {}
 
     @Suppress("UNCHECKED_CAST")
-    private fun <ResourceType : BaseResource> provisioner(resource: ResourceType): InfrastructureResourceProvisioner<ResourceType, *> =
-        provisioner(resource::class.java) as InfrastructureResourceProvisioner<ResourceType, *>
+    private fun <ResourceType : BaseResource> provisioner(resource: ResourceType): InfrastructureResourceProvisioner<ResourceType, *, *> =
+        provisioner(resource::class.java) as InfrastructureResourceProvisioner<ResourceType, *, *>
 
-    private fun <ResourceType : BaseResource> provisioner(resourceType: Class<ResourceType>): InfrastructureResourceProvisioner<ResourceType, *> {
-        val provisioner =
-            resourceProvisioners.singleOrNull {
+    private fun provisioner(resourceType: Class<*>): InfrastructureResourceProvisioner<*, *, *> {
+        val provisioner = resourceProvisioners.singleOrNull {
+            it.supportedResourceType.java.isAssignableFrom(resourceType) || it.supportedLookupType.java.isAssignableFrom(resourceType)
+        }
+
+        if (provisioner == null) {
+            val count = resourceProvisioners.count {
                 it.supportedResourceType.java.isAssignableFrom(resourceType)
             }
 
-        if (provisioner == null) {
-            val count =
-                resourceProvisioners.count {
-                    it.supportedResourceType.java.isAssignableFrom(resourceType)
-                }
             throw RuntimeException(
                 "no or more than one ($count) provisioner found for '${resourceType.name}'",
             )
         }
 
         @Suppress("UNCHECKED_CAST")
-        return provisioner as InfrastructureResourceProvisioner<ResourceType, *>
+        return provisioner
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -59,7 +58,10 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
 
     suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = provisioner(resource).diff(resource, context)
 
-    suspend fun <ResourceType : BaseResource> destroy(resource: ResourceType, context: ProvisionerContext, log: LogContext): Boolean = provisioner(resource).destroy(resource, context, log)
+    suspend fun <LookupType> destroy(lookup: LookupType, context: ProvisionerContext, log: LogContext): Boolean {
+        val provisioner = provisioner(lookup!!.javaClass) as InfrastructureResourceProvisioner<Any, Any, LookupType>
+        return provisioner.destroy(lookup, context, log)
+    }
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: ProvisionerContext): RuntimeType? = runBlocking {
         val provider =
@@ -96,7 +98,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
 
         fun List<ProviderRegistration<*, *, *>>.createRegistry(providers: List<ProviderConfigurationRuntime>) = ProvisionersRegistry(this.createLookups(providers), this.createProvisioners(providers))
 
-        fun List<ProviderRegistration<*, *, *>>.createProvisioners(providers: List<ProviderConfigurationRuntime>): List<InfrastructureResourceProvisioner<*, *>> = providers.flatMap {
+        fun List<ProviderRegistration<*, *, *>>.createProvisioners(providers: List<ProviderConfigurationRuntime>): List<InfrastructureResourceProvisioner<*, *, *>> = providers.flatMap {
             val manager:
                 ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                 this.managerForRuntime(it)

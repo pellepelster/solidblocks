@@ -101,7 +101,7 @@ class GithubRunnerUserData(
                     "RUNNER_NAME" to variables.runnerName,
                     "RUNNER_LABELS" to variables.runnerLabels.joinToString(","),
 
-                    ),
+                ),
             ),
             Install(Target.MULTI_USER_TARGET),
         )

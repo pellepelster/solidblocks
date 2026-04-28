@@ -17,7 +17,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource1Provisioner :
     ResourceLookupProvider<Resource1Lookup, Resource1Runtime>,
-    InfrastructureResourceProvisioner<Resource1, Resource1Runtime> {
+    InfrastructureResourceProvisioner<Resource1, Resource1Runtime, Resource1Lookup> {
 
     private val logger = KotlinLogging.logger {}
 

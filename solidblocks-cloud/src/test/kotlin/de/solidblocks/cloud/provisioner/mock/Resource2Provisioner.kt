@@ -18,7 +18,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource2Provisioner :
     ResourceLookupProvider<Resource2Lookup, Resource2Runtime>,
-    InfrastructureResourceProvisioner<Resource2, Resource2Runtime> {
+    InfrastructureResourceProvisioner<Resource2, Resource2Runtime, Resource2Lookup> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -55,8 +55,8 @@ class Resource2Provisioner :
 
     fun isApplied(name: String) = appliedResources.contains(name)
 
-    override suspend fun destroy(resource: Resource2, context: ProvisionerContext, log: LogContext): Boolean {
-        destroyedResources.add(resource.name)
+    override suspend fun destroy(lookup: Resource2Lookup, context: ProvisionerContext, log: LogContext): Boolean {
+        destroyedResources.add(lookup.name)
         return true
     }
 

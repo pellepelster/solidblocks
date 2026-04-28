@@ -9,7 +9,7 @@ class AwsIamUser(
 
     val policyName = "$name-policy"
 
-    fun asLookup() = AwsIamUserLookup(name)
+    override fun asLookup() = AwsIamUserLookup(name)
 
     override fun logText() = "IAM user '$name'"
 

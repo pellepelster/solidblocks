@@ -47,7 +47,7 @@ class CloudInit() {
             sw.appendLine("write_files:")
             files.forEach {
                 sw.appendLine("    - path: ${it.path}")
-                sw.appendLine("      permissions: ${it.permissions}")
+                sw.appendLine("      permissions: '${it.permissions}'")
                 sw.appendLine("      content: |")
                 it.content.lines().forEach {
                     sw.appendLine("        $it")

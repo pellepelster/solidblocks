@@ -7,6 +7,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.provisioner.aws.s3.AwsS3BucketLookup
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -30,7 +31,7 @@ import kotlin.reflect.KClass
 class HetznerFirewallProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerFirewallLookup, HetznerFirewallRuntime>,
-    InfrastructureResourceProvisioner<HetznerFirewall, HetznerFirewallRuntime> {
+    InfrastructureResourceProvisioner<HetznerFirewall, HetznerFirewallRuntime, HetznerFirewallLookup> {
 
     override suspend fun lookup(lookup: HetznerFirewallLookup, context: ProvisionerContext) = api.firewalls.get(lookup.name)?.let {
         val appliedToLabels = it.appliedTo.flatMap {
@@ -134,7 +135,7 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
         return Success(fw)
     }
 
-    override suspend fun destroy(resource: HetznerFirewall, context: ProvisionerContext, log: LogContext) = lookup(resource.asLookup(), context)?.let { api.firewalls.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerFirewallLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.firewalls.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerFirewallLookup::class
 

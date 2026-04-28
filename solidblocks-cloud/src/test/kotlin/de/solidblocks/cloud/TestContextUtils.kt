@@ -46,6 +46,8 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
 
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>) = TODO("Not yet implemented")
 
+    override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
+
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = TODO("Not yet implemented")
 
     val secrets = mutableMapOf<String, String>()

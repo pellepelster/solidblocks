@@ -23,7 +23,7 @@ import java.sql.Connection
 class PostgresDatabaseProvisioner :
     BasePostgresProvisioner(),
     ResourceLookupProvider<PostgresDatabaseLookup, PostgresDatabaseRuntime>,
-    InfrastructureResourceProvisioner<PostgresDatabase, PostgresDatabaseRuntime> {
+    InfrastructureResourceProvisioner<PostgresDatabase, PostgresDatabaseRuntime, PostgresDatabaseLookup> {
 
     private val logger = KotlinLogging.logger {}
 

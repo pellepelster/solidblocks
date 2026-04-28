@@ -10,7 +10,7 @@ class GarageFsLayout(val capacity: Long, val server: HetznerServerLookup, val ad
         "GarageFsLayout",
         setOf(server, adminToken),
     ) {
-    fun asLookup() = GarageFsLayoutLookup(name, server, adminToken)
+    override fun asLookup() = GarageFsLayoutLookup(name, server, adminToken)
 
     override fun logText() = "GarageFS Layout '$name' on ${server.logText()}"
 

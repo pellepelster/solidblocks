@@ -13,7 +13,7 @@ data class CloudConfigurationContext(val environment: EnvironmentContext, val co
 interface ProviderManager<C : ProviderConfiguration, R : ProviderConfigurationRuntime> {
     fun validateConfiguration(configuration: C, context: CloudConfigurationContext, log: LogContext): Result<R>
 
-    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
+    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *, *>>
 
     fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
 

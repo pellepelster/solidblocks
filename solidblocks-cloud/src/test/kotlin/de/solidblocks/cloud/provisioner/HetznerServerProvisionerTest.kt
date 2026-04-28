@@ -186,7 +186,7 @@ class HetznerServerProvisionerTest {
                     it.privateIpv4 shouldBe "10.0.1.1"
                 }
 
-                testContext.serverProvisioner.destroy(server, testContext.context, TEST_LOG_CONTEXT)
+                testContext.serverProvisioner.destroy(server.asLookup(), testContext.context, TEST_LOG_CONTEXT)
             }
         }
     }

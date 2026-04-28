@@ -137,7 +137,7 @@ class HetznerFirewallProvisionerTest {
                 it.changes.shouldBeEmpty()
             }
 
-            provisioner.destroy(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.destroy(resourceWithUpdatedLabel.asLookup(), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
             provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
         }
     }

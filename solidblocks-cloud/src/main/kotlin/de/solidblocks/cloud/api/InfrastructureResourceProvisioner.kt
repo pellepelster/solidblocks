@@ -7,15 +7,17 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
-interface InfrastructureResourceProvisioner<ResourceType, RuntimeType> {
+interface InfrastructureResourceProvisioner<ResourceType, RuntimeType, LookupType> {
 
     suspend fun diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = TODO("Not yet implemented")
 
     suspend fun apply(resource: ResourceType, context: ProvisionerApplyContext, log: LogContext): Result<RuntimeType> = TODO("Not yet implemented")
 
-    suspend fun destroy(resource: ResourceType, context: ProvisionerContext, log: LogContext): Boolean = TODO("Not yet implemented")
+    suspend fun destroy(lookup: LookupType, context: ProvisionerContext, log: LogContext): Boolean = TODO("Not yet implemented")
 
     suspend fun destroyAll(context: ProvisionerContext): Boolean = TODO("Not yet implemented")
+
+    val supportedLookupType: KClass<*>
 
     val supportedResourceType: KClass<*>
 }

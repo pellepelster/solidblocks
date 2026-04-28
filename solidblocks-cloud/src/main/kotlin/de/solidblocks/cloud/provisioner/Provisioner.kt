@@ -14,6 +14,7 @@ import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -182,7 +183,7 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
                     logger.info { "destroying ${resource.logText()}" }
                     log.info("destroying ${resource.logText()}")
 
-                    val result = registry.destroy<BaseResource>(resource, context, log)
+                    val result = registry.destroy(resource.asLookup(), context, log)
                     if (!result) {
                         return@runBlocking Error("destroying ${resource.logText()} failed")
                     }

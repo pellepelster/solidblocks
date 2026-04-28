@@ -6,7 +6,7 @@ import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 class HetznerFirewall(name: String, val rules: List<HetznerFirewallRule>, labels: Map<String, String> = emptyMap(), val appliedToLabels: Map<String, String>) :
     BaseLabeledInfrastructureResource<HetznerFirewallRuntime>(name, emptySet(), labels) {
 
-    fun asLookup() = HetznerFirewallLookup(name)
+    override fun asLookup() = HetznerFirewallLookup(name)
 
     override fun logText() = "firewall '$name'"
 

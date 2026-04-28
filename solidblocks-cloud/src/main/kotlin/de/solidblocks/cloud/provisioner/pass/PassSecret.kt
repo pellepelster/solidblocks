@@ -32,7 +32,7 @@ class PassSecret(
     val secretGenerator: SecretGenerator,
     dependsOn: Set<BaseResource> = emptySet(),
 ) : BaseInfrastructureResource<PassSecretRuntime>(name, dependsOn) {
-    fun asLookup() = PassSecretLookup(name)
+    override fun asLookup() = PassSecretLookup(name)
 
     override fun logText() = "pass secret '$name'"
 

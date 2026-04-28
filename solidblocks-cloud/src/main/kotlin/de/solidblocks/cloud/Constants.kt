@@ -40,7 +40,7 @@ object Constants {
 
     fun firewallName(environment: EnvironmentContext, name: String) = "${environment.cloud}-${environment.environment}-$name"
 
-    fun serverName(environment: EnvironmentContext, name: String, index: Int) = "${serverNamePrefix(environment, name)}-${index}"
+    fun serverName(environment: EnvironmentContext, name: String, index: Int) = "${serverNamePrefix(environment, name)}-$index"
 
     fun serverNamePrefix(environment: EnvironmentContext, name: String) = "${environment.cloud}-${environment.environment}-$name"
 

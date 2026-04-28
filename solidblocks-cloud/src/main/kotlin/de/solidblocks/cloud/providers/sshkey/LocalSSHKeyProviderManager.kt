@@ -141,7 +141,7 @@ class LocalSSHKeyProviderManager :
         return Success(sshKey)
     }
 
-    override fun createProvisioners(runtime: LocalSSHKeyProviderConfigurationRuntime) = emptyList<InfrastructureResourceProvisioner<*, *>>()
+    override fun createProvisioners(runtime: LocalSSHKeyProviderConfigurationRuntime) = emptyList<InfrastructureResourceProvisioner<*, *, *>>()
 
     override val supportedConfiguration = LocalSSHKeyProviderConfiguration::class
 }

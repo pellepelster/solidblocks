@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
 class HetznerSSHKeyProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerSSHKeyLookup, HetznerSSHKeyRuntime>,
-    InfrastructureResourceProvisioner<HetznerSSHKey, HetznerSSHKeyRuntime> {
+    InfrastructureResourceProvisioner<HetznerSSHKey, HetznerSSHKeyRuntime, HetznerSSHKeyLookup> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -105,7 +105,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(resource: HetznerSSHKey, context: ProvisionerContext, log: LogContext) = lookup(resource.asLookup(), context)?.let { api.sshKeys.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerSSHKeyLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.sshKeys.delete(it.id) } ?: false
 
     private fun computeFingerprint(publicKey: String): String {
         val parts = publicKey.trim().split(Regex("\\s+"))

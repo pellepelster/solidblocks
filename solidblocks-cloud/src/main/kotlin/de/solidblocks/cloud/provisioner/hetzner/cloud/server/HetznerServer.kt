@@ -29,7 +29,7 @@ class HetznerServer(
     labels,
 ) {
 
-    fun asLookup() = HetznerServerLookup(name)
+    override fun asLookup() = HetznerServerLookup(name)
 
     override fun logText() = if (privateIp == null) {
         "server '$name'"

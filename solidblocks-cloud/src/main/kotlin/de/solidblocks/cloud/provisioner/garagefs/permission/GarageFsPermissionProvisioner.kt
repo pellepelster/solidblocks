@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
 class GarageFsPermissionProvisioner :
     BaseGarageFsProvisioner(),
     ResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
-    InfrastructureResourceProvisioner<GarageFsPermission, GarageFsPermissionRuntime> {
+    InfrastructureResourceProvisioner<GarageFsPermission, GarageFsPermissionRuntime, GarageFsPermissionLookup> {
 
     private val logger = KotlinLogging.logger {}
 

@@ -6,7 +6,7 @@ import de.solidblocks.hetzner.cloud.model.HetznerLocation
 
 class HetznerVolume(name: String, val location: HetznerLocation, val size: ByteSize, labels: Map<String, String> = emptyMap(), val protected: Boolean = true) :
     BaseLabeledInfrastructureResource<HetznerVolumeRuntime>(name, emptySet(), labels) {
-    fun asLookup() = HetznerVolumeLookup(name)
+    override fun asLookup() = HetznerVolumeLookup(name)
 
     override fun logText() = "volume '$name'"
 

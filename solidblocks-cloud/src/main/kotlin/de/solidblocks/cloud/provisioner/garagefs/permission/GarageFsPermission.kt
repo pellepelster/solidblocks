@@ -21,7 +21,7 @@ class GarageFsPermission(
     setOf(server, bucket, accessKey) + dependsOn,
 ) {
 
-    fun asLookup() = GarageFsPermissionLookup(
+    override fun asLookup() = GarageFsPermissionLookup(
         name,
         bucket.asLookup(),
         accessKey.asLookup(),

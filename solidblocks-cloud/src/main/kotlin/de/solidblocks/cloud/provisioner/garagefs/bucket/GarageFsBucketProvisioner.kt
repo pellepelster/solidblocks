@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 class GarageFsBucketProvisioner :
     BaseGarageFsProvisioner(),
     ResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>,
-    InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime> {
+    InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime, GarageFsBucketLookup> {
 
     override suspend fun diff(resource: GarageFsBucket, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
         is Error<GarageFsBucketRuntime?> -> ResourceDiff(resource, unknown)

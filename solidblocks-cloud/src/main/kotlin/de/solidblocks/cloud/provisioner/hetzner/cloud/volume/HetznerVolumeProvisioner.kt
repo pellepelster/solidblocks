@@ -24,7 +24,7 @@ import kotlin.reflect.KClass
 class HetznerVolumeProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerVolumeLookup, HetznerVolumeRuntime>,
-    InfrastructureResourceProvisioner<HetznerVolume, HetznerVolumeRuntime> {
+    InfrastructureResourceProvisioner<HetznerVolume, HetznerVolumeRuntime, HetznerVolumeLookup> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -106,7 +106,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(resource: HetznerVolume, context: ProvisionerContext, log: LogContext) = lookup(resource.asLookup(), context)?.let { api.volumes.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerVolumeLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.volumes.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerVolumeLookup::class
 

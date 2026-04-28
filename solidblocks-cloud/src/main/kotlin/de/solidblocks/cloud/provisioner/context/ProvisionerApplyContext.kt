@@ -10,6 +10,7 @@ import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.ssh.SSHClient
+import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
 interface ProvisionerApplyContext : ProvisionerDiffContext
@@ -28,6 +29,8 @@ class ProvisionerDiffContextImpl(val pendingChanges: List<BaseInfrastructureReso
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType) = context.lookup(lookup)
 
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType> = context.list(clazz)
+
+    override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = context.managerForService(runtime)
 

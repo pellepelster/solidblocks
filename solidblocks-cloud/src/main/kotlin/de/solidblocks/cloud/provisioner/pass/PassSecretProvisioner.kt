@@ -22,7 +22,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
     ResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
-    InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime> {
+    InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime, PassSecretLookup> {
 
     private val logger = KotlinLogging.logger {}
 

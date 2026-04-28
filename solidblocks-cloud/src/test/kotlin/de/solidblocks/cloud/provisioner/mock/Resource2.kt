@@ -5,7 +5,7 @@ import de.solidblocks.cloud.api.resources.BaseResource
 
 class Resource2(name: String, dependsOn: Set<BaseResource> = emptySet()) : BaseInfrastructureResource<Resource1Runtime>(name, dependsOn) {
 
-    fun asLookup() = Resource2Lookup(name)
+    override fun asLookup() = Resource2Lookup(name)
 
     override val lookupType = Resource2Lookup::class
 }

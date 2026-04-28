@@ -25,7 +25,7 @@ import java.sql.DriverManager
 class PostgresUserProvisioner :
     BasePostgresProvisioner(),
     ResourceLookupProvider<PostgresUserLookup, PostgresUserRuntime>,
-    InfrastructureResourceProvisioner<PostgresUser, PostgresUserRuntime> {
+    InfrastructureResourceProvisioner<PostgresUser, PostgresUserRuntime, PostgresUserLookup> {
 
     private val logger = KotlinLogging.logger {}
 

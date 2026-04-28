@@ -73,7 +73,7 @@ class HetznerProviderManager :
         HetznerSubnetProvisioner(runtime.cloudToken),
         HetznerFirewallProvisioner(runtime.cloudToken),
     )
-        as List<InfrastructureResourceProvisioner<*, *>>
+        as List<InfrastructureResourceProvisioner<*, *, *>>
 
     override val supportedConfiguration = HetznerProviderConfiguration::class
 }

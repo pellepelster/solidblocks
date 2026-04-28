@@ -8,7 +8,7 @@ import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserLookup
 class PostgresDatabase(name: String, val user: PostgresUserLookup, val server: HetznerServerLookup, val superUserPassword: PassSecretLookup) :
     BaseInfrastructureResource<PostgresDatabaseRuntime>(name, emptySet()) {
 
-    fun asLookup() = PostgresDatabaseLookup(name, server, superUserPassword)
+    override fun asLookup() = PostgresDatabaseLookup(name, server, superUserPassword)
 
     override fun logText() = "Postgres database '$name'"
 

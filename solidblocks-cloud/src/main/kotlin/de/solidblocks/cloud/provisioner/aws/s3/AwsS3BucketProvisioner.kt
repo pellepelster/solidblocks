@@ -39,7 +39,7 @@ class AwsS3BucketProvisioner(
     private val secretAccessKey: String,
     private val region: String,
 ) : ResourceLookupProvider<AwsS3BucketLookup, AwsS3BucketRuntime>,
-    InfrastructureResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime> {
+    InfrastructureResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime, AwsS3BucketLookup> {
 
     val waitConfig = WaitConfig(15, 2.seconds)
 
@@ -119,12 +119,12 @@ class AwsS3BucketProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(resource: AwsS3Bucket, context: ProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(lookup: AwsS3BucketLookup, context: ProvisionerContext, log: LogContext): Boolean {
         s3Client().use { client ->
             try {
                 var truncated = true
                 while (truncated) {
-                    val response = client.listObjectVersions(ListObjectVersionsRequest { bucket = resource.name })
+                    val response = client.listObjectVersions(ListObjectVersionsRequest { bucket = lookup.name })
                     val toDelete =
                         (response.versions ?: emptyList()).map {
                             ObjectIdentifier {
@@ -141,7 +141,7 @@ class AwsS3BucketProvisioner(
                     if (toDelete.isNotEmpty()) {
                         client.deleteObjects(
                             DeleteObjectsRequest {
-                                bucket = resource.name
+                                bucket = lookup.name
                                 delete = Delete { objects = toDelete }
                             },
                         )
@@ -149,12 +149,12 @@ class AwsS3BucketProvisioner(
                     truncated = response.isTruncated == true
                 }
 
-                client.deleteBucket(DeleteBucketRequest { bucket = resource.name })
+                client.deleteBucket(DeleteBucketRequest { bucket = lookup.name })
 
                 WaitConfig(60, 2.seconds).waitForConsecutive(3) {
                     try {
-                        log.info("waiting for deletion of bucket '${resource.name}'...")
-                        lookup(resource.asLookup(), context)
+                        log.info("waiting for deletion of bucket '${lookup.name}'...")
+                        lookup(lookup, context)
                     } catch (e: Exception) {
                         null
                     }

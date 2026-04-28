@@ -29,7 +29,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 
     fun cleanupResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext, log: LogContext): Result<Unit> = Success(Unit)
 
-    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
+    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *, *>>
 
     fun validateConfiguration(
         index: Int,

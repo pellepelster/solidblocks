@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 class GarageFsAccessKeyProvisioner :
     BaseGarageFsProvisioner(),
     ResourceLookupProvider<GarageFsAccessKeyLookup, GarageFsAccessKeyRuntime>,
-    InfrastructureResourceProvisioner<GarageFsAccessKey, GarageFsAccessKeyRuntime> {
+    InfrastructureResourceProvisioner<GarageFsAccessKey, GarageFsAccessKeyRuntime, GarageFsAccessKeyLookup> {
 
     private val logger = KotlinLogging.logger {}
 

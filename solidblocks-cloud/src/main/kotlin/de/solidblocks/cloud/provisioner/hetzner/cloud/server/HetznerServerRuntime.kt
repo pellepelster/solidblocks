@@ -29,7 +29,6 @@ class HetznerServerRuntime(
     override fun logText() = "server '$name'"
 }
 
-
 suspend fun ServerResponse.toRuntime(api: HetznerApi, context: ProvisionerContext) = HetznerServerRuntime(
     this.id,
     this.name,

@@ -106,7 +106,7 @@ class AwsIamUserProvisionerTest {
                 it.changes.shouldBeEmpty()
             }
 
-            provisioner.destroy(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT) shouldBe true
+            provisioner.destroy(AwsIamUser(name, readWritePolicy(bucketArn)).asLookup(), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT) shouldBe true
             provisioner.lookup(AwsIamUser(name, readWritePolicy(bucketArn)).asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
         }
     }
