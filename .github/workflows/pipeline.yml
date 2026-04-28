@@ -99,7 +99,6 @@ jobs:
         run: mise :build:jvm:all
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: solidblocks-cli-${{ matrix.job.target }}
           path: |
@@ -178,6 +177,13 @@ jobs:
         with:
           report_paths: '**/build/test-results/**/*.xml'
           check_name: solidblocks-shell-junit
+      - name: Archive Test Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: solidblocks-shell-test
+          path: |
+            **/build/reports/tests
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -301,10 +307,10 @@ jobs:
           report_paths: '**/build/test-results/**/*.xml'
           check_name: solidblocks-test-junit
       - name: Archive Test Artifacts
-        if: always()
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: solidblocks-test
+          name: solidblocks-test-test
           path: |
             **/build/reports/tests
 
@@ -336,7 +342,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: solidblocks-cloud
+          name: solidblocks-cloud-test
           path: |
             **/build/reports/tests
             solidblocks-cloud/build/*.schema.json
