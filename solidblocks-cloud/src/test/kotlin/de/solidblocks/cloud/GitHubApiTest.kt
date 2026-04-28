@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 
 class GitHubApiTest {
     @Test
+    @Disabled("TODO inject test api token into CI")
     fun testFlow() {
         val api = GitHubApi(System.getenv("GITHUB_TOKEN"))
         runBlocking {

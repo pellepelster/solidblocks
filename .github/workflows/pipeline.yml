@@ -145,7 +145,7 @@ jobs:
         if: always()
         with:
           report_paths: "solidblocks-cli-test/build/test-results/**/*.xml"
-          check_name: junit-solidblocks-cli-test-${{ matrix.job.target }}
+          check_name: solidblocks-cli-test-${{ matrix.job.target }}-junit
 
 
   solidblocks-shell:
@@ -177,7 +177,7 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
-          check_name: junit-solidblocks-shell
+          check_name: solidblocks-shell-junit
       - name: Archive Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -299,7 +299,7 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
-          check_name: junit-solidblocks-test
+          check_name: solidblocks-test-junit
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -331,7 +331,7 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
-          check_name: junit-solidblocks-cloud
+          check_name: solidblocks-cloud-junit
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -472,7 +472,7 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
-          check_name: junit-solidblocks-debug-container
+          check_name: solidblocks-debug-container-junit
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -551,7 +551,7 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
-          check_name: junit-solidblocks-rds-postgresql-test
+          check_name: solidblocks-rds-postgresql-test-junit
       - name: Archive Test Artifacts
         if: always()
         uses: actions/upload-artifact@v4
