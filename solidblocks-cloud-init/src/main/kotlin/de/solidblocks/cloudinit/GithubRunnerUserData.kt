@@ -6,6 +6,7 @@ import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
 import de.solidblocks.shell.GithubLibrary
 import de.solidblocks.shell.ShellScript
+import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.UserLibrary
 import de.solidblocks.shell.WriteFile
 import de.solidblocks.shell.systemd.Install
@@ -25,15 +26,17 @@ class GithubRunnerUserData(
     val packages: List<String>,
     val allowSudo: Boolean,
     val distributor: Distributor,
+    val dataDevice: String,
 ) : ServiceUserData {
 
+    val dataMount = "/storage/data"
+
     private val runnerUser = "github-runner"
-    private val runnerHome = "/home/$runnerUser"
-    private val runnerDir1 = "$runnerHome"
+    private val runnerHome = "$dataMount/$runnerUser"
 
-    override fun shellScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, runnerToken, runnerLabels, packages, allowSudo))
+    override fun shellScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, runnerToken, runnerLabels, packages, allowSudo, dataDevice))
 
-    override fun ephemeralScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, "<none>", runnerLabels, packages, allowSudo))
+    override fun ephemeralScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, "<none>", runnerLabels, packages, allowSudo, dataDevice))
 
     data class Variables(
         val runnerName: String,
@@ -42,6 +45,7 @@ class GithubRunnerUserData(
         val runnerLabels: List<String>,
         val packages: List<String>,
         val allowSudo: Boolean,
+        val dataStorageDevice: String,
     )
 
     private fun scriptInternal(variables: Variables): ShellScript {
@@ -50,6 +54,10 @@ class GithubRunnerUserData(
         shellScript.addLibrary(AptLibrary)
         shellScript.addLibrary(CurlLibrary)
         shellScript.addLibrary(GithubLibrary)
+
+        shellScript.addLibrary(StorageLibrary)
+        shellScript.addCommand(StorageLibrary.Mount(dataDevice, dataMount))
+
         shellScript.addCommand(
             WriteFile(
                 "\$nrconf{kernelhints} = -1;".toByteArray(),
@@ -71,7 +79,7 @@ class GithubRunnerUserData(
             Distributor.debian -> shellScript.addCommand(DockerLibrary.InstallDebian())
             Distributor.ubuntu -> shellScript.addCommand(DockerLibrary.InstallUbuntu())
         }
-        shellScript.addCommand(GithubLibrary.InstallRunner())
+        shellScript.addCommand(GithubLibrary.InstallRunner(runnerHome))
 
         val runnerUsername = "github-runner"
         if (variables.allowSudo) {
@@ -90,11 +98,11 @@ class GithubRunnerUserData(
             variables.runnerName,
             Unit("Github actions runner '${variables.runnerName}'", listOf(Target.NETWORK_ONLINE_TARGET), listOf(Target.NETWORK_ONLINE_TARGET)),
             Service(
-                listOf("$runnerDir1/start_runner.sh"),
+                listOf("$runnerHome/start_runner.sh"),
                 restart = Restart.ALWAYS,
                 user = runnerUser,
                 group = runnerUser,
-                workingDirectory = runnerDir1,
+                workingDirectory = runnerHome,
                 environment = mapOf(
                     "GITHUB_URL" to variables.githubUrl,
                     "RUNNER_TOKEN" to variables.runnerToken,

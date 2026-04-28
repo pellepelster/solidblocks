@@ -17,6 +17,7 @@ services:
     packages:
       - python3-venv
       - zip
+      - unzip
     labels:
       - self-hosted
       - ubuntu-24.04

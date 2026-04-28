@@ -25,16 +25,15 @@ import de.solidblocks.shell.systemd.Target
 import de.solidblocks.shell.systemd.Timer
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
-import de.solidblocks.shell.toCloudInit
 
-class PostgresqlUserData(val instanceName: String, val superUserPassword: String, val storageDevice: String, val backupConfiguration: BackupConfiguration) : ServiceUserData {
+class PostgresqlUserData(val instanceName: String, val superUserPassword: String, val dataDevice: String, val backupConfiguration: BackupConfiguration) : ServiceUserData {
 
     companion object {
         val BACKUP_STATUS_COMMAND = "pgbackrest-status"
     }
 
     override fun shellScript(): ShellScript {
-        val storageMount = "/storage/data"
+        val dataMount = "/storage/data"
         val backupMount = "/storage/backup"
 
         val shellScript = ShellScript()
@@ -47,7 +46,7 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
 
         shellScript.addLibrary(DockerLibrary)
         shellScript.addLibrary(StorageLibrary)
-        shellScript.addCommand(StorageLibrary.Mount(storageDevice, storageMount))
+        shellScript.addCommand(StorageLibrary.Mount(dataDevice, dataMount))
 
         if (backupConfiguration.target is LocalBackupTarget) {
             shellScript.addCommand(StorageLibrary.Mount(backupConfiguration.target.backupDevice, backupMount))
@@ -100,7 +99,7 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
                             ) + backupEnvironment,
                             volumes =
                             listOf(
-                                Mount(MountType.bind, storageMount, "/storage/data"),
+                                Mount(MountType.bind, dataMount, "/storage/data"),
                             ) + backupMounts,
                             ports =
                             listOf(

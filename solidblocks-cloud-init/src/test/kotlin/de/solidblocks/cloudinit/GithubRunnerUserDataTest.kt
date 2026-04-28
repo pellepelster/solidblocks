@@ -16,11 +16,12 @@ class GithubRunnerUserDataTest {
         val userData = GithubRunnerUserData(
             "runner1",
             "https://github.com/pellepelster/solidblocks",
-            "AAEYLRLYTXITHVJNQLXFKCDJ5IDYS",
+            "TODO",
             listOf("label1", "label2"),
             listOf("zip"),
             false,
             Distributor.debian,
+            dataVolume.linuxDevice,
         )
 
         val serverContext =

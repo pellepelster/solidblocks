@@ -18,6 +18,7 @@ import de.solidblocks.cloud.providers.github.GitHubUrlRuntime
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Organization
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Repository
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -97,6 +98,8 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                     packages = runtime.packages,
                     runtime.allowSudo,
                     Distributor.ubuntu,
+                    it.ensureLookup(defaultResources.dataVolume.asLookup()).device,
+
                 ).toResult(context, defaultResources)
             }
 

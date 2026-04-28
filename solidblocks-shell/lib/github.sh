@@ -16,7 +16,7 @@ EOF
 }
 
 function github_runner_install() {
-  local install_dir="/home/github-runner"
+  local install_dir="${1:-}"
   local version="2.333.1"
   local sha256_hash="18f8f68ed1892854ff2ab1bab4fcaa2f5abeedc98093b6cb13638991725cab74"
   useradd -m github-runner --home-dir "${install_dir}"
