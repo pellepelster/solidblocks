@@ -10,7 +10,7 @@ public val SHORT_WAIT = WaitConfig(10, 1.seconds)
 
 public val DEFAULT_WAIT = WaitConfig(30, 1.seconds)
 
-public val LONG_WAIT = WaitConfig(90, 5.seconds)
+public val LONG_WAIT = WaitConfig(5 * 12, 5.seconds)
 
 suspend fun <T> WaitConfig.waitFor(callback: suspend () -> T?) = this.waitForConsecutive(1, callback)
 

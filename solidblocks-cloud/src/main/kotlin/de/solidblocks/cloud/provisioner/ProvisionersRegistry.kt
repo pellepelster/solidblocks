@@ -77,7 +77,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType> {
+    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>, context: ProvisionerContext): List<RuntimeType> {
         val provider = resourceLookupProviders.firstOrNull { it.supportedLookupType == clazz }
 
         if (provider == null) {
@@ -89,7 +89,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
             provider
                 as ResourceLookupProvider<InfrastructureResourceLookup<RuntimeType>, RuntimeType>
             )
-            .list()
+            .list(context)
     }
 
     companion object {

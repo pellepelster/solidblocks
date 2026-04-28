@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
+import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
@@ -74,7 +75,7 @@ class HetznerDnsProvisionerTest {
             val recordProvisioner = HetznerDnsRecordProvisioner(System.getenv("HCLOUD_TOKEN"))
             val zoneProvisioner = HetznerDnsZoneProvisioner(System.getenv("HCLOUD_TOKEN"))
 
-            val zones: List<HetznerDnsZoneRuntime> = zoneProvisioner.list()
+            val zones: List<HetznerDnsZoneRuntime> = zoneProvisioner.list(TEST_PROVISIONER_CONTEXT)
             assertSoftly(zones) {
                 it shouldHaveSize 1
                 it[0].name shouldBe "blcks-test.de"

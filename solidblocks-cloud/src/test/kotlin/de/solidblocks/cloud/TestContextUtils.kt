@@ -44,7 +44,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
 
     override fun createOrGetSshClient(serverName: String) = sshClient ?: TODO("Not yet implemented")
 
-    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>) = TODO("Not yet implemented")
+    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>) = TODO("Not yet implemented")
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = TODO("Not yet implemented")
 

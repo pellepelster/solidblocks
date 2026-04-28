@@ -27,7 +27,7 @@ class ProvisionerDiffContextImpl(val pendingChanges: List<BaseInfrastructureReso
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType) = context.lookup(lookup)
 
-    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType> = context.list(clazz)
+    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType> = context.list(clazz)
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = context.managerForService(runtime)
 

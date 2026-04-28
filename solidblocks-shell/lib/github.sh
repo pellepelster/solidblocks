@@ -24,7 +24,7 @@ function github_runner_install() {
   curl_wrapper https://github.com/actions/runner/releases/download/v${version}/actions-runner-linux-x64-${version}.tar.gz -o /tmp/actions-runner-linux-x64-${version}.tar.gz
   echo "${sha256_hash}  /tmp/actions-runner-linux-x64-${version}.tar.gz" | sha256sum --check
 
-  tar -xvzf /tmp/actions-runner-linux-x64-${version}.tar.gz -C "${install_dir}"
+  tar -xzf /tmp/actions-runner-linux-x64-${version}.tar.gz -C "${install_dir}"
   rm -f /tmp/actions-runner-linux-x64-${version}.tar.gz
   "${install_dir}/bin/installdependencies.sh"
 

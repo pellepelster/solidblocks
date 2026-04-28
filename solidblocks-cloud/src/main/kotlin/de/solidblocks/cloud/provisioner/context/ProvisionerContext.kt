@@ -38,7 +38,9 @@ interface ProvisionerContext {
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType?
 
-    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType>
+    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType>
+
+    suspend fun destroy(runtime: BaseInfrastructureResourceRuntime)
 
     fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R>
 
@@ -80,7 +82,9 @@ data class ProvisionerContextImpl(
         }
     }
 
-    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<RuntimeType> = registry.list(clazz)
+    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType> = registry.list(clazz, this)
+
+    override suspend fun  destroy(runtime: BaseInfrastructureResourceRuntime) = registry.destroy(clazz, this)
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = serviceRegistrations.managerForService(runtime)
 

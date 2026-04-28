@@ -50,10 +50,19 @@ class GithubRunnerUserData(
         shellScript.addLibrary(AptLibrary)
         shellScript.addLibrary(CurlLibrary)
         shellScript.addLibrary(GithubLibrary)
+        shellScript.addCommand(
+            WriteFile(
+                "\$nrconf{kernelhints} = -1;".toByteArray(),
+                "/etc/needrestart/conf.d/kernel.conf",
+                FilePermissions.RW_R__R__,
+            ),
+        )
         shellScript.addCommand(AptLibrary.UpdateRepositories())
         shellScript.addCommand(AptLibrary.UpdateSystem())
+
         shellScript.addCommand(AptLibrary.InstallPackage("curl"))
         shellScript.addCommand(AptLibrary.InstallPackage("ca-certificates"))
+
         variables.packages.forEach {
             shellScript.addCommand(AptLibrary.InstallPackage(it))
         }

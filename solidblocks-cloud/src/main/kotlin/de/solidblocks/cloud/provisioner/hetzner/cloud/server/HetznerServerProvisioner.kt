@@ -35,24 +35,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) = api.servers.get(lookup.name)?.let {
-        HetznerServerRuntime(
-            it.id,
-            it.name,
-            it.status,
-            it.image.name ?: "unknown",
-            HetznerServerType.valueOf(it.type.name),
-            HetznerLocation.valueOf(it.location.name),
-            it.labels,
-            it.volumes
-                .mapNotNull { api.volumes.get(it) }
-                .mapNotNull { context.lookup(HetznerVolumeLookup(it.name)) },
-            it.privateNetwork.firstOrNull()?.ip,
-            it.publicNetwork?.ipv4?.ip,
-            it.publicNetwork?.ipv4?.ip?.let { listOf(Endpoint(lookup.name, it, 22, EndpointProtocol.ssh)) }
-                ?: emptyList(),
-        )
-    }
+    override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) = api.servers.get(lookup.name)?.toRuntime(api, context)
 
     override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext, log: LogContext): Result<HetznerServerRuntime> {
         if (resource.preApplyHook != null) {
@@ -248,13 +231,13 @@ class HetznerServerProvisioner(hcloudToken: String) :
                     resource,
                     has_changes,
                     changes =
-                    listOf(
-                        ResourceDiffItem(
-                            "user data checksum",
-                            triggersRecreate = true,
-                            changed = true,
+                        listOf(
+                            ResourceDiffItem(
+                                "user data checksum",
+                                triggersRecreate = true,
+                                changed = true,
+                            ),
                         ),
-                    ),
                 )
             }
             val userDataHash =
@@ -317,6 +300,8 @@ class HetznerServerProvisioner(hcloudToken: String) :
             api.volumes.list().none { it.server == it.id }
         }
     } ?: false
+
+    override suspend fun list(context: ProvisionerContext): List<HetznerServerRuntime> = api.servers.list().map { it.toRuntime(api, context) }
 
     override val supportedLookupType: KClass<*> = HetznerServerLookup::class
 

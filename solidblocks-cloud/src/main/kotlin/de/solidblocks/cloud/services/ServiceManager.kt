@@ -14,6 +14,7 @@ import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.toPem
@@ -25,6 +26,8 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
     fun linkedEnvironmentVariables(cloud: CloudConfigurationRuntime, runtime: R): List<BaseEnvironmentVariable> = emptyList()
 
     fun createResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): List<BaseInfrastructureResource<*>>
+
+    fun cleanupResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext, log: LogContext): Result<Unit> = Success(Unit)
 
     fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *>>
 

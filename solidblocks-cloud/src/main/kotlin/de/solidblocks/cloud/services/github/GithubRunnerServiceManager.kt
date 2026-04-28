@@ -5,19 +5,27 @@ import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.defaultServiceSubnet
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.serverName
+import de.solidblocks.cloud.Constants.serverNamePrefix
 import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.github.GitHubApi
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime
+import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Organization
+import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Repository
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.toResult
@@ -74,16 +82,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
     }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
-        val githubUrl = cloud.githubProviderRuntime().githubUrl
-        val githubApi = GitHubApi(cloud.githubProviderRuntime().githubToken)
-
-        val runnerToken = runBlocking {
-            when (githubUrl) {
-                is GitHubUrlRuntime.Organization -> githubApi.runners.createOrgRegistrationToken(githubUrl.org).token
-                is GitHubUrlRuntime.Repository -> githubApi.runners.createRepoRegistrationToken(githubUrl.username, githubUrl.repo).token
-            }
-        }
-
+        val (githubUrl, githubApi, runnerToken) = getGithub(cloud)
 
         val servers = (0..runtime.scale - 1).flatMap {
             val runnerName = "${runtime.name}-$it"
@@ -121,7 +120,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                 dependsOn = defaultResources.list().toSet(),
                 preApplyHook = { log ->
                     when (githubUrl) {
-                        is GitHubUrlRuntime.Repository ->
+                        is Repository ->
                             runBlocking {
                                 githubApi.runners.listRepoRunners(githubUrl.username, githubUrl.repo).filter { it.name == runnerName }.forEach {
                                     log.info("removing runner ${it.name}")
@@ -129,7 +128,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                                 }
                             }
 
-                        is GitHubUrlRuntime.Organization -> runBlocking {
+                        is Organization -> runBlocking {
                             githubApi.runners.listOrgRunners(githubUrl.org).filter { it.name == runnerName }.forEach {
                                 log.info("removing runner ${it.name}")
                                 githubApi.runners.deleteOrgRunner(githubUrl.org, it.id)
@@ -143,6 +142,51 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         }
 
         return servers
+    }
+
+    override fun cleanupResources(
+        cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime,
+        context: ProvisionerContext, log: LogContext
+    ): Result<Unit> {
+        val (githubUrl, githubApi, runnerToken) = getGithub(cloud)
+
+        runBlocking {
+            val runners = when (githubUrl) {
+                is Organization -> githubApi.runners.listOrgRunners(githubUrl.org)
+                is Repository -> githubApi.runners.listRepoRunners(githubUrl.username, githubUrl.repo)
+            }
+
+            val serverNames = (0..runtime.scale - 1).map {
+                serverName(cloud.environment, runtime.name, it)
+            }
+
+            val serverNamePrefix = serverNamePrefix(cloud.environment, runtime.name)
+
+            val runnersForService = runners.filter { it.name.startsWith(serverNamePrefix) }
+            val runnersToDelete = runnersForService.filter { it.name !in serverNames }
+
+            runnersToDelete.forEach { runner ->
+                log.info("removing runner ${runner.name}")
+                when (githubUrl) {
+                    is Repository ->
+                        githubApi.runners.deleteRepoRunner(githubUrl.username, githubUrl.repo, runner.id)
+
+                    is Organization ->
+                        githubApi.runners.deleteOrgRunner(githubUrl.org, runner.id)
+                }
+            }
+
+            val servers = context.list<HetznerServerRuntime>(HetznerServerLookup::class).filter { it.name.startsWith(serverNamePrefix) }
+
+            servers.filter { it.name.startsWith(serverNamePrefix) }.forEach { server ->
+                if (server.name !in serverNames) {
+                    log.info("removing ${server.logText()}")
+                    context.destroy(server)
+                }
+            }
+        }
+
+        return Success(Unit)
     }
 
     override fun createProvisioners(runtime: GithubRunnerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *>>()
@@ -168,4 +212,17 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
     override val supportedConfiguration = GithubRunnerServiceConfiguration::class
 
     override val supportedRuntime = GithubRunnerServiceConfigurationRuntime::class
+}
+
+private fun getGithub(cloud: CloudConfigurationRuntime): Triple<GitHubUrlRuntime, GitHubApi, String> {
+    val githubUrl = cloud.githubProviderRuntime().githubUrl
+    val githubApi = GitHubApi(cloud.githubProviderRuntime().githubToken)
+
+    val runnerToken = runBlocking {
+        when (githubUrl) {
+            is Organization -> githubApi.runners.createOrgRegistrationToken(githubUrl.org).token
+            is Repository -> githubApi.runners.createRepoRegistrationToken(githubUrl.username, githubUrl.repo).token
+        }
+    }
+    return Triple(githubUrl, githubApi, runnerToken)
 }

@@ -40,6 +40,8 @@ import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.aggregateErrors
+import de.solidblocks.cloud.utils.hasError
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
@@ -105,7 +107,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             }
         }
 
-        return@runBlocking Success(CloudInfo(services))
+        Success(CloudInfo(services))
     }
 
     fun apply(log: LogContext): Result<Unit> = runBlocking {
@@ -120,11 +122,26 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         log.info(bold("rolling out changes for cloud configuration '${runtime.environment.cloud}'"))
         val pendingResourceChanges = diffs.flatMap { it.value.map { it.resource } }
 
-        return@runBlocking if (diffs.entries.flatMap { it.value }.filter { it.status != up_to_date }.isNotEmpty()) {
+        val diffResult = if (diffs.entries.flatMap { it.value }.filter { it.status != up_to_date }.isNotEmpty()) {
             provisioner.apply(diffs, ProvisionerDiffContextImpl(pendingResourceChanges, context), log.indent())
         } else {
             log.indent().info("no pending changes")
             Success(Unit)
+        }
+
+        when (diffResult) {
+            is Error<Unit> -> diffResult
+            is Success<Unit> -> {
+                val cleanupResults = serviceManagers().map {
+                    log.debug("running cleanup for service '${it.first.name}'")
+                    it.second.cleanupResources(runtime, it.first, context, log.indent())
+                }
+                if (cleanupResults.hasError()) {
+                    Error<Unit>(cleanupResults.aggregateErrors())
+                } else {
+                    diffResult
+                }
+            }
         }
     }
 
@@ -199,8 +216,8 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         )
 
         val lookups = providerLookups + listOf(UserDataLookupProvider()) + (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-            ResourceLookupProvider<*, *>,
-            >()
+                ResourceLookupProvider<*, *>,
+                >()
 
         return ProvisionersRegistry(
             lookups,
