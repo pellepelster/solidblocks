@@ -25,7 +25,7 @@ public class GithubTest {
                 .step("apt_update_repositories")
                 .step("apt_ensure_package curl")
                 .step("apt_ensure_package ca-certificates")
-                .step("github_runner_install") { it.fileExists("/home/github-runner/run.sh") shouldBe true }
+                .step("github_runner_install /home/github-runner") { it.fileExists("/home/github-runner/run.sh") shouldBe true }
                 .run()
         assertSoftly(result) { it shouldHaveExitCode 0 }
     }

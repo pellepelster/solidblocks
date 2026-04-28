@@ -27,8 +27,16 @@ data class GitHubApiError(val message: String, @SerialName("documentation_url") 
 
 class GitHubApiException(val error: GitHubApiError) : RuntimeException(error.message)
 
+@Serializable
+data class GitHubRateLimit(val limit: Int, val remaining: Int)
+
+@Serializable
+data class GitHubRateLimitResponse(val rate: GitHubRateLimit)
+
 class GitHubApi(token: String) {
     val runners = GitHubRunnersApi(this)
+
+    suspend fun rateLimit(): GitHubRateLimitResponse = get("rate_limit")
 
     internal val client = createHttpClient(token)
 

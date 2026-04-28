@@ -108,6 +108,132 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.github.GitHubApiError",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubApiError$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubRateLimit",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubRateLimit$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubRateLimitResponse",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubRateLimitResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.Runner",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.Runner$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.RunnerLabel",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.RunnerLabel$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.RunnerRegistrationToken",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.RunnerRegistrationToken$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.RunnersPage",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.resources.RunnersPage$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cloud.provisioner.CloudInitResult",
         "fields": [
             {
