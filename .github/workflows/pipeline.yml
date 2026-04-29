@@ -43,9 +43,9 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Info
@@ -68,9 +68,9 @@ jobs:
       BUILD_TARGET: "${{ matrix.job.target }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - uses: graalvm/setup-graalvm@v1
@@ -98,7 +98,7 @@ jobs:
         working-directory: solidblocks-cli/
         run: mise :build:jvm:all
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-cli-${{ matrix.job.target }}
           path: |
@@ -123,13 +123,13 @@ jobs:
       BUILD_TARGET: ${{ matrix.job.target }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Rename blcks
         shell: bash
         run: |
@@ -140,7 +140,7 @@ jobs:
         shell: bash
         run: ./gradlew :solidblocks-cli:testIntegration
       - name: Publish JUnit Results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: "solidblocks-cli-test/build/test-results/**/*.xml"
@@ -154,15 +154,15 @@ jobs:
         working-directory: solidblocks-shell
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: install bzip2
         run: sudo apt-get install -y bzip2
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -172,20 +172,20 @@ jobs:
       - name: Test
         run: mise :test
       - name: Publish JUnit Results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
           check_name: solidblocks-shell-junit
       - name: Archive Test Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: solidblocks-shell-test
           path: |
             **/build/reports/tests
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-shell
           path: |
@@ -199,9 +199,9 @@ jobs:
         working-directory: solidblocks-do-python
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Build
@@ -209,7 +209,7 @@ jobs:
       - name: Test
         run: mise :test
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-do-python
           path: |
@@ -222,9 +222,9 @@ jobs:
         working-directory: solidblocks-k3s-ansible
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Build
@@ -232,7 +232,7 @@ jobs:
       - name: Test Integration
         run: mise :test:integration
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-k3s-ansible
           path: |
@@ -245,9 +245,9 @@ jobs:
         working-directory: solidblocks-ansible
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Build
@@ -255,7 +255,7 @@ jobs:
       - name: Test
         run: mise :test
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-ansible
           path: |
@@ -268,15 +268,15 @@ jobs:
         working-directory: solidblocks-rds-postgresql-ansible
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Build
         run: mise :build
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-rds-postgresql-ansible
           path: |
@@ -289,25 +289,25 @@ jobs:
         working-directory: solidblocks-test
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Build
         run: mise :build
       - name: Test
         run: mise :test
       - name: Publish JUnit Results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
           check_name: solidblocks-test-junit
       - name: Archive Test Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: solidblocks-test-test
@@ -323,9 +323,9 @@ jobs:
       BLCKS_PASS_PROVIDER_SKIP_VALIDATION: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Build
@@ -333,14 +333,14 @@ jobs:
       - name: Test
         run: mise :test
       - name: Publish JUnit Results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
           check_name: solidblocks-cloud-junit
       - name: Archive Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-cloud-test
           path: |
@@ -354,9 +354,9 @@ jobs:
         working-directory: solidblocks-cloud-init
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Build
@@ -364,20 +364,20 @@ jobs:
       - name: Test
         run: mise :test
       - name: Publish JUnit Results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: "solidblocks-cloud-init/build/test-results/**/*.xml"
           check_name: solidblocks-cloud-init-junit
       - name: Archive Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-cloud-init-test
           path: |
             **/build/reports/tests
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-cloud-init
           path: |
@@ -394,17 +394,17 @@ jobs:
       - solidblocks-cloud-init
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Build
         run: mise :build
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-rds-postgresql-hetzner
           path: |
@@ -418,15 +418,15 @@ jobs:
         working-directory: solidblocks-web-s3-docker-hetzner
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Build
         run: mise :build
       - name: Archive Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-web-s3-docker-hetzner
           path: |
@@ -445,15 +445,15 @@ jobs:
         test_name: [ test-migration, test-restore-local, test-restore-s3, test-restore-gcp, test-private-network, test-arm, test-ssl ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: install postgresql-client
         run: sudo apt-get install -y postgresql-client
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Build
         run: mise //solidblocks-rds-postgresql-hetzner:build
       - name: Test
@@ -467,34 +467,34 @@ jobs:
         working-directory: solidblocks-debug-container
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build
         run: mise :build
       - name: Test
         run: mise :test
       - name: Publish JUnit Results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
           check_name: solidblocks-debug-container-junit
       - name: Archive Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-debug-container-test
           path: |
@@ -514,33 +514,33 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Restore cached layers
         id: docker-layers-cache-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             solidblocks-rds-postgresql-docker/.cache
           key: ${{ runner.os }}-docker-layers
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build
         run: mise //solidblocks-rds-postgresql-docker:build-${{ matrix.job.version }}
       - name: Save cached layers
         id: cache-primes-save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             solidblocks-rds-postgresql-docker/.cache
@@ -552,28 +552,28 @@ jobs:
       - solidblocks-rds-postgresql-docker
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Test
         run: mise //solidblocks-rds-postgresql-docker:test
       - name: Publish JUnit Results
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: '**/build/test-results/**/*.xml'
           check_name: solidblocks-rds-postgresql-test-junit
       - name: Archive Test Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: solidblocks-rds-postgresql-test
           path: |
@@ -595,9 +595,9 @@ jobs:
       - solidblocks-test
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Hetzner Nuke
         run: |
           find ./solidblocks-cli-linux-amd64 -name "blcks-cli-*.zip" -exec unzip {} \;
@@ -625,21 +625,21 @@ jobs:
       - solidblocks-web-s3-docker-hetzner
     steps:
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -651,7 +651,7 @@ jobs:
           ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
         run: mise //...:release:artifacts
       - name: Release Artifacts
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           body_path: CHANGELOG.md
           files: |
@@ -690,24 +690,24 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
       - name: Mise setup
-        uses: jdx/mise-action@v3
+        uses: jdx/mise-action@v4
         with:
           experimental: true
       - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       - name: Build Documentation
         run: mise documentation:build
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: './build/documentation/public'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@main
+        uses: actions/deploy-pages@v5
 
