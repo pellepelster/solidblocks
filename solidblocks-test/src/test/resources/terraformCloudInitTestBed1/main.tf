@@ -31,5 +31,6 @@ resource "hcloud_server" "server" {
   name        = random_string.test_id.id
   image       = "debian-12"
   server_type = "cx23"
+  location    = "hel1"
   ssh_keys    = [hcloud_ssh_key.ssh_key_ed25519.id, hcloud_ssh_key.ssh_key_rsa.id]
 }
