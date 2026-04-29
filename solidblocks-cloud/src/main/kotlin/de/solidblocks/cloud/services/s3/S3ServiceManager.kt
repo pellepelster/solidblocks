@@ -55,7 +55,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
         val serverName = serverName(cloud.environment, runtime.name, 0)
 
-        val defaultResources = this.createDefaultResources(cloud, runtime, 0)
+        val defaultResources = this.createDefaultServerResources(cloud, runtime, 0)
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
@@ -84,7 +84,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         )
 
         val userData = UserData(
-            setOf(defaultResources.dataVolume, adminToken, rpcSecret, metricsToken) + backupResources.first,
+            setOf(defaultResources.volumes.data, adminToken, rpcSecret, metricsToken) + backupResources.first,
             { context ->
                 if (listOf(adminToken, rpcSecret, metricsToken).any {
                         context.lookup(it.asLookup()) == null
@@ -95,7 +95,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
                 GarageFsUserData(
                     runtime.name,
-                    context.ensureLookup(defaultResources.dataVolume.asLookup()).device,
+                    context.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     serviceRootDomain(cloud, runtime),
                     context.ensureLookup(rpcSecret.asLookup()).secret,
@@ -108,7 +108,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         )
                     },
                     true,
-                ).toResult(context, defaultResources)
+                ).toResult(context, defaultResources.sshIdentity)
             },
         )
 
@@ -119,7 +119,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             userData = userData,
             location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
-            volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
+            volumes = setOf(defaultResources.volumes.data.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
                 defaultServiceSubnet,

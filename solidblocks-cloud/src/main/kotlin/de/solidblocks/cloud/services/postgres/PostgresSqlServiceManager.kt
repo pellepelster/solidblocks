@@ -182,21 +182,21 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
         val serverName = serverName(cloud.environment, runtime.name, 0)
 
-        val defaultResources = createDefaultResources(cloud, runtime, 0)
+        val defaultResources = createDefaultServerResources(cloud, runtime, 0)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
         val superUserPassword = superUserPasswordSecret(cloud, runtime)
 
         val userData =
             UserData(
-                setOf(defaultResources.dataVolume, superUserPassword) + backupResources.first,
+                setOf(defaultResources.volumes.data, superUserPassword) + backupResources.first,
                 {
                     PostgresqlUserData(
                         runtime.name,
                         it.ensureLookup(superUserPassword.asLookup()).secret,
-                        it.ensureLookup(defaultResources.dataVolume.asLookup()).device,
+                        it.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                         createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
-                    ).toResult(it, defaultResources)
+                    ).toResult(it, defaultResources.sshIdentity)
                 },
             )
 
@@ -206,7 +206,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 userData = userData,
                 location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
-                volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
+                volumes = setOf(defaultResources.volumes.data.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
                 HetznerSubnetLookup(

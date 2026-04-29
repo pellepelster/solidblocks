@@ -26,17 +26,14 @@ class GithubRunnerUserData(
     val packages: List<String>,
     val allowSudo: Boolean,
     val distributor: Distributor,
-    val dataDevice: String,
 ) : ServiceUserData {
 
-    val dataMount = "/storage/data"
-
     private val runnerUser = "github-runner"
-    private val runnerHome = "$dataMount/$runnerUser"
+    private val runnerHome = "/home/$runnerUser"
 
-    override fun shellScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, runnerToken, runnerLabels, packages, allowSudo, dataDevice))
+    override fun shellScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, runnerToken, runnerLabels, packages, allowSudo))
 
-    override fun ephemeralScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, "<none>", runnerLabels, packages, allowSudo, dataDevice))
+    override fun ephemeralScript(): ShellScript = scriptInternal(Variables(runnerName, githubUrl, "<none>", runnerLabels, packages, allowSudo))
 
     data class Variables(
         val runnerName: String,
@@ -45,7 +42,6 @@ class GithubRunnerUserData(
         val runnerLabels: List<String>,
         val packages: List<String>,
         val allowSudo: Boolean,
-        val dataStorageDevice: String,
     )
 
     private fun scriptInternal(variables: Variables): ShellScript {
@@ -54,9 +50,6 @@ class GithubRunnerUserData(
         shellScript.addLibrary(AptLibrary)
         shellScript.addLibrary(CurlLibrary)
         shellScript.addLibrary(GithubLibrary)
-
-        shellScript.addLibrary(StorageLibrary)
-        shellScript.addCommand(StorageLibrary.Mount(dataDevice, dataMount))
 
         shellScript.addCommand(
             WriteFile(

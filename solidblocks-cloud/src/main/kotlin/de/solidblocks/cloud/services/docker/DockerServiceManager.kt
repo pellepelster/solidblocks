@@ -35,7 +35,7 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
-import de.solidblocks.cloud.services.createDefaultResources
+import de.solidblocks.cloud.services.createDefaultServerResources
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfigurationRuntime
@@ -119,15 +119,15 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
 
         val serverName = serverName(cloud.environment, runtime.name, 0)
 
-        val defaultResources = this.createDefaultResources(cloud, runtime, 0)
+        val defaultResources = this.createDefaultServerResources(cloud, runtime, 0)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
         val userData = UserData(
-            setOf(defaultResources.dataVolume) + backupResources.first,
+            setOf(defaultResources.volumes.data) + backupResources.first,
             { context ->
                 GenericDockerServiceUserData(
                     runtime.name,
-                    context.ensureLookup(defaultResources.dataVolume.asLookup()).device,
+                    context.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     runtime.image,
                     runtime.endpoints.associate { 80 to it.port },
@@ -140,7 +140,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
 
                         it.name to value
                     },
-                ).toResult(context, defaultResources)
+                ).toResult(context, defaultResources.sshIdentity)
             },
         )
 
@@ -149,7 +149,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             userData = userData,
             location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
             sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
-            volumes = setOf(defaultResources.dataVolume.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
+            volumes = setOf(defaultResources.volumes.data.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
                 defaultServiceSubnet,

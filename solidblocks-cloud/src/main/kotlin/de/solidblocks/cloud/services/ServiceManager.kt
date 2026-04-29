@@ -53,11 +53,22 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceManager<C, R> =
     this.single { it.supportedConfiguration == service::class }.createManager() as ServiceManager<C, R>? ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")
 
-data class DefaultServerResources(val dataVolume: HetznerVolume, val sshIdentityRsaSecret: PassSecret, val sshIdentityED25519Secret: PassSecret) {
-    fun list() = listOf(dataVolume, sshIdentityRsaSecret, sshIdentityED25519Secret)
+data class DefaultServerResources(val volumes: DefaultServerVolumes, val sshIdentity: ServerSSHIdentityResources) {
+    fun list() = volumes.list() + sshIdentity.list()
 }
 
-fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): DefaultServerResources {
+fun ServiceManager<*, *>.createDefaultServerResources(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): DefaultServerResources {
+    val serverSSHIdentity = createDefaultSSHIdentity(cloud, runtime, index)
+    val serverVolumes = createDefaultServerVolumes(cloud, runtime, index)
+
+    return DefaultServerResources(serverVolumes, serverSSHIdentity)
+}
+
+data class ServerSSHIdentityResources(val rsaSecret: PassSecret, val ed25519Secret: PassSecret) {
+    fun list() = listOf(rsaSecret, ed25519Secret)
+}
+
+fun createDefaultSSHIdentity(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): ServerSSHIdentityResources {
     val serverName = serverName(cloud.environment, runtime.name, index)
 
     val sshIdentityRsaSecret = PassSecret(
@@ -77,6 +88,16 @@ fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime
         },
     )
 
+    return ServerSSHIdentityResources(sshIdentityRsaSecret, sshIdentityED25519Secret)
+}
+
+data class DefaultServerVolumes(val data: HetznerVolume) {
+    fun list() = listOf(data)
+}
+
+fun ServiceManager<*, *>.createDefaultServerVolumes(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): DefaultServerVolumes {
+    val serverName = serverName(cloud.environment, runtime.name, index)
+
     val dataVolume = HetznerVolume(
         serverName + "-data",
         runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
@@ -84,5 +105,5 @@ fun ServiceManager<*, *>.createDefaultResources(cloud: CloudConfigurationRuntime
         volumeLabels(runtime) + cloudLabels(cloud.environment),
     )
 
-    return DefaultServerResources(dataVolume, sshIdentityRsaSecret, sshIdentityED25519Secret)
+    return DefaultServerVolumes(dataVolume)
 }

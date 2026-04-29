@@ -18,7 +18,6 @@ import de.solidblocks.cloud.providers.github.GitHubUrlRuntime
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Organization
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Repository
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
-import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -85,10 +84,10 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         val servers = (0..runtime.scale - 1).flatMap {
             val runnerName = "${runtime.name}-$it"
             val serverName = serverName(cloud.environment, runtime.name, it)
-            val defaultResources = this.createDefaultResources(cloud, runtime, it)
+            val defaultResources = createDefaultSSHIdentity(cloud, runtime, it)
 
             val userData = UserData(
-                setOf(defaultResources.dataVolume),
+                setOf(),
             ) {
                 GithubRunnerUserData(
                     runnerName = runnerName,
@@ -98,7 +97,6 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                     packages = runtime.packages,
                     runtime.allowSudo,
                     Distributor.ubuntu,
-                    it.ensureLookup(defaultResources.dataVolume.asLookup()).device,
 
                 ).toResult(context, defaultResources)
             }
@@ -109,7 +107,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                 userData = userData,
                 location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
-                volumes = setOf(defaultResources.dataVolume.asLookup()),
+                volumes = emptySet(),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet = HetznerSubnetLookup(
                     defaultServiceSubnet,

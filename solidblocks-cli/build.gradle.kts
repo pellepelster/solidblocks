@@ -133,9 +133,9 @@ graalvmNative {
                     "--initialize-at-run-time=org.xbill.DNS.Header",
                     "--initialize-at-run-time=org.xbill.DNS.Lookup",
                     "--initialize-at-run-time=org.xbill.DNS.io.DefaultIoClientFactory",
+                    "-H:+UnlockExperimentalVMOptions",
                     "-H:IncludeResources=logging.properties",
                     "-H:-AddAllFileSystemProviders",
-                    "-H:+UnlockExperimentalVMOptions",
                     "-H:-ReduceImplicitExceptionStackTraceInformation",
                     "-H:ReflectionConfigurationFiles=${projectDir}/src/main/resources/META-INF/native-image/reflect-config-generated.json"
                 )
