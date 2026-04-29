@@ -16,6 +16,7 @@ import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.postgresql.util.PSQLException
@@ -37,39 +38,44 @@ class PostgresUserProvisioner :
             } else {
                 val changes = mutableListOf<ResourceDiffItem>()
 
-                context.createOrGetSshClient(resource.server.name).portForward(5432) {
-                    if (it == null) {
-                        return@portForward ResourceDiff(resource, unknown)
-                    }
+                when (val result = context.createOrGetSshClient(resource.server.name)) {
+                    is Error<SSHClient> -> ResourceDiff(resource, unknown)
+                    is Success<SSHClient> -> {
+                        result.data.portForward(5432) {
+                            if (it == null) {
+                                return@portForward ResourceDiff(resource, unknown)
+                            }
 
-                    val passwordValid = try {
-                        DriverManager.getConnection(
-                            "jdbc:postgresql://localhost:$it/postgres",
-                            resource.name,
-                            context.ensureLookup(resource.password).secret,
-                        ).use { true }
-                    } catch (e: PSQLException) {
-                        if (e.sqlState == "28P01") {
-                            false
+                            val passwordValid = try {
+                                DriverManager.getConnection(
+                                    "jdbc:postgresql://localhost:$it/postgres",
+                                    resource.name,
+                                    context.ensureLookup(resource.password).secret,
+                                ).use { true }
+                            } catch (e: PSQLException) {
+                                if (e.sqlState == "28P01") {
+                                    false
+                                } else {
+                                    true
+                                }
+                            }
+
+                            if (!passwordValid) {
+                                changes.add(
+                                    ResourceDiffItem(
+                                        "password",
+                                        changed = true,
+                                    ),
+                                )
+                            }
+                        }
+
+                        if (changes.isEmpty()) {
+                            ResourceDiff(resource, up_to_date)
                         } else {
-                            true
+                            ResourceDiff(resource, has_changes, changes = changes)
                         }
                     }
-
-                    if (!passwordValid) {
-                        changes.add(
-                            ResourceDiffItem(
-                                "password",
-                                changed = true,
-                            ),
-                        )
-                    }
-                }
-
-                if (changes.isEmpty()) {
-                    ResourceDiff(resource, up_to_date)
-                } else {
-                    ResourceDiff(resource, has_changes, changes = changes)
                 }
             }
         }

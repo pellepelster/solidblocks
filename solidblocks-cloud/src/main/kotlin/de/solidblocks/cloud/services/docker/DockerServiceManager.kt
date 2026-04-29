@@ -24,21 +24,35 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
-import de.solidblocks.cloud.provisioner.userdata.UserDataResult
 import de.solidblocks.cloud.provisioner.userdata.toResult
-import de.solidblocks.cloud.services.*
+import de.solidblocks.cloud.services.BackupRuntime
+import de.solidblocks.cloud.services.EndpointInfo
+import de.solidblocks.cloud.services.EnvironmentVariableCallback
+import de.solidblocks.cloud.services.EnvironmentVariableStatic
+import de.solidblocks.cloud.services.InstanceRuntime
+import de.solidblocks.cloud.services.ServerInfo
+import de.solidblocks.cloud.services.ServiceConfiguration
+import de.solidblocks.cloud.services.ServiceConfigurationRuntime
+import de.solidblocks.cloud.services.ServiceInfo
+import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.createDefaultResources
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfigurationRuntime
-import de.solidblocks.cloud.utils.*
+import de.solidblocks.cloud.services.firewall
+import de.solidblocks.cloud.services.sshConnectCommand
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.formatBytes
+import de.solidblocks.cloud.utils.formatLocale
 import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.GenericDockerServiceUserData
 import de.solidblocks.cloudinit.RESTIC_STATUS_COMMAND
 import de.solidblocks.shell.restic.parseResticSnapshotsOutput
-import de.solidblocks.shell.toCloudInit
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import java.time.Duration
-import kotlin.collections.plus
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
 
@@ -64,7 +78,12 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): Result<String> {
-        val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name, 0)).command(RESTIC_STATUS_COMMAND)
+        val sshClient = when (val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name, 0))) {
+            is Error<SSHClient> -> return Error<String>(result.error)
+            is Success -> result.data
+        }
+
+        val result = sshClient.command(RESTIC_STATUS_COMMAND)
         if (result.exitCode != 0) {
             return Error<String>("command failed '${result.stdErr}'")
         }
@@ -138,7 +157,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             ),
             privateIp = serverPrivateIp(runtime.index),
             labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
-            dependsOn = backupResources.first,
+            dependsOn = backupResources.first + defaultResources.list(),
         )
 
         val optionalResources = if (cloud.rootDomain != null) {

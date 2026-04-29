@@ -7,6 +7,7 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.garagefs.GarageFsApi
+import de.solidblocks.ssh.SSHClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 open class BaseGarageFsProvisioner {
@@ -15,15 +16,20 @@ open class BaseGarageFsProvisioner {
 
     suspend fun <T> ProvisionerContext.withApiClients(server: HetznerServerLookup, adminToken: PassSecretLookup, block: suspend (Result<GarageFsApi>) -> T): T {
         val adminToken = this.lookup(adminToken)
-        return this.createOrGetSshClient(server.name).portForward(3903) {
-            if (it == null || adminToken == null) {
-                block.invoke(Error("could not establish GarageFS connection for${server.logText()}"))
-            } else {
-                block.invoke(
-                    Success(
-                        GarageFsApi(adminToken.secret, "http://localhost:$it"),
-                    ),
-                )
+        return when (val result = this.createOrGetSshClient(server.name)) {
+            is Error<SSHClient> -> block.invoke(Error<GarageFsApi>(result.error))
+            is Success -> {
+                result.data.portForward(3903) {
+                    if (it == null || adminToken == null) {
+                        block.invoke(Error("could not establish GarageFS connection for${server.logText()}"))
+                    } else {
+                        block.invoke(
+                            Success(
+                                GarageFsApi(adminToken.secret, "http://localhost:$it"),
+                            ),
+                        )
+                    }
+                }
             }
         }
     }

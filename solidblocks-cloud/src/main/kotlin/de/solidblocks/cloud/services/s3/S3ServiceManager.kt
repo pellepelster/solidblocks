@@ -128,7 +128,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             ),
             privateIp = serverPrivateIp(runtime.index),
             labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
-            dependsOn = backupResources.first,
+            dependsOn = backupResources.first + defaultResources.list(),
         )
 
         if (cloud.rootDomain == null) {

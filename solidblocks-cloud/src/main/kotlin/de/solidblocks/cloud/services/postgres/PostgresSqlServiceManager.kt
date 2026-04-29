@@ -39,6 +39,7 @@ import de.solidblocks.cloudinit.PostgresqlUserData
 import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
 import de.solidblocks.shell.toCloudInit
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import java.time.Duration
@@ -54,7 +55,12 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): Result<String> {
-        val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name, 0)).command(BACKUP_STATUS_COMMAND)
+        val sshClient = when (val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name, 0))) {
+            is Error<SSHClient> -> return Error<String>(result.error)
+            is Success -> result.data
+        }
+
+        val result = sshClient.command(BACKUP_STATUS_COMMAND)
         if (result.exitCode != 0) {
             return Error<String>("command failed '${result.stdErr}'")
         }
@@ -211,7 +217,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 ),
                 privateIp = serverPrivateIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
-                dependsOn = backupResources.first,
+                dependsOn = backupResources.first + defaultResources.list(),
             )
 
         val databaseResources =

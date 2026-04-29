@@ -6,7 +6,6 @@ import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.assertions.stderrShouldContain
-import de.solidblocks.infra.test.assertions.stdoutShouldMatch
 import de.solidblocks.utils.logInfo
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.ints.shouldBeGreaterThan

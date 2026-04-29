@@ -8,6 +8,7 @@ import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.waitForResult
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
@@ -25,20 +26,25 @@ open class BasePostgresProvisioner {
     suspend fun ProvisionerContext.createConnection(server: HetznerServerLookup, userPassword: PassSecretLookup, userName: String = "rds"): Result<Connection> {
         val password = this.lookup(userPassword)
 
-        return this.createOrGetSshClient(server.name).portForward(5432) {
-            if (it == null || password == null) {
-                Error("could not establish Postgres admin connection for ${server.logText()}")
-            } else {
-                try {
-                    Success(
-                        DriverManager.getConnection(
-                            "jdbc:postgresql://localhost:$it/postgres",
-                            userName,
-                            password.secret,
-                        ),
-                    )
-                } catch (e: Exception) {
-                    Error<Connection>(e.message ?: "<unknown")
+        when (val result = this.createOrGetSshClient(server.name)) {
+            is Error<SSHClient> -> return Error<Connection>(result.error)
+            is Success<SSHClient> -> {
+                return result.data.portForward(5432) {
+                    if (it == null || password == null) {
+                        Error("could not establish Postgres admin connection for ${server.logText()}")
+                    } else {
+                        try {
+                            Success(
+                                DriverManager.getConnection(
+                                    "jdbc:postgresql://localhost:$it/postgres",
+                                    userName,
+                                    password.secret,
+                                ),
+                            )
+                        } catch (e: Exception) {
+                            Error<Connection>(e.message ?: "<unknown")
+                        }
+                    }
                 }
             }
         }

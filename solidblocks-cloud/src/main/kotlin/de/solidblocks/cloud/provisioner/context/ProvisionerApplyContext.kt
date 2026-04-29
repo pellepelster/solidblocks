@@ -34,7 +34,7 @@ class ProvisionerDiffContextImpl(val pendingChanges: List<BaseInfrastructureReso
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = context.managerForService(runtime)
 
-    override fun createOrGetSshClient(serverName: String): SSHClient = context.createOrGetSshClient(serverName)
+    override fun createOrGetSshClient(serverName: String): Result<SSHClient> = context.createOrGetSshClient(serverName)
 
     override suspend fun createSecret(path: String, secret: String): Result<Unit> = context.createSecret(path, secret)
 }

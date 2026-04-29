@@ -42,7 +42,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
-    override fun createOrGetSshClient(serverName: String) = sshClient ?: TODO("Not yet implemented")
+    override fun createOrGetSshClient(serverName: String) = sshClient?.let { Success(it) } ?: TODO("Not yet implemented")
 
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>) = TODO("Not yet implemented")
 

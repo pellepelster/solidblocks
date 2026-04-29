@@ -15,8 +15,6 @@ data class CloudConfigurationRuntime(
     val providers: List<ProviderConfigurationRuntime>,
     val services: List<ServiceConfigurationRuntime>,
 ) {
-    fun getDefaultEnvironment() = DEFAULT_NAME
-
     // TODO clean up when multi provider support is needed
     fun hetznerProviderRuntime() = providers.filterIsInstance<HetznerProviderRuntime>().single()
 

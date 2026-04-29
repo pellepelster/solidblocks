@@ -79,9 +79,9 @@ fi
 
 export HCLOUD_TOKEN="${HCLOUD_TOKEN:-$(pass solidblocks/hetzner/test/hcloud_api_token)}"
 
-cd "test/terraform"
-terraform init -upgrade
-terraform apply -auto-approve
+#cd "test/terraform"
+#terraform init -upgrade
+#terraform apply -auto-approve
 """
 
 [tasks."test:integration"]

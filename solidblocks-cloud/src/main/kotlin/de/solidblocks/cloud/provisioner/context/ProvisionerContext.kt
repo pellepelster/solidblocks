@@ -44,7 +44,7 @@ interface ProvisionerContext {
 
     fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R>
 
-    fun createOrGetSshClient(serverName: String): SSHClient
+    fun createOrGetSshClient(serverName: String): Result<SSHClient>
 
     suspend fun createSecret(path: String, secret: String): Result<Unit>
 }
@@ -70,16 +70,15 @@ data class ProvisionerContextImpl(
         return secret?.secret?.let { SSHKeyUtils.loadKey(it).public }
     }
 
-    override fun createOrGetSshClient(serverName: String): SSHClient {
-        val server = this.ensureLookup(HetznerServerLookup(serverName))
+    override fun createOrGetSshClient(serverName: String): Result<SSHClient> {
+        val server = this.lookup(HetznerServerLookup(serverName)) ?: return Error<SSHClient>("failed to create ssh client for '$serverName'")
         val publicIpv4 = server.publicIpv4 ?: throw RuntimeException("${server.logText()} has no public ip")
         val publicKey = getOpenSshHostPublicKey(server.name) ?: throw RuntimeException("no host key found for ${server.logText()}")
 
-        // TODO ensure only valid sessions are cached
         return sshClients.getOrPut("${server.name}:${server.sshPort}") {
             logger.info { "creating ssh client for '${server.name}:${server.sshPort}'" }
-            SSHClient(publicIpv4, this.sshKeyPair, null, port = server.sshPort)
-        }
+            SSHClient(publicIpv4, this.sshKeyPair, publicKey, port = server.sshPort)
+        }.let { Success(it) }
     }
 
     override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType> = registry.list(clazz, this)
