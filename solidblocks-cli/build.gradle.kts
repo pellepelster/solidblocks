@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import sun.jvmstat.monitor.MonitoredVmUtil.commandLine
 
 plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
@@ -46,7 +47,32 @@ val integrationTest = sourceSets.create("integrationTest") {
     runtimeClasspath += sourceSets["test"].runtimeClasspath
 }
 
+tasks.register("generateIntegrationTestKeys") {
+    doLast {
+        val resourcesDir = file("src/integrationTest/resources")
+
+        resourcesDir.listFiles { f -> f.name.matches(Regex("test\\d+\\.yaml")) }
+            ?.forEach { yamlFile ->
+                val cloudName = yamlFile.nameWithoutExtension.replace("test", "cloud")
+                val keyFile = File(resourcesDir, "$cloudName.key")
+
+                if (!keyFile.exists()) {
+                    val process = ProcessBuilder("ssh-keygen", "-t", "ed25519", "-f", keyFile.absolutePath, "-q", "-N", "")
+                        .redirectErrorStream(true)
+                        .start()
+                    val exitCode = process.waitFor()
+
+                    if (exitCode != 0) {
+                        val output = process.inputStream.readBytes().toString(Charsets.UTF_8)
+                        throw GradleException("Command failed with exit code $exitCode (${output})")
+                    }
+                }
+            }
+    }
+}
+
 tasks.register<Test>("testIntegration") {
+    dependsOn("generateIntegrationTestKeys")
     testClassesDirs = integrationTest.output.classesDirs
     classpath = integrationTest.runtimeClasspath
 
