@@ -32,7 +32,7 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
         StringListKeyword(
             "packages",
             KeywordHelp(
-                "extra packages to install on machine provisioning",
+                "extra Ubuntu packages to install during machine provisioning",
             ),
         )
 
@@ -40,7 +40,7 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
         OptionalBooleanKeyword(
             "allow_sudo",
             KeywordHelp(
-                "allow sudo commands for the GitHub runner user",
+                "allow password-less sudo commands for the GitHub runner user",
             ),
             false,
         )
@@ -64,7 +64,7 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
         )
 
     override val keywords =
-        listOf(SERVICE_NAME_KEYWORD, labels, scale, packages) + InstanceConfigurationFactory.keywords
+        listOf(SERVICE_NAME_KEYWORD, labels, scale, packages, allowSudo) + InstanceConfigurationFactory.keywords
 
     override fun parse(yaml: YamlNode): Result<GithubRunnerServiceConfiguration> {
         val name =

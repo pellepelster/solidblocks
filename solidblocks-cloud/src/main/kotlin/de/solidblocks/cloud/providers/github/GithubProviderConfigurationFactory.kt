@@ -4,7 +4,6 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeyword
-import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
@@ -18,22 +17,16 @@ class GithubProviderConfigurationFactory : PolymorphicConfigurationFactory<Githu
         StringKeyword(
             "github_url",
             NONE,
-            KeywordHelp("GitHub URL scoping the runner, either an organisation (https://github.com/<org>) or a repository (https://github.com/<user>/<repo>)"),
+            KeywordHelp("GitHub URL, either an organisation (https://github.com/<org>) or a repository (https://github.com/<user>/<repo>)"),
         )
 
     override val help =
         ConfigurationHelp(
             "GitHub",
-            "Provides GitHub Actions runner support. A personal access token with the required runner registration permissions must be supplied via the environment variable `GITHUB_TOKEN`.",
+            "Provides GitHub resource support. A personal access token with appropriate permissions must be supplied via the environment variable `GITHUB_TOKEN`.",
         )
 
-    val labels =
-        StringListKeyword(
-            "labels",
-            KeywordHelp("Labels for the runner"),
-        )
-
-    override val keywords = listOf(PROVIDER_NAME_KEYWORD, githubUrl, labels)
+    override val keywords = listOf(PROVIDER_NAME_KEYWORD, githubUrl)
 
     override fun parse(yaml: YamlNode): Result<GithubProviderConfiguration> {
         val name =
@@ -46,12 +39,6 @@ class GithubProviderConfigurationFactory : PolymorphicConfigurationFactory<Githu
             when (val result = githubUrl.parse(yaml)) {
                 is Error<String> -> return Error(result.error)
                 is Success<String> -> result.data
-            }
-
-        val labels =
-            when (val result = labels.parse(yaml)) {
-                is Error<List<String>> -> return Error(result.error)
-                is Success<List<String>> -> result.data
             }
 
         return Success(GithubProviderConfiguration(name, githubUrl))

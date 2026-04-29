@@ -1,8 +1,12 @@
 package de.solidblocks.cloud.documentation
 
-import de.solidblocks.cloud.configuration.*
+import de.solidblocks.cloud.configuration.BaseStringKeyword
+import de.solidblocks.cloud.configuration.ConfigurationFactory
+import de.solidblocks.cloud.configuration.ListKeyword
+import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import de.solidblocks.cloud.configuration.PolymorphicListKeyword
+import de.solidblocks.cloud.configuration.SimpleKeyword
 import de.solidblocks.cloud.utils.markdown
-import kotlin.text.appendLine
 
 class DocumentationGenerator(val hugo: Boolean = false) {
 
@@ -80,18 +84,14 @@ class DocumentationGenerator(val hugo: Boolean = false) {
                     italic("default")
                     text(": ")
 
-                    if (hugo) {
-                        bold("${it.default ?: "\\<none\\>"}")
-                    } else {
-                        bold("${it.default ?: "<none>"}")
-                    }
+                    bold("${it.default ?: "<none>".escape(hugo)}")
                 }
 
-                p(it.help.description)
+                p(it.help.description.escape(hugo))
             }
             listTypes.forEach {
                 h(level + 1, it.name)
-                p(it.help.description)
+                p(it.help.description.escape(hugo))
                 +it.factory.generateKeywordDocumentation(level + 1)
             }
         }
@@ -106,7 +106,7 @@ class DocumentationGenerator(val hugo: Boolean = false) {
             h(level, factory.help.title)
         }
 
-        p(factory.help.description)
+        p(factory.help.description.escape(hugo))
 
         val example = StringBuilder()
 
@@ -131,9 +131,15 @@ class DocumentationGenerator(val hugo: Boolean = false) {
 
         polymorphicListTypes.forEach {
             h(level, it.name.capitalize())
-            p(it.help.description)
+            p(it.help.description.escape(hugo))
 
             it.factories.entries.forEach { +generateMarkdown(level + 1, it.value, it.key) }
         }
     }
+}
+
+fun String.escape(hugo: Boolean) = if (hugo) {
+    this.replace(">", "&gt;").replace("<", "&lt;").replace("~", "&tilde;")
+} else {
+    this
 }

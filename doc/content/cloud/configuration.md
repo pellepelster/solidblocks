@@ -10,25 +10,25 @@ name: <string>
 root_domain: [string]
 
 providers:
-  - type: <hcloud|pass|ssh_key|backup_aws_s3|backup_local>
+  - type: <hcloud|pass|ssh_key|backup_aws_s3|backup_local|github>
     #...
 
 services:
-  - type: <s3|postgresql|docker>
+  - type: <s3|postgresql|docker|github_runner>
     #...
 ```
 ## Keywords
 ## name
 *type*: **string**, *optional*: **false**, 
-*min. length*: **2**, *max. length*: **63**, *default*: **\<none\>**
+*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the cloud deployment. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files.
 
 ## root_domain
 *type*: **string**, *optional*: **true**, 
-*min. length*: **4**, *max. length*: **253**, *default*: **\<none\>**
+*min. length*: **4**, *max. length*: **253**, *default*: **&lt;none&gt;**
 
-Root domain to use for addresses of created services, e.g. `<service_name>.<root_domain>`. If set the domain must be manageable by one of the configured providers.
+Root domain to use for addresses of created services, e.g. `&lt;service_name&gt;.&lt;root_domain&gt;`. If set the domain must be manageable by one of the configured providers.
 
 # Providers
 
@@ -81,7 +81,7 @@ Name for the provider, can be omitted if only one provider of this specific type
 
 ### password_store_dir
 *type*: **string**, *optional*: **true**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Storage path for the password store, if not set the default or the setting from the `PASSWORD_STORE_DIR` environment variable will be used.
 
@@ -96,9 +96,9 @@ private_key: [string]
 ### Keywords
 ### private_key
 *type*: **string**, *optional*: **true**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
-Path to the private key, if not set, the default SSH key paths will be tried ('~/.ssh/id_rsa', '~/.ssh/id_ecdsa', '~/.ssh/id_ecdsa_sk', '~/.ssh/id_ed25519', '~/.ssh/id_ed25519_sk')
+Path to the private key, if not set, the default SSH key paths will be tried ('&tilde;/.ssh/id_rsa', '&tilde;/.ssh/id_ecdsa', '&tilde;/.ssh/id_ecdsa_sk', '&tilde;/.ssh/id_ed25519', '&tilde;/.ssh/id_ed25519_sk')
 
 ## Backup S3
 
@@ -124,7 +124,7 @@ Region where the backup bucket should be created
 
 ## Backup Local
 
-Provides backup of cloud data to locally attached disk. This provider is always automatically added
+Provides backup of cloud data to a disk locally attached to the created VMs
 
 type: backup_local
 ```
@@ -136,6 +136,28 @@ name: [string]
 *default*: **default**
 
 Name for the provider, can be omitted if only one provider of this specific type is configured
+
+## GitHub
+
+Provides GitHub resource support. A personal access token with appropriate permissions must be supplied via the environment variable `GITHUB_TOKEN`.
+
+type: github
+```
+name: [string]
+github_url: <string>
+```
+### Keywords
+### name
+*type*: **string**, *optional*: **true**, 
+*default*: **default**
+
+Name for the provider, can be omitted if only one provider of this specific type is configured
+
+### github_url
+*type*: **string**, *optional*: **false**, 
+*default*: **&lt;none&gt;**
+
+GitHub URL, either an organisation (https://github.com/&lt;org&gt;) or a repository (https://github.com/&lt;user&gt;/&lt;repo&gt;)
 
 # Services
 
@@ -169,13 +191,13 @@ buckets:
 ### Keywords
 ### name
 *type*: **string**, *optional*: **false**, 
-*min. length*: **2**, *max. length*: **63**, *default*: **\<none\>**
+*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
 
 ### backup_size
 *type*: **number**, *optional*: **true**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
 
@@ -209,7 +231,7 @@ List of S3 buckets to create. Buckets that are removed from this list will not b
 
 #### name
 *type*: **string**, *optional*: **false**, 
-*min. length*: **4**, *max. length*: **253**, *default*: **\<none\>**
+*min. length*: **4**, *max. length*: **253**, *default*: **&lt;none&gt;**
 
 Unique name for the bucket. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
 
@@ -225,7 +247,7 @@ Access keys to generate for bucket access
 
 ##### name
 *type*: **string**, *optional*: **false**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Unique name for the access key
 
@@ -274,13 +296,13 @@ databases:
 ### Keywords
 ### name
 *type*: **string**, *optional*: **false**, 
-*min. length*: **2**, *max. length*: **63**, *default*: **\<none\>**
+*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
 
 ### backup_size
 *type*: **number**, *optional*: **true**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
 
@@ -314,7 +336,7 @@ List of databases to create. Databases that are removed from this list will not 
 
 #### name
 *type*: **string**, *optional*: **false**, 
-*min. length*: **4**, *max. length*: **253**, *default*: **\<none\>**
+*min. length*: **4**, *max. length*: **253**, *default*: **&lt;none&gt;**
 
 Unique name for the database
 
@@ -324,7 +346,7 @@ Users to create for database access
 
 ##### name
 *type*: **string**, *optional*: **false**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Unique name for the access key
 
@@ -351,19 +373,19 @@ links:
 ### Keywords
 ### name
 *type*: **string**, *optional*: **false**, 
-*min. length*: **2**, *max. length*: **63**, *default*: **\<none\>**
+*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
 
 ### image
 *type*: **string**, *optional*: **false**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Docker image to deploy
 
 ### backup_size
 *type*: **number**, *optional*: **true**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
 
@@ -397,7 +419,7 @@ Service endpoints to publicly expose
 
 #### container_port
 *type*: **number**, *optional*: **true**, 
-*default*: **\<none\>**
+*default*: **&lt;none&gt;**
 
 Service port on the docker container
 
@@ -410,4 +432,68 @@ Type of the service endpoints. Endpoints with the type `http` are automatically 
 ### links
 
 Linked services will automatically expose environment variables to the linked service, e.g. database credentials. To see which variables are available run the `info` command.
+
+
+## GitHub Runner
+
+Provisions a Hetzner VM and registers it as a GitHub Actions self-hosted runner. Requires a `github` provider to be configured with the target organisation or repository URL and a personal access token supplied via the `GITHUB_TOKEN` environment variable.
+
+type: github_runner
+```
+name: <string>
+scale: [number]
+allow_sudo: [boolean]
+data_size: [number]
+hetzner_location: [string]
+hetzner_instance_type: [string]
+labels:
+    #...
+packages:
+    #...
+```
+### Keywords
+### name
+*type*: **string**, *optional*: **false**, 
+*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
+
+Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### scale
+*type*: **number**, *optional*: **true**, 
+*default*: **1**
+
+Number if runner instances to create
+
+### allow_sudo
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
+
+allow password-less sudo commands for the GitHub runner user
+
+### data_size
+*type*: **number**, *optional*: **true**, 
+*default*: **16**
+
+Size in GB for the data volume keeping all data needed for this service.
+
+### hetzner_location
+*type*: **string**, *optional*: **true**, 
+*options*: **fsn1, nbg1, hel1, ash, hil, sin**, *default*: **fsn1**
+
+Hetzner location for created infrastructure resources, if not set the default from the Hetzner provider configuration is used.
+
+### hetzner_instance_type
+*type*: **string**, *optional*: **true**, 
+*options*: **cx23, cx33, cx43, cx53, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62**, *default*: **cx23**
+
+Hetzner instance size for virtual machines, if not set the default from the Hetzner provider configuration is used.
+
+### labels
+
+list of runner labels used to route workflow jobs to this runner
+
+
+### packages
+
+extra Ubuntu packages to install during machine provisioning
 
