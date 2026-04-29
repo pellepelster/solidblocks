@@ -80,7 +80,7 @@ class ResticUserDataTest {
 
     @Test
     fun testRecoveryFromS3(context: SolidblocksTestContext) {
-        val hetzner = context.hetzner(System.getenv("HCLOUD_TOKEN").toString())
+        val hetzner = context.hetzner(getenv("HCLOUD_TOKEN").toString())
 
         val bucket = context.aws().createBucket()
 
@@ -103,8 +103,6 @@ class ResticUserDataTest {
         shellScript.addLibrary(AptLibrary)
         shellScript.addCommand(AptLibrary.UpdateRepositories())
         shellScript.addCommand(StorageLibrary.Mount(dataVolume1.linuxDevice, "/storage/data"))
-
-        val s3Repository = "s3:s3.eu-central-1.amazonaws.com/$bucket/${generateRandomString(5)}"
 
         shellScript.resticBackup(
             "repo1",

@@ -36,7 +36,7 @@ class HetznerServerTestContext(val id: Long, val host: String, val privateKey: S
 }
 
 class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestContext(testId) {
-    val defaultLocation = HetznerLocation.nbg1
+    val defaultLocation = HetznerLocation.hel1
 
     val api = HetznerApi(hcloudToken)
 
