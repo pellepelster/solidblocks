@@ -7,6 +7,7 @@ import kotlin.io.encoding.Base64
  */
 class WriteFile(val content: ByteArray, val path: String, val permissions: FilePermissions = FilePermissions()) : ShellCommand {
     override fun commands() = listOf(
+        "mkdir -p $(dirname $path)",
         "touch $path",
         "chmod ${permissions.renderChmod()} $path",
         "echo \"${Base64.encode(content)}\" | base64 -d > $path",
