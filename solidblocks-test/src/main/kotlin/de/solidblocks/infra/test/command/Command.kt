@@ -1,6 +1,5 @@
 package de.solidblocks.infra.test.command
 
-import de.solidblocks.infra.test.TestConstants
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
@@ -16,8 +15,6 @@ import java.io.Closeable
 import java.nio.file.Path
 import java.util.*
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 data class CommandResult<O : OutputLine>(val exitCode: Int, val runtime: Duration, private val internalOutput: List<O>) {
     val stdout: String

@@ -4,19 +4,13 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.choice
-import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import de.solidblocks.cli.cloud.CloudHelpCommand.Companion.printMarkdown
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.services.CloudInfo
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
-import kotlinx.serialization.json.Json
 
 class CloudStatusCommand : CliktCommand(name = "status") {
     override fun help(context: Context) = "show cloud runtime status"

@@ -10,8 +10,6 @@ import org.jgrapht.Graph
 import org.jgrapht.graph.DefaultDirectedGraph
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.traverse.TopologicalOrderIterator
-import java.io.StringWriter
-import java.io.Writer
 import java.util.*
 
 fun Map<ResourceGroup, List<ResourceDiff>>.allDiffs() = this.flatMap { it.value }

@@ -8,10 +8,8 @@ import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
-import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner

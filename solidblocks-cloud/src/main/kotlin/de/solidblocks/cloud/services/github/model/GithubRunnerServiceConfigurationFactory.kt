@@ -2,12 +2,9 @@ package de.solidblocks.cloud.services.github.model
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.NumberConstraints
-import de.solidblocks.cloud.configuration.NumberKeywordOptional
 import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.OptionalBooleanKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeywordOptional
 import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.InstanceConfig

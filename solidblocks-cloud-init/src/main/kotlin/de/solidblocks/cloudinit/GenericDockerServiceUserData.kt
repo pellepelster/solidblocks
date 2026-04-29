@@ -26,7 +26,6 @@ import de.solidblocks.shell.systemd.SystemDService
 import de.solidblocks.shell.systemd.Target
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
-import de.solidblocks.shell.toCloudInit
 
 class GenericDockerServiceUserData(
     val serviceName: String,

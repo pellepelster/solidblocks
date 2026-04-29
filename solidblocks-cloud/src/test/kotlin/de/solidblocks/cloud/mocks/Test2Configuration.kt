@@ -9,7 +9,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.getNumber
 import de.solidblocks.cloud.utils.getOptionalString
-import de.solidblocks.cloud.utils.getString
 
 data class Test2Configuration(val name: String, val number1: Number)
 

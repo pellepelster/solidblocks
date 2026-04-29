@@ -4,7 +4,6 @@ import de.solidblocks.infra.test.assertions.shouldHaveExitCode
 import de.solidblocks.infra.test.docker.DockerTestImage
 import de.solidblocks.infra.test.docker.dockerTestContext
 import de.solidblocks.infra.test.files.workingDir
-import de.solidblocks.shell.GarageLibrary
 import de.solidblocks.shell.GithubLibrary
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe

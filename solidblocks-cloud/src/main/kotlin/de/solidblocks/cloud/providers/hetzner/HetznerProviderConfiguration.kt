@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.providers.hetzner
 
 import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
-import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 

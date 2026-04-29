@@ -42,7 +42,6 @@ import de.solidblocks.cloud.utils.*
 import de.solidblocks.cloudinit.GarageFsUserData
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3AdminHost
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3Host
-import de.solidblocks.shell.toCloudInit
 import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import kotlinx.coroutines.runBlocking

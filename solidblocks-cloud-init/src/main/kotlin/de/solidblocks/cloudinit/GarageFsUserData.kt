@@ -5,7 +5,6 @@ import de.solidblocks.shell.caddy.*
 import de.solidblocks.shell.garagefs.GarageFsConfig
 import de.solidblocks.shell.systemd.*
 import de.solidblocks.shell.systemd.Unit
-import java.util.UUID
 
 data class GarageFsBucket(val name: String, val publicDomains: Set<String>)
 

@@ -5,18 +5,12 @@ import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderConfiguration
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderManager
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRuntime
-import de.solidblocks.cloud.providers.pass.PassProviderConfiguration
-import de.solidblocks.cloud.providers.pass.PassProviderManager
-import de.solidblocks.cloud.providers.pass.PassProviderRuntime
 import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
-import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 
 class HetznerProviderTest {
 

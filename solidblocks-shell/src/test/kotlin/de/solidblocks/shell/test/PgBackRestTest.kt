@@ -5,7 +5,6 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import kotlin.collections.get
 
 class PgBackRestTest {
     @Test

@@ -15,7 +15,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvis
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.getEnvOrProperty
 import de.solidblocks.cloud.utils.getPropertyOrEnv
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.utils.LogContext

@@ -38,12 +38,10 @@ import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.PostgresqlUserData
 import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
-import de.solidblocks.shell.toCloudInit
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import java.time.Duration
-import kotlin.collections.plus
 
 class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
 

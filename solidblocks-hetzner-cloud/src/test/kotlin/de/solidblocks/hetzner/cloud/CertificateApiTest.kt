@@ -3,7 +3,6 @@ package de.solidblocks.hetzner.cloud
 import de.solidblocks.hetzner.cloud.model.toLabelSelectors
 import de.solidblocks.hetzner.cloud.resources.CertificateCreateRequest
 import de.solidblocks.hetzner.cloud.resources.CertificateNameFilter
-import de.solidblocks.hetzner.cloud.resources.CertificateType
 import de.solidblocks.hetzner.cloud.resources.CertificateType.uploaded
 import de.solidblocks.hetzner.cloud.resources.CertificateTypeFilter
 import de.solidblocks.hetzner.cloud.resources.CertificateUpdateRequest

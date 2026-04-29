@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.services.s3.model
 
-import de.solidblocks.cloud.configuration.OptionalBooleanKeyword
 import de.solidblocks.cloud.services.BackupConfig
 import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.ServiceConfiguration

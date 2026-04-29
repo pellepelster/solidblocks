@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.configuration.model
 
 import de.solidblocks.cloud.providers.CloudConfigurationContext
-import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.github.GithubProviderRuntime
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRuntime

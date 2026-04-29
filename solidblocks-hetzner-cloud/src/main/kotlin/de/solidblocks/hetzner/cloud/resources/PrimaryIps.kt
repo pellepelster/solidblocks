@@ -4,7 +4,6 @@ import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.HetznerAssignedResourceApi
 import de.solidblocks.hetzner.cloud.HetznerDeleteResourceApi
 import de.solidblocks.hetzner.cloud.HetznerProtectedResourceApi
-import de.solidblocks.hetzner.cloud.InstantSerializer
 import de.solidblocks.hetzner.cloud.listQuery
 import de.solidblocks.hetzner.cloud.model.BaseFilter
 import de.solidblocks.hetzner.cloud.model.HetznerAssignedResource

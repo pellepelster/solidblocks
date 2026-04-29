@@ -4,10 +4,7 @@ import de.solidblocks.infra.test.TestContext
 import de.solidblocks.infra.test.cloudinit.cloudInitTestContext
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.logInfo
-import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermissions
 import java.security.KeyPair
 
 fun sshTestContext(
