@@ -1,11 +1,8 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TestContextUtils
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.configuration.model.EnvironmentContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
@@ -35,7 +32,6 @@ import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
 import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldHaveSize
@@ -53,7 +49,6 @@ import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 import org.testcontainers.utility.Base58
-import java.nio.file.Path
 import java.util.Locale.getDefault
 import java.util.UUID
 
