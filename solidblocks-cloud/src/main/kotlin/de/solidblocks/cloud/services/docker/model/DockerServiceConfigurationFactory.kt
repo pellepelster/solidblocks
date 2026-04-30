@@ -46,7 +46,7 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
     override val help =
         ConfigurationHelp(
             "Docker",
-            "Deploys a docker service image containers and exposes its endpoints",
+            "Deploys a dockerized service exposes its endpoints.",
         )
 
     override val keywords =

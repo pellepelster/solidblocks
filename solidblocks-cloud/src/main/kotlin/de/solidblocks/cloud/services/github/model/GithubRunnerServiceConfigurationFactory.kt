@@ -55,7 +55,7 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
     override val help =
         ConfigurationHelp(
             "GitHub Runner",
-            "Provisions a Hetzner VM and registers it as a GitHub Actions self-hosted runner. " +
+            "Provisions a self-hosted runner based on the configured cloud provider. " +
                 "Requires a `github` provider to be configured with the target organisation or repository URL " +
                 "and a personal access token supplied via the `GITHUB_TOKEN` environment variable.",
         )

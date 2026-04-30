@@ -17,7 +17,7 @@ A loose collection of future ideas and features, if you are interested in a part
 * MySQL/MariaDB
 * pull images from private docker registries for docker service
 * support service scaling and loadbalancers
-* build agents for gitlab/github/...
+* build agents for gitlab/~~github~~/...
 
 ## Monitoring
 * automatic configuration for observability platforms
@@ -32,9 +32,9 @@ A loose collection of future ideas and features, if you are interested in a part
 
 ## Developer Experience
 
-* add command for automatic rotation
-* generate and register JSON Schema for configuration file format
+* add command for automatic rotation of instances
+* ~~generate and register JSON Schema for configuration file format~~
 
 ## Security
 
-* use static SSH host keys for VMs and explicit host key checking
+* ~~use static SSH host keys for VMs and explicit host key checking~~

@@ -13,7 +13,7 @@ class LocalBackupProviderConfigurationFactory : PolymorphicConfigurationFactory<
     override val help: ConfigurationHelp
         get() = ConfigurationHelp(
             "Backup Local",
-            "Provides backup of cloud data to a disk locally attached to the created VMs",
+            "Enables use of locally attached disks for service backups.",
         )
 
     override val keywords = listOf(PROVIDER_NAME_KEYWORD)

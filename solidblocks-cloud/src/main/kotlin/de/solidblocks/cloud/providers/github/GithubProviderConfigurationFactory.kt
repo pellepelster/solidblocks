@@ -23,7 +23,7 @@ class GithubProviderConfigurationFactory : PolymorphicConfigurationFactory<Githu
     override val help =
         ConfigurationHelp(
             "GitHub",
-            "Provides GitHub resource support. A personal access token with appropriate permissions must be supplied via the environment variable `GITHUB_TOKEN`.",
+            "Provides integration of GitHub resources. A personal access token with appropriate permissions must be supplied via the environment variable `GITHUB_TOKEN`.",
         )
 
     override val keywords = listOf(PROVIDER_NAME_KEYWORD, githubUrl)

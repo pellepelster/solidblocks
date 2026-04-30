@@ -70,3 +70,45 @@ To protect your data, Solidblocks includes automatic backup and restore function
 Context-sensitive information and error messages help connecting to the deployed services.
 
 {{< asciicast src="casts/quickstart_help.cast" >}}
+
+
+## Providers
+
+### `pass`
+
+Stores secrets in the [pass](https://www.passwordstore.org/) password manager.
+
+### `hcloud`
+
+Provides Hetzner Cloud based infrastructure resources.
+
+### `github`
+
+Provides integration of GitHub resources.
+
+### `backup_local`
+
+Enables use of locally attached disks for service backups.
+
+### `backup_aws_s3`
+
+Uses AWS S3 buckets for service backups.
+
+
+## Services
+
+### `docker`
+
+Deploys a dockerized service exposes its endpoints.
+
+### `github_runner`
+
+Provisions a self-hosted runner based on the configured cloud provider. 
+
+### `postgresql`
+
+Single node PostgreSQL database instance with pgBackRest powered backup.
+
+### `s3`
+
+S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfleurs.fr/).

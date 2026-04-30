@@ -27,7 +27,7 @@ class S3BackupProviderConfigurationFactory : PolymorphicConfigurationFactory<S3B
     override val help =
         ConfigurationHelp(
             "Backup S3",
-            "Provides backup of cloud data to AWS S3 buckets. During plan/apply the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set with credentials that have the permission to create new S3 Buckets, as well as IAM users and access keys. For each service a dedicated backup bucket and separate IAM credentials will be created.",
+            "Uses AWS S3 buckets for service backups. During plan/apply the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set with credentials that have the permission to create new S3 Buckets, as well as IAM users and access keys. For each service a dedicated backup bucket and separate IAM credentials will be created.",
         )
 
     override val keywords = listOf(PROVIDER_NAME_KEYWORD, region)
