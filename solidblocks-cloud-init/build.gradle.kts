@@ -126,7 +126,7 @@ tasks.test {
     systemProperty("junit.jupiter.execution.parallel.enabled", "true")
     systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
     systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
-    systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "3")
+    systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "4")
 }
 
 tasks.getByName("jar").dependsOn(generate)
