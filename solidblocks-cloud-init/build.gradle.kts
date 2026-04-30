@@ -122,6 +122,13 @@ val generate = tasks.register("generate") {
     }
 }.get()
 
+tasks.test {
+    systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+    systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
+    systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "3")
+}
+
 tasks.getByName("jar").dependsOn(generate)
 tasks.getByName("assemble").dependsOn(generate)
 generate.dependsOn(zip)
