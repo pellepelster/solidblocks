@@ -12,6 +12,8 @@ public val DEFAULT_WAIT = WaitConfig(30, 1.seconds)
 
 public val LONG_WAIT = WaitConfig(5 * 12, 5.seconds)
 
+public val VERY_LONG_WAIT = WaitConfig(10 * 12, 5.seconds)
+
 suspend fun <T> WaitConfig.waitFor(callback: suspend () -> T?) = this.waitForConsecutive(1, callback)
 
 suspend fun <T> WaitConfig.waitForConsecutive(consecutiveCount: Int = 1, callback: suspend () -> T?): T? {
@@ -34,12 +36,17 @@ suspend fun <T> WaitConfig.waitForConsecutive(consecutiveCount: Int = 1, callbac
     return null
 }
 
-suspend fun WaitConfig.waitForCondition(callback: suspend () -> Boolean): Boolean {
+suspend fun WaitConfig.waitForCondition(logWaitCallback: (() -> Unit)? = null, callback: suspend () -> Boolean): Boolean {
     repeat(this.maxIterations) {
         val result = callback()
         if (result) {
             return true
         }
+
+        if (logWaitCallback != null) {
+            logWaitCallback()
+        }
+
         delay(this.wait)
     }
     return false

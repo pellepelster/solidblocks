@@ -6,6 +6,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLooku
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
+import de.solidblocks.cloud.utils.Result
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.utils.LogContext
@@ -22,7 +23,7 @@ class HetznerServer(
     val image: String = "debian-12",
     val subnet: HetznerSubnetLookup? = null,
     val privateIp: String? = null,
-    val preApplyHook: ((LogContext) -> Unit)? = null,
+    val preApplyHook: ((LogContext) -> Result<Unit>)? = null,
 ) : BaseLabeledInfrastructureResource<HetznerServerRuntime>(
     name,
     setOfNotNull(subnet, userData) + volumes + userData.dependsOn + sshKeys + dependsOn,

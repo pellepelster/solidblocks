@@ -5,14 +5,23 @@ import de.solidblocks.cloud.Constants.userDataLabel
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
-import de.solidblocks.cloud.utils.*
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.HetznerLabels
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.WaitConfig
+import de.solidblocks.cloud.utils.equalsIgnoreOrder
+import de.solidblocks.cloud.utils.joinToStringOrEmpty
+import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
@@ -34,7 +43,11 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext, log: LogContext): Result<HetznerServerRuntime> {
         if (resource.preApplyHook != null) {
-            resource.preApplyHook.invoke(log)
+            when (val result = resource.preApplyHook(log)) {
+                is Error<*> -> return Error(result.error)
+                is Success<*> -> {
+                }
+            }
         }
 
         var server = lookup(resource.asLookup(), context)
