@@ -6,7 +6,6 @@ import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
 import de.solidblocks.shell.GithubLibrary
 import de.solidblocks.shell.ShellScript
-import de.solidblocks.shell.StorageLibrary
 import de.solidblocks.shell.UserLibrary
 import de.solidblocks.shell.WriteFile
 import de.solidblocks.shell.systemd.Install

@@ -95,7 +95,7 @@ data class DefaultServerVolumes(val data: HetznerVolume) {
     fun list() = listOf(data)
 }
 
-fun ServiceManager<*, *>.createDefaultServerVolumes(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): DefaultServerVolumes {
+fun createDefaultServerVolumes(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): DefaultServerVolumes {
     val serverName = serverName(cloud.environment, runtime.name, index)
 
     val dataVolume = HetznerVolume(

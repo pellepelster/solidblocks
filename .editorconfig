@@ -1,5 +1,6 @@
 [*.{kt,kts}]
 ktlint_code_style = intellij_idea
+ktlint_standard_no-unused-imports = enabled
 ktlint_standard_no-wildcard-imports = disabled
 ktlint_standard_enum-entry-name-case = disabled
 ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 5
