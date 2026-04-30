@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestContextUtils
+import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
@@ -33,6 +34,7 @@ import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus
+import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import io.kotest.assertions.assertSoftly
 import io.kotest.common.runBlocking
@@ -42,6 +44,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldHaveLength
 import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.coEvery
+import io.mockk.coInvoke
 import io.mockk.mockk
 import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeAll
@@ -122,6 +125,13 @@ class GarageFsProvisionersTest {
                 GarageFsProvisionersTest::class.java.getResource("/test_ed25519.key")!!.readText(),
             )
 
+        val sshClient = mockk<SSHClient>()
+        coEvery {
+            sshClient.portForward<Any>(remotePort = 3903, localPort = any(), block = captureLambda())
+        } coAnswers {
+            lambda<suspend (Int?) -> Any>().coInvoke(garageFsContainer.getMappedPort(3903))
+        }
+
         val server =
             HetznerServer(
                 "server1",
@@ -136,13 +146,7 @@ class GarageFsProvisionersTest {
         val layoutProvisioner = GarageFsLayoutProvisioner()
 
         val context =
-            ProvisionerContextImpl(
-                SSHKeyUtils.loadKey(
-                    TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
-                ),
-                "some_path",
-                Path.of("."),
-                EnvironmentContext("cloud1", "default"),
+            TestProvisionerContext(
                 ProvisionersRegistry(
                     listOf(
                         serverProvisioner,
@@ -159,7 +163,7 @@ class GarageFsProvisionersTest {
                         bucketProvisioner,
                     ),
                 ),
-                emptyList(),
+                sshClient,
             )
 
         val adminToken = PassSecret("admin_token", RandomSecret())
