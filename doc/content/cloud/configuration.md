@@ -65,7 +65,7 @@ Default instance size for virtual machines
 
 ## Pass
 
-Stores secrets in the [pass](https://www.passwordstore.org/) secret manager. To ensure that the store is setup correctly a temporary secret will be created and deleted during the configuration validation phase. The validation can be skipped by setting the environment variable 'BLCKS_PASS_PROVIDER_SKIP_VALIDATION'
+Stores secrets in the [pass](https://www.passwordstore.org/) password manager. To ensure that the store is setup correctly a temporary secret will be created and deleted during the configuration validation phase. The validation can be skipped by setting the environment variable 'BLCKS_PASS_PROVIDER_SKIP_VALIDATION'
 
 type: pass
 ```
@@ -102,7 +102,7 @@ Path to the private key, if not set, the default SSH key paths will be tried ('&
 
 ## Backup S3
 
-Provides backup of cloud data to AWS S3 buckets. During plan/apply the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set with credentials that have the permission to create new S3 Buckets, as well as IAM users and access keys. For each service a dedicated backup bucket and separate IAM credentials will be created.
+Uses AWS S3 buckets for service backups. During plan/apply the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` must be set with credentials that have the permission to create new S3 Buckets, as well as IAM users and access keys. For each service a dedicated backup bucket and separate IAM credentials will be created.
 
 type: backup_aws_s3
 ```
@@ -124,7 +124,7 @@ Region where the backup bucket should be created
 
 ## Backup Local
 
-Provides backup of cloud data to a disk locally attached to the created VMs
+Enables use of locally attached disks for service backups.
 
 type: backup_local
 ```
@@ -139,7 +139,7 @@ Name for the provider, can be omitted if only one provider of this specific type
 
 ## GitHub
 
-Provides GitHub resource support. A personal access token with appropriate permissions must be supplied via the environment variable `GITHUB_TOKEN`.
+Provides integration of GitHub resources. A personal access token with appropriate permissions must be supplied via the environment variable `GITHUB_TOKEN`.
 
 type: github
 ```
@@ -352,7 +352,7 @@ Unique name for the access key
 
 ## Docker
 
-Deploys a docker service image containers and exposes its endpoints
+Deploys a dockerized service exposes its endpoints.
 
 type: docker
 ```
@@ -436,7 +436,7 @@ Linked services will automatically expose environment variables to the linked se
 
 ## GitHub Runner
 
-Provisions a Hetzner VM and registers it as a GitHub Actions self-hosted runner. Requires a `github` provider to be configured with the target organisation or repository URL and a personal access token supplied via the `GITHUB_TOKEN` environment variable.
+Provisions a self-hosted runner based on the configured cloud provider. Requires a `github` provider to be configured with the target organisation or repository URL and a personal access token supplied via the `GITHUB_TOKEN` environment variable.
 
 type: github_runner
 ```
