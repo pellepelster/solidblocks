@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.providers.github
 
 import de.solidblocks.cloud.github.GitHubApi
+import de.solidblocks.cloud.github.GitHubApiException
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.utils.Error
@@ -50,6 +51,32 @@ class GithubProviderManager : ProviderManager<GithubProviderConfiguration, Githu
             1 -> GitHubUrlRuntime.Organization(parts[0])
             2 -> GitHubUrlRuntime.Repository(username = parts[0], repo = parts[1])
             else -> return Error("'${configuration.githubUrl}' is not a valid github url")
+        }
+
+        val api = GitHubApi(githubToken)
+        try {
+            when (gitHubUrl) {
+                is GitHubUrlRuntime.Organization -> {
+                    runBlocking { api.org(gitHubUrl.org) }
+                    log.info("GitHub organization '${gitHubUrl.org}' is accessible")
+                }
+                is GitHubUrlRuntime.Repository -> {
+                    runBlocking { api.repo(gitHubUrl.username, gitHubUrl.repo) }
+                    log.info("GitHub repository '${gitHubUrl.username}/${gitHubUrl.repo}' is accessible")
+                }
+            }
+        } catch (e: GitHubApiException) {
+            return when (gitHubUrl) {
+                is GitHubUrlRuntime.Organization -> "GitHub organization '${gitHubUrl.org}' not found or not accessible with the provided token"
+                is GitHubUrlRuntime.Repository -> "GitHub repository '${gitHubUrl.username}/${gitHubUrl.repo}' not found or not accessible with the provided token"
+            }.also {
+                log.error(it)
+            }.let { Error(it) }
+        } catch (e: Exception) {
+            return "failed to validate GitHub URL '${configuration.githubUrl}'".also {
+                logger.error(e) { it }
+                log.error(it)
+            }.let { Error(it) }
         }
 
         return Success(GithubProviderRuntime(gitHubUrl, githubToken))

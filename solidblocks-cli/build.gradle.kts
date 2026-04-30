@@ -51,7 +51,7 @@ tasks.register("generateIntegrationTestKeys") {
     doLast {
         val resourcesDir = file("src/integrationTest/resources")
 
-        resourcesDir.listFiles { f -> f.name.matches(Regex("test\\d+\\.yaml")) }
+        resourcesDir.listFiles { f -> f.name.matches(Regex("cloud\\d+\\.yaml")) }
             ?.forEach { yamlFile ->
                 val cloudName = yamlFile.nameWithoutExtension.replace("test", "cloud")
                 val keyFile = File(resourcesDir, "$cloudName.key")

@@ -34,11 +34,15 @@ class CloudIntegrationTest {
     @Test
     @DisabledIfEnvironmentVariable(named = "SKIP_TESTS", matches = ".*integration.*")
     fun testMinimalAndDnsCloudConfig(context: SolidblocksTestContext) {
-        val test1CloudConfig = Path.of(ClassLoader.getSystemResource("test1.yaml").toURI())
-        val test2CloudConfig = Path.of(ClassLoader.getSystemResource("test2.yaml").toURI())
+        val cloud1CloudConfig = Path.of(ClassLoader.getSystemResource("cloud1.yaml").toURI())
+        val cloud1DnsCloudConfig = Path.of(ClassLoader.getSystemResource("cloud1_dns.yaml").toURI())
         val cloud1Key = Path.of(ClassLoader.getSystemResource("cloud1.key").toURI())
 
         assertSoftly(context.local().command("$blcksCommand", "hetzner", "nuke", "--do-nuke").timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()) { result ->
+            result shouldHaveExitCode 0
+        }
+
+        assertSoftly(context.local().command("pass", "rm", "-rf", "cloud1").timeout(5.minutes).runResult()) { result ->
             result shouldHaveExitCode 0
         }
 
@@ -52,7 +56,7 @@ class CloudIntegrationTest {
          * plan minimal cloud
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "plan", test1CloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "plan", cloud1CloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             listOf(
@@ -76,7 +80,7 @@ class CloudIntegrationTest {
          * apply minimal cloud
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "apply", test1CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "apply", cloud1CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             result stderrShouldContain "ssh config file for cloud 'cloud1' written to"
@@ -86,7 +90,7 @@ class CloudIntegrationTest {
          * apply again
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "apply", test1CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "apply", cloud1CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
         }
@@ -101,7 +105,7 @@ class CloudIntegrationTest {
                 "info",
                 "--format",
                 "json",
-                test1CloudConfig.absolutePathString(),
+                cloud1CloudConfig.absolutePathString(),
             ).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
@@ -149,7 +153,7 @@ class CloudIntegrationTest {
          * plan minimal cloud with dns
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "plan", test2CloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "plan", cloud1DnsCloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             listOf(
@@ -165,7 +169,7 @@ class CloudIntegrationTest {
          * apply minimal cloud with dns
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "apply", test2CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "apply", cloud1DnsCloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             result stderrShouldContain "ssh config file for cloud 'cloud1' written to"
@@ -181,7 +185,7 @@ class CloudIntegrationTest {
         }
 
         val infoResult =
-            context.local().command("$blcksCommand", "cloud", "info", "--format", "json", test2CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN"))
+            context.local().command("$blcksCommand", "cloud", "info", "--format", "json", cloud1DnsCloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN"))
                 .runResult()
         val sshConnectCommand = JsonPath.read<List<String>>(
             infoResult.stdout,

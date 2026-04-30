@@ -33,10 +33,20 @@ data class GitHubRateLimit(val limit: Int, val remaining: Int)
 @Serializable
 data class GitHubRateLimitResponse(val rate: GitHubRateLimit)
 
+@Serializable
+data class GitHubOrg(val login: String)
+
+@Serializable
+data class GitHubRepo(@SerialName("full_name") val fullName: String)
+
 class GitHubApi(token: String) {
     val runners = GitHubRunnersApi(this)
 
     suspend fun rateLimit(): GitHubRateLimitResponse = get("rate_limit")
+
+    suspend fun org(org: String): GitHubOrg = get("orgs/$org")
+
+    suspend fun repo(owner: String, repo: String): GitHubRepo = get("repos/$owner/$repo")
 
     internal val client = createHttpClient(token)
 

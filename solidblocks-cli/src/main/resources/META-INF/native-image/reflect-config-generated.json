@@ -126,6 +126,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.github.GitHubOrg",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubOrg$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cloud.github.GitHubRateLimit",
         "fields": [
             {
@@ -154,6 +172,24 @@
     },
     {
         "name": "de.solidblocks.cloud.github.GitHubRateLimitResponse$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubRepo",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.github.GitHubRepo$Companion",
         "fields": [],
         "methods": [
             {
