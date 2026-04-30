@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    implementation("de.solidblocks:hetzner-cloud:0.5.4")
+    implementation("de.solidblocks:hetzner-cloud:0.5.5")
 }
 
 tasks.named<Test>("test") {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.5
+* add GitHub runner provisioning to Solidblocks Cloud
+* use pre-generated identities for SSH servers
+
 ## v0.5.4
 * wait for AWS bucket creation/deletion before continuing with provisioning
 * fix label update for DNS records
