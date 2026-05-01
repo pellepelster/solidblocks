@@ -125,7 +125,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     override fun infoText(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): Result<String> = Success(
         markdown {
-            val sshConfigFilePath = Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(context.sshConfigFilePath, context.environment))
+            val sshConfigFilePath = Path.of(".").toAbsolutePath().relativize(sshConfigFilePath(cloud.context.configFileDirectory, context.environment))
             val serverName = serverName(cloud.environment, runtime.name, 0)
 
             h1("Service '${runtime.name}'")

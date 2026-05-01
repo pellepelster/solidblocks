@@ -33,7 +33,6 @@ private val logger = KotlinLogging.logger {}
 
 interface ProvisionerContext {
     val sshKeyPair: KeyPair
-    val sshConfigFilePath: Path
     val environment: EnvironmentContext
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType?
@@ -52,7 +51,6 @@ interface ProvisionerContext {
 data class ProvisionerContextImpl(
     override val sshKeyPair: KeyPair,
     val sshKeyAbsolutePath: String,
-    override val sshConfigFilePath: Path,
     override val environment: EnvironmentContext,
     val registry: ProvisionersRegistry,
     val serviceRegistrations: List<ServiceRegistration<*, *>>,

@@ -22,7 +22,6 @@ class ProvisionerDiffContextImpl(val pendingChanges: List<BaseInfrastructureReso
     }
 
     override val sshKeyPair = context.sshKeyPair
-    override val sshConfigFilePath = context.sshConfigFilePath
     override val environment = context.environment
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType) = context.lookup(lookup)

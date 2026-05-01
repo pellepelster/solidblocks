@@ -34,8 +34,6 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
             TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
         )
 
-    override val sshConfigFilePath = Path.of(".")
-
     override val environment = EnvironmentContext("testCloudName", "default")
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)

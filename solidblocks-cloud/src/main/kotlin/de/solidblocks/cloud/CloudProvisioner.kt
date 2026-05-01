@@ -64,7 +64,6 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     val context = ProvisionerContextImpl(
         runtime.providers.sshKeyProvider().keyPair,
         runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
-        runtime.context.configFileDirectory,
         runtime.environment,
         registry,
         serviceRegistrations,

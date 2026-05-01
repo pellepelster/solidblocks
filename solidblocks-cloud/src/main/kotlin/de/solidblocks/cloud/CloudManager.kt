@@ -195,7 +195,6 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         ProvisionerContextImpl(
             sshKeyProvider.keyPair,
             sshKeyProvider.privateKey.absolutePathString(),
-            configurationContext.configFileDirectory,
             EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
             registry,
             serviceRegistrations,
