@@ -14,6 +14,7 @@ import de.solidblocks.cloud.providers.managerForRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -58,12 +59,12 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
 
     suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = provisioner(resource).diff(resource, context)
 
-    suspend fun <LookupType> destroy(lookup: LookupType, context: ProvisionerContext, log: LogContext): Boolean {
+    suspend fun <LookupType> destroy(lookup: LookupType, context: SSHProvisionerContext, log: LogContext): Boolean {
         val provisioner = provisioner(lookup!!.javaClass) as InfrastructureResourceProvisioner<Any, Any, LookupType>
         return provisioner.destroy(lookup, context, log)
     }
 
-    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: ProvisionerContext): RuntimeType? = runBlocking {
+    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: SSHProvisionerContext): RuntimeType? = runBlocking {
         val provider =
             resourceLookupProviders.firstOrNull {
                 it.supportedLookupType.java.isAssignableFrom(lookup::class.java)
@@ -90,8 +91,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
         return (
             provider
                 as ResourceLookupProvider<InfrastructureResourceLookup<RuntimeType>, RuntimeType>
-            )
-            .list(context)
+            ).list(context)
     }
 
     companion object {

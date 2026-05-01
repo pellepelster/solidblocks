@@ -6,6 +6,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -24,7 +25,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerSubnetLookup, context: ProvisionerContext): HetznerSubnetRuntime? {
+    override suspend fun lookup(lookup: HetznerSubnetLookup, context: SSHProvisionerContext): HetznerSubnetRuntime? {
         val network = context.lookup(lookup.network)
 
         if (network == null) {

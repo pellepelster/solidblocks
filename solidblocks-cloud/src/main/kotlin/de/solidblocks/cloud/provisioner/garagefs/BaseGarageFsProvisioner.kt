@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.provisioner.garagefs
 
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.utils.Error
@@ -14,7 +15,7 @@ open class BaseGarageFsProvisioner {
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun <T> ProvisionerContext.withApiClients(server: HetznerServerLookup, adminToken: PassSecretLookup, block: suspend (Result<GarageFsApi>) -> T): T {
+    suspend fun <T> SSHProvisionerContext.withApiClients(server: HetznerServerLookup, adminToken: PassSecretLookup, block: suspend (Result<GarageFsApi>) -> T): T {
         val adminToken = this.lookup(adminToken)
         return when (val result = this.createOrGetSshClient(server.name)) {
             is Error<SSHClient> -> block.invoke(Error<GarageFsApi>(result.error))

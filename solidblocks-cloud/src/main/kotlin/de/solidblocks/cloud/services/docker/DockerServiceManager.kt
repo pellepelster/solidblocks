@@ -15,6 +15,8 @@ import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
@@ -56,7 +58,7 @@ import java.time.Duration
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
 
-    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext) = Success(
+    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: SSHProvisionerContext) = Success(
         ServiceInfo(
             runtime.name,
             listOf(ServerInfo(sshConnectCommand(context, cloud, runtime, 0))),
@@ -64,7 +66,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         ),
     )
 
-    override fun infoText(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): Result<String> = Success(
+    override fun infoText(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> = Success(
         markdown {
             h1("Service '${runtime.name}'")
 
@@ -77,7 +79,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         },
     )
 
-    override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): Result<String> {
+    override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
         val sshClient = when (val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name, 0))) {
             is Error<SSHClient> -> return Error<String>(result.error)
             is Success -> result.data
@@ -182,7 +184,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         index: Int,
         cloud: CloudConfiguration,
         configuration: DockerServiceConfiguration,
-        context: ProvisionerContext,
+        context: ValidationContext,
         log: LogContext,
     ): Result<DockerServiceConfigurationRuntime> {
         configuration.links.forEach { link ->

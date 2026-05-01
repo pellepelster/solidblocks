@@ -22,7 +22,7 @@ import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createLookups
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createProvisioners
 import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
-import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
+import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContextImpl
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayoutProvisioner
@@ -122,7 +122,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         val pendingResourceChanges = diffs.flatMap { it.value.map { it.resource } }
 
         val diffResult = if (diffs.entries.flatMap { it.value }.filter { it.status != up_to_date }.isNotEmpty()) {
-            provisioner.apply(diffs, ProvisionerDiffContextImpl(pendingResourceChanges, context), log.indent())
+            provisioner.apply(diffs, ProvisionerApplyContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, context.environment, context.registry, context.serviceRegistrations), log.indent())
         } else {
             log.indent().info("no pending changes")
             Success(Unit)
@@ -194,7 +194,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         it to manager
     }
 
-    private fun createProvisioner() = Provisioner(registry)
+    private fun createProvisioner() = Provisioner(registry, serviceRegistrations)
 
     private fun createRegistry(): ProvisionersRegistry {
         val providerProvisioners = providerRegistrations.createProvisioners(runtime.providers)

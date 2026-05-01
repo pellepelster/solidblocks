@@ -1,38 +1,43 @@
 package de.solidblocks.cloud.provisioner.context
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
-import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
-import de.solidblocks.cloud.services.ServiceConfiguration
-import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.configuration.model.EnvironmentContext
+import de.solidblocks.cloud.provisioner.ProvisionersRegistry
+import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
+import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
+import de.solidblocks.cloud.services.ServiceRegistration
+import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.ssh.SSHClient
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
-import kotlin.reflect.KClass
+import java.security.KeyPair
 
-interface ProvisionerApplyContext : ProvisionerDiffContext
 
-class ProvisionerDiffContextImpl(val pendingChanges: List<BaseInfrastructureResource<*>>, val context: ProvisionerContext) : ProvisionerApplyContext {
-
-    override fun hasPendingChange(resource: BaseResource) = when (resource) {
-        is InfrastructureResourceLookup<*> -> pendingChanges.any { pendingChanges.any { resource.isLookupFor(it) } }
-        else -> pendingChanges.contains(resource)
-    }
-
-    override val sshKeyPair = context.sshKeyPair
-    override val environment = context.environment
-
-    override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType) = context.lookup(lookup)
-
-    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType> = context.list(clazz)
+class ProvisionerApplyContextImpl(
+    sshKeyPair: KeyPair,
+    sshKeyAbsolutePath: String,
+    environment: EnvironmentContext,
+    registry: ProvisionersRegistry,
+    serviceRegistrations: List<ServiceRegistration<*, *>>,
+) : ProvisionerContextImpl(sshKeyPair, sshKeyAbsolutePath, environment, registry, serviceRegistrations), ProvisionerApplyContext {
 
     override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
 
-    override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = context.managerForService(runtime)
+    override suspend fun createSecret(path: String, secret: String): Result<Unit> {
+        val secret = PassSecret(
+            path,
+            OneTimeGeneratedSecret(secret = {
+                secret
+            }),
+        )
 
-    override fun createOrGetSshClient(serverName: String): Result<SSHClient> = context.createOrGetSshClient(serverName)
-
-    override suspend fun createSecret(path: String, secret: String): Result<Unit> = context.createSecret(path, secret)
+        return when (val result: Result<PassSecretRuntime> =
+            registry.apply(secret, ProvisionerApplyContextImpl(sshKeyPair, sshKeyAbsolutePath, environment, registry, serviceRegistrations), LogContext())) {
+            is de.solidblocks.cloud.utils.Error<PassSecretRuntime> -> Error(result.error)
+            is Success<PassSecretRuntime> -> Success(Unit)
+        }
+    }
 }

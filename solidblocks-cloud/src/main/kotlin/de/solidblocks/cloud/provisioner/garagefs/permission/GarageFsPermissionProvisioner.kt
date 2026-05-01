@@ -8,6 +8,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -26,7 +27,7 @@ class GarageFsPermissionProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun lookupInternal(lookup: GarageFsPermissionLookup, context: ProvisionerContext): Result<GarageFsPermissionRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
+    suspend fun lookupInternal(lookup: GarageFsPermissionLookup, context: SSHProvisionerContext): Result<GarageFsPermissionRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
             is Error<GarageFsApi> -> Error(apis.error)
             is Success<GarageFsApi> -> {
@@ -53,7 +54,7 @@ class GarageFsPermissionProvisioner :
         }
     }
 
-    override suspend fun lookup(lookup: GarageFsPermissionLookup, context: ProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: GarageFsPermissionLookup, context: SSHProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsPermissionRuntime?> -> null
         is Success<GarageFsPermissionRuntime?> -> result.data
     }

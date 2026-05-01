@@ -8,6 +8,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -67,12 +68,12 @@ class GarageFsBucketProvisioner :
         }
     }
 
-    override suspend fun lookup(lookup: GarageFsBucketLookup, context: ProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: GarageFsBucketLookup, context: SSHProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsBucketRuntime?> -> null
         is Success<GarageFsBucketRuntime?> -> result.data
     }
 
-    private suspend fun lookupInternal(lookup: GarageFsBucketLookup, context: ProvisionerContext): Result<GarageFsBucketRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
+    private suspend fun lookupInternal(lookup: GarageFsBucketLookup, context: SSHProvisionerContext): Result<GarageFsBucketRuntime?> = context.withApiClients(lookup.server, lookup.adminToken) { apis ->
         when (apis) {
             is Error<GarageFsApi> -> Error(apis.error)
             is Success<GarageFsApi> ->

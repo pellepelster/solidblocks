@@ -8,6 +8,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -25,7 +26,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerNetworkLookup, context: ProvisionerContext) = api.networks.get(lookup.name)?.let { network ->
+    override suspend fun lookup(lookup: HetznerNetworkLookup, context: SSHProvisionerContext) = api.networks.get(lookup.name)?.let { network ->
         HetznerNetworkRuntime(
             network.id,
             network.name,
@@ -99,7 +100,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(lookup: HetznerNetworkLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.networks.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerNetworkLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.networks.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerNetworkLookup::class
 

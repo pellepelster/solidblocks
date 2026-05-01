@@ -10,6 +10,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.CommandResult
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -55,7 +56,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         }
     }
 
-    override suspend fun lookup(lookup: PassSecretLookup, context: ProvisionerContext): PassSecretRuntime? {
+    override suspend fun lookup(lookup: PassSecretLookup, context: SSHProvisionerContext): PassSecretRuntime? {
         val result = passShow(lookup.name, passwordStoreDir)
 
         if (result == null) {

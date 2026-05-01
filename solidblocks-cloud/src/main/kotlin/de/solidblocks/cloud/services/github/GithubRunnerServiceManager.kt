@@ -19,6 +19,8 @@ import de.solidblocks.cloud.providers.github.GitHubUrlRuntime
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Organization
 import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Repository
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -50,7 +52,7 @@ import kotlinx.coroutines.runBlocking
 
 class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfiguration, GithubRunnerServiceConfigurationRuntime> {
 
-    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: ProvisionerContext) = Success(
+    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: SSHProvisionerContext) = Success(
         ServiceInfo(
             runtime.name,
             (0..<runtime.scale).map {
@@ -60,7 +62,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         ),
     )
 
-    override fun infoText(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: ProvisionerContext): Result<String> = Success(
+    override fun infoText(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> = Success(
         markdown {
             h1("Service '${runtime.name}'")
 
@@ -82,7 +84,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         },
     )
 
-    override fun status(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: ProvisionerContext): Result<String> {
+    override fun status(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
         /*
         val sshClient = context.createOrGetSshClient(serverName(cloud.environment, runtime.name))
         val result = sshClient.command("systemctl is-active ${runtime.name}.service")
@@ -117,7 +119,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                     runtime.allowSudo,
                     Distributor.ubuntu,
 
-                ).toResult(context, defaultResources)
+                    ).toResult(context, defaultResources)
             }
 
             val server = HetznerServer(
@@ -211,7 +213,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         index: Int,
         cloud: CloudConfiguration,
         configuration: GithubRunnerServiceConfiguration,
-        context: ProvisionerContext,
+        context: ValidationContext,
         log: LogContext,
     ): Result<GithubRunnerServiceConfigurationRuntime> = Success(
         GithubRunnerServiceConfigurationRuntime(

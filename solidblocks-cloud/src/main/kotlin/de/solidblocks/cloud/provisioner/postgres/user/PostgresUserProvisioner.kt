@@ -11,6 +11,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
 import de.solidblocks.cloud.utils.Error
@@ -81,7 +82,7 @@ class PostgresUserProvisioner :
         }
     }
 
-    private suspend fun lookupInternal(lookup: PostgresUserLookup, context: ProvisionerContext): Result<PostgresUserRuntime?> =
+    private suspend fun lookupInternal(lookup: PostgresUserLookup, context: SSHProvisionerContext): Result<PostgresUserRuntime?> =
         when (val result = context.createConnection(lookup.server, lookup.superUserPassword)) {
             is Error<Connection> -> Error<PostgresUserRuntime?>(result.error)
             is Success<Connection> ->
@@ -130,7 +131,7 @@ class PostgresUserProvisioner :
         return Success(lookup(resource.asLookup(), context)!!)
     }
 
-    override suspend fun lookup(lookup: PostgresUserLookup, context: ProvisionerContext): PostgresUserRuntime? = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: PostgresUserLookup, context: SSHProvisionerContext): PostgresUserRuntime? = when (val result = lookupInternal(lookup, context)) {
         is Error<PostgresUserRuntime?> -> null
         is Success<PostgresUserRuntime?> -> result.data
     }
