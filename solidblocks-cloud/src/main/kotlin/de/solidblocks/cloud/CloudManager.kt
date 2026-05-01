@@ -81,9 +81,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one cloud provider is configured */
         val cloudProviders = cloud.providers.filterIsInstance<CloudResourceProviderConfiguration>()
-        if (cloudProviders.count() != 1) {
+        if (cloudProviders.count() > 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one or no cloud provider found (${cloudProviders.count()}), please register exactly one. available types are: ${
+                "more than one cloud provider found (${cloudProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         CloudResourceProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -95,9 +95,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one ssh key provider is configured */
         val sshProviders = cloud.providers.filterIsInstance<SSHKeyProviderConfiguration>()
-        if (sshProviders.count() != 1) {
+        if (sshProviders.count() > 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one or no provider for ssh keys found (${sshProviders.count()}), please register exactly one. available types are: ${
+                "more than one provider for ssh keys found (${sshProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         SSHKeyProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -109,9 +109,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one backup provider is configured */
         val backupProviders = cloud.providers.filterIsInstance<BackupProviderConfiguration>()
-        if (backupProviders.count() != 1) {
+        if (backupProviders.count() > 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one or no provider for backups found (${backupProviders.count()}), please register exactly one. available types are: ${
+                "more than one provider for backups found (${backupProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         BackupProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -123,9 +123,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one secret provider is configured */
         val secretProviders = cloud.providers.filterIsInstance<SecretProviderConfiguration>()
-        if (secretProviders.count() != 1) {
+        if (secretProviders.count() > 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one or no secret provider found (${secretProviders.count()}), please register exactly one. available types are: ${
+                "more than one secret provider found (${secretProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         SecretProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -147,7 +147,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 log = log.indent()
 
                 val manager:
-                    ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                        ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                     providerRegistrations.managerForConfiguration(provider)
 
                 log.debug(
@@ -175,6 +175,23 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         val registry = this.providerRegistrations.createRegistry(providers)
         val sshKeyProvider = providers.sshKeyProvider()
 
+        cloud.services.forEach { service ->
+            service.neededProviders.forEach { neededProvider ->
+                if (cloud.providers.filterIsInstance(neededProvider.java).count() == 0) {
+                    val types = providerRegistrations.filter { neededProvider == it.supportedConfiguration.java }.map { it.type }
+                    if (types.isNotEmpty()) {
+                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs the following provider type(s) ${types.joinToString(", ") { "'${it}'" }}")
+                    }
+
+                    val categoryTypes = providerRegistrations.filter { neededProvider.java.isAssignableFrom(it.supportedConfiguration.java) }.map { it.type }
+                    if (categoryTypes.isNotEmpty()) {
+                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs one the following provider types ${categoryTypes.joinToString(", ") { "'${it}'" }}")
+                    }
+
+                    throw RuntimeException("failed to resolve prerequisites for service '${service.name}'")
+                }
+            }
+        }
         ProvisionerContextImpl(
             sshKeyProvider.keyPair,
             sshKeyProvider.privateKey.absolutePathString(),
@@ -183,7 +200,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             registry,
             serviceRegistrations,
         )
-            .use {
+            .use { context ->
                 val services: List<ServiceConfigurationRuntime> =
                     cloud.services.mapIndexed { index, service ->
                         log.info("found '${service.type}' service with name '${service.name}'")
@@ -198,7 +215,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
                         val runtime =
                             when (
-                                val result = manager.validateConfiguration(index, cloud, service, it, log)
+                                val result = manager.validateConfiguration(index, cloud, service, context, log)
                             ) {
                                 is Error<ServiceConfigurationRuntime> ->
                                     return Error<CloudConfigurationRuntime>(result.error)
