@@ -6,8 +6,8 @@ import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -27,7 +27,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: ProvisionerContext) = api.sshKeys.get(lookup.name)?.let {
+    override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: SSHProvisionerContext) = api.sshKeys.get(lookup.name)?.let {
         HetznerSSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)
     }
 
@@ -105,7 +105,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(lookup: HetznerSSHKeyLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.sshKeys.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerSSHKeyLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.sshKeys.delete(it.id) } ?: false
 
     private fun computeFingerprint(publicKey: String): String {
         val parts = publicKey.trim().split(Regex("\\s+"))

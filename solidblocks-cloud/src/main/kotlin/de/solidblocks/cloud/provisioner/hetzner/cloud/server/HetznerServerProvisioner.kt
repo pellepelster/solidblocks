@@ -10,8 +10,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
@@ -39,7 +39,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerContext) = api.servers.get(lookup.name)?.toRuntime(api, context)
+    override suspend fun lookup(lookup: HetznerServerLookup, context: SSHProvisionerContext) = api.servers.get(lookup.name)?.toRuntime(api, context)
 
     override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext, log: LogContext): Result<HetznerServerRuntime> {
         if (resource.preApplyHook != null) {
@@ -308,7 +308,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(lookup: HetznerServerLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let {
+    override suspend fun destroy(lookup: HetznerServerLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let {
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) {
             log.info("waiting for deletion of ${lookup.logText()}")
@@ -320,7 +320,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
         }
     } ?: false
 
-    override suspend fun list(context: ProvisionerContext): List<HetznerServerRuntime> = api.servers.list().map { it.toRuntime(api, context) }
+    override suspend fun list(): List<HetznerServerLookup> = api.servers.list().map { HetznerServerLookup(it.name) }
 
     override val supportedLookupType: KClass<*> = HetznerServerLookup::class
 

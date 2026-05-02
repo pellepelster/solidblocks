@@ -12,9 +12,8 @@ import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
-import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
-import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
+import de.solidblocks.cloud.provisioner.context.ValidationContextImpl
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
@@ -23,7 +22,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.*
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 
 class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
@@ -81,9 +79,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one cloud provider is configured */
         val cloudProviders = cloud.providers.filterIsInstance<CloudResourceProviderConfiguration>()
-        if (cloudProviders.count() != 1) {
+        if (cloudProviders.count() > 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one or no cloud provider found (${cloudProviders.count()}), please register exactly one. available types are: ${
+                "more than one cloud provider found (${cloudProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         CloudResourceProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -109,9 +107,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one backup provider is configured */
         val backupProviders = cloud.providers.filterIsInstance<BackupProviderConfiguration>()
-        if (backupProviders.count() != 1) {
+        if (backupProviders.count() > 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one or no provider for backups found (${backupProviders.count()}), please register exactly one. available types are: ${
+                "more than one provider for backups found (${backupProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         BackupProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -123,9 +121,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one secret provider is configured */
         val secretProviders = cloud.providers.filterIsInstance<SecretProviderConfiguration>()
-        if (secretProviders.count() != 1) {
+        if (secretProviders.count() > 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one or no secret provider found (${secretProviders.count()}), please register exactly one. available types are: ${
+                "more than one secret provider found (${secretProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         SecretProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
@@ -173,75 +171,86 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             }
 
         val registry = this.providerRegistrations.createRegistry(providers)
-        val sshKeyProvider = providers.sshKeyProvider()
 
-        ProvisionerContextImpl(
-            sshKeyProvider.keyPair,
-            sshKeyProvider.privateKey.absolutePathString(),
-            configurationContext.configFileDirectory,
+        cloud.services.forEach { service ->
+            service.neededProviders.forEach { neededProvider ->
+                if (cloud.providers.filterIsInstance(neededProvider.java).count() == 0) {
+                    val types = providerRegistrations.filter { neededProvider == it.supportedConfiguration.java }.map { it.type }
+                    if (types.isNotEmpty()) {
+                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs the following provider type(s) ${types.joinToString(", ") { "'$it'" }}")
+                    }
+
+                    val categoryTypes = providerRegistrations.filter { neededProvider.java.isAssignableFrom(it.supportedConfiguration.java) }.map { it.type }
+                    if (categoryTypes.isNotEmpty()) {
+                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs one the following provider types ${categoryTypes.joinToString(", ") { "'$it'" }}")
+                    }
+
+                    throw RuntimeException("failed to resolve prerequisites for service '${service.name}'")
+                }
+            }
+        }
+        val context = ValidationContextImpl(
             EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
             registry,
             serviceRegistrations,
         )
-            .use {
-                val services: List<ServiceConfigurationRuntime> =
-                    cloud.services.mapIndexed { index, service ->
-                        log.info("found '${service.type}' service with name '${service.name}'")
-                        log = log.indent()
+        val services: List<ServiceConfigurationRuntime> =
+            cloud.services.mapIndexed { index, service ->
+                log.info("found '${service.type}' service with name '${service.name}'")
+                log = log.indent()
 
-                        log.debug(
-                            "validating configuration for '${service.type}' service '${service.name}'",
-                        )
+                log.debug(
+                    "validating configuration for '${service.type}' service '${service.name}'",
+                )
 
-                        val manager: ServiceManager<ServiceConfiguration, ServiceConfigurationRuntime> =
-                            serviceRegistrations.forService(service)
-
-                        val runtime =
-                            when (
-                                val result = manager.validateConfiguration(index, cloud, service, it, log)
-                            ) {
-                                is Error<ServiceConfigurationRuntime> ->
-                                    return Error<CloudConfigurationRuntime>(result.error)
-
-                                is Success<ServiceConfigurationRuntime> -> {
-                                    log.debug(
-                                        "configuration for '${service.type}' service '${service.name}' is valid",
-                                    )
-                                    result.data
-                                }
-                            }
-
-                        log = log.unindent()
-                        runtime
-                    }
+                val manager: ServiceManager<ServiceConfiguration, ServiceConfigurationRuntime> =
+                    serviceRegistrations.forService(service)
 
                 val runtime =
-                    CloudConfigurationRuntime(
-                        configurationContext,
-                        EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
-                        cloud.rootDomain,
-                        providers,
-                        services,
-                    )
-                CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-                    if (runtime.rootDomain == null) {
-                        logWarning(
-                            "no configuration found for '${CloudConfigurationFactory.rootDomain.name}', created services will only be reachable via IP address. Depending on the service this may lead to limited functionality.",
-                        )
-                    } else {
-                        val lookup = it.context.lookup(HetznerDnsZoneLookup(runtime.rootDomain))
+                    when (
+                        val result = manager.validateConfiguration(index, cloud, service, context, log)
+                    ) {
+                        is Error<ServiceConfigurationRuntime> ->
+                            return Error<CloudConfigurationRuntime>(result.error)
 
-                        if (lookup == null) {
-                            return Error<CloudConfigurationRuntime>(
-                                "no zone found for root domain '${runtime.rootDomain}', please make sure that the zone can be managed by the configured cloud provider",
+                        is Success<ServiceConfigurationRuntime> -> {
+                            log.debug(
+                                "configuration for '${service.type}' service '${service.name}' is valid",
                             )
+                            result.data
                         }
                     }
 
-                    logSuccess("cloud configuration '${cloud.name}' is valid", context = log)
-                    return Success(runtime)
+                log = log.unindent()
+                runtime
+            }
+
+        val runtime =
+            CloudConfigurationRuntime(
+                configurationContext,
+                EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
+                cloud.rootDomain,
+                providers,
+                services,
+            )
+        CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
+            if (runtime.rootDomain == null) {
+                logWarning(
+                    "no configuration found for '${CloudConfigurationFactory.rootDomain.name}', created services will only be reachable via IP address. Depending on the service this may lead to limited functionality.",
+                )
+            } else {
+                val lookup = it.context.lookup(HetznerDnsZoneLookup(runtime.rootDomain))
+
+                if (lookup == null) {
+                    return Error<CloudConfigurationRuntime>(
+                        "no zone found for root domain '${runtime.rootDomain}', please make sure that the zone can be managed by the configured cloud provider",
+                    )
                 }
             }
+
+            logSuccess("cloud configuration '${cloud.name}' is valid", context = log)
+            return Success(runtime)
+        }
     }
 
     fun apply(runtime: CloudConfigurationRuntime): Result<String> {

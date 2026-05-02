@@ -16,6 +16,8 @@ import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
@@ -23,7 +25,6 @@ import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayout
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermission
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -50,7 +51,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
     private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud.environment, runtime.name, 0)}.${cloud.rootDomain}"
 
-    override fun status(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext) = markdown { }.let { Success(it) }
+    override fun status(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext) = markdown { }.let { Success(it) }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
         val serverName = serverName(cloud.environment, runtime.name, 0)
@@ -232,7 +233,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         index: Int,
         cloud: CloudConfiguration,
         configuration: S3ServiceConfiguration,
-        context: ProvisionerContext,
+        context: ValidationContext,
         log: LogContext,
     ): Result<S3ServiceConfigurationRuntime> {
         if (cloud.rootDomain == null) {
@@ -268,7 +269,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
                     val managedPublicAccessDomains = mutableMapOf<String, String>()
 
-                    val dnsZones: List<HetznerDnsZoneRuntime> = runBlocking {
+                    val dnsZones: List<HetznerDnsZoneLookup> = runBlocking {
                         context.list(HetznerDnsZoneLookup::class)
                     }
                     log.info("validating bucket configuration for bucket '${bucket.name}'")
@@ -302,7 +303,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         )
     }
 
-    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext) = Success(
+    override fun infoJson(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext) = Success(
         ServiceInfo(
             runtime.name,
             listOf(ServerInfo(sshConnectCommand(context, cloud, runtime, 0))),
@@ -313,7 +314,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         ),
     )
 
-    override fun infoText(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext) = markdown {
+    override fun infoText(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext) = markdown {
         h2("Servers")
         text("to access server **${serverName(cloud.environment, runtime.name, 0)}** via SSH, run")
         codeBlock(

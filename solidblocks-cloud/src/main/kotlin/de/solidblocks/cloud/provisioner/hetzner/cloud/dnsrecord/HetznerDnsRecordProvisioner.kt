@@ -3,8 +3,8 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.utils.Error
@@ -24,7 +24,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerDnsRecordLookup, context: ProvisionerContext): HetznerDnsRecordRuntime? {
+    override suspend fun lookup(lookup: HetznerDnsRecordLookup, context: SSHProvisionerContext): HetznerDnsRecordRuntime? {
         val zone = context.lookup(lookup.zone) ?: return null
 
         val record = api.dnsRrSets(zone.name).get(lookup.name, RRType.A) ?: return null

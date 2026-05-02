@@ -1,14 +1,13 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZone
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProvisioner
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
@@ -75,7 +74,7 @@ class HetznerDnsProvisionerTest {
             val recordProvisioner = HetznerDnsRecordProvisioner(System.getenv("HCLOUD_TOKEN"))
             val zoneProvisioner = HetznerDnsZoneProvisioner(System.getenv("HCLOUD_TOKEN"))
 
-            val zones: List<HetznerDnsZoneRuntime> = zoneProvisioner.list(TEST_PROVISIONER_CONTEXT)
+            val zones: List<HetznerDnsZoneLookup> = zoneProvisioner.list()
             assertSoftly(zones) {
                 it shouldHaveSize 1
                 it[0].name shouldBe "blcks-test.de"

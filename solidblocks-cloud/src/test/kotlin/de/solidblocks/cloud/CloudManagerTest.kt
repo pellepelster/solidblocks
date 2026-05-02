@@ -91,23 +91,6 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testNoBackupProvider() {
-        val manager =
-            """
-        name: cloud1
-        providers:
-            - type: hcloud
-            - type: pass
-            - type: ssh_key
-        """
-                .trimIndent()
-                .createManager()
-
-        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
-        result.error shouldBe "more than one or no provider for backups found (0), please register exactly one. available types are: 'backup_aws_s3', 'backup_local'"
-    }
-
-    @Test
     @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
     fun testDefaultToCloudSSHKey() {
         val manager =
@@ -242,7 +225,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "more than one or no cloud provider found (2), please register exactly one. available types are: 'hcloud'"
+        result.error shouldBe "more than one cloud provider found (2), please register exactly one. available types are: 'hcloud'"
     }
 
     @Test
@@ -266,6 +249,51 @@ class CloudManagerTest {
     }
 
     @Test
+    fun testServiceIsMissingProvider() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: pass
+            - type: ssh_key
+            - type: backup_local
+        services:
+            - type: github_runner
+              name: runner1
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "service 'runner1' needs one the following provider types 'github'"
+    }
+
+    @Test
+    fun testServiceIsMissingProviderCategory() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: github
+              github_url: "https://github.com/pellepelster/solidblocks"
+            - type: pass
+            - type: ssh_key
+            - type: backup_local
+        services:
+            - type: github_runner
+              name: runner1
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+
+        result.error shouldBe "service 'runner1' needs one the following provider types 'hcloud'"
+    }
+
+    @Test
     fun testMoreThanOneSecretProvider() {
         val manager =
             """
@@ -283,7 +311,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "more than one or no secret provider found (2), please register exactly one. available types are: 'pass'"
+        result.error shouldBe "more than one secret provider found (2), please register exactly one. available types are: 'pass'"
     }
 
     @Test
@@ -314,31 +342,52 @@ class CloudManagerTest {
             - type: hcloud
             - type: backup_local
             - type: ssh_key
-              private_key: "test_ssh.key"
+        services:
+            - type: postgresql
+              name: service1
         """
                 .trimIndent()
                 .createManager()
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "more than one or no secret provider found (0), please register exactly one. available types are: 'pass'"
+            "service 'service1' needs one the following provider types 'pass'"
     }
 
     @Test
-    fun testNoCloudProvider() {
+    fun testNoServices() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: ssh_key
+        """
+                .trimIndent()
+                .createManager()
+
+        val cloud = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>().data
+        cloud.providers shouldHaveSize 1
+        cloud.services shouldHaveSize 0
+    }
+
+    @Test
+    fun testNoBackupProvider() {
         val manager =
             """
         name: cloud1
         providers:
             - type: pass
             - type: ssh_key
+        services:
+            - type: postgresql
+              name: service1
         """
                 .trimIndent()
                 .createManager()
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "more than one or no cloud provider found (0), please register exactly one. available types are: 'hcloud'"
+            "service 'service1' needs one the following provider types 'backup_aws_s3', 'backup_local'"
     }
 }
 

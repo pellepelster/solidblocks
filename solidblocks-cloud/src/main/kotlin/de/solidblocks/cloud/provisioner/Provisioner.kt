@@ -15,9 +15,10 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.Result
@@ -34,11 +35,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 
-class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig = LONG_WAIT) {
+class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: List<ServiceRegistration<*, *>>, val waitConfig: WaitConfig = LONG_WAIT) {
 
     private val logger = KotlinLogging.logger {}
 
-    fun diff(resourceGroups: List<ResourceGroup>, context: ProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
+    fun diff(resourceGroups: List<ResourceGroup>, context: SSHProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val changedResources = mutableListOf<BaseInfrastructureResource<*>>()
         val resourceGroupDiffs =
             resourceGroups
@@ -49,7 +50,13 @@ class Provisioner(val registry: ProvisionersRegistry, val waitConfig: WaitConfig
                     val diffLogContext = resourceGroupLogContext.indent()
 
                     val diffs =
-                        when (val result = diff(resourceGroup, ProvisionerDiffContextImpl(changedResources, context), diffLogContext)) {
+                        when (
+                            val result = diff(
+                                resourceGroup,
+                                ProvisionerDiffContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, changedResources, context.environment, registry, serviceRegistrations),
+                                diffLogContext,
+                            )
+                        ) {
                             is Error<List<ResourceDiff>> -> return Error(result.error)
                             is Success<List<ResourceDiff>> -> result.data
                         }

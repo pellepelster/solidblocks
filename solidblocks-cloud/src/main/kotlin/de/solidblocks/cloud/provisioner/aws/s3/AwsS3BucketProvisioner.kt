@@ -23,8 +23,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -43,7 +43,7 @@ class AwsS3BucketProvisioner(
 
     val waitConfig = WaitConfig(15, 2.seconds)
 
-    override suspend fun lookup(lookup: AwsS3BucketLookup, context: ProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->
+    override suspend fun lookup(lookup: AwsS3BucketLookup, context: SSHProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->
         try {
             client.headBucket(HeadBucketRequest { bucket = lookup.name })
         } catch (e: NotFound) {
@@ -119,7 +119,7 @@ class AwsS3BucketProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(lookup: AwsS3BucketLookup, context: ProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(lookup: AwsS3BucketLookup, context: SSHProvisionerContext, log: LogContext): Boolean {
         s3Client().use { client ->
             try {
                 var truncated = true

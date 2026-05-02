@@ -8,8 +8,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -32,7 +32,7 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
     ResourceLookupProvider<HetznerFirewallLookup, HetznerFirewallRuntime>,
     InfrastructureResourceProvisioner<HetznerFirewall, HetznerFirewallRuntime, HetznerFirewallLookup> {
 
-    override suspend fun lookup(lookup: HetznerFirewallLookup, context: ProvisionerContext) = api.firewalls.get(lookup.name)?.let {
+    override suspend fun lookup(lookup: HetznerFirewallLookup, context: SSHProvisionerContext) = api.firewalls.get(lookup.name)?.let {
         val appliedToLabels = it.appliedTo.flatMap {
             it.labelSelector?.selector?.split(",")?.map {
                 it.split("=").let {
@@ -134,7 +134,7 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
         return Success(fw)
     }
 
-    override suspend fun destroy(lookup: HetznerFirewallLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.firewalls.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerFirewallLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.firewalls.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerFirewallLookup::class
 

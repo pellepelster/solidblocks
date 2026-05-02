@@ -9,6 +9,8 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
@@ -35,15 +37,15 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
         index: Int,
         cloud: CloudConfiguration,
         configuration: C,
-        context: ProvisionerContext,
+        context: ValidationContext,
         log: LogContext,
     ): Result<R>
 
-    fun infoText(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<String>
+    fun infoText(cloud: CloudConfigurationRuntime, runtime: R, context: SSHProvisionerContext): Result<String>
 
-    fun status(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<String>
+    fun status(cloud: CloudConfigurationRuntime, runtime: R, context: SSHProvisionerContext): Result<String>
 
-    fun infoJson(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<ServiceInfo>
+    fun infoJson(cloud: CloudConfigurationRuntime, runtime: R, context: SSHProvisionerContext): Result<ServiceInfo>
 
     val supportedConfiguration: KClass<C>
 

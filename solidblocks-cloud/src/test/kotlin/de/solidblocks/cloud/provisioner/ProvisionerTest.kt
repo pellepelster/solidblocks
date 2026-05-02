@@ -31,6 +31,7 @@ class ProvisionerTest {
                         emptyList(),
                         listOf(Resource1Provisioner(), Resource2Provisioner()),
                     ),
+                    emptyList(),
                     WaitConfig(1, 1.seconds),
                 )
 
@@ -86,6 +87,7 @@ class ProvisionerTest {
             val provisioner =
                 Provisioner(
                     ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
+                    emptyList(),
                     WaitConfig(1, 1.seconds),
                 )
 

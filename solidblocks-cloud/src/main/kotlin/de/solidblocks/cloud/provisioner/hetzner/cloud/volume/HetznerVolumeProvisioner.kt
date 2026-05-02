@@ -8,8 +8,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -28,7 +28,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerVolumeLookup, context: ProvisionerContext) = api.volumes.get(lookup.name)?.let {
+    override suspend fun lookup(lookup: HetznerVolumeLookup, context: SSHProvisionerContext) = api.volumes.get(lookup.name)?.let {
         HetznerVolumeRuntime(
             it.id,
             it.name,
@@ -106,7 +106,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
         }
     }
 
-    override suspend fun destroy(lookup: HetznerVolumeLookup, context: ProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.volumes.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerVolumeLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.volumes.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerVolumeLookup::class
 
