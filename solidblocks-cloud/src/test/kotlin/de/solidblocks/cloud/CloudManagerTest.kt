@@ -245,7 +245,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "more than one provider for ssh keys found (2), please register exactly one. available types are: 'ssh_key'"
+        result.error shouldBe "more than one or no provider for ssh keys found (2), please register exactly one. available types are: 'ssh_key'"
     }
 
     @Test
@@ -267,7 +267,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "service 'runner1' needs a provider(s) of the type(s) 'github'"
+        result.error shouldBe "service 'runner1' needs one the following provider types 'github'"
     }
 
     @Test
@@ -311,7 +311,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "more than one or no secret provider found (2), please register exactly one. available types are: 'pass'"
+        result.error shouldBe "more than one secret provider found (2), please register exactly one. available types are: 'pass'"
     }
 
     @Test
@@ -355,16 +355,18 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testNoProviderOrServices() {
+    fun testNoServices() {
         val manager =
             """
         name: cloud1
+        providers:
+            - type: ssh_key
         """
                 .trimIndent()
                 .createManager()
 
         val cloud = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>().data
-        cloud.providers shouldHaveSize 0
+        cloud.providers shouldHaveSize 1
         cloud.services shouldHaveSize 0
     }
 

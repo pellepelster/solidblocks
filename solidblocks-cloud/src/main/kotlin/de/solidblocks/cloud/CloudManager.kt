@@ -93,9 +93,9 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
         /** validate that exactly one ssh key provider is configured */
         val sshProviders = cloud.providers.filterIsInstance<SSHKeyProviderConfiguration>()
-        if (sshProviders.count() > 1) {
+        if (sshProviders.count() != 1) {
             return Error<CloudConfigurationRuntime>(
-                "more than one provider for ssh keys found (${sshProviders.count()}), please register exactly one. available types are: ${
+                "more than one or no provider for ssh keys found (${sshProviders.count()}), please register exactly one. available types are: ${
                     providerRegistrations.filter {
                         SSHKeyProviderConfiguration::class.java.isAssignableFrom(
                             it.supportedConfiguration.java,
