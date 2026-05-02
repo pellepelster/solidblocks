@@ -1,10 +1,7 @@
 package de.solidblocks.cloud.services.github.model
 
 import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
-import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.github.GithubProviderConfiguration
-import de.solidblocks.cloud.providers.hetzner.HetznerProviderConfiguration
-import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
 import kotlin.reflect.KClass
@@ -19,5 +16,4 @@ data class GithubRunnerServiceConfiguration(
 ) : ServiceConfiguration {
     override val type = "github_runner"
     override val neededProviders: List<KClass<*>> = listOf(GithubProviderConfiguration::class, CloudResourceProviderConfiguration::class)
-
 }

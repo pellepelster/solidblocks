@@ -14,10 +14,8 @@ import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
-import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContextImpl
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.services.ServiceRegistration
@@ -52,11 +50,13 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                     val diffLogContext = resourceGroupLogContext.indent()
 
                     val diffs =
-                        when (val result = diff(
-                            resourceGroup,
-                            ProvisionerDiffContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, changedResources, context.environment, registry, serviceRegistrations),
-                            diffLogContext
-                        )) {
+                        when (
+                            val result = diff(
+                                resourceGroup,
+                                ProvisionerDiffContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, changedResources, context.environment, registry, serviceRegistrations),
+                                diffLogContext,
+                            )
+                        ) {
                             is Error<List<ResourceDiff>> -> return Error(result.error)
                             is Success<List<ResourceDiff>> -> result.data
                         }

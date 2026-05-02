@@ -24,7 +24,7 @@ interface ProvisionerContext {
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType?
 
-    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType>
+    suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType>
 
     suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext): Boolean
 
@@ -32,7 +32,7 @@ interface ProvisionerContext {
 }
 
 interface ValidationContext {
-    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType>
+    suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType>
 }
 
 interface ProvisionerApplyContext : SSHProvisionerContext {

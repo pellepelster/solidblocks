@@ -8,6 +8,8 @@ import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
@@ -28,19 +30,23 @@ import kotlin.reflect.KClass
 
 class TestContextUtils
 
-class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: SSHClient? = null) : ProvisionerApplyContext {
+class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: SSHClient? = null) : ProvisionerDiffContext, ValidationContext, ProvisionerApplyContext {
+
     override val sshKeyPair =
         SSHKeyUtils.loadKey(
             TestContextUtils::class.java.getResource("/test_ed25519.key").readText(),
         )
 
+    override val sshKeyAbsolutePath: String = "."
+
     override val environment = EnvironmentContext("testCloudName", "default")
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
+    override suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType> {
+        TODO("Not yet implemented")
+    }
 
     override fun createOrGetSshClient(serverName: String) = sshClient?.let { Success(it) } ?: TODO("Not yet implemented")
-
-    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>) = TODO("Not yet implemented")
 
     override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
 
@@ -60,7 +66,7 @@ val TEST_PROVISIONER_CONTEXT = TestProvisionerContext(ProvisionersRegistry())
 
 val TEST_CLOUD_CONFIGURATION_CONTEXT = CloudConfigurationContext(EnvironmentContext("cloud1", "default"), Path.of("tmp"))
 
-data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: ProvisionerApplyContext) {
+data class HetznerTestContext(val provisioner: Provisioner, val serverProvisioner: HetznerServerProvisioner, val context: TestProvisionerContext) {
 
     companion object {
         fun create(hcloudToken: String): HetznerTestContext {
@@ -88,7 +94,7 @@ data class HetznerTestContext(val provisioner: Provisioner, val serverProvisione
                         subnetProvisioner,
                     ),
                 )
-            val provisioner = Provisioner(registry)
+            val provisioner = Provisioner(registry, emptyList())
 
             return HetznerTestContext(
                 provisioner,

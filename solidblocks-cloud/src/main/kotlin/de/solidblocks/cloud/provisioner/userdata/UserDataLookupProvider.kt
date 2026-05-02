@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.provisioner.userdata
 
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 

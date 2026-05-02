@@ -12,9 +12,7 @@ import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderConfiguration
-import de.solidblocks.cloud.providers.types.ssh.sshKeyProvider
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createRegistry
-import de.solidblocks.cloud.provisioner.context.ProvisionerContextImpl
 import de.solidblocks.cloud.provisioner.context.ValidationContextImpl
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.services.*
@@ -24,7 +22,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.*
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 
 class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
@@ -148,7 +145,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 log = log.indent()
 
                 val manager:
-                        ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                    ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                     providerRegistrations.managerForConfiguration(provider)
 
                 log.debug(
@@ -180,12 +177,12 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 if (cloud.providers.filterIsInstance(neededProvider.java).count() == 0) {
                     val types = providerRegistrations.filter { neededProvider == it.supportedConfiguration.java }.map { it.type }
                     if (types.isNotEmpty()) {
-                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs the following provider type(s) ${types.joinToString(", ") { "'${it}'" }}")
+                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs the following provider type(s) ${types.joinToString(", ") { "'$it'" }}")
                     }
 
                     val categoryTypes = providerRegistrations.filter { neededProvider.java.isAssignableFrom(it.supportedConfiguration.java) }.map { it.type }
                     if (categoryTypes.isNotEmpty()) {
-                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs one the following provider types ${categoryTypes.joinToString(", ") { "'${it}'" }}")
+                        return Error<CloudConfigurationRuntime>("service '${service.name}' needs one the following provider types ${categoryTypes.joinToString(", ") { "'$it'" }}")
                     }
 
                     throw RuntimeException("failed to resolve prerequisites for service '${service.name}'")

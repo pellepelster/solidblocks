@@ -28,12 +28,9 @@ class ValidationContextImpl(
     val registry: ProvisionersRegistry,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
 ) : ValidationContext {
-    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType> {
-        return registry.list(clazz)
-    }
+    override suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType> =
+        registry.list(clazz)
 }
-
-
 
 open class ProvisionerContextImpl(
     override val sshKeyPair: KeyPair,
@@ -80,7 +77,8 @@ abstract class BaseSSHProvisionerContextImpl(
 
     override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = registry.lookup(lookup, this)
 
-    override suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<RuntimeType> = registry.list(clazz)
+    override suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType> =
+        registry.list(clazz)
 
     override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = registry.destroy(lookup, this, log)
 

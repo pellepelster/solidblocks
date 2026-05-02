@@ -10,7 +10,6 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
@@ -321,7 +320,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
         }
     } ?: false
 
-    override suspend fun list(): List<HetznerServerRuntime> = api.servers.list().map { it.toRuntime(api, context) }
+    override suspend fun list(): List<HetznerServerLookup> = api.servers.list().map { HetznerServerLookup(it.name) }
 
     override val supportedLookupType: KClass<*> = HetznerServerLookup::class
 

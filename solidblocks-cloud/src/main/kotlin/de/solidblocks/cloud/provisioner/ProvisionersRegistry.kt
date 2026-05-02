@@ -12,7 +12,6 @@ import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.managerForRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Result
@@ -80,7 +79,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>, context: ProvisionerContext): List<RuntimeType> {
+    suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<LookupType> {
         val provider = resourceLookupProviders.firstOrNull { it.supportedLookupType == clazz }
 
         if (provider == null) {
@@ -90,8 +89,8 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
         @Suppress("UNCHECKED_CAST")
         return (
             provider
-                as ResourceLookupProvider<InfrastructureResourceLookup<RuntimeType>, RuntimeType>
-            ).list(context)
+                as ResourceLookupProvider<LookupType, RuntimeType>
+            ).list()
     }
 
     companion object {

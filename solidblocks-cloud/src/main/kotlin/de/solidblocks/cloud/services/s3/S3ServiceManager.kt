@@ -25,7 +25,6 @@ import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayout
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermission
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -270,7 +269,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
                     val managedPublicAccessDomains = mutableMapOf<String, String>()
 
-                    val dnsZones: List<HetznerDnsZoneRuntime> = runBlocking {
+                    val dnsZones: List<HetznerDnsZoneLookup> = runBlocking {
                         context.list(HetznerDnsZoneLookup::class)
                     }
                     log.info("validating bucket configuration for bucket '${bucket.name}'")

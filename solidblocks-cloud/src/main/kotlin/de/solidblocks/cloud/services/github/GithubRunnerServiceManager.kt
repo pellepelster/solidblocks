@@ -119,7 +119,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                     runtime.allowSudo,
                     Distributor.ubuntu,
 
-                    ).toResult(context, defaultResources)
+                ).toResult(context, defaultResources)
             }
 
             val server = HetznerServer(
@@ -194,7 +194,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                 return@runBlocking Error<Unit>(results.aggregateErrors())
             }
 
-            val servers = context.list<HetznerServerRuntime>(HetznerServerLookup::class).filter { it.name.startsWith(serverNamePrefix) }
+            val servers = context.list<HetznerServerLookup, HetznerServerRuntime>(HetznerServerLookup::class).filter { it.name.startsWith(serverNamePrefix) }
 
             servers.filter { it.name.startsWith(serverNamePrefix) }.forEach { server ->
                 if (server.name !in serverNames) {

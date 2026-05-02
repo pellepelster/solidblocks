@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner.postgres
 
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup

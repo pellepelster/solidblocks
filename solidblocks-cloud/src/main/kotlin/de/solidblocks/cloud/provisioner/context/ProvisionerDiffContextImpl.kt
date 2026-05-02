@@ -21,5 +21,4 @@ class ProvisionerDiffContextImpl(
         is InfrastructureResourceLookup<*> -> pendingChanges.any { pendingChanges.any { resource.isLookupFor(it) } }
         else -> pendingChanges.contains(resource)
     }
-
 }

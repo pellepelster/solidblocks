@@ -8,8 +8,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -24,7 +24,7 @@ class Resource2Provisioner :
 
     val resources = mutableMapOf<String, Resource2>()
 
-    override suspend fun lookup(lookup: Resource2Lookup, context: ProvisionerContext) = resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
+    override suspend fun lookup(lookup: Resource2Lookup, context: SSHProvisionerContext) = resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
 
     override suspend fun diff(resource: Resource2, context: ProvisionerDiffContext): ResourceDiff? = if (resource.name == "throw_exception_on_diff") {
         throw RuntimeException()
@@ -55,7 +55,7 @@ class Resource2Provisioner :
 
     fun isApplied(name: String) = appliedResources.contains(name)
 
-    override suspend fun destroy(lookup: Resource2Lookup, context: ProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(lookup: Resource2Lookup, context: SSHProvisionerContext, log: LogContext): Boolean {
         destroyedResources.add(lookup.name)
         return true
     }

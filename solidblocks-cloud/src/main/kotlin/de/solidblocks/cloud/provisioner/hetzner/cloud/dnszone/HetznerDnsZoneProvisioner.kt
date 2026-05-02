@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone
 
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 
@@ -18,7 +17,7 @@ class HetznerDnsZoneProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun list() = api.dnsZones.list().map { HetznerDnsZoneRuntime(it.id, it.name, it.labels) }
+    override suspend fun list() = api.dnsZones.list().map { HetznerDnsZoneLookup(it.name) }
 
     override val supportedLookupType = HetznerDnsZoneLookup::class
 }
