@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
-import de.solidblocks.cli.cloud.CloudHelpCommand.Companion.printMarkdown
+import de.solidblocks.cli.cloud.help.CloudHelpCommand.Companion.printMarkdown
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.services.CloudInfo

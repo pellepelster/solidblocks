@@ -1,8 +1,6 @@
 package de.solidblocks.cloudinit
 
-import de.solidblocks.shell.AptLibrary
 import de.solidblocks.shell.CaddyLibrary
-import de.solidblocks.shell.CurlLibrary
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
 import de.solidblocks.shell.MkDir
@@ -65,10 +63,7 @@ class GenericDockerServiceUserData(
 
         val shellScript = ShellScript()
 
-        shellScript.addLibrary(AptLibrary)
-        shellScript.addLibrary(CurlLibrary)
-        shellScript.addCommand(AptLibrary.UpdateRepositories())
-        shellScript.addCommand(AptLibrary.UpdateSystem())
+        shellScript.commonSetup()
 
         shellScript.addLibrary(StorageLibrary)
         shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))

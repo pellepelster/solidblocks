@@ -35,17 +35,23 @@ import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurat
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseUsersConfigurationRuntime
+import de.solidblocks.cloud.status.ServerStatus
+import de.solidblocks.cloud.status.serverStatusMarkdown
+import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.*
-import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.PostgresqlUserData
 import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
+import de.solidblocks.shell.pgbackrest.PgBackRestInfo
 import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
-import de.solidblocks.ssh.SSHClient
+import de.solidblocks.ssh.ensureCommand
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import java.time.Duration
 
 class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration, PostgresSqlServiceConfigurationRuntime> {
+
+    override fun maintenance(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: SSHProvisionerContext, log: LogContext): Result<Unit> =
+        serverMaintenance(cloud, runtime, context, log)
 
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
 
@@ -55,28 +61,37 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
-        val sshClient = when (val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name, 0))) {
-            is Error<SSHClient> -> return Error<String>(result.error)
-            is Success -> result.data
-        }
+        val serverName = serverName(cloud.environment, runtime.name, 0)
 
-        val result = sshClient.command(BACKUP_STATUS_COMMAND)
-        if (result.exitCode != 0) {
-            return Error<String>("command failed '${result.stdErr}'")
+        val result = context.withServerStatus(serverName) { sshClient, status ->
+            status to sshClient.ensureCommand(BACKUP_STATUS_COMMAND).parsePgBackRestInfoOutput()
         }
-
-        val backupStatus = result.stdOut.parsePgBackRestInfoOutput()
 
         return markdown {
-            h1("Service '${runtime.name}'")
+            h1("Service ${runtime.name}")
+            h2("Server $serverName")
+            serverStatusMarkdown(
+                result.map {
+                    it.first
+                },
+            )
+
             h2("Backups")
 
-            table {
-                header("start", "duration", "size")
-                backupStatus.flatMap {
-                    it.backup
-                }.forEach {
-                    row(it.timestamp.start.formatLocale(), Duration.between(it.timestamp.start, it.timestamp.stop).formatLocale(), it.info.size.formatBytes())
+            when (result) {
+                is Error<Pair<ServerStatus, PgBackRestInfo>> -> {
+                    text("*failed to retrieve backup status*: **${result.error}**")
+                }
+
+                is Success<Pair<ServerStatus, PgBackRestInfo>> -> {
+                    table {
+                        header("start", "duration", "size")
+                        result.data.second.flatMap {
+                            it.backup
+                        }.forEach {
+                            row(it.timestamp.start.formatLocale(), Duration.between(it.timestamp.start, it.timestamp.stop).formatLocale(), it.info.size.formatBytes())
+                        }
+                    }
                 }
             }
         }.let { Success(it) }

@@ -54,5 +54,3 @@ run = [
     { task = "build" },
     { task = "test" },
 ]
-
-

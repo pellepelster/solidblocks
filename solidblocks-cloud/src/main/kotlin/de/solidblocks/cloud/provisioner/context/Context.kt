@@ -7,7 +7,10 @@ import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.catchingResult
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import java.security.KeyPair
@@ -41,4 +44,19 @@ interface ProvisionerApplyContext : SSHProvisionerContext {
 
 interface ProvisionerDiffContext : SSHProvisionerContext {
     fun hasPendingChange(resource: BaseResource): Boolean
+}
+
+fun <T> SSHProvisionerContext.withSSHClient(serverName: String, block: (SSHClient) -> Result<T>): Result<T> {
+    val sshClient = when (val result = this.createOrGetSshClient(serverName)) {
+        is Error<SSHClient> -> return Error<T>(result.error)
+        is Success -> result.data
+    }
+
+    return block(sshClient)
+}
+
+fun <T> SSHProvisionerContext.withCatchingSSHClient(serverName: String, block: (SSHClient) -> T) = this.withSSHClient(serverName) {
+    catchingResult {
+        block.invoke(it)
+    }
 }

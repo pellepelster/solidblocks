@@ -122,3 +122,13 @@ class SSHClient(val host: String, val keyPair: KeyPair, val hostKey: PublicKey?,
         client.close()
     }
 }
+
+fun SSHClient.ensureCommand(command: String): String {
+    val result = this.command(command)
+
+    if (result.exitCode != 0) {
+        throw RuntimeException("command '$command' returned with code ${result.exitCode}")
+    }
+
+    return result.stdOut
+}

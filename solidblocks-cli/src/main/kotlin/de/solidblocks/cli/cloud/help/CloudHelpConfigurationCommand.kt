@@ -1,4 +1,4 @@
-package de.solidblocks.cli.cloud
+package de.solidblocks.cli.cloud.help
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context

@@ -7,6 +7,7 @@ import de.solidblocks.cloud.utils.*
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.Duration
@@ -19,6 +20,18 @@ class CloudUtilsTest {
         MockResource1("resource1").logText() shouldBe "mockresource1 'resource1'"
         MockResource1Lookup("resource1").logText() shouldBe "mockresource1 'resource1'"
         MockResource2Lookup("resource2").logText() shouldBe "custom log text 'resource2'"
+    }
+
+    @Test
+    fun testCatchingResultSuccess() {
+        val result = catchingResult { "foo-bar" }.shouldBeInstanceOf<Success<String>>()
+        result.data shouldBe "foo-bar"
+    }
+
+    @Test
+    fun testCatchingResultError() {
+        val result = catchingResult { throw RuntimeException("foo-bar") }.shouldBeInstanceOf<Error<String>>()
+        result.error shouldBe "foo-bar"
     }
 
     @Test

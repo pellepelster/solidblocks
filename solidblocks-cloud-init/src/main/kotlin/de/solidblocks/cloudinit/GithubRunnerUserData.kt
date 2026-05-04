@@ -1,7 +1,6 @@
 package de.solidblocks.cloudinit
 
 import de.solidblocks.shell.AptLibrary
-import de.solidblocks.shell.CurlLibrary
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
 import de.solidblocks.shell.GithubLibrary
@@ -46,19 +45,9 @@ class GithubRunnerUserData(
     private fun scriptInternal(variables: Variables): ShellScript {
         val shellScript = ShellScript()
 
-        shellScript.addLibrary(AptLibrary)
-        shellScript.addLibrary(CurlLibrary)
-        shellScript.addLibrary(GithubLibrary)
+        shellScript.commonSetup()
 
-        shellScript.addCommand(
-            WriteFile(
-                "\$nrconf{kernelhints} = -1;".toByteArray(),
-                "/etc/needrestart/conf.d/kernel.conf",
-                FilePermissions.RW_R__R__,
-            ),
-        )
-        shellScript.addCommand(AptLibrary.UpdateRepositories())
-        shellScript.addCommand(AptLibrary.UpdateSystem())
+        shellScript.addLibrary(GithubLibrary)
 
         shellScript.addCommand(AptLibrary.InstallPackage("curl"))
         shellScript.addCommand(AptLibrary.InstallPackage("ca-certificates"))

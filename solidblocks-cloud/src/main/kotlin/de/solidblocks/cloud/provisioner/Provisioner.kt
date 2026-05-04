@@ -9,6 +9,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
+import de.solidblocks.cloud.api.endpoint.waitForSSH
 import de.solidblocks.cloud.api.hierarchicalResourceList
 import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -237,18 +238,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                         when (it.protocol) {
                             EndpointProtocol.ssh -> {
                                 val sshPortOpen =
-                                    waitConfig.waitForCondition {
-                                        try {
-                                            applyLog.info("waiting for SSH on endpoint on ${it.serverName} (${it.address}:${it.port})")
-                                            val client = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
-                                            client.command("whoami").exitCode == 0
-                                        } catch (e: Exception) {
-                                            logger.error(e) {
-                                                "error waiting for '${it.protocol}' endpoint ${it.address}:${it.port}"
-                                            }
-                                            false
-                                        }
-                                    }
+                                    waitConfig.waitForSSH(it, context.sshKeyPair, applyLog)
 
                                 if (!sshPortOpen) {
                                     return@runBlocking Error<Unit>(

@@ -2,7 +2,15 @@ package de.solidblocks.cli
 
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
-import de.solidblocks.cli.cloud.*
+import de.solidblocks.cli.cloud.CloudApplyCommand
+import de.solidblocks.cli.cloud.CloudCommand
+import de.solidblocks.cli.cloud.CloudInfoCommand
+import de.solidblocks.cli.cloud.CloudPlanCommand
+import de.solidblocks.cli.cloud.CloudSSHConfigCommand
+import de.solidblocks.cli.cloud.help.CloudHelpCommand
+import de.solidblocks.cli.cloud.help.CloudHelpConfigurationCommand
+import de.solidblocks.cli.cloud.maintenance.CloudMaintenanceCommand
+import de.solidblocks.cli.cloud.status.CloudStatusCommand
 import de.solidblocks.cli.commands.BlcksCommand
 import de.solidblocks.cli.docs.DocsCommand
 import de.solidblocks.cli.docs.ansible.AnsibleCommand
@@ -12,7 +20,11 @@ import de.solidblocks.cli.hetzner.HetznerCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgRotateCommand
 import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
-import de.solidblocks.cli.terraform.*
+import de.solidblocks.cli.terraform.BackendsCommand
+import de.solidblocks.cli.terraform.BackendsS3Command
+import de.solidblocks.cli.terraform.TYPE
+import de.solidblocks.cli.terraform.TerraformCommand
+import de.solidblocks.cli.terraform.TofuCommand
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.graalvm.nativeimage.hosted.Feature
 import org.graalvm.nativeimage.hosted.RuntimeClassInitialization
@@ -44,6 +56,8 @@ fun main(args: Array<String>) {
         root.subcommands(it)
         it.subcommands(
             CloudApplyCommand(),
+            CloudMaintenanceCommand(),
+            CloudStatusCommand(),
             CloudPlanCommand(),
             CloudInfoCommand(),
             CloudHelpCommand().also {

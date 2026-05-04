@@ -36,21 +36,37 @@ import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.services.createDefaultSSHIdentity
 import de.solidblocks.cloud.services.github.model.GithubRunnerServiceConfiguration
 import de.solidblocks.cloud.services.github.model.GithubRunnerServiceConfigurationRuntime
+import de.solidblocks.cloud.services.serverMaintenance
 import de.solidblocks.cloud.services.sshConnectCommand
+import de.solidblocks.cloud.status.serverStatusMarkdown
+import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.VERY_LONG_WAIT
-import de.solidblocks.cloud.utils.aggregateErrors
+import de.solidblocks.cloud.utils.aggregate
+import de.solidblocks.cloud.utils.aggregateErrorMessage
 import de.solidblocks.cloud.utils.hasError
 import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.cloudinit.Distributor
 import de.solidblocks.cloudinit.GithubRunnerUserData
 import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.bold
 import kotlinx.coroutines.runBlocking
 
 class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfiguration, GithubRunnerServiceConfigurationRuntime> {
+
+    override fun maintenance(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: SSHProvisionerContext, log: LogContext): Result<Unit> {
+        log.info("running maintenance for service '${bold(runtime.name)}'")
+        val serviceLog = log.indent()
+        val results = (0..runtime.scale - 1).map {
+            val serverName = serverName(cloud.environment, runtime.name, it)
+            serverMaintenance(serverName, context, serviceLog)
+        }
+
+        return results.aggregate { Unit }
+    }
 
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: SSHProvisionerContext) = Success(
         ServiceInfo(
@@ -85,13 +101,23 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
-        /*
-        val sshClient = context.createOrGetSshClient(serverName(cloud.environment, runtime.name))
-        val result = sshClient.command("systemctl is-active ${runtime.name}.service")
-        text(if (result.exitCode == 0) "active" else "inactive (${result.stdOut.trim()})")
-         */
+        val status = (0..runtime.scale - 1).map {
+            val serverName = serverName(cloud.environment, runtime.name, it)
+            val result = context.withServerStatus(serverName) { sshClient, status ->
+                status
+            }
+
+            serverName to result
+        }
 
         return markdown {
+            h1("Service ${runtime.name}")
+
+            h2("Servers")
+            status.forEach { (serverName, status) ->
+                h2("Server $serverName")
+                serverStatusMarkdown(status)
+            }
         }.let { Success(it) }
     }
 
@@ -144,11 +170,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                         }
                     }
 
-                    if (results.hasError()) {
-                        Error(results.aggregateErrors())
-                    } else {
-                        Success(Unit)
-                    }
+                    results.aggregate { Unit }
                 },
             )
 
@@ -191,7 +213,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             }
 
             if (results.hasError()) {
-                return@runBlocking Error<Unit>(results.aggregateErrors())
+                return@runBlocking Error<Unit>(results.aggregateErrorMessage())
             }
 
             val servers = context.list<HetznerServerLookup, HetznerServerRuntime>(HetznerServerLookup::class).filter { it.name.startsWith(serverNamePrefix) }

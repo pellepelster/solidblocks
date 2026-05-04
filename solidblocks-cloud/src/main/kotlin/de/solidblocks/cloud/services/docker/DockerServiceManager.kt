@@ -27,36 +27,26 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.toResult
-import de.solidblocks.cloud.services.BackupRuntime
-import de.solidblocks.cloud.services.EndpointInfo
-import de.solidblocks.cloud.services.EnvironmentVariableCallback
-import de.solidblocks.cloud.services.EnvironmentVariableStatic
-import de.solidblocks.cloud.services.InstanceRuntime
-import de.solidblocks.cloud.services.ServerInfo
-import de.solidblocks.cloud.services.ServiceConfiguration
-import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.services.ServiceInfo
-import de.solidblocks.cloud.services.ServiceManager
-import de.solidblocks.cloud.services.createDefaultServerResources
+import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfigurationRuntime
-import de.solidblocks.cloud.services.firewall
-import de.solidblocks.cloud.services.sshConnectCommand
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.formatBytes
-import de.solidblocks.cloud.utils.formatLocale
-import de.solidblocks.cloud.utils.markdown
+import de.solidblocks.cloud.status.ServerStatus
+import de.solidblocks.cloud.status.serverStatusMarkdown
+import de.solidblocks.cloud.status.withServerStatus
+import de.solidblocks.cloud.utils.*
 import de.solidblocks.cloudinit.GenericDockerServiceUserData
 import de.solidblocks.cloudinit.RESTIC_STATUS_COMMAND
+import de.solidblocks.shell.restic.ResticSnapshots
 import de.solidblocks.shell.restic.parseResticSnapshotsOutput
-import de.solidblocks.ssh.SSHClient
+import de.solidblocks.ssh.ensureCommand
 import de.solidblocks.utils.LogContext
 import java.time.Duration
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {
+
+    override fun maintenance(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: SSHProvisionerContext, log: LogContext): Result<Unit> =
+        serverMaintenance(cloud, runtime, context, log)
 
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: SSHProvisionerContext) = Success(
         ServiceInfo(
@@ -80,26 +70,35 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
-        val sshClient = when (val result = context.createOrGetSshClient(serverName(cloud.environment, runtime.name, 0))) {
-            is Error<SSHClient> -> return Error<String>(result.error)
-            is Success -> result.data
-        }
+        val serverName = serverName(cloud.environment, runtime.name, 0)
 
-        val result = sshClient.command(RESTIC_STATUS_COMMAND)
-        if (result.exitCode != 0) {
-            return Error<String>("command failed '${result.stdErr}'")
+        val result = context.withServerStatus(serverName) { sshClient, status ->
+            status to sshClient.ensureCommand(RESTIC_STATUS_COMMAND).parseResticSnapshotsOutput()
         }
-
-        val backupStatus = result.stdOut.parseResticSnapshotsOutput()
 
         return markdown {
-            h1("Service '${runtime.name}'")
+            h1("Service ${runtime.name}")
+            h2("Server $serverName")
+            serverStatusMarkdown(
+                result.map {
+                    it.first
+                },
+            )
+
             h2("Backups")
 
-            table {
-                header("start", "duration", "size")
-                backupStatus.forEach {
-                    row(it.summary.backupStart.formatLocale(), Duration.between(it.summary.backupStart, it.summary.backupEnd).formatLocale(), it.summary.totalBytesProcessed.formatBytes())
+            when (result) {
+                is Error<Pair<ServerStatus, ResticSnapshots>> -> {
+                    text("**failed to retrieve backup status**")
+                }
+
+                is Success<Pair<ServerStatus, ResticSnapshots>> -> {
+                    table {
+                        header("start", "duration", "size")
+                        result.data.second.forEach {
+                            row(it.summary.backupStart.formatLocale(), Duration.between(it.summary.backupStart, it.summary.backupEnd).formatLocale(), it.summary.totalBytesProcessed.formatBytes())
+                        }
+                    }
                 }
             }
         }.let { Success(it) }

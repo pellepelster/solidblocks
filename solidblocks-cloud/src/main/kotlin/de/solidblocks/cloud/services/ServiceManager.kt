@@ -5,22 +5,32 @@ import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.volumeLabels
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.endpoint.EndpointProtocol
+import de.solidblocks.cloud.api.endpoint.waitForNoSSH
+import de.solidblocks.cloud.api.endpoint.waitForSSH
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
+import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.ByteSize
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.SHORT_WAIT
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.toPem
 import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.bold
+import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 
 interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {
@@ -44,6 +54,8 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
     fun infoText(cloud: CloudConfigurationRuntime, runtime: R, context: SSHProvisionerContext): Result<String>
 
     fun status(cloud: CloudConfigurationRuntime, runtime: R, context: SSHProvisionerContext): Result<String>
+
+    fun maintenance(cloud: CloudConfigurationRuntime, runtime: R, context: SSHProvisionerContext, log: LogContext): Result<Unit> = Success(Unit)
 
     fun infoJson(cloud: CloudConfigurationRuntime, runtime: R, context: SSHProvisionerContext): Result<ServiceInfo>
 
@@ -108,4 +120,61 @@ fun createDefaultServerVolumes(cloud: CloudConfigurationRuntime, runtime: Servic
     )
 
     return DefaultServerVolumes(dataVolume)
+}
+
+fun serverMaintenance(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, context: SSHProvisionerContext, log: LogContext): Result<Unit> {
+    log.info("running maintenance for service '${bold(runtime.name)}'")
+    val serverName = serverName(cloud.environment, runtime.name, 0)
+    return serverMaintenance(serverName, context, log.indent())
+}
+
+fun serverMaintenance(serverName: String, context: SSHProvisionerContext, log: LogContext): Result<Unit> {
+    log.info("checking server status '${bold(serverName)}'")
+    val serverLog = log.indent()
+
+    val server = context.lookup(HetznerServerLookup(serverName))
+    if (server == null) {
+        return Error<Unit>("server '$serverName' not found")
+    }
+
+    val rebootTriggered = context.withServerStatus(serverName) { sshClient, status ->
+        if (status.needRestart.currentKernel != status.needRestart.expectedKernel) {
+            serverLog.info("kernel was updated to ${bold(status.needRestart.expectedKernel)} from ${bold(status.needRestart.currentKernel)}, triggering reboot")
+            serverLog.info("triggering reboot")
+            sshClient.command("reboot")
+            runBlocking {
+                server.endpoints.forEach { endpoint ->
+                    when (endpoint.protocol) {
+                        EndpointProtocol.ssh -> SHORT_WAIT.waitForNoSSH(endpoint, context.sshKeyPair) {
+                            serverLog.info("waiting for server shutdown")
+                        }
+                    }
+                }
+            }
+            true
+        } else {
+            serverLog.info("kernel is up-to-date ${bold(status.needRestart.expectedKernel)}")
+            false
+        }
+    }
+
+    return when (rebootTriggered) {
+        is Error<Boolean> -> {
+            serverLog.error(rebootTriggered.error)
+            Error<Unit>(rebootTriggered.error)
+        }
+
+        is Success -> runBlocking {
+            if (rebootTriggered.data) {
+                serverLog.info("waiting for server reboot")
+                server.endpoints.forEach { endpoint ->
+                    when (endpoint.protocol) {
+                        EndpointProtocol.ssh -> LONG_WAIT.waitForSSH(endpoint, context.sshKeyPair, serverLog)
+                    }
+                }
+            }
+
+            Success(Unit)
+        }
+    }
 }

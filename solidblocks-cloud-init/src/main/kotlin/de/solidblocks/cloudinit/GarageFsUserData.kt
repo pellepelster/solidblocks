@@ -59,10 +59,7 @@ class GarageFsUserData(
 
         val shellScript = ShellScript()
 
-        shellScript.addLibrary(CurlLibrary)
-        shellScript.addLibrary(AptLibrary)
-        shellScript.addCommand(AptLibrary.UpdateRepositories())
-        shellScript.addCommand(AptLibrary.UpdateSystem())
+        shellScript.commonSetup()
 
         shellScript.addLibrary(StorageLibrary)
         shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))

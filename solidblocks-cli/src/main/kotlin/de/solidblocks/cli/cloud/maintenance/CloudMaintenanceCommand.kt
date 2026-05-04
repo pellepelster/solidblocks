@@ -1,19 +1,18 @@
-package de.solidblocks.cli.cloud
+package de.solidblocks.cli.cloud.maintenance
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.types.file
-import de.solidblocks.cli.cloud.CloudHelpCommand.Companion.printMarkdown
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
 
-class CloudStatusCommand : CliktCommand(name = "status") {
-    override fun help(context: Context) = "show cloud runtime status"
+class CloudMaintenanceCommand : CliktCommand(name = "maintenance") {
+    override fun help(context: Context) = "update and maintain running service instances"
 
     private val configFile by argument().file(mustExist = true)
 
@@ -29,13 +28,14 @@ class CloudStatusCommand : CliktCommand(name = "status") {
                 is Success<CloudConfigurationRuntime> -> result.data
             }
 
-        when (val result = manager.status(runtime)) {
-            is Error<String> -> {
+        when (val result = manager.maintenance(runtime)) {
+            is Error<Unit> -> {
                 logError(result.error)
                 throw ProgramResult(1)
             }
 
-            is Success<String> -> printMarkdown(result)
+            is Success<Unit> -> {
+            }
         }
     }
 }

@@ -40,8 +40,7 @@ import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.aggregateErrors
-import de.solidblocks.cloud.utils.hasError
+import de.solidblocks.cloud.utils.aggregate
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
@@ -98,6 +97,14 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         return@runBlocking Success(serviceOutput.joinToString("\n"))
     }
 
+    fun maintenance(runtime: CloudConfigurationRuntime, log: LogContext): Result<Unit> = runBlocking {
+        val maintenanceOutputs = serviceManagers().map {
+            it.second.maintenance(runtime, it.first, context, log.indent())
+        }
+
+        maintenanceOutputs.aggregate { Unit }
+    }
+
     fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> = runBlocking {
         val services = serviceManagers().map {
             when (val result = it.second.infoJson(runtime, it.first, context)) {
@@ -135,11 +142,8 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
                     log.debug("running cleanup for service '${it.first.name}'")
                     it.second.cleanupResources(runtime, it.first, context, log.indent())
                 }
-                if (cleanupResults.hasError()) {
-                    Error<Unit>(cleanupResults.aggregateErrors())
-                } else {
-                    diffResult
-                }
+
+                cleanupResults.aggregate { Unit }
             }
         }
     }

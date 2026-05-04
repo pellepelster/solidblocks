@@ -39,6 +39,8 @@ import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurat
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfigurationRuntime
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
+import de.solidblocks.cloud.status.serverStatusMarkdown
+import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.*
 import de.solidblocks.cloudinit.GarageFsUserData
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3AdminHost
@@ -51,7 +53,22 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
     private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud.environment, runtime.name, 0)}.${cloud.rootDomain}"
 
-    override fun status(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext) = markdown { }.let { Success(it) }
+    override fun maintenance(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext, log: LogContext): Result<Unit> =
+        serverMaintenance(cloud, runtime, context, log)
+
+    override fun status(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
+        val serverName = serverName(cloud.environment, runtime.name, 0)
+
+        val result = context.withServerStatus(serverName) { sshClient, status ->
+            status
+        }
+
+        return markdown {
+            h1("Service ${runtime.name}")
+            h2("Server $serverName")
+            serverStatusMarkdown(result)
+        }.let { Success(it) }
+    }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
         val serverName = serverName(cloud.environment, runtime.name, 0)

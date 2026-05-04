@@ -17,6 +17,8 @@ open class LogContext(val indent: Int = 0) {
 
     fun error(message: String) = logError(message, context = this)
 
+    fun success(message: String) = logSuccess(message, context = this)
+
     companion object {
         fun default() = LogContext(0)
 

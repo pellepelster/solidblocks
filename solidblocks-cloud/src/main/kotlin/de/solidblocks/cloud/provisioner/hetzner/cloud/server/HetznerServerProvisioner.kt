@@ -159,7 +159,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
                     }
                 } catch (e: HetznerApiException) {
                     if (e.error.code != HetznerApiErrorType.SERVER_ALREADY_ATTACHED) {
-                        return Error("hetzner api error '${e.error.code}'")
+                        return Error("Hetzner api error '${e.error.code}'")
                     }
                 }
             }

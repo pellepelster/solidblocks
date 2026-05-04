@@ -15,6 +15,7 @@ env:
   SKIP_TESTS: "integration"
   BUILD_FAST: ${{ (github.ref == 'refs/heads/main' || contains(github.ref, '-rc') || contains(github.ref, 'next')) && 'true' || 'false' }}
   HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

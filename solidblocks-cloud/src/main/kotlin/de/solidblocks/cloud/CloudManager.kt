@@ -300,6 +300,19 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         }
     }
 
+    fun maintenance(runtime: CloudConfigurationRuntime): Result<Unit> {
+        val log = LogContext()
+        log.info(bold("running maintenance"))
+
+        CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
+            return it.maintenance(runtime, log).also {
+                if (it is Success<Unit>) {
+                    log.success("maintenance finished")
+                }
+            }
+        }
+    }
+
     fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> {
         CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
             return it.infoJson(runtime)
