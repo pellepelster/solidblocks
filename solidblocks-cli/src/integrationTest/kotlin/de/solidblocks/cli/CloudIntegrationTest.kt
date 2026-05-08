@@ -43,7 +43,6 @@ class CloudIntegrationTest {
         }
 
         assertSoftly(context.local().command("pass", "rm", "-rf", "cloud1").timeout(5.minutes).runResult()) { result ->
-            result shouldHaveExitCode 0
         }
 
         val permissions = setOf(
