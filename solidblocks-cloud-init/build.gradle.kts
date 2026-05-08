@@ -74,7 +74,7 @@ val generate = tasks.register("generate") {
 
     outputs.file(layout.buildDirectory.file("blcks-cloud-init-bootstrap.sh"))
     outputs.dir(layout.buildDirectory.dir("snippets"))
-    outputs.file(layout.projectDirectory.file("src/main/resources/blcks-cloud-init-bootstrap.sh.template"))
+    outputs.file(layout.buildDirectory.file("generated/resources/main/blcks-cloud-init-bootstrap.sh.template"))
 
     doLast {
         val includes = listOf(
@@ -128,9 +128,10 @@ val generate = tasks.register("generate") {
             it.setExecutable(true)
         }
 
-        val resourcesDir = project.layout.projectDirectory.dir("src/main/resources").asFile
+        val generatedResourcesDir = layout.buildDirectory.dir("generated/resources/main").get().asFile
+        generatedResourcesDir.mkdirs()
 
-        resourcesDir.resolve("blcks-cloud-init-bootstrap.sh.template").also {
+        generatedResourcesDir.resolve("blcks-cloud-init-bootstrap.sh.template").also {
             it.writeText(bootstrapTemplateSh.toString())
             it.setExecutable(true)
         }
@@ -144,8 +145,14 @@ tasks.test {
     systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "4")
 }
 
+sourceSets.main {
+    resources.srcDir(layout.buildDirectory.dir("generated/resources/main"))
+}
+
 tasks.getByName("jar").dependsOn(generate)
 tasks.getByName("assemble").dependsOn(generate)
+tasks.getByName("processResources").dependsOn(generate)
+tasks.matching { it.name == "sourcesJar" }.configureEach { dependsOn(generate) }
 generate.dependsOn(zip)
 
 artifacts {
