@@ -65,6 +65,18 @@ To protect your data, Solidblocks includes automatic backup and restore function
 
 {{< asciicast src="casts/quickstart_s3.cast" >}}
 
+## Status
+
+The status allows you to gather a quick concise over the status of all provisioned servers 
+
+{{< asciicast src="casts/quickstart_status.cast" >}}
+
+## Maintenance
+
+The maintenance tasks helps to keep the provisioned servers up-to-date and will also schedule reboots if necessary.
+
+{{< asciicast src="casts/quickstart_maintenance.cast" >}}
+
 ## Help
 
 Context-sensitive information and error messages help connecting to the deployed services.

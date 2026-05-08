@@ -72,5 +72,4 @@
 [5.025, "o", "[   INFO]       waiting for SSH on endpoint on cloud1-default-service1-0 (178.105.102.255:22)\r\n"]
 [0.636, "o", "[SUCCESS] \u001b[32mmaintenance finished\u001b[39m\r\n"]
 [0.011, "o", "\u001b[?2004h$ "]
-[23.952, "o", "\u001b[?2004l\r\r\nexit\r\n"]
 [0.001, "x", "0"]

@@ -7,7 +7,6 @@ function task_build {
   DOCKER_OPTIONS="${DOCKER_OPTIONS:---push}"
   DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/amd64,linux/arm64}"
   DOCKER_OPTIONS="--push"
-  DOCKER_PLATFORM="linux/amd64,linux/arm64"
 
   (
     mkdir -p "build"
