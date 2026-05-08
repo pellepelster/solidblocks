@@ -2,6 +2,7 @@ package de.solidblocks.cli.utils
 
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.terminal.Terminal
+import java.util.Properties
 
 sealed interface Result<T>
 
@@ -26,3 +27,9 @@ public fun List<String>.indentWithYamlObjectMarker() = this.withIndex().map {
 }
 
 fun createTerminal() = Terminal(AnsiLevel.ANSI256)
+
+fun solidblocksVersion(): String {
+    val props = Properties()
+    object {}.javaClass.getResourceAsStream("/solidblocks-version.properties")?.use { props.load(it) }
+    return props.getProperty("version", "unknown")
+}

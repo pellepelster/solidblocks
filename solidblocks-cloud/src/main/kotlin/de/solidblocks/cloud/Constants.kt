@@ -68,7 +68,5 @@ object Constants {
         cloudLabel to cloudName,
     )
 
-    fun solidblocksVersion() = "0.0.0"
-
     fun serverPrivateIp(index: Int) = "10.0.1.${index + 1}"
 }

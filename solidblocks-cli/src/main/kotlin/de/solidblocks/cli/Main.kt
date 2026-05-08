@@ -12,6 +12,7 @@ import de.solidblocks.cli.cloud.help.CloudHelpConfigurationCommand
 import de.solidblocks.cli.cloud.maintenance.CloudMaintenanceCommand
 import de.solidblocks.cli.cloud.status.CloudStatusCommand
 import de.solidblocks.cli.commands.BlcksCommand
+import de.solidblocks.cli.commands.VersionCommand
 import de.solidblocks.cli.docs.DocsCommand
 import de.solidblocks.cli.docs.ansible.AnsibleCommand
 import de.solidblocks.cli.github.GithubCommand
@@ -51,6 +52,7 @@ fun main(args: Array<String>) {
     logger.log(Level.INFO, "starting CLI")
 
     val root = BlcksCommand()
+    root.subcommands(VersionCommand())
 
     CloudCommand().also {
         root.subcommands(it)
