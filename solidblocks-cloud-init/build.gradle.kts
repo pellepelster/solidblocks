@@ -59,15 +59,30 @@ fun List<File>.processIncludes(sw: StringWriter) {
 }
 
 val generate = tasks.register("generate") {
-    doLast {
-        val shellLibDir = project.rootProject.project(":solidblocks-shell").layout.projectDirectory.dir("lib").asFile
+    val shellLibDir = project.rootProject.project(":solidblocks-shell").layout.projectDirectory.dir("lib")
 
+    inputs.files(
+        shellLibDir.file("text.sh"),
+        shellLibDir.file("utils.sh"),
+        shellLibDir.file("log.sh"),
+        shellLibDir.file("curl.sh"),
+        shellLibDir.file("apt.sh"),
+    )
+    inputs.file(layout.projectDirectory.file("templates/cloud-init-bootstrap.header.template"))
+    inputs.file(layout.projectDirectory.file("templates/cloud-init-bootstrap.body.template"))
+    inputs.file(cloudInitZip)
+
+    outputs.file(layout.buildDirectory.file("blcks-cloud-init-bootstrap.sh"))
+    outputs.dir(layout.buildDirectory.dir("snippets"))
+    outputs.file(layout.projectDirectory.file("src/main/resources/blcks-cloud-init-bootstrap.sh.template"))
+
+    doLast {
         val includes = listOf(
-            shellLibDir.resolve("text.sh"),
-            shellLibDir.resolve("utils.sh"),
-            shellLibDir.resolve("log.sh"),
-            shellLibDir.resolve("curl.sh"),
-            shellLibDir.resolve("apt.sh"),
+            shellLibDir.file("text.sh").asFile,
+            shellLibDir.file("utils.sh").asFile,
+            shellLibDir.file("log.sh").asFile,
+            shellLibDir.file("curl.sh").asFile,
+            shellLibDir.file("apt.sh").asFile,
         )
 
         val sha256256Sum = cloudInitZip.get().asFile.readBytes().hashedWithSha256()
