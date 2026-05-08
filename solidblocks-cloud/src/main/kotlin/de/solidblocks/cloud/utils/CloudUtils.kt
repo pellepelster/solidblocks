@@ -7,9 +7,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-fun getEnvOrProperty(name: String) = System.getenv(name) ?: System.getProperty(name)
+fun getEnvOrProperty(name: String): String? = System.getenv(name) ?: System.getProperty(name)
 
-fun getPropertyOrEnv(name: String) = System.getProperty(name) ?: System.getenv(name)
+fun getPropertyOrEnv(name: String): String? = System.getProperty(name) ?: System.getenv(name)
 
 fun commandExists(command: String) = try {
     val isWindows = System.getProperty("os.name").lowercase().contains("win")
@@ -27,7 +27,7 @@ fun commandExists(command: String) = try {
             .start()
 
     process.waitFor() == 0
-} catch (e: Exception) {
+} catch (_: Exception) {
     false
 }
 
@@ -46,8 +46,6 @@ fun CommandResult?.asResult(description: String): Result<CommandResult> {
 }
 
 fun runCommand(command: List<String>, stdin: String? = null, env: Map<String, String> = emptyMap()) = try {
-    val isWindows = System.getProperty("os.name").lowercase().contains("win")
-
     val pb = ProcessBuilder(command)
     pb.environment().putAll(env)
 
@@ -67,7 +65,7 @@ fun runCommand(command: List<String>, stdin: String? = null, env: Map<String, St
         InputStreamReader(process.inputStream).readText(),
         InputStreamReader(process.errorStream).readText(),
     )
-} catch (e: Exception) {
+} catch (_: Exception) {
     null
 }
 
@@ -80,7 +78,7 @@ class ByteSize(val bytes: Long) {
     }
 }
 
-fun Instant.formatLocale(zone: ZoneId = ZoneId.systemDefault()) = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withZone(zone).format(this)
+fun Instant.formatLocale(zone: ZoneId = ZoneId.systemDefault()): String = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withZone(zone).format(this)
 
 fun Duration.formatLocale() = if (this.toMinutes() > 2) {
     "${this.toMinutes()}m"
@@ -105,9 +103,9 @@ fun Long.formatBytes(): String {
     }
 }
 
-public infix fun <T> List<T>.equalsIgnoreOrder(other: List<T>) = this.size == other.size && this.toSet() == other.toSet()
+infix fun <T> List<T>.equalsIgnoreOrder(other: List<T>) = this.size == other.size && this.toSet() == other.toSet()
 
-public fun <T> Iterable<T>.joinToStringOrEmpty(separator: CharSequence = ", ", empty: String = "<none>", transform: (T) -> CharSequence): String = if (this.count() == 0) {
+fun <T> Iterable<T>.joinToStringOrEmpty(separator: CharSequence = ", ", empty: String = "<none>", transform: (T) -> CharSequence): String = if (this.count() == 0) {
     empty
 } else {
     this.joinToString(separator) { transform.invoke(it) }

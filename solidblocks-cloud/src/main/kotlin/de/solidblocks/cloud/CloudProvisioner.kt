@@ -102,7 +102,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             it.second.maintenance(runtime, it.first, context, log.indent())
         }
 
-        maintenanceOutputs.aggregate { Unit }
+        maintenanceOutputs.aggregate { }
     }
 
     fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> = runBlocking {
@@ -126,9 +126,8 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         }
 
         log.info(bold("rolling out changes for cloud configuration '${runtime.environment.cloud}'"))
-        val pendingResourceChanges = diffs.flatMap { it.value.map { it.resource } }
 
-        val diffResult = if (diffs.entries.flatMap { it.value }.filter { it.status != up_to_date }.isNotEmpty()) {
+        val diffResult = if (diffs.entries.flatMap { it.value }.any { it.status != up_to_date }) {
             provisioner.apply(diffs, ProvisionerApplyContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, context.environment, context.registry, context.serviceRegistrations), log.indent())
         } else {
             log.indent().info("no pending changes")

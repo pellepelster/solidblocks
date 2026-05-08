@@ -44,15 +44,10 @@ class S3BackupProviderManager :
     }
 
     override fun validateConfiguration(configuration: S3BackupProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<S3BackupProviderConfigurationRuntime> {
-        if (getEnvOrProperty("AWS_ACCESS_KEY_ID") == null) {
-            return Error("environment variable 'AWS_ACCESS_KEY_ID' not set")
-        }
+        val awsAccessKey = getEnvOrProperty("AWS_ACCESS_KEY_ID") ?: return Error("environment variable 'AWS_ACCESS_KEY_ID' not set")
+        val awsSecretKey = getEnvOrProperty("AWS_SECRET_ACCESS_KEY") ?: return Error("environment variable 'AWS_SECRET_ACCESS_KEY' not set")
 
-        if (getEnvOrProperty("AWS_SECRET_ACCESS_KEY") == null) {
-            return Error("environment variable 'AWS_SECRET_ACCESS_KEY' not set")
-        }
-
-        return Success(S3BackupProviderConfigurationRuntime(configuration.region, getEnvOrProperty("AWS_ACCESS_KEY_ID"), getEnvOrProperty("AWS_SECRET_ACCESS_KEY")))
+        return Success(S3BackupProviderConfigurationRuntime(configuration.region, awsAccessKey, awsSecretKey))
     }
 
     override fun createProvisioners(runtime: S3BackupProviderConfigurationRuntime) = listOf(
