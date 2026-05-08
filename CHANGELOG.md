@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.5.6
+* add status and maintenance tasks to Solidblock [Cloud](https://pellepelster.github.io/solidblocks/cloud/)
+
 ## v0.5.5
 * add GitHub runner provisioning to Solidblocks Cloud
 * use pre-generated identities for SSH servers

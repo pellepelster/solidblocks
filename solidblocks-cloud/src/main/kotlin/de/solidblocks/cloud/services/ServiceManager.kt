@@ -64,6 +64,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
     val supportedRuntime: KClass<R>
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceManager<C, R> =
     this.single { it.supportedConfiguration == service::class }.createManager() as ServiceManager<C, R>? ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")
 
