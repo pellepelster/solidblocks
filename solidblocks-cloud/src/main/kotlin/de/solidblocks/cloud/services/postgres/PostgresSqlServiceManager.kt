@@ -213,6 +213,8 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                         it.ensureLookup(superUserPassword.asLookup()).secret,
                         it.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                         createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
+                        runtime.majorVersion,
+                        solidblocksVersion(),
                     ).toResult(it, defaultResources.sshIdentity)
                 },
             )
@@ -302,6 +304,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                         it.users.map { PostgresSqlServiceDatabaseUsersConfigurationRuntime(it.name) },
                     )
                 },
+                configuration.majorVersion,
             ),
         )
     }

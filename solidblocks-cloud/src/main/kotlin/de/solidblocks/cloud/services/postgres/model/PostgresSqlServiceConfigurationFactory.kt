@@ -2,6 +2,8 @@ package de.solidblocks.cloud.services.postgres.model
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
+import de.solidblocks.cloud.configuration.NumberConstraints
+import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.BackupConfig
@@ -25,6 +27,16 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
             ),
         )
 
+    val majorVersion =
+        NumberKeywordOptionalWithDefault(
+            "majorVersion",
+            NumberConstraints(14, 18),
+            KeywordHelp(
+                "Postgres major version",
+            ),
+            17,
+        )
+
     override val help =
         ConfigurationHelp(
             "PostgreSQL",
@@ -34,6 +46,7 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
     override val keywords =
         listOf(
             SERVICE_NAME_KEYWORD,
+            majorVersion,
             databases,
         ) + BackupConfigurationFactory.keywords + InstanceConfigurationFactory.keywords
 
@@ -62,12 +75,19 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
                 is Success<List<PostgresSqlServiceDatabaseConfiguration>> -> result.data
             }
 
+        val majorVersion =
+            when (val result = majorVersion.parse(yaml)) {
+                is Error<Int> -> return Error(result.error)
+                is Success<Int> -> result.data
+            }
+
         return Success(
             PostgresSqlServiceConfiguration(
                 name,
                 instance,
                 backupConfig,
                 databases,
+                majorVersion,
             ),
         )
     }

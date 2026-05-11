@@ -2,6 +2,32 @@ plugins {
     id("buildlogic.solidblocks-kotlin-conventions")
 }
 
+val solidblocksVersion = run {
+    val proc = ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
+        .directory(rootDir)
+        .redirectErrorStream(true)
+        .start()
+    proc.inputStream.bufferedReader().readText().trim().removePrefix("v")
+}
+
+val generateVersionProperties by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/resources/main")
+    outputs.dir(outputDir)
+    doLast {
+        outputDir.get().asFile.mkdirs()
+        outputDir.get().file("solidblocks-version.properties").asFile.writeText("version=$solidblocksVersion\n")
+    }
+}
+
+sourceSets.main {
+    resources.srcDir(generateVersionProperties)
+}
+
+tasks.named("compileKotlin") {
+    dependsOn(generateVersionProperties)
+}
+
+
 dependencies {
     implementation(project(":solidblocks-utils"))
     implementation(project(":solidblocks-ssh"))

@@ -8,7 +8,13 @@ import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
 import kotlin.reflect.KClass
 
-data class PostgresSqlServiceConfiguration(override val name: String, val instance: InstanceConfig, val backup: BackupConfig, val databases: List<PostgresSqlServiceDatabaseConfiguration>) :
+data class PostgresSqlServiceConfiguration(
+    override val name: String,
+    val instance: InstanceConfig,
+    val backup: BackupConfig,
+    val databases: List<PostgresSqlServiceDatabaseConfiguration>,
+    val majorVersion: Int,
+) :
     ServiceConfiguration {
     override val type = "postgresql"
     override val neededProviders: List<KClass<*>> = listOf(BackupProviderConfiguration::class, SecretProviderConfiguration::class, CloudResourceProviderConfiguration::class)

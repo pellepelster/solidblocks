@@ -6,6 +6,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.util.Properties
 
 fun getEnvOrProperty(name: String): String? = System.getenv(name) ?: System.getProperty(name)
 
@@ -109,4 +110,10 @@ fun <T> Iterable<T>.joinToStringOrEmpty(separator: CharSequence = ", ", empty: S
     empty
 } else {
     this.joinToString(separator) { transform.invoke(it) }
+}
+
+fun solidblocksVersion(): String {
+    val props = Properties()
+    object {}.javaClass.getResourceAsStream("/solidblocks-version.properties")?.use { props.load(it) }
+    return props.getProperty("version", "unknown")
 }

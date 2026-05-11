@@ -28,6 +28,8 @@ class PostgresqlUserDataTest {
                 "superuser-very-secret",
                 dataVolume1.linuxDevice,
                 backupConfiguration,
+                17,
+                "0.5.5",
             )
 
         val server =
@@ -69,6 +71,8 @@ class PostgresqlUserDataTest {
                 "superuser-very-secret",
                 dataVolume2.linuxDevice,
                 backupConfiguration,
+                17,
+                "0.5.5",
             )
 
         val recreatedServer =
@@ -108,6 +112,8 @@ class PostgresqlUserDataTest {
                 "superuser-very-secret",
                 dataVolume1.linuxDevice,
                 backupConfiguration,
+                17,
+                "0.5.5",
             )
 
         val server =
@@ -149,6 +155,8 @@ class PostgresqlUserDataTest {
                 "superuser-very-secret",
                 dataVolume2.linuxDevice,
                 backupConfiguration,
+                17,
+                "0.5.5",
             )
 
         val recreatedServer =

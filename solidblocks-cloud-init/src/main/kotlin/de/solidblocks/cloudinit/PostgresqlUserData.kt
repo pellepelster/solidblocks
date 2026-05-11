@@ -24,7 +24,14 @@ import de.solidblocks.shell.systemd.Timer
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
 
-class PostgresqlUserData(val instanceName: String, val superUserPassword: String, val dataDevice: String, val backupConfiguration: BackupConfiguration) : ServiceUserData {
+class PostgresqlUserData(
+    val instanceName: String,
+    val superUserPassword: String,
+    val dataDevice: String,
+    val backupConfiguration: BackupConfiguration,
+    val postgresMajorVersion: Int,
+    val solidblocksVersion: String,
+) : ServiceUserData {
 
     companion object {
         val BACKUP_STATUS_COMMAND = "pgbackrest-status"
@@ -85,7 +92,7 @@ class PostgresqlUserData(val instanceName: String, val superUserPassword: String
                 mapOf(
                     instanceName to
                         Service(
-                            image = "ghcr.io/pellepelster/solidblocks-rds-postgresql:17-v0.5.1",
+                            image = "ghcr.io/pellepelster/solidblocks-rds-postgresql:$postgresMajorVersion-v$solidblocksVersion",
                             environment =
                             mapOf(
                                 "DB_INSTANCE_NAME" to instanceName,
