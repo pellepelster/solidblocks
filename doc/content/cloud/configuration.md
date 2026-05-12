@@ -281,6 +281,7 @@ Single node PostgreSQL database instance with pgBackRest powered backup.
 type: postgresql
 ```
 name: <string>
+majorVersion: [number]
 backup_size: [number]
 backup_full_retention_days: [number]
 data_size: [number]
@@ -299,6 +300,12 @@ databases:
 *min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### majorVersion
+*type*: **number**, *optional*: **true**, 
+*default*: **17**
+
+Postgres major version
 
 ### backup_size
 *type*: **number**, *optional*: **true**, 
