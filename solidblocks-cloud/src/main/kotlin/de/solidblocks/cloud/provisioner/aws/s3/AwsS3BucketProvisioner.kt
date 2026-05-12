@@ -93,7 +93,7 @@ class AwsS3BucketProvisioner(
                 },
             )
 
-            waitConfig.waitForConsecutive(3) {
+            waitConfig.waitForConsecutive(5) {
                 try {
                     log.info("waiting for creation of bucket '${resource.name}'...")
                     lookup(resource.asLookup(), context)

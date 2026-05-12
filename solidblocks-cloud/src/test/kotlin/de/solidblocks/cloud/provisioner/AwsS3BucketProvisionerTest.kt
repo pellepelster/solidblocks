@@ -11,6 +11,7 @@ import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -42,8 +43,9 @@ class AwsS3BucketProvisionerTest {
             provisioner.apply(AwsS3Bucket(name, region), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<*>>()
 
-            assertSoftly(provisioner.lookup(AwsS3Bucket(name, region).asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
-                it.name shouldBe name
+            assertSoftly(provisioner.lookup(AwsS3Bucket(name, region).asLookup(), TEST_PROVISIONER_CONTEXT)) {
+                it shouldNotBe null
+                it!!.name shouldBe name
                 it.region shouldBe region
             }
 
