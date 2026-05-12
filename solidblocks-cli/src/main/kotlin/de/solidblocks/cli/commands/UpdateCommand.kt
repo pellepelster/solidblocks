@@ -23,7 +23,6 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.zip.ZipInputStream
 
-
 class UpdateCommand : CliktCommand(name = "update") {
 
     @Serializable
@@ -111,19 +110,17 @@ class UpdateCommand : CliktCommand(name = "update") {
         return false
     }
 
-    private fun currentBinaryPath(): File? =
-        ProcessHandle.current().info().command()
-            .map { File(it) }
-            .orElse(null)
-            ?.takeIf { it.exists() }
+    private fun currentBinaryPath(): File? = ProcessHandle.current().info().command()
+        .map { File(it) }
+        .orElse(null)
+        ?.takeIf { it.exists() }
 
     private suspend fun downloadAndReplace(downloadUrl: String, currentBinary: File, platform: String, version: String) {
-
         val binaryName = if (platform.startsWith("windows")) "blcks.exe" else "blcks"
         val tempZip = Files.createTempFile("blcks-update-", ".zip").toFile()
 
         try {
-            logInfo("Downloading '${downloadUrl}'")
+            logInfo("Downloading '$downloadUrl'")
             HttpClient(Java).use { client ->
                 val response = client.get(downloadUrl)
                 if (!response.status.isSuccess()) {

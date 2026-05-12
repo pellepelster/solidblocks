@@ -30,7 +30,7 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
     val majorVersion =
         NumberKeywordOptionalWithDefault(
             "majorVersion",
-            NumberConstraints(14, 18),
+            NumberConstraints(18, 14),
             KeywordHelp(
                 "Postgres major version",
             ),
