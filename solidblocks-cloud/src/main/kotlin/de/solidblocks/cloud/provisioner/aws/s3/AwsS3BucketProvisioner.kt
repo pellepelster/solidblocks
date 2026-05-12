@@ -25,6 +25,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.utils.DEFAULT_WAIT
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -38,10 +39,9 @@ class AwsS3BucketProvisioner(
     private val accessKeyId: String,
     private val secretAccessKey: String,
     private val region: String,
+    val waitConfig: WaitConfig = DEFAULT_WAIT,
 ) : ResourceLookupProvider<AwsS3BucketLookup, AwsS3BucketRuntime>,
     InfrastructureResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime, AwsS3BucketLookup> {
-
-    val waitConfig = WaitConfig(15, 2.seconds)
 
     override suspend fun lookup(lookup: AwsS3BucketLookup, context: SSHProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->
         try {
