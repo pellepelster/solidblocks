@@ -16,9 +16,11 @@ terraform-docs="0.21.0"
 rg="15.1.0"
 java="24.0.2"
 go="1.26.0"
+git-cliff="2.13.1"
 
 [env]
 ROOT_PROJECT="{{config_root}}"
+CHANGELOG_BASE_COMMIT="d1cf83bea722f838c23b00fd2559a438c5225ee3"
 DOCKER_REGISTRY="ghcr.io"
 DOCKER_REPOSITORY="pellepelster"
 DOCKER_API_VERSION = "1.48"
@@ -151,4 +153,16 @@ export ORG_GRADLE_PROJECT_mavenCentralUsername="${ORG_GRADLE_PROJECT_MAVENCENTRA
 export ORG_GRADLE_PROJECT_mavenCentralPassword="${ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD:-$(pass maven/central-portal/user-token/password)}"
 
 ${ROOT_PROJECT}/gradlew publishAllPublicationsToMavenCentralRepository
+"""
+
+[tasks."release:prepare"]
+usage = """
+arg "<version>" env="VERSION"
+"""
+run = """
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+echo "generating changelog for version: ${usage_version}"
+git cliff ${CHANGELOG_BASE_COMMIT}..HEAD --tag ${usage_version} > CHANGELOG.md
 """
