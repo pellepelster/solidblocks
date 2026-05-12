@@ -54,6 +54,24 @@
         ]
     },
     {
+        "name": "de.solidblocks.cli.commands.UpdateCommand$GitHubRelease",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cli.commands.UpdateCommand$GitHubRelease$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cli.github.Container",
         "fields": [
             {

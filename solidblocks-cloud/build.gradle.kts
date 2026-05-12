@@ -3,11 +3,11 @@ plugins {
 }
 
 val solidblocksVersion = run {
-    val proc = ProcessBuilder("git", "describe", "--tags", "--abbrev=0")
+    val proc = ProcessBuilder("git", "tag", "--sort=-version:refname")
         .directory(rootDir)
         .redirectErrorStream(true)
         .start()
-    proc.inputStream.bufferedReader().readText().trim().removePrefix("v")
+    proc.inputStream.bufferedReader().readText().lines().listIterator() .trim().removePrefix("v")
 }
 
 val generateVersionProperties by tasks.registering {
