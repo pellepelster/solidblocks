@@ -7,7 +7,7 @@ val generateVersionProperties by tasks.registering {
     outputs.dir(outputDir)
     doLast {
         outputDir.get().asFile.mkdirs()
-        outputDir.get().file("solidblocks-version.properties").asFile.writeText("version=${System.getProperty("VERSION") ?: "0.0.0-snapshot"}\n")
+        outputDir.get().file("solidblocks-version.properties").asFile.writeText("version=${System.getenv("VERSION") ?: "0.0.0-snapshot"}\n")
     }
 }
 
