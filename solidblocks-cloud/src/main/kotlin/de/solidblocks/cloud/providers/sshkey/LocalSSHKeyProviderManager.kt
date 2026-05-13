@@ -27,7 +27,7 @@ class LocalSSHKeyProviderManager :
 
     private val logger = KotlinLogging.logger {}
 
-    val homeDir = Path(System.getProperty("user.home"))
+    fun homeDir() = Path(System.getProperty("user.home"))
 
     override fun validateConfiguration(configuration: LocalSSHKeyProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<LocalSSHKeyProviderConfigurationRuntime> {
         val sshKey =
@@ -117,7 +117,7 @@ class LocalSSHKeyProviderManager :
 
         val sshKey =
             defaultSSHKeyNames.firstNotNullOfOrNull {
-                val privateKey = homeDir.resolve(".ssh").resolve(it)
+                val privateKey = homeDir().resolve(".ssh").resolve(it)
 
                 if (privateKey.exists()) {
                     privateKey
@@ -131,7 +131,7 @@ class LocalSSHKeyProviderManager :
                 "no SSH key found, tried ${
                     defaultSSHKeyNames.joinToString(", ") {
                         "'${
-                            homeDir.resolve(".ssh").resolve(it)
+                            homeDir().resolve(".ssh").resolve(it)
                         }'"
                     }
                 }",
