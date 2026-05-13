@@ -2,7 +2,7 @@ package de.solidblocks.cloud.utils
 
 import kotlin.io.path.Path
 
-val DEFAULT_PASS_DIR = "${Path(System.getProperty("user.home")).toAbsolutePath()}/.password-store"
+fun defaultPassDir() = "${Path(System.getProperty("user.home")).toAbsolutePath()}/.password-store"
 
 fun passInsert(path: String, secret: String, passwordStoreDir: String) = runCommand(
     listOf("pass", "insert", "--multiline", "--force", path),

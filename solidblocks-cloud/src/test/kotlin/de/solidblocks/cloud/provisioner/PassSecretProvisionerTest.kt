@@ -10,8 +10,8 @@ import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
 import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.pass.StaticSecret
-import de.solidblocks.cloud.utils.DEFAULT_PASS_DIR
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.defaultPassDir
 import de.solidblocks.cloud.utils.runCommand
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
@@ -38,7 +38,7 @@ class PassSecretProvisionerTest {
                 "onetime-secret"
             },
         )
-        val provisioner = PassSecretProvisioner(DEFAULT_PASS_DIR)
+        val provisioner = PassSecretProvisioner(defaultPassDir())
 
         runCommand(listOf("pass", "rm", "--force", "--recursive", "testCloudName"))
 

@@ -14,8 +14,8 @@ class PassProviderManager : ProviderManager<PassProviderConfiguration, PassProvi
     override fun validateConfiguration(configuration: PassProviderConfiguration, context: CloudConfigurationContext, log: LogContext): Result<PassProviderRuntime> {
         val passwordStoreDir = if (configuration.passwordStoreDir == null) {
             if (System.getenv("PASSWORD_STORE_DIR") == null) {
-                log.info("no password store directory configured, using default '${DEFAULT_PASS_DIR}'")
-                DEFAULT_PASS_DIR
+                log.info("no password store directory configured, using default '${defaultPassDir()}'")
+                defaultPassDir()
             } else {
                 log.info("using password store directory from environment variable 'PASSWORD_STORE_DIR' (${System.getenv("PASSWORD_STORE_DIR")})")
                 System.getenv("PASSWORD_STORE_DIR")
