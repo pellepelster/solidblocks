@@ -29,7 +29,7 @@ resource "hcloud_network_subnet" "subnet" {
 }
 
 module "rds-postgresql" {
-  source = "https://github.com/pellepelster/solidblocks/releases/download/v0.5.7/blcks-terraform-rds-postgresql-hetzner-v0.5.7.zip"
+  source = "https://github.com/pellepelster/solidblocks/releases/download/v0.5.8/blcks-terraform-rds-postgresql-hetzner-v0.5.8.zip"
 
   name     = "rds-postgresql"
   location = var.hetzner_location

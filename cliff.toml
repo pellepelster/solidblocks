@@ -7,7 +7,7 @@
 # See https://keats.github.io/tera/docs/#introduction
 body = """
 {% if version %}\
-    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+    ## {{ version | trim_start_matches(pat="v") }} - {{ timestamp | date(format="%Y-%m-%d") }}
 {% else %}\
     ## [unreleased]
 {% endif %}\
@@ -19,6 +19,7 @@ body = """
             {{ commit.message | upper_first }}\
             {% if commit.body %}\n\n          {{ commit.body | trim | replace(from="\n", to="\n          ") }}\n{% endif %}\
     {% endfor %}
+    \n
 {% endfor %}
 """
 # Remove leading and trailing whitespaces from the changelog's body.
@@ -72,7 +73,7 @@ commit_parsers = [
     { message = "^chore\\(pr\\)", skip = true },
     { message = "^chore\\(pull\\)", skip = true },
     { message = "^chore|^ci", group = "<!-- 7 -->⚙️ Miscellaneous Tasks" },
-    { body = ".*security", group = "<!-- 8 -->🛡️ Security" },
+    { message = "^security", group = "<!-- 8 -->🛡️ Security" },
     { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
     { message = ".*", group = "<!-- 10 -->💼 Other" },
 ]
