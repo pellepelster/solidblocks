@@ -51,13 +51,13 @@ import kotlinx.coroutines.runBlocking
 
 class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
 
-    private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud.environment, runtime.name, 0)}.${cloud.rootDomain}"
+    private fun serviceRootDomain(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime) = "${serverName(cloud.environmentContext, runtime.name, 0)}.${cloud.rootDomain}"
 
     override fun maintenance(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext, log: LogContext): Result<Unit> =
         serverMaintenance(cloud, runtime, context, log)
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
-        val serverName = serverName(cloud.environment, runtime.name, 0)
+        val serverName = serverName(cloud.environmentContext, runtime.name, 0)
 
         val result = context.withServerStatus(serverName) { sshClient, status ->
             status
@@ -71,14 +71,14 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
     }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
-        val serverName = serverName(cloud.environment, runtime.name, 0)
+        val serverName = serverName(cloud.environmentContext, runtime.name, 0)
 
         val defaultResources = this.createDefaultServerResources(cloud, runtime, 0)
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
         val adminToken = PassSecret(
-            secretPath(cloud.environment, runtime, listOf("garage", "admin_token")),
+            secretPath(cloud.environmentContext, runtime, listOf("garage", "admin_token")),
             RandomSecret(
                 length = 64,
                 allowedChars = ('a'..'f') + ('0'..'9'),
@@ -86,7 +86,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         )
 
         val rpcSecret = PassSecret(
-            secretPath(cloud.environment, runtime, listOf("garage", "rpc_secret")),
+            secretPath(cloud.environmentContext, runtime, listOf("garage", "rpc_secret")),
             RandomSecret(
                 length = 64,
                 allowedChars = ('a'..'f') + ('0'..'9'),
@@ -94,7 +94,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         )
 
         val metricsToken = PassSecret(
-            secretPath(cloud.environment, runtime, listOf("garage", "metrics_token")),
+            secretPath(cloud.environmentContext, runtime, listOf("garage", "metrics_token")),
             RandomSecret(
                 length = 64,
                 allowedChars = ('a'..'f') + ('0'..'9'),
@@ -116,6 +116,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     context.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     serviceRootDomain(cloud, runtime),
+                    cloud.environmentVars + runtime.environmentVars,
                     context.ensureLookup(rpcSecret.asLookup()).secret,
                     context.ensureLookup(adminToken.asLookup()).secret,
                     context.ensureLookup(metricsToken.asLookup()).secret,
@@ -136,15 +137,15 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             serverName,
             userData = userData,
             location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
+            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environmentContext))),
             volumes = setOf(defaultResources.volumes.data.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
                 defaultServiceSubnet,
-                HetznerNetworkLookup(networkName(cloud.environment)),
+                HetznerNetworkLookup(networkName(cloud.environmentContext)),
             ),
             privateIp = serverPrivateIp(runtime.index),
-            labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
+            labels = serviceLabels(runtime) + cloudLabels(cloud.environmentContext),
             dependsOn = backupResources.first + defaultResources.list(),
         )
 
@@ -154,27 +155,33 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         val zone = HetznerDnsZoneLookup(cloud.rootDomain)
         val serverDnsRecord = HetznerDnsRecord(
-            serverName(cloud.environment, runtime.name, 0),
+            serverName(cloud.environmentContext, runtime.name, 0),
             zone,
             listOf(server.asLookup()),
-            labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment),
+            labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
         )
 
-        val catchAllDomain = HetznerDnsRecord("*.${serverName(cloud.environment, runtime.name, 0)}", zone, listOf(server.asLookup()), labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment))
+        val catchAllDomain = HetznerDnsRecord(
+            "*.${serverName(cloud.environmentContext, runtime.name, 0)}",
+            zone,
+            listOf(server.asLookup()),
+            labels =
+            dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
+        )
         val dnsResources = runtime.buckets.flatMap { it.managedPublicWebAccessDomains.entries }.map {
             if (it.key.isEmpty()) {
                 HetznerDnsRecord(
                     "@",
                     HetznerDnsZoneLookup(it.value),
                     listOf(server.asLookup()),
-                    labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment),
+                    labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
                 )
             } else {
                 HetznerDnsRecord(
                     it.value,
                     HetznerDnsZoneLookup(it.value),
                     listOf(server.asLookup()),
-                    labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment),
+                    labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
                 )
             }
         } + listOf(serverDnsRecord, catchAllDomain)
@@ -199,7 +206,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
             it.accessKeys.forEach { accessKeyRuntime ->
                 val accessKey = GarageFsAccessKey(
-                    secretPath(cloud.environment, runtime, listOf(accessKeyRuntime.name)),
+                    secretPath(cloud.environmentContext, runtime, listOf(accessKeyRuntime.name)),
                     server,
                     adminToken,
                     setOf(bucket),
@@ -208,7 +215,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
                 bucketResources.add(
                     PassSecret(
-                        secretPath(cloud.environment, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "secret_key")),
+                        secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "secret_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
                         dependsOn = setOf(accessKey.asLookup()),
                     ),
@@ -216,7 +223,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
                 bucketResources.add(
                     PassSecret(
-                        secretPath(cloud.environment, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "access_key")),
+                        secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "access_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).id },
                         dependsOn = setOf(accessKey.asLookup()),
                     ),
@@ -237,7 +244,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         }
 
         val s3HostSecret = PassSecret(
-            secretPath(cloud.environment, runtime, listOf("endpoints", "s3_host")),
+            secretPath(cloud.environmentContext, runtime, listOf("endpoints", "s3_host")),
             StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
         )
 
@@ -282,6 +289,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 configuration.name,
                 InstanceRuntime.fromConfig(configuration.instance),
                 BackupRuntime.fromConfig(configuration.backup),
+                configuration.environmentVars,
                 configuration.buckets.map { bucket ->
                     val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
                     val managedPublicAccessDomains = mutableMapOf<String, String>()
@@ -333,7 +341,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
     override fun infoText(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: SSHProvisionerContext) = markdown {
         h2("Servers")
-        text("to access server **${serverName(cloud.environment, runtime.name, 0)}** via SSH, run")
+        text("to access server **${serverName(cloud.environmentContext, runtime.name, 0)}** via SSH, run")
         codeBlock(
             sshConnectCommand(context, cloud, runtime, 0),
         )
@@ -350,12 +358,12 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         h2("Secrets")
         bold("GarageFS admin secret")
         codeBlock(
-            "export ADMIN_SECRET=\"\$(pass ${secretPath(cloud.environment, runtime, listOf("garage", "admin_token"))})\"",
+            "export ADMIN_SECRET=\"\$(pass ${secretPath(cloud.environmentContext, runtime, listOf("garage", "admin_token"))})\"",
         )
 
         bold("GarageFS metrics secret")
         codeBlock(
-            "export METRICS_SECRET=\"\$(pass ${secretPath(cloud.environment, runtime, listOf("garage", "metrics_token"))})\"",
+            "export METRICS_SECRET=\"\$(pass ${secretPath(cloud.environmentContext, runtime, listOf("garage", "metrics_token"))})\"",
         )
 
         h2("Usage examples")
@@ -368,9 +376,9 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
                 codeBlock(
                     """
-            export ACCESS_KEY="$(pass ${secretPath(cloud.environment, runtime, listOf("buckets", bucket.name, accessKey.name, "access_key"))})"
-            export SECRET_KEY="$(pass ${secretPath(cloud.environment, runtime, listOf("buckets", bucket.name, accessKey.name, "secret_key"))})"
-            export S3_HOST="$(pass ${secretPath(cloud.environment, runtime, listOf("endpoints", "s3_host"))})"
+            export ACCESS_KEY="$(pass ${secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKey.name, "access_key"))})"
+            export SECRET_KEY="$(pass ${secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKey.name, "secret_key"))})"
+            export S3_HOST="$(pass ${secretPath(cloud.environmentContext, runtime, listOf("endpoints", "s3_host"))})"
 
             s3cmd --host-bucket "%(bucket).${'$'}{S3_HOST} \
                 --host ${'$'}{S3_HOST} \

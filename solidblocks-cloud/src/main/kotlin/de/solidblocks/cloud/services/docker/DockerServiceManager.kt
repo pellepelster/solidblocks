@@ -61,7 +61,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             h1("Service '${runtime.name}'")
 
             h2("Servers")
-            text("to access server **${serverName(cloud.environment, runtime.name, 0)}** via SSH, run")
+            text("to access server **${serverName(cloud.environmentContext, runtime.name, 0)}** via SSH, run")
             codeBlock(sshConnectCommand(context, cloud, runtime, 0))
 
             h2("Endpoints")
@@ -70,7 +70,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
-        val serverName = serverName(cloud.environment, runtime.name, 0)
+        val serverName = serverName(cloud.environmentContext, runtime.name, 0)
 
         val result = context.withServerStatus(serverName) { sshClient, status ->
             status to sshClient.ensureCommand(RESTIC_STATUS_COMMAND).parseResticSnapshotsOutput()
@@ -105,9 +105,9 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
     }
 
     fun endpoint(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext) = if (cloud.dnsEnabled == true) {
-        "https://${serverName(cloud.environment, runtime.name, 0)}.${cloud.rootDomain}"
+        "https://${serverName(cloud.environmentContext, runtime.name, 0)}.${cloud.rootDomain}"
     } else {
-        "http://${context.lookup(HetznerServerLookup(serverName(cloud.environment, runtime.name, 0)))?.publicIpv4 ?: "<unknown>"}"
+        "http://${context.lookup(HetznerServerLookup(serverName(cloud.environmentContext, runtime.name, 0)))?.publicIpv4 ?: "<unknown>"}"
     }
 
     override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
@@ -118,7 +118,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             }
         }
 
-        val serverName = serverName(cloud.environment, runtime.name, 0)
+        val serverName = serverName(cloud.environmentContext, runtime.name, 0)
 
         val defaultResources = this.createDefaultServerResources(cloud, runtime, 0)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
@@ -128,12 +128,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             { context ->
                 GenericDockerServiceUserData(
                     runtime.name,
-                    context.ensureLookup(defaultResources.volumes.data.asLookup()).device,
-                    createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
-                    runtime.image,
-                    runtime.endpoints.associate { 80 to it.port },
-                    serverFQDN = cloud.rootDomain?.let { "${serverName(cloud.environment, runtime.name, 0)}.$it" },
-                    environmentVariables = environmentVariables.associate {
+                    cloud.environmentVars + runtime.environmentVars + environmentVariables.associate {
                         val value = when (it) {
                             is EnvironmentVariableCallback -> it.value.invoke(context)
                             is EnvironmentVariableStatic -> it.value
@@ -141,6 +136,11 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
 
                         it.name to value
                     },
+                    context.ensureLookup(defaultResources.volumes.data.asLookup()).device,
+                    createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
+                    runtime.image,
+                    runtime.endpoints.associate { 80 to it.port },
+                    serverFQDN = cloud.rootDomain?.let { "${serverName(cloud.environmentContext, runtime.name, 0)}.$it" },
                 ).toResult(context, defaultResources.sshIdentity)
             },
         )
@@ -149,25 +149,25 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             serverName,
             userData = userData,
             location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
+            sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environmentContext))),
             volumes = setOf(defaultResources.volumes.data.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
             type = cloud.hetznerProviderRuntime().defaultInstanceType,
             subnet = HetznerSubnetLookup(
                 defaultServiceSubnet,
-                HetznerNetworkLookup(networkName(cloud.environment)),
+                HetznerNetworkLookup(networkName(cloud.environmentContext)),
             ),
             privateIp = serverPrivateIp(runtime.index),
-            labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
+            labels = serviceLabels(runtime) + cloudLabels(cloud.environmentContext),
             dependsOn = backupResources.first + defaultResources.list(),
         )
 
         val optionalResources = if (cloud.rootDomain != null) {
             val zone = HetznerDnsZoneLookup(cloud.rootDomain)
             val serverDnsRecord = HetznerDnsRecord(
-                serverName(cloud.environment, runtime.name, 0),
+                serverName(cloud.environmentContext, runtime.name, 0),
                 zone,
                 listOf(server.asLookup()),
-                labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environment),
+                labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
             )
             listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
         } else {
@@ -218,6 +218,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             DockerServiceConfigurationRuntime(
                 index,
                 configuration.name,
+                configuration.environmentVars,
                 configuration.image,
                 InstanceRuntime.fromConfig(configuration.instance),
                 BackupRuntime.fromConfig(configuration.backup),

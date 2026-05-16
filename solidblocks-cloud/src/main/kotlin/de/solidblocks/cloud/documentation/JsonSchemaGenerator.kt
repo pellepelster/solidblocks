@@ -109,6 +109,11 @@ class JsonSchemaGenerator {
                 put("type", "boolean")
                 put("default", keyword.default)
             }
+
+            is OptionalStringMapKeyword -> {
+                put("type", "object")
+                putJsonObject("additionalProperties") { put("type", "string") }
+            }
         }
     }
 

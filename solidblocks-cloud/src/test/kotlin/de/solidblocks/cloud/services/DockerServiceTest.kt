@@ -24,8 +24,7 @@ class DockerServiceTest {
 
     @Test
     fun testParse() {
-        val rawYml =
-            """
+        val rawYml = """
         name: foo-bar
         root_domain: foo.bar
         services:
@@ -37,15 +36,11 @@ class DockerServiceTest {
               image: image2
               links:
                 - service1
-        """
-                .trimIndent()
+        """.trimIndent()
 
-        val cloud =
-            ConfigurationParser(
-                CloudConfigurationFactory(emptyList(), listOf(DockerServiceRegistration())),
-            )
-                .parse(rawYml)
-                .shouldBeTypeOf<Success<CloudConfiguration>>()
+        val cloud = ConfigurationParser(
+            CloudConfigurationFactory(emptyList(), listOf(DockerServiceRegistration())),
+        ).parse(rawYml).shouldBeTypeOf<Success<CloudConfiguration>>()
         cloud.data.services shouldHaveSize 2
 
         val service1 = cloud.data.services[0].shouldBeTypeOf<DockerServiceConfiguration>()
@@ -60,43 +55,40 @@ class DockerServiceTest {
 
     @Test
     fun testValidate() {
-        val cloud =
-            CloudConfiguration(
-                "cloud1",
-                "cloud1.test-blcks.de",
-                emptyList(),
-                listOf(
-                    DockerServiceConfiguration(
-                        "docker2",
-                        "image2",
-                        InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
-                        BackupConfig(16, 7),
-                        listOf(DockerServiceEndpointConfiguration(8080)),
-                        listOf("docker1"),
-                    ),
+        val cloud = CloudConfiguration(
+            "cloud1",
+            "cloud1.test-blcks.de",
+            emptyMap(),
+            emptyList(),
+            listOf(
+                DockerServiceConfiguration(
+                    "docker2",
+                    "image2",
+                    InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+                    BackupConfig(16, 7),
+                    listOf(DockerServiceEndpointConfiguration(8080)),
+                    emptyMap(),
+                    listOf("docker1"),
                 ),
-            )
-        val configuration =
-            DockerServiceConfiguration(
-                "docker1",
-                "image1",
-                InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
-                BackupConfig(16, 7),
-                listOf(DockerServiceEndpointConfiguration(8080)),
-                listOf("docker2"),
-            )
+            ),
+        )
+        val configuration = DockerServiceConfiguration(
+            "docker1",
+            "image1",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            listOf(DockerServiceEndpointConfiguration(8080)),
+            emptyMap(),
+            listOf("docker2"),
+        )
 
-        val result =
-            DockerServiceManager()
-                .validateConfiguration(
-                    2,
-                    cloud,
-                    configuration,
-                    TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
-                )
-                .shouldBeInstanceOf<Success<DockerServiceConfigurationRuntime>>()
-                .data
+        val result = DockerServiceManager().validateConfiguration(
+            2,
+            cloud,
+            configuration,
+            TEST_PROVISIONER_CONTEXT,
+            TEST_LOG_CONTEXT,
+        ).shouldBeInstanceOf<Success<DockerServiceConfigurationRuntime>>().data
         result.name shouldBe "docker1"
         result.index shouldBe 2
         result.links shouldHaveSize 1
@@ -105,109 +97,96 @@ class DockerServiceTest {
 
     @Test
     fun testInvalidLink() {
-        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), emptyList())
-        val configuration =
-            DockerServiceConfiguration(
-                "docker1",
-                "image11",
-                InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
-                BackupConfig(16, 7),
-                listOf(DockerServiceEndpointConfiguration(8080)),
-                listOf("docker3"),
-            )
+        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
+        val configuration = DockerServiceConfiguration(
+            "docker1",
+            "image11",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            listOf(DockerServiceEndpointConfiguration(8080)),
+            emptyMap(),
+            listOf("docker3"),
+        )
 
-        val result =
-            DockerServiceManager()
-                .validateConfiguration(
-                    2,
-                    cloud,
-                    configuration,
-                    TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
-                )
-                .shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
+        val result = DockerServiceManager().validateConfiguration(
+            2,
+            cloud,
+            configuration,
+            TEST_PROVISIONER_CONTEXT,
+            TEST_LOG_CONTEXT,
+        ).shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
         result.error shouldBe "linked service 'docker3' not found for service 'docker1'"
     }
 
     @Test
     fun testSelfLink() {
-        val configuration =
-            DockerServiceConfiguration(
-                "docker1",
-                "image1",
-                InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
-                BackupConfig(16, 7),
-                listOf(DockerServiceEndpointConfiguration(8080)),
-                listOf("docker1"),
-            )
-        val cloud =
-            CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), listOf(configuration))
+        val configuration = DockerServiceConfiguration(
+            "docker1",
+            "image1",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            listOf(DockerServiceEndpointConfiguration(8080)),
+            emptyMap(),
+            listOf("docker1"),
+        )
+        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), listOf(configuration))
 
-        val result =
-            DockerServiceManager()
-                .validateConfiguration(
-                    2,
-                    cloud,
-                    configuration,
-                    TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
-                )
-                .shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
+        val result = DockerServiceManager().validateConfiguration(
+            2,
+            cloud,
+            configuration,
+            TEST_PROVISIONER_CONTEXT,
+            TEST_LOG_CONTEXT,
+        ).shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
         result.error shouldBe "service can not be linked with itself 'docker1' -> 'docker1'"
     }
 
     @Test
     fun testDuplicatedPortConfig() {
-        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), emptyList())
-        val configuration =
-            DockerServiceConfiguration(
-                "docker1",
-                "image1",
-                InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
-                BackupConfig(16, 7),
-                listOf(
-                    DockerServiceEndpointConfiguration(8080),
-                    DockerServiceEndpointConfiguration(8080),
-                ),
-                emptyList(),
-            )
+        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
+        val configuration = DockerServiceConfiguration(
+            "docker1",
+            "image1",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            listOf(
+                DockerServiceEndpointConfiguration(8080),
+                DockerServiceEndpointConfiguration(8080),
+            ),
+            emptyMap(),
+            emptyList(),
+        )
 
-        val result =
-            DockerServiceManager()
-                .validateConfiguration(
-                    2,
-                    cloud,
-                    configuration,
-                    TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
-                )
-                .shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
+        val result = DockerServiceManager().validateConfiguration(
+            2,
+            cloud,
+            configuration,
+            TEST_PROVISIONER_CONTEXT,
+            TEST_LOG_CONTEXT,
+        ).shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
         result.error shouldBe "more than one endpoint is currently not supported for service 'docker1'"
     }
 
     @Test
     fun testNoEndpointConfig() {
-        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyList(), emptyList())
-        val configuration =
-            DockerServiceConfiguration(
-                "docker1",
-                "image1",
-                InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
-                BackupConfig(16, 7),
-                emptyList(),
-                emptyList(),
-            )
+        val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
+        val configuration = DockerServiceConfiguration(
+            "docker1",
+            "image1",
+            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+            BackupConfig(16, 7),
+            emptyList(),
+            emptyMap(),
+            emptyList(),
+        )
 
-        val result =
-            DockerServiceManager()
-                .validateConfiguration(
-                    2,
-                    cloud,
-                    configuration,
-                    TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
-                )
-                .shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
+        val result = DockerServiceManager().validateConfiguration(
+            2,
+            cloud,
+            configuration,
+            TEST_PROVISIONER_CONTEXT,
+            TEST_LOG_CONTEXT,
+        ).shouldBeInstanceOf<Error<DockerServiceConfigurationRuntime>>()
         result.error shouldBe "no endpoint configured for service 'docker1'"
     }
 }

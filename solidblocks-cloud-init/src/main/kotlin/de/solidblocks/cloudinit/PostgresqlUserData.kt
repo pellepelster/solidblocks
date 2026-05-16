@@ -1,5 +1,6 @@
 package de.solidblocks.cloudinit
 
+import de.solidblocks.cloudinit.CloudInitConstants.baseDockerWorkingDirectory
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
 import de.solidblocks.shell.MkDir
@@ -26,6 +27,7 @@ import de.solidblocks.shell.systemd.installSystemDUnit
 
 class PostgresqlUserData(
     val instanceName: String,
+    val environment: Map<String, String>,
     val superUserPassword: String,
     val dataDevice: String,
     val backupConfiguration: BackupConfiguration,
@@ -82,9 +84,8 @@ class PostgresqlUserData(
             shellScript.addCommand(MkDir(backupMount, "10000", "10000"))
         }
 
-        val dockerWorkingDirectory = "/etc/docker/$instanceName"
+        val dockerWorkingDirectory = "$baseDockerWorkingDirectory/$instanceName"
         val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
-        val environment = mapOf<String, String>()
 
         val dockerCompose =
             ComposeFile(
@@ -94,10 +95,11 @@ class PostgresqlUserData(
                         Service(
                             image = "ghcr.io/pellepelster/solidblocks-rds-postgresql:$postgresMajorVersion-v$solidblocksVersion",
                             environment =
-                            mapOf(
-                                "DB_INSTANCE_NAME" to instanceName,
-                                "DB_ADMIN_PASSWORD" to superUserPassword,
-                            ) + backupEnvironment,
+                            environment +
+                                mapOf(
+                                    "DB_INSTANCE_NAME" to instanceName,
+                                    "DB_ADMIN_PASSWORD" to superUserPassword,
+                                ) + backupEnvironment,
                             volumes =
                             listOf(
                                 Mount(MountType.bind, dataMount, "/storage/data"),

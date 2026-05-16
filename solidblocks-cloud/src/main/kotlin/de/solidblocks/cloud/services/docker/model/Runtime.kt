@@ -9,6 +9,7 @@ data class DockerServiceEndpointConfigurationRuntime(val port: Int)
 class DockerServiceConfigurationRuntime(
     override val index: Int,
     override val name: String,
+    override val environmentVars: Map<String, String>,
     val image: String,
     override val instance: InstanceRuntime,
     override val backup: BackupRuntime,

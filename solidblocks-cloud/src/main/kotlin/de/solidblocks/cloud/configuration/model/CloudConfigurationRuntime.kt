@@ -9,7 +9,8 @@ import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 
 data class CloudConfigurationRuntime(
     val context: CloudConfigurationContext,
-    val environment: EnvironmentContext,
+    val environmentContext: EnvironmentContext,
+    val environmentVars: Map<String, String>,
     val rootDomain: String?,
     val providers: List<ProviderConfigurationRuntime>,
     val services: List<ServiceConfigurationRuntime>,

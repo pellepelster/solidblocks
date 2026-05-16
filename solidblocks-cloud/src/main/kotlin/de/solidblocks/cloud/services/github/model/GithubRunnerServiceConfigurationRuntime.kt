@@ -7,6 +7,7 @@ import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 class GithubRunnerServiceConfigurationRuntime(
     override val index: Int,
     override val name: String,
+    override var environmentVars: Map<String, String>,
     val labels: List<String>,
     val packages: List<String>,
     val allowSudo: Boolean,

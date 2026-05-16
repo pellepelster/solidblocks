@@ -13,6 +13,7 @@ class GarageFsUserData(
     val dataDevice: String,
     val backupConfiguration: BackupConfiguration,
     val serviceRootDomain: String,
+    val environment: Map<String, String>,
     val rpcSecret: String,
     val adminToken: String,
     val metricsToken: String,
@@ -92,7 +93,7 @@ class GarageFsUserData(
                 Unit("Garage Data Store"),
                 Service(
                     listOf("/usr/local/bin/garage", "server"),
-                    environment = mapOf("RUST_LOG" to "garage=info", "RUST_BACKTRACE" to "1"),
+                    environment = environment + mapOf("RUST_LOG" to "garage=info", "RUST_BACKTRACE" to "1"),
                     limitNOFILE = 42000,
                     stateDirectory = "garage",
                 ),

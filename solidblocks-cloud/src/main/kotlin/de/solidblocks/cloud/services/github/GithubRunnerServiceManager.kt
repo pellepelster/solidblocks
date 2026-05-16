@@ -61,7 +61,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         log.info("running maintenance for service '${bold(runtime.name)}'")
         val serviceLog = log.indent()
         val results = (0..runtime.scale - 1).map {
-            val serverName = serverName(cloud.environment, runtime.name, it)
+            val serverName = serverName(cloud.environmentContext, runtime.name, it)
             serverMaintenance(serverName, context, serviceLog)
         }
 
@@ -84,7 +84,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
 
             h2("Servers")
             (0..<runtime.scale).forEach {
-                text("to access server **${serverName(cloud.environment, runtime.name, it)}** via SSH, run")
+                text("to access server **${serverName(cloud.environmentContext, runtime.name, it)}** via SSH, run")
                 listOf(codeBlock(sshConnectCommand(context, cloud, runtime, it)))
             }
 
@@ -102,7 +102,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
         val status = (0..runtime.scale - 1).map {
-            val serverName = serverName(cloud.environment, runtime.name, it)
+            val serverName = serverName(cloud.environmentContext, runtime.name, it)
             val result = context.withServerStatus(serverName) { sshClient, status ->
                 status
             }
@@ -130,7 +130,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
 
         val servers = (0..runtime.scale - 1).flatMap {
             val runnerName = "${runtime.name}-$it"
-            val serverName = serverName(cloud.environment, runtime.name, it)
+            val serverName = serverName(cloud.environmentContext, runtime.name, it)
             val defaultResources = createDefaultSSHIdentity(cloud, runtime, it)
 
             val userData = UserData(
@@ -138,6 +138,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             ) {
                 GithubRunnerUserData(
                     runnerName = runnerName,
+                    cloud.environmentVars + runtime.environmentVars,
                     githubUrl = gitHub.url.toUrl(),
                     runnerToken = runnerToken,
                     runnerLabels = runtime.labels,
@@ -153,15 +154,15 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                 image = "ubuntu-24.04",
                 userData = userData,
                 location = runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
-                sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environment))),
+                sshKeys = setOf(HetznerSSHKeyLookup(sshKeyName(cloud.environmentContext))),
                 volumes = emptySet(),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet = HetznerSubnetLookup(
                     defaultServiceSubnet,
-                    HetznerNetworkLookup(networkName(cloud.environment)),
+                    HetznerNetworkLookup(networkName(cloud.environmentContext)),
                 ),
                 privateIp = serverPrivateIp(runtime.index + it),
-                labels = serviceLabels(runtime) + cloudLabels(cloud.environment) + Constants.indexLabels(it),
+                labels = serviceLabels(runtime) + cloudLabels(cloud.environmentContext) + Constants.indexLabels(it),
                 dependsOn = defaultResources.list().toSet(),
                 preApplyHook = { log ->
                     val results = runBlocking {
@@ -194,9 +195,9 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         runBlocking {
             val runners = gitHub.listRunners()
 
-            val serverNamePrefix = serverNamePrefix(cloud.environment, runtime.name)
+            val serverNamePrefix = serverNamePrefix(cloud.environmentContext, runtime.name)
             val serverNames = (0..<runtime.scale).map {
-                serverName(cloud.environment, runtime.name, it)
+                serverName(cloud.environmentContext, runtime.name, it)
             }
 
             val runnerNamePrefix = runtime.name
@@ -241,6 +242,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         GithubRunnerServiceConfigurationRuntime(
             index,
             configuration.name,
+            configuration.environmentVars,
             configuration.labels,
             configuration.packages,
             configuration.allowSudo,

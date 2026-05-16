@@ -8,6 +8,7 @@ import de.solidblocks.cloud.services.BackupConfig
 import de.solidblocks.cloud.services.BackupConfigurationFactory
 import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.InstanceConfigurationFactory
+import de.solidblocks.cloud.services.SERVICE_ENVIRONMENT_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -34,6 +35,7 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
     override val keywords =
         listOf(
             SERVICE_NAME_KEYWORD,
+            SERVICE_ENVIRONMENT_KEYWORD,
             buckets,
         ) + BackupConfigurationFactory.keywords + InstanceConfigurationFactory.keywords
 
@@ -62,6 +64,12 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
                 is Success<BackupConfig> -> result.data
             }
 
-        return Success(S3ServiceConfiguration(name, instance, backup, buckets))
+        val environment =
+            when (val result = SERVICE_ENVIRONMENT_KEYWORD.parse(yaml)) {
+                is Error<Map<String, String>?> -> return Error(result.error)
+                is Success<Map<String, String>?> -> result.data ?: emptyMap()
+            }
+
+        return Success(S3ServiceConfiguration(name, environment, instance, backup, buckets))
     }
 }

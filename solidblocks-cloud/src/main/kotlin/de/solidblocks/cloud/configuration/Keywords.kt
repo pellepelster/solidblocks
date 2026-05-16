@@ -10,6 +10,7 @@ enum class KeywordType {
     number,
     polymorphic_list,
     `object`,
+    map,
 }
 
 sealed interface Keyword<T> {

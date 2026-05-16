@@ -7,6 +7,7 @@ A Solidblocks instance is defined using a YAML based configuration file with the
 
 ```
 name: <string>
+environment_vars: [map]
 root_domain: [string]
 
 providers:
@@ -24,11 +25,17 @@ services:
 
 Unique name for the cloud deployment. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files.
 
+## environment_vars
+*type*: **map**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Environment variables that should be set for all services, can be overridden on a per-service basis
+
 ## root_domain
 *type*: **string**, *optional*: **true**, 
 *min. length*: **4**, *max. length*: **253**, *default*: **&lt;none&gt;**
 
-Root domain to use for addresses of created services, e.g. `&lt;service_name&gt;.&lt;root_domain&gt;`. If set the domain must be manageable by one of the configured providers.
+Root domain to use for addresses of created services, e.g. **&lt;service_name&gt;.&lt;root_domain&gt;**. If set the domain must be manageable by one of the configured providers.
 
 # Providers
 
@@ -170,6 +177,7 @@ S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfl
 type: s3
 ```
 name: <string>
+environment_vars: [map]
 backup_size: [number]
 backup_full_retention_days: [number]
 data_size: [number]
@@ -194,6 +202,12 @@ buckets:
 *min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### environment_vars
+*type*: **map**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Environment variables that should be set for the service, will be merged with the globally configured environment variables
 
 ### backup_size
 *type*: **number**, *optional*: **true**, 
@@ -281,6 +295,7 @@ Single node PostgreSQL database instance with pgBackRest powered backup.
 type: postgresql
 ```
 name: <string>
+environment_vars: [map]
 majorVersion: [number]
 backup_size: [number]
 backup_full_retention_days: [number]
@@ -300,6 +315,12 @@ databases:
 *min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### environment_vars
+*type*: **map**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Environment variables that should be set for the service, will be merged with the globally configured environment variables
 
 ### majorVersion
 *type*: **number**, *optional*: **true**, 
@@ -364,6 +385,7 @@ Deploys a dockerized service exposes its endpoints.
 type: docker
 ```
 name: <string>
+environment_vars: [map]
 image: <string>
 backup_size: [number]
 backup_full_retention_days: [number]
@@ -383,6 +405,12 @@ links:
 *min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### environment_vars
+*type*: **map**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Environment variables that should be set for the service, will be merged with the globally configured environment variables
 
 ### image
 *type*: **string**, *optional*: **false**, 
@@ -448,6 +476,7 @@ Provisions a self-hosted runner based on the configured cloud provider. Requires
 type: github_runner
 ```
 name: <string>
+environment_vars: [map]
 scale: [number]
 allow_sudo: [boolean]
 data_size: [number]
@@ -464,6 +493,12 @@ packages:
 *min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
 
 Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### environment_vars
+*type*: **map**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Environment variables that should be set for the service, will be merged with the globally configured environment variables
 
 ### scale
 *type*: **number**, *optional*: **true**, 

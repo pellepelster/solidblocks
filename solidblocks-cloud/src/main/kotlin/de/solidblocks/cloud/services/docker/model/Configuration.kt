@@ -14,6 +14,7 @@ data class DockerServiceConfiguration(
     val instance: InstanceConfig,
     val backup: BackupConfig,
     val endpoints: List<DockerServiceEndpointConfiguration>,
+    override val environmentVars: Map<String, String>,
     val links: List<String>,
 ) : ServiceConfiguration {
     override val type = "docker"

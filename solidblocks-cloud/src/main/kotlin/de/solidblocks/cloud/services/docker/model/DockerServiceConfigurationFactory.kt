@@ -11,6 +11,7 @@ import de.solidblocks.cloud.services.BackupConfig
 import de.solidblocks.cloud.services.BackupConfigurationFactory
 import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.InstanceConfigurationFactory
+import de.solidblocks.cloud.services.SERVICE_ENVIRONMENT_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -50,7 +51,7 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
         )
 
     override val keywords =
-        listOf(SERVICE_NAME_KEYWORD, endpoints, image, links) +
+        listOf(SERVICE_NAME_KEYWORD, SERVICE_ENVIRONMENT_KEYWORD, endpoints, image, links) +
             BackupConfigurationFactory.keywords +
             InstanceConfigurationFactory.keywords
 
@@ -79,6 +80,12 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
                 is Success<BackupConfig> -> result.data
             }
 
+        val environment =
+            when (val result = SERVICE_ENVIRONMENT_KEYWORD.parse(yaml)) {
+                is Error<Map<String, String>?> -> return Error(result.error)
+                is Success<Map<String, String>?> -> result.data ?: emptyMap()
+            }
+
         val endpoints =
             when (val result = endpoints.parse(yaml)) {
                 is Error<List<DockerServiceEndpointConfiguration>> -> return Error(result.error)
@@ -92,7 +99,7 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
             }
 
         return Success(
-            DockerServiceConfiguration(name, image, instance, backupConfig, endpoints, links),
+            DockerServiceConfiguration(name, image, instance, backupConfig, endpoints, environment, links),
         )
     }
 }

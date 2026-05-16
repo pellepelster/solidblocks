@@ -106,6 +106,7 @@ depends=["build:jvm:all", "build:native"]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
 [tasks."release:prepare"]
+depends=["build:jvm:all", "build:native", "build:documentation"]
 run="""
 #!/usr/bin/env bash
 set -eu -o pipefail
@@ -116,6 +117,11 @@ set -eu -o pipefail
   asciinema cat s3_backup_activate.cast s3_blcks_apply.cast  s3_blcks_nuke.cast s3_blcks_restore_comment.cast s3_blcks_restore.cast s3_blcks_restore_call_endpoint_comment.cast s3_blcks_restore_call_endpoint.cast > ${ROOT_PROJECT}/doc/content/cloud/casts/quickstart_s3.cast
   cat blcks_help.cast > ${ROOT_PROJECT}/doc/content/cloud/casts/quickstart_help.cast
 )
+"""
+
+[tasks."build:documentation"]
+run="""
+#!/usr/bin/env bash
 ${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration --format hugo ${ROOT_PROJECT}/doc/content/cloud/configuration.md"
 """
 

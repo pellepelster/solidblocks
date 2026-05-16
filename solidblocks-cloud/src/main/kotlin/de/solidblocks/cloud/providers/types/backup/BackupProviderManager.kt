@@ -31,7 +31,7 @@ interface BackupProviderManager<
     > : ProviderManager<C, R>
 
 fun backupSecretResource(runtime: CloudConfigurationRuntime) = PassSecret(
-    secretPath(runtime.environment, listOf("backup", "password")),
+    secretPath(runtime.environmentContext, listOf("backup", "password")),
     RandomSecret(
         length = 32,
         allowedChars = ('a'..'f') + ('0'..'9'),
@@ -62,7 +62,7 @@ fun createBackupResources(
                 serverName + "-backup",
                 service.instance.locationWithDefault(cloud.hetznerProviderRuntime()),
                 service.backup.backupVolumeSizeWithDefault(service.instance.volumeSize),
-                volumeLabels(service) + cloudLabels(cloud.environment),
+                volumeLabels(service) + cloudLabels(cloud.environmentContext),
             )
             setOf(backupVolume) to backupVolume
         }

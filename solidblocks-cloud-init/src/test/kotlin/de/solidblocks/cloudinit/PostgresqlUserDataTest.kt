@@ -25,6 +25,7 @@ class PostgresqlUserDataTest {
         val userData =
             PostgresqlUserData(
                 "instance1",
+                emptyMap(),
                 "superuser-very-secret",
                 dataVolume1.linuxDevice,
                 backupConfiguration,
@@ -68,6 +69,7 @@ class PostgresqlUserDataTest {
         val recreatedUserData =
             PostgresqlUserData(
                 "instance1",
+                emptyMap(),
                 "superuser-very-secret",
                 dataVolume2.linuxDevice,
                 backupConfiguration,
@@ -109,6 +111,7 @@ class PostgresqlUserDataTest {
         val userData =
             PostgresqlUserData(
                 "instance1",
+                emptyMap(),
                 "superuser-very-secret",
                 dataVolume1.linuxDevice,
                 backupConfiguration,
@@ -152,6 +155,7 @@ class PostgresqlUserDataTest {
         val recreatedUserData =
             PostgresqlUserData(
                 "instance1",
+                emptyMap(),
                 "superuser-very-secret",
                 dataVolume2.linuxDevice,
                 backupConfiguration,

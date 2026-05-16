@@ -37,12 +37,20 @@ class CloudConfigurationFactory(
                 ),
             )
 
+        val environment =
+            OptionalStringMapKeyword(
+                "environment_vars",
+                KeywordHelp(
+                    "Environment variables that should be set for all services, can be overridden on a per-service basis",
+                ),
+            )
+
         val rootDomain =
             StringKeywordOptional(
                 "root_domain",
                 DOMAIN_NAME,
                 KeywordHelp(
-                    "Root domain to use for addresses of created services, e.g. `<service_name>.<root_domain>`. If set the domain must be manageable by one of the configured providers.",
+                    "Root domain to use for addresses of created services, e.g. **<service_name>.<root_domain>**. If set, the domain must be manageable by one of the configured providers.",
                 ),
             )
     }
@@ -73,33 +81,39 @@ class CloudConfigurationFactory(
             "A Solidblocks instance is defined using a YAML based configuration file with the following format",
         )
 
-    override val keywords = listOf<Keyword<*>>(name, rootDomain, providers, services)
+    override val keywords = listOf<Keyword<*>>(name, environment, rootDomain, providers, services)
 
     override fun parse(yaml: YamlNode): Result<CloudConfiguration> {
         val name =
-            when (val name = name.parse(yaml)) {
-                is Error<*> -> return Error(name.error)
-                is Success<String> -> name.data
+            when (val result = name.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<String> -> result.data
             }
 
         val rootDomain =
-            when (val rootDomain = rootDomain.parse(yaml)) {
-                is Error<*> -> return Error(rootDomain.error)
-                is Success<String?> -> rootDomain.data
+            when (val result = rootDomain.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<String?> -> result.data
+            }
+
+        val environment =
+            when (val result = environment.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<Map<String, String>?> -> result.data ?: emptyMap()
             }
 
         val providers =
-            when (val providers = providers.parse(yaml)) {
-                is Error<*> -> return Error(providers.error)
-                is Success<List<ProviderConfiguration>> -> providers.data
+            when (val result = providers.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<List<ProviderConfiguration>> -> result.data
             }
 
         val services =
-            when (val services = services.parse(yaml)) {
-                is Error<*> -> return Error(services.error)
-                is Success<List<ServiceConfiguration>> -> services.data
+            when (val result = services.parse(yaml)) {
+                is Error<*> -> return Error(result.error)
+                is Success<List<ServiceConfiguration>> -> result.data
             }
 
-        return Success(CloudConfiguration(name, rootDomain, providers, services))
+        return Success(CloudConfiguration(name, rootDomain, environment, providers, services))
     }
 }

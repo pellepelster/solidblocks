@@ -63,14 +63,14 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     val context = ProvisionerContextImpl(
         runtime.providers.sshKeyProvider().keyPair,
         runtime.providers.sshKeyProvider().privateKey.absolutePathString(),
-        runtime.environment,
+        runtime.environmentContext,
         registry,
         serviceRegistrations,
     )
 
     fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
         val provisioner = createProvisioner()
-        log.info(bold("planning changes for cloud configuration '${runtime.environment.cloud}'"))
+        log.info(bold("planning changes for cloud configuration '${runtime.environmentContext.cloud}'"))
         val resourceGroups = createResourceGroups()
         return@runBlocking provisioner.diff(resourceGroups, context, log)
     }
@@ -125,7 +125,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
         }
 
-        log.info(bold("rolling out changes for cloud configuration '${runtime.environment.cloud}'"))
+        log.info(bold("rolling out changes for cloud configuration '${runtime.environmentContext.cloud}'"))
 
         val diffResult = if (diffs.entries.flatMap { it.value }.any { it.status != up_to_date }) {
             provisioner.apply(diffs, ProvisionerApplyContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, context.environment, context.registry, context.serviceRegistrations), log.indent())
@@ -150,10 +150,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     private fun createResourceGroups(): List<ResourceGroup> {
         val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
 
-        val sshKey = HetznerSSHKey(sshKeyName(runtime.environment), publicKey, cloudLabels(runtime.environment))
+        val sshKey = HetznerSSHKey(sshKeyName(runtime.environmentContext), publicKey, cloudLabels(runtime.environmentContext))
 
         val firewall = HetznerFirewall(
-            firewallName(runtime.environment, "ssh"),
+            firewallName(runtime.environmentContext, "ssh"),
             listOf(
                 HetznerFirewallRule(
                     direction = FirewallRuleDirection.IN,
@@ -169,15 +169,15 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
                     description = "allow ICMP",
                 ),
             ),
-            cloudLabels(runtime.environment),
-            cloudLabels(runtime.environment),
+            cloudLabels(runtime.environmentContext),
+            cloudLabels(runtime.environmentContext),
         )
 
-        val network = HetznerNetwork(networkName(runtime.environment), defaultNetwork)
+        val network = HetznerNetwork(networkName(runtime.environmentContext), defaultNetwork)
         val subnet = HetznerSubnet(defaultServiceSubnet, network.asLookup())
 
         val cloudResourceGroup = ResourceGroup(
-            "cloud '${runtime.environment.cloud} base resources'",
+            "cloud '${runtime.environmentContext.cloud} base resources'",
             listOf(sshKey, firewall, network, subnet, backupSecretResource(runtime)),
         )
 
@@ -230,12 +230,12 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     fun createSSHConfig(): Result<Path> {
         val sshConfigFile = sshConfigFilePath(
             runtime.context.configFileDirectory,
-            runtime.environment,
+            runtime.environmentContext,
         )
 
         val sshKnownHostsFile = sshKnownHosts(
             runtime.context.configFileDirectory,
-            runtime.environment,
+            runtime.environmentContext,
         )
 
         val resourceGroups = createResourceGroups()

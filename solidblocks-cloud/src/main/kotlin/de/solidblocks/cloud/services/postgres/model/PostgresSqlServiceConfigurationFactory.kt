@@ -10,6 +10,7 @@ import de.solidblocks.cloud.services.BackupConfig
 import de.solidblocks.cloud.services.BackupConfigurationFactory
 import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.InstanceConfigurationFactory
+import de.solidblocks.cloud.services.SERVICE_ENVIRONMENT_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -46,6 +47,7 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
     override val keywords =
         listOf(
             SERVICE_NAME_KEYWORD,
+            SERVICE_ENVIRONMENT_KEYWORD,
             majorVersion,
             databases,
         ) + BackupConfigurationFactory.keywords + InstanceConfigurationFactory.keywords
@@ -81,9 +83,16 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
                 is Success<Int> -> result.data
             }
 
+        val environment =
+            when (val result = SERVICE_ENVIRONMENT_KEYWORD.parse(yaml)) {
+                is Error<Map<String, String>?> -> return Error(result.error)
+                is Success<Map<String, String>?> -> result.data ?: emptyMap()
+            }
+
         return Success(
             PostgresSqlServiceConfiguration(
                 name,
+                environment,
                 instance,
                 backupConfig,
                 databases,

@@ -12,6 +12,7 @@ data class GithubRunnerServiceConfiguration(
     val labels: List<String>,
     val packages: List<String>,
     val allowSudo: Boolean,
+    override val environmentVars: Map<String, String>,
     val scale: Int,
 ) : ServiceConfiguration {
     override val type = "github_runner"

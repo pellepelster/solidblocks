@@ -8,7 +8,13 @@ import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
 import kotlin.reflect.KClass
 
-data class S3ServiceConfiguration(override val name: String, val instance: InstanceConfig, val backup: BackupConfig, val buckets: List<S3ServiceBucketConfiguration>) : ServiceConfiguration {
+data class S3ServiceConfiguration(
+    override val name: String,
+    override val environmentVars: Map<String, String>,
+    val instance: InstanceConfig,
+    val backup: BackupConfig,
+    val buckets: List<S3ServiceBucketConfiguration>,
+) : ServiceConfiguration {
     override val type = "s3"
     override val neededProviders: List<KClass<*>> = listOf(BackupProviderConfiguration::class, SecretProviderConfiguration::class, CloudResourceProviderConfiguration::class)
 }

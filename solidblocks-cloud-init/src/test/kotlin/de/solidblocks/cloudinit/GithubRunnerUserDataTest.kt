@@ -15,6 +15,7 @@ class GithubRunnerUserDataTest {
 
         val userData = GithubRunnerUserData(
             "runner1",
+            emptyMap(),
             "https://github.com/pellepelster/solidblocks",
             "TODO",
             listOf("label1", "label2"),

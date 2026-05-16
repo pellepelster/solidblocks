@@ -18,6 +18,7 @@ import de.solidblocks.shell.systemd.startSystemDUnit
 
 class GithubRunnerUserData(
     val runnerName: String,
+    val environment: Map<String, String>,
     val githubUrl: String,
     val runnerToken: String,
     val runnerLabels: List<String>,
@@ -84,7 +85,7 @@ class GithubRunnerUserData(
                 user = runnerUser,
                 group = runnerUser,
                 workingDirectory = runnerHome,
-                environment = mapOf(
+                environment = environment + mapOf(
                     "GITHUB_URL" to variables.githubUrl,
                     "RUNNER_TOKEN" to variables.runnerToken,
                     "RUNNER_NAME" to variables.runnerName,

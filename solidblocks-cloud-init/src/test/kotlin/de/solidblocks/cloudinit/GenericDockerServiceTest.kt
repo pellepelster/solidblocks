@@ -23,6 +23,7 @@ class GenericDockerServiceTest {
         val userData =
             GenericDockerServiceUserData(
                 testContext.testId,
+                emptyMap(),
                 dataVolume.linuxDevice,
                 backupConfiguration,
                 "nginx",

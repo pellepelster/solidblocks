@@ -3,8 +3,9 @@ package de.solidblocks.cloud.utils
 import com.charleskorn.kaml.*
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import kotlin.collections.emptyMap
 
-fun Location.logMessage() = "line ${this.line} colum ${this.column}"
+fun Location.logMessage() = "line ${this.line} column ${this.column}"
 
 fun YamlNode.isList(key: String) = (this.yamlMap.get<YamlNode>(key) is YamlList)
 
@@ -38,6 +39,31 @@ fun YamlNode.getMap(key: String) = if (this is YamlMap) {
     this.yamlMap.getMap(key)
 } else {
     Error<YamlMap>("expected a map at '$key' but got '${contentToString()}'")
+}
+
+fun YamlNode.getStringMap(key: String): YamlResult<Map<String, String>> = if (this is YamlMap) {
+    when (val map = this.yamlMap.getMap(key)) {
+        is Error<YamlMap> -> Error<Map<String, String>>(map.error)
+        is Success<YamlMap> -> {
+            val nonScalarKeys = map.data.entries.filter {
+                it.value !is YamlScalar
+            }.map { it.key }
+
+            if (nonScalarKeys.isNotEmpty()) {
+                Error<Map<String, String>>("found non string value in map '$key' at key(s) ${nonScalarKeys.joinToString(", ") { it.content }}")
+            } else {
+                Success(
+                    map.data.entries.map {
+                        it.key.content to (it.value as YamlScalar).content
+                    }.associate { it },
+                )
+            }
+        }
+
+        is YamlEmpty<YamlMap> -> YamlEmpty("'$key' not set")
+    }
+} else {
+    Error<Map<String, String>>("expected a map at '$key' but got '${contentToString()}'")
 }
 
 fun YamlMap.getList(key: String) = if (this.get<YamlNode>(key) == null) {

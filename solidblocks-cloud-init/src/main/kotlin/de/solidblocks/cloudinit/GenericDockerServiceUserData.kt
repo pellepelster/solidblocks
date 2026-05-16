@@ -1,5 +1,6 @@
 package de.solidblocks.cloudinit
 
+import de.solidblocks.cloudinit.CloudInitConstants.baseDockerWorkingDirectory
 import de.solidblocks.shell.CaddyLibrary
 import de.solidblocks.shell.DockerLibrary
 import de.solidblocks.shell.FilePermissions
@@ -27,12 +28,12 @@ import de.solidblocks.shell.systemd.installSystemDUnit
 
 class GenericDockerServiceUserData(
     val serviceName: String,
+    val environment: Map<String, String>,
     val dataDevice: String,
     val backupConfiguration: BackupConfiguration,
     val dockerImage: String,
     val ports: Map<Int, Int>,
     val serverFQDN: String?,
-    val environmentVariables: Map<String, String> = emptyMap(),
 ) : ServiceUserData {
     override fun shellScript(): ShellScript {
         val storageMount = "/storage/data"
@@ -82,9 +83,8 @@ class GenericDockerServiceUserData(
         )
         shellScript.addCommand(SystemDLibrary.Restart("caddy"))
 
-        val dockerWorkingDirectory = "/usr/local/etc/containers"
+        val dockerWorkingDirectory = "$baseDockerWorkingDirectory/$serviceName"
         val dockerComposeFile = "$dockerWorkingDirectory/docker-compose.yml"
-        val environment = mapOf<String, String>()
 
         val dockerCompose =
             ComposeFile(
@@ -100,7 +100,7 @@ class GenericDockerServiceUserData(
                                     it.value + 1024,
                                 )
                             },
-                            environment = environmentVariables,
+                            environment = environment,
                         ),
                 ),
             )

@@ -10,6 +10,7 @@ import kotlin.reflect.KClass
 
 data class PostgresSqlServiceConfiguration(
     override val name: String,
+    override val environmentVars: Map<String, String>,
     val instance: InstanceConfig,
     val backup: BackupConfig,
     val databases: List<PostgresSqlServiceDatabaseConfiguration>,

@@ -229,6 +229,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             CloudConfigurationRuntime(
                 configurationContext,
                 EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
+                cloud.environmentVariables,
                 cloud.rootDomain,
                 providers,
                 services,
@@ -279,7 +280,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                     val path = Path.of(".").toAbsolutePath().relativize(result.data)
                     logInfo(
                         bold(
-                            "ssh config file for cloud '${runtime.environment.cloud}' written to '$path', use 'ssh -F $path <host>' to access the VMs",
+                            "ssh config file for cloud '${runtime.environmentContext.cloud}' written to '$path', use 'ssh -F $path <host>' to access the VMs",
                         ),
                     )
                     return Success(Unit)

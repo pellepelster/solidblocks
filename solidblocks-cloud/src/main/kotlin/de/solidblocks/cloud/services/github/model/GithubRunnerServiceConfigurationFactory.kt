@@ -9,6 +9,7 @@ import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.InstanceConfig
 import de.solidblocks.cloud.services.InstanceConfigurationFactory
+import de.solidblocks.cloud.services.SERVICE_ENVIRONMENT_KEYWORD
 import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -61,7 +62,7 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
         )
 
     override val keywords =
-        listOf(SERVICE_NAME_KEYWORD, labels, scale, packages, allowSudo) + InstanceConfigurationFactory.keywords
+        listOf(SERVICE_NAME_KEYWORD, SERVICE_ENVIRONMENT_KEYWORD, labels, scale, packages, allowSudo) + InstanceConfigurationFactory.keywords
 
     override fun parse(yaml: YamlNode): Result<GithubRunnerServiceConfiguration> {
         val name =
@@ -94,12 +95,18 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
                 is Success<Int> -> result.data
             }
 
+        val environment =
+            when (val result = SERVICE_ENVIRONMENT_KEYWORD.parse(yaml)) {
+                is Error<Map<String, String>?> -> return Error(result.error)
+                is Success<Map<String, String>?> -> result.data ?: emptyMap()
+            }
+
         val instance =
             when (val result = InstanceConfigurationFactory.parse(yaml)) {
                 is Error<InstanceConfig> -> return Error(result.error)
                 is Success<InstanceConfig> -> result.data
             }
 
-        return Success(GithubRunnerServiceConfiguration(name, instance, labels, packages, allowSudo, scale))
+        return Success(GithubRunnerServiceConfiguration(name, instance, labels, packages, allowSudo, environment, scale))
     }
 }
