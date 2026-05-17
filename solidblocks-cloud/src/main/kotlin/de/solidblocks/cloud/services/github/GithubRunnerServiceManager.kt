@@ -121,7 +121,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         }.let { Success(it) }
     }
 
-    override fun createResources(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
+    override fun createResources(cloud: CloudConfigurationRuntime, runtime: GithubRunnerServiceConfigurationRuntime, context: ProvisionerContext): Result<List<BaseInfrastructureResource<*>>> {
         val gitHub = githubContext(cloud)
 
         val runnerToken = runBlocking {
@@ -178,7 +178,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             defaultResources.list() + listOf(server)
         }
 
-        return servers
+        return Success(servers)
     }
 
     private data class GithubContext(val api: GitHubApi, val url: GitHubUrlRuntime)

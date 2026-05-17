@@ -70,7 +70,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         }.let { Success(it) }
     }
 
-    override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
+    override fun createResources(cloud: CloudConfigurationRuntime, runtime: S3ServiceConfigurationRuntime, context: ProvisionerContext): Result<List<BaseInfrastructureResource<*>>> {
         val serverName = serverName(cloud.environmentContext, runtime.name, 0)
 
         val defaultResources = this.createDefaultServerResources(cloud, runtime, 0)
@@ -248,7 +248,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
         )
 
-        return listOf(s3HostSecret, firewall, server, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources + defaultResources.list()
+        return Success(listOf(s3HostSecret, firewall, server, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources + defaultResources.list())
     }
 
     override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()

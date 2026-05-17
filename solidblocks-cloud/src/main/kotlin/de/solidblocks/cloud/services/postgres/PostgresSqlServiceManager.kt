@@ -196,7 +196,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         },
     )
 
-    override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
+    override fun createResources(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: ProvisionerContext): Result<List<BaseInfrastructureResource<*>>> {
         val serverName = serverName(cloud.environmentContext, runtime.name, 0)
 
         val defaultResources = createDefaultServerResources(cloud, runtime, 0)
@@ -260,7 +260,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 )
             }
 
-        return listOf(server) + databaseResources + backupResources.first + defaultResources.list()
+        return Success(listOf(server) + databaseResources + backupResources.first + defaultResources.list())
     }
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =

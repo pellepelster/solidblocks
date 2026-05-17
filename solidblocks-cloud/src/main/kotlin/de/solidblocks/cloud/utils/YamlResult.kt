@@ -1,5 +1,7 @@
 package de.solidblocks.cloud.utils
 
+import de.solidblocks.cloud.utils.mapSuccess
+
 sealed interface Result<T>
 
 sealed interface YamlResult<T>
@@ -20,7 +22,7 @@ fun <T, R> Collection<Result<T>>.aggregate(block: () -> R): Result<R> = if (this
     Success(block())
 }
 
-fun <T> Collection<Result<*>>.mapSuccess() = this.filterIsInstance<Success<T>>().map { it.data }
+fun <T> Collection<Result<T>>.mapSuccess() = this.filterIsInstance<Success<T>>().map { it.data }
 
 fun <T> catchingResult(block: () -> T): Result<T> = try {
     Success(block())

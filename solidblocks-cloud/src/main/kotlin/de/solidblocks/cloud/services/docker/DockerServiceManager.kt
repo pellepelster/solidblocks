@@ -110,7 +110,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         "http://${context.lookup(HetznerServerLookup(serverName(cloud.environmentContext, runtime.name, 0)))?.publicIpv4 ?: "<unknown>"}"
     }
 
-    override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): List<BaseInfrastructureResource<*>> {
+    override fun createResources(cloud: CloudConfigurationRuntime, runtime: DockerServiceConfigurationRuntime, context: ProvisionerContext): Result<List<BaseInfrastructureResource<*>>> {
         val environmentVariables = runtime.links.flatMap { link ->
             val links = cloud.services.filter { it.name == link }
             links.flatMap {
@@ -174,7 +174,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             listOf(runtime.firewall(cloud, listOf(80)))
         }
 
-        return listOf(server) + optionalResources + setOfNotNull(backupResources.second) + defaultResources.list()
+        return Success(listOf(server) + optionalResources + setOfNotNull(backupResources.second) + defaultResources.list())
     }
 
     override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()

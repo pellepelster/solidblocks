@@ -13,6 +13,7 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.types.backup.backupSecretResource
@@ -41,6 +42,9 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.aggregate
+import de.solidblocks.cloud.utils.aggregateErrorMessage
+import de.solidblocks.cloud.utils.hasError
+import de.solidblocks.cloud.utils.mapSuccess
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
@@ -71,7 +75,12 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
         val provisioner = createProvisioner()
         log.info(bold("planning changes for cloud configuration '${runtime.environmentContext.cloud}'"))
-        val resourceGroups = createResourceGroups()
+
+        val resourceGroups = when (val result = createResourceGroups()) {
+            is Error<List<ResourceGroup>> -> return@runBlocking Error(result.error)
+            is Success -> result.data
+        }
+
         return@runBlocking provisioner.diff(resourceGroups, context, log)
     }
 
@@ -147,7 +156,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         }
     }
 
-    private fun createResourceGroups(): List<ResourceGroup> {
+    private fun createResourceGroups(): Result<List<ResourceGroup>> {
         val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
 
         val sshKey = HetznerSSHKey(sshKeyName(runtime.environmentContext), publicKey, cloudLabels(runtime.environmentContext))
@@ -182,14 +191,25 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         )
 
         val serviceResourceGroups = serviceManagers().map {
-            ResourceGroup(
-                "service '${it.first.name}'",
-                it.second.createResources(runtime, it.first, context),
-                setOf(cloudResourceGroup),
-            )
+            when (val result = it.second.createResources(runtime, it.first, context)) {
+                is Error<List<BaseInfrastructureResource<*>>> -> Error<ResourceGroup>(result.error)
+                is Success<List<BaseInfrastructureResource<*>>> -> {
+                    Success(
+                        ResourceGroup(
+                            "service '${it.first.name}'",
+                            result.data,
+                            setOf(cloudResourceGroup),
+                        ),
+                    )
+                }
+            }
         }
 
-        return listOf(cloudResourceGroup) + serviceResourceGroups
+        return if (serviceResourceGroups.hasError()) {
+            Error(serviceResourceGroups.aggregateErrorMessage())
+        } else {
+            Success(serviceResourceGroups.mapSuccess() + cloudResourceGroup)
+        }
     }
 
     private fun serviceManagers() = runtime.services.map {
@@ -238,7 +258,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             runtime.environmentContext,
         )
 
-        val resourceGroups = createResourceGroups()
+        val resourceGroups = when (val result = createResourceGroups()) {
+            is Error<List<ResourceGroup>> -> return Error(result.error)
+            is Success<List<ResourceGroup>> -> result.data
+        }
 
         val sshConfig = StringWriter()
         sshConfig.appendLine("Host *")
