@@ -1,10 +1,23 @@
-package de.solidblocks.cloud.utils
+package de.solidblocks.cloud.interpolation
 
-data class StringInterpolationResult(val value: String?, val error: String?)
+import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 
-fun interpolateString(template: String, resolve: (String) -> String): StringInterpolationResult {
-    val validation = validateInterpolationTemplate(template)
-    if (validation != null) return StringInterpolationResult(null, validation)
+fun collectInterpolatedStrings(template: String): List<String> {
+    val interpolations = mutableListOf<String>()
+    replaceInterpolatedStrings(template, {
+        interpolations.add(it)
+        Success("<none>")
+    })
+
+    return interpolations.toList()
+}
+
+fun replaceInterpolatedStrings(template: String, resolve: (String) -> Result<String>): Result<String> {
+    val validationError = validateInterpolatedString(template)
+
+    if (validationError != null) return Error(validationError)
 
     val result = StringBuilder()
     var i = 0
@@ -15,12 +28,17 @@ fun interpolateString(template: String, resolve: (String) -> String): StringInte
                 result.append('$')
                 i += 2
             }
+
             template[i] == '$' && i + 1 < template.length && template[i + 1] == '{' -> {
                 val end = template.indexOf('}', i + 2)
                 val key = template.substring(i + 2, end)
-                result.append(resolve(key))
+                when (val resolved = resolve(key)) {
+                    is Success -> result.append(resolved.data)
+                    is Error -> return Error(resolved.error)
+                }
                 i = end + 1
             }
+
             else -> {
                 result.append(template[i])
                 i++
@@ -28,10 +46,10 @@ fun interpolateString(template: String, resolve: (String) -> String): StringInte
         }
     }
 
-    return StringInterpolationResult(result.toString(), null)
+    return Success(result.toString())
 }
 
-fun containsInterpolation(template: String): Boolean {
+fun stringContainsInterpolation(template: String): Boolean {
     var i = 0
     while (i < template.length) {
         when {
@@ -43,7 +61,7 @@ fun containsInterpolation(template: String): Boolean {
     return false
 }
 
-fun validateInterpolationTemplate(template: String): String? {
+fun validateInterpolatedString(template: String): String? {
     var i = 0
     var depth = 0
 
@@ -55,11 +73,13 @@ fun validateInterpolationTemplate(template: String): String? {
                 depth++
                 i += 2
             }
+
             template[i] == '{' && (i == 0 || template[i - 1] != '$') && depth == 0 -> i++
             template[i] == '}' && depth > 0 -> {
                 depth--
                 i++
             }
+
             else -> i++
         }
     }

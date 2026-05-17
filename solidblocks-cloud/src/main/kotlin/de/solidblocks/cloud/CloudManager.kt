@@ -8,6 +8,8 @@ import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
+import de.solidblocks.cloud.interpolation.EnvironmentVariableInterpolationFactory
+import de.solidblocks.cloud.interpolation.StringInterpolationRegistry
 import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
@@ -309,6 +311,28 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
             return it.maintenance(runtime, log).also {
                 if (it is Success<Unit>) {
                     log.success("maintenance finished")
+                }
+            }
+        }
+    }
+
+    fun debugInterpolation(runtime: CloudConfigurationRuntime, interpolated: String): Result<Unit> {
+        val log = LogContext()
+        log.info(bold("debugging interpolation for '$interpolated'"))
+
+        return CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
+            val factory = StringInterpolationRegistry(listOf(EnvironmentVariableInterpolationFactory()))
+
+            when (val result = factory.validate(interpolated)) {
+                is Error<Unit> -> Error("error validating '$interpolated': ${result.error}")
+                is Success<*> -> {
+                    when (val resolved = factory.resolve(interpolated)) {
+                        is Error<String> -> Error("error resolving '$interpolated': ${resolved.error}")
+                        is Success<String> -> {
+                            log.success("'$interpolated' resolved to '${resolved.data}'")
+                            Success(Unit)
+                        }
+                    }
                 }
             }
         }

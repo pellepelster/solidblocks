@@ -4,12 +4,8 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.services.BackupConfig
-import de.solidblocks.cloud.services.BackupConfigurationFactory
-import de.solidblocks.cloud.services.InstanceConfig
-import de.solidblocks.cloud.services.InstanceConfigurationFactory
-import de.solidblocks.cloud.services.SERVICE_ENVIRONMENT_KEYWORD
-import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
+import de.solidblocks.cloud.services.*
+import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -34,28 +30,19 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
 
     override val keywords =
         listOf(
-            SERVICE_NAME_KEYWORD,
-            SERVICE_ENVIRONMENT_KEYWORD,
             buckets,
-        ) + BackupConfigurationFactory.keywords + InstanceConfigurationFactory.keywords
+        ) + BackupConfigurationFactory.keywords + ServiceConfigurationFactory.keywords
 
     override fun parse(yaml: YamlNode): Result<S3ServiceConfiguration> {
-        val name =
-            when (val name = SERVICE_NAME_KEYWORD.parse(yaml)) {
-                is Error<*> -> return Error(name.error)
-                is Success<String> -> name.data
-            }
+        val common = when (val result = yaml.parseServiceCommonConfig()) {
+            is Error<ServiceCommonConfig> -> return Error(result.error)
+            is Success<ServiceCommonConfig> -> result.data
+        }
 
         val buckets =
             when (val result = buckets.parse(yaml)) {
                 is Error<List<S3ServiceBucketConfiguration>> -> return Error(result.error)
                 is Success<List<S3ServiceBucketConfiguration>> -> result.data
-            }
-
-        val instance =
-            when (val result = InstanceConfigurationFactory.parse(yaml)) {
-                is Error<InstanceConfig> -> return Error(result.error)
-                is Success<InstanceConfig> -> result.data
             }
 
         val backup =
@@ -64,12 +51,6 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
                 is Success<BackupConfig> -> result.data
             }
 
-        val environment =
-            when (val result = SERVICE_ENVIRONMENT_KEYWORD.parse(yaml)) {
-                is Error<Map<String, String>?> -> return Error(result.error)
-                is Success<Map<String, String>?> -> result.data ?: emptyMap()
-            }
-
-        return Success(S3ServiceConfiguration(name, environment, instance, backup, buckets))
+        return Success(S3ServiceConfiguration(common.name, common.environmentVars, common.instance, backup, buckets))
     }
 }

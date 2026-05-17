@@ -15,6 +15,14 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
+data class InstanceRuntime(val volumeSize: Int, val hetznerLocation: HetznerLocation?, val hetznerInstanceType: HetznerServerType?) {
+    companion object {
+        fun fromConfig(config: InstanceConfig) = InstanceRuntime(config.volumeSize, config.hetznerLocation, config.hetznerInstanceType)
+    }
+
+    fun locationWithDefault(runtime: HetznerProviderRuntime) = hetznerLocation ?: runtime.defaultLocation1
+}
+
 object InstanceConfigurationFactory {
 
     val SERVICE_DATA_VOLUME_SIZE_KEYWORD =
@@ -54,21 +62,21 @@ object InstanceConfigurationFactory {
             HETZNER_INSTANCE_TYPE_KEYWORD,
         )
 
-    fun parse(yaml: YamlNode): Result<InstanceConfig> {
+    fun YamlNode.parseInstanceConfig(): Result<InstanceConfig> {
         val volumeSize =
-            when (val result = SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(yaml)) {
+            when (val result = SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(this)) {
                 is Error<Int> -> return Error(result.error)
                 is Success<Int> -> result.data
             }
 
         val hetznerLocation =
-            when (val result = HETZNER_LOCATION_KEYWORD.parse(yaml)) {
+            when (val result = HETZNER_LOCATION_KEYWORD.parse(this)) {
                 is Error<*> -> return Error(result.error)
                 is Success<String> -> result.data
             }
 
         val hetznerInstanceType =
-            when (val result = HETZNER_INSTANCE_TYPE_KEYWORD.parse(yaml)) {
+            when (val result = HETZNER_INSTANCE_TYPE_KEYWORD.parse(this)) {
                 is Error<*> -> return Error(result.error)
                 is Success<String> -> result.data
             }
@@ -81,14 +89,4 @@ object InstanceConfigurationFactory {
             ),
         )
     }
-}
-
-data class InstanceConfig(val volumeSize: Int, val hetznerLocation: HetznerLocation?, val hetznerInstanceType: HetznerServerType?)
-
-data class InstanceRuntime(val volumeSize: Int, val hetznerLocation: HetznerLocation?, val hetznerInstanceType: HetznerServerType?) {
-    companion object {
-        fun fromConfig(config: InstanceConfig) = InstanceRuntime(config.volumeSize, config.hetznerLocation, config.hetznerInstanceType)
-    }
-
-    fun locationWithDefault(runtime: HetznerProviderRuntime) = hetznerLocation ?: runtime.defaultLocation1
 }

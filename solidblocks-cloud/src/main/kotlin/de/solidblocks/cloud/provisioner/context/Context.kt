@@ -4,6 +4,7 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
+import de.solidblocks.cloud.interpolation.StringInterpolationRegistry
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
@@ -32,6 +33,8 @@ interface ProvisionerContext {
     suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext): Boolean
 
     fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R>
+
+    fun interpolationRegistry(): StringInterpolationRegistry
 }
 
 interface ValidationContext {

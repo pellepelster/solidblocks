@@ -6,12 +6,8 @@ import de.solidblocks.cloud.configuration.NumberConstraints
 import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.services.BackupConfig
-import de.solidblocks.cloud.services.BackupConfigurationFactory
-import de.solidblocks.cloud.services.InstanceConfig
-import de.solidblocks.cloud.services.InstanceConfigurationFactory
-import de.solidblocks.cloud.services.SERVICE_ENVIRONMENT_KEYWORD
-import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
+import de.solidblocks.cloud.services.*
+import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -46,24 +42,15 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
 
     override val keywords =
         listOf(
-            SERVICE_NAME_KEYWORD,
-            SERVICE_ENVIRONMENT_KEYWORD,
             majorVersion,
             databases,
-        ) + BackupConfigurationFactory.keywords + InstanceConfigurationFactory.keywords
+        ) + BackupConfigurationFactory.keywords + ServiceConfigurationFactory.keywords
 
     override fun parse(yaml: YamlNode): Result<PostgresSqlServiceConfiguration> {
-        val name =
-            when (val result = SERVICE_NAME_KEYWORD.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val instance =
-            when (val result = InstanceConfigurationFactory.parse(yaml)) {
-                is Error<InstanceConfig> -> return Error(result.error)
-                is Success<InstanceConfig> -> result.data
-            }
+        val common = when (val result = yaml.parseServiceCommonConfig()) {
+            is Error<ServiceCommonConfig> -> return Error(result.error)
+            is Success<ServiceCommonConfig> -> result.data
+        }
 
         val backupConfig =
             when (val result = BackupConfigurationFactory.parse(yaml)) {
@@ -83,17 +70,11 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
                 is Success<Int> -> result.data
             }
 
-        val environment =
-            when (val result = SERVICE_ENVIRONMENT_KEYWORD.parse(yaml)) {
-                is Error<Map<String, String>?> -> return Error(result.error)
-                is Success<Map<String, String>?> -> result.data ?: emptyMap()
-            }
-
         return Success(
             PostgresSqlServiceConfiguration(
-                name,
-                environment,
-                instance,
+                common.name,
+                common.environmentVars,
+                common.instance,
                 backupConfig,
                 databases,
                 majorVersion,

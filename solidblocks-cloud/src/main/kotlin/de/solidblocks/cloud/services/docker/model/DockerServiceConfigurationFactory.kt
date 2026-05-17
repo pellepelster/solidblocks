@@ -9,10 +9,9 @@ import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.BackupConfig
 import de.solidblocks.cloud.services.BackupConfigurationFactory
-import de.solidblocks.cloud.services.InstanceConfig
-import de.solidblocks.cloud.services.InstanceConfigurationFactory
-import de.solidblocks.cloud.services.SERVICE_ENVIRONMENT_KEYWORD
-import de.solidblocks.cloud.services.SERVICE_NAME_KEYWORD
+import de.solidblocks.cloud.services.ServiceCommonConfig
+import de.solidblocks.cloud.services.ServiceConfigurationFactory
+import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -51,16 +50,15 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
         )
 
     override val keywords =
-        listOf(SERVICE_NAME_KEYWORD, SERVICE_ENVIRONMENT_KEYWORD, endpoints, image, links) +
+        listOf(endpoints, image, links) +
             BackupConfigurationFactory.keywords +
-            InstanceConfigurationFactory.keywords
+            ServiceConfigurationFactory.keywords
 
     override fun parse(yaml: YamlNode): Result<DockerServiceConfiguration> {
-        val name =
-            when (val result = SERVICE_NAME_KEYWORD.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
+        val common = when (val result = yaml.parseServiceCommonConfig()) {
+            is Error<ServiceCommonConfig> -> return Error(result.error)
+            is Success<ServiceCommonConfig> -> result.data
+        }
 
         val image =
             when (val result = image.parse(yaml)) {
@@ -68,22 +66,10 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
                 is Success<String> -> result.data
             }
 
-        val instance =
-            when (val result = InstanceConfigurationFactory.parse(yaml)) {
-                is Error<InstanceConfig> -> return Error(result.error)
-                is Success<InstanceConfig> -> result.data
-            }
-
         val backupConfig =
             when (val result = BackupConfigurationFactory.parse(yaml)) {
                 is Error<BackupConfig> -> return Error(result.error)
                 is Success<BackupConfig> -> result.data
-            }
-
-        val environment =
-            when (val result = SERVICE_ENVIRONMENT_KEYWORD.parse(yaml)) {
-                is Error<Map<String, String>?> -> return Error(result.error)
-                is Success<Map<String, String>?> -> result.data ?: emptyMap()
             }
 
         val endpoints =
@@ -99,7 +85,7 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
             }
 
         return Success(
-            DockerServiceConfiguration(name, image, instance, backupConfig, endpoints, environment, links),
+            DockerServiceConfiguration(common.name, image, common.instance, backupConfig, endpoints, common.environmentVars, links),
         )
     }
 }

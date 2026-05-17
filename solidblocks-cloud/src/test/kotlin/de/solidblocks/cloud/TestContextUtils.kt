@@ -4,6 +4,7 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
+import de.solidblocks.cloud.interpolation.StringInterpolationRegistry
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
@@ -51,6 +52,10 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
     override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = TODO("Not yet implemented")
+
+    override fun interpolationRegistry(): StringInterpolationRegistry {
+        TODO("Not yet implemented")
+    }
 
     val secrets = mutableMapOf<String, String>()
 

@@ -7,6 +7,8 @@ import de.solidblocks.cli.cloud.CloudCommand
 import de.solidblocks.cli.cloud.CloudInfoCommand
 import de.solidblocks.cli.cloud.CloudPlanCommand
 import de.solidblocks.cli.cloud.CloudSSHConfigCommand
+import de.solidblocks.cli.cloud.debug.CloudDebugCommand
+import de.solidblocks.cli.cloud.debug.CloudDebugInterpolationCommand
 import de.solidblocks.cli.cloud.help.CloudHelpCommand
 import de.solidblocks.cli.cloud.help.CloudHelpConfigurationCommand
 import de.solidblocks.cli.cloud.maintenance.CloudMaintenanceCommand
@@ -59,6 +61,9 @@ fun main(args: Array<String>) {
     CloudCommand().also {
         root.subcommands(it)
         it.subcommands(
+            CloudDebugCommand().also {
+                it.subcommands(CloudDebugInterpolationCommand())
+            },
             CloudApplyCommand(),
             CloudMaintenanceCommand(),
             CloudStatusCommand(),

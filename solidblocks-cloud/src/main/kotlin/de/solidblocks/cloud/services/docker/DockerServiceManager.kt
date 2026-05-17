@@ -119,16 +119,16 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         }
 
         val serverName = serverName(cloud.environmentContext, runtime.name, 0)
-
         val defaultResources = this.createDefaultServerResources(cloud, runtime, 0)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
+        val configurationEnvironmentVars = cloud.environmentVars + runtime.environmentVars
 
         val userData = UserData(
             setOf(defaultResources.volumes.data) + backupResources.first,
             { context ->
                 GenericDockerServiceUserData(
                     runtime.name,
-                    cloud.environmentVars + runtime.environmentVars + environmentVariables.associate {
+                    configurationEnvironmentVars + environmentVariables.associate {
                         val value = when (it) {
                             is EnvironmentVariableCallback -> it.value.invoke(context)
                             is EnvironmentVariableStatic -> it.value

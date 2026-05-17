@@ -4,6 +4,8 @@ import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
+import de.solidblocks.cloud.interpolation.EnvironmentVariableInterpolationFactory
+import de.solidblocks.cloud.interpolation.StringInterpolationRegistry
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
@@ -67,6 +69,8 @@ open class ProvisionerContextImpl(
 
         sshClients.clear()
     }
+
+    override fun interpolationRegistry(): StringInterpolationRegistry = StringInterpolationRegistry(listOf(EnvironmentVariableInterpolationFactory()))
 }
 
 abstract class BaseSSHProvisionerContextImpl(
