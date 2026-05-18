@@ -101,6 +101,15 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             ),
         )
 
+        val configurationEnvironmentVars = (cloud.environmentVars + runtime.environmentVars).map {
+            val resolvedValue = when (val result = context.interpolationRegistry().resolve(it.value)) {
+                is Error<String> -> return Error(result.error)
+                is Success<String> -> result.data
+            }
+
+            it.key to resolvedValue
+        }.toMap()
+
         val userData = UserData(
             setOf(defaultResources.volumes.data, adminToken, rpcSecret, metricsToken) + backupResources.first,
             { context ->
@@ -116,7 +125,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     context.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                     serviceRootDomain(cloud, runtime),
-                    cloud.environmentVars + runtime.environmentVars,
+                    configurationEnvironmentVars,
                     context.ensureLookup(rpcSecret.asLookup()).secret,
                     context.ensureLookup(adminToken.asLookup()).secret,
                     context.ensureLookup(metricsToken.asLookup()).secret,

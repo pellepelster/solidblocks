@@ -121,7 +121,14 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         val serverName = serverName(cloud.environmentContext, runtime.name, 0)
         val defaultResources = this.createDefaultServerResources(cloud, runtime, 0)
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
-        val configurationEnvironmentVars = cloud.environmentVars + runtime.environmentVars
+        val configurationEnvironmentVars = (cloud.environmentVars + runtime.environmentVars).map {
+            val resolvedValue = when (val result = context.interpolationRegistry().resolve(it.value)) {
+                is Error<String> -> return Error(result.error)
+                is Success<String> -> result.data
+            }
+
+            it.key to resolvedValue
+        }.toMap()
 
         val userData = UserData(
             setOf(defaultResources.volumes.data) + backupResources.first,

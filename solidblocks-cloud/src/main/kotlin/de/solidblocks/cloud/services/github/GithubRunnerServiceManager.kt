@@ -128,6 +128,15 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             gitHub.createRegistrationToken()
         }
 
+        val configurationEnvironmentVars = (cloud.environmentVars + runtime.environmentVars).map {
+            val resolvedValue = when (val result = context.interpolationRegistry().resolve(it.value)) {
+                is Error<String> -> return Error(result.error)
+                is Success<String> -> result.data
+            }
+
+            it.key to resolvedValue
+        }.toMap()
+
         val servers = (0..runtime.scale - 1).flatMap {
             val runnerName = "${runtime.name}-$it"
             val serverName = serverName(cloud.environmentContext, runtime.name, it)
@@ -138,7 +147,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             ) {
                 GithubRunnerUserData(
                     runnerName = runnerName,
-                    cloud.environmentVars + runtime.environmentVars,
+                    configurationEnvironmentVars,
                     githubUrl = gitHub.url.toUrl(),
                     runnerToken = runnerToken,
                     runnerLabels = runtime.labels,

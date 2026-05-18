@@ -208,7 +208,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         return if (serviceResourceGroups.hasError()) {
             Error(serviceResourceGroups.aggregateErrorMessage())
         } else {
-            Success(serviceResourceGroups.mapSuccess() + cloudResourceGroup)
+            Success(listOf(cloudResourceGroup) + serviceResourceGroups.mapSuccess())
         }
     }
 

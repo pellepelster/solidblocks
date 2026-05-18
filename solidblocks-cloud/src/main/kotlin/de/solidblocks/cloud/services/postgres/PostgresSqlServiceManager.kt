@@ -204,13 +204,22 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
         val superUserPassword = superUserPasswordSecret(cloud, runtime)
 
+        val configurationEnvironmentVars = (cloud.environmentVars + runtime.environmentVars).map {
+            val resolvedValue = when (val result = context.interpolationRegistry().resolve(it.value)) {
+                is Error<String> -> return Error(result.error)
+                is Success<String> -> result.data
+            }
+
+            it.key to resolvedValue
+        }.toMap()
+
         val userData =
             UserData(
                 setOf(defaultResources.volumes.data, superUserPassword) + backupResources.first,
                 {
                     PostgresqlUserData(
                         runtime.name,
-                        cloud.environmentVars + runtime.environmentVars,
+                        configurationEnvironmentVars,
                         it.ensureLookup(superUserPassword.asLookup()).secret,
                         it.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                         createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),

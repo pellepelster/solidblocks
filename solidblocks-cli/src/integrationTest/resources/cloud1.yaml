@@ -21,7 +21,7 @@ services:
     image: ghcr.io/pellepelster/solidblocks-hello-world:latest
     environment_vars:
       VAR1: yolo
-      VAR3: pelle123
+      VAR3: "yolo=${env:HOME}"
     endpoints:
       - container_port: 8080
     links:
