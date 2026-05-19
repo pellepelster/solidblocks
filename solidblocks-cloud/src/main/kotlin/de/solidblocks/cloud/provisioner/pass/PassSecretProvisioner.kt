@@ -7,6 +7,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.interpolation.StringInterpolationFactory
+import de.solidblocks.cloud.providers.pass.PASS_PROVIDER_TYPE
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -22,7 +24,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
     ResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
-    InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime, PassSecretLookup> {
+    InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime, PassSecretLookup>,
+    StringInterpolationFactory {
 
     private val logger = KotlinLogging.logger {}
 
@@ -55,7 +58,9 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         }
     }
 
-    override suspend fun lookup(lookup: PassSecretLookup, context: SSHProvisionerContext): PassSecretRuntime? {
+    override suspend fun lookup(lookup: PassSecretLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+
+    private fun lookupInternal(lookup: PassSecretLookup): PassSecretRuntime? {
         val result = passShow(lookup.name, passwordStoreDir)
 
         if (result == null) {
@@ -98,4 +103,16 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
     override val supportedLookupType = PassSecretLookup::class
 
     override val supportedResourceType = PassSecret::class
+
+    override val interpolationType = PASS_PROVIDER_TYPE
+
+    override fun validate(interpolation: String): Result<Unit> = when (lookupInternal(PassSecretLookup(interpolation))) {
+        is PassSecretRuntime -> Success(Unit)
+        else -> Error("pass secret '$interpolation' does not exist'")
+    }
+
+    override fun resolve(interpolation: String): Result<String> = when (val result = lookupInternal(PassSecretLookup(interpolation))) {
+        is PassSecretRuntime -> Success(result.secret.trim())
+        else -> Error("pass secret '$interpolation' does not exist'")
+    }
 }

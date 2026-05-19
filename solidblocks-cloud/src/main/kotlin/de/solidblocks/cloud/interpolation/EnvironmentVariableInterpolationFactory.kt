@@ -5,7 +5,7 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 
 class EnvironmentVariableInterpolationFactory() : StringInterpolationFactory {
-    override val type = "env"
+    override val interpolationType = "env"
 
     override fun validate(interpolation: String): Result<Unit> {
         val parts = interpolation.split(':', limit = 2)

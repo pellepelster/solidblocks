@@ -62,7 +62,11 @@ class SystemDService(override val name: String, val unit: Unit, val service: Ser
 
         service.environment.entries.forEach { sw.appendLine("Environment=\"${it.key}=${it.value}\"") }
         service.environmentFiles.forEach { sw.appendLine("EnvironmentFile=$it") }
+
         sw.appendLine("ExecStart=${service.execStart.joinToString(" ")}")
+        service.execStartPre?.also { sw.appendLine("ExecStartPre=${it.joinToString(" ")}") }
+        service.execStop?.also { sw.appendLine("ExecStop=${it.joinToString(" ")}") }
+
         service.stateDirectory?.let { sw.appendLine("StateDirectory=$it") }
         service.workingDirectory?.let { sw.appendLine("WorkingDirectory=$it") }
         service.user?.let { sw.appendLine("User=$it") }
@@ -140,7 +144,8 @@ class Service(
     val group: String? = null,
     val stateDirectory: String? = null,
     val limitNOFILE: Int? = null,
-    val execDown: List<String>? = null,
+    val execStop: List<String>? = null,
+    val execStartPre: List<String>? = null,
     val type: ServiceType? = null,
 )
 

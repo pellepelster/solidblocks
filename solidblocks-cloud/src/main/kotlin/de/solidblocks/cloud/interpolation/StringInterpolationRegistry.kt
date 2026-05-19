@@ -19,7 +19,7 @@ class StringInterpolationRegistry(val factories: List<StringInterpolationFactory
             if (parts.isEmpty() || parts[0].isEmpty()) {
                 Error("invalid empty interpolation")
             } else {
-                val factory = factories.singleOrNull { it.type == parts[0] }
+                val factory = factories.singleOrNull { it.interpolationType == parts[0] }
                 if (factory != null) {
                     factory.validate(it.removePrefix("${parts[0]}:"))
                 } else {
@@ -42,10 +42,10 @@ class StringInterpolationRegistry(val factories: List<StringInterpolationFactory
             if (parts.isEmpty() || parts[0].isEmpty()) {
                 Error("invalid empty interpolation")
             } else {
-                val factory = factories.singleOrNull { it.type == parts[0] }
+                val factory = factories.singleOrNull { it.interpolationType == parts[0] }
 
                 if (factory == null) {
-                    Error("invalid interpolation '$interpolation', could not resolve type 'invalid'")
+                    Error("invalid interpolation '$interpolation', could not resolve type '${parts[0]}'")
                 } else {
                     factory.resolve(it.removePrefix("${parts[0]}:"))
                 }

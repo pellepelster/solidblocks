@@ -12,7 +12,7 @@ class EnvironmentVariableInterpolationFactoryTest {
 
     @Test
     fun testType() {
-        factory.type shouldBe "env"
+        factory.interpolationType shouldBe "env"
     }
 
     @Test

@@ -105,7 +105,7 @@ class GenericDockerServiceUserData(
                 ),
             )
         shellScript.addCommand(MkDir(dockerWorkingDirectory))
-        shellScript.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile))
+        shellScript.addCommand(WriteFile(dockerCompose.toYaml().toByteArray(), dockerComposeFile, FilePermissions.RW_______))
 
         val dockerSystemDConfig =
             SystemDService(
@@ -125,10 +125,10 @@ class GenericDockerServiceUserData(
                         "--force-recreate",
                     ),
                     restart = Restart.ALWAYS,
-                    environment = environment,
                     workingDirectory = dockerWorkingDirectory,
-                    execDown =
+                    execStop =
                     listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
+                    execStartPre = listOf("docker", "compose", "pull", "--policy", "always"),
                 ),
                 Install(),
             )

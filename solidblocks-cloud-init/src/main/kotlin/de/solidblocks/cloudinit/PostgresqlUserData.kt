@@ -137,7 +137,7 @@ class PostgresqlUserData(
                     restart = Restart.ALWAYS,
                     environment = environment,
                     workingDirectory = dockerWorkingDirectory,
-                    execDown =
+                    execStop =
                     listOf("/usr/bin/docker", "compose", "--file", dockerComposeFile, "down"),
                 ),
                 Install(),

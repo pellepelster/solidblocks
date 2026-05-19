@@ -1,5 +1,6 @@
 package de.solidblocks.cloud
 
+import aws.smithy.kotlin.runtime.util.type
 import de.solidblocks.cloud.Constants.DEFAULT_ENVIRONMENT
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
@@ -9,6 +10,7 @@ import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.interpolation.EnvironmentVariableInterpolationFactory
+import de.solidblocks.cloud.interpolation.StringInterpolationFactory
 import de.solidblocks.cloud.interpolation.StringInterpolationRegistry
 import de.solidblocks.cloud.providers.*
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
@@ -321,7 +323,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         log.info(bold("debugging interpolation for '$interpolated'"))
 
         return CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-            val factory = StringInterpolationRegistry(listOf(EnvironmentVariableInterpolationFactory()))
+            val factory = StringInterpolationRegistry(it.registry.resourceProvisioners.filterIsInstance<StringInterpolationFactory>() + listOf(EnvironmentVariableInterpolationFactory()))
 
             when (val result = factory.validate(interpolated)) {
                 is Error<Unit> -> Error("error validating '$interpolated': ${result.error}")
