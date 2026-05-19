@@ -85,7 +85,7 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
             }
 
         return Success(
-            DockerServiceConfiguration(common.name, image, common.instance, backupConfig, endpoints, common.environmentVars, links),
+            DockerServiceConfiguration(common, image, backupConfig, endpoints, links),
         )
     }
 }

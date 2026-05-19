@@ -36,8 +36,7 @@ data class FloatingIpResponse(
     override val protection: HetznerDeleteProtectionResponse,
     val ip: String,
     val type: FloatingIpType,
-    @SerialName("assignee_id") val assigneeId: Long? = null,
-    @SerialName("assignee_type") val assigneeType: String? = null,
+    val server: Long? = null,
     val labels: Map<String, String> = emptyMap(),
     val description: String? = null,
 ) : HetznerDeleteProtectedResource<Long>

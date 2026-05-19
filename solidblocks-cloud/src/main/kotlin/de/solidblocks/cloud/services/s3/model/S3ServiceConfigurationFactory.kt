@@ -51,6 +51,6 @@ class S3ServiceConfigurationFactory : PolymorphicConfigurationFactory<S3ServiceC
                 is Success<BackupConfig> -> result.data
             }
 
-        return Success(S3ServiceConfiguration(common.name, common.environmentVars, common.instance, backup, buckets))
+        return Success(S3ServiceConfiguration(common, backup, buckets))
     }
 }

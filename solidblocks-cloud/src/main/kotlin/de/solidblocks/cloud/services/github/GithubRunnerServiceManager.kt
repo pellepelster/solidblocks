@@ -21,6 +21,7 @@ import de.solidblocks.cloud.providers.github.GitHubUrlRuntime.Repository
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
+import de.solidblocks.cloud.provisioner.context.ensureOptionalLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -29,15 +30,16 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntim
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.toResult
-import de.solidblocks.cloud.services.InstanceRuntime
 import de.solidblocks.cloud.services.ServerInfo
 import de.solidblocks.cloud.services.ServiceInfo
 import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.services.createDefaultFloatingIp
 import de.solidblocks.cloud.services.createDefaultSSHIdentity
 import de.solidblocks.cloud.services.github.model.GithubRunnerServiceConfiguration
 import de.solidblocks.cloud.services.github.model.GithubRunnerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.serverMaintenance
 import de.solidblocks.cloud.services.sshConnectCommand
+import de.solidblocks.cloud.services.toRuntime
 import de.solidblocks.cloud.status.serverStatusMarkdown
 import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.Error
@@ -141,6 +143,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
             val runnerName = "${runtime.name}-$it"
             val serverName = serverName(cloud.environmentContext, runtime.name, it)
             val defaultResources = createDefaultSSHIdentity(cloud, runtime, it)
+            val floatingIp = createDefaultFloatingIp(cloud, runtime, it)
 
             val userData = UserData(
                 setOf(),
@@ -154,7 +157,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                     packages = runtime.packages,
                     runtime.allowSudo,
                     Distributor.ubuntu,
-
+                    context.ensureOptionalLookup(floatingIp?.asLookup())?.ip,
                 ).toResult(context, defaultResources)
             }
 
@@ -173,6 +176,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                 privateIp = serverPrivateIp(runtime.index + it),
                 labels = serviceLabels(runtime) + cloudLabels(cloud.environmentContext) + Constants.indexLabels(it),
                 dependsOn = defaultResources.list().toSet(),
+                floatingIp = floatingIp?.asLookup(),
                 preApplyHook = { log ->
                     val results = runBlocking {
                         gitHub.listRunners().filter { it.name == runnerName }.map {
@@ -184,7 +188,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
                 },
             )
 
-            defaultResources.list() + listOf(server)
+            defaultResources.list() + listOf(server) + listOfNotNull(floatingIp)
         }
 
         return Success(servers)
@@ -250,13 +254,11 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
     ): Result<GithubRunnerServiceConfigurationRuntime> = Success(
         GithubRunnerServiceConfigurationRuntime(
             index,
-            configuration.name,
-            configuration.environmentVars,
+            configuration.common.toRuntime(),
             configuration.labels,
             configuration.packages,
             configuration.allowSudo,
             configuration.scale,
-            InstanceRuntime.fromConfig(configuration.instance),
         ),
     )
 

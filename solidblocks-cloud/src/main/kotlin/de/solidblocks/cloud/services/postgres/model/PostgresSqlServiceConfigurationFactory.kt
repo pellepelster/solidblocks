@@ -72,9 +72,7 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
 
         return Success(
             PostgresSqlServiceConfiguration(
-                common.name,
-                common.environmentVars,
-                common.instance,
+                common,
                 backupConfig,
                 databases,
                 majorVersion,

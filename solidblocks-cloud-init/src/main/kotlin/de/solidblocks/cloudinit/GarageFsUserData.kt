@@ -19,6 +19,7 @@ class GarageFsUserData(
     val metricsToken: String,
     val buckets: List<GarageFsBucket>,
     val enableHttps: Boolean = false,
+    val floatingIpV4: String?,
 ) : ServiceUserData {
     companion object {
         fun s3Host(serviceRootDomain: String) = "s3.$serviceRootDomain"
@@ -60,7 +61,7 @@ class GarageFsUserData(
 
         val shellScript = ShellScript()
 
-        shellScript.commonSetup()
+        shellScript.commonSetup(floatingIpV4)
 
         shellScript.addLibrary(StorageLibrary)
         shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))

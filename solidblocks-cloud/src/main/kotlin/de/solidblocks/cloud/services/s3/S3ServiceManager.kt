@@ -19,6 +19,7 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
+import de.solidblocks.cloud.provisioner.context.ensureOptionalLookup
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
 import de.solidblocks.cloud.provisioner.garagefs.layout.GarageFsLayout
@@ -136,6 +137,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                         )
                     },
                     true,
+                    context.ensureOptionalLookup(defaultResources.floatingIp?.asLookup())?.ip,
                 ).toResult(context, defaultResources.sshIdentity)
             },
         )
@@ -156,6 +158,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             privateIp = serverPrivateIp(runtime.index),
             labels = serviceLabels(runtime) + cloudLabels(cloud.environmentContext),
             dependsOn = backupResources.first + defaultResources.list(),
+            floatingIp = defaultResources.floatingIp?.asLookup(),
         )
 
         if (cloud.rootDomain == null) {
@@ -163,17 +166,13 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         }
 
         val zone = HetznerDnsZoneLookup(cloud.rootDomain)
-        val serverDnsRecord = HetznerDnsRecord(
-            serverName(cloud.environmentContext, runtime.name, 0),
-            zone,
-            listOf(server.asLookup()),
-            labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
-        )
+        val serverDnsRecord = createDefaultServerDnsRecord(cloud, runtime, server.asLookup(), defaultResources.floatingIp?.asLookup())!!
 
         val catchAllDomain = HetznerDnsRecord(
             "*.${serverName(cloud.environmentContext, runtime.name, 0)}",
             zone,
             listOf(server.asLookup()),
+            emptyList(),
             labels =
             dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
         )
@@ -183,6 +182,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     "@",
                     HetznerDnsZoneLookup(it.value),
                     listOf(server.asLookup()),
+                    emptyList(),
                     labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
                 )
             } else {
@@ -190,6 +190,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     it.value,
                     HetznerDnsZoneLookup(it.value),
                     listOf(server.asLookup()),
+                    emptyList(),
                     labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
                 )
             }
@@ -295,10 +296,8 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         return Success(
             S3ServiceConfigurationRuntime(
                 index,
-                configuration.name,
-                InstanceRuntime.fromConfig(configuration.instance),
+                configuration.common.toRuntime(),
                 BackupRuntime.fromConfig(configuration.backup),
-                configuration.environmentVars,
                 configuration.buckets.map { bucket ->
                     val manuallyManagedPublicAccessDomains = mutableSetOf<String>()
                     val managedPublicAccessDomains = mutableMapOf<String, String>()

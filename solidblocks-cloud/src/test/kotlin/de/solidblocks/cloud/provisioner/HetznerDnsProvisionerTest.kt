@@ -99,6 +99,7 @@ class HetznerDnsProvisionerTest {
                     recordName,
                     HetznerDnsZone("blcks-test.de").asLookup(),
                     listOf(serverLookup1),
+                    emptyList(),
                     labels = hetzner.defaultLabels,
                 )
             recordProvisioner.lookup(record.asLookup(), context) shouldBe null
@@ -122,6 +123,7 @@ class HetznerDnsProvisionerTest {
                     recordName,
                     HetznerDnsZone("blcks-test.de").asLookup(),
                     listOf(serverLookup2),
+                    emptyList(),
                     labels = hetzner.defaultLabels,
                 )
 

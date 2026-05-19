@@ -31,6 +31,7 @@ class PostgresqlUserDataTest {
                 backupConfiguration,
                 17,
                 "0.5.5",
+                null,
             )
 
         val server =
@@ -75,6 +76,7 @@ class PostgresqlUserDataTest {
                 backupConfiguration,
                 17,
                 "0.5.5",
+                null,
             )
 
         val recreatedServer =
@@ -117,6 +119,7 @@ class PostgresqlUserDataTest {
                 backupConfiguration,
                 17,
                 "0.5.5",
+                null,
             )
 
         val server =
@@ -161,6 +164,7 @@ class PostgresqlUserDataTest {
                 backupConfiguration,
                 17,
                 "0.5.5",
+                null,
             )
 
         val recreatedServer =

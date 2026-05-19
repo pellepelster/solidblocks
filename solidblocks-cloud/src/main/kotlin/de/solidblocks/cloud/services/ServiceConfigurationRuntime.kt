@@ -11,11 +11,22 @@ import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 
 interface ServiceConfigurationRuntime {
     val index: Int
-    val name: String
-    val instance: InstanceRuntime
+    val common: ServiceCommonRuntime
     val backup: BackupRuntime
+
+    val name: String
+        get() = common.name
+
+    val instance: InstanceRuntime
+        get() = common.instance
+
     val environmentVars: Map<String, String>
+        get() = common.environmentVars
 }
+
+data class ServiceCommonRuntime(val name: String, val useFloatingIp: Boolean, val environmentVars: Map<String, String>, val instance: InstanceRuntime)
+
+fun ServiceCommonConfig.toRuntime() = ServiceCommonRuntime(this.name, this.useFloatingIp, this.environmentVars, this.instance.toRuntime())
 
 fun ServiceConfigurationRuntime.firewall(cloud: CloudConfigurationRuntime, ports: List<Int>) = HetznerFirewall(
     firewallName(cloud.environmentContext, this.name),

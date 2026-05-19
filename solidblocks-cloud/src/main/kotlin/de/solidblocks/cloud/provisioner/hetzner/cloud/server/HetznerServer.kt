@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResource
+import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
@@ -23,10 +24,11 @@ class HetznerServer(
     val image: String = "debian-12",
     val subnet: HetznerSubnetLookup? = null,
     val privateIp: String? = null,
+    val floatingIp: HetznerFloatingIpLookup? = null,
     val preApplyHook: ((LogContext) -> Result<Unit>)? = null,
 ) : BaseLabeledInfrastructureResource<HetznerServerRuntime>(
     name,
-    setOfNotNull(subnet, userData) + volumes + userData.dependsOn + sshKeys + dependsOn,
+    setOfNotNull(subnet, userData, floatingIp) + volumes + userData.dependsOn + sshKeys + dependsOn,
     labels,
 ) {
 

@@ -7,6 +7,7 @@ import de.solidblocks.cloud.providers.CloudResourceProviderManager
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallProvisioner
+import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
@@ -66,6 +67,7 @@ class HetznerProviderManager :
     override fun createProvisioners(runtime: HetznerProviderRuntime) = listOf(
         HetznerDnsRecordProvisioner(runtime.cloudToken),
         HetznerServerProvisioner(runtime.cloudToken),
+        HetznerFloatingIpProvisioner(runtime.cloudToken),
         HetznerVolumeProvisioner(runtime.cloudToken),
         HetznerSSHKeyProvisioner(runtime.cloudToken),
         HetznerNetworkProvisioner(runtime.cloudToken),

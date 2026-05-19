@@ -4,14 +4,12 @@ import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.BackupConfig
-import de.solidblocks.cloud.services.InstanceConfig
+import de.solidblocks.cloud.services.ServiceCommonConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
 import kotlin.reflect.KClass
 
 data class PostgresSqlServiceConfiguration(
-    override val name: String,
-    override val environmentVars: Map<String, String>,
-    val instance: InstanceConfig,
+    override val common: ServiceCommonConfig,
     val backup: BackupConfig,
     val databases: List<PostgresSqlServiceDatabaseConfiguration>,
     val majorVersion: Int,

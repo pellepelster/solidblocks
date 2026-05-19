@@ -15,3 +15,15 @@ function network_wait_for_port_open() {
   done
   echo "port '${host}:${port}' is open"
 }
+
+function network_add_ipv4() {
+  local ip="${1:-}"
+  ip addr add ${1:-} dev eth0
+  tee /etc/network/interfaces.d/60-floating-ip.cfg <<EOF
+auto eth0:1
+iface eth0:1 inet static
+   address ${ip}
+   netmask 32
+EOF
+
+}

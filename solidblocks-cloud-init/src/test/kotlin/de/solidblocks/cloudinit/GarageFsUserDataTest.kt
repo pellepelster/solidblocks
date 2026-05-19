@@ -35,6 +35,7 @@ class GarageFsUserDataTest {
                 adminToken,
                 metricsToken,
                 emptyList(),
+                floatingIpV4 = null,
             )
 
         val serverContext =
@@ -59,6 +60,7 @@ class GarageFsUserDataTest {
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
                 emptyList(),
+                floatingIpV4 = null,
             )
                 .shellScript(),
         )

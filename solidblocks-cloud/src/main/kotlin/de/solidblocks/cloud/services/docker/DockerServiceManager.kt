@@ -2,7 +2,6 @@ package de.solidblocks.cloud.services.docker
 
 import de.solidblocks.cloud.Constants.cloudLabels
 import de.solidblocks.cloud.Constants.defaultServiceSubnet
-import de.solidblocks.cloud.Constants.dnsRecordLabels
 import de.solidblocks.cloud.Constants.networkName
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.serverPrivateIp
@@ -18,8 +17,7 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
-import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
+import de.solidblocks.cloud.provisioner.context.ensureOptionalLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -131,7 +129,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         }.toMap()
 
         val userData = UserData(
-            setOf(defaultResources.volumes.data) + backupResources.first,
+            defaultResources.list() + backupResources.first,
             { context ->
                 GenericDockerServiceUserData(
                     runtime.name,
@@ -148,6 +146,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                     runtime.image,
                     runtime.endpoints.associate { 80 to it.port },
                     serverFQDN = cloud.rootDomain?.let { "${serverName(cloud.environmentContext, runtime.name, 0)}.$it" },
+                    context.ensureOptionalLookup(defaultResources.floatingIp?.asLookup())?.ip,
                 ).toResult(context, defaultResources.sshIdentity)
             },
         )
@@ -166,17 +165,12 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             privateIp = serverPrivateIp(runtime.index),
             labels = serviceLabels(runtime) + cloudLabels(cloud.environmentContext),
             dependsOn = backupResources.first + defaultResources.list(),
+            floatingIp = defaultResources.floatingIp?.asLookup(),
         )
 
         val optionalResources = if (cloud.rootDomain != null) {
-            val zone = HetznerDnsZoneLookup(cloud.rootDomain)
-            val serverDnsRecord = HetznerDnsRecord(
-                serverName(cloud.environmentContext, runtime.name, 0),
-                zone,
-                listOf(server.asLookup()),
-                labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
-            )
-            listOf(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
+            val serverDnsRecord = createDefaultServerDnsRecord(cloud, runtime, server.asLookup(), defaultResources.floatingIp?.asLookup())
+            listOfNotNull(serverDnsRecord, runtime.firewall(cloud, listOf(80, 443)))
         } else {
             listOf(runtime.firewall(cloud, listOf(80)))
         }
@@ -224,10 +218,8 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         return Success(
             DockerServiceConfigurationRuntime(
                 index,
-                configuration.name,
-                configuration.environmentVars,
+                configuration.common.toRuntime(),
                 configuration.image,
-                InstanceRuntime.fromConfig(configuration.instance),
                 BackupRuntime.fromConfig(configuration.backup),
                 configuration.endpoints.map { DockerServiceEndpointConfigurationRuntime(it.port) },
                 configuration.links,

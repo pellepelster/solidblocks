@@ -55,7 +55,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             )
         }
 
-        val expectedValues = resource.values.mapNotNull { context.lookup(it)?.publicIpv4 }
+        val expectedValues = resource.servers.mapNotNull { context.lookup(it)?.publicIpv4 } + resource.floatingIps.mapNotNull { context.lookup(it)?.ip }
         if (!(expectedValues equalsIgnoreOrder runtime.values)) {
             changes.add(
                 ResourceDiffItem(
@@ -85,7 +85,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                 ?: return Error("zone '${resource.asLookup().zone.name}' not found'")
 
         val serverIps =
-            resource.values.mapNotNull {
+            resource.servers.mapNotNull {
                 val runtime = context.lookup(it)
 
                 if (runtime == null) {
@@ -98,6 +98,19 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
 
                 runtime?.publicIpv4
             }
+
+        val floatingIps =
+            resource.floatingIps.mapNotNull {
+                val runtime = context.lookup(it)
+
+                if (runtime == null) {
+                    logError("could not resolve server ${it.logText()}")
+                }
+
+                runtime?.ip
+            }
+
+        val allIps = serverIps + floatingIps
 
         if (current != null) {
             if (current.ttl != resource.ttl) {
@@ -116,9 +129,9 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                 DnsRRSetsUpdateRequest(resource.labels),
             )
 
-            if (!(current.values equalsIgnoreOrder serverIps)) {
+            if (!(current.values equalsIgnoreOrder allIps)) {
                 logger.info {
-                    "updating ${resource.name}/${resource.type} values to ${serverIps.joinToString(",")}"
+                    "updating ${resource.name}/${resource.type} values to ${allIps.joinToString(",")}"
                 }
                 val ttlUpdateResult =
                     api.dnsRrSets(zone.name)
@@ -126,7 +139,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                             resource.name,
                             resource.type,
                             DnsRRSetsRecordsUpdateRequest(
-                                serverIps.map { DnsRRSetRecord(it) },
+                                allIps.map { DnsRRSetRecord(it) },
                             ),
                         )
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
@@ -134,7 +147,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                 }
             }
         } else {
-            createRRSet(zone, resource, serverIps)
+            createRRSet(zone, resource, allIps)
         }
 
         return lookup(resource.asLookup(), context)?.let { Success(it) }

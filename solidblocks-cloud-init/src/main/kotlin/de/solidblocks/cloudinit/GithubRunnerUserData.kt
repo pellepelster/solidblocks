@@ -25,6 +25,7 @@ class GithubRunnerUserData(
     val packages: List<String>,
     val allowSudo: Boolean,
     val distributor: Distributor,
+    val floatingIpV4: String?,
 ) : ServiceUserData {
 
     private val runnerUser = "github-runner"
@@ -46,7 +47,7 @@ class GithubRunnerUserData(
     private fun scriptInternal(variables: Variables): ShellScript {
         val shellScript = ShellScript()
 
-        shellScript.commonSetup()
+        shellScript.commonSetup(floatingIpV4)
 
         shellScript.addLibrary(GithubLibrary)
 

@@ -89,6 +89,6 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
                 is Success<Int> -> result.data
             }
 
-        return Success(GithubRunnerServiceConfiguration(common.name, common.instance, labels, packages, allowSudo, common.environmentVars, scale))
+        return Success(GithubRunnerServiceConfiguration(common, labels, packages, allowSudo, scale))
     }
 }

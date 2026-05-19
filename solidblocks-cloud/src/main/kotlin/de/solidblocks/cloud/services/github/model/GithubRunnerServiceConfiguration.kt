@@ -2,17 +2,15 @@ package de.solidblocks.cloud.services.github.model
 
 import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
 import de.solidblocks.cloud.providers.github.GithubProviderConfiguration
-import de.solidblocks.cloud.services.InstanceConfig
+import de.solidblocks.cloud.services.ServiceCommonConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
 import kotlin.reflect.KClass
 
 data class GithubRunnerServiceConfiguration(
-    override val name: String,
-    val instance: InstanceConfig,
+    override val common: ServiceCommonConfig,
     val labels: List<String>,
     val packages: List<String>,
     val allowSudo: Boolean,
-    override val environmentVars: Map<String, String>,
     val scale: Int,
 ) : ServiceConfiguration {
     override val type = "github_runner"

@@ -4,17 +4,15 @@ import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
 import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
 import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.BackupConfig
-import de.solidblocks.cloud.services.InstanceConfig
+import de.solidblocks.cloud.services.ServiceCommonConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
 import kotlin.reflect.KClass
 
 data class DockerServiceConfiguration(
-    override val name: String,
+    override val common: ServiceCommonConfig,
     val image: String,
-    val instance: InstanceConfig,
     val backup: BackupConfig,
     val endpoints: List<DockerServiceEndpointConfiguration>,
-    override val environmentVars: Map<String, String>,
     val links: List<String>,
 ) : ServiceConfiguration {
     override val type = "docker"

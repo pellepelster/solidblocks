@@ -95,3 +95,9 @@ abstract class BaseSSHProvisionerContextImpl(
 fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ProvisionerContext.ensureLookup(lookup: ResourceLookupType): RuntimeType = this.lookup(lookup).let {
     it ?: throw RuntimeException("could not find resource ${lookup.logText()}")
 }
+
+fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ProvisionerContext.ensureOptionalLookup(lookup: ResourceLookupType?): RuntimeType? = if (lookup == null) {
+    return null
+} else {
+    this.ensureLookup(lookup)
+}

@@ -2,6 +2,7 @@ package de.solidblocks.cloud.services
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.Keyword
+import de.solidblocks.cloud.configuration.OptionalBooleanKeyword
 import de.solidblocks.cloud.configuration.OptionalStringMapKeyword
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
 import de.solidblocks.cloud.configuration.StringKeyword
@@ -13,6 +14,13 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 
 object ServiceConfigurationFactory {
+
+    val SERVICE_FLOATING_IP_KEYWORD =
+        OptionalBooleanKeyword(
+            "use_floating_ip",
+            KeywordHelp("use floating ip for public server access"),
+            false,
+        )
 
     val SERVICE_NAME_KEYWORD =
         StringKeyword(
@@ -35,6 +43,7 @@ object ServiceConfigurationFactory {
         listOf<Keyword<*>>(
             SERVICE_NAME_KEYWORD,
             SERVICE_ENVIRONMENT_VARS_KEYWORD,
+            SERVICE_FLOATING_IP_KEYWORD,
         ) + InstanceConfigurationFactory.keywords
 
     fun Map<String, String>.validateInterpolatedStrings(serviceName: String): Result<Unit> {
@@ -74,11 +83,17 @@ object ServiceConfigurationFactory {
                 is Success<Map<String, String>?> -> result.data ?: emptyMap()
             }
 
+        val floatingIp =
+            when (val result = SERVICE_FLOATING_IP_KEYWORD.parse(this)) {
+                is Error<Boolean> -> return Error(result.error)
+                is Success<Boolean> -> result.data
+            }
+
         when (val result = environmentVars.validateInterpolatedStrings(name)) {
             is Error<Unit> -> return Error(result.error)
             else -> {}
         }
 
-        return Success(ServiceCommonConfig(name, environmentVars, instance))
+        return Success(ServiceCommonConfig(name, floatingIp, environmentVars, instance))
     }
 }

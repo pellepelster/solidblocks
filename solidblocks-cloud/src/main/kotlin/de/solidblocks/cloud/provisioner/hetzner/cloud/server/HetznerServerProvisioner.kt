@@ -165,6 +165,19 @@ class HetznerServerProvisioner(hcloudToken: String) :
             }
         }
 
+        if (resource.floatingIp != null) {
+            val floatingIp =
+                context.lookup(resource.floatingIp)
+                    ?: return Error("floating IP '${resource.floatingIp.name}' not found")
+
+            if (floatingIp.assigneeId != server.id) {
+                val action = api.floatingIps.assign(floatingIp.id, server.id)
+                api.floatingIps.waitForAction(action) {
+                    log.info("waiting for assignment of ${resource.floatingIp.logText()} to ${resource.logText()}")
+                }
+            }
+        }
+
         return lookup(resource.asLookup(), context)?.let {
             log.debug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}")
             Success(it)
@@ -187,6 +200,16 @@ class HetznerServerProvisioner(hcloudToken: String) :
             val sshKeysHash =
                 labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
             changes.addAll(createLabelDiff(resource, runtime))
+
+            if ((runtime.publicIpv4 != null) != (resource.floatingIp == null)) {
+                changes.add(
+                    ResourceDiffItem(
+                        "public IpV4 address",
+                        triggersRecreate = true,
+                        changed = true,
+                    ),
+                )
+            }
 
             val sshKeyHasPendingChanges = resource.sshKeys.any { context.hasPendingChange(it) }
             if (sshKeyHasPendingChanges) {
@@ -235,6 +258,22 @@ class HetznerServerProvisioner(hcloudToken: String) :
                         actualValue = runtime.privateIpv4,
                     ),
                 )
+            }
+
+            if (resource.floatingIp != null) {
+                val floatingIp = context.lookup(resource.floatingIp)
+
+                if (floatingIp == null || floatingIp.assigneeId != runtime.id) {
+                    changes.add(
+                        ResourceDiffItem(
+                            "floating ip",
+                            triggersRecreate = false,
+                            changed = true,
+                            expectedValue = resource.floatingIp.name,
+                            actualValue = floatingIp?.assigneeId?.toString() ?: "<none>",
+                        ),
+                    )
+                }
             }
 
             val userData = try {

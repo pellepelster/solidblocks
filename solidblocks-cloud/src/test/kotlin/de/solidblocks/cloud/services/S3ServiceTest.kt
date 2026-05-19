@@ -56,9 +56,7 @@ class S3ServiceTest {
                     0,
                     cloud,
                     S3ServiceConfiguration(
-                        "bucket1",
-                        emptyMap(),
-                        InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+                        ServiceCommonConfig("bucket1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
                         BackupConfig(16, 7),
                         listOf(
                             S3ServiceBucketConfiguration("bucket1", false, emptyList(), emptyList()),
@@ -91,9 +89,7 @@ class S3ServiceTest {
                     0,
                     cloud,
                     S3ServiceConfiguration(
-                        "bucket1",
-                        emptyMap(),
-                        InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
+                        ServiceCommonConfig("bucket1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
                         BackupConfig(16, 7),
                         listOf(
                             S3ServiceBucketConfiguration(

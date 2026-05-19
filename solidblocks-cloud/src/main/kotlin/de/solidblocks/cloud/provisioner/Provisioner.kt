@@ -118,17 +118,18 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
         val result = mutableListOf<ResourceDiff>()
 
         for (resource in resources) {
-            log.debug("creating diff for ${resource.logText()}")
+            log.info("creating diff for ${resource.logText()}")
+            val diffLog = log.indent()
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
                 val diff =
                     registry.diff<BaseResource>(resource, context)
                         ?: return@runBlocking Error("diff failed for ${resource.logText()} (null)")
 
-                log.debug("diff status for ${diff.resource.logText()} is '${diff.status}'")
+                diffLog.debug("diff status for ${diff.resource.logText()} is '${diff.status}'")
                 result.add(diff)
 
-                log.debug("finished diff for ${resource.logText()}")
+                diffLog.debug("finished diff for ${resource.logText()}")
             } catch (e: Exception) {
                 logger.error(e) { "diff failed for ${resource.logText()}" }
 

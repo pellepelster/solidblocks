@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.services
 
 import de.solidblocks.cloud.Constants.cloudLabels
+import de.solidblocks.cloud.Constants.dnsRecordLabels
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.volumeLabels
@@ -14,6 +15,10 @@ import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
+import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIp
+import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
@@ -25,6 +30,7 @@ import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.SHORT_WAIT
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.hetzner.cloud.resources.FloatingIpType
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.toPem
@@ -64,18 +70,44 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
     val supportedRuntime: KClass<R>
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.forService(service: C): ServiceManager<C, R> =
     this.single { it.supportedConfiguration == service::class }.createManager() as ServiceManager<C, R>? ?: throw RuntimeException("no service found for '${service::class.qualifiedName}'")
 
-data class DefaultServerResources(val volumes: DefaultServerVolumes, val sshIdentity: ServerSSHIdentityResources) {
-    fun list() = volumes.list() + sshIdentity.list()
+data class DefaultServerResources(val volumes: DefaultServerVolumes, val sshIdentity: ServerSSHIdentityResources, val floatingIp: HetznerFloatingIp?) {
+    fun list() = volumes.list().toSet() + sshIdentity.list().toSet() + listOfNotNull(floatingIp).toSet()
+}
+
+data class DefaultNetworkResources(val floatingIp: HetznerFloatingIp?)
+
+fun createDefaultFloatingIp(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): HetznerFloatingIp? {
+    val serverName = serverName(cloud.environmentContext, runtime.name, index)
+    return if (runtime.common.useFloatingIp) {
+        HetznerFloatingIp(serverName, FloatingIpType.ipv4, runtime.instance.locationWithDefault(cloud.hetznerProviderRuntime()))
+    } else {
+        null
+    }
+}
+
+fun createDefaultServerDnsRecord(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, server: HetznerServerLookup, floatingIp: HetznerFloatingIpLookup?) = if (cloud.rootDomain != null) {
+    val zone = HetznerDnsZoneLookup(cloud.rootDomain)
+    HetznerDnsRecord(
+        serverName(cloud.environmentContext, runtime.name, 0),
+        zone,
+        floatingIp?.let { emptyList() } ?: listOf(server),
+        listOfNotNull(floatingIp),
+        labels = dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
+    )
+} else {
+    null
 }
 
 fun ServiceManager<*, *>.createDefaultServerResources(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): DefaultServerResources {
     val serverSSHIdentity = createDefaultSSHIdentity(cloud, runtime, index)
     val serverVolumes = createDefaultServerVolumes(cloud, runtime, index)
+    val floatingIp = createDefaultFloatingIp(cloud, runtime, index)
 
-    return DefaultServerResources(serverVolumes, serverSSHIdentity)
+    return DefaultServerResources(serverVolumes, serverSSHIdentity, floatingIp)
 }
 
 data class ServerSSHIdentityResources(val rsaSecret: PassSecret, val ed25519Secret: PassSecret) {

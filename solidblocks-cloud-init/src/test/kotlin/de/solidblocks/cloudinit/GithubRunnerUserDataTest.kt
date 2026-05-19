@@ -22,6 +22,7 @@ class GithubRunnerUserDataTest {
             listOf("zip"),
             false,
             Distributor.debian,
+            floatingIpV4 = null,
         )
 
         val serverContext =

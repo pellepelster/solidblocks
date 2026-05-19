@@ -33,6 +33,7 @@ class PostgresqlUserData(
     val backupConfiguration: BackupConfiguration,
     val postgresMajorVersion: Int,
     val solidblocksVersion: String,
+    val floatingIpV4: String?,
 ) : ServiceUserData {
 
     companion object {
@@ -45,7 +46,7 @@ class PostgresqlUserData(
 
         val shellScript = ShellScript()
 
-        shellScript.commonSetup()
+        shellScript.commonSetup(floatingIpV4)
 
         shellScript.addLibrary(DockerLibrary)
         shellScript.addLibrary(StorageLibrary)

@@ -19,6 +19,7 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
+import de.solidblocks.cloud.provisioner.context.ensureOptionalLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -225,6 +226,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                         createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                         runtime.majorVersion,
                         solidblocksVersion(),
+                        context.ensureOptionalLookup(defaultResources.floatingIp?.asLookup())?.ip,
                     ).toResult(it, defaultResources.sshIdentity)
                 },
             )
@@ -245,6 +247,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 privateIp = serverPrivateIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud.environmentContext),
                 dependsOn = backupResources.first + defaultResources.list(),
+                floatingIp = defaultResources.floatingIp?.asLookup(),
             )
 
         val databaseResources =
@@ -305,10 +308,8 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
         return Success(
             PostgresSqlServiceConfigurationRuntime(
                 index,
-                configuration.name,
-                InstanceRuntime.fromConfig(configuration.instance),
+                configuration.common.toRuntime(),
                 BackupRuntime.fromConfig(configuration.backup),
-                configuration.environmentVars,
                 configuration.databases.map {
                     PostgresSqlServiceDatabaseConfigurationRuntime(
                         it.name,

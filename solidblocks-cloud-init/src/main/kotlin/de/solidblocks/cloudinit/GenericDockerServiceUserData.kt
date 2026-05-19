@@ -34,6 +34,7 @@ class GenericDockerServiceUserData(
     val dockerImage: String,
     val ports: Map<Int, Int>,
     val serverFQDN: String?,
+    val floatingIpV4: String?,
 ) : ServiceUserData {
     override fun shellScript(): ShellScript {
         val storageMount = "/storage/data"
@@ -64,8 +65,7 @@ class GenericDockerServiceUserData(
 
         val shellScript = ShellScript()
 
-        shellScript.commonSetup()
-
+        shellScript.commonSetup(floatingIpV4)
         shellScript.addLibrary(StorageLibrary)
         shellScript.addCommand(StorageLibrary.Mount(dataDevice, storageMount))
         shellScript.addLibrary(DockerLibrary)

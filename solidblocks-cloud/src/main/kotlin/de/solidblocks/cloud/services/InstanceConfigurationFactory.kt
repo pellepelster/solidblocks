@@ -16,12 +16,10 @@ import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
 data class InstanceRuntime(val volumeSize: Int, val hetznerLocation: HetznerLocation?, val hetznerInstanceType: HetznerServerType?) {
-    companion object {
-        fun fromConfig(config: InstanceConfig) = InstanceRuntime(config.volumeSize, config.hetznerLocation, config.hetznerInstanceType)
-    }
-
     fun locationWithDefault(runtime: HetznerProviderRuntime) = hetznerLocation ?: runtime.defaultLocation1
 }
+
+fun InstanceConfig.toRuntime() = InstanceRuntime(this.volumeSize, this.hetznerLocation, this.hetznerInstanceType)
 
 object InstanceConfigurationFactory {
 

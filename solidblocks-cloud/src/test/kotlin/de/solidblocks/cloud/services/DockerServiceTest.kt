@@ -62,23 +62,19 @@ class DockerServiceTest {
             emptyList(),
             listOf(
                 DockerServiceConfiguration(
-                    "docker2",
+                    ServiceCommonConfig("docker2", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
                     "image2",
-                    InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
                     BackupConfig(16, 7),
                     listOf(DockerServiceEndpointConfiguration(8080)),
-                    emptyMap(),
                     listOf("docker1"),
                 ),
             ),
         )
         val configuration = DockerServiceConfiguration(
-            "docker1",
+            ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
             "image1",
-            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
             BackupConfig(16, 7),
             listOf(DockerServiceEndpointConfiguration(8080)),
-            emptyMap(),
             listOf("docker2"),
         )
 
@@ -99,12 +95,10 @@ class DockerServiceTest {
     fun testInvalidLink() {
         val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
         val configuration = DockerServiceConfiguration(
-            "docker1",
+            ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
             "image11",
-            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
             BackupConfig(16, 7),
             listOf(DockerServiceEndpointConfiguration(8080)),
-            emptyMap(),
             listOf("docker3"),
         )
 
@@ -121,12 +115,10 @@ class DockerServiceTest {
     @Test
     fun testSelfLink() {
         val configuration = DockerServiceConfiguration(
-            "docker1",
+            ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
             "image1",
-            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
             BackupConfig(16, 7),
             listOf(DockerServiceEndpointConfiguration(8080)),
-            emptyMap(),
             listOf("docker1"),
         )
         val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), listOf(configuration))
@@ -145,15 +137,13 @@ class DockerServiceTest {
     fun testDuplicatedPortConfig() {
         val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
         val configuration = DockerServiceConfiguration(
-            "docker1",
+            ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
             "image1",
-            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
             BackupConfig(16, 7),
             listOf(
                 DockerServiceEndpointConfiguration(8080),
                 DockerServiceEndpointConfiguration(8080),
             ),
-            emptyMap(),
             emptyList(),
         )
 
@@ -171,12 +161,10 @@ class DockerServiceTest {
     fun testNoEndpointConfig() {
         val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
         val configuration = DockerServiceConfiguration(
-            "docker1",
+            ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
             "image1",
-            InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23),
             BackupConfig(16, 7),
             emptyList(),
-            emptyMap(),
             emptyList(),
         )
 
