@@ -48,8 +48,8 @@ To create a backup of your sensitive data using paperback, execute the following
 #### Write secrets to a file
 
 Depending on the type of secrets you handle, you should consider running the backup process on a dedicated, non-networked
-machine that is booted from USB using a clean and verified ephemeral operating system, for 
-example, [grml](https://grml.org/) or [knoppix](http://www.knoppix.org/).  
+machine that is booted from USB using a clean and verified ephemeral operating system, for
+example, [grml](https://grml.org/) or [knoppix](http://www.knoppix.org/).
 
 **backup.txt**
 ```
@@ -68,8 +68,7 @@ paperback backup --quorum-size <quorum> --shards <key_shards> backup.txt
 
 #### Distribute PDFs
 
-`paperback` backup will create a main document with a unique `document_id` and `n` key shards with unique `key_shard_id`
-s
+`paperback` backup will create a main document with a unique `document_id` and `n` key shards with unique `key_shard_id`s
 
 ```
 main_document-<document_id>.pdf
@@ -84,7 +83,7 @@ Each storage location should contain a copy of the main document and a single ke
 {{% notice warning %}}
 When printing the documents, please keep in mind that the printer may keep your printed documents in memory or on disk. 
 
-Also consider to user archival paper, which is a grade of paper that is designed to last longer than ordinary copy paper.
+Also consider using archival paper, which is a grade of paper that is designed to last longer than ordinary copy paper.
 {{% /notice %}}
 
 ##### Main document
