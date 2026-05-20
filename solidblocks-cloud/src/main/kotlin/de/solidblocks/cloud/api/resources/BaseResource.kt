@@ -11,4 +11,17 @@ abstract class BaseResource(val name: String, val dependsOn: Set<BaseResource>) 
 
         return "$simpleName '${this.name}'"
     }
+
+    fun recursiveDependencies(): MutableSet<BaseResource> {
+        val allDependsOn = mutableSetOf<BaseResource>()
+        collectDependsOn(this, allDependsOn)
+        return allDependsOn
+    }
+
+    private fun collectDependsOn(resource: BaseResource, dependsOn: MutableSet<BaseResource>) {
+        dependsOn.addAll(resource.dependsOn)
+        resource.dependsOn.forEach {
+            collectDependsOn(it, dependsOn)
+        }
+    }
 }

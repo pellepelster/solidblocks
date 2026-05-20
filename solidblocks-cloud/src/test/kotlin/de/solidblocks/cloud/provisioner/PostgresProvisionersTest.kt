@@ -127,9 +127,9 @@ class PostgresProvisionersTest {
                 sshClient,
             )
 
-        val superUserPassword = PassSecret("super_user_password", RandomSecret())
-        val password1 = PassSecret("password1", RandomSecret())
-        val password2 = PassSecret("password2", RandomSecret())
+        val superUserPassword = PassSecret("super_user_password", RandomSecret(), true)
+        val password1 = PassSecret("password1", RandomSecret(), true)
+        val password2 = PassSecret("password2", RandomSecret(), true)
 
         runBlocking {
             val username = UUID.randomUUID().toString()

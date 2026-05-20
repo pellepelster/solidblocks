@@ -14,6 +14,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.SecretInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.types.backup.backupSecretResource
@@ -72,7 +73,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         serviceRegistrations,
     )
 
-    fun plan(log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
+    fun plan(taintCallback: (BaseInfrastructureResource<*>) -> Boolean, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> = runBlocking {
         val provisioner = createProvisioner()
         log.info(bold("planning changes for cloud configuration '${runtime.environmentContext.cloud}'"))
 
@@ -81,7 +82,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             is Success -> result.data
         }
 
-        return@runBlocking provisioner.diff(resourceGroups, context, log)
+        return@runBlocking provisioner.diff(resourceGroups, taintCallback, context, log)
     }
 
     fun info(runtime: CloudConfigurationRuntime): Result<String> = runBlocking {
@@ -125,12 +126,19 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         Success(CloudInfo(services))
     }
 
-    fun apply(log: LogContext): Result<Unit> = runBlocking {
+    fun apply(taintSecrets: Boolean, log: LogContext): Result<Unit> = runBlocking {
         val provisioner = createProvisioner()
 
-        val diffs = when (val result = plan(log)) {
+        val diffs = when (
+            val result = plan({
+                if (taintSecrets) {
+                    it is SecretInfrastructureResource
+                } else {
+                    false
+                }
+            }, log)
+        ) {
             is Error<Map<ResourceGroup, List<ResourceDiff>>> -> return@runBlocking Error<Unit>(result.error)
-
             is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
         }
 

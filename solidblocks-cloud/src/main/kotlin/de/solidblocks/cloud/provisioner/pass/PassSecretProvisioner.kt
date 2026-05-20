@@ -85,7 +85,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
     override suspend fun apply(resource: PassSecret, context: ProvisionerApplyContext, log: LogContext): Result<PassSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
-        if (current != null && !resource.tainted && resource.secretGenerator.isEphemeral()) {
+        if (current != null && !resource.isTainted() && resource.secretGenerator.isEphemeral()) {
             return Success(current)
         }
 

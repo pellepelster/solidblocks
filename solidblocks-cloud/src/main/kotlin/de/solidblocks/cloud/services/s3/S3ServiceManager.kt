@@ -84,6 +84,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 length = 64,
                 allowedChars = ('a'..'f') + ('0'..'9'),
             ),
+            true,
         )
 
         val rpcSecret = PassSecret(
@@ -92,6 +93,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 length = 64,
                 allowedChars = ('a'..'f') + ('0'..'9'),
             ),
+            true,
         )
 
         val metricsToken = PassSecret(
@@ -100,6 +102,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 length = 64,
                 allowedChars = ('a'..'f') + ('0'..'9'),
             ),
+            true,
         )
 
         val configurationEnvironmentVars = (cloud.environmentVars + runtime.environmentVars).map {
@@ -227,6 +230,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     PassSecret(
                         secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "secret_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
+                        true,
                         dependsOn = setOf(accessKey.asLookup()),
                     ),
                 )
@@ -235,6 +239,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                     PassSecret(
                         secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "access_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).id },
+                        true,
                         dependsOn = setOf(accessKey.asLookup()),
                     ),
                 )
@@ -256,6 +261,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         val s3HostSecret = PassSecret(
             secretPath(cloud.environmentContext, runtime, listOf("endpoints", "s3_host")),
             StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
+            true,
         )
 
         return Success(listOf(s3HostSecret, firewall, server, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources + defaultResources.list())
@@ -388,10 +394,10 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             export SECRET_KEY="$(pass ${secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKey.name, "secret_key"))})"
             export S3_HOST="$(pass ${secretPath(cloud.environmentContext, runtime, listOf("endpoints", "s3_host"))})"
 
-            s3cmd --host-bucket "%(bucket).${'$'}{S3_HOST} \
-                --host ${'$'}{S3_HOST} \
-                --access_key ${'$'}{ACCESS_KEY} \
-                --secret_key ${'$'}{SECRET_KEY} \
+            s3cmd --host-bucket "%(bucket).${'$'}{S3_HOST}" \
+                --host "${'$'}{S3_HOST}" \
+                --access_key "${'$'}{ACCESS_KEY}" \
+                --secret_key "${'$'}{SECRET_KEY}" \
                 ls s3://${bucket.name}
 
                     """.trimIndent(),

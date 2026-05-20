@@ -258,10 +258,10 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         }
     }
 
-    fun apply(runtime: CloudConfigurationRuntime): Result<String> {
+    fun apply(runtime: CloudConfigurationRuntime, tainSecrets: Boolean): Result<String> {
         val log = LogContext.default()
         CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-            when (val result = it.apply(log)) {
+            when (val result = it.apply(tainSecrets, log)) {
                 is Error<Unit> -> {
                     writeSshConfig(runtime)
                     return Error<String>(result.error)
@@ -349,7 +349,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
     fun plan(runtime: CloudConfigurationRuntime): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val log = LogContext.default()
         CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-            return it.plan(log)
+            return it.plan({ false }, log)
         }
     }
 }

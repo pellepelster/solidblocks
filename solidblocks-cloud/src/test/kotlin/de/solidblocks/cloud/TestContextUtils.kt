@@ -59,7 +59,7 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
 
     val secrets = mutableMapOf<String, String>()
 
-    override suspend fun createSecret(path: String, secret: String): Result<Unit> {
+    override suspend fun createSecret(path: String, secret: String, taintable: Boolean): Result<Unit> {
         secrets[path] = secret
         return Success(Unit)
     }

@@ -102,6 +102,7 @@ class AwsIamUserProvisioner(
             false
         }
 
+        // TODO handle tainting
         if (!exists) {
             log.info("creating IAM user '${resource.name}'")
             client.createUser(CreateUserRequest { userName = resource.name })
@@ -112,13 +113,13 @@ class AwsIamUserProvisioner(
                 },
             )
 
-            when (val result = context.createSecret(accessKeySecretPath(context.environment, resource.name), keys.accessKey!!.accessKeyId)) {
+            when (val result = context.createSecret(accessKeySecretPath(context.environment, resource.name), keys.accessKey!!.accessKeyId, false)) {
                 is Error<Unit> -> return@use Error(result.error)
                 is Success<Unit> -> {
                 }
             }
 
-            when (val result = context.createSecret(S3BackupProviderManager.secretKeySecretPath(context.environment, resource.name), keys.accessKey!!.secretAccessKey)) {
+            when (val result = context.createSecret(S3BackupProviderManager.secretKeySecretPath(context.environment, resource.name), keys.accessKey!!.secretAccessKey, false)) {
                 is Error<Unit> -> return@use Error(result.error)
                 is Success<Unit> -> {
                 }

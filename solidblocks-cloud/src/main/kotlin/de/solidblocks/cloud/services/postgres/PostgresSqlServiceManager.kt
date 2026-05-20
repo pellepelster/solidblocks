@@ -59,6 +59,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): PassSecret = PassSecret(
         secretPath(cloud.environmentContext, runtime, listOf("superuser", "password")),
         RandomSecret(),
+        true,
     )
 
     override fun status(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: SSHProvisionerContext): Result<String> {
@@ -276,7 +277,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     }
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
-        PassSecret(secretPath(cloud.environmentContext, runtime, listOf(database.name, "password")), RandomSecret())
+        PassSecret(secretPath(cloud.environmentContext, runtime, listOf(database.name, "password")), RandomSecret(), true)
 
     fun defaultDatabaseUserName(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) = database.name
 

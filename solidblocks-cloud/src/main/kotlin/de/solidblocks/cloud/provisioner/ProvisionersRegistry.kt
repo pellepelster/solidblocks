@@ -58,6 +58,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
 
     suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = provisioner(resource).diff(resource, context)
 
+    @Suppress("UNCHECKED_CAST")
     suspend fun <LookupType> destroy(lookup: LookupType, context: SSHProvisionerContext, log: LogContext): Boolean {
         val provisioner = provisioner(lookup!!.javaClass) as InfrastructureResourceProvisioner<Any, Any, LookupType>
         return provisioner.destroy(lookup, context, log)

@@ -124,6 +124,7 @@ fun createDefaultSSHIdentity(cloud: CloudConfigurationRuntime, runtime: ServiceC
             // TODO for some reason ssh-keygen -yf refuses to derive public key from private openssh RSA key
             keyPair.toPem().privateKey
         },
+        true,
     )
 
     val sshIdentityED25519Secret = PassSecret(
@@ -132,6 +133,7 @@ fun createDefaultSSHIdentity(cloud: CloudConfigurationRuntime, runtime: ServiceC
             val keyPair = SSHKeyUtils.ED25519.generate()
             SSHKeyUtils.privateKeyToOpenSsh(keyPair.private)
         },
+        true,
     )
 
     return ServerSSHIdentityResources(sshIdentityRsaSecret, sshIdentityED25519Secret)

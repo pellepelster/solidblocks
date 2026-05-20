@@ -30,13 +30,14 @@ class PassSecretProvisionerTest {
     fun testFlow() {
         val secretPath = "testCloudName/some/extra/path/secret1"
 
-        val randomSecret = PassSecret(secretPath, RandomSecret(13))
-        val staticSecret = PassSecret(secretPath, StaticSecret { "static-secret" })
+        val randomSecret = PassSecret(secretPath, RandomSecret(13), true)
+        val staticSecret = PassSecret(secretPath, StaticSecret { "static-secret" }, true)
         val oneTimeSecret = PassSecret(
             secretPath,
             OneTimeGeneratedSecret {
                 "onetime-secret"
             },
+            true,
         )
         val provisioner = PassSecretProvisioner(defaultPassDir())
 

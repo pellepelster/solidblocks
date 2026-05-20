@@ -36,6 +36,7 @@ fun backupSecretResource(runtime: CloudConfigurationRuntime) = PassSecret(
         length = 32,
         allowedChars = ('a'..'f') + ('0'..'9'),
     ),
+    false,
 )
 
 fun createBackupResources(

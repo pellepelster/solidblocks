@@ -201,16 +201,6 @@ class HetznerServerProvisioner(hcloudToken: String) :
                 labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
             changes.addAll(createLabelDiff(resource, runtime))
 
-            if ((runtime.publicIpv4 != null) != (resource.floatingIp == null)) {
-                changes.add(
-                    ResourceDiffItem(
-                        "public IpV4 address",
-                        triggersRecreate = true,
-                        changed = true,
-                    ),
-                )
-            }
-
             val sshKeyHasPendingChanges = resource.sshKeys.any { context.hasPendingChange(it) }
             if (sshKeyHasPendingChanges) {
                 changes.add(

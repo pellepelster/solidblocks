@@ -23,12 +23,13 @@ class ProvisionerApplyContextImpl(
 
     override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
 
-    override suspend fun createSecret(path: String, secret: String): Result<Unit> {
+    override suspend fun createSecret(path: String, secret: String, taintable: Boolean): Result<Unit> {
         val secret = PassSecret(
             path,
             OneTimeGeneratedSecret(secret = {
                 secret
             }),
+            taintable,
         )
 
         return when (

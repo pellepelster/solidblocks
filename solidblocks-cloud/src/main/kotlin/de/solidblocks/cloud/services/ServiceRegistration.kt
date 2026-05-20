@@ -14,6 +14,7 @@ interface ServiceRegistration<C : ServiceConfiguration, R : ServiceConfiguration
     fun createFactory(): ConfigurationFactory<C>
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> List<ServiceRegistration<*, *>>.managerForService(runtime: R): ServiceManager<C, R> =
     this.singleOrNull { it.supportedRuntime == runtime::class }?.createManager()
         as ServiceManager<C, R>?

@@ -4,6 +4,8 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import de.solidblocks.cli.cloud.help.CloudHelpCommand.Companion.printMarkdown
 import de.solidblocks.cloud.CloudManager
@@ -14,6 +16,8 @@ import de.solidblocks.utils.logError
 
 class CloudApplyCommand : CliktCommand(name = "apply") {
     override fun help(context: Context) = "roll out a cloud configuration"
+
+    private val taintSecrets by option(help = "invalidates all secrets and forces re-creation of generated secrets").flag(default = false)
 
     private val configFile by argument().file(mustExist = true)
 
@@ -29,6 +33,6 @@ class CloudApplyCommand : CliktCommand(name = "apply") {
                 is Success<CloudConfigurationRuntime> -> result.data
             }
 
-        printMarkdown(manager.apply(runtime))
+        printMarkdown(manager.apply(runtime, taintSecrets))
     }
 }

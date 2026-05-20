@@ -42,7 +42,7 @@ interface ValidationContext {
 }
 
 interface ProvisionerApplyContext : SSHProvisionerContext {
-    suspend fun createSecret(path: String, secret: String): Result<Unit>
+    suspend fun createSecret(path: String, secret: String, taintable: Boolean): Result<Unit>
 }
 
 interface ProvisionerDiffContext : SSHProvisionerContext {

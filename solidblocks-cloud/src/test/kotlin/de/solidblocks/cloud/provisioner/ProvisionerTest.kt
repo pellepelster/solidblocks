@@ -43,6 +43,7 @@ class ProvisionerTest {
                 provisioner
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource1, resource2Fail))),
+                        { false },
                         TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
@@ -67,6 +68,7 @@ class ProvisionerTest {
                         listOf(
                             ResourceGroup("common", listOf(resource1, resource2)),
                         ),
+                        { false },
                         TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
@@ -99,6 +101,7 @@ class ProvisionerTest {
                         listOf(
                             ResourceGroup("common", listOf(resource2ForceRecreateChange)),
                         ),
+                        { false },
                         TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )

@@ -46,6 +46,7 @@ object ServiceConfigurationFactory {
             SERVICE_FLOATING_IP_KEYWORD,
         ) + InstanceConfigurationFactory.keywords
 
+    @Suppress("UNCHECKED_CAST")
     fun Map<String, String>.validateInterpolatedStrings(serviceName: String): Result<Unit> {
         val errors = this.entries.associate {
             it.key to validateInterpolatedString(it.value)

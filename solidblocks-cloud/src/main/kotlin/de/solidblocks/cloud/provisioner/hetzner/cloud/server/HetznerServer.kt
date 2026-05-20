@@ -30,6 +30,7 @@ class HetznerServer(
     name,
     setOfNotNull(subnet, userData, floatingIp) + volumes + userData.dependsOn + sshKeys + dependsOn,
     labels,
+    taintRequiresRecreate = true,
 ) {
 
     override fun asLookup() = HetznerServerLookup(name)

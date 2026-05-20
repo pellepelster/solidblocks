@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner.pass
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseResource
+import de.solidblocks.cloud.api.resources.SecretInfrastructureResource
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 
 sealed class SecretGenerator() {
@@ -30,8 +31,9 @@ class StaticSecret(val secret: (ProvisionerContext) -> String) : SecretGenerator
 class PassSecret(
     name: String,
     val secretGenerator: SecretGenerator,
+    taintable: Boolean,
     dependsOn: Set<BaseResource> = emptySet(),
-) : BaseInfrastructureResource<PassSecretRuntime>(name, dependsOn) {
+) : SecretInfrastructureResource, BaseInfrastructureResource<PassSecretRuntime>(name, dependsOn, taintable) {
     override fun asLookup() = PassSecretLookup(name)
 
     override fun logText() = "pass secret '$name'"

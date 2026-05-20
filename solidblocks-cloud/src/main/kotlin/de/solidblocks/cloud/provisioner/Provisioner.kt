@@ -5,6 +5,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.duplicate
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.parent_missing
+import de.solidblocks.cloud.api.ResourceDiffStatus.tainted
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
@@ -40,7 +41,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
 
     private val logger = KotlinLogging.logger {}
 
-    fun diff(resourceGroups: List<ResourceGroup>, context: SSHProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
+    fun diff(resourceGroups: List<ResourceGroup>, taintCallback: (BaseInfrastructureResource<*>) -> Boolean, context: SSHProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val changedResources = mutableListOf<BaseInfrastructureResource<*>>()
         val resourceGroupDiffs =
             resourceGroups
@@ -55,6 +56,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                             val result = diff(
                                 resourceGroup,
                                 ProvisionerDiffContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, changedResources, context.environment, registry, serviceRegistrations),
+                                taintCallback,
                                 diffLogContext,
                             )
                         ) {
@@ -100,6 +102,10 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                                         ?: "<unknown duplicate error message for ${it.resource.logText()}>",
                                 )
                             }
+
+                            tainted -> {
+                                diffLogContext.info(bold("${it.resource.logText()} is tainted"))
+                            }
                         }
                     }
 
@@ -110,7 +116,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
         return Success(resourceGroupDiffs)
     }
 
-    private fun diff(resourceGroup: ResourceGroup, context: ProvisionerDiffContext, log: LogContext): Result<List<ResourceDiff>> = runBlocking {
+    private fun diff(resourceGroup: ResourceGroup, context: ProvisionerDiffContext, taintCallback: (BaseInfrastructureResource<*>) -> Boolean, log: LogContext): Result<List<ResourceDiff>> = runBlocking {
         logger.info { "creating diff for ${resourceGroup.logText()}" }
 
         val resources =
@@ -122,13 +128,22 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
             val diffLog = log.indent()
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
-                val diff =
+
+                val isAnyParentTainted = resource.recursiveDependencies().filterIsInstance<BaseInfrastructureResource<*>>().any { it.isTainted() }
+                val diff = if (isAnyParentTainted || taintCallback.invoke(resource)) {
+                    if (resource.taint()) {
+                        ResourceDiff(resource, tainted)
+                    } else {
+                        log.warning("${resource.logText()} could not be tainted, manual intervention might be needed")
+                        ResourceDiff(resource, up_to_date)
+                    }
+                } else {
                     registry.diff<BaseResource>(resource, context)
                         ?: return@runBlocking Error("diff failed for ${resource.logText()} (null)")
+                }
 
                 diffLog.debug("diff status for ${diff.resource.logText()} is '${diff.status}'")
                 result.add(diff)
-
                 diffLog.debug("finished diff for ${resource.logText()}")
             } catch (e: Exception) {
                 logger.error(e) { "diff failed for ${resource.logText()}" }
