@@ -1,5 +1,6 @@
 +++
 title = 'Roadmap'
+weight = 90
 +++
 
 A loose collection of future ideas and features, if you are interested in a particular feature drop me a line to [pelle@pelle.io](mailto:pelle@pelle.io) or [open a ticket](https://github.com/pellepelster/solidblocks/issues/new) 

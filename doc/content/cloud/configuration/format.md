@@ -1,5 +1,5 @@
 +++
-title = 'Configuration'
+title = 'Format'
 description = 'configuration file format documentation'
 +++
 
@@ -35,7 +35,7 @@ Environment variables that should be set for all services, can be overridden on 
 *type*: **string**, *optional*: **true**, 
 *min. length*: **4**, *max. length*: **253**, *default*: **&lt;none&gt;**
 
-Root domain to use for addresses of created services, e.g. **&lt;service_name&gt;.&lt;root_domain&gt;**. If set the domain must be manageable by one of the configured providers.
+Root domain to use for addresses of created services, e.g. **&lt;service_name&gt;.&lt;root_domain&gt;**. If set, the domain must be manageable by one of the configured providers.
 
 # Providers
 
@@ -176,10 +176,11 @@ S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfl
 
 type: s3
 ```
-name: <string>
-environment_vars: [map]
 backup_size: [number]
 backup_full_retention_days: [number]
+name: <string>
+environment_vars: [map]
+use_floating_ip: [boolean]
 data_size: [number]
 hetzner_location: [string]
 hetzner_instance_type: [string]
@@ -197,6 +198,18 @@ buckets:
     #...
 ```
 ### Keywords
+### backup_size
+*type*: **number**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
+
+### backup_full_retention_days
+*type*: **number**, *optional*: **true**, 
+*default*: **7**
+
+amount of days to keep full backups
+
 ### name
 *type*: **string**, *optional*: **false**, 
 *min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
@@ -209,17 +222,11 @@ Unique name for the service. Must conform with [RFC 1123](https://datatracker.ie
 
 Environment variables that should be set for the service, will be merged with the globally configured environment variables
 
-### backup_size
-*type*: **number**, *optional*: **true**, 
-*default*: **&lt;none&gt;**
+### use_floating_ip
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
 
-Size in GB for the local backup volume. If not set the size will be derived from the data volume size and the amount of full backup retention days.
-
-### backup_full_retention_days
-*type*: **number**, *optional*: **true**, 
-*default*: **7**
-
-amount of days to keep full backups
+use floating ip for public server access
 
 ### data_size
 *type*: **number**, *optional*: **true**, 
@@ -294,11 +301,12 @@ Single node PostgreSQL database instance with pgBackRest powered backup.
 
 type: postgresql
 ```
-name: <string>
-environment_vars: [map]
 majorVersion: [number]
 backup_size: [number]
 backup_full_retention_days: [number]
+name: <string>
+environment_vars: [map]
+use_floating_ip: [boolean]
 data_size: [number]
 hetzner_location: [string]
 hetzner_instance_type: [string]
@@ -310,18 +318,6 @@ databases:
     #...
 ```
 ### Keywords
-### name
-*type*: **string**, *optional*: **false**, 
-*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
-
-Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
-
-### environment_vars
-*type*: **map**, *optional*: **true**, 
-*default*: **&lt;none&gt;**
-
-Environment variables that should be set for the service, will be merged with the globally configured environment variables
-
 ### majorVersion
 *type*: **number**, *optional*: **true**, 
 *default*: **17**
@@ -339,6 +335,24 @@ Size in GB for the local backup volume. If not set the size will be derived from
 *default*: **7**
 
 amount of days to keep full backups
+
+### name
+*type*: **string**, *optional*: **false**, 
+*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
+
+Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### environment_vars
+*type*: **map**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Environment variables that should be set for the service, will be merged with the globally configured environment variables
+
+### use_floating_ip
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
+
+use floating ip for public server access
 
 ### data_size
 *type*: **number**, *optional*: **true**, 
@@ -384,11 +398,12 @@ Deploys a dockerized service exposes its endpoints.
 
 type: docker
 ```
-name: <string>
-environment_vars: [map]
 image: <string>
 backup_size: [number]
 backup_full_retention_days: [number]
+name: <string>
+environment_vars: [map]
+use_floating_ip: [boolean]
 data_size: [number]
 hetzner_location: [string]
 hetzner_instance_type: [string]
@@ -400,18 +415,6 @@ links:
     #...
 ```
 ### Keywords
-### name
-*type*: **string**, *optional*: **false**, 
-*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
-
-Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
-
-### environment_vars
-*type*: **map**, *optional*: **true**, 
-*default*: **&lt;none&gt;**
-
-Environment variables that should be set for the service, will be merged with the globally configured environment variables
-
 ### image
 *type*: **string**, *optional*: **false**, 
 *default*: **&lt;none&gt;**
@@ -429,6 +432,24 @@ Size in GB for the local backup volume. If not set the size will be derived from
 *default*: **7**
 
 amount of days to keep full backups
+
+### name
+*type*: **string**, *optional*: **false**, 
+*min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
+
+Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.
+
+### environment_vars
+*type*: **map**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Environment variables that should be set for the service, will be merged with the globally configured environment variables
+
+### use_floating_ip
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
+
+use floating ip for public server access
 
 ### data_size
 *type*: **number**, *optional*: **true**, 
@@ -475,10 +496,11 @@ Provisions a self-hosted runner based on the configured cloud provider. Requires
 
 type: github_runner
 ```
-name: <string>
-environment_vars: [map]
 scale: [number]
 allow_sudo: [boolean]
+name: <string>
+environment_vars: [map]
+use_floating_ip: [boolean]
 data_size: [number]
 hetzner_location: [string]
 hetzner_instance_type: [string]
@@ -488,6 +510,18 @@ packages:
     #...
 ```
 ### Keywords
+### scale
+*type*: **number**, *optional*: **true**, 
+*default*: **1**
+
+Number if runner instances to create
+
+### allow_sudo
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
+
+allow password-less sudo commands for the GitHub runner user
+
 ### name
 *type*: **string**, *optional*: **false**, 
 *min. length*: **2**, *max. length*: **63**, *default*: **&lt;none&gt;**
@@ -500,17 +534,11 @@ Unique name for the service. Must conform with [RFC 1123](https://datatracker.ie
 
 Environment variables that should be set for the service, will be merged with the globally configured environment variables
 
-### scale
-*type*: **number**, *optional*: **true**, 
-*default*: **1**
-
-Number if runner instances to create
-
-### allow_sudo
+### use_floating_ip
 *type*: **boolean**, *optional*: **true**, 
 *default*: **false**
 
-allow password-less sudo commands for the GitHub runner user
+use floating ip for public server access
 
 ### data_size
 *type*: **number**, *optional*: **true**, 

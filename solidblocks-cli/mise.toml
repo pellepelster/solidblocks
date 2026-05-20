@@ -122,7 +122,7 @@ set -eu -o pipefail
 [tasks."build:documentation"]
 run="""
 #!/usr/bin/env bash
-${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration --format hugo ${ROOT_PROJECT}/doc/content/cloud/configuration.md"
+${ROOT_PROJECT}/gradlew :solidblocks-cli:run --args="cloud help configuration --format hugo ${ROOT_PROJECT}/doc/content/cloud/configuration/format.md"
 """
 
 [tasks."release:test"]

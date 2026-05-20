@@ -50,7 +50,7 @@ class CloudHelpConfigurationCommand : CliktCommand(name = "configuration") {
             HelpFormat.hugo -> {
                 val hugo = """
 +++
-title = 'Configuration'
+title = 'Format'
 description = 'configuration file format documentation'
 +++
 ${CloudConfigurationHelp().renderMarkdown(true)}

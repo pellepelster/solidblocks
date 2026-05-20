@@ -1,5 +1,6 @@
 +++
 title = 'Design & Development'
+weight = 100
 +++
 
 The overall design of Solidblocks cloud is led by the following rules

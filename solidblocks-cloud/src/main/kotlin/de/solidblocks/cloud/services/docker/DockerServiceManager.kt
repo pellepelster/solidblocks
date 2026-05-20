@@ -128,6 +128,11 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
             it.key to resolvedValue
         }.toMap()
 
+        val image = when (val result = context.interpolationRegistry().resolve(runtime.image)) {
+            is Error<String> -> return Error(result.error)
+            is Success<String> -> result.data
+        }
+
         val userData = UserData(
             defaultResources.list() + backupResources.first,
             { context ->
@@ -143,7 +148,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
                     },
                     context.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                     createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
-                    runtime.image,
+                    image,
                     runtime.endpoints.associate { 80 to it.port },
                     serverFQDN = cloud.rootDomain?.let { "${serverName(cloud.environmentContext, runtime.name, 0)}.$it" },
                     context.ensureOptionalLookup(defaultResources.floatingIp?.asLookup())?.ip,
