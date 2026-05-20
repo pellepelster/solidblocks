@@ -6,6 +6,9 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
+import de.solidblocks.cloud.interpolation.EnvironmentVariableInterpolationFactory
+import de.solidblocks.cloud.interpolation.StringInterpolationFactory
+import de.solidblocks.cloud.interpolation.StringInterpolationRegistry
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderManager
@@ -23,6 +26,8 @@ import kotlin.reflect.KClass
 class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvider<*, *>> = emptyList(), val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList()) {
 
     private val logger = KotlinLogging.logger {}
+
+    val interpolationRegistry = StringInterpolationRegistry(this.resourceProvisioners.filterIsInstance<StringInterpolationFactory>() + listOf(EnvironmentVariableInterpolationFactory()))
 
     @Suppress("UNCHECKED_CAST")
     private fun <ResourceType : BaseResource> provisioner(resource: ResourceType): InfrastructureResourceProvisioner<ResourceType, *, *> =

@@ -7,6 +7,12 @@ weight = 20
 
 The cloud configuration has capabilities to substitute configuration settings with dynamic values. Those dynamic values are configured with the syntax `${<type>:<arg1>:<arg2>:<arg n>}` and the following types are available
 
+A debug command is available for interactive testing of substitutions
+
+```shell
+blcks cloud debug interpolation --config-file <cloud_config> 'all my files are stored here: ${env:HOME}'
+```
+
 ## Environment variables `env`
 
 **replace with `HOME` environment variable**

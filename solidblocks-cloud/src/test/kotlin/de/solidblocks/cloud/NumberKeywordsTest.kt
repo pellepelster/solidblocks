@@ -94,7 +94,7 @@ class NumberKeywordsTest {
                 TEST_KEYWORD_HELP,
             )
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
-            "'number1' may not be smaller then 22 at line 1 colum 1"
+            "'number1' may not be smaller then 22 at line 1 column 1"
     }
 
     @Test
@@ -115,6 +115,6 @@ class NumberKeywordsTest {
                 TEST_KEYWORD_HELP,
             )
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
-            "'number1' may not be larger then null at line 1 colum 1"
+            "'number1' may not be larger then null at line 1 column 1"
     }
 }

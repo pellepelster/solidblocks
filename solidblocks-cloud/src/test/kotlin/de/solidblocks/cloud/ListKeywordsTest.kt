@@ -90,6 +90,6 @@ class ListKeywordsTest {
             )
 
         keyword.parse(yaml.data).shouldBeTypeOf<Error<List<String>>>().error shouldBe
-            "expected a string at line 2 colum 6"
+            "expected a string at line 2 column 6"
     }
 }

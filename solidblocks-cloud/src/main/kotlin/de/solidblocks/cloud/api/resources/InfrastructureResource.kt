@@ -19,4 +19,9 @@ abstract class BaseInfrastructureResource<RuntimeType>(name: String, dependsOn: 
     abstract fun asLookup(): InfrastructureResourceLookup<*>
 }
 
-abstract class BaseLabeledInfrastructureResource<RuntimeType>(name: String, dependsOn: Set<BaseResource>, val labels: Map<String, String>, taintRequiresRecreate: Boolean = false) : BaseInfrastructureResource<RuntimeType>(name, dependsOn, true, taintRequiresRecreate)
+abstract class BaseLabeledInfrastructureResource<RuntimeType>(
+    name: String,
+    dependsOn: Set<BaseResource>,
+    val labels: Map<String, String>,
+    taintRequiresRecreate: Boolean = false,
+) : BaseInfrastructureResource<RuntimeType>(name, dependsOn, true, taintRequiresRecreate)

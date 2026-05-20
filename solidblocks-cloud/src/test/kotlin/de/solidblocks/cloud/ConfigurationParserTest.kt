@@ -56,6 +56,6 @@ class ConfigurationParserTest {
 
         val result = ConfigurationParser(TestConfigurationFactory()).parse(rawYml)
         val testConfiguration = result.shouldBeTypeOf<Error<TestConfiguration>>()
-        testConfiguration.error shouldBe "name 'forbidden' is not allowed at line 4 colum 5"
+        testConfiguration.error shouldBe "name 'forbidden' is not allowed at line 4 column 5"
     }
 }

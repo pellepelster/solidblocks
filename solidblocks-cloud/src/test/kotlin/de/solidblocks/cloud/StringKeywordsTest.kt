@@ -94,7 +94,7 @@ class StringKeywordsTest {
                 TEST_KEYWORD_HELP,
             )
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
-            "maximum allowed length for 'string1' is 12 characters at line 1 colum 1"
+            "maximum allowed length for 'string1' is 12 characters at line 1 column 1"
     }
 
     @Test
@@ -115,7 +115,7 @@ class StringKeywordsTest {
                 TEST_KEYWORD_HELP,
             )
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
-            "'string1' must match '[a-z0-9]+(-[a-z0-9]+)*' at line 1 colum 1"
+            "'string1' must match '[a-z0-9]+(-[a-z0-9]+)*' at line 1 column 1"
     }
 
     @Test
@@ -156,7 +156,7 @@ class StringKeywordsTest {
                 TEST_KEYWORD_HELP,
             )
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
-            "'string1' should be at least 4 characters long at line 1 colum 1"
+            "'string1' should be at least 4 characters long at line 1 column 1"
     }
 
     @Test
@@ -197,7 +197,7 @@ class StringKeywordsTest {
                 TEST_KEYWORD_HELP,
             )
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
-            "'xyz' is not allowed for 'string1', possible options are: 'foo', 'bar' at line 1 colum 1"
+            "'xyz' is not allowed for 'string1', possible options are: 'foo', 'bar' at line 1 column 1"
     }
 
     @Test

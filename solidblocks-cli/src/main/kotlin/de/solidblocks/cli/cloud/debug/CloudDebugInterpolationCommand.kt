@@ -14,7 +14,7 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.logError
 
 class CloudDebugInterpolationCommand : CliktCommand(name = "interpolation") {
-    override fun help(context: Context) = "test and verify interpolated strings"
+    override fun help(context: Context) = "test and verify string substitution"
 
     val interpolated by argument(help = "Interpolated string to test")
 

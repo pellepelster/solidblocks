@@ -48,6 +48,6 @@ class CloudConfigurationFactoryTest {
             ConfigurationParser(CloudConfigurationFactory(emptyList(), emptyList()))
                 .parse(rawYml)
                 .shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
-        cloud.error shouldBe "unknown type 'invalid', possible types are <none> at line 4 colum 7"
+        cloud.error shouldBe "unknown type 'invalid', possible types are <none> at line 4 column 7"
     }
 }

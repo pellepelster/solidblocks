@@ -36,7 +36,7 @@ class CloudManagerTest {
                 .createManager()
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
-        error.error shouldBe "key 'name' not found at line 1 colum 1"
+        error.error shouldBe "key 'name' not found at line 1 column 1"
     }
 
     @Test
@@ -52,7 +52,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key', 'backup_aws_s3', 'backup_local', 'github' at line 3 colum 7"
+            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key', 'backup_aws_s3', 'backup_local', 'github' at line 3 column 7"
     }
 
     @Test
