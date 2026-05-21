@@ -52,7 +52,9 @@ run = """
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-pass rm -rf cloud1 || true
+if pass show cloud1; then
+    pass rm -rf cloud1
+fi
 
 ${ROOT_PROJECT}/gradlew clean :$(basename $PWD):testIntegration
 rm -rf blcks
