@@ -29,7 +29,7 @@ VERSION = """
 {%- if get_env(name='GITHUB_REF', default='none') == 'none' -%}
     {%- if os() == 'windows' -%}
         {%- if get_env(name='VERSION', default='none') == 'none' -%}
-            "0.0.0-snapshot"
+            "0.0.0-rc"
         {%- else -%}
             {{ get_env(name='VERSION') }}
         {%- endif -%}
@@ -45,7 +45,7 @@ VERSION = """
     {%- if github_ref is starting_with("refs/tags/") -%}
         {{ github_ref | trim_start_matches(pat="refs/tags/v") }}
     {%- else -%}
-        0.0.0-snapshot
+        0.0.0-rc
     {%- endif -%}
 {%- endif -%}
 """

@@ -8,10 +8,10 @@ function version() {
       if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
         echo "${GITHUB_REF_NAME#v}"
       else
-        echo "0.0.0-snapshot"
+        echo "0.0.0-rc"
       fi
     else
-      echo "0.0.0-snapshot"
+      echo "0.0.0-rc"
     fi
   else
     echo "${VERSION#v}"

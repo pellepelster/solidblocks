@@ -8,7 +8,7 @@
 Role belongs to blcks/utils
 Namespace - blcks
 Collection - utils
-Version - 0.0.0-snapshot
+Version - 0.0.0-rc
 Repository - https://github.com/pellepelster/solidblocks
 ```
 
