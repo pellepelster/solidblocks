@@ -11,8 +11,13 @@ import de.solidblocks.shell.SystemDLibrary
 import de.solidblocks.shell.WriteFile
 import de.solidblocks.shell.caddy.AutoHttps
 import de.solidblocks.shell.caddy.CaddyConfig
+import de.solidblocks.shell.caddy.FileRoll
 import de.solidblocks.shell.caddy.FileSystemStorage
 import de.solidblocks.shell.caddy.GlobalOptions
+import de.solidblocks.shell.caddy.Log
+import de.solidblocks.shell.caddy.LogFormat
+import de.solidblocks.shell.caddy.LogLevel
+import de.solidblocks.shell.caddy.LogOutput
 import de.solidblocks.shell.caddy.ReverseProxy
 import de.solidblocks.shell.caddy.Site
 import de.solidblocks.shell.docker.ComposeFile
@@ -54,11 +59,11 @@ class GenericDockerServiceUserData(
                 ),
                 if (serverFQDN == null) {
                     ports.map {
-                        Site(":${it.key}", ReverseProxy("http://localhost:${it.value + 1024}"))
+                        Site(":${it.key}", ReverseProxy("http://localhost:${it.value + 1024}"), Log.default("${caddyStorageDir}/log/access.log"))
                     }
                 } else {
                     ports.map {
-                        Site(serverFQDN, ReverseProxy("http://localhost:${it.value + 1024}"))
+                        Site(serverFQDN, ReverseProxy("http://localhost:${it.value + 1024}"), Log.default("${caddyStorageDir}/log/${serverFQDN}/access.log"))
                     }
                 },
             )

@@ -46,7 +46,7 @@ class GarageFsUserData(
                 ),
                 buckets.flatMap {
                     listOf(
-                        Site("${it.name}.s3.$serviceRootDomain", ReverseProxy("http://localhost:3900")),
+                        Site("${it.name}.s3.$serviceRootDomain", ReverseProxy("http://localhost:3900"), Log.default("${caddyStorageDir}/log/access.log")),
                         Site(
                             "${it.name}.s3-web.$serviceRootDomain",
                             ReverseProxy("http://localhost:3902"),
