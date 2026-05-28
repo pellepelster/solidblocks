@@ -46,16 +46,17 @@ class GarageFsUserData(
                 ),
                 buckets.flatMap {
                     listOf(
-                        Site("${it.name}.s3.$serviceRootDomain", ReverseProxy("http://localhost:3900"), Log.default("${caddyStorageDir}/log/access.log")),
+                        Site("${it.name}.s3.$serviceRootDomain", ReverseProxy("http://localhost:3900"), Log.default1("$caddyDataDir/log/${it.name}.s3.$serviceRootDomain/access.log")),
                         Site(
                             "${it.name}.s3-web.$serviceRootDomain",
                             ReverseProxy("http://localhost:3902"),
+                            Log.default1("$caddyDataDir/log/${it.name}.s3-web.$serviceRootDomain/access.log"),
                         ),
-                    ) + it.publicDomains.map { Site(it, ReverseProxy("http://localhost:3902")) }
+                    ) + it.publicDomains.map { Site(it, ReverseProxy("http://localhost:3902"), Log.default1("$caddyDataDir/log/$it/access.log")) }
                 } +
                     listOf(
-                        Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903")),
-                        Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900")),
+                        Site(s3AdminHost(serviceRootDomain), ReverseProxy("http://localhost:3903"), Log.default1("$caddyDataDir/log/${s3AdminHost(serviceRootDomain)}/access.log")),
+                        Site(s3Host(serviceRootDomain), ReverseProxy("http://localhost:3900"), Log.default1("$caddyDataDir/log/${s3Host(serviceRootDomain)}/access.log")),
                     ),
             )
 

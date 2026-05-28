@@ -53,14 +53,13 @@ sealed interface LogOutput {
 
 data class Log(val output: LogOutput? = null, val format: LogFormat? = null, val level: LogLevel? = null) {
 
-     companion object {
-         fun default(path: String) = Log(
-             LogOutput.File(path, FileRoll("10MiB", 10, "720h")),
-             LogFormat.json,
-             LogLevel.INFO,
-         )
-     }
-
+    companion object {
+        fun default1(path: String) = Log(
+            LogOutput.File(path, FileRoll("10MiB", 10, "720h")),
+            LogFormat.json,
+            LogLevel.INFO,
+        )
+    }
 
     fun render(): List<String> = buildList {
         add("log {")
