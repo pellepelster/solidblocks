@@ -12,8 +12,8 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
-import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success

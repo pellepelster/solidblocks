@@ -3,7 +3,7 @@ package de.solidblocks.cloud.provisioner.garagefs.accesskey
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
 
 class GarageFsAccessKeyProvisioner :
     BaseGarageFsProvisioner(),
-    ResourceLookupProvider<GarageFsAccessKeyLookup, GarageFsAccessKeyRuntime>,
+    InfrastructureResourceLookupProvider<GarageFsAccessKeyLookup, GarageFsAccessKeyRuntime>,
     InfrastructureResourceProvisioner<GarageFsAccessKey, GarageFsAccessKeyRuntime, GarageFsAccessKeyLookup> {
 
     private val logger = KotlinLogging.logger {}

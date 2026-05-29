@@ -3,9 +3,9 @@ package de.solidblocks.cloud.provisioner.context
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
-import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result

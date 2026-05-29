@@ -7,7 +7,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -22,7 +22,7 @@ import java.sql.Connection
 
 class PostgresDatabaseProvisioner :
     BasePostgresProvisioner(),
-    ResourceLookupProvider<PostgresDatabaseLookup, PostgresDatabaseRuntime>,
+    InfrastructureResourceLookupProvider<PostgresDatabaseLookup, PostgresDatabaseRuntime>,
     InfrastructureResourceProvisioner<PostgresDatabase, PostgresDatabaseRuntime, PostgresDatabaseLookup> {
 
     private val logger = KotlinLogging.logger {}

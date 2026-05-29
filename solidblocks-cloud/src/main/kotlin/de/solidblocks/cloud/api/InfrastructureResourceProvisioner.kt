@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.api
 
+import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -18,7 +19,12 @@ interface InfrastructureResourceProvisioner<ResourceType, RuntimeType, LookupTyp
 
     suspend fun destroyAll(context: ProvisionerContext): Boolean = TODO("Not yet implemented")
 
+    suspend fun convertGenericResource(resource: BaseResource): ResourceType? = null
+
     val supportedLookupType: KClass<*>
 
     val supportedResourceType: KClass<*>
+    
+    val supportedGenericResourceType: KClass<*>?
+        get() = null
 }

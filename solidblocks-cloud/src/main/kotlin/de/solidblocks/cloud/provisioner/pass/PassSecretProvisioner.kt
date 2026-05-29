@@ -6,10 +6,11 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.utils.CommandResult
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -21,7 +22,7 @@ import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
-    ResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
+    InfrastructureResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
     InfrastructureResourceProvisioner<PassSecret, PassSecretRuntime, PassSecretLookup> {
 
     private val logger = KotlinLogging.logger {}

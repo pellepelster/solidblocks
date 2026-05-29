@@ -12,7 +12,7 @@ import de.solidblocks.cloud.Constants.sshKnownHosts
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.types.backup.backupSecretResource
@@ -215,7 +215,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         )
 
         val lookups = providerLookups + listOf(UserDataLookupProvider()) + (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-            ResourceLookupProvider<*, *>,
+            InfrastructureResourceLookupProvider<*, *>,
             >()
 
         return ProvisionersRegistry(

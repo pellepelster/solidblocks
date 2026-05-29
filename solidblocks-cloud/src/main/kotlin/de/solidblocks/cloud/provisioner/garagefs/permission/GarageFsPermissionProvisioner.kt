@@ -4,7 +4,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
 
 class GarageFsPermissionProvisioner :
     BaseGarageFsProvisioner(),
-    ResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
+    InfrastructureResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
     InfrastructureResourceProvisioner<GarageFsPermission, GarageFsPermissionRuntime, GarageFsPermissionLookup> {
 
     private val logger = KotlinLogging.logger {}

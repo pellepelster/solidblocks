@@ -6,7 +6,7 @@ import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -17,7 +17,7 @@ import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource2Provisioner :
-    ResourceLookupProvider<Resource2Lookup, Resource2Runtime>,
+    InfrastructureResourceLookupProvider<Resource2Lookup, Resource2Runtime>,
     InfrastructureResourceProvisioner<Resource2, Resource2Runtime, Resource2Lookup> {
 
     private val logger = KotlinLogging.logger {}

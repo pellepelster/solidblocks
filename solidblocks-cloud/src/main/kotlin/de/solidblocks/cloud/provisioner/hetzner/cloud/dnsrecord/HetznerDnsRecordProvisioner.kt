@@ -19,7 +19,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class HetznerDnsRecordProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    ResourceLookupProvider<HetznerDnsRecordLookup, HetznerDnsRecordRuntime>,
+    InfrastructureResourceLookupProvider<HetznerDnsRecordLookup, HetznerDnsRecordRuntime>,
     InfrastructureResourceProvisioner<HetznerDnsRecord, HetznerDnsRecordRuntime, HetznerDnsRecordLookup> {
 
     private val logger = KotlinLogging.logger {}

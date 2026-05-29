@@ -30,8 +30,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLooku
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.RandomSecret
-import de.solidblocks.cloud.provisioner.pass.StaticSecret
+import de.solidblocks.cloud.provisioner.secret.RandomSecret
+import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.toResult
 import de.solidblocks.cloud.services.*

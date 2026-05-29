@@ -7,7 +7,6 @@ import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
-import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
@@ -25,15 +24,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 
 @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
-class PassSecretProvisionerTest {
+class GenericSecretTest {
 
     @Test
     fun testFlow() {
         val secretPath = "testCloudName/some/extra/path/secret1"
 
-        val randomSecret = GenericSecret(secretPath, RandomSecret(13))
-        val staticSecret = GenericSecret(secretPath, StaticSecret { "static-secret" })
-        val oneTimeSecret = GenericSecret(
+        val randomSecret = PassSecret(secretPath, RandomSecret(13))
+        val staticSecret = PassSecret(secretPath, StaticSecret { "static-secret" })
+        val oneTimeSecret = PassSecret(
             secretPath,
             OneTimeGeneratedSecret {
                 "onetime-secret"
@@ -44,7 +43,6 @@ class PassSecretProvisionerTest {
         runCommand(listOf("pass", "rm", "--force", "--recursive", "testCloudName"))
 
         runBlocking {
-            /*
             // before create
             provisioner.lookup(randomSecret.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
             assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT)) {
@@ -84,7 +82,6 @@ class PassSecretProvisionerTest {
              */
             provisioner.apply(staticSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
             provisioner.lookup(staticSecret.asLookup(), TEST_PROVISIONER_CONTEXT)?.secret shouldBe "static-secret"
-             */
         }
     }
 }
