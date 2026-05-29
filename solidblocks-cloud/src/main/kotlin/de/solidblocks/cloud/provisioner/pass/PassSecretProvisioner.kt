@@ -6,6 +6,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.interpolation.StringInterpolationFactory
+import de.solidblocks.cloud.providers.pass.PASS_PROVIDER_TYPE
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -26,7 +28,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
     InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
-    GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup> {
+    GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup>,
+    StringInterpolationFactory {
 
     private val logger = KotlinLogging.logger {}
 
@@ -59,7 +62,27 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         }
     }
 
-    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext): GenericSecretRuntime? {
+    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+
+    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext, log: LogContext): Result<GenericSecretRuntime> {
+        val current = lookup(resource.asLookup(), context)
+
+        if (current != null && !resource.isTainted() && resource.secretGenerator.isEphemeral()) {
+            return Success(current)
+        }
+
+        log.debug("creating secret at '${resource.name}'")
+        val secret = resource.secretGenerator.generate(context)
+        when (val result = passInsert(resource.name, secret, passwordStoreDir).asResult("pass insert")) {
+            is Error<CommandResult> -> Error<GenericSecretRuntime>(result.error)
+            is Success<CommandResult> -> {}
+        }
+
+        return lookup(resource.asLookup(), context)?.let { Success(it) }
+            ?: Error<GenericSecretRuntime>("error creating ${resource.logText()}")
+    }
+
+    private fun lookupInternal(lookup: GenericSecretLookup): GenericSecretRuntime? {
         val result = passShow(lookup.name, passwordStoreDir)
 
         if (result == null) {
@@ -81,22 +104,16 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         return null
     }
 
-    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext, log: LogContext): Result<GenericSecretRuntime> {
-        val current = lookup(resource.asLookup(), context)
+    override val interpolationType = PASS_PROVIDER_TYPE
 
-        if (current != null && !resource.isTainted() && resource.secretGenerator.isEphemeral()) {
-            return Success(current)
-        }
+    override fun validate(interpolation: String): Result<Unit> = when (lookupInternal(GenericSecretLookup(interpolation))) {
+        is GenericSecretRuntime -> Success(Unit)
+        else -> Error("pass secret '$interpolation' does not exist'")
+    }
 
-        log.debug("creating secret at '${resource.name}'")
-        val secret = resource.secretGenerator.generate(context)
-        when (val result = passInsert(resource.name, secret, passwordStoreDir).asResult("pass insert")) {
-            is Error<CommandResult> -> Error<GenericSecretRuntime>(result.error)
-            is Success<CommandResult> -> {}
-        }
-
-        return lookup(resource.asLookup(), context)?.let { Success(it) }
-            ?: Error<GenericSecretRuntime>("error creating ${resource.logText()}")
+    override fun resolve(interpolation: String): Result<String> = when (val result = lookupInternal(GenericSecretLookup(interpolation))) {
+        is GenericSecretRuntime -> Success(result.secret.trim())
+        else -> Error("pass secret '$interpolation' does not exist'")
     }
 
     override val supportedLookupType = GenericSecretLookup::class

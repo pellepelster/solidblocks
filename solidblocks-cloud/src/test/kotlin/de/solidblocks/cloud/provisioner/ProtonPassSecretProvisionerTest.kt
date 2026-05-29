@@ -29,13 +29,14 @@ class ProtonPassSecretProvisionerTest {
     fun testFlow() {
         val secretTitle = "blcks-test/some/extra/path/secret1"
 
-        val randomSecret = GenericSecret<GenericSecretRuntime>(secretTitle, RandomSecret(13))
-        val staticSecret = GenericSecret<GenericSecretRuntime>(secretTitle, StaticSecret { "static-secret" })
+        val randomSecret = GenericSecret<GenericSecretRuntime>(secretTitle, RandomSecret(13), true)
+        val staticSecret = GenericSecret<GenericSecretRuntime>(secretTitle, StaticSecret { "static-secret" }, true)
         val oneTimeSecret = GenericSecret<GenericSecretRuntime>(
             secretTitle,
             OneTimeGeneratedSecret {
                 "onetime-secret"
             },
+            true,
         )
         val provisioner = ProtonPassSecretProvisioner(vaultName)
 

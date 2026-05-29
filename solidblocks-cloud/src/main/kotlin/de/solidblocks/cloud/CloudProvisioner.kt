@@ -14,6 +14,8 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.api.resources.SecretInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
@@ -246,7 +248,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         )
 
         val lookups = providerLookups + listOf(UserDataLookupProvider()) + (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-            InfrastructureResourceLookupProvider<*, *>,
+            InfrastructureResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>,
             >()
 
         return ProvisionersRegistry(

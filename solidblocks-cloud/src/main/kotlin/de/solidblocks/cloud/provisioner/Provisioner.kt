@@ -175,7 +175,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                 .map { resource ->
                     val runtime =
                         try {
-                            registry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
+                            registry.apply<BaseInfrastructureResourceRuntime>(
                                 resource,
                                 context,
                                 log,
@@ -232,7 +232,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
 
                     val result =
                         try {
-                            registry.apply<BaseResource, BaseInfrastructureResourceRuntime>(
+                            registry.apply(
                                 resource,
                                 context,
                                 applyLog,
