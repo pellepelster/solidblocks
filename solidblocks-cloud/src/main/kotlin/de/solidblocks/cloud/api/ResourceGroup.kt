@@ -33,7 +33,9 @@ data class ResourceGroup(
     val readinessHealthChecks: List<HealthCheck> = emptyList(),
 ) {
 
-    fun hierarchicalResourceList() = this.resources.hierarchicalResourceList()
+    private val hierarchicalResources by lazy { resources.hierarchicalResourceList() }
+
+    fun hierarchicalResourceList() = hierarchicalResources
 
     override fun toString(): String = name
 }

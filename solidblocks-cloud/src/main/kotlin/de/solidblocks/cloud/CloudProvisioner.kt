@@ -154,7 +154,13 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         }
     }
 
-    private fun createResourceGroups(): Result<List<ResourceGroup>> {
+    // desired state is static for the lifetime of the provisioner, so the (relatively expensive)
+    // resource group construction is computed once and reused across plan/apply/ssh-config.
+    private val resourceGroups: Result<List<ResourceGroup>> by lazy { buildResourceGroups() }
+
+    private fun createResourceGroups(): Result<List<ResourceGroup>> = resourceGroups
+
+    private fun buildResourceGroups(): Result<List<ResourceGroup>> {
         val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
 
         val sshKey = HetznerSSHKey(sshKeyName(runtime.environmentContext), publicKey, cloudLabels(runtime.environmentContext))
