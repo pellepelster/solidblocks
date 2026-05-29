@@ -9,10 +9,10 @@ import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.Constants.sshKnownHosts
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.types.backup.backupSecretResource
@@ -32,9 +32,9 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
@@ -253,10 +253,10 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
         serversIps.forEach {
             val rsaSecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, KeyType.rsa)
-            val rsaSecret = context.lookup(PassSecretLookup(rsaSecretPath))
+            val rsaSecret = context.lookup(GenericSecretLookup(rsaSecretPath))
 
             val ed25519SecretPath = sshHostPrivateKeySecretPath(context.environment, it.first, KeyType.ed25519)
-            val ed25519Secret = context.lookup(PassSecretLookup(ed25519SecretPath))
+            val ed25519Secret = context.lookup(GenericSecretLookup(ed25519SecretPath))
 
             if (rsaSecret != null) {
                 val keyPair = SSHKeyUtils.loadKey(rsaSecret.secret)

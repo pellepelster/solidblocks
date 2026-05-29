@@ -6,7 +6,7 @@ import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
@@ -44,7 +44,7 @@ open class ProvisionerContextImpl(
     private fun getOpenSshHostPublicKey(serverName: String): PublicKey? {
         val secretPath = sshHostPrivateKeySecretPath(environment, serverName, KeyType.ed25519)
         logger.info { "loading ssh host key from '$secretPath'" }
-        val secret = lookup(PassSecretLookup(secretPath))
+        val secret = lookup(GenericSecretLookup(secretPath))
         return secret?.secret?.let { SSHKeyUtils.loadKey(it).public }
     }
 

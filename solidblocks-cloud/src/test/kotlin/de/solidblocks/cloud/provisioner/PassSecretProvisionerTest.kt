@@ -1,25 +1,13 @@
 package de.solidblocks.cloud.provisioner
 
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
-import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
-import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
-import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.utils.DEFAULT_PASS_DIR
-import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.runCommand
-import io.kotest.assertions.assertSoftly
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldHaveLength
-import io.kotest.matchers.types.shouldBeInstanceOf
-import io.kotest.matchers.types.shouldBeTypeOf
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
@@ -31,9 +19,9 @@ class PassSecretProvisionerTest {
     fun testFlow() {
         val secretPath = "testCloudName/some/extra/path/secret1"
 
-        val randomSecret = GenericSecret(secretPath, RandomSecret(13))
-        val staticSecret = GenericSecret(secretPath, StaticSecret { "static-secret" })
-        val oneTimeSecret = GenericSecret(
+        val randomSecret = GenericSecret<GenericSecretRuntime>(secretPath, RandomSecret(13))
+        val staticSecret = GenericSecret<GenericSecretRuntime>(secretPath, StaticSecret { "static-secret" })
+        val oneTimeSecret = GenericSecret<GenericSecretRuntime>(
             secretPath,
             OneTimeGeneratedSecret {
                 "onetime-secret"

@@ -3,9 +3,9 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
-import de.solidblocks.cloud.provisioner.protonpass.ProtonPassSecret
 import de.solidblocks.cloud.provisioner.protonpass.ProtonPassSecretProvisioner
-import de.solidblocks.cloud.provisioner.protonpass.ProtonPassSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
@@ -29,9 +29,9 @@ class ProtonPassSecretProvisionerTest {
     fun testFlow() {
         val secretTitle = "blcks-test/some/extra/path/secret1"
 
-        val randomSecret = ProtonPassSecret(secretTitle, RandomSecret(13))
-        val staticSecret = ProtonPassSecret(secretTitle, StaticSecret { "static-secret" })
-        val oneTimeSecret = ProtonPassSecret(
+        val randomSecret = GenericSecret<GenericSecretRuntime>(secretTitle, RandomSecret(13))
+        val staticSecret = GenericSecret<GenericSecretRuntime>(secretTitle, StaticSecret { "static-secret" })
+        val oneTimeSecret = GenericSecret<GenericSecretRuntime>(
             secretTitle,
             OneTimeGeneratedSecret {
                 "onetime-secret"
@@ -51,7 +51,7 @@ class ProtonPassSecretProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
-            val runtimeAfterCreation = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<ProtonPassSecretRuntime>>().data
+            val runtimeAfterCreation = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             val runtimeAfterLookup = provisioner.lookup(randomSecret.asLookup(), TEST_PROVISIONER_CONTEXT)!!
             runtimeAfterLookup.secret shouldHaveLength 13
             runtimeAfterLookup.secret shouldBe runtimeAfterCreation.secret
@@ -61,7 +61,7 @@ class ProtonPassSecretProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
-            val runtimeAfterSecondApply = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<ProtonPassSecretRuntime>>().data
+            val runtimeAfterSecondApply = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterSecondApply.secret shouldBe runtimeAfterCreation.secret
 
             // a static secret with a different value reports pending changes
@@ -71,7 +71,7 @@ class ProtonPassSecretProvisionerTest {
 
             // tainting forces a new ephemeral secret
             randomSecret.taint()
-            val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<ProtonPassSecretRuntime>>().data
+            val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterCreation.secret shouldNotBe secretAfterTaint.secret
 
             assertSoftly(provisioner.diff(oneTimeSecret, TEST_PROVISIONER_CONTEXT)) {

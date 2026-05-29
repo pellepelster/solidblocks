@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.provisioner.mock
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
@@ -47,5 +47,4 @@ class Resource1Provisioner :
     override val genericResourceType = Resource1Generic::class
 
     override val genericLookupType = Resource1GenericLookup::class
-
 }

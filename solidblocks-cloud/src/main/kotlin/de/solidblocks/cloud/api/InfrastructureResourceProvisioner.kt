@@ -11,7 +11,7 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
-interface InfrastructureResourceProvisioner<ResourceType: BaseResource, RuntimeType: BaseInfrastructureResourceRuntime, LookupType: InfrastructureResourceLookup<*>> {
+interface InfrastructureResourceProvisioner<ResourceType : BaseResource, RuntimeType : BaseInfrastructureResourceRuntime, LookupType : InfrastructureResourceLookup<*>> {
 
     suspend fun diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = TODO("Not yet implemented")
 

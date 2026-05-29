@@ -49,7 +49,7 @@ class ProvisionersRegistryTest {
     fun testApplyGenericResource() {
         runBlocking {
             val registry = ProvisionersRegistry(resourceProvisioners = listOf(Resource1Provisioner()))
-            val runtime = registry.apply<Resource2Runtime>(Resource1Generic("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf< Success<Resource1Runtime>>()
+            val runtime = registry.apply<Resource2Runtime>(Resource1Generic("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<Resource1Runtime>>()
             runtime.data.name shouldBe "name1"
         }
     }
@@ -58,7 +58,7 @@ class ProvisionersRegistryTest {
     fun testApply() {
         runBlocking {
             val registry = ProvisionersRegistry(resourceProvisioners = listOf(Resource1Provisioner()))
-            val runtime =   registry.apply<Resource1Runtime>(Resource1("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<Resource1Runtime>>()
+            val runtime = registry.apply<Resource1Runtime>(Resource1("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeTypeOf<Success<Resource1Runtime>>()
             runtime.data.name shouldBe "name1"
         }
     }
@@ -67,7 +67,7 @@ class ProvisionersRegistryTest {
     fun testLookup() {
         runBlocking {
             val registry = ProvisionersRegistry(resourceProvisioners = listOf(Resource1Provisioner()))
-            registry.apply<Resource1Runtime>(Resource1("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf< Success<Resource1Runtime>>()
+            registry.apply<Resource1Runtime>(Resource1("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<Resource1Runtime>>()
             val runtime = registry.lookup(Resource1Lookup("name1"), mockk<SSHProvisionerContext>())
             runtime!!.name shouldBe "name1"
         }
@@ -77,10 +77,9 @@ class ProvisionersRegistryTest {
     fun testLookupGeneric() {
         runBlocking {
             val registry = ProvisionersRegistry(resourceProvisioners = listOf(Resource1Provisioner()))
-            registry.apply<Resource1Runtime>(Resource1("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf< Success<Resource1Runtime>>()
+            registry.apply<Resource1Runtime>(Resource1("name1"), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<Resource1Runtime>>()
             val runtime = registry.lookup(Resource1GenericLookup("name1"), mockk<SSHProvisionerContext>())
             runtime!!.name shouldBe "name1"
         }
     }
-
 }

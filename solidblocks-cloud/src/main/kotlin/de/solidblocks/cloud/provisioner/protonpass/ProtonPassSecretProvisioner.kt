@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.provisioner.protonpass
 
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
@@ -10,7 +9,10 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
-import de.solidblocks.cloud.provisioner.secret.SecretProvisioner
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecretProvisioner
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.utils.CommandResult
 import de.solidblocks.cloud.utils.Error
@@ -25,12 +27,12 @@ import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ProtonPassSecretProvisioner(val vaultName: String) :
-    InfrastructureResourceLookupProvider<ProtonPassSecretLookup, ProtonPassSecretRuntime>,
-    SecretProvisioner<ProtonPassSecret, ProtonPassSecretRuntime, ProtonPassSecretLookup> {
+    InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
+    GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup> {
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: ProtonPassSecret, context: ProvisionerDiffContext): ResourceDiff {
+    override suspend fun diff(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerDiffContext): ResourceDiff {
         val runtime = lookup(resource.asLookup(), context)
 
         return if (runtime != null) {
@@ -59,7 +61,7 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
         }
     }
 
-    override suspend fun lookup(lookup: ProtonPassSecretLookup, context: SSHProvisionerContext): ProtonPassSecretRuntime? {
+    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext): ProtonPassSecretRuntime? {
         val result = protonPassItemView(vaultName, lookup.name)
 
         if (result == null) {
@@ -86,7 +88,7 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
         return null
     }
 
-    override suspend fun apply(resource: ProtonPassSecret, context: ProvisionerApplyContext, log: LogContext): Result<ProtonPassSecretRuntime> {
+    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext, log: LogContext): Result<GenericSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !resource.tainted && resource.secretGenerator.isEphemeral()) {
@@ -113,7 +115,7 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
             ?: Error("error creating ${resource.logText()}")
     }
 
-    override val lookupType = ProtonPassSecretLookup::class
+    override val lookupType = GenericSecretLookup::class
 
-    override val resourceType = ProtonPassSecret::class
+    override val resourceType = GenericSecret::class
 }

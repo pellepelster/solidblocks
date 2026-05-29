@@ -24,10 +24,10 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLooku
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.toResult
@@ -37,7 +37,6 @@ import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurat
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseUsersConfigurationRuntime
 import de.solidblocks.cloud.utils.*
-import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloudinit.PostgresqlUserData
 import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMAND
 import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
@@ -50,7 +49,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
 
-    private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): GenericSecret = GenericSecret(
+    private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): GenericSecret<GenericSecretRuntime> = GenericSecret(
         secretPath(cloud.environment, runtime, listOf("superuser", "password")),
         RandomSecret(),
     )
@@ -99,21 +98,21 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             ),
         )
     } +
-            listOf(
-                EnvironmentVariableCallback(
-                    sanitizeEnvironmentVariables("DATABASE_HOST"),
-                    "host address for service '${runtime.name}'",
-                    {
-                        it.ensureLookup(HetznerServerLookup(serverName(cloud.environment, runtime.name, 0)))
-                            .privateIpv4 ?: throw RuntimeException("no private ip address found")
-                    },
-                ),
-                EnvironmentVariableStatic(
-                    sanitizeEnvironmentVariables("DATABASE_PORT"),
-                    "database port for service '${runtime.name}'",
-                    "5432",
-                ),
-            )
+        listOf(
+            EnvironmentVariableCallback(
+                sanitizeEnvironmentVariables("DATABASE_HOST"),
+                "host address for service '${runtime.name}'",
+                {
+                    it.ensureLookup(HetznerServerLookup(serverName(cloud.environment, runtime.name, 0)))
+                        .privateIpv4 ?: throw RuntimeException("no private ip address found")
+                },
+            ),
+            EnvironmentVariableStatic(
+                sanitizeEnvironmentVariables("DATABASE_PORT"),
+                "database port for service '${runtime.name}'",
+                "5432",
+            ),
+        )
 
     override fun infoJson(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, context: SSHProvisionerContext) = Success(
         ServiceInfo(
@@ -212,10 +211,10 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 volumes = setOf(defaultResources.volumes.data.asLookup()) + setOfNotNull(backupResources.second?.asLookup()),
                 type = cloud.hetznerProviderRuntime().defaultInstanceType,
                 subnet =
-                    HetznerSubnetLookup(
-                        defaultServiceSubnet,
-                        HetznerNetworkLookup(networkName(cloud.environment)),
-                    ),
+                HetznerSubnetLookup(
+                    defaultServiceSubnet,
+                    HetznerNetworkLookup(networkName(cloud.environment)),
+                ),
                 privateIp = serverPrivateIp(runtime.index),
                 labels = serviceLabels(runtime) + cloudLabels(cloud.environment),
                 dependsOn = backupResources.first + defaultResources.list(),
@@ -247,7 +246,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     }
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
-        GenericSecret(secretPath(cloud.environment, runtime, listOf(database.name, "password")), RandomSecret())
+        GenericSecret<GenericSecretRuntime>(secretPath(cloud.environment, runtime, listOf(database.name, "password")), RandomSecret())
 
     fun defaultDatabaseUserName(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) = database.name
 

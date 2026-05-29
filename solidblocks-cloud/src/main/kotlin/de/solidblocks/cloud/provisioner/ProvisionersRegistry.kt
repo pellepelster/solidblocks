@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -23,14 +23,15 @@ import kotlin.reflect.KClass
 
 class ProvisionersRegistry(
     val resourceLookupProviders: List<InfrastructureResourceLookupProvider<*, *>> = emptyList(),
-    val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList()
+    val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList(),
 ) {
 
     private val logger = KotlinLogging.logger {}
 
     @Suppress("UNCHECKED_CAST")
-    private fun <ResourceType : BaseResource> supportedProvisioner(resource: ResourceType): Pair<InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>>, BaseResource> =
-        provisioner(resource)
+    private fun <ResourceType : BaseResource> supportedProvisioner(
+        resource: ResourceType,
+    ): Pair<InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>>, BaseResource> = provisioner(resource)
 
     private fun provisioner(resource: BaseResource): Pair<InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>>, BaseResource> {
         val genericProvisioners = resourceProvisioners.filter {
@@ -73,7 +74,7 @@ class ProvisionersRegistry(
     }
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: SSHProvisionerContext): RuntimeType? = runBlocking {
-        val allLookups =  (resourceProvisioners.filterIsInstance<InfrastructureResourceLookupProvider<*, *>>() + resourceLookupProviders).distinctBy { it::class.java }
+        val allLookups = (resourceProvisioners.filterIsInstance<InfrastructureResourceLookupProvider<*, *>>() + resourceLookupProviders).distinctBy { it::class.java }
 
         val genericLookups = allLookups.filter {
             it.genericLookupType?.java?.isAssignableFrom(lookup::class.java) ?: false
@@ -85,12 +86,10 @@ class ProvisionersRegistry(
             lookup
         }
 
-
         val lookups =
             allLookups.filter {
                 it.lookupType.java.isAssignableFrom(maybeConvertedLookup::class.java)
             }
-
 
         val lookup = lookups.singleOrNull() ?: throw RuntimeException(
             "expected one lookup but found ${lookups.count()} for '${lookup::class.java.name}' (${lookups.joinToStringOrEmpty(", ") { "'${it::class.qualifiedName}'" }})",
@@ -111,9 +110,9 @@ class ProvisionersRegistry(
 
         @Suppress("UNCHECKED_CAST")
         return (
-                provider
-                        as InfrastructureResourceLookupProvider<LookupType, RuntimeType>
-                ).list()
+            provider
+                as InfrastructureResourceLookupProvider<LookupType, RuntimeType>
+            ).list()
     }
 
     companion object {
@@ -122,14 +121,14 @@ class ProvisionersRegistry(
 
         fun List<ProviderRegistration<*, *, *>>.createProvisioners(providers: List<ProviderConfigurationRuntime>): List<InfrastructureResourceProvisioner<*, *, *>> = providers.flatMap {
             val manager:
-                    ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                 this.managerForRuntime(it)
             manager.createProvisioners(it)
         }
 
         fun List<ProviderRegistration<*, *, *>>.createLookups(providers: List<ProviderConfigurationRuntime>) = providers.flatMap {
             val manager:
-                    ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
+                ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                 this.managerForRuntime(it)
             manager.createLookupProviders(it)
         }

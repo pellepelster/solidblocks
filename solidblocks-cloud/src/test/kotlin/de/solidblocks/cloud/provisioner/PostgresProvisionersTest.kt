@@ -14,6 +14,9 @@ import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseRuntim
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserRuntime
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataResult
@@ -75,21 +78,21 @@ class PostgresProvisionersTest {
 
         val secretProvisioner = mockk<PassSecretProvisioner>()
         coEvery { secretProvisioner.lookup(match { it.name == "super_user_password" }, any()) } returns
-            PassSecretRuntime(
+            GenericSecretRuntime(
                 "super_user_password",
                 "verysecret",
             )
         coEvery { secretProvisioner.lookup(match { it.name == "password1" }, any()) } returns
-            PassSecretRuntime(
+            GenericSecretRuntime(
                 "password1",
                 "secret1",
             )
         coEvery { secretProvisioner.lookup(match { it.name == "password2" }, any()) } returns
-            PassSecretRuntime(
+            GenericSecretRuntime(
                 "password2",
                 "secret2",
             )
-        coEvery { secretProvisioner.lookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.lookupType } returns GenericSecretLookup::class
         coEvery { secretProvisioner.genericLookupType } returns null
 
         val server =
@@ -130,9 +133,9 @@ class PostgresProvisionersTest {
                 sshClient,
             )
 
-        val superUserPassword = PassSecret("super_user_password", RandomSecret())
-        val password1 = PassSecret("password1", RandomSecret())
-        val password2 = PassSecret("password2", RandomSecret())
+        val superUserPassword = GenericSecret<GenericSecretRuntime>("super_user_password", RandomSecret())
+        val password1 = GenericSecret<GenericSecretRuntime>("password1", RandomSecret())
+        val password2 = GenericSecret<GenericSecretRuntime>("password2", RandomSecret())
 
         runBlocking {
             val username = UUID.randomUUID().toString()

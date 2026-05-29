@@ -17,9 +17,9 @@ import de.solidblocks.cloud.provisioner.aws.s3.AwsS3Bucket
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
-import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloudinit.BackupConfiguration
@@ -31,7 +31,7 @@ interface BackupProviderManager<
     R : ProviderConfigurationRuntime,
     > : ProviderManager<C, R>
 
-fun backupSecretResource(runtime: CloudConfigurationRuntime) = GenericSecret(
+fun backupSecretResource(runtime: CloudConfigurationRuntime) = GenericSecret<GenericSecretRuntime>(
     secretPath(runtime.environment, listOf("backup", "password")),
     RandomSecret(
         length = 32,
@@ -87,8 +87,8 @@ fun createBackupConfiguration(
                 context.ensureLookup(backupPassword).secret,
                 S3BackupTarget(
                     bucketName,
-                    context.ensureLookup(PassSecretLookup(S3BackupProviderManager.accessKeySecretPath(context.environment, iamUserName))).secret,
-                    context.ensureLookup(PassSecretLookup(S3BackupProviderManager.secretKeySecretPath(context.environment, iamUserName))).secret,
+                    context.ensureLookup(GenericSecretLookup(S3BackupProviderManager.accessKeySecretPath(context.environment, iamUserName))).secret,
+                    context.ensureLookup(GenericSecretLookup(S3BackupProviderManager.secretKeySecretPath(context.environment, iamUserName))).secret,
                 ),
             )
         }

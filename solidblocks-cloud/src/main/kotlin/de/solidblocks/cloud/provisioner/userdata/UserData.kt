@@ -16,17 +16,17 @@ data class UserDataResult(val userData: String, val ephemeralUserData: String)
 
 class UserData(dependsOn: Set<BaseInfrastructureResource<*>>, val block: ((ProvisionerContext) -> UserDataResult?)) : InfrastructureResourceLookup<UserDataRuntime>(UUID.randomUUID().toString(), dependsOn)
 
-fun ServiceUserData.toResult(context: ProvisionerContext, sSHIdentity: ServerSSHIdentityResources): UserDataResult {
+fun ServiceUserData.toResult(context: ProvisionerContext, sshIdentity: ServerSSHIdentityResources): UserDataResult {
     val script = this.shellScript()
         .toCloudInit(
-            context.ensureLookup(sSHIdentity.rsaSecret.asLookup()).secret,
-            context.ensureLookup(sSHIdentity.ed25519Secret.asLookup()).secret,
+            context.ensureLookup(sshIdentity.rsaSecret.asLookup()).secret,
+            context.ensureLookup(sshIdentity.ed25519Secret.asLookup()).secret,
         ).render()
 
     val ephemeralScript = this.ephemeralScript()
         .toCloudInit(
-            context.ensureLookup(sSHIdentity.rsaSecret.asLookup()).secret,
-            context.ensureLookup(sSHIdentity.ed25519Secret.asLookup()).secret,
+            context.ensureLookup(sshIdentity.rsaSecret.asLookup()).secret,
+            context.ensureLookup(sshIdentity.ed25519Secret.asLookup()).secret,
         ).render()
 
     return UserDataResult(script, ephemeralScript)

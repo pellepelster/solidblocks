@@ -7,8 +7,8 @@ import de.solidblocks.cloud.utils.*
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import java.time.Duration
 import java.util.*
 
@@ -104,13 +104,13 @@ class CloudUtilsTest {
     }
 
     @Test
-    @Disabled
+    @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
     fun testPassShow() {
         println(runCommand(listOf("pass", "test"))?.stdout)
     }
 
     @Test
-    @Disabled
+    @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
     fun testPassInsert() {
         val random = UUID.randomUUID().toString()
         runCommand(listOf("pass", "insert", "--multiline", "--force", "test"), random)

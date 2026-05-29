@@ -2,6 +2,6 @@ package de.solidblocks.cloud.provisioner.garagefs.bucket
 
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 
-class GarageFsBucketLookup(name: String, val server: HetznerServerLookup, val adminToken: PassSecretLookup) : InfrastructureResourceLookup<GarageFsBucketRuntime>(name, emptySet())
+class GarageFsBucketLookup(name: String, val server: HetznerServerLookup, val adminToken: GenericSecretLookup) : InfrastructureResourceLookup<GarageFsBucketRuntime>(name, emptySet())

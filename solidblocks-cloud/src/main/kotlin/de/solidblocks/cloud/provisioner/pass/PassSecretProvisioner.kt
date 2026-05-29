@@ -1,16 +1,18 @@
 package de.solidblocks.cloud.provisioner.pass
 
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
-import de.solidblocks.cloud.provisioner.secret.SecretProvisioner
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecretProvisioner
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.utils.CommandResult
 import de.solidblocks.cloud.utils.Error
@@ -23,12 +25,12 @@ import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
-    InfrastructureResourceLookupProvider<PassSecretLookup, PassSecretRuntime>,
-    SecretProvisioner<PassSecret, PassSecretRuntime, PassSecretLookup> {
+    InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
+    GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup> {
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: PassSecret, context: ProvisionerDiffContext): ResourceDiff {
+    override suspend fun diff(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerDiffContext): ResourceDiff {
         val runtime = lookup(resource.asLookup(), context)
 
         return if (runtime != null) {
@@ -57,7 +59,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         }
     }
 
-    override suspend fun lookup(lookup: PassSecretLookup, context: SSHProvisionerContext): PassSecretRuntime? {
+    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext): GenericSecretRuntime? {
         val result = passShow(lookup.name, passwordStoreDir)
 
         if (result == null) {
@@ -66,7 +68,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         }
 
         if (result.exitCode == 0) {
-            return PassSecretRuntime(lookup.name, result.stdout)
+            return GenericSecretRuntime(lookup.name, result.stdout)
         } else {
             if (result.stdout.contains("is not in the password store")) {
                 return null
@@ -79,7 +81,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         return null
     }
 
-    override suspend fun apply(resource: PassSecret, context: ProvisionerApplyContext, log: LogContext): Result<PassSecretRuntime> {
+    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext, log: LogContext): Result<GenericSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !resource.tainted && resource.secretGenerator.isEphemeral()) {
@@ -89,15 +91,15 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         log.debug("creating secret at '${resource.name}'")
         val secret = resource.secretGenerator.generate(context)
         when (val result = passInsert(resource.name, secret, passwordStoreDir).asResult("pass insert")) {
-            is Error<CommandResult> -> Error<PassSecretRuntime>(result.error)
+            is Error<CommandResult> -> Error<GenericSecretRuntime>(result.error)
             is Success<CommandResult> -> {}
         }
 
         return lookup(resource.asLookup(), context)?.let { Success(it) }
-            ?: Error<PassSecretRuntime>("error creating ${resource.logText()}")
+            ?: Error<GenericSecretRuntime>("error creating ${resource.logText()}")
     }
 
-    override val lookupType = PassSecretLookup::class
+    override val lookupType = GenericSecretLookup::class
 
-    override val resourceType = PassSecret::class
+    override val resourceType = GenericSecret::class
 }
