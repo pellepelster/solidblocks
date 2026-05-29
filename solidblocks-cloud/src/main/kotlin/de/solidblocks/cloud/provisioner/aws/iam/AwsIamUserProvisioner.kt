@@ -13,13 +13,13 @@ import aws.sdk.kotlin.services.iam.model.ListAccessKeysRequest
 import aws.sdk.kotlin.services.iam.model.ListUserPoliciesRequest
 import aws.sdk.kotlin.services.iam.model.NoSuchEntityException
 import aws.sdk.kotlin.services.iam.model.PutUserPolicyRequest
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager.Companion.accessKeySecretPath
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
@@ -36,7 +36,7 @@ import kotlin.reflect.KClass
 class AwsIamUserProvisioner(
     private val accessKeyId: String,
     private val secretAccessKey: String,
-) : ResourceLookupProvider<AwsIamUserLookup, AwsIamUserRuntime>,
+) : InfrastructureResourceLookupProvider<AwsIamUserLookup, AwsIamUserRuntime>,
     InfrastructureResourceProvisioner<AwsIamUser, AwsIamUserRuntime, AwsIamUserLookup> {
 
     private val json = Json { prettyPrint = false }

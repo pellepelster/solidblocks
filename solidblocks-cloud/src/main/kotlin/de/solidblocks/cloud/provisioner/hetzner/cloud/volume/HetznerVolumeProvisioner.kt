@@ -1,12 +1,12 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.volume
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
 
 class HetznerVolumeProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    ResourceLookupProvider<HetznerVolumeLookup, HetznerVolumeRuntime>,
+    InfrastructureResourceLookupProvider<HetznerVolumeLookup, HetznerVolumeRuntime>,
     InfrastructureResourceProvisioner<HetznerVolume, HetznerVolumeRuntime, HetznerVolumeLookup> {
 
     private val logger = KotlinLogging.logger {}

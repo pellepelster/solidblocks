@@ -30,9 +30,10 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLook
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.RandomSecret
-import de.solidblocks.cloud.provisioner.pass.StaticSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.RandomSecret
+import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.toResult
 import de.solidblocks.cloud.services.*
@@ -78,7 +79,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
-        val adminToken = PassSecret(
+        val adminToken = GenericSecret<GenericSecretRuntime>(
             secretPath(cloud.environmentContext, runtime, listOf("garage", "admin_token")),
             RandomSecret(
                 length = 64,
@@ -87,7 +88,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             true,
         )
 
-        val rpcSecret = PassSecret(
+        val rpcSecret = GenericSecret<GenericSecretRuntime>(
             secretPath(cloud.environmentContext, runtime, listOf("garage", "rpc_secret")),
             RandomSecret(
                 length = 64,
@@ -96,7 +97,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             true,
         )
 
-        val metricsToken = PassSecret(
+        val metricsToken = GenericSecret<GenericSecretRuntime>(
             secretPath(cloud.environmentContext, runtime, listOf("garage", "metrics_token")),
             RandomSecret(
                 length = 64,
@@ -227,7 +228,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 bucketResources.add(accessKey)
 
                 bucketResources.add(
-                    PassSecret(
+                    GenericSecret<GenericSecretRuntime>(
                         secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "secret_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
                         true,
@@ -236,7 +237,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 )
 
                 bucketResources.add(
-                    PassSecret(
+                    GenericSecret<GenericSecretRuntime>(
                         secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "access_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).id },
                         true,
@@ -258,7 +259,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             }
         }
 
-        val s3HostSecret = PassSecret(
+        val s3HostSecret = GenericSecret<GenericSecretRuntime>(
             secretPath(cloud.environmentContext, runtime, listOf("endpoints", "s3_host")),
             StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
             true,

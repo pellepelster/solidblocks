@@ -1,8 +1,7 @@
-package de.solidblocks.cloud.provisioner.pass
+package de.solidblocks.cloud.provisioner.secret
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseResource
-import de.solidblocks.cloud.api.resources.SecretInfrastructureResource
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 
 sealed class SecretGenerator() {
@@ -28,17 +27,19 @@ class StaticSecret(val secret: (ProvisionerContext) -> String) : SecretGenerator
     override fun isEphemeral() = false
 }
 
-class PassSecret(
+open class GenericSecret<RuntimeType : GenericSecretRuntime>(
     name: String,
     val secretGenerator: SecretGenerator,
     taintable: Boolean,
     dependsOn: Set<BaseResource> = emptySet(),
-) : SecretInfrastructureResource, BaseInfrastructureResource<PassSecretRuntime>(name, dependsOn, taintable) {
-    override fun asLookup() = PassSecretLookup(name)
+) : BaseInfrastructureResource<GenericSecretRuntime>(name, dependsOn) {
 
-    override fun logText() = "pass secret '$name'"
+    override fun asLookup() = GenericSecretLookup(name)
 
+    override fun logText() = "secret '$name'"
+
+    // TODO generalize
     fun shellExportCommand(envName: String) = "export $envName=\"\$(pass $name)\""
 
-    override val lookupType = PassSecretLookup::class
+    override val lookupType = GenericSecretLookup::class
 }

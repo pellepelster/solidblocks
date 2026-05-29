@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.network
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 
 class HetznerNetworkProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    ResourceLookupProvider<HetznerNetworkLookup, HetznerNetworkRuntime>,
+    InfrastructureResourceLookupProvider<HetznerNetworkLookup, HetznerNetworkRuntime>,
     InfrastructureResourceProvisioner<HetznerNetwork, HetznerNetworkRuntime, HetznerNetworkLookup> {
 
     private val logger = KotlinLogging.logger {}

@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner.postgres.user
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
@@ -7,7 +8,6 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -25,7 +25,7 @@ import java.sql.DriverManager
 
 class PostgresUserProvisioner :
     BasePostgresProvisioner(),
-    ResourceLookupProvider<PostgresUserLookup, PostgresUserRuntime>,
+    InfrastructureResourceLookupProvider<PostgresUserLookup, PostgresUserRuntime>,
     InfrastructureResourceProvisioner<PostgresUser, PostgresUserRuntime, PostgresUserLookup> {
 
     private val logger = KotlinLogging.logger {}

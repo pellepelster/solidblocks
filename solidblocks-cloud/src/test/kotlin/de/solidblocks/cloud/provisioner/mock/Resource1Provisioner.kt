@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.provisioner.mock
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -15,7 +15,7 @@ import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource1Provisioner :
-    ResourceLookupProvider<Resource1Lookup, Resource1Runtime>,
+    InfrastructureResourceLookupProvider<Resource1Lookup, Resource1Runtime>,
     InfrastructureResourceProvisioner<Resource1, Resource1Runtime, Resource1Lookup> {
 
     private val logger = KotlinLogging.logger {}

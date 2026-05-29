@@ -1,12 +1,12 @@
 package de.solidblocks.cloud.provisioner.garagefs.layout
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -25,7 +25,7 @@ import kotlin.reflect.KClass
 
 class GarageFsLayoutProvisioner :
     BaseGarageFsProvisioner(),
-    ResourceLookupProvider<GarageFsLayoutLookup, GarageFsLayoutRuntime>,
+    InfrastructureResourceLookupProvider<GarageFsLayoutLookup, GarageFsLayoutRuntime>,
     InfrastructureResourceProvisioner<GarageFsLayout, GarageFsLayoutRuntime, GarageFsLayoutLookup> {
 
     private val logger = KotlinLogging.logger {}

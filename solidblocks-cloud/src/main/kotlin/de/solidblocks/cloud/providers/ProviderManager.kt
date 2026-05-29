@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.providers
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
@@ -15,7 +15,7 @@ interface ProviderManager<C : ProviderConfiguration, R : ProviderConfigurationRu
 
     fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *, *>>
 
-    fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
+    fun createLookupProviders(runtime: R): List<InfrastructureResourceLookupProvider<*, *>> = emptyList()
 
     val supportedConfiguration: KClass<C>
 }

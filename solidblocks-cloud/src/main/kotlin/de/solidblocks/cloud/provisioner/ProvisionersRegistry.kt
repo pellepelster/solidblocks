@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -23,7 +23,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 
-class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvider<*, *>> = emptyList(), val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList()) {
+class ProvisionersRegistry(
+    val resourceLookupProviders: List<InfrastructureResourceLookupProvider<*, *>> = emptyList(),
+    val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList(),
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -80,7 +83,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
         }
 
         @Suppress("UNCHECKED_CAST")
-        (provider as ResourceLookupProvider<InfrastructureResourceLookup<RuntimeType>, RuntimeType>)
+        (provider as InfrastructureResourceLookupProvider<InfrastructureResourceLookup<RuntimeType>, RuntimeType>)
             .lookup(lookup, context)
     }
 
@@ -95,7 +98,7 @@ class ProvisionersRegistry(val resourceLookupProviders: List<ResourceLookupProvi
         @Suppress("UNCHECKED_CAST")
         return (
             provider
-                as ResourceLookupProvider<LookupType, RuntimeType>
+                as InfrastructureResourceLookupProvider<LookupType, RuntimeType>
             ).list()
     }
 

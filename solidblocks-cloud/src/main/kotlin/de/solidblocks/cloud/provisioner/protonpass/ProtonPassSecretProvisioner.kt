@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.provisioner.pass
+package de.solidblocks.cloud.provisioner.protonpass
 
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceDiff
@@ -19,12 +19,14 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.asResult
-import de.solidblocks.cloud.utils.passInsert
-import de.solidblocks.cloud.utils.passShow
+import de.solidblocks.cloud.utils.parseProtonPassItem
+import de.solidblocks.cloud.utils.protonPassItemCreateNote
+import de.solidblocks.cloud.utils.protonPassItemDelete
+import de.solidblocks.cloud.utils.protonPassItemView
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-class PassSecretProvisioner(val passwordStoreDir: String) :
+class ProtonPassSecretProvisioner(val vaultName: String) :
     InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
     GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup> {
 
@@ -59,24 +61,29 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         }
     }
 
-    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext): GenericSecretRuntime? {
-        val result = passShow(lookup.name, passwordStoreDir)
+    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext): ProtonPassSecretRuntime? {
+        val result = protonPassItemView(vaultName, lookup.name)
 
         if (result == null) {
-            logger.error { "pass command failed" }
+            logger.error { "pass-cli command failed" }
             return null
         }
 
         if (result.exitCode == 0) {
-            return GenericSecretRuntime(lookup.name, result.stdout)
-        } else {
-            if (result.stdout.contains("is not in the password store")) {
+            val item = parseProtonPassItem(result.stdout)
+            if (item == null) {
+                logger.error { "failed to parse pass-cli item view output" }
                 return null
             }
+            return ProtonPassSecretRuntime(lookup.name, item.content.note ?: "", item.shareId, item.id)
+        }
+
+        if (result.stderr.contains("No item found")) {
+            return null
         }
 
         logger.error {
-            "invalid pass command result (${result.exitCode}), stdout: '${result.stdout}', stderr: '${result.stderr}'"
+            "invalid pass-cli command result (${result.exitCode}), stdout: '${result.stdout}', stderr: '${result.stderr}'"
         }
         return null
     }
@@ -88,15 +95,24 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
             return Success(current)
         }
 
-        log.debug("creating secret at '${resource.name}'")
+        log.debug("creating secret at '${resource.name}' in vault '$vaultName'")
         val secret = resource.secretGenerator.generate(context)
-        when (val result = passInsert(resource.name, secret, passwordStoreDir).asResult("pass insert")) {
-            is Error<CommandResult> -> Error<GenericSecretRuntime>(result.error)
+
+        // proton pass note items cannot be updated via stdin, so an existing item is removed and recreated
+        if (current != null) {
+            when (val result = protonPassItemDelete(current.shareId, current.itemId).asResult("pass-cli item delete")) {
+                is Error<CommandResult> -> return Error(result.error)
+                is Success<CommandResult> -> {}
+            }
+        }
+
+        when (val result = protonPassItemCreateNote(vaultName, resource.name, secret).asResult("pass-cli item create")) {
+            is Error<CommandResult> -> return Error(result.error)
             is Success<CommandResult> -> {}
         }
 
         return lookup(resource.asLookup(), context)?.let { Success(it) }
-            ?: Error<GenericSecretRuntime>("error creating ${resource.logText()}")
+            ?: Error("error creating ${resource.logText()}")
     }
 
     override val supportedLookupType = GenericSecretLookup::class

@@ -18,11 +18,11 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerRuntime
-import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
-import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
-import de.solidblocks.cloud.provisioner.pass.RandomSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataResult
 import de.solidblocks.cloud.utils.Success
@@ -107,14 +107,14 @@ class GarageFsProvisionersTest {
         coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
 
         val secretProvisioner = mockk<PassSecretProvisioner>()
-        coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.supportedLookupType } returns GenericSecretLookup::class
         coEvery { secretProvisioner.lookup(match { it.name == "admin_token" }, any()) } returns
-            PassSecretRuntime(
+            GenericSecretRuntime(
                 "admin_token",
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             )
         coEvery { secretProvisioner.lookup(match { it.name == "cloud1/default/hosts/server1/ssh_host_key_ed25519" }, any()) } returns
-            PassSecretRuntime(
+            GenericSecretRuntime(
                 "cloud1/default/hosts/server1/ssh_host_key_ed25519",
                 GarageFsProvisionersTest::class.java.getResource("/test_ed25519.key")!!.readText(),
             )
@@ -160,7 +160,7 @@ class GarageFsProvisionersTest {
                 sshClient,
             )
 
-        val adminToken = PassSecret("admin_token", RandomSecret(), true)
+        val adminToken = GenericSecret<GenericSecretRuntime>("admin_token", RandomSecret(), true)
         val bucketName = UUID.randomUUID().toString()
         val bucket = GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), false)
         val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)

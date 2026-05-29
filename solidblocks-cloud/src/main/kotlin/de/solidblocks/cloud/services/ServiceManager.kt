@@ -21,8 +21,9 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloating
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
-import de.solidblocks.cloud.provisioner.pass.OneTimeGeneratedSecret
-import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.Error
@@ -110,14 +111,14 @@ fun ServiceManager<*, *>.createDefaultServerResources(cloud: CloudConfigurationR
     return DefaultServerResources(serverVolumes, serverSSHIdentity, floatingIp)
 }
 
-data class ServerSSHIdentityResources(val rsaSecret: PassSecret, val ed25519Secret: PassSecret) {
+data class ServerSSHIdentityResources(val rsaSecret: GenericSecret<GenericSecretRuntime>, val ed25519Secret: GenericSecret<GenericSecretRuntime>) {
     fun list() = listOf(rsaSecret, ed25519Secret)
 }
 
 fun createDefaultSSHIdentity(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): ServerSSHIdentityResources {
     val serverName = serverName(cloud.environmentContext, runtime.name, index)
 
-    val sshIdentityRsaSecret = PassSecret(
+    val sshIdentityRsaSecret = GenericSecret<GenericSecretRuntime>(
         sshHostPrivateKeySecretPath(cloud.environmentContext, serverName, KeyType.rsa),
         OneTimeGeneratedSecret {
             val keyPair = SSHKeyUtils.RSA.generate()
@@ -127,7 +128,7 @@ fun createDefaultSSHIdentity(cloud: CloudConfigurationRuntime, runtime: ServiceC
         true,
     )
 
-    val sshIdentityED25519Secret = PassSecret(
+    val sshIdentityED25519Secret = GenericSecret<GenericSecretRuntime>(
         sshHostPrivateKeySecretPath(cloud.environmentContext, serverName, KeyType.ed25519),
         OneTimeGeneratedSecret {
             val keyPair = SSHKeyUtils.ED25519.generate()

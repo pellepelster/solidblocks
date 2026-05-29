@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.provisioner.garagefs.bucket
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
 
 class GarageFsBucketProvisioner :
     BaseGarageFsProvisioner(),
-    ResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>,
+    InfrastructureResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>,
     InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime, GarageFsBucketLookup> {
 
     override suspend fun diff(resource: GarageFsBucket, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {

@@ -15,13 +15,13 @@ import aws.sdk.kotlin.services.s3.model.NotFound
 import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.model.PublicAccessBlockConfiguration
 import aws.sdk.kotlin.services.s3.model.PutPublicAccessBlockRequest
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -40,7 +40,7 @@ class AwsS3BucketProvisioner(
     private val secretAccessKey: String,
     private val region: String,
     val waitConfig: WaitConfig = DEFAULT_WAIT,
-) : ResourceLookupProvider<AwsS3BucketLookup, AwsS3BucketRuntime>,
+) : InfrastructureResourceLookupProvider<AwsS3BucketLookup, AwsS3BucketRuntime>,
     InfrastructureResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime, AwsS3BucketLookup> {
 
     override suspend fun lookup(lookup: AwsS3BucketLookup, context: SSHProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->

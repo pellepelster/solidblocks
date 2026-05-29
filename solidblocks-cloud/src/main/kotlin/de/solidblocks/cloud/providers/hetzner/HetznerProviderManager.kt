@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.providers.hetzner
 
+import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.CloudResourceProviderManager
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
@@ -62,7 +62,7 @@ class HetznerProviderManager :
         }
     }
 
-    override fun createLookupProviders(runtime: HetznerProviderRuntime) = listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<ResourceLookupProvider<*, *>>
+    override fun createLookupProviders(runtime: HetznerProviderRuntime) = listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<InfrastructureResourceLookupProvider<*, *>>
 
     override fun createProvisioners(runtime: HetznerProviderRuntime) = listOf(
         HetznerDnsRecordProvisioner(runtime.cloudToken),

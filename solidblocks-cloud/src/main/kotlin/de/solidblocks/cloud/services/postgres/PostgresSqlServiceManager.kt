@@ -15,20 +15,17 @@ import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.providers.types.backup.createBackupConfiguration
 import de.solidblocks.cloud.providers.types.backup.createBackupResources
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
-import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
-import de.solidblocks.cloud.provisioner.context.ValidationContext
-import de.solidblocks.cloud.provisioner.context.ensureLookup
-import de.solidblocks.cloud.provisioner.context.ensureOptionalLookup
+import de.solidblocks.cloud.provisioner.context.*
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.pass.PassSecret
-import de.solidblocks.cloud.provisioner.pass.RandomSecret
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.toResult
 import de.solidblocks.cloud.services.*
@@ -56,7 +53,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
 
-    private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): PassSecret = PassSecret(
+    private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): GenericSecret<GenericSecretRuntime> = GenericSecret<GenericSecretRuntime>(
         secretPath(cloud.environmentContext, runtime, listOf("superuser", "password")),
         RandomSecret(),
         true,
@@ -277,7 +274,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     }
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
-        PassSecret(secretPath(cloud.environmentContext, runtime, listOf(database.name, "password")), RandomSecret(), true)
+        GenericSecret<GenericSecretRuntime>(secretPath(cloud.environmentContext, runtime, listOf(database.name, "password")), RandomSecret(), true)
 
     fun defaultDatabaseUserName(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) = database.name
 

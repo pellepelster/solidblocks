@@ -4,7 +4,7 @@ import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import kotlin.reflect.KClass
 
-interface ResourceLookupProvider<ResourceLookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType> {
+interface InfrastructureResourceLookupProvider<ResourceLookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType> {
 
     suspend fun lookup(lookup: ResourceLookupType, context: SSHProvisionerContext): RuntimeType?
 
