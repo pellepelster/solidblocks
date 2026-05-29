@@ -18,14 +18,10 @@ dependencies {
     testImplementation("com.github.docker-java:docker-java:3.5.1")
     testImplementation("com.github.docker-java:docker-java-transport-zerodep:3.5.1")
 
-    testImplementation("org.eclipse:yasson:1.0.1")
     testImplementation("org.glassfish:javax.json:1.1.2")
 
     testImplementation("io.minio:minio:8.6.0")
-    testImplementation("com.squareup.okhttp3:okhttp-tls:4.11.0")
-    testImplementation("io.github.hakky54:sslcontext-kickstart-for-pem:7.4.5")
 
-    testImplementation("io.mockk:mockk:1.12.4")
     testImplementation("org.awaitility:awaitility:4.2.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
@@ -33,7 +29,6 @@ dependencies {
     testImplementation("org.postgresql:postgresql:42.7.2")
     testImplementation("org.jdbi:jdbi3-core:3.32.0")
 
-    testImplementation("com.amazonaws:aws-java-sdk-s3:1.12.455")
     testImplementation("com.google.cloud:google-cloud-storage:2.34.0")
 
     testImplementation(project(":solidblocks-test"))

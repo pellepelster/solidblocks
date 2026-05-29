@@ -15,7 +15,6 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("io.ktor:ktor-client-java:3.1.2")
-    implementation("io.ktor:ktor-client-logging:3.1.2")
 
     implementation("org.graalvm.sdk:nativeimage:23.1.7")
 
@@ -36,7 +35,6 @@ dependencies {
 
     testImplementation(project(":solidblocks-test"))
     testImplementation("org.reflections:reflections:0.10.2")
-    testImplementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
     testImplementation("com.jayway.jsonpath:json-path:2.9.0")
 }

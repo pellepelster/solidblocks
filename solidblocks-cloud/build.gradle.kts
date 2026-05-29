@@ -40,7 +40,6 @@ dependencies {
 
     implementation("com.charleskorn.kaml:kaml:0.83.0")
 
-    implementation("io.ktor:ktor-client-resources:3.1.2")
     implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("io.ktor:ktor-client-java:3.1.2")

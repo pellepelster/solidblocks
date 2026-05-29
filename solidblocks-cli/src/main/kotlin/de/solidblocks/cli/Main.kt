@@ -24,11 +24,6 @@ import de.solidblocks.cli.hetzner.HetznerCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgCommand
 import de.solidblocks.cli.hetzner.asg.HetznerAsgRotateCommand
 import de.solidblocks.cli.hetzner.nuke.HetznerNukeCommand
-import de.solidblocks.cli.terraform.BackendsCommand
-import de.solidblocks.cli.terraform.BackendsS3Command
-import de.solidblocks.cli.terraform.TYPE
-import de.solidblocks.cli.terraform.TerraformCommand
-import de.solidblocks.cli.terraform.TofuCommand
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.graalvm.nativeimage.hosted.Feature
 import org.graalvm.nativeimage.hosted.RuntimeClassInitialization
@@ -90,20 +85,6 @@ fun main(args: Array<String>) {
     DocsCommand().also {
         root.subcommands(it)
         it.subcommands(AnsibleCommand())
-    }
-
-    TerraformCommand().also {
-        root.subcommands(it)
-        it.subcommands(
-            BackendsCommand(TYPE.TERRAFORM).also { it.subcommands(BackendsS3Command(TYPE.TERRAFORM)) },
-        )
-    }
-
-    TofuCommand().also {
-        root.subcommands(it)
-        it.subcommands(
-            BackendsCommand(TYPE.TOFU).also { it.subcommands(BackendsS3Command(TYPE.TOFU)) },
-        )
     }
 
     root.main(args)

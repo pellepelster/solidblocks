@@ -46,7 +46,6 @@ mavenPublishing {
 
 dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
-    implementation("io.ktor:ktor-client-resources:3.1.2")
     implementation("io.ktor:ktor-client-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.2")
     implementation("io.ktor:ktor-client-java:3.1.2")
