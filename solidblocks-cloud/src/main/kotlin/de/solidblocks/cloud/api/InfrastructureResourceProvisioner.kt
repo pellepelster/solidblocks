@@ -31,5 +31,4 @@ interface InfrastructureResourceProvisioner<ResourceType: BaseResource, RuntimeT
         get() = null
 
     val genericLookupType: KClass<*>?
-
 }

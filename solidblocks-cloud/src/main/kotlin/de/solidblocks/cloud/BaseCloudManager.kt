@@ -5,6 +5,7 @@ import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderRegistrati
 import de.solidblocks.cloud.providers.github.GithubProviderRegistration
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRegistration
 import de.solidblocks.cloud.providers.pass.PassProviderRegistration
+import de.solidblocks.cloud.providers.protonpass.ProtonPassProviderRegistration
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderRegistration
 import de.solidblocks.cloud.services.docker.DockerServiceRegistration
 import de.solidblocks.cloud.services.github.GithubRunnerServiceRegistration
@@ -20,6 +21,7 @@ abstract class BaseCloudManager {
         listOf(
             HetznerProviderRegistration(),
             PassProviderRegistration(),
+            ProtonPassProviderRegistration(),
             LocalSSHKeyProviderRegistration(),
             S3BackupProviderRegistration(),
             LocalBackupProviderRegistration(),
