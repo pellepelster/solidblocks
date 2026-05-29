@@ -5,10 +5,9 @@ import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
@@ -42,31 +41,11 @@ class HetznerProviderConfigurationFactory : PolymorphicConfigurationFactory<Hetz
 
     override val keywords = listOf(PROVIDER_NAME_KEYWORD, defaultLocation, defaultInstanceType)
 
-    override fun parse(yaml: YamlNode): Result<HetznerProviderConfiguration> {
-        val name =
-            when (val result = PROVIDER_NAME_KEYWORD.parse(yaml)) {
-                is Error<String> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val defaultLocation =
-            when (val result = defaultLocation.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val defaultInstanceType =
-            when (val result = defaultInstanceType.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        return Success(
-            HetznerProviderConfiguration(
-                name,
-                HetznerLocation.valueOf(defaultLocation),
-                HetznerServerType.valueOf(defaultInstanceType),
-            ),
+    override fun parse(yaml: YamlNode): Result<HetznerProviderConfiguration> = result {
+        HetznerProviderConfiguration(
+            PROVIDER_NAME_KEYWORD.parse(yaml).bind(),
+            HetznerLocation.valueOf(defaultLocation.parse(yaml).bind()),
+            HetznerServerType.valueOf(defaultInstanceType.parse(yaml).bind()),
         )
     }
 }

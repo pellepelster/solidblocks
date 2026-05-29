@@ -11,10 +11,9 @@ import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceRegistration
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 
 class CloudConfigurationFactory(
     providerRegistrations: List<
@@ -83,37 +82,13 @@ class CloudConfigurationFactory(
 
     override val keywords = listOf<Keyword<*>>(name, environment, rootDomain, providers, services)
 
-    override fun parse(yaml: YamlNode): Result<CloudConfiguration> {
-        val name =
-            when (val result = name.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val rootDomain =
-            when (val result = rootDomain.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String?> -> result.data
-            }
-
-        val environment =
-            when (val result = environment.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<Map<String, String>?> -> result.data ?: emptyMap()
-            }
-
-        val providers =
-            when (val result = providers.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<List<ProviderConfiguration>> -> result.data
-            }
-
-        val services =
-            when (val result = services.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<List<ServiceConfiguration>> -> result.data
-            }
-
-        return Success(CloudConfiguration(name, rootDomain, environment, providers, services))
+    override fun parse(yaml: YamlNode): Result<CloudConfiguration> = result {
+        CloudConfiguration(
+            name.parse(yaml).bind(),
+            rootDomain.parse(yaml).bind(),
+            environment.parse(yaml).bind() ?: emptyMap(),
+            providers.parse(yaml).bind(),
+            services.parse(yaml).bind(),
+        )
     }
 }

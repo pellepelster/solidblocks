@@ -4,10 +4,9 @@ import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.NumberConstraints.Companion.IP_PORTS
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class DockerServiceEndpointConfigurationFactory : ConfigurationFactory<DockerServiceEndpointConfiguration> {
@@ -46,13 +45,7 @@ class DockerServiceEndpointConfigurationFactory : ConfigurationFactory<DockerSer
 
     override val keywords = listOf(port, type)
 
-    override fun parse(yaml: YamlNode): Result<DockerServiceEndpointConfiguration> {
-        val port =
-            when (val result = port.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<Int> -> result.data
-            }
-
-        return Success(DockerServiceEndpointConfiguration(port))
+    override fun parse(yaml: YamlNode): Result<DockerServiceEndpointConfiguration> = result {
+        DockerServiceEndpointConfiguration(port.parse(yaml).bind())
     }
 }

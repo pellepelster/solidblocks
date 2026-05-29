@@ -6,10 +6,9 @@ import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 
 class GithubProviderConfigurationFactory : PolymorphicConfigurationFactory<GithubProviderConfiguration>() {
 
@@ -28,19 +27,10 @@ class GithubProviderConfigurationFactory : PolymorphicConfigurationFactory<Githu
 
     override val keywords = listOf(PROVIDER_NAME_KEYWORD, githubUrl)
 
-    override fun parse(yaml: YamlNode): Result<GithubProviderConfiguration> {
-        val name =
-            when (val result = PROVIDER_NAME_KEYWORD.parse(yaml)) {
-                is Error<String> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val githubUrl =
-            when (val result = githubUrl.parse(yaml)) {
-                is Error<String> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        return Success(GithubProviderConfiguration(name, githubUrl))
+    override fun parse(yaml: YamlNode): Result<GithubProviderConfiguration> = result {
+        GithubProviderConfiguration(
+            PROVIDER_NAME_KEYWORD.parse(yaml).bind(),
+            githubUrl.parse(yaml).bind(),
+        )
     }
 }

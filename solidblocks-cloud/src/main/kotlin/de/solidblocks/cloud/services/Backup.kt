@@ -7,10 +7,9 @@ import de.solidblocks.cloud.configuration.NumberConstraints.Companion.VOLUME_SIZ
 import de.solidblocks.cloud.configuration.NumberKeywordOptional
 import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
 import de.solidblocks.cloud.utils.ByteSize
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 
 object BackupConfigurationFactory {
 
@@ -36,20 +35,11 @@ object BackupConfigurationFactory {
     val keywords =
         listOf<Keyword<*>>(BACKUP_DATA_VOLUME_SIZE_KEYWORD, BACKUP_FULL_RETENTION_DAYS_KEYWORD)
 
-    fun parse(yaml: YamlNode): Result<BackupConfig> {
-        val backupVolumeSize =
-            when (val result = BACKUP_DATA_VOLUME_SIZE_KEYWORD.parse(yaml)) {
-                is Error<Int?> -> return Error(result.error)
-                is Success<Int?> -> result.data
-            }
-
-        val backupFullRetentionDays =
-            when (val result = BACKUP_FULL_RETENTION_DAYS_KEYWORD.parse(yaml)) {
-                is Error<Int> -> return Error(result.error)
-                is Success<Int> -> result.data
-            }
-
-        return Success(BackupConfig(backupVolumeSize, backupFullRetentionDays))
+    fun parse(yaml: YamlNode): Result<BackupConfig> = result {
+        BackupConfig(
+            BACKUP_DATA_VOLUME_SIZE_KEYWORD.parse(yaml).bind(),
+            BACKUP_FULL_RETENTION_DAYS_KEYWORD.parse(yaml).bind(),
+        )
     }
 }
 

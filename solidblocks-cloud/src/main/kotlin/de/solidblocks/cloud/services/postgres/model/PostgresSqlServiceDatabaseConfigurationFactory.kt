@@ -6,10 +6,9 @@ import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAME
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PostgresSqlServiceDatabaseConfigurationFactory : ConfigurationFactory<PostgresSqlServiceDatabaseConfiguration> {
@@ -37,19 +36,10 @@ class PostgresSqlServiceDatabaseConfigurationFactory : ConfigurationFactory<Post
 
     override val keywords = listOf(name, users)
 
-    override fun parse(yaml: YamlNode): Result<PostgresSqlServiceDatabaseConfiguration> {
-        val name =
-            when (val result = name.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val users =
-            when (val result = users.parse(yaml)) {
-                is Error<List<PostgresSqlServiceDatabaseUserConfiguration>> -> return Error(result.error)
-                is Success<List<PostgresSqlServiceDatabaseUserConfiguration>> -> result.data
-            }
-
-        return Success(PostgresSqlServiceDatabaseConfiguration(name, users))
+    override fun parse(yaml: YamlNode): Result<PostgresSqlServiceDatabaseConfiguration> = result {
+        PostgresSqlServiceDatabaseConfiguration(
+            name.parse(yaml).bind(),
+            users.parse(yaml).bind(),
+        )
     }
 }

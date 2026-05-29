@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.providers.pass
 
-import de.solidblocks.cloud.providers.ProviderRegistration
+import de.solidblocks.cloud.providers.types.secret.SecretProviderRegistration
 
 val PASS_PROVIDER_TYPE = "pass"
 
-class PassProviderRegistration : ProviderRegistration<PassProviderConfiguration, PassProviderRuntime, PassProviderManager> {
+class PassProviderRegistration : SecretProviderRegistration<PassProviderConfiguration, PassProviderRuntime, PassProviderManager> {
     override val supportedConfiguration = PassProviderConfiguration::class
     override val supportedRuntime = PassProviderRuntime::class
 

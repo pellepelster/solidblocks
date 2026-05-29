@@ -46,7 +46,9 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.aggregate
 import de.solidblocks.cloud.utils.aggregateErrorMessage
+import de.solidblocks.cloud.utils.getOrElse
 import de.solidblocks.cloud.utils.hasError
+import de.solidblocks.cloud.utils.map
 import de.solidblocks.cloud.utils.mapSuccess
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
@@ -89,10 +91,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
     fun info(runtime: CloudConfigurationRuntime): Result<String> = runBlocking {
         val serviceOutput = serviceManagers().map {
-            when (val result = it.second.infoText(runtime, it.first, context)) {
-                is Error<String> -> return@runBlocking Error<String>(result.error)
-                is Success<String> -> result.data
-            }
+            it.second.infoText(runtime, it.first, context).getOrElse { e -> return@runBlocking Error(e.error, e.cause) }
         }
 
         return@runBlocking Success(serviceOutput.joinToString("\n"))
@@ -100,10 +99,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
     fun status(runtime: CloudConfigurationRuntime): Result<String> = runBlocking {
         val serviceOutput = serviceManagers().map {
-            when (val result = it.second.status(runtime, it.first, context)) {
-                is Error<String> -> return@runBlocking Error<String>(result.error)
-                is Success<String> -> result.data
-            }
+            it.second.status(runtime, it.first, context).getOrElse { e -> return@runBlocking Error(e.error, e.cause) }
         }
 
         return@runBlocking Success(serviceOutput.joinToString("\n"))
@@ -119,10 +115,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
     fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> = runBlocking {
         val services = serviceManagers().map {
-            when (val result = it.second.infoJson(runtime, it.first, context)) {
-                is Error<ServiceInfo> -> return@runBlocking Error<CloudInfo>(result.error)
-                is Success<ServiceInfo> -> result.data
-            }
+            it.second.infoJson(runtime, it.first, context).getOrElse { e -> return@runBlocking Error(e.error, e.cause) }
         }
 
         Success(CloudInfo(services))
@@ -131,18 +124,13 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
     fun apply(taintSecrets: Boolean, log: LogContext): Result<Unit> = runBlocking {
         val provisioner = createProvisioner()
 
-        val diffs = when (
-            val result = plan({
-                if (taintSecrets) {
-                    it is SecretInfrastructureResource
-                } else {
-                    false
-                }
-            }, log)
-        ) {
-            is Error<Map<ResourceGroup, List<ResourceDiff>>> -> return@runBlocking Error<Unit>(result.error)
-            is Success<Map<ResourceGroup, List<ResourceDiff>>> -> result.data
-        }
+        val diffs = plan({
+            if (taintSecrets) {
+                it is SecretInfrastructureResource
+            } else {
+                false
+            }
+        }, log).getOrElse { return@runBlocking Error(it.error, it.cause) }
 
         log.info(bold("rolling out changes for cloud configuration '${runtime.environmentContext.cloud}'"))
 
@@ -200,18 +188,13 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             listOf(sshKey, firewall, network, subnet, backupSecretResource(runtime)),
         )
 
-        val serviceResourceGroups = serviceManagers().map {
-            when (val result = it.second.createResources(runtime, it.first, context)) {
-                is Error<List<BaseInfrastructureResource<*>>> -> Error<ResourceGroup>(result.error)
-                is Success<List<BaseInfrastructureResource<*>>> -> {
-                    Success(
-                        ResourceGroup(
-                            "service '${it.first.name}'",
-                            result.data,
-                            setOf(cloudResourceGroup),
-                        ),
-                    )
-                }
+        val serviceResourceGroups = serviceManagers().map { (service, manager) ->
+            manager.createResources(runtime, service, context).map { resources ->
+                ResourceGroup(
+                    "service '${service.name}'",
+                    resources,
+                    setOf(cloudResourceGroup),
+                )
             }
         }
 

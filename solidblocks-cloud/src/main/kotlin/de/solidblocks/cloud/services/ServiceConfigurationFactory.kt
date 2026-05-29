@@ -12,6 +12,7 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 
 object ServiceConfigurationFactory {
 
@@ -66,35 +67,16 @@ object ServiceConfigurationFactory {
     }
 
     fun YamlNode.parseServiceCommonConfig(): Result<ServiceCommonConfig> {
-        val name =
-            when (val result = SERVICE_NAME_KEYWORD.parse(this)) {
-                is de.solidblocks.cloud.utils.Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
+        val yaml = this
+        return result {
+            val name = SERVICE_NAME_KEYWORD.parse(yaml).bind()
+            val instance = yaml.parseInstanceConfig().bind()
+            val environmentVars = SERVICE_ENVIRONMENT_VARS_KEYWORD.parse(yaml).bind() ?: emptyMap()
+            val floatingIp = SERVICE_FLOATING_IP_KEYWORD.parse(yaml).bind()
 
-        val instance =
-            when (val result = this.parseInstanceConfig()) {
-                is Error<InstanceConfig> -> return Error(result.error)
-                is Success<InstanceConfig> -> result.data
-            }
+            environmentVars.validateInterpolatedStrings(name).bind()
 
-        val environmentVars =
-            when (val result = SERVICE_ENVIRONMENT_VARS_KEYWORD.parse(this)) {
-                is Error<Map<String, String>?> -> return Error(result.error)
-                is Success<Map<String, String>?> -> result.data ?: emptyMap()
-            }
-
-        val floatingIp =
-            when (val result = SERVICE_FLOATING_IP_KEYWORD.parse(this)) {
-                is Error<Boolean> -> return Error(result.error)
-                is Success<Boolean> -> result.data
-            }
-
-        when (val result = environmentVars.validateInterpolatedStrings(name)) {
-            is Error<Unit> -> return Error(result.error)
-            else -> {}
+            ServiceCommonConfig(name, floatingIp, environmentVars, instance)
         }
-
-        return Success(ServiceCommonConfig(name, floatingIp, environmentVars, instance))
     }
 }

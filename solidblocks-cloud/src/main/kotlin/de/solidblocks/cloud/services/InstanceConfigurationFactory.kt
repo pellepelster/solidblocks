@@ -8,10 +8,9 @@ import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.providers.hetzner.HETZNER_INSTANCE_TYPE
 import de.solidblocks.cloud.providers.hetzner.HETZNER_LOCATIONS
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRuntime
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 
@@ -61,30 +60,13 @@ object InstanceConfigurationFactory {
         )
 
     fun YamlNode.parseInstanceConfig(): Result<InstanceConfig> {
-        val volumeSize =
-            when (val result = SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(this)) {
-                is Error<Int> -> return Error(result.error)
-                is Success<Int> -> result.data
-            }
-
-        val hetznerLocation =
-            when (val result = HETZNER_LOCATION_KEYWORD.parse(this)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val hetznerInstanceType =
-            when (val result = HETZNER_INSTANCE_TYPE_KEYWORD.parse(this)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        return Success(
+        val yaml = this
+        return result {
             InstanceConfig(
-                volumeSize,
-                HetznerLocation.valueOf(hetznerLocation),
-                HetznerServerType.valueOf(hetznerInstanceType),
-            ),
-        )
+                SERVICE_DATA_VOLUME_SIZE_KEYWORD.parse(yaml).bind(),
+                HetznerLocation.valueOf(HETZNER_LOCATION_KEYWORD.parse(yaml).bind()),
+                HetznerServerType.valueOf(HETZNER_INSTANCE_TYPE_KEYWORD.parse(yaml).bind()),
+            )
+        }
     }
 }

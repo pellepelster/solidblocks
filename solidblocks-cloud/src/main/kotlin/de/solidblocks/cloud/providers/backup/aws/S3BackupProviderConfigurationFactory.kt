@@ -6,10 +6,9 @@ import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 
 class S3BackupProviderConfigurationFactory : PolymorphicConfigurationFactory<S3BackupProviderConfiguration>() {
 
@@ -32,19 +31,10 @@ class S3BackupProviderConfigurationFactory : PolymorphicConfigurationFactory<S3B
 
     override val keywords = listOf(PROVIDER_NAME_KEYWORD, region)
 
-    override fun parse(yaml: YamlNode): Result<S3BackupProviderConfiguration> {
-        val name =
-            when (val result = PROVIDER_NAME_KEYWORD.parse(yaml)) {
-                is Error<String> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val region =
-            when (val result = region.parse(yaml)) {
-                is Error<String> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        return Success(S3BackupProviderConfiguration(name, region))
+    override fun parse(yaml: YamlNode): Result<S3BackupProviderConfiguration> = result {
+        S3BackupProviderConfiguration(
+            PROVIDER_NAME_KEYWORD.parse(yaml).bind(),
+            region.parse(yaml).bind(),
+        )
     }
 }
