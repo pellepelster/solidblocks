@@ -10,5 +10,5 @@ class UserDataLookupProvider : InfrastructureResourceLookupProvider<UserData, Us
 
     override suspend fun lookup(lookup: UserData, context: SSHProvisionerContext) = lookup.block.invoke(context)?.let { UserDataRuntime(it.userData, it.ephemeralUserData) }
 
-    override val supportedLookupType = UserData::class
+    override val lookupType = UserData::class
 }

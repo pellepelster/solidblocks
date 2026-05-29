@@ -181,7 +181,8 @@ class AwsIamUserProvisioner(
         }
     }
 
-    override val supportedLookupType: KClass<*> = AwsIamUserLookup::class
+    override val lookupType: KClass<*> = AwsIamUserLookup::class
+    override val resourceType: KClass<*> = AwsIamUser::class
 
-    override val supportedResourceType: KClass<*> = AwsIamUser::class
+    override val genericLookupType: KClass<*>? = null
 }

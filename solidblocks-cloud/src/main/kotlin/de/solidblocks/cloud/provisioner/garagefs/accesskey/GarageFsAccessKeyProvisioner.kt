@@ -91,7 +91,7 @@ class GarageFsAccessKeyProvisioner :
             ?: Error<GarageFsAccessKeyRuntime>("error creating ${resource.logText()}")
     }
 
-    override val supportedLookupType: KClass<*> = GarageFsAccessKeyLookup::class
+    override val lookupType: KClass<*> = GarageFsAccessKeyLookup::class
 
-    override val supportedResourceType: KClass<*> = GarageFsAccessKey::class
+    override val resourceType: KClass<*> = GarageFsAccessKey::class
 }

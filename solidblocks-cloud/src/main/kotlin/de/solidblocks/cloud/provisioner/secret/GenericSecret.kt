@@ -38,5 +38,8 @@ class GenericSecret(
 
     override fun logText() = "secret '$name'"
 
+    // TODO generalize
+    fun shellExportCommand(envName: String) = "export $envName=\"\$(pass $name)\""
+
     override val lookupType = PassSecretLookup::class
 }

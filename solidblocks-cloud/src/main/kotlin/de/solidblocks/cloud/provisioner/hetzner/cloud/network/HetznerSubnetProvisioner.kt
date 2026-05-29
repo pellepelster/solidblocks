@@ -68,7 +68,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
         }
     }
 
-    override val supportedLookupType: KClass<*> = HetznerSubnetLookup::class
+    override val lookupType: KClass<*> = HetznerSubnetLookup::class
 
-    override val supportedResourceType: KClass<*> = HetznerSubnet::class
+    override val resourceType: KClass<*> = HetznerSubnet::class
 }

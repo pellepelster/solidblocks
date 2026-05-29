@@ -5,6 +5,7 @@ import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.utils.Error
@@ -24,7 +25,7 @@ class ProvisionerApplyContextImpl(
     override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
 
     override suspend fun createSecret(path: String, secret: String): Result<Unit> {
-        val secret = PassSecret(
+        val secret = GenericSecret(
             path,
             OneTimeGeneratedSecret(secret = {
                 secret
@@ -35,7 +36,7 @@ class ProvisionerApplyContextImpl(
             val result: Result<PassSecretRuntime> =
                 registry.apply(secret, ProvisionerApplyContextImpl(sshKeyPair, sshKeyAbsolutePath, environment, registry, serviceRegistrations), LogContext())
         ) {
-            is de.solidblocks.cloud.utils.Error<PassSecretRuntime> -> Error(result.error)
+            is Error<PassSecretRuntime> -> Error(result.error)
             is Success<PassSecretRuntime> -> Success(Unit)
         }
     }

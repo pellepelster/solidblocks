@@ -19,6 +19,7 @@ import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloudinit.BackupConfiguration
@@ -30,7 +31,7 @@ interface BackupProviderManager<
     R : ProviderConfigurationRuntime,
     > : ProviderManager<C, R>
 
-fun backupSecretResource(runtime: CloudConfigurationRuntime) = PassSecret(
+fun backupSecretResource(runtime: CloudConfigurationRuntime) = GenericSecret(
     secretPath(runtime.environment, listOf("backup", "password")),
     RandomSecret(
         length = 32,

@@ -66,7 +66,8 @@ class HetznerDnsProvisionerTest {
                 "127.0.0.2",
                 emptyList(),
             )
-        coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
+        coEvery { serverProvisioner.lookupType } returns HetznerServerLookup::class
+        coEvery { serverProvisioner.genericLookupType } returns null
 
         runBlocking {
             val recordName = UUID.randomUUID().toString()

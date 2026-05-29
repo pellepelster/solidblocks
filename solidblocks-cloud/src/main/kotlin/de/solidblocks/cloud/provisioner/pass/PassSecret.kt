@@ -14,7 +14,5 @@ class PassSecret(
 
     override fun logText() = "pass secret '$name'"
 
-    fun shellExportCommand(envName: String) = "export $envName=\"\$(pass $name)\""
-
     override val lookupType = PassSecretLookup::class
 }

@@ -19,5 +19,5 @@ class HetznerDnsZoneProvisioner(hcloudToken: String) :
 
     override suspend fun list() = api.dnsZones.list().map { HetznerDnsZoneLookup(it.name) }
 
-    override val supportedLookupType = HetznerDnsZoneLookup::class
+    override val lookupType = HetznerDnsZoneLookup::class
 }

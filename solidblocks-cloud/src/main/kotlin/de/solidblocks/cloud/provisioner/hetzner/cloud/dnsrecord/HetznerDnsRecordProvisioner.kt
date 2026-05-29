@@ -152,7 +152,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
             ),
         )
 
-    override val supportedLookupType = HetznerDnsRecordLookup::class
+    override val lookupType = HetznerDnsRecordLookup::class
 
-    override val supportedResourceType = HetznerDnsRecord::class
+    override val resourceType = HetznerDnsRecord::class
 }

@@ -322,7 +322,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     override suspend fun list(): List<HetznerServerLookup> = api.servers.list().map { HetznerServerLookup(it.name) }
 
-    override val supportedLookupType: KClass<*> = HetznerServerLookup::class
+    override val lookupType: KClass<*> = HetznerServerLookup::class
 
-    override val supportedResourceType: KClass<*> = HetznerServer::class
+    override val resourceType: KClass<*> = HetznerServer::class
 }

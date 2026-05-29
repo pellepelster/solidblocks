@@ -126,7 +126,7 @@ class GarageFsLayoutProvisioner :
             ?: Error<GarageFsLayoutRuntime>("error creating ${resource.logText()}")
     }
 
-    override val supportedLookupType: KClass<*> = GarageFsLayoutLookup::class
+    override val lookupType: KClass<*> = GarageFsLayoutLookup::class
 
-    override val supportedResourceType: KClass<*> = GarageFsLayout::class
+    override val resourceType: KClass<*> = GarageFsLayout::class
 }

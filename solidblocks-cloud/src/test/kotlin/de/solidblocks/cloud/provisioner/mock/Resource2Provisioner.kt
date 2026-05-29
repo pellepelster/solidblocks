@@ -60,7 +60,7 @@ class Resource2Provisioner :
         return true
     }
 
-    override val supportedLookupType = Resource2Lookup::class
+    override val lookupType = Resource2Lookup::class
 
-    override val supportedResourceType = Resource2::class
+    override val resourceType = Resource2::class
 }

@@ -101,7 +101,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
     override suspend fun destroy(lookup: HetznerNetworkLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.networks.delete(it.id) } ?: false
 
-    override val supportedLookupType: KClass<*> = HetznerNetworkLookup::class
+    override val lookupType: KClass<*> = HetznerNetworkLookup::class
 
-    override val supportedResourceType: KClass<*> = HetznerNetwork::class
+    override val resourceType: KClass<*> = HetznerNetwork::class
 }

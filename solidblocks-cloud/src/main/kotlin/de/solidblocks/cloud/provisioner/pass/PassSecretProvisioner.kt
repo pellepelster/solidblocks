@@ -96,7 +96,7 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
             ?: Error<PassSecretRuntime>("error creating ${resource.logText()}")
     }
 
-    override val supportedLookupType = PassSecretLookup::class
+    override val lookupType = PassSecretLookup::class
 
-    override val supportedResourceType = PassSecret::class
+    override val resourceType = PassSecret::class
 }

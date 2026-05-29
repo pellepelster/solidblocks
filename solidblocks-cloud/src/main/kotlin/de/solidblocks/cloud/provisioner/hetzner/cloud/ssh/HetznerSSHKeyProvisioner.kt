@@ -122,7 +122,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
         return digest.joinToString(":") { "%02x".format(it) }
     }
 
-    override val supportedLookupType: KClass<*> = HetznerSSHKeyLookup::class
+    override val lookupType: KClass<*> = HetznerSSHKeyLookup::class
 
-    override val supportedResourceType: KClass<*> = HetznerSSHKey::class
+    override val resourceType: KClass<*> = HetznerSSHKey::class
 }

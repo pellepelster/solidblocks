@@ -35,8 +35,8 @@ class UserDataLookupProviderTest {
             val resource1 = Resource1("resource1")
             val resource2 = Resource2("resource2")
 
-            registry.apply<Resource1, Resource1Runtime>(resource1, context, TEST_LOG_CONTEXT)
-            registry.apply<Resource2, Resource2Runtime>(resource2, context, TEST_LOG_CONTEXT)
+            registry.apply<Resource1Runtime>(resource1, context, TEST_LOG_CONTEXT)
+            registry.apply<Resource2Runtime>(resource2, context, TEST_LOG_CONTEXT)
 
             val userData =
                 UserData(

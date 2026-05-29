@@ -156,7 +156,7 @@ class GarageFsBucketProvisioner :
             ?: Error<GarageFsBucketRuntime>("error creating ${resource.logText()}")
     }
 
-    override val supportedLookupType: KClass<*> = GarageFsBucketLookup::class
+    override val lookupType: KClass<*> = GarageFsBucketLookup::class
 
-    override val supportedResourceType: KClass<*> = GarageFsBucket::class
+    override val resourceType: KClass<*> = GarageFsBucket::class
 }

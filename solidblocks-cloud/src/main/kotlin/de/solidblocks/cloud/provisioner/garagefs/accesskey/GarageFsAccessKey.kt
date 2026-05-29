@@ -5,8 +5,9 @@ import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.pass.PassSecret
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
 
-class GarageFsAccessKey(name: String, val server: HetznerServer, val adminToken: PassSecret, dependsOn: Set<BaseResource> = emptySet()) :
+class GarageFsAccessKey(name: String, val server: HetznerServer, val adminToken: GenericSecret, dependsOn: Set<BaseResource> = emptySet()) :
     BaseInfrastructureResource<GarageFsPermissionRuntime>(name, dependsOn + setOf(server)) {
     override fun asLookup() = GarageFsAccessKeyLookup(name, server.asLookup(), adminToken)
 

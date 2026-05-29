@@ -150,7 +150,7 @@ class GarageFsPermissionProvisioner :
         }
     }
 
-    override val supportedLookupType: KClass<*> = GarageFsPermissionLookup::class
+    override val lookupType: KClass<*> = GarageFsPermissionLookup::class
 
-    override val supportedResourceType: KClass<*> = GarageFsPermission::class
+    override val resourceType: KClass<*> = GarageFsPermission::class
 }

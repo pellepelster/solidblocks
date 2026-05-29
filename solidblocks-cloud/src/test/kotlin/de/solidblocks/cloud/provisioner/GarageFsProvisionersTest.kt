@@ -22,6 +22,7 @@ import de.solidblocks.cloud.provisioner.pass.PassSecret
 import de.solidblocks.cloud.provisioner.pass.PassSecretLookup
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.pass.PassSecretRuntime
+import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataResult
@@ -104,10 +105,12 @@ class GarageFsProvisionersTest {
                 emptyList(),
                 sshPort = garageFsContainer.getMappedPort(22),
             )
-        coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
+        coEvery { serverProvisioner.lookupType } returns HetznerServerLookup::class
+        coEvery { serverProvisioner.genericLookupType } returns null
 
         val secretProvisioner = mockk<PassSecretProvisioner>()
-        coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.lookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.genericLookupType } returns null
         coEvery { secretProvisioner.lookup(match { it.name == "admin_token" }, any()) } returns
             PassSecretRuntime(
                 "admin_token",
@@ -160,7 +163,7 @@ class GarageFsProvisionersTest {
                 sshClient,
             )
 
-        val adminToken = PassSecret("admin_token", RandomSecret())
+        val adminToken = GenericSecret("admin_token", RandomSecret())
         val bucketName = UUID.randomUUID().toString()
         val bucket = GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), false)
         val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)

@@ -70,7 +70,8 @@ class PostgresProvisionersTest {
                 "127.0.0.1",
                 emptyList(),
             )
-        coEvery { serverProvisioner.supportedLookupType } returns HetznerServerLookup::class
+        coEvery { serverProvisioner.lookupType } returns HetznerServerLookup::class
+        coEvery { serverProvisioner.genericLookupType } returns null
 
         val secretProvisioner = mockk<PassSecretProvisioner>()
         coEvery { secretProvisioner.lookup(match { it.name == "super_user_password" }, any()) } returns
@@ -88,7 +89,8 @@ class PostgresProvisionersTest {
                 "password2",
                 "secret2",
             )
-        coEvery { secretProvisioner.supportedLookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.lookupType } returns PassSecretLookup::class
+        coEvery { secretProvisioner.genericLookupType } returns null
 
         val server =
             HetznerServer(

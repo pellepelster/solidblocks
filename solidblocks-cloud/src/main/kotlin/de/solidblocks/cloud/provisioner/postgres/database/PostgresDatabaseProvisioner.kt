@@ -91,7 +91,7 @@ class PostgresDatabaseProvisioner :
         is Success<PostgresDatabaseRuntime?> -> result.data
     }
 
-    override val supportedLookupType = PostgresDatabaseLookup::class
+    override val lookupType = PostgresDatabaseLookup::class
 
-    override val supportedResourceType = PostgresDatabase::class
+    override val resourceType = PostgresDatabase::class
 }

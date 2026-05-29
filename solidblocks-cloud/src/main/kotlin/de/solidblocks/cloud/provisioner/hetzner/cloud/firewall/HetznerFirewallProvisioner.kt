@@ -136,7 +136,7 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
 
     override suspend fun destroy(lookup: HetznerFirewallLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.firewalls.delete(it.id) } ?: false
 
-    override val supportedLookupType: KClass<*> = HetznerFirewallLookup::class
+    override val lookupType: KClass<*> = HetznerFirewallLookup::class
 
-    override val supportedResourceType: KClass<*> = HetznerFirewall::class
+    override val resourceType: KClass<*> = HetznerFirewall::class
 }

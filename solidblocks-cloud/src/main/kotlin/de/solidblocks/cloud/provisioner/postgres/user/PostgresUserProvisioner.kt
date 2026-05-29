@@ -135,7 +135,7 @@ class PostgresUserProvisioner :
         is Success<PostgresUserRuntime?> -> result.data
     }
 
-    override val supportedLookupType = PostgresUserLookup::class
+    override val lookupType = PostgresUserLookup::class
 
-    override val supportedResourceType = PostgresUser::class
+    override val resourceType = PostgresUser::class
 }

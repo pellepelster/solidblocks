@@ -174,7 +174,6 @@ class AwsS3BucketProvisioner(
         }
     }
 
-    override val supportedLookupType: KClass<*> = AwsS3BucketLookup::class
-
-    override val supportedResourceType: KClass<*> = AwsS3Bucket::class
+    override val lookupType: KClass<*> = AwsS3BucketLookup::class
+    override val resourceType: KClass<*> = AwsS3Bucket::class
 }

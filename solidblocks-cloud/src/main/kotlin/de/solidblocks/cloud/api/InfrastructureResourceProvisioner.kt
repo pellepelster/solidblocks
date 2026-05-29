@@ -1,6 +1,8 @@
 package de.solidblocks.cloud.api
 
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -9,7 +11,7 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
-interface InfrastructureResourceProvisioner<ResourceType, RuntimeType, LookupType> {
+interface InfrastructureResourceProvisioner<ResourceType: BaseResource, RuntimeType: BaseInfrastructureResourceRuntime, LookupType: InfrastructureResourceLookup<*>> {
 
     suspend fun diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = TODO("Not yet implemented")
 
@@ -19,12 +21,15 @@ interface InfrastructureResourceProvisioner<ResourceType, RuntimeType, LookupTyp
 
     suspend fun destroyAll(context: ProvisionerContext): Boolean = TODO("Not yet implemented")
 
-    suspend fun convertGenericResource(resource: BaseResource): ResourceType? = null
+    fun convertGenericResource(resource: BaseResource): BaseResource = TODO("Not yet implemented")
 
-    val supportedLookupType: KClass<*>
+    val lookupType: KClass<*>
 
-    val supportedResourceType: KClass<*>
-    
-    val supportedGenericResourceType: KClass<*>?
+    val resourceType: KClass<*>
+
+    val genericResourceType: KClass<*>?
         get() = null
+
+    val genericLookupType: KClass<*>?
+
 }

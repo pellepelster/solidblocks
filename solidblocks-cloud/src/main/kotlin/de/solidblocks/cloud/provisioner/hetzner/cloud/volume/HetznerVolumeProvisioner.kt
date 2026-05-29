@@ -108,7 +108,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
 
     override suspend fun destroy(lookup: HetznerVolumeLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.volumes.delete(it.id) } ?: false
 
-    override val supportedLookupType: KClass<*> = HetznerVolumeLookup::class
+    override val lookupType: KClass<*> = HetznerVolumeLookup::class
 
-    override val supportedResourceType: KClass<*> = HetznerVolume::class
+    override val resourceType: KClass<*> = HetznerVolume::class
 }

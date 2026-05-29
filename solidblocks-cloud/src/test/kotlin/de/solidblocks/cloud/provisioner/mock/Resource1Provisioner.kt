@@ -5,6 +5,8 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
+import de.solidblocks.cloud.api.resources.BaseResource
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -34,9 +36,16 @@ class Resource1Provisioner :
             ?: Error<Resource1Runtime>("creation error")
     }
 
-    override val supportedLookupType = Resource1Lookup::class
+    override fun convertGenericResource(resource: BaseResource) = Resource1(resource.name)
 
-    override val supportedResourceType = Resource1::class
+    override fun convertGenericLookup(lookup: InfrastructureResourceLookup<*>) = Resource1Lookup(lookup.name)
 
-    override val supportedGenericResourceType = Resource1Generic::class
+    override val lookupType = Resource1Lookup::class
+
+    override val resourceType = Resource1::class
+
+    override val genericResourceType = Resource1Generic::class
+
+    override val genericLookupType = Resource1GenericLookup::class
+
 }
