@@ -3,13 +3,11 @@ package de.solidblocks.cloud.services.github.model
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.services.ServiceCommonConfig
 import de.solidblocks.cloud.services.ServiceConfigurationFactory
 import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 
 class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<GithubRunnerServiceConfiguration>() {
 
@@ -59,36 +57,13 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
     override val keywords =
         listOf(labels, scale, packages, allowSudo) + ServiceConfigurationFactory.keywords
 
-    override fun parse(yaml: YamlNode): Result<GithubRunnerServiceConfiguration> {
-        val common = when (val result = yaml.parseServiceCommonConfig()) {
-            is Error<ServiceCommonConfig> -> return Error(result.error)
-            is Success<ServiceCommonConfig> -> result.data
-        }
-
-        val labels =
-            when (val result = labels.parse(yaml)) {
-                is Error<List<String>> -> return Error(result.error)
-                is Success<List<String>> -> result.data
-            }
-
-        val packages =
-            when (val result = packages.parse(yaml)) {
-                is Error<List<String>> -> return Error(result.error)
-                is Success<List<String>> -> result.data
-            }
-
-        val allowSudo =
-            when (val result = allowSudo.parse(yaml)) {
-                is Error<Boolean> -> return Error(result.error)
-                is Success<Boolean> -> result.data
-            }
-
-        val scale =
-            when (val result = scale.parse(yaml)) {
-                is Error<Int> -> return Error(result.error)
-                is Success<Int> -> result.data
-            }
-
-        return Success(GithubRunnerServiceConfiguration(common, labels, packages, allowSudo, scale))
+    override fun parse(yaml: YamlNode): Result<GithubRunnerServiceConfiguration> = result {
+        GithubRunnerServiceConfiguration(
+            yaml.parseServiceCommonConfig().bind(),
+            labels.parse(yaml).bind(),
+            packages.parse(yaml).bind(),
+            allowSudo.parse(yaml).bind(),
+            scale.parse(yaml).bind(),
+        )
     }
 }

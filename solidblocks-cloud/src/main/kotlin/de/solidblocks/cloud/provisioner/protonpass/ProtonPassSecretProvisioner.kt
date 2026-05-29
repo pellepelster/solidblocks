@@ -14,11 +14,11 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
-import de.solidblocks.cloud.utils.CommandResult
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.asResult
+import de.solidblocks.cloud.utils.onError
 import de.solidblocks.cloud.utils.parseProtonPassItem
 import de.solidblocks.cloud.utils.protonPassItemCreateNote
 import de.solidblocks.cloud.utils.protonPassItemDelete
@@ -100,16 +100,12 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
 
         // proton pass note items cannot be updated via stdin, so an existing item is removed and recreated
         if (current != null) {
-            when (val result = protonPassItemDelete(current.shareId, current.itemId).asResult("pass-cli item delete")) {
-                is Error<CommandResult> -> return Error(result.error)
-                is Success<CommandResult> -> {}
-            }
+            protonPassItemDelete(current.shareId, current.itemId).asResult("pass-cli item delete")
+                .onError { return Error(it.error, it.cause) }
         }
 
-        when (val result = protonPassItemCreateNote(vaultName, resource.name, secret).asResult("pass-cli item create")) {
-            is Error<CommandResult> -> return Error(result.error)
-            is Success<CommandResult> -> {}
-        }
+        protonPassItemCreateNote(vaultName, resource.name, secret).asResult("pass-cli item create")
+            .onError { return Error(it.error, it.cause) }
 
         return lookup(resource.asLookup(), context)?.let { Success(it) }
             ?: Error("error creating ${resource.logText()}")

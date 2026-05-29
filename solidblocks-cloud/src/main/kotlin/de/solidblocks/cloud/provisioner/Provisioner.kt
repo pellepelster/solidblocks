@@ -170,29 +170,25 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
     }
 
     suspend fun apply(resources: List<BaseResource>, context: ProvisionerApplyContext, log: LogContext): Result<Unit> {
-        val success =
-            resources
-                .map { resource ->
-                    val runtime =
-                        try {
-                            registry.apply<BaseInfrastructureResourceRuntime>(
-                                resource,
-                                context,
-                                log,
-                            )
-                        } catch (e: Exception) {
-                            logger.error(e) { "creating ${resource.logText()} failed" }
-                            null
-                        }
-
-                    runtime
+        val failures =
+            resources.mapNotNull { resource ->
+                try {
+                    registry.apply<BaseInfrastructureResourceRuntime>(
+                        resource,
+                        context,
+                        log,
+                    )
+                    null
+                } catch (e: Exception) {
+                    logger.error(e) { "creating ${resource.logText()} failed" }
+                    resource.logText()
                 }
-                .all { it != null }
+            }
 
-        return if (success) {
+        return if (failures.isEmpty()) {
             Success(Unit)
         } else {
-            Error("")
+            Error("failed to apply ${failures.size} resource(s): ${failures.joinToString(", ")}")
         }
     }
 

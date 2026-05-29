@@ -8,10 +8,9 @@ import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAM
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucketConfiguration> {
@@ -55,36 +54,16 @@ class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucket
 
     override val keywords = listOf(name, publicAccess, accessKeys, publicAccessDomains)
 
-    override fun parse(yaml: YamlNode): Result<S3ServiceBucketConfiguration> {
-        val name =
-            when (val result = name.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val publicAccess =
-            when (val result = publicAccess.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<Boolean> -> result.data
-            }
-
-        val publicAccessDomains =
-            when (val result = publicAccessDomains.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<List<String>> -> result.data
-            }
-
-        val accessKeys =
-            when (val result = accessKeys.parse(yaml)) {
-                is Error<List<S3ServiceBucketAccessKeyConfiguration>> -> return Error(result.error)
-                is Success<List<S3ServiceBucketAccessKeyConfiguration>> -> result.data
-            }
+    override fun parse(yaml: YamlNode): Result<S3ServiceBucketConfiguration> = result {
+        val name = name.parse(yaml).bind()
+        val publicAccess = publicAccess.parse(yaml).bind()
+        val publicAccessDomains = publicAccessDomains.parse(yaml).bind()
+        val accessKeys = accessKeys.parse(yaml).bind()
 
         logger.debug {
             "parsed bucket '$name', publicAccess: $publicAccess, publicAccessDomains: ${publicAccessDomains.joinToString(", ")}"
         }
-        return Success(
-            S3ServiceBucketConfiguration(name, publicAccess, accessKeys, publicAccessDomains),
-        )
+
+        S3ServiceBucketConfiguration(name, publicAccess, accessKeys, publicAccessDomains)
     }
 }

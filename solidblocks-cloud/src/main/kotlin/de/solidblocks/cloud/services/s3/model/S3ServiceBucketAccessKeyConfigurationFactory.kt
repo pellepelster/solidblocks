@@ -7,10 +7,9 @@ import de.solidblocks.cloud.configuration.SimpleKeyword
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.result
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class S3ServiceBucketAccessKeyConfigurationFactory : ConfigurationFactory<S3ServiceBucketAccessKeyConfiguration> {
@@ -59,31 +58,12 @@ class S3ServiceBucketAccessKeyConfigurationFactory : ConfigurationFactory<S3Serv
 
     override val keywords = listOf<SimpleKeyword<*>>(name, owner, read, write)
 
-    override fun parse(yaml: YamlNode): Result<S3ServiceBucketAccessKeyConfiguration> {
-        val name =
-            when (val result = name.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<String> -> result.data
-            }
-
-        val owner =
-            when (val result = owner.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<Boolean> -> result.data
-            }
-
-        val read =
-            when (val result = read.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<Boolean> -> result.data
-            }
-
-        val write =
-            when (val result = write.parse(yaml)) {
-                is Error<*> -> return Error(result.error)
-                is Success<Boolean> -> result.data
-            }
-
-        return Success(S3ServiceBucketAccessKeyConfiguration(name, owner, read, write))
+    override fun parse(yaml: YamlNode): Result<S3ServiceBucketAccessKeyConfiguration> = result {
+        S3ServiceBucketAccessKeyConfiguration(
+            name.parse(yaml).bind(),
+            owner.parse(yaml).bind(),
+            read.parse(yaml).bind(),
+            write.parse(yaml).bind(),
+        )
     }
 }

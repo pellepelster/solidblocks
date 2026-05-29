@@ -17,36 +17,23 @@ import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.utils.fold
+import de.solidblocks.cloud.utils.result
 import de.solidblocks.utils.*
 import java.io.File
 import java.nio.file.Path
 
 class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
 
-    fun validate(): Result<CloudConfigurationRuntime> {
+    fun validate(): Result<CloudConfigurationRuntime> = result {
         val log = LogContext.default()
         log.info(bold("validating cloud configuration '${cloudConfigFile.absolutePath}'"))
         val validateLog = log.indent()
 
-        val cloud = when (val result = parseConfiguration(validateLog)) {
-            is Error<CloudConfiguration> -> return Error(result.error)
-            is Success<CloudConfiguration> -> result.data
-        }
-
-        when (val result = validateNoDuplicateProviders(cloud)) {
-            is Error<Unit> -> return Error(result.error)
-            is Success<Unit> -> {}
-        }
-
-        when (val result = validateNoDuplicateServices(cloud)) {
-            is Error<Unit> -> return Error(result.error)
-            is Success<Unit> -> {}
-        }
-
-        when (val result = providerRegistrations.validateCardinality(cloud.providers)) {
-            is Error<Unit> -> return Error(result.error)
-            is Success<Unit> -> {}
-        }
+        val cloud = parseConfiguration(validateLog).bind()
+        validateNoDuplicateProviders(cloud).bind()
+        validateNoDuplicateServices(cloud).bind()
+        providerRegistrations.validateCardinality(cloud.providers).bind()
 
         val configurationContext =
             CloudConfigurationContext(
@@ -54,27 +41,17 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 cloudConfigFile.toPath().toAbsolutePath().toFile().parentFile.toPath(),
             )
 
-        val providers = when (val result = buildProviderRuntimes(cloud, configurationContext, validateLog)) {
-            is Error<List<ProviderConfigurationRuntime>> -> return Error(result.error)
-            is Success<List<ProviderConfigurationRuntime>> -> result.data
-        }
+        val providers = buildProviderRuntimes(cloud, configurationContext, validateLog).bind()
+        validateServicePrerequisites(cloud).bind()
 
-        when (val result = validateServicePrerequisites(cloud)) {
-            is Error<Unit> -> return Error(result.error)
-            is Success<Unit> -> {}
-        }
-
-        val registry = this.providerRegistrations.createRegistry(providers)
+        val registry = providerRegistrations.createRegistry(providers)
         val context = ValidationContextImpl(
             EnvironmentContext(cloud.name, DEFAULT_ENVIRONMENT),
             registry,
             serviceRegistrations,
         )
 
-        val services = when (val result = buildServiceRuntimes(cloud, context, validateLog)) {
-            is Error<List<ServiceConfigurationRuntime>> -> return Error(result.error)
-            is Success<List<ServiceConfigurationRuntime>> -> result.data
-        }
+        val services = buildServiceRuntimes(cloud, context, validateLog).bind()
 
         val runtime =
             CloudConfigurationRuntime(
@@ -86,13 +63,10 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
                 services,
             )
 
-        when (val result = validateDnsZone(runtime)) {
-            is Error<Unit> -> return Error(result.error)
-            is Success<Unit> -> {}
-        }
+        validateDnsZone(runtime).bind()
 
         logSuccess("cloud configuration '${cloud.name}' is valid", context = validateLog)
-        return Success(runtime)
+        runtime
     }
 
     private fun parseConfiguration(log: LogContext): Result<CloudConfiguration> {
@@ -151,11 +125,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         return Success(Unit)
     }
 
-    private fun buildProviderRuntimes(
-        cloud: CloudConfiguration,
-        configurationContext: CloudConfigurationContext,
-        log: LogContext,
-    ): Result<List<ProviderConfigurationRuntime>> {
+    private fun buildProviderRuntimes(cloud: CloudConfiguration, configurationContext: CloudConfigurationContext, log: LogContext): Result<List<ProviderConfigurationRuntime>> {
         val providers = cloud.providers.map { provider ->
             log.info("found '${provider.type}' provider with name '${provider.name}'")
             val providerLog = log.indent()
@@ -205,11 +175,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         return Success(Unit)
     }
 
-    private fun buildServiceRuntimes(
-        cloud: CloudConfiguration,
-        context: ValidationContextImpl,
-        log: LogContext,
-    ): Result<List<ServiceConfigurationRuntime>> {
+    private fun buildServiceRuntimes(cloud: CloudConfiguration, context: ValidationContextImpl, log: LogContext): Result<List<ServiceConfigurationRuntime>> {
         val services = cloud.services.mapIndexed { index, service ->
             log.info("found '${service.type}' service with name '${service.name}'")
             val serviceLog = log.indent()
@@ -258,52 +224,41 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         }
     }
 
-    private fun <T> withProvisioner(runtime: CloudConfigurationRuntime, block: (CloudProvisioner) -> T): T =
-        CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use(block)
+    private fun <T> withProvisioner(runtime: CloudConfigurationRuntime, block: (CloudProvisioner) -> T): T = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use(block)
 
     fun apply(runtime: CloudConfigurationRuntime, tainSecrets: Boolean): Result<String> {
         val log = LogContext.default()
         return withProvisioner(runtime) { provisioner ->
-            when (val result = provisioner.apply(tainSecrets, log)) {
-                is Error<Unit> -> {
-                    writeSshConfig(provisioner)
-                    Error(result.error)
-                }
-
-                is Success<*> -> {
-                    writeSshConfig(provisioner)
-                    info(provisioner)
-                }
-            }
+            val applyResult = provisioner.apply(tainSecrets, log)
+            writeSshConfig(provisioner)
+            applyResult.fold(
+                onError = { Error(it.error, it.cause) },
+                onSuccess = { info(provisioner) },
+            )
         }
     }
 
     // TODO integration test for generated ssh config
-    fun writeSshConfig(runtime: CloudConfigurationRuntime): Result<Unit> =
-        withProvisioner(runtime) { writeSshConfig(it) }
+    fun writeSshConfig(runtime: CloudConfigurationRuntime): Result<Unit> = withProvisioner(runtime) { writeSshConfig(it) }
 
-    private fun writeSshConfig(provisioner: CloudProvisioner): Result<Unit> =
-        when (val result = provisioner.createSSHConfig()) {
-            is Error<Path> -> Error(result.error)
-            is Success<Path> -> {
-                val path = Path.of(".").toAbsolutePath().relativize(result.data)
-                logInfo(
-                    bold(
-                        "ssh config file for cloud '${provisioner.runtime.environmentContext.cloud}' written to '$path', use 'ssh -F $path <host>' to access the VMs",
-                    ),
-                )
-                Success(Unit)
-            }
+    private fun writeSshConfig(provisioner: CloudProvisioner): Result<Unit> = when (val result = provisioner.createSSHConfig()) {
+        is Error<Path> -> Error(result.error)
+        is Success<Path> -> {
+            val path = Path.of(".").toAbsolutePath().relativize(result.data)
+            logInfo(
+                bold(
+                    "ssh config file for cloud '${provisioner.runtime.environmentContext.cloud}' written to '$path', use 'ssh -F $path <host>' to access the VMs",
+                ),
+            )
+            Success(Unit)
         }
+    }
 
-    fun info(runtime: CloudConfigurationRuntime): Result<String> =
-        withProvisioner(runtime) { info(it) }
+    fun info(runtime: CloudConfigurationRuntime): Result<String> = withProvisioner(runtime) { info(it) }
 
-    private fun info(provisioner: CloudProvisioner): Result<String> =
-        provisioner.info(provisioner.runtime)
+    private fun info(provisioner: CloudProvisioner): Result<String> = provisioner.info(provisioner.runtime)
 
-    fun status(runtime: CloudConfigurationRuntime): Result<String> =
-        withProvisioner(runtime) { it.status(runtime) }
+    fun status(runtime: CloudConfigurationRuntime): Result<String> = withProvisioner(runtime) { it.status(runtime) }
 
     fun maintenance(runtime: CloudConfigurationRuntime): Result<Unit> {
         val log = LogContext()
@@ -338,8 +293,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         }
     }
 
-    fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> =
-        withProvisioner(runtime) { it.infoJson(runtime) }
+    fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> = withProvisioner(runtime) { it.infoJson(runtime) }
 
     fun plan(runtime: CloudConfigurationRuntime): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val log = LogContext.default()

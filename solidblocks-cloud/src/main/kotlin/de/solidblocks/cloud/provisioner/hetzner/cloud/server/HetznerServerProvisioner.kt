@@ -21,6 +21,7 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.cloud.utils.joinToStringOrEmpty
+import de.solidblocks.cloud.utils.onError
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
@@ -43,11 +44,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext, log: LogContext): Result<HetznerServerRuntime> {
         if (resource.preApplyHook != null) {
-            when (val result = resource.preApplyHook(log)) {
-                is Error<*> -> return Error(result.error)
-                is Success<*> -> {
-                }
-            }
+            resource.preApplyHook(log).onError { return Error(it.error, it.cause) }
         }
 
         var server = lookup(resource.asLookup(), context)
