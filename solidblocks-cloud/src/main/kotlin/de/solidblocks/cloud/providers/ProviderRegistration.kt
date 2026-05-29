@@ -10,6 +10,9 @@ interface ProviderRegistration<C : ProviderConfiguration, R : ProviderConfigurat
 
     val type: String
 
+    /** Category this provider belongs to, or null if it is not cardinality-constrained. */
+    val category: ProviderCategory? get() = null
+
     val supportedConfiguration: KClass<C>
     val supportedRuntime: KClass<R>
 
