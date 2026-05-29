@@ -90,6 +90,10 @@ Context-sensitive information and error messages help connecting to the deployed
 
 Stores secrets in the [pass](https://www.passwordstore.org/) password manager.
 
+### `protonpass`
+
+Stores secrets in [Proton Pass](https://proton.me/de/pass).
+
 ### `hcloud`
 
 Provides Hetzner Cloud based infrastructure resources.
