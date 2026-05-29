@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip
 
+import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
@@ -23,7 +24,8 @@ import kotlin.reflect.KClass
 class HetznerFloatingIpProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     InfrastructureResourceLookupProvider<HetznerFloatingIpLookup, HetznerFloatingIpRuntime>,
-    InfrastructureResourceProvisioner<HetznerFloatingIp, HetznerFloatingIpRuntime, HetznerFloatingIpLookup> {
+    InfrastructureResourceProvisioner<HetznerFloatingIp, HetznerFloatingIpRuntime, HetznerFloatingIpLookup>,
+    DestroyableResourceProvisioner<HetznerFloatingIpLookup> {
 
     private val logger = KotlinLogging.logger {}
 

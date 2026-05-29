@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.firewall
 
+import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
@@ -30,7 +31,8 @@ import kotlin.reflect.KClass
 class HetznerFirewallProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     InfrastructureResourceLookupProvider<HetznerFirewallLookup, HetznerFirewallRuntime>,
-    InfrastructureResourceProvisioner<HetznerFirewall, HetznerFirewallRuntime, HetznerFirewallLookup> {
+    InfrastructureResourceProvisioner<HetznerFirewall, HetznerFirewallRuntime, HetznerFirewallLookup>,
+    DestroyableResourceProvisioner<HetznerFirewallLookup> {
 
     override suspend fun lookup(lookup: HetznerFirewallLookup, context: SSHProvisionerContext) = api.firewalls.get(lookup.name)?.let {
         val appliedToLabels = it.appliedTo.flatMap {

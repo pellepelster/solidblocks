@@ -9,7 +9,5 @@ interface InfrastructureResourceLookupProvider<ResourceLookupType : Infrastructu
 
     suspend fun lookup(lookup: ResourceLookupType, context: SSHProvisionerContext): RuntimeType?
 
-    suspend fun list(): List<ResourceLookupType> = TODO("Not yet implemented")
-
     val supportedLookupType: KClass<*>
 }

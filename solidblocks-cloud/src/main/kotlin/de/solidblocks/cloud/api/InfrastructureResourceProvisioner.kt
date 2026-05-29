@@ -1,22 +1,16 @@
 package de.solidblocks.cloud.api
 
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
-import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
 interface InfrastructureResourceProvisioner<ResourceType, RuntimeType, LookupType> {
 
-    suspend fun diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = TODO("Not yet implemented")
+    suspend fun diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff?
 
-    suspend fun apply(resource: ResourceType, context: ProvisionerApplyContext, log: LogContext): Result<RuntimeType> = TODO("Not yet implemented")
-
-    suspend fun destroy(lookup: LookupType, context: SSHProvisionerContext, log: LogContext): Boolean = TODO("Not yet implemented")
-
-    suspend fun destroyAll(context: ProvisionerContext): Boolean = TODO("Not yet implemented")
+    suspend fun apply(resource: ResourceType, context: ProvisionerApplyContext, log: LogContext): Result<RuntimeType>
 
     val supportedLookupType: KClass<*>
 

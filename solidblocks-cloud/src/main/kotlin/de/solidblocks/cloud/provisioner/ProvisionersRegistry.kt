@@ -1,7 +1,9 @@
 package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ListableResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
@@ -18,7 +20,6 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.joinToStringOrEmpty
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -28,56 +29,64 @@ class ProvisionersRegistry(
     val resourceLookupProviders: List<InfrastructureResourceLookupProvider<*, *>> = emptyList(),
     val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList(),
 ) {
-
     val interpolationRegistry = StringInterpolationRegistry(this.resourceProvisioners.filterIsInstance<StringInterpolationFactory>() + listOf(EnvironmentVariableInterpolationFactory()))
 
     private val logger = KotlinLogging.logger {}
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <ResourceType : BaseResource> supportedProvisioner(resource: ResourceType): InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>> =
-        provisioner(resource)
+    private val provisionersByResourceType by lazy { resourceProvisioners.indexByUnique { it.supportedResourceType } }
 
-    private fun provisioner(resource: BaseResource): InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>> {
-        val provisioners = resourceProvisioners.filter {
-            it.supportedResourceType.java.isAssignableFrom(resource::class.java) || it.supportedLookupType.java.isAssignableFrom(resource::class.java)
+    private val provisionersByLookupType by lazy { resourceProvisioners.indexByUnique { it.supportedLookupType } }
+
+    private val lookupProvidersByType by lazy {
+        (resourceProvisioners.filterIsInstance<InfrastructureResourceLookupProvider<*, *>>() + resourceLookupProviders)
+            .distinctBy { it::class }
+            .indexByUnique { it.supportedLookupType }
+    }
+
+    private fun <V> List<V>.indexByUnique(key: (V) -> KClass<*>): Map<KClass<*>, V> {
+        val grouped = this.groupBy(key)
+        grouped.forEach { (clazz, entries) ->
+            if (entries.size > 1) {
+                throw RuntimeException("expected one but found ${entries.size} instances for '${clazz.qualifiedName}'")
+            }
         }
+        return grouped.mapValues { it.value.single() }
+    }
 
-        val provisioner = provisioners.singleOrNull() ?: throw RuntimeException(
-            "expected one provisioner but found ${provisioners.count()} for '${resource::class.java.name}' (${provisioners.joinToStringOrEmpty { "'${it::class.qualifiedName}'" }})",
-        )
+    @Suppress("UNCHECKED_CAST")
+    private fun provisioner(resource: BaseResource): InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>> {
+        val provisioner = provisionersByResourceType[resource::class] ?: provisionersByLookupType[resource::class]
+            ?: throw RuntimeException("no provisioner found for '${resource::class.qualifiedName}'")
 
-        @Suppress("UNCHECKED_CAST")
         return provisioner as InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>>
     }
 
     @Suppress("UNCHECKED_CAST")
     suspend fun <RuntimeType : BaseInfrastructureResourceRuntime> apply(resource: BaseResource, context: ProvisionerApplyContext, log: LogContext): Result<RuntimeType> {
-        val provisionerAndResource = supportedProvisioner(resource)
+        val provisioner = provisioner(resource)
         logger.info {
-            "creating ${resource.logText()} using provisioner ${provisionerAndResource::class.qualifiedName}"
+            "creating ${resource.logText()} using provisioner ${provisioner::class.qualifiedName}"
         }
 
-        return provisionerAndResource.apply(resource, context, log) as Result<RuntimeType>
+        return provisioner.apply(resource, context, log) as Result<RuntimeType>
     }
 
-    suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = supportedProvisioner(resource).diff(resource, context)
+    suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = provisioner(resource).diff(resource, context)
 
+    @Suppress("UNCHECKED_CAST")
     suspend fun <LookupType : InfrastructureResourceLookup<*>> destroy(lookup: LookupType, context: SSHProvisionerContext, log: LogContext): Boolean {
-        val provisionerAndResource = provisioner(lookup)
-        return provisionerAndResource.destroy(lookup, context, log)
+        val provisioner = provisioner(lookup)
+        return if (provisioner is DestroyableResourceProvisioner<*>) {
+            (provisioner as DestroyableResourceProvisioner<InfrastructureResourceLookup<*>>).destroy(lookup, context, log)
+        } else {
+            logger.warn { "${lookup.logText()} does not support destroy (${provisioner::class.qualifiedName})" }
+            false
+        }
     }
 
     fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: SSHProvisionerContext): RuntimeType? = runBlocking {
-        val allLookups = (resourceProvisioners.filterIsInstance<InfrastructureResourceLookupProvider<*, *>>() + resourceLookupProviders).distinctBy { it::class.java }
-
-        val lookups =
-            allLookups.filter {
-                it.supportedLookupType.java.isAssignableFrom(lookup::class.java)
-            }
-
-        val provider = lookups.singleOrNull() ?: throw RuntimeException(
-            "expected one lookup but found ${lookups.count()} for '${lookup::class.java.name}' (${lookups.joinToStringOrEmpty(", ") { "'${it::class.qualifiedName}'" }})",
-        )
+        val provider = lookupProvidersByType[lookup::class]
+            ?: throw RuntimeException("no lookup found for '${lookup::class.qualifiedName}'")
 
         @Suppress("UNCHECKED_CAST")
         (provider as InfrastructureResourceLookupProvider<ResourceLookupType, BaseInfrastructureResourceRuntime>).lookup(lookup, context) as RuntimeType?
@@ -85,17 +94,14 @@ class ProvisionersRegistry(
 
     @Suppress("UNCHECKED_CAST")
     suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<LookupType> {
-        val provider = resourceLookupProviders.firstOrNull { it.supportedLookupType == clazz }
+        val provider = lookupProvidersByType[clazz]
+            ?: throw RuntimeException("no lookup provider found for '$clazz'")
 
-        if (provider == null) {
-            throw RuntimeException("no lookup provider found for '$clazz'")
+        if (provider !is ListableResourceLookupProvider<*>) {
+            throw RuntimeException("lookup provider for '$clazz' does not support list")
         }
 
-        @Suppress("UNCHECKED_CAST")
-        return (
-            provider
-                as InfrastructureResourceLookupProvider<LookupType, RuntimeType>
-            ).list()
+        return (provider as ListableResourceLookupProvider<LookupType>).list()
     }
 
     companion object {

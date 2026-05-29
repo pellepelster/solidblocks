@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner.mock
 
+import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
@@ -18,7 +19,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource2Provisioner :
     InfrastructureResourceLookupProvider<Resource2Lookup, Resource2Runtime>,
-    InfrastructureResourceProvisioner<Resource2, Resource2Runtime, Resource2Lookup> {
+    InfrastructureResourceProvisioner<Resource2, Resource2Runtime, Resource2Lookup>,
+    DestroyableResourceProvisioner<Resource2Lookup> {
 
     private val logger = KotlinLogging.logger {}
 

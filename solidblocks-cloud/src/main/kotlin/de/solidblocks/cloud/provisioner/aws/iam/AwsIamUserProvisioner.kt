@@ -13,6 +13,7 @@ import aws.sdk.kotlin.services.iam.model.ListAccessKeysRequest
 import aws.sdk.kotlin.services.iam.model.ListUserPoliciesRequest
 import aws.sdk.kotlin.services.iam.model.NoSuchEntityException
 import aws.sdk.kotlin.services.iam.model.PutUserPolicyRequest
+import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
@@ -37,7 +38,8 @@ class AwsIamUserProvisioner(
     private val accessKeyId: String,
     private val secretAccessKey: String,
 ) : InfrastructureResourceLookupProvider<AwsIamUserLookup, AwsIamUserRuntime>,
-    InfrastructureResourceProvisioner<AwsIamUser, AwsIamUserRuntime, AwsIamUserLookup> {
+    InfrastructureResourceProvisioner<AwsIamUser, AwsIamUserRuntime, AwsIamUserLookup>,
+    DestroyableResourceProvisioner<AwsIamUserLookup> {
 
     private val json = Json { prettyPrint = false }
 
