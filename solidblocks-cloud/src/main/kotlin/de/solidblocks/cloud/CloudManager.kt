@@ -20,10 +20,20 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.fold
 import de.solidblocks.cloud.utils.result
 import de.solidblocks.utils.*
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 
-class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
+class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
+
+    private val provisioners = mutableMapOf<CloudConfigurationRuntime, CloudProvisioner>()
+
+    private fun provisionerFor(runtime: CloudConfigurationRuntime): CloudProvisioner = provisioners.getOrPut(runtime) { CloudProvisioner(runtime, serviceRegistrations, providerRegistrations) }
+
+    override fun close() {
+        provisioners.values.forEach(CloudProvisioner::close)
+        provisioners.clear()
+    }
 
     fun validate(): Result<CloudConfigurationRuntime> = result {
         val log = LogContext.default()
@@ -204,27 +214,26 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager() {
         return Success(services)
     }
 
-    private fun validateDnsZone(runtime: CloudConfigurationRuntime): Result<Unit> {
-        CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use {
-            if (runtime.rootDomain == null) {
-                logWarning(
-                    "no configuration found for '${CloudConfigurationFactory.rootDomain.name}', created services will only be reachable via IP address. Depending on the service this may lead to limited functionality.",
+    private fun validateDnsZone(runtime: CloudConfigurationRuntime): Result<Unit> = withProvisioner(runtime) {
+        if (runtime.rootDomain == null) {
+            logWarning(
+                "no configuration found for '${CloudConfigurationFactory.rootDomain.name}', created services will only be reachable via IP address. Depending on the service this may lead to limited functionality.",
+            )
+            Success(Unit)
+        } else {
+            val lookup = it.context.lookup(HetznerDnsZoneLookup(runtime.rootDomain))
+
+            if (lookup == null) {
+                Error(
+                    "no zone found for root domain '${runtime.rootDomain}', please make sure that the zone can be managed by the configured cloud provider",
                 )
             } else {
-                val lookup = it.context.lookup(HetznerDnsZoneLookup(runtime.rootDomain))
-
-                if (lookup == null) {
-                    return Error(
-                        "no zone found for root domain '${runtime.rootDomain}', please make sure that the zone can be managed by the configured cloud provider",
-                    )
-                }
+                Success(Unit)
             }
-
-            return Success(Unit)
         }
     }
 
-    private fun <T> withProvisioner(runtime: CloudConfigurationRuntime, block: (CloudProvisioner) -> T): T = CloudProvisioner(runtime, serviceRegistrations, providerRegistrations).use(block)
+    private fun <T> withProvisioner(runtime: CloudConfigurationRuntime, block: (CloudProvisioner) -> T): T = block(provisionerFor(runtime))
 
     fun apply(runtime: CloudConfigurationRuntime, tainSecrets: Boolean): Result<String> {
         val log = LogContext.default()

@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.provisioner.context
 
 import de.solidblocks.cloud.api.resources.BaseResource
-import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
@@ -25,10 +24,8 @@ class ProvisionerApplyContextImpl(
 
     override fun isTainted(resource: BaseResource) = taintedResources.contains(resource)
 
-    override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
-
     override suspend fun createSecret(path: String, secret: String, taintable: Boolean): Result<Unit> {
-        val secret = GenericSecret<GenericSecretRuntime>(
+        val genericSecret = GenericSecret<GenericSecretRuntime>(
             path,
             OneTimeGeneratedSecret(secret = {
                 secret
@@ -38,7 +35,7 @@ class ProvisionerApplyContextImpl(
 
         return when (
             val result: Result<GenericSecretRuntime> =
-                registry.apply(secret, ProvisionerApplyContextImpl(sshKeyPair, sshKeyAbsolutePath, environment, registry, serviceRegistrations), LogContext())
+                registry.apply(genericSecret, this, LogContext())
         ) {
             is Error<GenericSecretRuntime> -> Error(result.error)
             is Success<GenericSecretRuntime> -> Success(Unit)
