@@ -1,6 +1,5 @@
 package de.solidblocks.cloud
 
-import aws.smithy.kotlin.runtime.util.type
 import de.solidblocks.cloud.Constants.DEFAULT_ENVIRONMENT
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
