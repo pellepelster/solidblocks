@@ -166,7 +166,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         )
 
         if (cloud.rootDomain == null) {
-            throw IllegalArgumentException("root domain is required")
+            return Error("root domain is required for service '${runtime.name}'")
         }
 
         val zone = HetznerDnsZoneLookup(cloud.rootDomain)
