@@ -43,6 +43,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
 
     fun diff(resourceGroups: List<ResourceGroup>, taintCallback: (BaseInfrastructureResource<*>) -> Boolean, context: SSHProvisionerContext, log: LogContext): Result<Map<ResourceGroup, List<ResourceDiff>>> {
         val changedResources = mutableListOf<BaseInfrastructureResource<*>>()
+        val taintedResources = mutableSetOf<BaseInfrastructureResource<*>>()
         val resourceGroupDiffs =
             resourceGroups
                 .map { resourceGroup ->
@@ -57,6 +58,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                                 resourceGroup,
                                 ProvisionerDiffContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, changedResources, context.environment, registry, serviceRegistrations),
                                 taintCallback,
+                                taintedResources,
                                 diffLogContext,
                             )
                         ) {
@@ -116,7 +118,13 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
         return Success(resourceGroupDiffs)
     }
 
-    private fun diff(resourceGroup: ResourceGroup, context: ProvisionerDiffContext, taintCallback: (BaseInfrastructureResource<*>) -> Boolean, log: LogContext): Result<List<ResourceDiff>> = runBlocking {
+    private fun diff(
+        resourceGroup: ResourceGroup,
+        context: ProvisionerDiffContext,
+        taintCallback: (BaseInfrastructureResource<*>) -> Boolean,
+        taintedResources: MutableSet<BaseInfrastructureResource<*>>,
+        log: LogContext,
+    ): Result<List<ResourceDiff>> = runBlocking {
         logger.info { "creating diff for ${resourceGroup.logText()}" }
 
         val resources =
@@ -129,9 +137,10 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
             try {
                 logger.info { "creating diff for ${resource.logText()}" }
 
-                val isAnyParentTainted = resource.recursiveDependencies().filterIsInstance<BaseInfrastructureResource<*>>().any { it.isTainted() }
+                val isAnyParentTainted = resource.recursiveDependencies().filterIsInstance<BaseInfrastructureResource<*>>().any { it in taintedResources }
                 val diff = if (isAnyParentTainted || taintCallback.invoke(resource)) {
-                    if (resource.taint()) {
+                    if (resource.taintable) {
+                        taintedResources.add(resource)
                         ResourceDiff(resource, tainted)
                     } else {
                         log.warning("${resource.logText()} could not be tainted, manual intervention might be needed")

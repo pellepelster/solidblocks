@@ -71,7 +71,7 @@ class ProtonPassSecretProvisionerTest {
             }
 
             // tainting forces a new ephemeral secret
-            randomSecret.taint()
+            TEST_PROVISIONER_CONTEXT.taintedResources.add(randomSecret)
             val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterCreation.secret shouldNotBe secretAfterTaint.secret
 

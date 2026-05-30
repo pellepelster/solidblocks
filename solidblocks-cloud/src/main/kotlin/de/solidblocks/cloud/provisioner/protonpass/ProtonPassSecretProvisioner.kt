@@ -91,7 +91,7 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
     override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext, log: LogContext): Result<GenericSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
-        if (current != null && !resource.isTainted() && resource.secretGenerator.isEphemeral()) {
+        if (current != null && !context.isTainted(resource) && resource.secretGenerator.isEphemeral()) {
             return Success(current)
         }
 

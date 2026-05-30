@@ -39,7 +39,7 @@ enum class ResourceDiffStatus {
 
 class ResourceDiff(val resource: BaseInfrastructureResource<*>, val status: ResourceDiffStatus, val duplicateErrorMessage: String? = null, val changes: List<ResourceDiffItem> = emptyList()) {
 
-    fun needsRecreate(): Boolean = (resource.isTainted() && resource.taintRequiresRecreate) || changes.any { it.triggersRecreate }
+    fun needsRecreate(): Boolean = (status == ResourceDiffStatus.tainted && resource.taintRequiresRecreate) || changes.any { it.triggersRecreate }
 
     fun hasChanges(): Boolean = changes.any { it.hasChanges() }
 

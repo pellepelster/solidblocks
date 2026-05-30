@@ -59,6 +59,10 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
 
     val secrets = mutableMapOf<String, String>()
 
+    val taintedResources = mutableSetOf<BaseResource>()
+
+    override fun isTainted(resource: BaseResource) = taintedResources.contains(resource)
+
     override suspend fun createSecret(path: String, secret: String, taintable: Boolean): Result<Unit> {
         secrets[path] = secret
         return Success(Unit)

@@ -24,8 +24,7 @@ class ProtonPassProviderTest {
             TEST_CLOUD_CONFIGURATION_CONTEXT,
             TEST_LOG_CONTEXT,
         ).shouldBeTypeOf<Success<ProtonPassProviderRuntime>>()
-        // TEST_CLOUD_CONFIGURATION_CONTEXT uses cloud name 'cloud1'
-        result.data.vaultName shouldBe "cloud1"
+        result.data.vaultName shouldBe "cloud1-default"
         System.clearProperty("BLCKS_PROTONPASS_PROVIDER_SKIP_VALIDATION")
     }
 

@@ -66,7 +66,7 @@ class PassSecretProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.has_changes
             }
 
-            randomSecret.taint()
+            TEST_PROVISIONER_CONTEXT.taintedResources.add(randomSecret)
 
             val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
             runtimeAfterCreation.secret shouldNotBe secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data

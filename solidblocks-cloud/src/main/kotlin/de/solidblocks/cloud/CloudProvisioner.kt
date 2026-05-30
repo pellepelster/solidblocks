@@ -11,6 +11,7 @@ import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.Constants.sshKnownHosts
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceDiffStatus.tainted
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -134,8 +135,14 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
         log.info(bold("rolling out changes for cloud configuration '${runtime.environmentContext.cloud}'"))
 
+        val taintedResources = diffs.values.flatten().filter { it.status == tainted }.map { it.resource }.toSet()
+
         val diffResult = if (diffs.entries.flatMap { it.value }.any { it.status != up_to_date }) {
-            provisioner.apply(diffs, ProvisionerApplyContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, context.environment, context.registry, context.serviceRegistrations), log.indent())
+            provisioner.apply(
+                diffs,
+                ProvisionerApplyContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, context.environment, context.registry, context.serviceRegistrations, taintedResources),
+                log.indent(),
+            )
         } else {
             log.indent().info("no pending changes")
             Success(Unit)

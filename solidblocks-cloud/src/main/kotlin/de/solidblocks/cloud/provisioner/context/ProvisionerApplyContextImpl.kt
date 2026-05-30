@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner.context
 
+import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
@@ -19,7 +20,10 @@ class ProvisionerApplyContextImpl(
     environment: EnvironmentContext,
     registry: ProvisionersRegistry,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
+    private val taintedResources: Set<BaseResource> = emptySet(),
 ) : ProvisionerContextImpl(sshKeyPair, sshKeyAbsolutePath, environment, registry, serviceRegistrations), ProvisionerApplyContext {
+
+    override fun isTainted(resource: BaseResource) = taintedResources.contains(resource)
 
     override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = TODO("Not yet implemented")
 
