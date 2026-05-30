@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIp
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpRuntime
@@ -37,7 +37,7 @@ class HetznerFloatingIpProvisionerTest {
         runBlocking {
             // before create
             provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)?.name shouldBe null
-            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
                 it.changes.shouldBeEmpty()
             }
@@ -53,7 +53,7 @@ class HetznerFloatingIpProvisionerTest {
                 it.deleteProtected shouldBe true
                 it.ip shouldNotBe null
             }
-            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
@@ -61,7 +61,7 @@ class HetznerFloatingIpProvisionerTest {
             // changing the type should trigger recreate
             val resourceWithDifferentType =
                 HetznerFloatingIp(name, FloatingIpType.ipv6, HetznerLocation.nbg1, hetzner.defaultLabels)
-            assertSoftly(provisioner.diff(resourceWithDifferentType, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithDifferentType, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "type"
@@ -78,7 +78,7 @@ class HetznerFloatingIpProvisionerTest {
                     HetznerLocation.nbg1,
                     hetzner.defaultLabels + mapOf("foo" to "bar"),
                 )
-            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].missing shouldBe true
@@ -89,7 +89,7 @@ class HetznerFloatingIpProvisionerTest {
                 .shouldBeTypeOf<Success<HetznerFloatingIpRuntime>>()
                 .data
                 .name shouldBe name
-            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
@@ -102,7 +102,7 @@ class HetznerFloatingIpProvisionerTest {
                     HetznerLocation.nbg1,
                     hetzner.defaultLabels + mapOf("foo" to "bar2"),
                 )
-            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "label 'foo'"
@@ -114,7 +114,7 @@ class HetznerFloatingIpProvisionerTest {
                 .shouldBeTypeOf<Success<HetznerFloatingIpRuntime>>()
                 .data
                 .name shouldBe name
-            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
@@ -128,7 +128,7 @@ class HetznerFloatingIpProvisionerTest {
                     hetzner.defaultLabels + mapOf("foo" to "bar2"),
                     protected = false,
                 )
-            assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "delete protection"
@@ -140,7 +140,7 @@ class HetznerFloatingIpProvisionerTest {
                 .shouldBeTypeOf<Success<HetznerFloatingIpRuntime>>()
                 .data
                 .name shouldBe name
-            assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(provisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }

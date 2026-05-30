@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewall
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallRuntime
@@ -59,7 +59,7 @@ class HetznerFirewallProvisionerTest {
 
         runBlocking {
             provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
-            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
                 it.changes.shouldBeEmpty()
             }
@@ -74,14 +74,14 @@ class HetznerFirewallProvisionerTest {
                 it.name shouldBe name
                 it.rules shouldHaveSize 2
             }
-            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resource, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
             val resourceWithNewRules = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels, emptyMap())
 
-            assertSoftly(provisioner.diff(resourceWithNewRules, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resourceWithNewRules, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "rules"
@@ -99,14 +99,14 @@ class HetznerFirewallProvisionerTest {
                 it.rules shouldHaveSize 1
                 it.rules[0].protocol shouldBe FirewallRuleProtocol.ICMP
             }
-            assertSoftly(provisioner.diff(resourceWithNewRules, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resourceWithNewRules, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
             val resourceWithNewLabel = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels + mapOf("foo" to "bar"), emptyMap())
 
-            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].missing shouldBe true
@@ -115,14 +115,14 @@ class HetznerFirewallProvisionerTest {
 
             provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
 
-            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
             val resourceWithUpdatedLabel = HetznerFirewall(name, listOf(icmpRule), hetzner.defaultLabels + mapOf("foo" to "bar2"), emptyMap())
 
-            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "label 'foo'"
@@ -132,7 +132,7 @@ class HetznerFirewallProvisionerTest {
 
             provisioner.apply(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
 
-            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }

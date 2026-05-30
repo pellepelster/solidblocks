@@ -18,6 +18,16 @@ data class ProtonPassItem(
 )
 
 @Serializable
+data class ProtonPassListItem(
+    @SerialName("id") val id: String,
+    @SerialName("share_id") val shareId: String,
+    @SerialName("title") val title: String,
+)
+
+@Serializable
+data class ProtonPassListItemWrapper(@SerialName("items") val items: List<ProtonPassListItem>)
+
+@Serializable
 data class ProtonPassItemContent(
     @SerialName("title") val title: String,
     @SerialName("note") val note: String? = null,
@@ -39,41 +49,37 @@ private data class ProtonPassNoteTemplate(
     @SerialName("note") val note: String,
 )
 
-/**
- * Tests if an authenticated connection to Proton Pass can be established.
- */
 fun protonPassTest() = runCommand(listOf("pass-cli", "test"))
 
-/**
- * Lists all available vaults as JSON.
- */
 fun protonPassVaultList() = runCommand(listOf("pass-cli", "vault", "list", "--output", "json"))
 
-/**
- * Reads a note item from a vault as JSON. Exits non-zero if the item does not exist.
- */
+fun protonPassVaultCreate(name: String) = runCommand(listOf("pass-cli", "vault", "create", "--name", name))
+
 fun protonPassItemView(vaultName: String, title: String) = runCommand(
     listOf("pass-cli", "item", "view", "--vault-name", vaultName, "--item-title", title, "--output", "json"),
 )
 
-/**
- * Creates a note item in a vault. The secret value is passed via stdin (JSON template) to avoid
- * leaking it through the process argument list.
- */
+fun protonPassItemList(vaultName: String) = runCommand(
+    listOf("pass-cli", "item", "list", "--output", "json", vaultName),
+)
+
 fun protonPassItemCreateNote(vaultName: String, title: String, secret: String) = runCommand(
     listOf("pass-cli", "item", "create", "note", "--vault-name", vaultName, "--from-template", "-"),
     stdin = Json.encodeToString(ProtonPassNoteTemplate(title, secret)),
 )
 
-/**
- * Deletes an item by its share and item id.
- */
 fun protonPassItemDelete(shareId: String, itemId: String) = runCommand(
     listOf("pass-cli", "item", "delete", "--share-id", shareId, "--item-id", itemId),
 )
 
 fun parseProtonPassItem(stdout: String): ProtonPassItem? = try {
     protonPassJson.decodeFromString<ProtonPassItemViewWrapper>(stdout).item
+} catch (e: Exception) {
+    null
+}
+
+fun parseProtonPassList(stdout: String): ProtonPassListItemWrapper? = try {
+    protonPassJson.decodeFromString<ProtonPassListItemWrapper>(stdout)
 } catch (e: Exception) {
     null
 }

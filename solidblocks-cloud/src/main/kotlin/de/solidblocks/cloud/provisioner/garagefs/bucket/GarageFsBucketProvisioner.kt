@@ -22,50 +22,52 @@ class GarageFsBucketProvisioner :
     InfrastructureResourceLookupProvider<GarageFsBucketLookup, GarageFsBucketRuntime>,
     InfrastructureResourceProvisioner<GarageFsBucket, GarageFsBucketRuntime, GarageFsBucketLookup> {
 
-    override suspend fun diff(resource: GarageFsBucket, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
-        is Error<GarageFsBucketRuntime?> -> ResourceDiff(resource, unknown)
-        is Success<GarageFsBucketRuntime?> -> {
-            if (result.data == null) {
-                ResourceDiff(resource, missing)
-            } else {
-                val changes = mutableListOf<ResourceDiffItem>()
-
-                val globalAliasesWithOutOwnName =
-                    result.data.globalAliases.filter { it != resource.name }
-                if (!(resource.websiteAccessDomains equalsIgnoreOrder globalAliasesWithOutOwnName)) {
-                    changes.add(
-                        ResourceDiffItem(
-                            "website access domains",
-                            true,
-                            false,
-                            false,
-                            resource.websiteAccessDomains,
-                            globalAliasesWithOutOwnName,
-                        ),
-                    )
-                }
-
-                if (resource.websiteAccess != result.data.websiteAccess) {
-                    changes.add(
-                        ResourceDiffItem(
-                            "public access",
-                            true,
-                            false,
-                            false,
-                            resource.websiteAccess,
-                            result.data.websiteAccess,
-                        ),
-                    )
-                }
-
-                if (changes.isEmpty()) {
-                    ResourceDiff(resource, up_to_date)
+    override suspend fun diff(resource: GarageFsBucket, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        when (val result = lookupInternal(resource.asLookup(), context)) {
+            is Error<GarageFsBucketRuntime?> -> ResourceDiff(resource, unknown)
+            is Success<GarageFsBucketRuntime?> -> {
+                if (result.data == null) {
+                    ResourceDiff(resource, missing)
                 } else {
-                    ResourceDiff(resource, has_changes, changes = changes)
+                    val changes = mutableListOf<ResourceDiffItem>()
+
+                    val globalAliasesWithOutOwnName =
+                        result.data.globalAliases.filter { it != resource.name }
+                    if (!(resource.websiteAccessDomains equalsIgnoreOrder globalAliasesWithOutOwnName)) {
+                        changes.add(
+                            ResourceDiffItem(
+                                "website access domains",
+                                true,
+                                false,
+                                false,
+                                resource.websiteAccessDomains,
+                                globalAliasesWithOutOwnName,
+                            ),
+                        )
+                    }
+
+                    if (resource.websiteAccess != result.data.websiteAccess) {
+                        changes.add(
+                            ResourceDiffItem(
+                                "public access",
+                                true,
+                                false,
+                                false,
+                                resource.websiteAccess,
+                                result.data.websiteAccess,
+                            ),
+                        )
+                    }
+
+                    if (changes.isEmpty()) {
+                        ResourceDiff(resource, up_to_date)
+                    } else {
+                        ResourceDiff(resource, has_changes, changes = changes)
+                    }
                 }
             }
-        }
-    }
+        },
+    )
 
     override suspend fun lookup(lookup: GarageFsBucketLookup, context: SSHProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsBucketRuntime?> -> null

@@ -50,8 +50,8 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
         HetznerFirewallRuntime(it.id, it.name, it.rules, it.labels, appliedToLabels)
     }
 
-    override suspend fun diff(resource: HetznerFirewall, context: ProvisionerDiffContext): ResourceDiff {
-        val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
+    override suspend fun diff(resource: HetznerFirewall, context: ProvisionerDiffContext): Result<ResourceDiff> {
+        val runtime = lookup(resource.asLookup(), context) ?: return Success(ResourceDiff(resource, missing))
 
         val changes = mutableListOf<ResourceDiffItem>()
 
@@ -87,11 +87,13 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
 
         changes.addAll(createLabelDiff(resource, runtime))
 
-        return if (changes.isEmpty()) {
-            ResourceDiff(resource, up_to_date)
-        } else {
-            ResourceDiff(resource, has_changes, changes = changes)
-        }
+        return Success(
+            if (changes.isEmpty()) {
+                ResourceDiff(resource, up_to_date)
+            } else {
+                ResourceDiff(resource, has_changes, changes = changes)
+            },
+        )
     }
 
     override suspend fun apply(resource: HetznerFirewall, context: ProvisionerApplyContext, log: LogContext): Result<HetznerFirewallRuntime> {

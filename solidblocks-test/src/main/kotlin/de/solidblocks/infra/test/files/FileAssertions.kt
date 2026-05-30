@@ -1,5 +1,6 @@
 package de.solidblocks.infra.test.files
 
+import de.solidblocks.utils.sha256Hash
 import io.kotest.matchers.Matcher
 import io.kotest.matchers.MatcherResult
 import io.kotest.matchers.collections.shouldHaveSize
@@ -7,7 +8,6 @@ import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.file.shouldExist
 import io.kotest.matchers.should
 import java.nio.file.Path
-import java.security.MessageDigest
 import kotlin.io.path.readBytes
 import kotlin.io.path.readText
 
@@ -23,11 +23,7 @@ infix fun DirectoryBuilder.shouldContainFile(file: String): DirectoryBuilder {
 
 infix fun Path.shouldHaveChecksum(checksum: String) {
     val bytes = this.readBytes()
-    val digest =
-        MessageDigest.getInstance("SHA-256")
-            .digest(bytes)
-            .fold("", { str, it -> str + "%02x".format(it) })
-
+    val digest = bytes.sha256Hash()
     digest shouldBeEqual checksum
 }
 

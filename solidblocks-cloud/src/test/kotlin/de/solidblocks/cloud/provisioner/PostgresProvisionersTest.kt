@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
@@ -153,7 +153,7 @@ class PostgresProvisionersTest {
                 )
 
             userProvisioner.lookup(user.asLookup(), context) shouldBe null
-            assertSoftly(userProvisioner.diff(user, context)) {
+            assertSoftly(userProvisioner.diff(user, context).diffData()) {
                 it.status shouldBe missing
                 it.changes shouldHaveSize 0
             }
@@ -165,7 +165,7 @@ class PostgresProvisionersTest {
                 ?.name shouldBe username
             userProvisioner.lookup(user.asLookup(), context)?.name shouldBe username
 
-            assertSoftly(userProvisioner.diff(userWithPassword2, context)) {
+            assertSoftly(userProvisioner.diff(userWithPassword2, context).diffData()) {
                 it.status shouldBe has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "password"
@@ -177,7 +177,7 @@ class PostgresProvisionersTest {
                 .shouldBeInstanceOf<Success<PostgresUserRuntime?>>()
                 .data
                 ?.name shouldBe username
-            assertSoftly(userProvisioner.diff(userWithPassword2, context)) {
+            assertSoftly(userProvisioner.diff(userWithPassword2, context).diffData()) {
                 it.status shouldBe up_to_date
                 it.changes shouldHaveSize 0
             }
@@ -190,7 +190,7 @@ class PostgresProvisionersTest {
                     superUserPassword.asLookup(),
                 )
             databaseProvisioner.lookup(database.asLookup(), context) shouldBe null
-            assertSoftly(databaseProvisioner.diff(database, context)) {
+            assertSoftly(databaseProvisioner.diff(database, context).diffData()) {
                 it.status shouldBe missing
                 it.changes shouldHaveSize 0
             }
@@ -204,7 +204,7 @@ class PostgresProvisionersTest {
             }
 
             databaseProvisioner.lookup(database.asLookup(), context)?.name shouldBe database.name
-            assertSoftly(databaseProvisioner.diff(database, context)) {
+            assertSoftly(databaseProvisioner.diff(database, context).diffData()) {
                 it.status shouldBe up_to_date
                 it.changes shouldHaveSize 0
             }

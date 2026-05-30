@@ -68,8 +68,8 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
             ?: Error<HetznerNetworkRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerNetwork, context: ProvisionerDiffContext): ResourceDiff? {
-        val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
+    override suspend fun diff(resource: HetznerNetwork, context: ProvisionerDiffContext): Result<ResourceDiff> {
+        val runtime = lookup(resource.asLookup(), context) ?: return Success(ResourceDiff(resource, missing))
 
         val deleteProtection =
             if (runtime.deleteProtected != resource.protected) {
@@ -87,18 +87,20 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
         val changes = createLabelDiff(resource, runtime) + deleteProtection
 
-        return if (changes.isEmpty()) {
-            ResourceDiff(
-                resource,
-                up_to_date,
-            )
-        } else {
-            ResourceDiff(
-                resource,
-                has_changes,
-                changes = changes,
-            )
-        }
+        return Success(
+            if (changes.isEmpty()) {
+                ResourceDiff(
+                    resource,
+                    up_to_date,
+                )
+            } else {
+                ResourceDiff(
+                    resource,
+                    has_changes,
+                    changes = changes,
+                )
+            },
+        )
     }
 
     override suspend fun destroy(lookup: HetznerNetworkLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.networks.delete(it.id) } ?: false

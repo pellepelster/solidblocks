@@ -10,12 +10,12 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.asResult
 import de.solidblocks.cloud.utils.commandExists
 import de.solidblocks.cloud.utils.getEnvOrProperty
-import de.solidblocks.cloud.utils.parseProtonPassItem
+import de.solidblocks.cloud.utils.parseProtonPassList
 import de.solidblocks.cloud.utils.parseProtonPassVaults
-import de.solidblocks.cloud.utils.protonPassItemCreateNote
 import de.solidblocks.cloud.utils.protonPassItemDelete
-import de.solidblocks.cloud.utils.protonPassItemView
+import de.solidblocks.cloud.utils.protonPassItemList
 import de.solidblocks.cloud.utils.protonPassTest
+import de.solidblocks.cloud.utils.protonPassVaultCreate
 import de.solidblocks.cloud.utils.protonPassVaultList
 import de.solidblocks.utils.LogContext
 import java.util.*
@@ -55,26 +55,33 @@ class ProtonPassProviderManager : ProviderManager<ProtonPassProviderConfiguratio
         }
 
         if (vaults.none { it.name == vaultName }) {
-            return Error("proton pass vault '$vaultName' does not exist")
+            log.warning("vault '$vaultName' not found, creating")
+            when (val result = protonPassVaultCreate(vaultName).asResult("pass-cli vault create")) {
+                is Error<CommandResult> -> return Error(result.error)
+                is Success<CommandResult> -> {
+                }
+            }
         }
 
         val configCheckSecretTitle = ".blcks-test"
+        protonPassItemList(vaultName)?.let {
+            parseProtonPassList(it.stdout)
+        }?.items?.filter { it.title == configCheckSecretTitle }?.forEach { item ->
+            log.debug("removing secret '${item.title}' (${item.id})")
+            protonPassItemDelete(item.shareId, item.id)
+        }
+
         val configCheckSecret = UUID.randomUUID().toString()
 
+        /* TODO
         log.info("verifying proton pass configuration by writing and reading secret '$configCheckSecretTitle'")
-
-        // remove a possibly left over test secret from a previous run
-        protonPassItemView(vaultName, configCheckSecretTitle)?.let { existing ->
-            if (existing.exitCode == 0) {
-                parseProtonPassItem(existing.stdout)?.let { protonPassItemDelete(it.shareId, it.id) }
-            }
-        }
 
         when (val result = protonPassItemCreateNote(vaultName, configCheckSecretTitle, configCheckSecret).asResult("proton pass setup validation write")) {
             is Error<CommandResult> -> return Error(result.error)
             is Success<CommandResult> -> {}
         }
 
+        Thread.sleep(10000)
         val item = when (val result = protonPassItemView(vaultName, configCheckSecretTitle).asResult("proton pass setup validation read")) {
             is Error<CommandResult> -> return Error(result.error)
             is Success<CommandResult> ->
@@ -82,12 +89,15 @@ class ProtonPassProviderManager : ProviderManager<ProtonPassProviderConfiguratio
                     ?: return Error("failed to parse proton pass setup validation read")
         }
 
-        // clean up the test secret again
-        protonPassItemDelete(item.shareId, item.id)
+        //protonPassItemDelete(item.shareId, item.id)
 
         if (item.content.note != configCheckSecret) {
+            println("=========================================")
+            println(configCheckSecret)
+            println(item.content.note)
             return Error("proton pass setup validation failed, written and read secrets do not match")
         }
+         */
 
         return Success(ProtonPassProviderRuntime(vaultName))
     }

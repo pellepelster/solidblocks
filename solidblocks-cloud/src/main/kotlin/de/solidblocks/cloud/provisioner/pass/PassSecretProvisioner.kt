@@ -7,7 +7,6 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.interpolation.StringInterpolationFactory
-import de.solidblocks.cloud.providers.pass.PASS_PROVIDER_TYPE
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -33,33 +32,35 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerDiffContext): ResourceDiff {
+    override suspend fun diff(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerDiffContext): Result<ResourceDiff> {
         val runtime = lookup(resource.asLookup(), context)
 
-        return if (runtime != null) {
-            when (val secretGenerator = resource.secretGenerator) {
-                is StaticSecret -> {
-                    val secret = try {
-                        secretGenerator.generate(context)
-                    } catch (e: Exception) {
-                        logger.error(e) { "failed to generate secret" }
-                        null
+        return Success(
+            if (runtime != null) {
+                when (val secretGenerator = resource.secretGenerator) {
+                    is StaticSecret -> {
+                        val secret = try {
+                            secretGenerator.generate(context)
+                        } catch (e: Exception) {
+                            logger.error(e) { "failed to generate secret" }
+                            null
+                        }
+
+                        if (secret == null) {
+                            ResourceDiff(resource, unknown)
+                        } else if (runtime.secret != secret) {
+                            ResourceDiff(resource, has_changes)
+                        } else {
+                            ResourceDiff(resource, up_to_date)
+                        }
                     }
 
-                    if (secret == null) {
-                        ResourceDiff(resource, unknown)
-                    } else if (runtime.secret != secret) {
-                        ResourceDiff(resource, has_changes)
-                    } else {
-                        ResourceDiff(resource, up_to_date)
-                    }
+                    else -> ResourceDiff(resource, up_to_date)
                 }
-
-                else -> ResourceDiff(resource, up_to_date)
-            }
-        } else {
-            ResourceDiff(resource, missing)
-        }
+            } else {
+                ResourceDiff(resource, missing)
+            },
+        )
     }
 
     override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
@@ -104,7 +105,11 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         return null
     }
 
-    override val interpolationType = PASS_PROVIDER_TYPE
+    override val supportedLookupType = GenericSecretLookup::class
+
+    override val supportedResourceType = GenericSecret::class
+
+    override val interpolationType = "secret"
 
     override fun validate(interpolation: String): Result<Unit> = when (lookupInternal(GenericSecretLookup(interpolation))) {
         is GenericSecretRuntime -> Success(Unit)
@@ -115,8 +120,4 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
         is GenericSecretRuntime -> Success(result.secret.trim())
         else -> Error("pass secret '$interpolation' does not exist'")
     }
-
-    override val supportedLookupType = GenericSecretLookup::class
-
-    override val supportedResourceType = GenericSecret::class
 }

@@ -39,44 +39,46 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun diff(resource: HetznerDnsRecord, context: ProvisionerDiffContext) = lookup(resource.asLookup(), context)?.let { runtime ->
-        val changes = mutableListOf<ResourceDiffItem>()
+    override suspend fun diff(resource: HetznerDnsRecord, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        lookup(resource.asLookup(), context)?.let { runtime ->
+            val changes = mutableListOf<ResourceDiffItem>()
 
-        if (runtime.ttl != resource.ttl) {
-            changes.add(
-                ResourceDiffItem(
-                    "value",
-                    false,
-                    false,
-                    true,
-                    expectedValue = resource.ttl,
-                    actualValue = runtime.ttl,
-                ),
-            )
-        }
+            if (runtime.ttl != resource.ttl) {
+                changes.add(
+                    ResourceDiffItem(
+                        "value",
+                        false,
+                        false,
+                        true,
+                        expectedValue = resource.ttl,
+                        actualValue = runtime.ttl,
+                    ),
+                )
+            }
 
-        val expectedValues = resource.servers.mapNotNull { context.lookup(it)?.publicIpv4 } + resource.floatingIps.mapNotNull { context.lookup(it)?.ip }
-        if (!(expectedValues equalsIgnoreOrder runtime.values)) {
-            changes.add(
-                ResourceDiffItem(
-                    "value",
-                    false,
-                    false,
-                    true,
-                    expectedValue = expectedValues.joinToStringOrEmpty(empty = "<known after apply>") { it },
-                    actualValue = runtime.values.joinToStringOrEmpty(empty = "<known after apply>") { it },
-                ),
-            )
-        }
+            val expectedValues = resource.servers.mapNotNull { context.lookup(it)?.publicIpv4 } + resource.floatingIps.mapNotNull { context.lookup(it)?.ip }
+            if (!(expectedValues equalsIgnoreOrder runtime.values)) {
+                changes.add(
+                    ResourceDiffItem(
+                        "value",
+                        false,
+                        false,
+                        true,
+                        expectedValue = expectedValues.joinToStringOrEmpty(empty = "<known after apply>") { it },
+                        actualValue = runtime.values.joinToStringOrEmpty(empty = "<known after apply>") { it },
+                    ),
+                )
+            }
 
-        changes.addAll(createLabelDiff(resource, runtime))
+            changes.addAll(createLabelDiff(resource, runtime))
 
-        if (changes.isNotEmpty()) {
-            ResourceDiff(resource, has_changes, changes = changes)
-        } else {
-            ResourceDiff(resource, up_to_date)
-        }
-    } ?: ResourceDiff(resource, missing)
+            if (changes.isNotEmpty()) {
+                ResourceDiff(resource, has_changes, changes = changes)
+            } else {
+                ResourceDiff(resource, up_to_date)
+            }
+        } ?: ResourceDiff(resource, missing),
+    )
 
     override suspend fun apply(resource: HetznerDnsRecord, context: ProvisionerApplyContext, log: LogContext): Result<HetznerDnsRecordRuntime> {
         val current = lookup(resource.asLookup(), context)

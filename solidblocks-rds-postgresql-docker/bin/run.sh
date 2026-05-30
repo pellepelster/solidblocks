@@ -63,7 +63,7 @@ export DB_BACKUP_LOCAL_DIR="${DB_BACKUP_LOCAL_DIR:-/storage/backup}"
 if [[ ${DB_BACKUP_LOCAL:-0} == 1 ]]; then
   ensure_environment_variables DB_BACKUP_LOCAL_DIR
 
-  if ! mount | grep "${DB_BACKUP_LOCAL_DIR}"; then
+  if [[ ${DB_BACKUP_LOCAL_SKIP_MOUNT_CHECK:-0} == 0 ]] && ! mount | grep "${DB_BACKUP_LOCAL_DIR}"; then
       log "local backup dir '${DB_BACKUP_LOCAL_DIR}' not mounted"
       exit 1
   fi

@@ -6,11 +6,11 @@ import de.solidblocks.infra.test.files.DirectoryBuilder
 import de.solidblocks.infra.test.files.file
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.output.TimestampedOutputLine
+import de.solidblocks.utils.sha256Hash
 import java.io.Closeable
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
-import java.security.MessageDigest
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.readBytes
 import kotlin.time.Duration
@@ -46,11 +46,9 @@ abstract class ScriptBuilder(var timeout: Duration) : Closeable {
 
     fun includes(vararg includes: Path) = apply { this.includes.addAll(includes) }
 
-    fun String.hashedWithSha256() = MessageDigest.getInstance("SHA-256").digest(toByteArray()).toHexString()
-
     fun includes(vararg includes: URI) = apply {
         for (include in includes) {
-            val hashedURI = include.toString().hashedWithSha256()
+            val hashedURI = include.toString().sha256Hash()
             val includedURIFile = workingDir.file(hashedURI).content(include.toURL().readBytes()).create()
             this.includes.add(includedURIFile)
         }

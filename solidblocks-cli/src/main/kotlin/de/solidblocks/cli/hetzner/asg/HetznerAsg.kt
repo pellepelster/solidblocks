@@ -7,7 +7,6 @@ import de.solidblocks.cli.hetzner.Constants.LOADBALANCER_ID_LABEL
 import de.solidblocks.cli.hetzner.Constants.MANAGED_BY_LABEL
 import de.solidblocks.cli.hetzner.Constants.USER_DATA_HASH_LABEL
 import de.solidblocks.cli.hetzner.HetznerLabels
-import de.solidblocks.cli.hetzner.hashString
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
@@ -25,6 +24,7 @@ import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.utils.logError
 import de.solidblocks.utils.logInfo
 import de.solidblocks.utils.logWarning
+import de.solidblocks.utils.sha256Hash
 import kotlinx.coroutines.runBlocking
 import java.lang.Thread.sleep
 import java.time.ZoneOffset
@@ -201,7 +201,7 @@ class HetznerAsg(hcloudToken: String) {
             throw CliktError("ip based targets are not supported for server rotation")
         }
 
-        val userDataHash = hashString(userData)
+        val userDataHash = userData.sha256Hash()
 
         logInfo("hash for provided user data is '$userDataHash'")
         logInfo("inspecting load balancer '${loadbalancer.name}'")

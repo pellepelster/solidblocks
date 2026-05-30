@@ -73,8 +73,8 @@ class HetznerFloatingIpProvisioner(hcloudToken: String) :
             ?: Error<HetznerFloatingIpRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerFloatingIp, context: ProvisionerDiffContext): ResourceDiff? {
-        val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
+    override suspend fun diff(resource: HetznerFloatingIp, context: ProvisionerDiffContext): Result<ResourceDiff> {
+        val runtime = lookup(resource.asLookup(), context) ?: return Success(ResourceDiff(resource, missing))
 
         val changes = mutableListOf<ResourceDiffItem>()
 
@@ -103,11 +103,13 @@ class HetznerFloatingIpProvisioner(hcloudToken: String) :
 
         changes.addAll(createLabelDiff(resource, runtime))
 
-        return if (changes.isEmpty()) {
-            ResourceDiff(resource, up_to_date)
-        } else {
-            ResourceDiff(resource, has_changes, changes = changes)
-        }
+        return Success(
+            if (changes.isEmpty()) {
+                ResourceDiff(resource, up_to_date)
+            } else {
+                ResourceDiff(resource, has_changes, changes = changes)
+            },
+        )
     }
 
     override suspend fun destroy(lookup: HetznerFloatingIpLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let {

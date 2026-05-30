@@ -1,5 +1,6 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -20,6 +21,7 @@ import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
+import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
@@ -30,6 +32,12 @@ import java.nio.file.Path
 import kotlin.reflect.KClass
 
 class TestContextUtils
+
+/** Unwraps a provisioner diff [Result] in tests, failing loudly if the diff returned an error. */
+fun Result<ResourceDiff>.diffData(): ResourceDiff = when (this) {
+    is Success<ResourceDiff> -> data
+    is Error<ResourceDiff> -> throw AssertionError("expected diff to succeed but was error: $error")
+}
 
 class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: SSHClient? = null) : ProvisionerDiffContext, ValidationContext, ProvisionerApplyContext {
 

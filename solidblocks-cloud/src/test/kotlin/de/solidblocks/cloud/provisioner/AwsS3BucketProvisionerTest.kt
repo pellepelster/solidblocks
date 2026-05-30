@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.aws.s3.AwsS3Bucket
 import de.solidblocks.cloud.provisioner.aws.s3.AwsS3BucketProvisioner
 import de.solidblocks.cloud.utils.Success
@@ -35,7 +35,7 @@ class AwsS3BucketProvisionerTest {
         runBlocking {
             provisioner.lookup(AwsS3Bucket(name, region).asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
 
-            assertSoftly(provisioner.diff(AwsS3Bucket(name, region), TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(AwsS3Bucket(name, region), TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
                 it.changes.shouldBeEmpty()
             }
@@ -49,7 +49,7 @@ class AwsS3BucketProvisionerTest {
                 it.region shouldBe region
             }
 
-            assertSoftly(provisioner.diff(AwsS3Bucket(name, region), TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(AwsS3Bucket(name, region), TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }

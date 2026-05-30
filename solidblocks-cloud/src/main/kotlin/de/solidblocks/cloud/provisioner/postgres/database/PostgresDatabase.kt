@@ -6,7 +6,7 @@ import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 
 class PostgresDatabase(name: String, val user: PostgresUserLookup, val server: HetznerServerLookup, val superUserPassword: GenericSecretLookup) :
-    BaseInfrastructureResource<PostgresDatabaseRuntime>(name, emptySet()) {
+    BaseInfrastructureResource<PostgresDatabaseRuntime>(name, setOf(server, superUserPassword)) {
 
     override fun asLookup() = PostgresDatabaseLookup(name, server, superUserPassword)
 

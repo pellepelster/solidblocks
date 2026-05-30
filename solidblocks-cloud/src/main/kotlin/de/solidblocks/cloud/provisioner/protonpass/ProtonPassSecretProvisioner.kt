@@ -6,6 +6,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.interpolation.StringInterpolationFactory
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -28,40 +29,45 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ProtonPassSecretProvisioner(val vaultName: String) :
     InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
-    GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup> {
+    GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup>,
+    StringInterpolationFactory {
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerDiffContext): ResourceDiff {
+    override suspend fun diff(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerDiffContext): Result<ResourceDiff> {
         val runtime = lookup(resource.asLookup(), context)
 
-        return if (runtime != null) {
-            when (val secretGenerator = resource.secretGenerator) {
-                is StaticSecret -> {
-                    val secret = try {
-                        secretGenerator.generate(context)
-                    } catch (e: Exception) {
-                        logger.error(e) { "failed to generate secret" }
-                        null
+        return Success(
+            if (runtime != null) {
+                when (val secretGenerator = resource.secretGenerator) {
+                    is StaticSecret -> {
+                        val secret = try {
+                            secretGenerator.generate(context)
+                        } catch (e: Exception) {
+                            logger.error(e) { "failed to generate secret" }
+                            null
+                        }
+
+                        if (secret == null) {
+                            ResourceDiff(resource, unknown)
+                        } else if (runtime.secret != secret) {
+                            ResourceDiff(resource, has_changes)
+                        } else {
+                            ResourceDiff(resource, up_to_date)
+                        }
                     }
 
-                    if (secret == null) {
-                        ResourceDiff(resource, unknown)
-                    } else if (runtime.secret != secret) {
-                        ResourceDiff(resource, has_changes)
-                    } else {
-                        ResourceDiff(resource, up_to_date)
-                    }
+                    else -> ResourceDiff(resource, up_to_date)
                 }
-
-                else -> ResourceDiff(resource, up_to_date)
-            }
-        } else {
-            ResourceDiff(resource, missing)
-        }
+            } else {
+                ResourceDiff(resource, missing)
+            },
+        )
     }
 
-    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext): ProtonPassSecretRuntime? {
+    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+
+    private fun lookupInternal(lookup: GenericSecretLookup): ProtonPassSecretRuntime? {
         val result = protonPassItemView(vaultName, lookup.name)
 
         if (result == null) {
@@ -85,6 +91,7 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
         logger.error {
             "invalid pass-cli command result (${result.exitCode}), stdout: '${result.stdout}', stderr: '${result.stderr}'"
         }
+
         return null
     }
 
@@ -114,4 +121,16 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
     override val supportedLookupType = GenericSecretLookup::class
 
     override val supportedResourceType = GenericSecret::class
+
+    override val interpolationType = "secret"
+
+    override fun validate(interpolation: String): Result<Unit> = when (lookupInternal(GenericSecretLookup(interpolation))) {
+        is GenericSecretRuntime -> Success(Unit)
+        else -> Error("pass secret '$interpolation' does not exist'")
+    }
+
+    override fun resolve(interpolation: String): Result<String> = when (val result = lookupInternal(GenericSecretLookup(interpolation))) {
+        is GenericSecretRuntime -> Success(result.secret.trim())
+        else -> Error("pass secret '$interpolation' does not exist'")
+    }
 }

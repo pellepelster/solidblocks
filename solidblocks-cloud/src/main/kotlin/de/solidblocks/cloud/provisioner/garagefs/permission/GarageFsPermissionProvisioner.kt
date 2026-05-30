@@ -95,61 +95,63 @@ class GarageFsPermissionProvisioner :
             ?: Error<GarageFsPermissionRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: GarageFsPermission, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
-        is Error<GarageFsPermissionRuntime?> -> ResourceDiff(resource, unknown)
-        is Success<GarageFsPermissionRuntime?> -> {
-            if (result.data == null) {
-                ResourceDiff(resource, missing)
-            } else {
-                val changes = mutableListOf<ResourceDiffItem>()
-
-                if (result.data.owner != resource.owner) {
-                    changes.add(
-                        ResourceDiffItem(
-                            "owner",
-                            true,
-                            false,
-                            false,
-                            resource.owner,
-                            result.data.owner,
-                        ),
-                    )
-                }
-
-                if (result.data.read != resource.read) {
-                    changes.add(
-                        ResourceDiffItem(
-                            "read",
-                            true,
-                            false,
-                            false,
-                            resource.read,
-                            result.data.read,
-                        ),
-                    )
-                }
-
-                if (result.data.write != resource.write) {
-                    changes.add(
-                        ResourceDiffItem(
-                            "owner",
-                            true,
-                            false,
-                            false,
-                            resource.write,
-                            result.data.write,
-                        ),
-                    )
-                }
-
-                if (changes.isNotEmpty()) {
-                    ResourceDiff(resource, has_changes, changes = changes)
+    override suspend fun diff(resource: GarageFsPermission, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        when (val result = lookupInternal(resource.asLookup(), context)) {
+            is Error<GarageFsPermissionRuntime?> -> ResourceDiff(resource, unknown)
+            is Success<GarageFsPermissionRuntime?> -> {
+                if (result.data == null) {
+                    ResourceDiff(resource, missing)
                 } else {
-                    ResourceDiff(resource, up_to_date)
+                    val changes = mutableListOf<ResourceDiffItem>()
+
+                    if (result.data.owner != resource.owner) {
+                        changes.add(
+                            ResourceDiffItem(
+                                "owner",
+                                true,
+                                false,
+                                false,
+                                resource.owner,
+                                result.data.owner,
+                            ),
+                        )
+                    }
+
+                    if (result.data.read != resource.read) {
+                        changes.add(
+                            ResourceDiffItem(
+                                "read",
+                                true,
+                                false,
+                                false,
+                                resource.read,
+                                result.data.read,
+                            ),
+                        )
+                    }
+
+                    if (result.data.write != resource.write) {
+                        changes.add(
+                            ResourceDiffItem(
+                                "owner",
+                                true,
+                                false,
+                                false,
+                                resource.write,
+                                result.data.write,
+                            ),
+                        )
+                    }
+
+                    if (changes.isNotEmpty()) {
+                        ResourceDiff(resource, has_changes, changes = changes)
+                    } else {
+                        ResourceDiff(resource, up_to_date)
+                    }
                 }
             }
-        }
-    }
+        },
+    )
 
     override val supportedLookupType: KClass<*> = GarageFsPermissionLookup::class
 

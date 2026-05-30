@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 interface SSHProvisionerContext : ProvisionerContext {
     val sshKeyPair: KeyPair
     val sshKeyAbsolutePath: String
-    fun createOrGetSshClient(serverName: String): de.solidblocks.cloud.utils.Result<SSHClient>
+    fun createOrGetSshClient(serverName: String): Result<SSHClient>
 }
 
 interface ProvisionerContext {

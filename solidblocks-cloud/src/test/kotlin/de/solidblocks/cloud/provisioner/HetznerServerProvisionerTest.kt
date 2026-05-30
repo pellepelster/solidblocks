@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.HetznerTestContext
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
@@ -83,7 +83,7 @@ class HetznerServerProvisionerTest {
 
             runBlocking {
                 testContext.serverProvisioner.lookup(server.asLookup(), testContext.context) shouldBe null
-                assertSoftly(testContext.serverProvisioner.diff(server, testContext.context)!!) {
+                assertSoftly(testContext.serverProvisioner.diff(server, testContext.context).diffData()) {
                     it.status shouldBe ResourceDiffStatus.missing
                 }
 
@@ -93,7 +93,7 @@ class HetznerServerProvisionerTest {
                     TEST_LOG_CONTEXT,
                 ) shouldNotBe null
 
-                assertSoftly(testContext.serverProvisioner.diff(server, testContext.context)!!) {
+                assertSoftly(testContext.serverProvisioner.diff(server, testContext.context).diffData()) {
                     it.status shouldBe ResourceDiffStatus.up_to_date
                 }
 
@@ -110,7 +110,7 @@ class HetznerServerProvisionerTest {
                             labels = hetzner.defaultLabels,
                         ),
                         testContext.context,
-                    )!!,
+                    ).diffData(),
                 ) {
                     it.status shouldBe ResourceDiffStatus.has_changes
                     it.needsRecreate() shouldBe true
@@ -132,7 +132,7 @@ class HetznerServerProvisionerTest {
                             labels = hetzner.defaultLabels,
                         ),
                         testContext.context,
-                    )!!,
+                    ).diffData(),
                 ) {
                     it.status shouldBe ResourceDiffStatus.has_changes
                     it.needsRecreate() shouldBe true
@@ -162,7 +162,7 @@ class HetznerServerProvisionerTest {
                     )
 
                 assertSoftly(
-                    testContext.serverProvisioner.diff(serverWithPrivateNetwork, testContext.context)!!,
+                    testContext.serverProvisioner.diff(serverWithPrivateNetwork, testContext.context).diffData(),
                 ) {
                     it.status shouldBe ResourceDiffStatus.has_changes
                     it.changes shouldHaveSize 1

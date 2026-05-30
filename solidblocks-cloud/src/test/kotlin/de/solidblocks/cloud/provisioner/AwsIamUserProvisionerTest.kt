@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUser
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUserProvisioner
 import de.solidblocks.cloud.utils.Success
@@ -62,7 +62,7 @@ class AwsIamUserProvisionerTest {
         runBlocking {
             provisioner.lookup(AwsIamUser(name, readOnlyPolicy(bucketArn)).asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
 
-            assertSoftly(provisioner.diff(AwsIamUser(name, readOnlyPolicy(bucketArn)), TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(AwsIamUser(name, readOnlyPolicy(bucketArn)), TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
                 it.changes.shouldBeEmpty()
             }
@@ -79,13 +79,13 @@ class AwsIamUserProvisionerTest {
                 it.arn shouldBe "arn:aws:iam::${it.arn.split(":")[4]}:user/$name"
             }
 
-            assertSoftly(provisioner.diff(AwsIamUser(name, readOnlyPolicy(bucketArn)), TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(AwsIamUser(name, readOnlyPolicy(bucketArn)), TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
             // policy change is detected
-            assertSoftly(provisioner.diff(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "policy"
@@ -94,14 +94,14 @@ class AwsIamUserProvisionerTest {
             provisioner.apply(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
                 .shouldBeTypeOf<Success<*>>()
 
-            assertSoftly(provisioner.diff(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
             // whitespace differences in policy are ignored
             val policyWithExtraWhitespace = readWritePolicy(bucketArn).replace("\"s3:GetObject\"", "\"s3:GetObject\"   ")
-            assertSoftly(provisioner.diff(AwsIamUser(name, policyWithExtraWhitespace), TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(AwsIamUser(name, policyWithExtraWhitespace), TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }

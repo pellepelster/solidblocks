@@ -146,6 +146,10 @@ application {
     applicationName = "blcks"
 }
 
+tasks.named<JavaExec>("run") {
+    environment("SOLIDBLOCKS_VERSION", "0.0.0-rc-snapshot")
+}
+
 tasks.withType<JavaCompile> {
     sourceCompatibility = "24"
     targetCompatibility = "24"

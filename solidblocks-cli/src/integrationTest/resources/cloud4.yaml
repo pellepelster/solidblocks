@@ -1,0 +1,28 @@
+---
+name: cloud1
+environment_vars:
+  VAR1: foo
+
+providers:
+  - type: pass
+  - type: ssh_key
+  - type: hcloud
+  - type: backup_local
+
+services:
+  - type: postgresql
+    name: database1
+    environment_vars:
+      VAR2: bar
+    databases:
+      - name: hello-world
+  - type: docker
+    name: service1
+    image: ghcr.io/pellepelster/solidblocks-hello-world:latest
+    environment_vars:
+      VAR1: yolo
+      VAR3: "yolo=${env:HOME}"
+    endpoints:
+      - container_port: 8080
+    links:
+      - database1

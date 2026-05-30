@@ -75,7 +75,6 @@ class WaiterTest {
     @Test
     fun `waitForConsecutive returns null when streak is never reached within maxIterations`(): Unit = runTest {
         val callback = mockk<suspend () -> String?>()
-        // alternates null / value, so streak never reaches 3
         coEvery { callback() } returnsMany listOf("a", "b", null, "x", "y", null, "p", "q", null, "r")
 
         val result = noDelay.waitForConsecutive(3, callback)

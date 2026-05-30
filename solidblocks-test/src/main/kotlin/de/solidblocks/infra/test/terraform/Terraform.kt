@@ -3,6 +3,7 @@ package de.solidblocks.infra.test.terraform
 import de.solidblocks.infra.test.detectGolangPlatform
 import de.solidblocks.utils.LogSource
 import de.solidblocks.utils.logInfo
+import de.solidblocks.utils.sha256MessageDigest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -14,7 +15,6 @@ import java.io.InputStreamReader
 import java.net.URL
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 import kotlin.io.path.exists
@@ -97,16 +97,15 @@ class Terraform(val dir: Path, versionOverride: String? = null, val environment:
     }
 
     private fun calculateSHA256(file: File): String {
-        val digest = MessageDigest.getInstance("SHA-256")
         file.inputStream().use { input ->
             val buffer = ByteArray(8192)
             var bytesRead = input.read(buffer)
             while (bytesRead != -1) {
-                digest.update(buffer, 0, bytesRead)
+                sha256MessageDigest.update(buffer, 0, bytesRead)
                 bytesRead = input.read(buffer)
             }
         }
-        return digest.digest().joinToString("") { "%02x".format(it) }
+        return sha256MessageDigest.digest().joinToString("") { "%02x".format(it) }
     }
 
     private fun extractChecksum(checksumFile: File, filename: String) = checksumFile

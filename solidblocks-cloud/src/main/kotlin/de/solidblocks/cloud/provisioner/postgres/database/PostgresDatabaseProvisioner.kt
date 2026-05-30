@@ -27,21 +27,23 @@ class PostgresDatabaseProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: PostgresDatabase, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
-        is Error<PostgresDatabaseRuntime?> -> ResourceDiff(resource, unknown)
-        is Success<PostgresDatabaseRuntime?> -> {
-            if (result.data == null) {
-                ResourceDiff(resource, missing)
-            } else {
-                val changes = mutableListOf<ResourceDiffItem>()
-                if (changes.isEmpty()) {
-                    ResourceDiff(resource, up_to_date)
+    override suspend fun diff(resource: PostgresDatabase, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        when (val result = lookupInternal(resource.asLookup(), context)) {
+            is Error<PostgresDatabaseRuntime?> -> ResourceDiff(resource, unknown)
+            is Success<PostgresDatabaseRuntime?> -> {
+                if (result.data == null) {
+                    ResourceDiff(resource, missing)
                 } else {
-                    ResourceDiff(resource, has_changes, changes = changes)
+                    val changes = mutableListOf<ResourceDiffItem>()
+                    if (changes.isEmpty()) {
+                        ResourceDiff(resource, up_to_date)
+                    } else {
+                        ResourceDiff(resource, has_changes, changes = changes)
+                    }
                 }
             }
-        }
-    }
+        },
+    )
 
     private suspend fun lookupInternal(lookup: PostgresDatabaseLookup, context: SSHProvisionerContext): Result<PostgresDatabaseRuntime?> =
         when (val result = context.createConnection(lookup.server, lookup.superUserPassword)) {

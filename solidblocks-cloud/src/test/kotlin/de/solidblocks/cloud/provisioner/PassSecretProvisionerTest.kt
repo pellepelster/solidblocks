@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
@@ -46,7 +46,7 @@ class PassSecretProvisionerTest {
         runBlocking {
             // before create
             provisioner.lookup(randomSecret.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
-            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
@@ -55,14 +55,14 @@ class PassSecretProvisionerTest {
             runtimeAfterLookup.secret shouldHaveLength 13
             runtimeAfterLookup.secret shouldBe runtimeAfterCreation.secret
 
-            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
             val runtimeAfterSecondApply = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterSecondApply.secret shouldBe runtimeAfterCreation.secret
 
-            assertSoftly(provisioner.diff(staticSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(staticSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
             }
 
@@ -71,10 +71,10 @@ class PassSecretProvisionerTest {
             val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
             runtimeAfterCreation.secret shouldNotBe secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data
 
-            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
-            assertSoftly(provisioner.diff(oneTimeSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(oneTimeSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 

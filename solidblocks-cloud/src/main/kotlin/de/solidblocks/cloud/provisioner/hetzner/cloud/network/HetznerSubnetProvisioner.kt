@@ -58,14 +58,16 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
             ?: Error<HetznerSubnetRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerSubnet, context: ProvisionerDiffContext): ResourceDiff? {
-        val network = context.lookup(resource.network) ?: return ResourceDiff(resource, missing)
+    override suspend fun diff(resource: HetznerSubnet, context: ProvisionerDiffContext): Result<ResourceDiff> {
+        val network = context.lookup(resource.network) ?: return Success(ResourceDiff(resource, missing))
 
-        return if (network.subnets.none { it.subnet == resource.subnet }) {
-            ResourceDiff(resource, missing)
-        } else {
-            ResourceDiff(resource, up_to_date)
-        }
+        return Success(
+            if (network.subnets.none { it.subnet == resource.subnet }) {
+                ResourceDiff(resource, missing)
+            } else {
+                ResourceDiff(resource, up_to_date)
+            },
+        )
     }
 
     override val supportedLookupType: KClass<*> = HetznerSubnetLookup::class

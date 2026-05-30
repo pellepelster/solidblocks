@@ -33,7 +33,7 @@ class HetznerServer(
     taintRequiresRecreate = true,
 ) {
 
-    override fun asLookup() = HetznerServerLookup(name)
+    override fun asLookup() = HetznerServerLookup(name, dependsOn)
 
     override fun logText() = if (privateIp == null) {
         "server '$name'"

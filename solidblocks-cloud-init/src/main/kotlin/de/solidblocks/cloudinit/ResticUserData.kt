@@ -13,6 +13,7 @@ import de.solidblocks.shell.systemd.SystemDTimer
 import de.solidblocks.shell.systemd.Timer
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
+import de.solidblocks.utils.sha256Hash
 
 const val RESTIC_STATUS_COMMAND = "restic-status"
 
@@ -29,7 +30,7 @@ fun ShellScript.resticBackup(serviceName: String, backupConfig: BackupConfigurat
     when (backupConfig.target) {
         is LocalBackupTarget -> {
             val backupMount = "/storage/backup"
-            val localRepository = "$backupMount/$serviceName"
+            val localRepository = "$backupMount/$serviceName/${backupConfig.password.sha256Hash()}"
             addCommand(StorageLibrary.Mount(backupConfig.target.backupDevice, backupMount))
 
             addCommand(ResticLibrary.WriteCredentials(backupConfig.password))
@@ -40,7 +41,7 @@ fun ShellScript.resticBackup(serviceName: String, backupConfig: BackupConfigurat
         }
 
         is S3BackupTarget -> {
-            val s3Repository = "s3:s3.eu-central-1.amazonaws.com/${backupConfig.target.bucket}/$serviceName"
+            val s3Repository = "s3:s3.eu-central-1.amazonaws.com/${backupConfig.target.bucket}/$serviceName/${backupConfig.password.sha256Hash()}"
 
             addCommand(ResticLibrary.WriteS3Credentials(backupConfig.password, backupConfig.target.accessKey, backupConfig.target.secretKey))
             addCommand(ResticLibrary.EnsureS3Repo(s3Repository))

@@ -3,7 +3,7 @@ FROM debian:bookworm AS base
 ENV POSTGRES_KEY_CHECKSUM="0144068502a1eddd2a0280ede10ef607d1ec592ce819940991203941564e8e76"
 
 RUN apt-get update && \
-    apt-get -y install curl ca-certificates locales && \
+    apt-get --yes --no-install-recommends --no-install-suggests install curl ca-certificates locales && \
     install -d /usr/share/postgresql-common/pgdg && \
     curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
     echo "${POSTGRES_KEY_CHECKSUM}  /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc" | sha256sum -c && \
@@ -17,7 +17,7 @@ RUN locale-gen && \
 FROM base AS build_base
 
 RUN apt-get update && \
-    apt-get -y install \
+    apt-get --yes --no-install-recommends --no-install-suggests install \
         git \
         make \
         gcc
@@ -28,13 +28,13 @@ ARG POSTGRES_VERSION=""
 #############
 # pg_remote #
 #############
-RUN apt-get install -y postgresql-server-dev-${POSTGRES_VERSION}
+RUN apt-get install --yes --no-install-recommends --no-install-suggests postgresql-server-dev-${POSTGRES_VERSION}
 RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg_remote_exec && make install
 
 ###########
 # pgaudit #
 ###########
-RUN apt-get install -y libkrb5-dev && \
+RUN apt-get install --yes --no-install-recommends --no-install-suggests libkrb5-dev && \
     git clone https://github.com/pgaudit/pgaudit.git && \
     cd pgaudit &&  \
     git checkout REL_${POSTGRES_VERSION}_STABLE && \
@@ -47,13 +47,13 @@ ARG PREVIOUS_VERSION_PGAUDIT_BRANCH=""
 #############
 # pg_remote #
 #############
-RUN apt-get install -y postgresql-server-dev-${POSTGRES_PREVIOUS_VERSION}
+RUN apt-get install --yes --no-install-recommends --no-install-suggests postgresql-server-dev-${POSTGRES_PREVIOUS_VERSION}
 RUN git clone https://github.com/cybertec-postgresql/pg_remote_exec.git && cd pg_remote_exec && make install
 
 ###########
 # pgaudit    #
 ###########
-RUN apt-get install -y libkrb5-dev && \
+RUN apt-get install --yes --no-install-recommends --no-install-suggests libkrb5-dev && \
     git clone https://github.com/pgaudit/pgaudit.git && \
     cd pgaudit &&  \
     git checkout ${PREVIOUS_VERSION_PGAUDIT_BRANCH} && \
@@ -90,7 +90,7 @@ RUN addgroup --gid $GID $GROUP \
   --uid $UID
 
 RUN apt-get update && \
-    apt-get -y install \
+    apt-get --yes --no-install-recommends --no-install-suggests install \
         postgresql-${POSTGRES_PREVIOUS_VERSION} \
         postgresql-${POSTGRES_VERSION} \
         postgresql-${POSTGRES_VERSION}-cron \

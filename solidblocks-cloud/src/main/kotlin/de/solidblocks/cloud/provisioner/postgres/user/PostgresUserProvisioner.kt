@@ -30,56 +30,58 @@ class PostgresUserProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: PostgresUser, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
-        is Error<PostgresUserRuntime?> -> ResourceDiff(resource, unknown)
-        is Success<PostgresUserRuntime?> -> {
-            if (result.data == null) {
-                ResourceDiff(resource, missing)
-            } else {
-                val changes = mutableListOf<ResourceDiffItem>()
+    override suspend fun diff(resource: PostgresUser, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        when (val result = lookupInternal(resource.asLookup(), context)) {
+            is Error<PostgresUserRuntime?> -> ResourceDiff(resource, unknown)
+            is Success<PostgresUserRuntime?> -> {
+                if (result.data == null) {
+                    ResourceDiff(resource, missing)
+                } else {
+                    val changes = mutableListOf<ResourceDiffItem>()
 
-                when (val result = context.createOrGetSshClient(resource.server.name)) {
-                    is Error<SSHClient> -> ResourceDiff(resource, unknown)
-                    is Success<SSHClient> -> {
-                        result.data.portForward(5432) {
-                            if (it == null) {
-                                return@portForward ResourceDiff(resource, unknown)
-                            }
+                    when (val result = context.createOrGetSshClient(resource.server.name)) {
+                        is Error<SSHClient> -> ResourceDiff(resource, unknown)
+                        is Success<SSHClient> -> {
+                            result.data.portForward(5432) {
+                                if (it == null) {
+                                    return@portForward ResourceDiff(resource, unknown)
+                                }
 
-                            val passwordValid = try {
-                                DriverManager.getConnection(
-                                    "jdbc:postgresql://localhost:$it/postgres",
-                                    resource.name,
-                                    context.ensureLookup(resource.password).secret,
-                                ).use { true }
-                            } catch (e: PSQLException) {
-                                if (e.sqlState == "28P01") {
-                                    false
-                                } else {
-                                    true
+                                val passwordValid = try {
+                                    DriverManager.getConnection(
+                                        "jdbc:postgresql://localhost:$it/postgres",
+                                        resource.name,
+                                        context.ensureLookup(resource.password).secret,
+                                    ).use { true }
+                                } catch (e: PSQLException) {
+                                    if (e.sqlState == "28P01") {
+                                        false
+                                    } else {
+                                        true
+                                    }
+                                }
+
+                                if (!passwordValid) {
+                                    changes.add(
+                                        ResourceDiffItem(
+                                            "password",
+                                            changed = true,
+                                        ),
+                                    )
                                 }
                             }
 
-                            if (!passwordValid) {
-                                changes.add(
-                                    ResourceDiffItem(
-                                        "password",
-                                        changed = true,
-                                    ),
-                                )
+                            if (changes.isEmpty()) {
+                                ResourceDiff(resource, up_to_date)
+                            } else {
+                                ResourceDiff(resource, has_changes, changes = changes)
                             }
-                        }
-
-                        if (changes.isEmpty()) {
-                            ResourceDiff(resource, up_to_date)
-                        } else {
-                            ResourceDiff(resource, has_changes, changes = changes)
                         }
                     }
                 }
             }
-        }
-    }
+        },
+    )
 
     private suspend fun lookupInternal(lookup: PostgresUserLookup, context: SSHProvisionerContext): Result<PostgresUserRuntime?> =
         when (val result = context.createConnection(lookup.server, lookup.superUserPassword)) {

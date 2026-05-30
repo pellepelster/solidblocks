@@ -30,41 +30,43 @@ class GarageFsLayoutProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: GarageFsLayout, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
-        is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
-        is Success<GarageFsLayoutRuntime> -> {
-            context.withApiClients(resource.server, resource.adminToken) { apis ->
-                when (apis) {
-                    is Error<GarageFsApi> -> ResourceDiff(resource, unknown)
-                    is Success<GarageFsApi> -> {
-                        val status = apis.data.clusterApi.getClusterStatus()
+    override suspend fun diff(resource: GarageFsLayout, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        when (val result = lookupInternal(resource.asLookup(), context)) {
+            is Error<GarageFsLayoutRuntime> -> ResourceDiff(resource, unknown)
+            is Success<GarageFsLayoutRuntime> -> {
+                context.withApiClients(resource.server, resource.adminToken) { apis ->
+                    when (apis) {
+                        is Error<GarageFsApi> -> ResourceDiff(resource, unknown)
+                        is Success<GarageFsApi> -> {
+                            val status = apis.data.clusterApi.getClusterStatus()
 
-                        if (status.nodes.map { it.id } equalsIgnoreOrder result.data.nodes) {
-                            ResourceDiff(resource, up_to_date)
-                        } else {
-                            ResourceDiff(
-                                resource,
-                                has_changes,
-                                changes =
-                                listOf(
-                                    ResourceDiffItem(
-                                        "nodes",
-                                        expectedValue = status.nodes.joinToString(", ") { it.id },
-                                        actualValue =
-                                        if (result.data.nodes.isNotEmpty()) {
-                                            result.data.nodes.joinToString(", ") { it }
-                                        } else {
-                                            "<empty>"
-                                        },
+                            if (status.nodes.map { it.id } equalsIgnoreOrder result.data.nodes) {
+                                ResourceDiff(resource, up_to_date)
+                            } else {
+                                ResourceDiff(
+                                    resource,
+                                    has_changes,
+                                    changes =
+                                    listOf(
+                                        ResourceDiffItem(
+                                            "nodes",
+                                            expectedValue = status.nodes.joinToString(", ") { it.id },
+                                            actualValue =
+                                            if (result.data.nodes.isNotEmpty()) {
+                                                result.data.nodes.joinToString(", ") { it }
+                                            } else {
+                                                "<empty>"
+                                            },
+                                        ),
                                     ),
-                                ),
-                            )
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-    }
+        },
+    )
 
     override suspend fun lookup(lookup: GarageFsLayoutLookup, context: SSHProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsLayoutRuntime> -> null

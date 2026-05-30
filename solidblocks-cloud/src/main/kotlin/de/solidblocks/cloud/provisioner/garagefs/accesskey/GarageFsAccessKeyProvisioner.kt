@@ -24,16 +24,18 @@ class GarageFsAccessKeyProvisioner :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: GarageFsAccessKey, context: ProvisionerDiffContext) = when (val result = lookupInternal(resource.asLookup(), context)) {
-        is Error<GarageFsAccessKeyRuntime?> -> ResourceDiff(resource, unknown)
-        is Success<GarageFsAccessKeyRuntime?> -> {
-            if (result.data == null) {
-                ResourceDiff(resource, missing)
-            } else {
-                ResourceDiff(resource, up_to_date)
+    override suspend fun diff(resource: GarageFsAccessKey, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        when (val result = lookupInternal(resource.asLookup(), context)) {
+            is Error<GarageFsAccessKeyRuntime?> -> ResourceDiff(resource, unknown)
+            is Success<GarageFsAccessKeyRuntime?> -> {
+                if (result.data == null) {
+                    ResourceDiff(resource, missing)
+                } else {
+                    ResourceDiff(resource, up_to_date)
+                }
             }
-        }
-    }
+        },
+    )
 
     override suspend fun lookup(lookup: GarageFsAccessKeyLookup, context: SSHProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
         is Error<GarageFsAccessKeyRuntime?> -> null

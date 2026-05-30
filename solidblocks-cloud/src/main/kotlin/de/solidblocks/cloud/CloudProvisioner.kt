@@ -167,6 +167,11 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
 
     private fun createResourceGroups(): Result<List<ResourceGroup>> = resourceGroups
 
+    fun validateWiring(): Result<Unit> = when (val result = createResourceGroups()) {
+        is Error<List<ResourceGroup>> -> Error(result.error)
+        is Success<List<ResourceGroup>> -> registry.validateWiring(result.data)
+    }
+
     private fun buildResourceGroups(): Result<List<ResourceGroup>> {
         val publicKey = SSHKeyUtils.publicKeyToOpenSSH(runtime.providers.sshKeyProvider().keyPair.public)
 

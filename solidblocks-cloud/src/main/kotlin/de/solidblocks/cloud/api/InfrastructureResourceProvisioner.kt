@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 
 interface InfrastructureResourceProvisioner<ResourceType, RuntimeType, LookupType> {
 
-    suspend fun diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff?
+    suspend fun diff(resource: ResourceType, context: ProvisionerDiffContext): Result<ResourceDiff>
 
     suspend fun apply(resource: ResourceType, context: ProvisionerApplyContext, log: LogContext): Result<RuntimeType>
 

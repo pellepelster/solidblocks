@@ -75,8 +75,8 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
             ?: Error<HetznerVolumeRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerVolume, context: ProvisionerDiffContext): ResourceDiff? {
-        val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
+    override suspend fun diff(resource: HetznerVolume, context: ProvisionerDiffContext): Result<ResourceDiff> {
+        val runtime = lookup(resource.asLookup(), context) ?: return Success(ResourceDiff(resource, missing))
 
         val deleteProtection =
             if (runtime.deleteProtected != resource.protected) {
@@ -94,18 +94,20 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
 
         val changes = createLabelDiff(resource, runtime) + deleteProtection
 
-        return if (changes.isEmpty()) {
-            ResourceDiff(
-                resource,
-                up_to_date,
-            )
-        } else {
-            ResourceDiff(
-                resource,
-                has_changes,
-                changes = changes,
-            )
-        }
+        return Success(
+            if (changes.isEmpty()) {
+                ResourceDiff(
+                    resource,
+                    up_to_date,
+                )
+            } else {
+                ResourceDiff(
+                    resource,
+                    has_changes,
+                    changes = changes,
+                )
+            },
+        )
     }
 
     override suspend fun destroy(lookup: HetznerVolumeLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.volumes.delete(it.id) } ?: false

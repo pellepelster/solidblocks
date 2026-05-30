@@ -5,6 +5,9 @@ import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ListableResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.ResourceGroup
+import de.solidblocks.cloud.api.hierarchicalResourceList
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -19,7 +22,9 @@ import de.solidblocks.cloud.providers.managerForRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.utils.Success
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -71,7 +76,7 @@ class ProvisionersRegistry(
         return provisioner.apply(resource, context, log) as Result<RuntimeType>
     }
 
-    suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): ResourceDiff? = provisioner(resource).diff(resource, context)
+    suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): Result<ResourceDiff> = provisioner(resource).diff(resource, context)
 
     @Suppress("UNCHECKED_CAST")
     suspend fun <LookupType : InfrastructureResourceLookup<*>> destroy(lookup: LookupType, context: SSHProvisionerContext, log: LogContext): Boolean {
@@ -102,6 +107,50 @@ class ProvisionersRegistry(
         }
 
         return (provider as ListableResourceLookupProvider<LookupType>).list()
+    }
+
+    /**
+     * Validates once, up-front, that the registered provisioners and lookup providers can serve
+     * every resource that will be planned. This converts what would otherwise be RuntimeExceptions
+     * thrown deep inside diff/apply into a single, actionable error during configuration validation.
+     */
+    fun validateWiring(resourceGroups: List<ResourceGroup>): Result<Unit> {
+        // accessing the lazy indexes surfaces duplicate-registration problems eagerly
+        try {
+            provisionersByResourceType
+            provisionersByLookupType
+            lookupProvidersByType
+        } catch (e: Exception) {
+            return Error(e.message ?: "invalid provisioner registry wiring")
+        }
+
+        val resources = resourceGroups.flatMap { it.hierarchicalResourceList() }
+
+        val resourceTypesWithoutProvisioner = resources
+            .filterIsInstance<BaseInfrastructureResource<*>>()
+            .map { it::class }
+            .distinct()
+            .filter { it !in provisionersByResourceType && it !in provisionersByLookupType }
+
+        if (resourceTypesWithoutProvisioner.isNotEmpty()) {
+            return Error(
+                "no provisioner registered for resource type(s): ${resourceTypesWithoutProvisioner.joinToString(", ") { "'${it.qualifiedName}'" }}",
+            )
+        }
+
+        val lookupTypesWithoutProvider = resources
+            .filterIsInstance<InfrastructureResourceLookup<*>>()
+            .map { it::class }
+            .distinct()
+            .filter { it !in lookupProvidersByType }
+
+        if (lookupTypesWithoutProvider.isNotEmpty()) {
+            return Error(
+                "no lookup provider registered for lookup type(s): ${lookupTypesWithoutProvider.joinToString(", ") { "'${it.qualifiedName}'" }}",
+            )
+        }
+
+        return Success(Unit)
     }
 
     companion object {

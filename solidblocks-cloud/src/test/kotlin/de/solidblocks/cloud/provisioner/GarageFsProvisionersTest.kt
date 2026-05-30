@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyRuntime
@@ -168,32 +168,32 @@ class GarageFsProvisionersTest {
         runBlocking {
             val layout = GarageFsLayout(1 * 1000 * 1000, server.asLookup(), adminToken.asLookup())
 
-            assertSoftly(layoutProvisioner.diff(layout, context)) {
+            assertSoftly(layoutProvisioner.diff(layout, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
             }
 
             layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
-            assertSoftly(layoutProvisioner.diff(layout, context)) {
+            assertSoftly(layoutProvisioner.diff(layout, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes shouldHaveSize 0
             }
 
             layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
-            assertSoftly(layoutProvisioner.diff(layout, context)) {
+            assertSoftly(layoutProvisioner.diff(layout, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes shouldHaveSize 0
             }
 
             // check non-existing bucket
             bucketProvisioner.lookup(bucket.asLookup(), context) shouldBe null
-            assertSoftly(bucketProvisioner.diff(bucket, context)) {
+            assertSoftly(bucketProvisioner.diff(bucket, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
             // check non-existing access key
             accessKeyProvisioner.lookup(accessKey.asLookup(), context) shouldBe null
-            assertSoftly(accessKeyProvisioner.diff(accessKey, context)) {
+            assertSoftly(accessKeyProvisioner.diff(accessKey, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
@@ -223,13 +223,13 @@ class GarageFsProvisionersTest {
             assertSoftly(bucketProvisioner.lookup(bucket.asLookup(), context)!!) {
                 it.name shouldBe bucket.name
             }
-            assertSoftly(bucketProvisioner.diff(bucket, context)) {
+            assertSoftly(bucketProvisioner.diff(bucket, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
             val bucketWithWebsiteAccess =
                 GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), websiteAccess = true)
-            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
+            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].expectedValue shouldBe true
@@ -245,7 +245,7 @@ class GarageFsProvisionersTest {
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
                 .name shouldBe bucket.name
-            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context)) {
+            assertSoftly(bucketProvisioner.diff(bucketWithWebsiteAccess, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
@@ -262,7 +262,7 @@ class GarageFsProvisionersTest {
                 bucketProvisioner.diff(
                     bucketWithWebsiteAccessDomains,
                     context,
-                ),
+                ).diffData(),
             ) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
@@ -284,7 +284,7 @@ class GarageFsProvisionersTest {
                 bucketProvisioner.diff(
                     bucketWithWebsiteAccessDomains,
                     context,
-                ),
+                ).diffData(),
             ) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes shouldHaveSize 0
@@ -300,7 +300,7 @@ class GarageFsProvisionersTest {
                 accessKeyProvisioner.diff(
                     accessKey,
                     context,
-                ),
+                ).diffData(),
             ) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
@@ -324,14 +324,14 @@ class GarageFsProvisionersTest {
                 it.read shouldBe true
                 it.write shouldBe true
             }
-            assertSoftly(permissionProvisioner.diff(allPermission, context)) {
+            assertSoftly(permissionProvisioner.diff(allPermission, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
             val noOwnerPermission =
                 GarageFsPermission(bucket, accessKey, server, adminToken, false, true, true)
 
-            assertSoftly(permissionProvisioner.diff(noOwnerPermission, context)) {
+            assertSoftly(permissionProvisioner.diff(noOwnerPermission, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "owner"

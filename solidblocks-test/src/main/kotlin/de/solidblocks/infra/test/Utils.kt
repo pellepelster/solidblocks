@@ -4,9 +4,9 @@ import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient
+import de.solidblocks.utils.sha256MessageDigest
 import java.math.BigInteger
 import java.net.URI
-import java.security.MessageDigest
 import java.text.DecimalFormat
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -70,11 +70,10 @@ fun generateRandomString(length: Int = 12): String {
 fun generateTestId(length: Int = 12) = generateRandomString(length).generateStableTestId(length)
 
 fun String.generateStableTestId(length: Int = 12): String {
-    val digest = MessageDigest.getInstance("SHA-256")
     val alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     val base = alphanumeric.length
 
-    val hashBytes = digest.digest(this.toByteArray())
+    val hashBytes = sha256MessageDigest.digest(this.toByteArray())
     var number = BigInteger(1, hashBytes)
 
     val sb = StringBuilder()

@@ -5,6 +5,7 @@ import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
+import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
@@ -28,17 +29,27 @@ class Resource2Provisioner :
 
     override suspend fun lookup(lookup: Resource2Lookup, context: SSHProvisionerContext) = resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
 
-    override suspend fun diff(resource: Resource2, context: ProvisionerDiffContext): ResourceDiff? = if (resource.name == "throw_exception_on_diff") {
-        throw RuntimeException()
-    } else if (resource.name == "force_recreate_change") {
-        ResourceDiff(
-            resource,
-            has_changes,
-            changes = listOf(ResourceDiffItem("force_recreate_change", triggersRecreate = true)),
+    override suspend fun diff(resource: Resource2, context: ProvisionerDiffContext): Result<ResourceDiff> = when (resource.diffBehaviour) {
+        DiffBehaviour.error_on_diff -> Error("diff error for ${resource.logText()}")
+        DiffBehaviour.unknown_on_diff -> Success(
+            ResourceDiff(
+                resource,
+                ResourceDiffStatus.unknown,
+            ),
         )
-    } else {
-        lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
-            ?: ResourceDiff(resource, missing)
+        DiffBehaviour.throw_exception_on_diff -> throw RuntimeException()
+        DiffBehaviour.force_recreate_change -> Success(
+            ResourceDiff(
+                resource,
+                has_changes,
+                changes = listOf(ResourceDiffItem("force_recreate_change", triggersRecreate = true)),
+            ),
+        )
+
+        DiffBehaviour.up_to_date_or_missing -> Success(
+            lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
+                ?: ResourceDiff(resource, missing),
+        )
     }
 
     override suspend fun apply(resource: Resource2, context: ProvisionerApplyContext, log: LogContext): Result<Resource2Runtime> {

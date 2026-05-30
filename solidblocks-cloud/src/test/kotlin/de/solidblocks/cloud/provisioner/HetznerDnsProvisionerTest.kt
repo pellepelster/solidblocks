@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZone
@@ -103,7 +103,7 @@ class HetznerDnsProvisionerTest {
                     labels = hetzner.defaultLabels,
                 )
             recordProvisioner.lookup(record.asLookup(), context) shouldBe null
-            assertSoftly(recordProvisioner.diff(record, context)) {
+            assertSoftly(recordProvisioner.diff(record, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
@@ -114,7 +114,7 @@ class HetznerDnsProvisionerTest {
                 it.values shouldHaveSize 1
                 it.values[0] shouldBe "127.0.0.1"
             }
-            assertSoftly(recordProvisioner.diff(record, context)) {
+            assertSoftly(recordProvisioner.diff(record, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
@@ -127,7 +127,7 @@ class HetznerDnsProvisionerTest {
                     labels = hetzner.defaultLabels,
                 )
 
-            assertSoftly(recordProvisioner.diff(recordNewServer, context)) {
+            assertSoftly(recordProvisioner.diff(recordNewServer, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].name shouldBe "value"

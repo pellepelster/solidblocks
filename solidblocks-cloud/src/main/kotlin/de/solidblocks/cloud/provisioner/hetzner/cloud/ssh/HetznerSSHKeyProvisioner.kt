@@ -64,7 +64,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
             ?: Error<HetznerSSHKeyRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerSSHKey, context: ProvisionerDiffContext): ResourceDiff? {
+    override suspend fun diff(resource: HetznerSSHKey, context: ProvisionerDiffContext): Result<ResourceDiff> {
         val runtime = lookup(resource.asLookup(), context)
 
         val resourceFingerprint = computeFingerprint(resource.publicKey)
@@ -74,16 +74,18 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
         if (runtime == null) {
             val duplicateKey = listAll().firstOrNull { it.fingerprint == resourceFingerprint }
 
-            return if (duplicateKey == null) {
-                ResourceDiff(resource, missing)
-            } else {
-                ResourceDiff(
-                    resource,
-                    duplicate,
-                    duplicateErrorMessage =
-                    "another key with the fingerprint '${duplicateKey.fingerprint}' already exists (${duplicateKey.name})",
-                )
-            }
+            return Success(
+                if (duplicateKey == null) {
+                    ResourceDiff(resource, missing)
+                } else {
+                    ResourceDiff(
+                        resource,
+                        duplicate,
+                        duplicateErrorMessage =
+                        "another key with the fingerprint '${duplicateKey.fingerprint}' already exists (${duplicateKey.name})",
+                    )
+                },
+            )
         } else {
             if (runtime.fingerprint != resourceFingerprint) {
                 changes.add(
@@ -100,11 +102,13 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
 
         changes.addAll(createLabelDiff(resource, runtime))
 
-        return if (changes.isEmpty()) {
-            ResourceDiff(resource, up_to_date)
-        } else {
-            ResourceDiff(resource, has_changes, changes = changes)
-        }
+        return Success(
+            if (changes.isEmpty()) {
+                ResourceDiff(resource, up_to_date)
+            } else {
+                ResourceDiff(resource, has_changes, changes = changes)
+            },
+        )
     }
 
     override suspend fun destroy(lookup: HetznerSSHKeyLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.sshKeys.delete(it.id) } ?: false

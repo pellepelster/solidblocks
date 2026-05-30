@@ -185,98 +185,99 @@ class HetznerServerProvisioner(hcloudToken: String) :
         } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
     }
 
-    override suspend fun diff(resource: HetznerServer, context: ProvisionerDiffContext): ResourceDiff? {
-        val runtime = lookup(resource.asLookup(), context)
+    override suspend fun diff(resource: HetznerServer, context: ProvisionerDiffContext): Result<ResourceDiff> {
+        val runtime = lookup(resource.asLookup(), context) ?: return Success(ResourceDiff(resource, missing))
 
-        return if (runtime != null) {
-            val changes = mutableListOf<ResourceDiffItem>()
+        val changes = mutableListOf<ResourceDiffItem>()
 
-            val labels = HetznerLabels(runtime.labels)
+        val labels = HetznerLabels(runtime.labels)
 
-            val sshKeys =
-                resource.sshKeys.map {
-                    context.lookup(it) ?: throw RuntimeException("failed to lookup ${it.logText()}")
-                }
-
-            val sshKeysHash =
-                labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
-            changes.addAll(createLabelDiff(resource, runtime))
-
-            val sshKeyHasPendingChanges = resource.sshKeys.any { context.hasPendingChange(it) }
-            if (sshKeyHasPendingChanges) {
-                changes.add(
-                    ResourceDiffItem(
-                        "ssh keys",
-                        triggersRecreate = true,
-                        changed = true,
-                        expectedValue = "<known after apply>",
-                        actualValue = sshKeysHash.actualValue,
-                    ),
-                )
+        val sshKeys =
+            resource.sshKeys.map {
+                context.lookup(it)
+                    ?: return Error("failed to lookup ${it.logText()} while diffing ${resource.logText()}")
             }
 
-            if (!sshKeysHash.matches) {
-                changes.add(
-                    ResourceDiffItem(
-                        "ssh keys",
-                        triggersRecreate = true,
-                        changed = true,
-                        expectedValue = sshKeysHash.expectedValue,
-                        actualValue = sshKeysHash.actualValue,
-                    ),
-                )
-            }
+        val sshKeysHash =
+            labels.hashLabelMatches(sshKeysLabel, sshKeys.joinToString { it.fingerprint })
+        changes.addAll(createLabelDiff(resource, runtime))
 
-            if (resource.location != runtime.location) {
-                changes.add(
-                    ResourceDiffItem(
-                        "location",
-                        triggersRecreate = true,
-                        changed = true,
-                        expectedValue = resource.location,
-                        actualValue = runtime.location,
-                    ),
-                )
-            }
+        val sshKeyHasPendingChanges = resource.sshKeys.any { context.hasPendingChange(it) }
+        if (sshKeyHasPendingChanges) {
+            changes.add(
+                ResourceDiffItem(
+                    "ssh keys",
+                    triggersRecreate = true,
+                    changed = true,
+                    expectedValue = "<known after apply>",
+                    actualValue = sshKeysHash.actualValue,
+                ),
+            )
+        }
 
-            if (resource.privateIp != null && resource.privateIp != runtime.privateIpv4) {
+        if (!sshKeysHash.matches) {
+            changes.add(
+                ResourceDiffItem(
+                    "ssh keys",
+                    triggersRecreate = true,
+                    changed = true,
+                    expectedValue = sshKeysHash.expectedValue,
+                    actualValue = sshKeysHash.actualValue,
+                ),
+            )
+        }
+
+        if (resource.location != runtime.location) {
+            changes.add(
+                ResourceDiffItem(
+                    "location",
+                    triggersRecreate = true,
+                    changed = true,
+                    expectedValue = resource.location,
+                    actualValue = runtime.location,
+                ),
+            )
+        }
+
+        if (resource.privateIp != null && resource.privateIp != runtime.privateIpv4) {
+            changes.add(
+                ResourceDiffItem(
+                    "private ip address",
+                    triggersRecreate = false,
+                    changed = true,
+                    expectedValue = resource.privateIp,
+                    actualValue = runtime.privateIpv4,
+                ),
+            )
+        }
+
+        if (resource.floatingIp != null) {
+            val floatingIp = context.lookup(resource.floatingIp)
+
+            if (floatingIp == null || floatingIp.assigneeId != runtime.id) {
                 changes.add(
                     ResourceDiffItem(
-                        "private ip address",
+                        "floating ip",
                         triggersRecreate = false,
                         changed = true,
-                        expectedValue = resource.privateIp,
-                        actualValue = runtime.privateIpv4,
+                        expectedValue = resource.floatingIp.name,
+                        actualValue = floatingIp?.assigneeId?.toString() ?: "<none>",
                     ),
                 )
             }
+        }
 
-            if (resource.floatingIp != null) {
-                val floatingIp = context.lookup(resource.floatingIp)
+        val userData = try {
+            context.lookup(resource.userData)
+        } catch (e: Exception) {
+            // TODO create test
+            logger.warn { "to lookup ${resource.userData.logText()}" }
+            null
+        }
 
-                if (floatingIp == null || floatingIp.assigneeId != runtime.id) {
-                    changes.add(
-                        ResourceDiffItem(
-                            "floating ip",
-                            triggersRecreate = false,
-                            changed = true,
-                            expectedValue = resource.floatingIp.name,
-                            actualValue = floatingIp?.assigneeId?.toString() ?: "<none>",
-                        ),
-                    )
-                }
-            }
-
-            val userData = try {
-                context.lookup(resource.userData)
-            } catch (e: Exception) {
-                // TODO create test
-                logger.warn { "to lookup ${resource.userData.logText()}" }
-                null
-            }
-
-            if (userData == null) {
-                return ResourceDiff(
+        if (userData == null) {
+            return Success(
+                ResourceDiff(
                     resource,
                     has_changes,
                     changes =
@@ -287,55 +288,55 @@ class HetznerServerProvisioner(hcloudToken: String) :
                             changed = true,
                         ),
                     ),
-                )
-            }
-            val userDataHash =
-                labels.hashLabelMatches(
-                    userDataLabel,
-                    userData.ephemeralUserData,
-                )
+                ),
+            )
+        }
+        val userDataHash =
+            labels.hashLabelMatches(
+                userDataLabel,
+                userData.ephemeralUserData,
+            )
 
-            if (!userDataHash.matches) {
-                changes.add(
-                    ResourceDiffItem(
-                        "user data checksum",
-                        triggersRecreate = true,
-                        changed = true,
-                        expectedValue = userDataHash.expectedValue,
-                        actualValue = userDataHash.actualValue,
-                    ),
-                )
-            }
+        if (!userDataHash.matches) {
+            changes.add(
+                ResourceDiffItem(
+                    "user data checksum",
+                    triggersRecreate = true,
+                    changed = true,
+                    expectedValue = userDataHash.expectedValue,
+                    actualValue = userDataHash.actualValue,
+                ),
+            )
+        }
 
-            if (resource.type != runtime.type) {
-                changes.add(ResourceDiffItem("type", true, true, false, resource.type, runtime.type))
-            }
+        if (resource.type != runtime.type) {
+            changes.add(ResourceDiffItem("type", true, true, false, resource.type, runtime.type))
+        }
 
-            if (!(resource.volumes.map { it.name } equalsIgnoreOrder runtime.volumes.map { it.name })) {
-                changes.add(
-                    ResourceDiffItem(
-                        "volumes",
-                        true,
-                        true,
-                        false,
-                        resource.volumes.joinToStringOrEmpty { it.name },
-                        runtime.volumes.joinToStringOrEmpty { it.name },
-                    ),
-                )
-            }
+        if (!(resource.volumes.map { it.name } equalsIgnoreOrder runtime.volumes.map { it.name })) {
+            changes.add(
+                ResourceDiffItem(
+                    "volumes",
+                    true,
+                    true,
+                    false,
+                    resource.volumes.joinToStringOrEmpty { it.name },
+                    runtime.volumes.joinToStringOrEmpty { it.name },
+                ),
+            )
+        }
 
-            if (resource.image != runtime.image) {
-                changes.add(ResourceDiffItem("image", true, true, false, resource.image, runtime.image))
-            }
+        if (resource.image != runtime.image) {
+            changes.add(ResourceDiffItem("image", true, true, false, resource.image, runtime.image))
+        }
 
+        return Success(
             if (changes.isEmpty()) {
                 ResourceDiff(resource, up_to_date)
             } else {
                 ResourceDiff(resource, has_changes, changes = changes)
-            }
-        } else {
-            ResourceDiff(resource, missing)
-        }
+            },
+        )
     }
 
     override suspend fun destroy(lookup: HetznerServerLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let {

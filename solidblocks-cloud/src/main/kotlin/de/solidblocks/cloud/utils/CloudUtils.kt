@@ -115,5 +115,5 @@ fun <T> Iterable<T>.joinToStringOrEmpty(separator: CharSequence = ", ", empty: S
 fun solidblocksVersion(): String {
     val props = Properties()
     object {}.javaClass.getResourceAsStream("/solidblocks-version.properties")?.use { props.load(it) }
-    return props.getProperty("version", "unknown")
+    return System.getenv("SOLIDBLOCKS_VERSION") ?: props.getProperty("version", "unknown")
 }

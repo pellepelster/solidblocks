@@ -73,8 +73,8 @@ class AwsIamUserProvisioner(
         )
     }
 
-    override suspend fun diff(resource: AwsIamUser, context: ProvisionerDiffContext): ResourceDiff {
-        val runtime = lookup(resource.asLookup(), context) ?: return ResourceDiff(resource, missing)
+    override suspend fun diff(resource: AwsIamUser, context: ProvisionerDiffContext): Result<ResourceDiff> {
+        val runtime = lookup(resource.asLookup(), context) ?: return Success(ResourceDiff(resource, missing))
 
         val changes = mutableListOf<ResourceDiffItem>()
 
@@ -89,11 +89,13 @@ class AwsIamUserProvisioner(
             )
         }
 
-        return if (changes.isEmpty()) {
-            ResourceDiff(resource, up_to_date)
-        } else {
-            ResourceDiff(resource, has_changes, changes = changes)
-        }
+        return Success(
+            if (changes.isEmpty()) {
+                ResourceDiff(resource, up_to_date)
+            } else {
+                ResourceDiff(resource, has_changes, changes = changes)
+            },
+        )
     }
 
     override suspend fun apply(resource: AwsIamUser, context: ProvisionerApplyContext, log: LogContext): Result<AwsIamUserRuntime> = iamClient().use { client ->

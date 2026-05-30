@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.protonpass.ProtonPassSecretProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
@@ -48,7 +48,7 @@ class ProtonPassSecretProvisionerTest {
 
             // before create
             provisioner.lookup(randomSecret.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
-            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
@@ -58,7 +58,7 @@ class ProtonPassSecretProvisionerTest {
             runtimeAfterLookup.secret shouldBe runtimeAfterCreation.secret
 
             // an ephemeral secret that already exists stays unchanged
-            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
@@ -66,7 +66,7 @@ class ProtonPassSecretProvisionerTest {
             runtimeAfterSecondApply.secret shouldBe runtimeAfterCreation.secret
 
             // a static secret with a different value reports pending changes
-            assertSoftly(provisioner.diff(staticSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(staticSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
             }
 
@@ -75,7 +75,7 @@ class ProtonPassSecretProvisionerTest {
             val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterCreation.secret shouldNotBe secretAfterTaint.secret
 
-            assertSoftly(provisioner.diff(oneTimeSecret, TEST_PROVISIONER_CONTEXT)) {
+            assertSoftly(provisioner.diff(oneTimeSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 

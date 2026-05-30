@@ -24,6 +24,7 @@ import de.solidblocks.shell.systemd.Target
 import de.solidblocks.shell.systemd.Timer
 import de.solidblocks.shell.systemd.Unit
 import de.solidblocks.shell.systemd.installSystemDUnit
+import de.solidblocks.utils.sha256Hash
 
 class PostgresqlUserData(
     val instanceName: String,
@@ -59,11 +60,14 @@ class PostgresqlUserData(
         val backupEnvironment = when (backupConfiguration.target) {
             is LocalBackupTarget -> mapOf(
                 "DB_BACKUP_LOCAL" to "1",
-                "DB_BACKUP_ENCRYPTION_PASSPHRASE" to superUserPassword,
+                "DB_BACKUP_LOCAL_SKIP_MOUNT_CHECK" to "1",
+                "DB_BACKUP_LOCAL_DIR" to "/storage/backup/$instanceName/${backupConfiguration.password.sha256Hash()}",
+                "DB_BACKUP_ENCRYPTION_PASSPHRASE" to backupConfiguration.password,
             )
 
             is S3BackupTarget -> mapOf(
                 "DB_BACKUP_S3" to "1",
+                "DB_BACKUP_S3_PATH" to "/pgbackrest/$instanceName/${backupConfiguration.password.sha256Hash()}",
                 "DB_BACKUP_S3_BUCKET" to backupConfiguration.target.bucket,
                 "DB_BACKUP_S3_ACCESS_KEY" to backupConfiguration.target.accessKey,
                 "DB_BACKUP_S3_SECRET_KEY" to backupConfiguration.target.secretKey,

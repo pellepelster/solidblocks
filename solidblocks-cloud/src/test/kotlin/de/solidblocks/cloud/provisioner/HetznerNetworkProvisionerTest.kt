@@ -1,11 +1,11 @@
 package de.solidblocks.cloud.provisioner
-
 import de.solidblocks.cloud.Constants.defaultNetwork
 import de.solidblocks.cloud.Constants.defaultServiceSubnet
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkRuntime
@@ -46,13 +46,13 @@ class HetznerNetworkProvisionerTest {
         runBlocking {
             val subnet = HetznerSubnet(defaultServiceSubnet, resource.asLookup())
 
-            assertSoftly(subnetProvisioner.diff(subnet, context)!!) {
+            assertSoftly(subnetProvisioner.diff(subnet, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
             // before create
             networkProvisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)?.name shouldBe null
-            assertSoftly(networkProvisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(networkProvisioner.diff(resource, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
                 it.changes.shouldBeEmpty()
             }
@@ -66,7 +66,7 @@ class HetznerNetworkProvisionerTest {
             assertSoftly(networkProvisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT)!!) {
                 it.deleteProtected shouldBe true
             }
-            assertSoftly(networkProvisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(networkProvisioner.diff(resource, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
@@ -74,7 +74,7 @@ class HetznerNetworkProvisionerTest {
             // create new label
             val resourceWithNewLabel =
                 HetznerNetwork(name, "10.0.0.0/8", hetzner.defaultLabels + mapOf("foo" to "bar"))
-            assertSoftly(networkProvisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(networkProvisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].missing shouldBe true
@@ -85,12 +85,12 @@ class HetznerNetworkProvisionerTest {
                 .shouldBeTypeOf<Success<HetznerNetworkRuntime>>()
                 .data
                 .name shouldBe name
-            assertSoftly(networkProvisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(networkProvisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
-            assertSoftly(networkProvisioner.diff(resource, TEST_PROVISIONER_CONTEXT)!!) {
+            assertSoftly(networkProvisioner.diff(resource, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
                 it.changes[0].changed shouldBe true
@@ -106,7 +106,7 @@ class HetznerNetworkProvisionerTest {
             val resourceWithNewDeleteProtection =
                 HetznerNetwork(name, "10.0.0.0/8", protected = false, labels = hetzner.defaultLabels)
             assertSoftly(
-                networkProvisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!,
+                networkProvisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT).diffData(),
             ) {
                 it.status shouldBe ResourceDiffStatus.has_changes
                 it.changes shouldHaveSize 1
@@ -121,19 +121,19 @@ class HetznerNetworkProvisionerTest {
                 .data
                 .name shouldBe name
             assertSoftly(
-                networkProvisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)!!,
+                networkProvisioner.diff(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT).diffData(),
             ) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
-            assertSoftly(subnetProvisioner.diff(subnet, context)!!) {
+            assertSoftly(subnetProvisioner.diff(subnet, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
             subnetProvisioner.apply(subnet, context, TEST_LOG_CONTEXT)
 
-            assertSoftly(subnetProvisioner.diff(subnet, context)!!) {
+            assertSoftly(subnetProvisioner.diff(subnet, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
         }

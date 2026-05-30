@@ -24,8 +24,10 @@ class Resource1Provisioner :
 
     override suspend fun lookup(lookup: Resource1Lookup, context: SSHProvisionerContext) = resources[lookup.name]?.let { Resource1Runtime(lookup.name, listOf()) }
 
-    override suspend fun diff(resource: Resource1, context: ProvisionerDiffContext) = lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
-        ?: ResourceDiff(resource, missing)
+    override suspend fun diff(resource: Resource1, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
+        lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
+            ?: ResourceDiff(resource, missing),
+    )
 
     override suspend fun apply(resource: Resource1, context: ProvisionerApplyContext, log: LogContext): Result<Resource1Runtime> {
         resources[resource.name] = resource

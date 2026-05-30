@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.utils
 
 import de.solidblocks.cloud.Constants.cloudLabels
-import java.security.MessageDigest
+import de.solidblocks.utils.sha256Hash
 
 @Suppress("ktlint:standard:property-naming")
 class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
@@ -35,12 +35,12 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
     }
 
     fun addHashedLabel(key: String, value: String) {
-        safeStore(key, hashString(value))
+        safeStore(key, value.sha256Hash())
     }
 
     fun hashLabelMatches(key: String, value: String): HashComparisonResult {
         val actualValue = this.safeLabels()[key]
-        val expectedValue = hashString(value)
+        val expectedValue = value.sha256Hash()
 
         return HashComparisonResult(actualValue == expectedValue, expectedValue, actualValue)
     }
@@ -87,7 +87,3 @@ class HetznerLabels(hetznerLabels: Map<String, String> = HashMap()) {
         }
     }
 }
-
-private val messageDigest = MessageDigest.getInstance("SHA-256")
-
-fun hashString(input: String): String = messageDigest.digest(input.toByteArray()).fold("") { str, it -> str + "%02x".format(it) }

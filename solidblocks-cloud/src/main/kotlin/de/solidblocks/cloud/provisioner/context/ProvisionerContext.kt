@@ -54,9 +54,15 @@ open class ProvisionerContextImpl(
         val publicIpv4 = server.publicIpv4 ?: throw RuntimeException("${server.logText()} has no public ip")
         val publicKey = getOpenSshHostPublicKey(server.name) ?: throw RuntimeException("no host key found for ${server.logText()}")
 
-        return sshClients.getOrPut("${server.name}:${server.sshPort}") {
-            logger.info { "creating ssh client for '${server.name}:${server.sshPort}'" }
+        logger.info { "creating ssh client for '${server.name}:${server.sshPort}'" }
+        val sshClient = try {
             SSHClient(publicIpv4, this.sshKeyPair, publicKey, port = server.sshPort)
+        } catch (e: Exception) {
+            return Error(e.message ?: "failed to create ssh client")
+        }
+
+        return sshClients.getOrPut("${server.name}:${server.sshPort}") {
+            sshClient
         }.let { Success(it) }
     }
 
