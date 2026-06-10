@@ -38,6 +38,13 @@ class Resource2Provisioner :
             ),
         )
         DiffBehaviour.throw_exception_on_diff -> throw RuntimeException()
+        DiffBehaviour.duplicate_on_diff -> Success(
+            ResourceDiff(
+                resource,
+                ResourceDiffStatus.duplicate,
+                duplicateErrorMessage = "duplicate error for ${resource.logText()}",
+            ),
+        )
         DiffBehaviour.force_recreate_change -> Success(
             ResourceDiff(
                 resource,
@@ -53,6 +60,12 @@ class Resource2Provisioner :
     }
 
     override suspend fun apply(resource: Resource2, context: ProvisionerApplyContext, log: LogContext): Result<Resource2Runtime> {
+        when (resource.applyBehaviour) {
+            ApplyBehaviour.error_on_apply -> return Error("apply error for ${resource.logText()}")
+            ApplyBehaviour.throw_exception_on_apply -> throw RuntimeException("apply exception for ${resource.logText()}")
+            ApplyBehaviour.succeed -> {}
+        }
+
         appliedResources.add(resource.name)
         resources[resource.name] = resource
 
@@ -64,13 +77,17 @@ class Resource2Provisioner :
 
     val appliedResources = mutableListOf<String>()
 
+    var destroyResult = true
+
     fun isDestroyed(name: String) = destroyedResources.contains(name)
 
     fun isApplied(name: String) = appliedResources.contains(name)
 
+    fun applyCount(name: String) = appliedResources.count { it == name }
+
     override suspend fun destroy(lookup: Resource2Lookup, context: SSHProvisionerContext, log: LogContext): Boolean {
         destroyedResources.add(lookup.name)
-        return true
+        return destroyResult
     }
 
     override val supportedLookupType = Resource2Lookup::class

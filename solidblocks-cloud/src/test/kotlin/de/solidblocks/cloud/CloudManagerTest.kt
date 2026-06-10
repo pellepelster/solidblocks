@@ -52,7 +52,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "unknown type 'something', possible types are 'hcloud', 'pass', 'ssh_key', 'backup_aws_s3', 'backup_local', 'github' at line 3 column 7"
+            "unknown type 'something', possible types are 'hcloud', 'protonpass', 'pass', 'ssh_key', 'backup_aws_s3', 'backup_local', 'github' at line 3 column 7"
     }
 
     @Test
@@ -351,7 +351,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "service 'service1' needs one the following provider types 'pass'"
+            "service 'service1' needs one the following provider types 'protonpass', 'pass'"
     }
 
     @Test
@@ -360,13 +360,15 @@ class CloudManagerTest {
             """
         name: cloud1
         providers:
+            - type: hcloud
+            - type: pass
             - type: ssh_key
         """
                 .trimIndent()
                 .createManager()
 
         val cloud = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>().data
-        cloud.providers shouldHaveSize 1
+        cloud.providers shouldHaveSize 3
         cloud.services shouldHaveSize 0
     }
 

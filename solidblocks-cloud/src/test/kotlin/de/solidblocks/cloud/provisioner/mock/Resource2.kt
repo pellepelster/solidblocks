@@ -8,10 +8,24 @@ enum class DiffBehaviour {
     unknown_on_diff,
     throw_exception_on_diff,
     force_recreate_change,
+    duplicate_on_diff,
     up_to_date_or_missing,
 }
 
-class Resource2(name: String, val diffBehaviour: DiffBehaviour, dependsOn: Set<BaseResource> = emptySet()) : BaseInfrastructureResource<Resource1Runtime>(name, dependsOn) {
+enum class ApplyBehaviour {
+    succeed,
+    error_on_apply,
+    throw_exception_on_apply,
+}
+
+class Resource2(
+    name: String,
+    val diffBehaviour: DiffBehaviour,
+    dependsOn: Set<BaseResource> = emptySet(),
+    val applyBehaviour: ApplyBehaviour = ApplyBehaviour.succeed,
+    taintable: Boolean = true,
+    taintRequiresRecreate: Boolean = false,
+) : BaseInfrastructureResource<Resource1Runtime>(name, dependsOn, taintable, taintRequiresRecreate) {
 
     override fun asLookup() = Resource2Lookup(name)
 
