@@ -7,7 +7,6 @@ import de.solidblocks.cloud.api.ListableResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
 import de.solidblocks.cloud.api.hierarchicalResourceList
-import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -126,6 +125,7 @@ class ProvisionersRegistry(
 
         val resources = resourceGroups.flatMap { it.hierarchicalResourceList() }
 
+        /*
         val resourceTypesWithoutProvisioner = resources
             .filterIsInstance<BaseInfrastructureResource<*>>()
             .map { it::class }
@@ -136,8 +136,9 @@ class ProvisionersRegistry(
             return Error(
                 "no provisioner registered for resource type(s): ${resourceTypesWithoutProvisioner.joinToString(", ") { "'${it.qualifiedName}'" }}",
             )
-        }
+        }*/
 
+        /*
         val lookupTypesWithoutProvider = resources
             .filterIsInstance<InfrastructureResourceLookup<*>>()
             .map { it::class }
@@ -148,7 +149,7 @@ class ProvisionersRegistry(
             return Error(
                 "no lookup provider registered for lookup type(s): ${lookupTypesWithoutProvider.joinToString(", ") { "'${it.qualifiedName}'" }}",
             )
-        }
+        }*/
 
         return Success(Unit)
     }

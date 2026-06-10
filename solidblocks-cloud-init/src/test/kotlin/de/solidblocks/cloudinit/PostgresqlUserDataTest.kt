@@ -30,7 +30,7 @@ class PostgresqlUserDataTest {
                 dataVolume1.linuxDevice,
                 backupConfiguration,
                 17,
-                "0.5.5",
+                "0.0.0-rc-snapshot",
                 null,
             )
 
@@ -75,7 +75,7 @@ class PostgresqlUserDataTest {
                 dataVolume2.linuxDevice,
                 backupConfiguration,
                 17,
-                "0.5.5",
+                "0.0.0-rc-snapshot",
                 null,
             )
 
@@ -118,7 +118,7 @@ class PostgresqlUserDataTest {
                 dataVolume1.linuxDevice,
                 backupConfiguration,
                 17,
-                "0.5.5",
+                "0.0.0-rc-snapshot",
                 null,
             )
 
@@ -163,7 +163,7 @@ class PostgresqlUserDataTest {
                 dataVolume2.linuxDevice,
                 backupConfiguration,
                 17,
-                "0.5.5",
+                "0.0.0-rc-snapshot",
                 null,
             )
 

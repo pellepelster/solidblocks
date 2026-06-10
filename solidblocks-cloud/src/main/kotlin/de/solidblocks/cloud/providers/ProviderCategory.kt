@@ -15,6 +15,7 @@ enum class ProviderCategory(val min: Int, val max: Int?) {
     ssh_key(1, 1),
     backup(0, 1),
     secret(0, 1),
+    github(0, 1),
     ;
 
     /** Human-readable description of the allowed count for error messages. */

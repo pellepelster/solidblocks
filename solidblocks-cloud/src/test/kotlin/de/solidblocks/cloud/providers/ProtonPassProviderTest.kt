@@ -18,25 +18,21 @@ class ProtonPassProviderTest {
 
     @Test
     fun testProtonPassProviderDefaultsToCloudName() {
-        System.setProperty("BLCKS_PROTONPASS_PROVIDER_SKIP_VALIDATION", "true")
         val result = provider.validateConfiguration(
             ProtonPassProviderConfiguration("protonpassprovider1", null),
             TEST_CLOUD_CONFIGURATION_CONTEXT,
             TEST_LOG_CONTEXT,
         ).shouldBeTypeOf<Success<ProtonPassProviderRuntime>>()
         result.data.vaultName shouldBe "cloud1-default"
-        System.clearProperty("BLCKS_PROTONPASS_PROVIDER_SKIP_VALIDATION")
     }
 
     @Test
     fun testProtonPassProviderUsesConfiguredVaultName() {
-        System.setProperty("BLCKS_PROTONPASS_PROVIDER_SKIP_VALIDATION", "true")
         val result = provider.validateConfiguration(
-            ProtonPassProviderConfiguration("protonpassprovider1", "my-vault"),
+            ProtonPassProviderConfiguration("protonpassprovider1", "proton-passprovider-test"),
             TEST_CLOUD_CONFIGURATION_CONTEXT,
             TEST_LOG_CONTEXT,
         ).shouldBeTypeOf<Success<ProtonPassProviderRuntime>>()
-        result.data.vaultName shouldBe "my-vault"
-        System.clearProperty("BLCKS_PROTONPASS_PROVIDER_SKIP_VALIDATION")
+        result.data.vaultName shouldBe "proton-passprovider-test"
     }
 }

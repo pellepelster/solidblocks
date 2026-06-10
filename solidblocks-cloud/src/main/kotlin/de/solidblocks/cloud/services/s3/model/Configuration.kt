@@ -1,12 +1,8 @@
 package de.solidblocks.cloud.services.s3.model
 
-import de.solidblocks.cloud.providers.CloudResourceProviderConfiguration
-import de.solidblocks.cloud.providers.types.backup.BackupProviderConfiguration
-import de.solidblocks.cloud.providers.types.secret.SecretProviderConfiguration
 import de.solidblocks.cloud.services.BackupConfig
 import de.solidblocks.cloud.services.ServiceCommonConfig
 import de.solidblocks.cloud.services.ServiceConfiguration
-import kotlin.reflect.KClass
 
 data class S3ServiceConfiguration(
     override val common: ServiceCommonConfig,
@@ -14,7 +10,6 @@ data class S3ServiceConfiguration(
     val buckets: List<S3ServiceBucketConfiguration>,
 ) : ServiceConfiguration {
     override val type = "s3"
-    override val neededProviders: List<KClass<*>> = listOf(BackupProviderConfiguration::class, SecretProviderConfiguration::class, CloudResourceProviderConfiguration::class)
 }
 
 data class S3ServiceBucketAccessKeyConfiguration(

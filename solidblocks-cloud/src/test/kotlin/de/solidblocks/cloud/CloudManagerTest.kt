@@ -267,7 +267,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "service 'runner1' needs one the following provider types 'github'"
+        result.error shouldBe "service 'runner1' needs a 'github' provider, available types are: 'github'"
     }
 
     @Test
@@ -290,7 +290,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "service 'runner1' needs one the following provider types 'hcloud'"
+        result.error shouldBe "service 'runner1' needs a 'cloud' provider, available types are: 'hcloud'"
     }
 
     @Test
@@ -311,7 +311,7 @@ class CloudManagerTest {
 
         val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
 
-        result.error shouldBe "invalid number of 'secret' providers, found 2 but expected at most 1. available types are: 'pass'"
+        result.error shouldBe "invalid number of 'secret' providers, found 2 but expected at most 1. available types are: 'protonpass', 'pass'"
     }
 
     @Test
@@ -351,7 +351,7 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "service 'service1' needs one the following provider types 'protonpass', 'pass'"
+            "service 'service1' needs a 'secret' provider, available types are: 'protonpass', 'pass'"
     }
 
     @Test
@@ -360,24 +360,41 @@ class CloudManagerTest {
             """
         name: cloud1
         providers:
-            - type: hcloud
-            - type: pass
             - type: ssh_key
         """
                 .trimIndent()
                 .createManager()
 
         val cloud = manager.validate().shouldBeTypeOf<Success<CloudConfigurationRuntime>>().data
-        cloud.providers shouldHaveSize 3
+        cloud.providers shouldHaveSize 1
         cloud.services shouldHaveSize 0
     }
 
     @Test
-    fun testNoBackupProvider() {
+    fun `github runner needs github provider`() {
         val manager =
             """
         name: cloud1
         providers:
+            - type: ssh_key
+        services:
+            - type: github_runner
+              name: "runner1"
+        """
+                .trimIndent()
+                .createManager()
+
+        val result = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+        result.error shouldBe "service 'runner1' needs a 'cloud' provider, available types are: 'hcloud'"
+    }
+
+    @Test
+    fun `service needs backup provider`() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
             - type: pass
             - type: ssh_key
         services:
@@ -389,7 +406,28 @@ class CloudManagerTest {
 
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe
-            "service 'service1' needs one the following provider types 'backup_aws_s3', 'backup_local'"
+            "service 'service1' needs a 'backup' provider, available types are: 'backup_aws_s3', 'backup_local'"
+    }
+
+    @Test
+    fun `service needs secret provider`() {
+        val manager =
+            """
+        name: cloud1
+        providers:
+            - type: hcloud
+            - type: backup_local
+            - type: ssh_key
+        services:
+            - type: postgresql
+              name: service1
+        """
+                .trimIndent()
+                .createManager()
+
+        val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
+        error.error shouldBe
+            "service 'service1' needs a 'secret' provider, available types are: 'protonpass', 'pass'"
     }
 }
 

@@ -1,11 +1,14 @@
 package de.solidblocks.cloud.services.s3
 
+import de.solidblocks.cloud.providers.ProviderCategory
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationFactory
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationRuntime
 
 class S3ServiceRegistration : ServiceRegistration<S3ServiceConfiguration, S3ServiceConfigurationRuntime> {
+    override val requiredProviders = setOf(ProviderCategory.cloud, ProviderCategory.backup, ProviderCategory.secret)
+
     override val supportedConfiguration = S3ServiceConfiguration::class
     override val supportedRuntime = S3ServiceConfigurationRuntime::class
 

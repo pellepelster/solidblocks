@@ -2,7 +2,6 @@ package de.solidblocks.cloud.services
 
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
-import kotlin.reflect.KClass
 
 data class ServiceCommonConfig(val name: String, val useFloatingIp: Boolean, val environmentVars: Map<String, String>, val instance: InstanceConfig)
 
@@ -11,7 +10,6 @@ data class InstanceConfig(val volumeSize: Int, val hetznerLocation: HetznerLocat
 interface ServiceConfiguration {
     val common: ServiceCommonConfig
     val type: String
-    val neededProviders: List<KClass<*>>
 
     val name: String
         get() = common.name

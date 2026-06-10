@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.providers.protonpass
 
-import de.solidblocks.cloud.providers.ProviderRegistration
+import de.solidblocks.cloud.providers.types.secret.SecretProviderRegistration
 
 val PROTONPASS_PROVIDER_TYPE = "protonpass"
 
-class ProtonPassProviderRegistration : ProviderRegistration<ProtonPassProviderConfiguration, ProtonPassProviderRuntime, ProtonPassProviderManager> {
+class ProtonPassProviderRegistration : SecretProviderRegistration<ProtonPassProviderConfiguration, ProtonPassProviderRuntime, ProtonPassProviderManager> {
     override val supportedConfiguration = ProtonPassProviderConfiguration::class
     override val supportedRuntime = ProtonPassProviderRuntime::class
 

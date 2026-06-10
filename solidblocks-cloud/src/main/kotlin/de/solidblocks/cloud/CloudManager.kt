@@ -43,6 +43,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
         validateNoDuplicateProviders(cloud).bind()
         validateNoDuplicateServices(cloud).bind()
         providerRegistrations.validateCardinality(cloud.providers).bind()
+        serviceRegistrations.validateProviderRequirements(providerRegistrations, cloud.services, cloud.providers).bind()
 
         val configurationContext =
             CloudConfigurationContext(
@@ -51,7 +52,6 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
             )
 
         val providers = buildProviderRuntimes(cloud, configurationContext, validateLog).bind()
-        validateServicePrerequisites(cloud).bind()
 
         val registry = providerRegistrations.createRegistry(providers)
         val context = ValidationContextImpl(
@@ -161,28 +161,6 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
         }
 
         return Success(providers)
-    }
-
-    private fun validateServicePrerequisites(cloud: CloudConfiguration): Result<Unit> {
-        cloud.services.forEach { service ->
-            service.neededProviders.forEach { neededProvider ->
-                if (cloud.providers.filterIsInstance(neededProvider.java).count() == 0) {
-                    val types = providerRegistrations.filter { neededProvider == it.supportedConfiguration.java }.map { it.type }
-                    if (types.isNotEmpty()) {
-                        return Error("service '${service.name}' needs the following provider type(s) ${types.joinToString(", ") { "'$it'" }}")
-                    }
-
-                    val categoryTypes = providerRegistrations.filter { neededProvider.java.isAssignableFrom(it.supportedConfiguration.java) }.map { it.type }
-                    if (categoryTypes.isNotEmpty()) {
-                        return Error("service '${service.name}' needs one the following provider types ${categoryTypes.joinToString(", ") { "'$it'" }}")
-                    }
-
-                    throw RuntimeException("failed to resolve prerequisites for service '${service.name}'")
-                }
-            }
-        }
-
-        return Success(Unit)
     }
 
     private fun buildServiceRuntimes(cloud: CloudConfiguration, context: ValidationContextImpl, log: LogContext): Result<List<ServiceConfigurationRuntime>> {

@@ -1,10 +1,13 @@
 package de.solidblocks.cloud.providers.github
 
+import de.solidblocks.cloud.providers.ProviderCategory
 import de.solidblocks.cloud.providers.ProviderRegistration
 
 class GithubProviderRegistration : ProviderRegistration<GithubProviderConfiguration, GithubProviderRuntime, GithubProviderManager> {
 
     override val type = GITHUB_PROVIDER_TYPE
+
+    override val category = ProviderCategory.github
 
     override val supportedConfiguration = GithubProviderConfiguration::class
     override val supportedRuntime = GithubProviderRuntime::class
