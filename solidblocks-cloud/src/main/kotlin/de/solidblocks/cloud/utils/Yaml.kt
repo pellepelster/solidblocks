@@ -201,8 +201,8 @@ fun YamlNode.getOptionalNumber(key: String): Result<Int?> = when (val scalar = g
     is Success<String> -> {
         try {
             Success(scalar.data.toInt())
-        } catch (e: YamlScalarFormatException) {
-            Error("expected number but got '${e.originalValue}' at ${this.location.logMessage()}")
+        } catch (e: NumberFormatException) {
+            Error("expected number but got '${scalar.data}' at ${this.location.logMessage()}")
         }
     }
 }
@@ -212,21 +212,19 @@ fun YamlNode.getNumber(key: String): YamlResult<Number?> = when (val scalar = ge
     is Success<String> ->
         try {
             Success(scalar.data.toInt())
-        } catch (e: YamlScalarFormatException) {
-            Error("expected number but got '${e.originalValue}' at ${this.location.logMessage()}")
+        } catch (e: NumberFormatException) {
+            Error("expected number but got '${scalar.data}' at ${this.location.logMessage()}")
         }
 }
 
-fun YamlNode.getNumber(key: String, default: Number): Result<Number> = when (val result = getNumber(key)) {
-    is YamlEmpty<Number?> -> Success(default)
-    is Error<Number?> -> Error(result.error)
-    is Success<Number?> -> Success(result.data ?: default)
+fun YamlNode.getNumber(key: String, default: Number): Result<Number> = when (val result = getOptionalNumber(key)) {
+    is Error<Int?> -> Error(result.error)
+    is Success<Int?> -> Success(result.data ?: default)
 }
 
-fun YamlNode.getBoolean(key: String, default: Boolean): Result<Boolean> = when (val result = getBoolean(key)) {
-    is YamlEmpty<Boolean> -> Success(default)
-    is Error<Boolean> -> Error(result.error)
-    is Success<Boolean> -> Success(result.data)
+fun YamlNode.getBoolean(key: String, default: Boolean): Result<Boolean> = when (val result = getOptionalBoolean(key)) {
+    is Error<Boolean?> -> Error(result.error)
+    is Success<Boolean?> -> Success(result.data ?: default)
 }
 
 fun <T> YamlNode.getList(key: String, factory: ConfigurationFactory<T>): YamlResult<List<T>> {
