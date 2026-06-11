@@ -28,23 +28,20 @@ class GithubRunnerServiceConfigurationFactory : PolymorphicConfigurationFactory<
         )
 
     val allowSudo =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "allow_sudo",
             KeywordHelp(
                 "allow password-less sudo commands for the GitHub runner user",
             ),
-            false,
-        )
+        ).default(false)
 
     val scale =
-        NumberKeywordOptionalWithDefault(
+        NumberKeyword(
             "scale",
-            NumberConstraints(10, 0),
             KeywordHelp(
                 "Number if runner instances to create",
             ),
-            1,
-        )
+        ).constraints(NumberConstraints(10, 0)).default(1)
 
     override val help =
         ConfigurationHelp(

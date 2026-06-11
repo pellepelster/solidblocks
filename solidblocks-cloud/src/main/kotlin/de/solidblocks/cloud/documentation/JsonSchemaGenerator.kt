@@ -85,7 +85,7 @@ class JsonSchemaGenerator {
     private fun simpleKeywordToSchema(keyword: SimpleKeyword<*>): JsonObject = buildJsonObject {
         put("description", keyword.help.description)
         when (keyword) {
-            is BaseStringKeyword<*> -> {
+            is StringKeyword<*> -> {
                 if (keyword.constraints.options.isNotEmpty()) {
                     put("type", "string")
                     put("enum", JsonArray(keyword.constraints.options.map { JsonPrimitive(it) }))
@@ -98,16 +98,16 @@ class JsonSchemaGenerator {
                 keyword.default?.let { put("default", it.toString()) }
             }
 
-            is BaseNumberKeyword<*> -> {
+            is NumberKeyword<*> -> {
                 put("type", "integer")
                 keyword.constraints.min?.let { put("minimum", it) }
                 keyword.constraints.max?.let { put("maximum", it) }
                 (keyword.default as? Int)?.let { put("default", it) }
             }
 
-            is OptionalBooleanKeyword -> {
+            is BooleanKeyword<*> -> {
                 put("type", "boolean")
-                put("default", keyword.default)
+                keyword.default?.let { put("default", it) }
             }
 
             is OptionalStringMapKeyword -> {

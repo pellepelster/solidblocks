@@ -1,11 +1,11 @@
 package de.solidblocks.cloud.documentation
 
-import de.solidblocks.cloud.configuration.BaseStringKeyword
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.PolymorphicListKeyword
 import de.solidblocks.cloud.configuration.SimpleKeyword
+import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.utils.markdown
 
 class DocumentationGenerator(val hugo: Boolean = false) {
@@ -55,7 +55,7 @@ class DocumentationGenerator(val hugo: Boolean = false) {
                 }
                 line {
                     when (it) {
-                        is BaseStringKeyword<*> -> {
+                        is StringKeyword<*> -> {
                             if (it.constraints.minLength != null) {
                                 italic("min. length")
                                 text(": ")

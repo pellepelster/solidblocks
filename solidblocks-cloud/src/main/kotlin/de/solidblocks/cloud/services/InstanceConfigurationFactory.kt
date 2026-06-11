@@ -3,8 +3,10 @@ package de.solidblocks.cloud.services
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.NumberConstraints.Companion.VOLUME_SIZE
-import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
-import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
+import de.solidblocks.cloud.configuration.NumberKeyword
+import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.constraints
+import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.providers.hetzner.HETZNER_INSTANCE_TYPE
 import de.solidblocks.cloud.providers.hetzner.HETZNER_LOCATIONS
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRuntime
@@ -23,34 +25,28 @@ fun InstanceConfig.toRuntime() = InstanceRuntime(this.volumeSize, this.hetznerLo
 object InstanceConfigurationFactory {
 
     val SERVICE_DATA_VOLUME_SIZE_KEYWORD =
-        NumberKeywordOptionalWithDefault(
+        NumberKeyword(
             "data_size",
-            VOLUME_SIZE,
             KeywordHelp(
                 "Size in GB for the data volume keeping all data needed for this service.",
             ),
-            16,
-        )
+        ).constraints(VOLUME_SIZE).default(16)
 
     val HETZNER_LOCATION_KEYWORD =
-        StringKeywordOptionalWithDefault(
+        StringKeyword(
             "hetzner_location",
-            HETZNER_LOCATIONS,
-            HETZNER_LOCATIONS.options.first(),
             KeywordHelp(
                 "Hetzner location for created infrastructure resources, if not set the default from the Hetzner provider configuration is used.",
             ),
-        )
+        ).constraints(HETZNER_LOCATIONS).default(HETZNER_LOCATIONS.options.first())
 
     val HETZNER_INSTANCE_TYPE_KEYWORD =
-        StringKeywordOptionalWithDefault(
+        StringKeyword(
             "hetzner_instance_type",
-            HETZNER_INSTANCE_TYPE,
-            HETZNER_INSTANCE_TYPE.options.first(),
             KeywordHelp(
                 "Hetzner instance size for virtual machines, if not set the default from the Hetzner provider configuration is used.",
             ),
-        )
+        ).constraints(HETZNER_INSTANCE_TYPE).default(HETZNER_INSTANCE_TYPE.options.first())
 
     val keywords =
         listOf<Keyword<*>>(

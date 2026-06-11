@@ -2,7 +2,6 @@ package de.solidblocks.cloud.providers.github
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
@@ -15,7 +14,6 @@ class GithubProviderConfigurationFactory : PolymorphicConfigurationFactory<Githu
     val githubUrl =
         StringKeyword(
             "github_url",
-            NONE,
             KeywordHelp("GitHub URL, either an organisation (https://github.com/<org>) or a repository (https://github.com/<user>/<repo>)"),
         )
 

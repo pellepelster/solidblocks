@@ -2,8 +2,8 @@ package de.solidblocks.cloud.providers.backup.aws
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
+import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -13,15 +13,12 @@ import de.solidblocks.cloud.utils.result
 class S3BackupProviderConfigurationFactory : PolymorphicConfigurationFactory<S3BackupProviderConfiguration>() {
 
     val region =
-        StringKeywordOptionalWithDefault(
+        StringKeyword(
             "region",
-            NONE,
-            "eu-central-1",
             KeywordHelp(
                 "Region where the backup bucket should be created",
             ),
-
-        )
+        ).default("eu-central-1")
 
     override val help =
         ConfigurationHelp(

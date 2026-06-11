@@ -3,7 +3,6 @@ package de.solidblocks.cloud.services.docker.model
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
@@ -19,7 +18,6 @@ class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<Docker
     val image =
         StringKeyword(
             "image",
-            NONE,
             KeywordHelp(
                 "Docker image to deploy",
             ),

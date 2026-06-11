@@ -1,11 +1,13 @@
 package de.solidblocks.cloud.services
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.configuration.BooleanKeyword
 import de.solidblocks.cloud.configuration.Keyword
-import de.solidblocks.cloud.configuration.OptionalBooleanKeyword
 import de.solidblocks.cloud.configuration.OptionalStringMapKeyword
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
 import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.constraints
+import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.interpolation.validateInterpolatedString
 import de.solidblocks.cloud.services.InstanceConfigurationFactory.parseInstanceConfig
 import de.solidblocks.cloud.utils.Error
@@ -17,20 +19,18 @@ import de.solidblocks.cloud.utils.result
 object ServiceConfigurationFactory {
 
     val SERVICE_FLOATING_IP_KEYWORD =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "use_floating_ip",
             KeywordHelp("use floating ip for public server access"),
-            false,
-        )
+        ).default(false)
 
     val SERVICE_NAME_KEYWORD =
         StringKeyword(
             "name",
-            RFC_1123_NAME,
             KeywordHelp(
                 "Unique name for the service. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name.",
             ),
-        )
+        ).constraints(RFC_1123_NAME)
 
     val SERVICE_ENVIRONMENT_VARS_KEYWORD =
         OptionalStringMapKeyword(

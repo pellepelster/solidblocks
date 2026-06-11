@@ -5,6 +5,7 @@ import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAME
 import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.constraints
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -18,11 +19,10 @@ class PostgresSqlServiceDatabaseConfigurationFactory : ConfigurationFactory<Post
     val name =
         StringKeyword(
             "name",
-            DOMAIN_NAME,
             KeywordHelp(
                 "Unique name for the database",
             ),
-        )
+        ).constraints(DOMAIN_NAME)
 
     val users =
         ListKeyword(

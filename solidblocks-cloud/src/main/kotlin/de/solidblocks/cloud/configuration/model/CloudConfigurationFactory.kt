@@ -30,11 +30,10 @@ class CloudConfigurationFactory(
         val name =
             StringKeyword(
                 "name",
-                RFC_1123_NAME,
                 KeywordHelp(
                     "Unique name for the cloud deployment. Must conform with [RFC 1123](https://datatracker.ietf.org/doc/html/rfc1123) to ensure it can be used as part of a domain name. If you plan to deploy multiple Solidblocks cloud configurations to a single provider account make sure the names are unique across all configuration files.",
                 ),
-            )
+            ).constraints(RFC_1123_NAME)
 
         val environment =
             OptionalStringMapKeyword(
@@ -45,13 +44,12 @@ class CloudConfigurationFactory(
             )
 
         val rootDomain =
-            StringKeywordOptional(
+            StringKeyword(
                 "root_domain",
-                DOMAIN_NAME,
                 KeywordHelp(
                     "Root domain to use for addresses of created services, e.g. **<service_name>.<root_domain>**. If set, the domain must be manageable by one of the configured providers.",
                 ),
-            )
+            ).constraints(DOMAIN_NAME).optional()
     }
 
     @Suppress("UNCHECKED_CAST")

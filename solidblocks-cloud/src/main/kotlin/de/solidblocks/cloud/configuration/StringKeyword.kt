@@ -18,16 +18,25 @@ data class StringConstraints(val maxLength: Int? = null, val minLength: Int? = n
     }
 }
 
-abstract class BaseStringKeyword<T>(override val name: String, val constraints: StringConstraints, override val optional: Boolean, override val default: T?, override val help: KeywordHelp) : SimpleKeyword<T> {
+class StringKeyword<T : String?> internal constructor(
+    override val name: String,
+    override val help: KeywordHelp,
+    val constraints: StringConstraints,
+    override val optional: Boolean,
+    override val default: T?,
+) : SimpleKeyword<T> {
 
-    abstract fun parseInternal(yaml: YamlNode): Result<String?>
-
-    open fun parse(yaml: YamlNode): Result<T> {
+    fun parse(yaml: YamlNode): Result<T> {
         val string =
-            when (val result = parseInternal(yaml)) {
-                is Error<String?> -> return Error<T>(result.error)
-                is Success<String?> -> {
-                    result.data
+            if (optional) {
+                when (val result = yaml.getOptionalString(name)) {
+                    is Error<String?> -> return Error<T>(result.error)
+                    is Success<String?> -> result.data ?: default
+                }
+            } else {
+                when (val result = yaml.getNonNullOrEmptyString(name)) {
+                    is Error<String> -> return Error<T>(result.error)
+                    is Success<String> -> result.data
                 }
             }
 
@@ -67,35 +76,10 @@ abstract class BaseStringKeyword<T>(override val name: String, val constraints: 
     override val type = KeywordType.string
 }
 
-class StringKeyword(name: String, constraints: StringConstraints, help: KeywordHelp) : BaseStringKeyword<String>(name, constraints, false, null, help) {
-    override fun parseInternal(yaml: YamlNode): Result<String?> = when (val result = yaml.getNonNullOrEmptyString(name)) {
-        is Error<String> -> Error<String?>(result.error)
-        is Success<String> -> Success<String?>(result.data)
-    }
-}
+fun StringKeyword(name: String, help: KeywordHelp): StringKeyword<String> = StringKeyword(name, help, StringConstraints.NONE, optional = false, default = null)
 
-class StringKeywordOptional(name: String, constraints: StringConstraints, help: KeywordHelp) : BaseStringKeyword<String?>(name, constraints, true, null, help) {
+fun <T : String?> StringKeyword<T>.constraints(constraints: StringConstraints): StringKeyword<T> = StringKeyword(name, help, constraints, optional, default)
 
-    override fun parseInternal(yaml: YamlNode): Result<String?> {
-        val string =
-            when (val string = yaml.getOptionalString(name)) {
-                is Error<String?> -> return Error<String?>(string.error)
-                is Success<String?> -> string.data
-            }
+fun StringKeyword<String>.optional(): StringKeyword<String?> = StringKeyword(name, help, constraints, optional = true, default = null)
 
-        return Success(string)
-    }
-}
-
-class StringKeywordOptionalWithDefault(name: String, constraints: StringConstraints, default: String, help: KeywordHelp) : BaseStringKeyword<String>(name, constraints, true, default, help) {
-
-    override fun parseInternal(yaml: YamlNode): Result<String?> {
-        val string =
-            when (val string = yaml.getOptionalString(name)) {
-                is Error<String?> -> return Error<String?>(string.error)
-                is Success<String?> -> string.data ?: default
-            }
-
-        return Success(string)
-    }
-}
+fun StringKeyword<String>.default(value: String): StringKeyword<String> = StringKeyword(name, help, constraints, optional = true, default = value)

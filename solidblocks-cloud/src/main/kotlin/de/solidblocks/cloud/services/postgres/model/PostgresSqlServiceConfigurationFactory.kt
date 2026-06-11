@@ -3,8 +3,10 @@ package de.solidblocks.cloud.services.postgres.model
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.NumberConstraints
-import de.solidblocks.cloud.configuration.NumberKeywordOptionalWithDefault
+import de.solidblocks.cloud.configuration.NumberKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
+import de.solidblocks.cloud.configuration.constraints
+import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
@@ -24,14 +26,12 @@ class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<P
         )
 
     val majorVersion =
-        NumberKeywordOptionalWithDefault(
+        NumberKeyword(
             "majorVersion",
-            NumberConstraints(18, 14),
             KeywordHelp(
                 "Postgres major version",
             ),
-            17,
-        )
+        ).constraints(NumberConstraints(18, 14)).default(17)
 
     override val help =
         ConfigurationHelp(

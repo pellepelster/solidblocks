@@ -2,7 +2,6 @@ package de.solidblocks.cloud.services.postgres.model
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.*
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -16,37 +15,33 @@ class PostgresSqlServiceDatabaseUserConfigurationFactory : ConfigurationFactory<
     val name =
         StringKeyword(
             "name",
-            NONE,
             KeywordHelp(
                 "Unique name for the access key",
             ),
         )
 
     val admin =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "admin",
             KeywordHelp(
                 "Grant full DDL privileges to the user",
             ),
-            false,
-        )
+        ).default(false)
 
     val read =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "read",
             KeywordHelp(
                 "Grant read permissions to the user",
             ),
-            false,
-        )
+        ).default(false)
     val write =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "write",
             KeywordHelp(
                 "Grant update/insert and delete permissions to the user",
             ),
-            false,
-        )
+        ).default(false)
 
     override val help: ConfigurationHelp
         get() = TODO("Not yet implemented")

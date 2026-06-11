@@ -3,8 +3,8 @@ package de.solidblocks.cloud.providers.pass
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeywordOptional
+import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.optional
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
@@ -15,13 +15,12 @@ import de.solidblocks.cloud.utils.Success
 class PassProviderConfigurationFactory : PolymorphicConfigurationFactory<PassProviderConfiguration>() {
 
     val passwordStoreDir =
-        StringKeywordOptional(
+        StringKeyword(
             "password_store_dir",
-            NONE,
             KeywordHelp(
                 "Storage path for the password store, if not set the default or the setting from the `PASSWORD_STORE_DIR` environment variable will be used.",
             ),
-        )
+        ).optional()
 
     override val help =
         ConfigurationHelp(

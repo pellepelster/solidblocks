@@ -80,21 +80,3 @@ data class ObjectKeyword<T>(override val name: String, override val factory: Con
 
     override val type = KeywordType.`object`
 }
-
-data class OptionalBooleanKeyword(override val name: String, override val help: KeywordHelp, override val default: Boolean) : SimpleKeyword<Boolean> {
-
-    fun parse(yaml: YamlNode): Result<Boolean> {
-        val bool =
-            when (val result = yaml.getOptionalBoolean(name)) {
-                is Error<Boolean?> -> return Error(result.error)
-                is Success<Boolean?> -> {
-                    result.data
-                }
-            }
-
-        return Success(bool ?: default)
-    }
-
-    override val optional = true
-    override val type = KeywordType.boolean
-}

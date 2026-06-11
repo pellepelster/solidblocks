@@ -3,8 +3,8 @@ package de.solidblocks.cloud.providers.protonpass
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
-import de.solidblocks.cloud.configuration.StringKeywordOptional
+import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.optional
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.Error
@@ -15,13 +15,12 @@ import de.solidblocks.cloud.utils.Success
 class ProtonPassProviderConfigurationFactory : PolymorphicConfigurationFactory<ProtonPassProviderConfiguration>() {
 
     val vaultName =
-        StringKeywordOptional(
+        StringKeyword(
             "vault_name",
-            NONE,
             KeywordHelp(
                 "Name of the Proton Pass vault to store secrets in, if not set the cloud name will be used.",
             ),
-        )
+        ).optional()
 
     override val help =
         ConfigurationHelp(

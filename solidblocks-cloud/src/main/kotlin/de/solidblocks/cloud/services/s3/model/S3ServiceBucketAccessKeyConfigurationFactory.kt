@@ -1,11 +1,11 @@
 package de.solidblocks.cloud.services.s3.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.configuration.BooleanKeyword
 import de.solidblocks.cloud.configuration.ConfigurationFactory
-import de.solidblocks.cloud.configuration.OptionalBooleanKeyword
 import de.solidblocks.cloud.configuration.SimpleKeyword
-import de.solidblocks.cloud.configuration.StringConstraints.Companion.NONE
 import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
@@ -20,38 +20,34 @@ class S3ServiceBucketAccessKeyConfigurationFactory : ConfigurationFactory<S3Serv
     val name =
         StringKeyword(
             "name",
-            NONE,
             KeywordHelp(
                 "Unique name for the access key",
             ),
         )
 
     val owner =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "owner",
             KeywordHelp(
                 "Grant owner permission to the access key",
             ),
-            false,
-        )
+        ).default(false)
 
     val read =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "read",
             KeywordHelp(
                 "Grant read permission to the access key",
             ),
-            false,
-        )
+        ).default(false)
 
     val write =
-        OptionalBooleanKeyword(
+        BooleanKeyword(
             "write",
             KeywordHelp(
                 "Grant write permission to the access key",
             ),
-            false,
-        )
+        ).default(false)
 
     override val help: ConfigurationHelp
         get() = TODO("Not yet implemented")

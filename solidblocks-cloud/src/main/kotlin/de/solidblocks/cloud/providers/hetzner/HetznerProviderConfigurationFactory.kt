@@ -2,7 +2,9 @@ package de.solidblocks.cloud.providers.hetzner
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
-import de.solidblocks.cloud.configuration.StringKeywordOptionalWithDefault
+import de.solidblocks.cloud.configuration.StringKeyword
+import de.solidblocks.cloud.configuration.constraints
+import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.KeywordHelp
@@ -14,24 +16,20 @@ import de.solidblocks.hetzner.cloud.model.HetznerServerType
 class HetznerProviderConfigurationFactory : PolymorphicConfigurationFactory<HetznerProviderConfiguration>() {
 
     val defaultLocation =
-        StringKeywordOptionalWithDefault(
+        StringKeyword(
             "default_location",
-            HETZNER_LOCATIONS,
-            HETZNER_LOCATIONS.options.first(),
             KeywordHelp(
                 "Default location for created infrastructure resources",
             ),
-        )
+        ).constraints(HETZNER_LOCATIONS).default(HETZNER_LOCATIONS.options.first())
 
     val defaultInstanceType =
-        StringKeywordOptionalWithDefault(
+        StringKeyword(
             "default-instance-type",
-            HETZNER_INSTANCE_TYPE,
-            HETZNER_INSTANCE_TYPE.options.first(),
             KeywordHelp(
                 "Default instance size for virtual machines",
             ),
-        )
+        ).constraints(HETZNER_INSTANCE_TYPE).default(HETZNER_INSTANCE_TYPE.options.first())
 
     override val help =
         ConfigurationHelp(

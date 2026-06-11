@@ -16,11 +16,10 @@ class DockerServiceEndpointConfigurationFactory : ConfigurationFactory<DockerSer
     val port =
         NumberKeyword(
             "container_port",
-            IP_PORTS,
             KeywordHelp(
                 "Service port on the docker container",
             ),
-        )
+        ).constraints(IP_PORTS)
 
     val endpointTypes =
         StringConstraints(
@@ -31,14 +30,12 @@ class DockerServiceEndpointConfigurationFactory : ConfigurationFactory<DockerSer
         )
 
     val type =
-        StringKeywordOptionalWithDefault(
+        StringKeyword(
             "type",
-            endpointTypes,
-            endpointTypes.options.first(),
             KeywordHelp(
                 "Type of the service endpoints. Endpoints with the type `http` are automatically terminated with TLS if a `root_domain` is set.",
             ),
-        )
+        ).constraints(endpointTypes).default(endpointTypes.options.first())
 
     override val help: ConfigurationHelp
         get() = TODO("Not yet implemented")
