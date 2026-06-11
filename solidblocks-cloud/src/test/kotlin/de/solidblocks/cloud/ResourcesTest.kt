@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 class ResourcesTest {
 
     @Test
-    fun testLookupTypesMatchResource() {
+    fun `lookup types match resource`() {
         val mock1 = MockResource1("name1")
         val mock1Lookup = MockResource1Lookup("name1")
 
@@ -24,7 +24,7 @@ class ResourcesTest {
     }
 
     @Test
-    fun testHierarchicalResourceList() {
+    fun `hierarchical resource list`() {
         val mock1 = MockResource1("name1")
         val mock1Lookup1 = MockResource1Lookup("name1")
 

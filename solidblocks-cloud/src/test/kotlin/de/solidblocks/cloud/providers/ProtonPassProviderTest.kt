@@ -17,7 +17,7 @@ class ProtonPassProviderTest {
     val provider = ProtonPassProviderManager()
 
     @Test
-    fun testProtonPassProviderDefaultsToCloudName() {
+    fun `proton pass provider defaults to cloud name`() {
         val result = provider.validateConfiguration(
             ProtonPassProviderConfiguration("protonpassprovider1", null),
             TEST_CLOUD_CONFIGURATION_CONTEXT,
@@ -27,7 +27,7 @@ class ProtonPassProviderTest {
     }
 
     @Test
-    fun testProtonPassProviderUsesConfiguredVaultName() {
+    fun `proton pass provider uses configured vault name`() {
         val result = provider.validateConfiguration(
             ProtonPassProviderConfiguration("protonpassprovider1", "proton-passprovider-test"),
             TEST_CLOUD_CONFIGURATION_CONTEXT,

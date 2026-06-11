@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 class StringKeywordsTest {
 
     @Test
-    fun testStringKeyword() {
+    fun `string keyword`() {
         val yaml =
             yamlParse(
                 """
@@ -36,7 +36,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringOptionalKeyword() {
+    fun `string optional keyword`() {
         val yaml =
             yamlParse(
                 """
@@ -56,7 +56,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringOptionalKeywordWithDefault() {
+    fun `string optional keyword with default`() {
         val yaml =
             yamlParse(
                 """
@@ -77,7 +77,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringKeywordMaxLength() {
+    fun `string keyword max length`() {
         val yaml =
             yamlParse(
                 """
@@ -98,7 +98,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringKeywordRegexPatternFail() {
+    fun `string keyword regex pattern fail`() {
         val yaml =
             yamlParse(
                 """
@@ -119,7 +119,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringKeywordRegexPatternSuccess() {
+    fun `string keyword regex pattern success`() {
         val yaml =
             yamlParse(
                 """
@@ -139,7 +139,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringKeywordMinLength() {
+    fun `string keyword min length`() {
         val yaml =
             yamlParse(
                 """
@@ -160,7 +160,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testOptionalStringKeyword() {
+    fun `optional string keyword`() {
         val yaml =
             yamlParse(
                 """
@@ -180,7 +180,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringKeywordOptionsFailure() {
+    fun `string keyword options failure`() {
         val yaml =
             yamlParse(
                 """
@@ -201,7 +201,7 @@ class StringKeywordsTest {
     }
 
     @Test
-    fun testStringKeywordOptionsSuccess() {
+    fun `string keyword options success`() {
         val yaml =
             yamlParse(
                 """

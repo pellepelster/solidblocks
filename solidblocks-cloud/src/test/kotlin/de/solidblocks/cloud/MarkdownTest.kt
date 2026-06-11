@@ -7,22 +7,22 @@ import org.junit.jupiter.api.Test
 class MarkdownTest {
 
     @Test
-    fun testBold() {
+    fun `bold`() {
         markdown { bold("bold") } shouldBe "**bold**"
     }
 
     @Test
-    fun testItalic() {
+    fun `italic`() {
         markdown { italic("italic") } shouldBe "*italic*"
     }
 
     @Test
-    fun testCode() {
+    fun `code`() {
         markdown { codeBlock("some code") } shouldBe "```\nsome code\n```"
     }
 
     @Test
-    fun testLine() {
+    fun `line`() {
         markdown {
             line {
                 bold("italic")
@@ -32,17 +32,17 @@ class MarkdownTest {
     }
 
     @Test
-    fun testParagraphBuilder() {
+    fun `paragraph builder`() {
         markdown { p { text("some text") } } shouldBe "\nsome text\n"
     }
 
     @Test
-    fun testParagraph() {
+    fun `paragraph`() {
         markdown { p("some text") } shouldBe "\nsome text\n"
     }
 
     @Test
-    fun testNestedMarkdown() {
+    fun `nested markdown`() {
         markdown {
             +markdown { bold("bold") }
             +markdown { italic("italic") }
@@ -50,7 +50,7 @@ class MarkdownTest {
     }
 
     @Test
-    fun testMultipleElements() {
+    fun `multiple elements`() {
         markdown {
             bold("bold")
             italic("italic")

@@ -20,7 +20,7 @@ class HetznerLabelsTest {
     }
 
     @Test
-    fun testAddHashedLabel() {
+    fun `add hashed label`() {
         val labels = HetznerLabels.forCloud("test")
 
         labels.addHashedLabel("hash-test", "hallo welt")
@@ -33,7 +33,7 @@ class HetznerLabelsTest {
     }
 
     @Test
-    fun testLabelExportImport() {
+    fun `label export import`() {
         val labels = HetznerLabels.forCloud("test")
 
         labels.addHashedLabel("hash-test", "hallo welt")
@@ -50,7 +50,7 @@ class HetznerLabelsTest {
     }
 
     @Test
-    fun testMaxLabelValue() {
+    fun `max label value`() {
         val labels = HetznerLabels.forCloud("test")
         labels.addLabel("label1", "A".repeat(124))
 
@@ -64,7 +64,7 @@ class HetznerLabelsTest {
     }
 
     @Test
-    fun testTooLongLabelValue() {
+    fun `too long label value`() {
         val labels = HetznerLabels.forCloud("test")
 
         Assertions.assertThrows(
@@ -75,7 +75,7 @@ class HetznerLabelsTest {
     }
 
     @Test
-    fun testUnderscoreInKey() {
+    fun `underscore in key`() {
         val labels = HetznerLabels()
 
         assertThrows(

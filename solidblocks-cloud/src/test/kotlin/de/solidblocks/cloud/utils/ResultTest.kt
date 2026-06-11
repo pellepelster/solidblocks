@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test
 class ResultTest {
 
     @Test
-    fun testFlatMapChainsOnSuccess() {
+    fun `flat map chains on success`() {
         val result = Success(2).flatMap { Success(it * 3) }
         result.shouldBeTypeOf<Success<Int>>().data shouldBe 6
     }
 
     @Test
-    fun testFlatMapShortCircuitsAndPreservesCause() {
+    fun `flat map short circuits and preserves cause`() {
         val cause = RuntimeException("boom")
         val result = Error<Int>("failed", cause).flatMap { Success(it * 3) }
 
@@ -24,19 +24,19 @@ class ResultTest {
     }
 
     @Test
-    fun testFold() {
+    fun `fold`() {
         Success(1).fold(onError = { "err" }, onSuccess = { "ok-$it" }) shouldBe "ok-1"
         Error<Int>("nope").fold(onError = { it.error }, onSuccess = { "ok" }) shouldBe "nope"
     }
 
     @Test
-    fun testGetOrElse() {
+    fun `get or else`() {
         Success(5).getOrElse { -1 } shouldBe 5
         Error<Int>("nope").getOrElse { -1 } shouldBe -1
     }
 
     @Test
-    fun testOnErrorRunsOnlyForError() {
+    fun `on error runs only for error`() {
         var seen: String? = null
         Success(1).onError { seen = it.error }
         seen shouldBe null
@@ -46,7 +46,7 @@ class ResultTest {
     }
 
     @Test
-    fun testRetypePreservesMessageAndCause() {
+    fun `retype preserves message and cause`() {
         val cause = IllegalStateException("x")
         val retyped: Error<String> = Error<Int>("msg", cause).retype()
         retyped.error shouldBe "msg"
@@ -54,7 +54,7 @@ class ResultTest {
     }
 
     @Test
-    fun testCatchingResultCapturesCause() {
+    fun `catching result captures cause`() {
         val result = catchingResult<Int> { throw IllegalArgumentException("bad arg") }
         val error = result.shouldBeTypeOf<Error<Int>>()
         error.error shouldBe "bad arg"
@@ -62,7 +62,7 @@ class ResultTest {
     }
 
     @Test
-    fun testResultBindUnwrapsSuccess() {
+    fun `result bind unwraps success`() {
         val result = result {
             val a = Success(2).bind()
             val b = Success(3).bind()
@@ -72,7 +72,7 @@ class ResultTest {
     }
 
     @Test
-    fun testResultBindShortCircuitsOnFirstError() {
+    fun `result bind short circuits on first error`() {
         var reachedSecond = false
         val result = result {
             Success(1).bind()

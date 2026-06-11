@@ -15,11 +15,11 @@ object CounterTable : Table("counter") {
 }
 
 fun Application.configureDatabases() {
-    val host = System.getenv("DATABASE_HOST") ?: error("DB_HOST env variable is required")
+    val host = System.getenv("DATABASE_HOST") ?: error("DATABASE_HOST env variable is required")
     val port = System.getenv("DATABASE_PORT") ?: "5432"
     val database = System.getenv("DATABASE_NAME") ?: "hello-world"
-    val username = System.getenv("DATABASE_USER") ?: error("DB_USER env variable is required")
-    val password = System.getenv("DATABASE_PASSWORD") ?: error("DB_PASSWORD env variable is required")
+    val username = System.getenv("DATABASE_USER") ?: error("DATABASE_USER env variable is required")
+    val password = System.getenv("DATABASE_PASSWORD") ?: error("DATABASE_PASSWORD env variable is required")
 
     val hikariConfig = HikariConfig().apply {
         jdbcUrl = "jdbc:postgresql://$host:$port/$database"

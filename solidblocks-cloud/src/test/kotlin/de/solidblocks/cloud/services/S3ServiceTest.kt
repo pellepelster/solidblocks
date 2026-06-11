@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 class S3ServiceTest {
 
     @Test
-    fun testParse() {
+    fun `parse`() {
         val ymlRaw =
             """
         name: "name1"
@@ -40,7 +40,7 @@ class S3ServiceTest {
     }
 
     @Test
-    fun testDuplicateBucketName() {
+    fun `duplicate bucket name`() {
         val cloud =
             CloudConfiguration(
                 "name1",
@@ -73,7 +73,7 @@ class S3ServiceTest {
     }
 
     @Test
-    fun testDuplicateBucketAccessKeyName() {
+    fun `duplicate bucket access key name`() {
         val cloud =
             CloudConfiguration(
                 "name1",

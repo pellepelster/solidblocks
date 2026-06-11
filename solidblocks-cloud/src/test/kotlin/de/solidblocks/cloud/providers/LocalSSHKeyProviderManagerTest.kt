@@ -27,7 +27,7 @@ class LocalSSHKeyProviderManagerTest {
     val tempDir = Files.createTempDirectory("test")
 
     @Test
-    fun testLoadsDefaultKeyForCloud() {
+    fun `loads default key for cloud`() {
         val rawSshKey = TestContextUtils::class.java.getResource("/test_ed25519.key").readText()
         tempDir.resolve("cloud1.key").also {
             it.writeText(rawSshKey)
@@ -43,7 +43,7 @@ class LocalSSHKeyProviderManagerTest {
     }
 
     @Test
-    fun testKeyPermissionsTooOpen() {
+    fun `key permissions too open`() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_ed25519.key").toURI().path
         Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-rw-rw-"))
 
@@ -56,7 +56,7 @@ class LocalSSHKeyProviderManagerTest {
     }
 
     @Test
-    fun testRsaEncrypted() {
+    fun `rsa encrypted`() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_rsa_encrypted.key").toURI().path
         Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
@@ -69,7 +69,7 @@ class LocalSSHKeyProviderManagerTest {
     }
 
     @Test
-    fun testEd25519Encrypted() {
+    fun `ed25519 encrypted`() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_ed25519_encrypted.key").toURI().path
         Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
@@ -82,7 +82,7 @@ class LocalSSHKeyProviderManagerTest {
     }
 
     @Test
-    fun testEcdsaEncrypted() {
+    fun `ecdsa encrypted`() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_ecdsa_encrypted.key").toURI().path
         Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
@@ -95,7 +95,7 @@ class LocalSSHKeyProviderManagerTest {
     }
 
     @Test
-    fun testEcdsa() {
+    fun `ecdsa`() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_ecdsa.key").toURI().path
         Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
@@ -108,7 +108,7 @@ class LocalSSHKeyProviderManagerTest {
     }
 
     @Test
-    fun testRsa() {
+    fun `rsa`() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_rsa.key").toURI().path
         Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 
@@ -121,7 +121,7 @@ class LocalSSHKeyProviderManagerTest {
     }
 
     @Test
-    fun testEd25519() {
+    fun `ed25519`() {
         val sshKeyPath = TestContextUtils::class.java.getResource("/test_ed25519.key").toURI().path
         Path(sshKeyPath).setPosixFilePermissions(PosixFilePermissions.fromString("rw-------"))
 

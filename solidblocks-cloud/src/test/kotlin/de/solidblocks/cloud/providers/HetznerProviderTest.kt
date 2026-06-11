@@ -17,7 +17,7 @@ class HetznerProviderTest {
     val provider = HetznerProviderManager()
 
     @Test
-    fun testInvalidCloudToken() {
+    fun `invalid cloud token`() {
         System.setProperty("HCLOUD_TOKEN", "invalid_token")
 
         val result = provider.validateConfiguration(

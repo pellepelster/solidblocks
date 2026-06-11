@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 class DockerServiceTest {
 
     @Test
-    fun testParse() {
+    fun `parse`() {
         val rawYml = """
         name: foo-bar
         root_domain: foo.bar
@@ -54,7 +54,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun testValidate() {
+    fun `validate`() {
         val cloud = CloudConfiguration(
             "cloud1",
             "cloud1.test-blcks.de",
@@ -92,7 +92,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun testInvalidLink() {
+    fun `invalid link`() {
         val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
         val configuration = DockerServiceConfiguration(
             ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
@@ -113,7 +113,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun testSelfLink() {
+    fun `self link`() {
         val configuration = DockerServiceConfiguration(
             ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
             "image1",
@@ -134,7 +134,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun testDuplicatedPortConfig() {
+    fun `duplicated port config`() {
         val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
         val configuration = DockerServiceConfiguration(
             ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),
@@ -158,7 +158,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun testNoEndpointConfig() {
+    fun `no endpoint config`() {
         val cloud = CloudConfiguration("cloud1", "cloud1.test-blcks.de", emptyMap(), emptyList(), emptyList())
         val configuration = DockerServiceConfiguration(
             ServiceCommonConfig("docker1", false, emptyMap(), InstanceConfig(16, HetznerLocation.fsn1, HetznerServerType.cx23)),

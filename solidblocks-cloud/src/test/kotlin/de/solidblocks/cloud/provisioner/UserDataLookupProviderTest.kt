@@ -16,7 +16,7 @@ import org.junit.jupiter.api.TestInstance
 class UserDataLookupProviderTest {
 
     @Test
-    fun testLookup() {
+    fun `lookup`() {
         val provisioner1 = Resource1Provisioner()
         val provisioner2 = Resource2Provisioner()
 

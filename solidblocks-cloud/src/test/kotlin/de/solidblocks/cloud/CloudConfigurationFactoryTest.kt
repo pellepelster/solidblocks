@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 
 class CloudConfigurationFactoryTest {
     @Test
-    fun testParseCloud() {
+    fun `parse cloud`() {
         val rawYml =
             """
         name: foo-bar
@@ -32,7 +32,7 @@ class CloudConfigurationFactoryTest {
     }
 
     @Test
-    fun testParseUnknownService() {
+    fun `parse unknown service`() {
         val rawYml =
             """
         name: foo-bar

@@ -19,7 +19,7 @@ class PassProviderTest {
     val provider = PassProviderManager()
 
     @Test
-    fun testPassProviderDefaultDir() {
+    fun `pass provider default dir`() {
         val result = provider.validateConfiguration(
             PassProviderConfiguration("passprovider1", null),
             TEST_CLOUD_CONFIGURATION_CONTEXT,
@@ -29,7 +29,7 @@ class PassProviderTest {
     }
 
     @Test
-    fun testPassProviderInvalidDir() {
+    fun `pass provider invalid dir`() {
         val result = provider.validateConfiguration(
             PassProviderConfiguration("passprovider1", "/tmp"),
             TEST_CLOUD_CONFIGURATION_CONTEXT,
@@ -39,7 +39,7 @@ class PassProviderTest {
     }
 
     @Test
-    fun testPassProviderInvalidDirSkipValidation() {
+    fun `pass provider invalid dir skip validation`() {
         System.setProperty("BLCKS_PASS_PROVIDER_SKIP_VALIDATION", "true")
         val result = provider.validateConfiguration(
             PassProviderConfiguration("passprovider1", "/tmp"),
@@ -51,7 +51,7 @@ class PassProviderTest {
     }
 
     @Test
-    fun testPassProviderNonExistentDir() {
+    fun `pass provider non existent dir`() {
         val result = provider.validateConfiguration(
             PassProviderConfiguration("passprovider1", "/foo-bar"),
             TEST_CLOUD_CONFIGURATION_CONTEXT,

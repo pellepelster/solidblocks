@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 class DnsServiceTest {
 
     @Test
-    fun testGetInvalidARecords() {
+    fun `get invalid a records`() {
         assertSoftly(DnsService().tryResolveARecords("invalid-domain-pelle.io.")) {
             it shouldHaveSize 8
             it.all { it.values.isEmpty() } shouldBe true
@@ -17,7 +17,7 @@ class DnsServiceTest {
     }
 
     @Test
-    fun testGetARecords() {
+    fun `get a records`() {
         assertSoftly(DnsService().tryResolveARecords("pelle.io.")) {
             it shouldHaveAtLeastSize 4
             it.none { it.values.isEmpty() } shouldBe true

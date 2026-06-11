@@ -27,13 +27,13 @@ class SSHHealthCheckTest {
     val key = SSHKeyUtils.loadKey(ed25519Key)
 
     @Test
-    fun testHealthy() {
+    fun `healthy`() {
         val healthCheck = SSHHealthCheck(key)
         healthCheck.check(sshServer.host, sshServer.getMappedPort(22)) shouldBe HealthStatus.healthy
     }
 
     @Test
-    fun testUnhealthy() {
+    fun `unhealthy`() {
         val healthCheck = SSHHealthCheck(key)
         healthCheck.check(sshServer.host, 2222) shouldBe HealthStatus.unhealthy
     }

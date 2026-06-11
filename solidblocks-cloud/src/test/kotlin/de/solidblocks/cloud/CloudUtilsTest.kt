@@ -16,26 +16,26 @@ import java.util.*
 class CloudUtilsTest {
 
     @Test
-    fun testLogText() {
+    fun `log text`() {
         MockResource1("resource1").logText() shouldBe "mockresource1 'resource1'"
         MockResource1Lookup("resource1").logText() shouldBe "mockresource1 'resource1'"
         MockResource2Lookup("resource2").logText() shouldBe "custom log text 'resource2'"
     }
 
     @Test
-    fun testCatchingResultSuccess() {
+    fun `catching result success`() {
         val result = catchingResult { "foo-bar" }.shouldBeInstanceOf<Success<String>>()
         result.data shouldBe "foo-bar"
     }
 
     @Test
-    fun testCatchingResultError() {
+    fun `catching result error`() {
         val result = catchingResult { throw RuntimeException("foo-bar") }.shouldBeInstanceOf<Error<String>>()
         result.error shouldBe "foo-bar"
     }
 
     @Test
-    fun testFormatBytes() {
+    fun `format bytes`() {
         0L.formatBytes() shouldBe "0 B"
         512L.formatBytes() shouldBe "512 B"
         1024L.formatBytes() shouldBe "1.00 KB"
@@ -44,13 +44,13 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testCommandExists() {
+    fun `command exists`() {
         commandExists("whoami") shouldBe true
         commandExists("invalid") shouldBe false
     }
 
     @Test
-    fun testCommand() {
+    fun `command`() {
         assertSoftly(runCommand(listOf("whoami"))) {
             it?.exitCode shouldBe 0
             it?.stdout shouldBe "${System.getProperty("user.name")}\n"
@@ -59,7 +59,7 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testCommandEnvironment() {
+    fun `command environment`() {
         val random = UUID.randomUUID().toString()
         assertSoftly(runCommand(listOf("env"), env = mapOf("RANDOM_VAR" to random))) {
             it?.exitCode shouldBe 0
@@ -69,12 +69,12 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testInvalidCommand() {
+    fun `invalid command`() {
         runCommand(listOf("invalid")) shouldBe null
     }
 
     @Test
-    fun testGetEnvOrProperty() {
+    fun `get env or property`() {
         System.setProperty("test.solidblocks.property", "propertyValue")
         getEnvOrProperty("test.solidblocks.property") shouldBe "propertyValue"
         getEnvOrProperty("PATH") shouldBe System.getenv("PATH")
@@ -82,7 +82,7 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testByteSize() {
+    fun `byte size`() {
         ByteSize.fromGigabytes(1).bytes shouldBe 1_000_000_000L
         ByteSize.fromGigabytes(2).bytes shouldBe 2_000_000_000L
         ByteSize(1_000_000_000L).gigabytes() shouldBe 1
@@ -91,7 +91,7 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testDurationFormatLocale() {
+    fun `duration format locale`() {
         Duration.ofSeconds(30).formatLocale() shouldBe "30s"
         Duration.ofSeconds(120).formatLocale() shouldBe "120s"
         Duration.ofSeconds(180).formatLocale() shouldBe "3m"
@@ -99,7 +99,7 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testEqualsIgnoreOrder() {
+    fun `equals ignore order`() {
         listOf(1, 2, 3) equalsIgnoreOrder listOf(3, 1, 2) shouldBe true
         listOf(1, 2, 3) equalsIgnoreOrder listOf(1, 2, 3) shouldBe true
         listOf(1, 2, 3) equalsIgnoreOrder listOf(1, 2, 4) shouldBe false
@@ -108,7 +108,7 @@ class CloudUtilsTest {
     }
 
     @Test
-    fun testJoinToStringOrEmpty() {
+    fun `join to string or empty`() {
         emptyList<String>().joinToStringOrEmpty { it } shouldBe "<none>"
         emptyList<String>().joinToStringOrEmpty(empty = "nothing") { it } shouldBe "nothing"
         listOf("a", "b", "c").joinToStringOrEmpty { it } shouldBe "a, b, c"
@@ -118,13 +118,13 @@ class CloudUtilsTest {
 
     @Test
     @Disabled
-    fun testPassShow() {
+    fun `pass show`() {
         println(runCommand(listOf("pass", "test"))?.stdout)
     }
 
     @Test
     @Disabled
-    fun testPassInsert() {
+    fun `pass insert`() {
         val random = UUID.randomUUID().toString()
         runCommand(listOf("pass", "insert", "--multiline", "--force", "test"), random)
         runCommand(listOf("pass", "test"))?.stdout shouldBe random

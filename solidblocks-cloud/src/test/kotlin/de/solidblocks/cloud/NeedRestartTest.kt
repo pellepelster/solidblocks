@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 class NeedRestartTest {
 
     @Test
-    fun testParse() {
+    fun `parse`() {
         val output = """
             NEEDRESTART-KCUR: 6.1.0-41-amd64
             NEEDRESTART-KEXP: 6.1.0-45-amd64

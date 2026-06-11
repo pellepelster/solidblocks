@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 
 class ConfigurationParserTest {
     @Test
-    fun testParseConfiguration() {
+    fun `parse configuration`() {
         val rawYml =
             """
         test1:
@@ -43,7 +43,7 @@ class ConfigurationParserTest {
     }
 
     @Test
-    fun testParseConfigurationError() {
+    fun `parse configuration error`() {
         val rawYml =
             """
         test1:

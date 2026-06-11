@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 class ListKeywordsTest {
 
     @Test
-    fun testObjectListKeyword() {
+    fun `object list keyword`() {
         val yaml =
             yamlParse(
                 """
@@ -45,7 +45,7 @@ class ListKeywordsTest {
     }
 
     @Test
-    fun testStringListKeyword() {
+    fun `string list keyword`() {
         val yaml =
             yamlParse(
                 """
@@ -71,7 +71,7 @@ class ListKeywordsTest {
     }
 
     @Test
-    fun testStringListKeywordEmpty() {
+    fun `string list keyword empty`() {
         val yaml =
             yamlParse(
                 """

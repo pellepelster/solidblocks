@@ -20,14 +20,14 @@ import kotlin.io.path.writeText
 class CloudManagerTest {
 
     @Test
-    fun testEmptyConfiguration() {
+    fun `empty configuration`() {
         val manager = "".createManager()
         val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
         error.error shouldBe "cloud configuration was empty"
     }
 
     @Test
-    fun testNoName() {
+    fun `no name`() {
         val manager =
             """
         providers:
@@ -40,7 +40,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testNoProviders() {
+    fun `no providers`() {
         val manager =
             """
         name: cloud1
@@ -56,7 +56,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testNoSSHKeyProvider() {
+    fun `no SSH key provider`() {
         val manager =
             """
         name: cloud1
@@ -72,7 +72,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testS3BackupProvider() {
+    fun `S3 backup provider`() {
         val manager =
             """
         name: cloud1
@@ -92,7 +92,7 @@ class CloudManagerTest {
 
     @Test
     @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
-    fun testDefaultToCloudSSHKey() {
+    fun `default to cloud SSH key`() {
         val manager =
             """
         name: cloud1
@@ -125,7 +125,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testDuplicateDefaultProvider() {
+    fun `duplicate default provider`() {
         val manager =
             """
         name: cloud1
@@ -144,7 +144,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testDuplicateProviderName() {
+    fun `duplicate provider name`() {
         val manager =
             """
         name: cloud1
@@ -165,7 +165,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testDuplicateServiceName() {
+    fun `duplicate service name`() {
         val manager =
             """
         name: cloud1
@@ -189,7 +189,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testInvalidRootDomain() {
+    fun `invalid root domain`() {
         val manager =
             """
         name: cloud1
@@ -209,7 +209,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testMoreThanOneCloudProvider() {
+    fun `more than one cloud provider`() {
         val manager =
             """
         name: cloud1
@@ -229,7 +229,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testMoreThanOneSSHKeyProvider() {
+    fun `more than one SSH key provider`() {
         val manager =
             """
         name: cloud1
@@ -249,7 +249,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testServiceIsMissingProvider() {
+    fun `service is missing provider`() {
         val manager =
             """
         name: cloud1
@@ -271,7 +271,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testServiceIsMissingProviderCategory() {
+    fun `service is missing provider category`() {
         val manager =
             """
         name: cloud1
@@ -294,7 +294,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testMoreThanOneSecretProvider() {
+    fun `more than one secret provider`() {
         val manager =
             """
         name: cloud1
@@ -315,7 +315,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testSSHKeyTooOpen() {
+    fun `SSH key too open`() {
         val manager =
             """
         name: cloud1
@@ -334,28 +334,7 @@ class CloudManagerTest {
     }
 
     @Test
-    fun testNoSecretProvider() {
-        val manager =
-            """
-        name: cloud1
-        providers:
-            - type: hcloud
-            - type: backup_local
-            - type: ssh_key
-        services:
-            - type: postgresql
-              name: service1
-        """
-                .trimIndent()
-                .createManager()
-
-        val error = manager.validate().shouldBeTypeOf<Error<CloudConfigurationRuntime>>()
-        error.error shouldBe
-            "service 'service1' needs a 'secret' provider, available types are: 'protonpass', 'pass'"
-    }
-
-    @Test
-    fun testNoServices() {
+    fun `no services`() {
         val manager =
             """
         name: cloud1

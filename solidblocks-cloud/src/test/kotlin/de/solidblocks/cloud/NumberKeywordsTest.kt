@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 class NumberKeywordsTest {
 
     @Test
-    fun testNumberKeyword() {
+    fun `number keyword`() {
         val yaml =
             yamlParse(
                 """
@@ -35,7 +35,7 @@ class NumberKeywordsTest {
     }
 
     @Test
-    fun testNumberKeywordOptional() {
+    fun `number keyword optional`() {
         val yaml =
             yamlParse(
                 """
@@ -56,7 +56,7 @@ class NumberKeywordsTest {
     }
 
     @Test
-    fun testNumberKeywordOptionalWithDefault() {
+    fun `number keyword optional with default`() {
         val yaml =
             yamlParse(
                 """
@@ -77,7 +77,7 @@ class NumberKeywordsTest {
     }
 
     @Test
-    fun testNumberKeywordMin() {
+    fun `number keyword min`() {
         val yaml =
             yamlParse(
                 """
@@ -98,7 +98,7 @@ class NumberKeywordsTest {
     }
 
     @Test
-    fun testNumberKeywordMax() {
+    fun `number keyword max`() {
         val yaml =
             yamlParse(
                 """

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 
 class YamlTest {
     @Test
-    fun testParse() {
+    fun `parse`() {
         val rawYaml =
             """
         key1:
@@ -26,7 +26,7 @@ class YamlTest {
     }
 
     @Test
-    fun testParseError() {
+    fun `parse error`() {
         val rawYaml =
             """
         %§${'$'}"%"§${'$'}%§"
@@ -38,13 +38,13 @@ class YamlTest {
     }
 
     @Test
-    fun testParseEmpty() {
+    fun `parse empty`() {
         val result = yamlParse("").shouldBeTypeOf<YamlEmpty<YamlNode>>()
         result.message shouldBe "yaml document is empty"
     }
 
     @Test
-    fun testGetList() {
+    fun `get list`() {
         val rawYaml =
             """
         key1:
@@ -59,7 +59,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetListEmpty() {
+    fun `get list empty`() {
         val rawYaml =
             """
         key2:
@@ -74,7 +74,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetListError() {
+    fun `get list error`() {
         val rawYaml =
             """
         key1:
@@ -89,7 +89,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetString() {
+    fun `get string`() {
         val rawYaml =
             """
         key1: "foo"
@@ -102,7 +102,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetStringEmpty() {
+    fun `get string empty`() {
         val rawYaml =
             """
         key1: ""
@@ -119,7 +119,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetStringNull() {
+    fun `get string null`() {
         val rawYaml =
             """
         key1: null
@@ -136,7 +136,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetEmptyString() {
+    fun `get empty string`() {
         val rawYaml =
             """
         key1: 
@@ -153,7 +153,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetStringNoKey() {
+    fun `get string no key`() {
         val rawYaml =
             """
         key2: "bar"
@@ -166,7 +166,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetBoolean() {
+    fun `get boolean`() {
         val rawYaml =
             """
         key1: false
@@ -182,7 +182,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetBooleanEmpty() {
+    fun `get boolean empty`() {
         val rawYaml =
             """
         key1: ""
@@ -198,7 +198,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetBooleanInvalid() {
+    fun `get boolean invalid`() {
         val rawYaml =
             """
         key1: "yolo"
@@ -211,7 +211,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetBooleanNull() {
+    fun `get boolean null`() {
         val rawYaml =
             """
         key1: null
@@ -224,7 +224,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetBooleanNoValue() {
+    fun `get boolean no value`() {
         val rawYaml =
             """
         key1: 
@@ -237,7 +237,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetBooleanNoKey() {
+    fun `get boolean no key`() {
         val rawYaml =
             """
         key2: "bar"
@@ -250,7 +250,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetMap() {
+    fun `get map`() {
         val rawYaml =
             """
         key1:
@@ -264,7 +264,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetStringMap() {
+    fun `get string map`() {
         val rawYaml =
             """
         key1:
@@ -279,7 +279,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetStringMapNonString() {
+    fun `get string map non string`() {
         val rawYaml =
             """
         key1:
@@ -294,7 +294,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetMapListError() {
+    fun `get map list error`() {
         val rawYaml =
             """
         key1:
@@ -309,7 +309,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetMapEmpty() {
+    fun `get map empty`() {
         val rawYaml =
             """
         key1:
@@ -322,7 +322,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetMapEmpty1() {
+    fun `get map empty1`() {
         val rawYaml =
             """
         key1: {}
@@ -334,7 +334,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetMapEmpty2() {
+    fun `get map empty2`() {
         val rawYaml =
             """
         key2: {}
@@ -347,7 +347,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetNumberNull() {
+    fun `get number null`() {
         val rawYaml =
             """
         key1: null
@@ -360,7 +360,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetNumberNoValue() {
+    fun `get number no value`() {
         val rawYaml =
             """
         key1: 
@@ -373,7 +373,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetNumberEmptyString() {
+    fun `get number empty string`() {
         val rawYaml =
             """
         key1: "" 
@@ -386,7 +386,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetNumber() {
+    fun `get number`() {
         val rawYaml =
             """
         key1: 123
@@ -399,7 +399,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetNumberNoKey() {
+    fun `get number no key`() {
         val rawYaml =
             """
         key2: "bar"
@@ -438,7 +438,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetPolymorphicList() {
+    fun `get polymorphic list`() {
         val rawYaml =
             """
         list1:
@@ -459,7 +459,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetPolymorphicListTypeMissing() {
+    fun `get polymorphic list type missing`() {
         val rawYaml =
             """
         list1:
@@ -481,7 +481,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetPolymorphicListInvalidType() {
+    fun `get polymorphic list invalid type`() {
         val rawYaml =
             """
         list1:
@@ -504,7 +504,7 @@ class YamlTest {
     }
 
     @Test
-    fun testGetPolymorphicListTypeEmpty() {
+    fun `get polymorphic list type empty`() {
         val rawYaml =
             """
         list1:
