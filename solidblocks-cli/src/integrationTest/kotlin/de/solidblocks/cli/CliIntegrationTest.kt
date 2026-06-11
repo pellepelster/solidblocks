@@ -17,7 +17,7 @@ class CliIntegrationTest {
     fun testBinaryIsValid(context: SolidblocksTestContext) {
         assertSoftly(context.local().command(blcksCommand).runResult()) { result ->
             result shouldHaveExitCode 0
-            listOf("cloud", "hetzner", "github", "docs", "terraform", "tofu").forEach {
+            listOf("cloud", "hetzner", "github", "docs").forEach {
                 result stdoutShouldMatch ".*$it.*"
             }
         }

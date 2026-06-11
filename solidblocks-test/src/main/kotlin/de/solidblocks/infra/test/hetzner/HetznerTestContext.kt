@@ -92,7 +92,12 @@ class HetznerTestContext(hcloudToken: String, testId: String? = null) : TestCont
         logInfo(
             "creating server '$resourceName' (${request.type}) in '${request.location}' using image '${request.image}'",
         )
-        val newServer = api.servers.create(request)
+        val newServer = try {
+            api.servers.create(request)
+        } catch (e: HetznerApiException) {
+            println("creating server failed '${e.message}' ('${e.error.message}', ${e.error.code})")
+            throw e
+        }
 
         val result =
             api.waitForAction(
