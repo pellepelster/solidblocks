@@ -25,7 +25,7 @@ class HetznerProviderConfigurationFactory : PolymorphicConfigurationFactory<Hetz
 
     val defaultInstanceType =
         StringKeyword(
-            "default-instance-type",
+            "default_instance_type",
             KeywordHelp(
                 "Default instance size for virtual machines",
             ),

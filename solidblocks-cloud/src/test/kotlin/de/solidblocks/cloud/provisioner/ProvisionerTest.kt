@@ -33,7 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 class ProvisionerTest {
 
     @Test
-    fun `resource is tainted if parent is missing`() {
+    fun `resource is missing if parent is missing`() {
         val resource1Provisioner = Resource1Provisioner()
         runBlocking {
             val provisioner =
@@ -69,7 +69,7 @@ class ProvisionerTest {
                 it.values.first()[0].resource.name shouldBe "test1"
                 it.values.first()[0].status shouldBe missing
                 it.values.first()[1].resource.name shouldBe "test2"
-                it.values.first()[1].status shouldBe tainted
+                it.values.first()[1].status shouldBe missing
             }
 
             provisioner

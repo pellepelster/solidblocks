@@ -38,6 +38,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabaseProvisioner
+import de.solidblocks.cloud.provisioner.postgres.grant.PostgresDatabaseGrantProvisioner
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
@@ -246,6 +247,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
             GarageFsLayoutProvisioner(),
             PostgresUserProvisioner(),
             PostgresDatabaseProvisioner(),
+            PostgresDatabaseGrantProvisioner(),
         )
 
         val lookups = providerLookups + listOf(UserDataLookupProvider()) + (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<

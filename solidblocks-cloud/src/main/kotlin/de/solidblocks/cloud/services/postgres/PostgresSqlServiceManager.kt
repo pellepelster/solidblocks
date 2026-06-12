@@ -22,6 +22,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
 import de.solidblocks.cloud.provisioner.postgres.database.PostgresDatabase
+import de.solidblocks.cloud.provisioner.postgres.grant.PostgresDatabaseGrant
 import de.solidblocks.cloud.provisioner.postgres.user.PostgresUser
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
@@ -223,7 +224,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                         it.ensureLookup(defaultResources.volumes.data.asLookup()).device,
                         createBackupConfiguration(cloud.backupProviderRuntime(), cloud, runtime, context, backupResources.second),
                         runtime.majorVersion,
-                        solidblocksVersion(),
+                        System.getenv("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION") ?: solidblocksVersion(),
                         context.ensureOptionalLookup(defaultResources.floatingIp?.asLookup())?.ip,
                     ).toResult(it, defaultResources.sshIdentity)
                 },
@@ -249,25 +250,48 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
             )
 
         val databaseResources =
-            runtime.databases.flatMap {
-                val password = defaultDatabaseUserPassword(cloud, runtime, it)
+            runtime.databases.flatMap { database ->
+                val password = defaultDatabaseUserPassword(cloud, runtime, database)
                 val user =
                     PostgresUser(
-                        defaultDatabaseUserName(cloud, runtime, it),
+                        defaultDatabaseUserName(cloud, runtime, database),
                         password.asLookup(),
                         server.asLookup(),
                         superUserPassword.asLookup(),
                     )
-                listOf(
-                    password,
-                    user,
+                val databaseResource =
                     PostgresDatabase(
-                        it.name,
+                        database.name,
                         user.asLookup(),
                         server.asLookup(),
                         superUserPassword.asLookup(),
-                    ),
-                )
+                    )
+
+                val userResources = database.users.flatMap { databaseUser ->
+                    val userPassword = databaseUserPassword(cloud, runtime, database, databaseUser)
+                    val userResource =
+                        PostgresUser(
+                            databaseUser.name,
+                            userPassword.asLookup(),
+                            server.asLookup(),
+                            superUserPassword.asLookup(),
+                        )
+                    listOf(
+                        userPassword,
+                        userResource,
+                        PostgresDatabaseGrant(
+                            userResource,
+                            databaseResource,
+                            databaseUser.admin,
+                            databaseUser.read,
+                            databaseUser.write,
+                            server.asLookup(),
+                            superUserPassword.asLookup(),
+                        ),
+                    )
+                }
+
+                listOf(password, user, databaseResource) + userResources
             }
 
         return Success(listOf(server) + databaseResources + backupResources.first + defaultResources.list())
@@ -275,6 +299,13 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
         GenericSecret<GenericSecretRuntime>(secretPath(cloud.environmentContext, runtime, listOf(database.name, "password")), RandomSecret(), true)
+
+    fun databaseUserPassword(
+        cloud: CloudConfigurationRuntime,
+        runtime: PostgresSqlServiceConfigurationRuntime,
+        database: PostgresSqlServiceDatabaseConfigurationRuntime,
+        user: PostgresSqlServiceDatabaseUsersConfigurationRuntime,
+    ) = GenericSecret<GenericSecretRuntime>(secretPath(cloud.environmentContext, runtime, listOf(database.name, user.name, "password")), RandomSecret(), true)
 
     fun defaultDatabaseUserName(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) = database.name
 
@@ -298,6 +329,24 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 if (database.users.count { user.name == it.name } > 1) {
                     return Error(
                         "duplicated user with name '${user.name}' found for database '${database.name}', ensure that the user names are unique",
+                    )
+                }
+
+                if (user.name == "rds") {
+                    return Error(
+                        "user name 'rds' for database '${database.name}' is reserved for the superuser",
+                    )
+                }
+
+                if (configuration.databases.any { user.name == it.name }) {
+                    return Error(
+                        "user with name '${user.name}' for database '${database.name}' collides with the default user for database '${user.name}'",
+                    )
+                }
+
+                if (configuration.databases.any { it != database && it.users.any { user.name == it.name } }) {
+                    return Error(
+                        "user with name '${user.name}' is configured for multiple databases, sharing users between databases is not supported",
                     )
                 }
             }

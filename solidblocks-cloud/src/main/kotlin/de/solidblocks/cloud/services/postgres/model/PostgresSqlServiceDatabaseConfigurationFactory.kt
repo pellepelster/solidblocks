@@ -28,7 +28,7 @@ class PostgresSqlServiceDatabaseConfigurationFactory : ConfigurationFactory<Post
         ListKeyword(
             "users",
             PostgresSqlServiceDatabaseUserConfigurationFactory(),
-            KeywordHelp("Users to create for database access"),
+            KeywordHelp("Users to create for database access. Users that are removed from this list will not be deleted automatically and their privileges will not be revoked."),
         )
 
     override val help: ConfigurationHelp

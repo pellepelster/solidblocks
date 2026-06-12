@@ -140,7 +140,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
             if (resource.dependsOnAnyOf(missingResources)) {
                 diffLog.debug("parent resource for ${resource.logText()} is missing, skipping diff")
                 missingResources.add(resource)
-                result.add(ResourceDiff(resource, tainted))
+                result.add(ResourceDiff(resource, missing))
                 continue
             }
 

@@ -42,8 +42,7 @@ class CloudIntegrationTest {
             result shouldHaveExitCode 0
         }
 
-        assertSoftly(context.local().command("pass", "rm", "-rf", "cloud1").timeout(5.minutes).runResult()) {
-        }
+        assertSoftly(context.local().command("pass", "rm", "-rf", "cloud1").timeout(5.minutes).runResult()) {}
 
         val permissions = setOf(
             PosixFilePermission.OWNER_READ,
@@ -55,7 +54,8 @@ class CloudIntegrationTest {
          * plan minimal cloud
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "plan", cloud1CloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "plan", cloud1CloudConfig.absolutePathString()).timeout(5.minutes).env("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION", "0.0.0-rc-snapshot")
+                .env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             listOf(
@@ -79,7 +79,9 @@ class CloudIntegrationTest {
          * apply minimal cloud
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "apply", cloud1CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "apply", cloud1CloudConfig.absolutePathString()).timeout(10.minutes)
+                .env("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION", "0.0.0-rc-snapshot")
+                .env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             result stderrShouldContain "ssh config file for cloud 'cloud1' written to"
@@ -89,7 +91,8 @@ class CloudIntegrationTest {
          * apply again
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "apply", cloud1CloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "apply", cloud1CloudConfig.absolutePathString()).timeout(10.minutes).env("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION", "0.0.0-rc-snapshot")
+                .env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
         }
@@ -105,7 +108,7 @@ class CloudIntegrationTest {
                 "--format",
                 "json",
                 cloud1CloudConfig.absolutePathString(),
-            ).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            ).timeout(10.minutes).env("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION", "0.0.0-rc-snapshot").env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
 
@@ -152,7 +155,8 @@ class CloudIntegrationTest {
          * plan minimal cloud with dns
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "plan", cloud1DnsCloudConfig.absolutePathString()).timeout(5.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "plan", cloud1DnsCloudConfig.absolutePathString()).timeout(5.minutes).env("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION", "0.0.0-rc-snapshot")
+                .env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             listOf(
@@ -168,7 +172,8 @@ class CloudIntegrationTest {
          * apply minimal cloud with dns
          */
         assertSoftly(
-            context.local().command("$blcksCommand", "cloud", "apply", cloud1DnsCloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
+            context.local().command("$blcksCommand", "cloud", "apply", cloud1DnsCloudConfig.absolutePathString()).timeout(10.minutes).env("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION", "0.0.0-rc-snapshot")
+                .env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult(),
         ) { result ->
             result shouldHaveExitCode 0
             result stderrShouldContain "ssh config file for cloud 'cloud1' written to"
@@ -183,9 +188,8 @@ class CloudIntegrationTest {
             dnsService.tryResolveARecords("cloud1-default-service1-0.blcks-test.de.").filter { it.values.isNotEmpty() }.count() >= 6
         }
 
-        val infoResult =
-            context.local().command("$blcksCommand", "cloud", "info", "--format", "json", cloud1DnsCloudConfig.absolutePathString()).timeout(10.minutes).env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN"))
-                .runResult()
+        val infoResult = context.local().command("$blcksCommand", "cloud", "info", "--format", "json", cloud1DnsCloudConfig.absolutePathString()).timeout(10.minutes)
+            .env("SOLIDBLOCKS_RDS_POSTGRESQL_VERSION", "0.0.0-rc-snapshot").env("HCLOUD_TOKEN", System.getenv("HCLOUD_TOKEN")).runResult()
         val sshConnectCommand = JsonPath.read<List<String>>(
             infoResult.stdout,
             "$['services'][?(@.name == 'service1')]['servers'][0].sshConnectCommand",
@@ -243,10 +247,7 @@ class CloudIntegrationTest {
 
     private fun callEndpoint(endpoint: String): String {
         val client = HttpClient.newBuilder().build()
-        val request = HttpRequest.newBuilder()
-            .header("Accept", "application/json")
-            .uri(URI.create(endpoint))
-            .build()
+        val request = HttpRequest.newBuilder().header("Accept", "application/json").uri(URI.create(endpoint)).build()
 
         return client.send(request, HttpResponse.BodyHandlers.ofString()).body()
     }

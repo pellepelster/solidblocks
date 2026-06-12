@@ -49,7 +49,7 @@ type: hcloud
 ```
 name: [string]
 default_location: [string]
-default-instance-type: [string]
+default_instance_type: [string]
 ```
 ### Keywords
 ### name
@@ -64,7 +64,7 @@ Name for the provider, can be omitted if only one provider of this specific type
 
 Default location for created infrastructure resources
 
-### default-instance-type
+### default_instance_type
 *type*: **string**, *optional*: **true**, 
 *options*: **cx23, cx33, cx43, cx53, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62**, *default*: **cx23**
 
@@ -336,6 +336,9 @@ databases:
   - name: <string>
     users:
       - name: <string>
+        admin: [boolean]
+        read: [boolean]
+        write: [boolean]
         #...
     #...
 ```
@@ -406,13 +409,31 @@ Unique name for the database
 
 #### users
 
-Users to create for database access
+Users to create for database access. Users that are removed from this list will not be deleted automatically and their privileges will not be revoked.
 
 ##### name
 *type*: **string**, *optional*: **false**, 
 *default*: **&lt;none&gt;**
 
-Unique name for the access key
+Unique name for the database user
+
+##### admin
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
+
+Grant full DDL privileges to the user
+
+##### read
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
+
+Grant read permissions to the user
+
+##### write
+*type*: **boolean**, *optional*: **true**, 
+*default*: **false**
+
+Grant update/insert and delete permissions to the user
 
 ## Docker
 

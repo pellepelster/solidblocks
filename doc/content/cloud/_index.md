@@ -86,27 +86,31 @@ Context-sensitive information and error messages help connecting to the deployed
 
 ## Providers
 
-### `pass`
+### [`pass`]({{% relref "providers/pass.md" %}})
 
 Stores secrets in the [pass](https://www.passwordstore.org/) password manager.
 
-### `protonpass`
+### [`protonpass`]({{% relref "providers/protonpass.md" %}})
 
 Stores secrets in [Proton Pass](https://proton.me/de/pass).
 
-### `hcloud`
+### [`hcloud`]({{% relref "providers/hcloud.md" %}})
 
 Provides Hetzner Cloud based infrastructure resources.
 
-### `github`
+### [`ssh_key`]({{% relref "providers/ssh-key.md" %}})
+
+Loads local file based SSH keys used to manage the provisioned virtual machines.
+
+### [`github`]({{% relref "providers/github.md" %}})
 
 Provides integration of GitHub resources.
 
-### `backup_local`
+### [`backup_local`]({{% relref "providers/backup-local.md" %}})
 
 Enables use of locally attached disks for service backups.
 
-### `backup_aws_s3`
+### [`backup_aws_s3`]({{% relref "providers/backup-aws-s3.md" %}})
 
 Uses AWS S3 buckets for service backups.
 

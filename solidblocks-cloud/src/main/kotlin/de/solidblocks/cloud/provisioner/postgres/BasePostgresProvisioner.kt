@@ -18,12 +18,13 @@ open class BasePostgresProvisioner {
 
     private val logger = KotlinLogging.logger {}
 
-    suspend fun SSHProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: GenericSecretLookup, log: LogContext): Result<Connection> = LONG_WAIT.waitForResult {
-        log.info("waiting for Postgres admin connection")
-        createConnection(server, superUserPassword)
-    }
+    suspend fun SSHProvisionerContext.waitForAdminConnection(server: HetznerServerLookup, superUserPassword: GenericSecretLookup, log: LogContext, database: String = "postgres"): Result<Connection> =
+        LONG_WAIT.waitForResult {
+            log.info("waiting for Postgres admin connection")
+            createConnection(server, superUserPassword, database = database)
+        }
 
-    suspend fun SSHProvisionerContext.createConnection(server: HetznerServerLookup, userPassword: GenericSecretLookup, userName: String = "rds"): Result<Connection> {
+    suspend fun SSHProvisionerContext.createConnection(server: HetznerServerLookup, userPassword: GenericSecretLookup, userName: String = "rds", database: String = "postgres"): Result<Connection> {
         val password = this.lookup(userPassword)
 
         return when (val result = this.createOrGetSshClient(server.name)) {
@@ -36,7 +37,7 @@ open class BasePostgresProvisioner {
                         try {
                             Success(
                                 DriverManager.getConnection(
-                                    "jdbc:postgresql://localhost:$it/postgres",
+                                    "jdbc:postgresql://localhost:$it/$database",
                                     userName,
                                     password.secret,
                                 ),
