@@ -1,4 +1,4 @@
-## 0.5.9 - 2026-05-26
+## 0.6.0 - 2026-06-12
 
 ### 🚀 Features
 
@@ -7,6 +7,9 @@
 - Add interpolation for pass secrets
 - Add support for persistent floating ips
 - Add auto rotation for all secrets with '--taint-secrets'
+- Activate access logs for all http endpoints
+- Add support for proton pass secrets
+- Add support for backup encryption key rotation
 
 
 ## 0.5.8 - 2026-05-13

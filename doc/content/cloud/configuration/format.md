@@ -11,7 +11,7 @@ environment_vars: [map]
 root_domain: [string]
 
 providers:
-  - type: <hcloud|pass|ssh_key|backup_aws_s3|backup_local|github>
+  - type: <hcloud|protonpass|pass|ssh_key|backup_aws_s3|backup_local|github>
     #...
 
 services:
@@ -69,6 +69,28 @@ Default location for created infrastructure resources
 *options*: **cx23, cx33, cx43, cx53, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63, cpx12, cpx22, cpx32, cpx42, cpx52, cpx62**, *default*: **cx23**
 
 Default instance size for virtual machines
+
+## Proton Pass
+
+Stores secrets in a [Proton Pass](https://proton.me/pass) vault using the `pass-cli` command line tool. To ensure that the vault is setup correctly a temporary secret will be created and deleted during the configuration validation phase. The validation can be skipped by setting the environment variable 'BLCKS_PROTONPASS_PROVIDER_SKIP_VALIDATION'
+
+type: protonpass
+```
+name: [string]
+vault_name: [string]
+```
+### Keywords
+### name
+*type*: **string**, *optional*: **true**, 
+*default*: **default**
+
+Name for the provider, can be omitted if only one provider of this specific type is configured
+
+### vault_name
+*type*: **string**, *optional*: **true**, 
+*default*: **&lt;none&gt;**
+
+Name of the Proton Pass vault to store secrets in, if not set the cloud name will be used.
 
 ## Pass
 
@@ -408,7 +430,7 @@ data_size: [number]
 hetzner_location: [string]
 hetzner_instance_type: [string]
 endpoints:
-  - container_port: [number]
+  - container_port: <number>
     type: [string]
     #...
 links:
@@ -474,7 +496,7 @@ Hetzner instance size for virtual machines, if not set the default from the Hetz
 Service endpoints to publicly expose
 
 #### container_port
-*type*: **number**, *optional*: **true**, 
+*type*: **number**, *optional*: **false**, 
 *default*: **&lt;none&gt;**
 
 Service port on the docker container

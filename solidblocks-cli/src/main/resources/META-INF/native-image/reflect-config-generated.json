@@ -468,6 +468,42 @@
         ]
     },
     {
+        "name": "de.solidblocks.cloud.utils.ProtonPassListItem",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.utils.ProtonPassListItem$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
+        "name": "de.solidblocks.cloud.utils.ProtonPassListItemWrapper",
+        "fields": [
+            {
+                "name": "Companion"
+            }
+        ],
+        "methods": []
+    },
+    {
+        "name": "de.solidblocks.cloud.utils.ProtonPassListItemWrapper$Companion",
+        "fields": [],
+        "methods": [
+            {
+                "name": "serializer"
+            }
+        ]
+    },
+    {
         "name": "de.solidblocks.cloud.utils.ProtonPassNoteTemplate",
         "fields": [
             {

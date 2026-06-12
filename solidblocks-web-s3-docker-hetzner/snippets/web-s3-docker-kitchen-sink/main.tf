@@ -9,7 +9,7 @@ resource "hcloud_ssh_key" "ssh_key1" {
 }
 
 module "web-s3-docker" {
-  source   = "https://github.com/pellepelster/solidblocks/releases/download/v0.5.9/blcks-terraform-hcloud-web-s3-docker-v0.5.9.zip"
+  source   = "https://github.com/pellepelster/solidblocks/releases/download/v0.6.0/blcks-terraform-hcloud-web-s3-docker-v0.6.0.zip"
   name     = "server1"
   dns_zone = "blcks-test.de"
 

@@ -297,5 +297,5 @@ variable "solidblocks_base_url" {
 variable "solidblocks_rds_version" {
   type        = string
   description = "Solidblocks rds-postgresql version to use"
-  default     = "v0.5.9" #solidblocks_rds_version
+  default     = "v0.6.0" #solidblocks_rds_version
 }
