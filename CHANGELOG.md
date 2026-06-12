@@ -2,14 +2,21 @@
 
 ### 🚀 Features
 
+- Add support for proton pass secrets
+- Add support for backup encryption key rotation
+- Add user provisioning for postgres databases
+
+
+## 0.5.9 - 2026-05-28
+
+### 🚀 Features
+
 - Support setting of cloud wide, and service specific environment variables
 - Support interpolation of environment variables in environment variables definitions
 - Add interpolation for pass secrets
 - Add support for persistent floating ips
 - Add auto rotation for all secrets with '--taint-secrets'
 - Activate access logs for all http endpoints
-- Add support for proton pass secrets
-- Add support for backup encryption key rotation
 
 
 ## 0.5.8 - 2026-05-13
