@@ -16,4 +16,4 @@ data class PostgresSqlServiceConfiguration(
 
 data class PostgresSqlServiceDatabaseConfiguration(val name: String, val users: List<PostgresSqlServiceDatabaseUserConfiguration>)
 
-data class PostgresSqlServiceDatabaseUserConfiguration(val name: String)
+data class PostgresSqlServiceDatabaseUserConfiguration(val name: String, val admin: Boolean, val read: Boolean, val write: Boolean)

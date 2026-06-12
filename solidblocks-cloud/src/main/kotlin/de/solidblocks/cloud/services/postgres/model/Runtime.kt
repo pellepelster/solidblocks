@@ -6,7 +6,7 @@ import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 
 data class PostgresSqlServiceDatabaseConfigurationRuntime(val name: String, val users: List<PostgresSqlServiceDatabaseUsersConfigurationRuntime>)
 
-data class PostgresSqlServiceDatabaseUsersConfigurationRuntime(val name: String)
+data class PostgresSqlServiceDatabaseUsersConfigurationRuntime(val name: String, val admin: Boolean, val read: Boolean, val write: Boolean)
 
 data class PostgresSqlServiceConfigurationRuntime(
     override val index: Int,

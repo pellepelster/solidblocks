@@ -113,18 +113,18 @@ Uses AWS S3 buckets for service backups.
 
 ## Services
 
-### `docker`
+### [`docker`]({{% relref "services/docker.md" %}})
 
 Deploys a dockerized service exposes its endpoints.
 
-### `github_runner`
+### [`github_runner`]({{% relref "services/github-runner.md" %}})
 
 Provisions a self-hosted runner based on the configured cloud provider. 
 
-### `postgresql`
+### [`postgresql`]({{% relref "services/postgresql.md" %}})
 
 Single node PostgreSQL database instance with pgBackRest powered backup.
 
-### `s3`
+### [`s3`]({{% relref "services/s3.md" %}})
 
 S3 compatible object storage service based on [GarageFS](https://garagehq.deuxfleurs.fr/).

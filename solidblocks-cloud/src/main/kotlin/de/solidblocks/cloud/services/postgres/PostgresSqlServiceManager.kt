@@ -311,7 +311,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
                 configuration.databases.map {
                     PostgresSqlServiceDatabaseConfigurationRuntime(
                         it.name,
-                        it.users.map { PostgresSqlServiceDatabaseUsersConfigurationRuntime(it.name) },
+                        it.users.map { PostgresSqlServiceDatabaseUsersConfigurationRuntime(it.name, it.admin, it.read, it.write) },
                     )
                 },
                 configuration.majorVersion,

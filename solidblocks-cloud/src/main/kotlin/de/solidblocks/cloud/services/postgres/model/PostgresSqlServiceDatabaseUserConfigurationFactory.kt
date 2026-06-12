@@ -16,7 +16,7 @@ class PostgresSqlServiceDatabaseUserConfigurationFactory : ConfigurationFactory<
         StringKeyword(
             "name",
             KeywordHelp(
-                "Unique name for the access key",
+                "Unique name for the database user",
             ),
         )
 
@@ -46,9 +46,14 @@ class PostgresSqlServiceDatabaseUserConfigurationFactory : ConfigurationFactory<
     override val help: ConfigurationHelp
         get() = TODO("Not yet implemented")
 
-    override val keywords = listOf<SimpleKeyword<*>>(name)
+    override val keywords = listOf<SimpleKeyword<*>>(name, admin, read, write)
 
     override fun parse(yaml: YamlNode): Result<PostgresSqlServiceDatabaseUserConfiguration> = result {
-        PostgresSqlServiceDatabaseUserConfiguration(name.parse(yaml).bind())
+        PostgresSqlServiceDatabaseUserConfiguration(
+            name.parse(yaml).bind(),
+            admin.parse(yaml).bind(),
+            read.parse(yaml).bind(),
+            write.parse(yaml).bind(),
+        )
     }
 }
