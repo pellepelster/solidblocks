@@ -2,8 +2,8 @@
 name: cloud5
 
 providers:
-  - type: protonpass
-#  - type: pass
+#  - type: protonpass
+  - type: pass
   - type: ssh_key
   - type: hcloud
   - type: backup_local
