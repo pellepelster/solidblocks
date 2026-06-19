@@ -13,6 +13,11 @@ docker run  -v $(pwd):/src hairyhenderson/gomplate:stable -d "vendors=https://ra
 ${ROOT_PROJECT}/gradlew :$(basename $PWD):assemble
 """
 
+[tasks.generate]
+run = """
+${ROOT_PROJECT}/gradlew :$(basename $PWD):generate
+"""
+
 [tasks.format]
 run = "${ROOT_PROJECT}/gradlew :$(basename $PWD):spotlessApply"
 
