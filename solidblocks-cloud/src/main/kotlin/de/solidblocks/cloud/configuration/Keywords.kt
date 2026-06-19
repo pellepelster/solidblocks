@@ -38,8 +38,8 @@ open class ListKeyword<T>(override val name: String, override val factory: Confi
         val list =
             when (val list = yaml.getList(name, factory)) {
                 is YamlEmpty<List<T>> -> emptyList()
-                is Error<List<T>> -> return Error(list.error)
-                is Success<List<T>> -> list.data
+                is YamlError<List<T>> -> return Error(list.error)
+                is YamlSuccess<List<T>> -> list.data
             }
 
         return Success(list)
@@ -56,8 +56,8 @@ data class PolymorphicListKeyword<T>(override val name: String, override val fac
         val list =
             when (val list = yaml.getPolymorphicList(name, factories)) {
                 is YamlEmpty<List<T>> -> emptyList()
-                is Error<List<T>> -> return Error(list.error)
-                is Success<List<T>> -> list.data
+                is YamlError<List<T>> -> return Error(list.error)
+                is YamlSuccess<List<T>> -> list.data
             }
 
         return Success(list)

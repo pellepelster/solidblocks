@@ -21,10 +21,10 @@ fun YamlNode.getMapString(key: String) = if (this !is YamlMap) {
         .firstOrNull()
 }
 
-fun yamlParse(yaml: String) = try {
-    Success(Yaml.default.parseToYamlNode(yaml))
+fun yamlParse(yaml: String): YamlResult<YamlNode> = try {
+    YamlSuccess(Yaml.default.parseToYamlNode(yaml))
 } catch (e: MalformedYamlException) {
-    Error("invalid yaml document")
+    YamlError("invalid yaml document")
 } catch (e: EmptyYamlDocumentException) {
     YamlEmpty("yaml document is empty")
 }
@@ -32,27 +32,27 @@ fun yamlParse(yaml: String) = try {
 fun YamlNode.getList(key: String) = if (this is YamlMap) {
     this.yamlMap.getList(key)
 } else {
-    Error<YamlList>("expected a list at '$key' but got '${contentToString()}'")
+    YamlError<YamlList>("expected a list at '$key' but got '${contentToString()}'")
 }
 
 fun YamlNode.getMap(key: String) = if (this is YamlMap) {
     this.yamlMap.getMap(key)
 } else {
-    Error<YamlMap>("expected a map at '$key' but got '${contentToString()}'")
+    YamlError<YamlMap>("expected a map at '$key' but got '${contentToString()}'")
 }
 
 fun YamlNode.getStringMap(key: String): YamlResult<Map<String, String>> = if (this is YamlMap) {
     when (val map = this.yamlMap.getMap(key)) {
-        is Error<YamlMap> -> Error<Map<String, String>>(map.error)
-        is Success<YamlMap> -> {
+        is YamlError<YamlMap> -> YamlError<Map<String, String>>(map.error)
+        is YamlSuccess<YamlMap> -> {
             val nonScalarKeys = map.data.entries.filter {
                 it.value !is YamlScalar
             }.map { it.key }
 
             if (nonScalarKeys.isNotEmpty()) {
-                Error<Map<String, String>>("found non string value in map '$key' at key(s) ${nonScalarKeys.joinToString(", ") { it.content }}")
+                YamlError<Map<String, String>>("found non string value in map '$key' at key(s) ${nonScalarKeys.joinToString(", ") { it.content }}")
             } else {
-                Success(
+                YamlSuccess(
                     map.data.entries.map {
                         it.key.content to (it.value as YamlScalar).content
                     }.associate { it },
@@ -63,16 +63,16 @@ fun YamlNode.getStringMap(key: String): YamlResult<Map<String, String>> = if (th
         is YamlEmpty<YamlMap> -> YamlEmpty("'$key' not set")
     }
 } else {
-    Error<Map<String, String>>("expected a map at '$key' but got '${contentToString()}'")
+    YamlError<Map<String, String>>("expected a map at '$key' but got '${contentToString()}'")
 }
 
 fun YamlMap.getList(key: String) = if (this.get<YamlNode>(key) == null) {
     YamlEmpty("no list found for key '$key' at ${this.location.logMessage()}")
 } else {
     if (!this.isList(key)) {
-        Error("key '$key' should be a list ${location.logMessage()}")
+        YamlError("key '$key' should be a list ${location.logMessage()}")
     } else {
-        Success(this.get<YamlList>(key)!!)
+        YamlSuccess(this.get<YamlList>(key)!!)
     }
 }
 
@@ -80,9 +80,9 @@ fun YamlMap.getMap(key: String) = if (this.get<YamlNode>(key) == null) {
     YamlEmpty("no map found for key '$key' at ${this.location.logMessage()}")
 } else {
     if (!this.isMap(key)) {
-        Error("key '$key' should be a map ${location.logMessage()}")
+        YamlError("key '$key' should be a map ${location.logMessage()}")
     } else {
-        Success(this.get<YamlMap>(key)!!)
+        YamlSuccess(this.get<YamlMap>(key)!!)
     }
 }
 
@@ -96,7 +96,7 @@ fun YamlMap.getKeys(): Result<List<String>> = Success(this.entries.map { it.key.
 
 fun YamlNode.getScalar(key: String): YamlResult<String> {
     if (this !is YamlMap) {
-        return Error("expected a map, got '${contentToString()}'")
+        return YamlError("expected a map, got '${contentToString()}'")
     }
 
     val f = this.entries.filter { it.key.content == key }.map { it.value }.singleOrNull()
@@ -109,7 +109,7 @@ fun YamlNode.getScalar(key: String): YamlResult<String> {
         if (f.content.isEmpty()) {
             return YamlEmpty("key '$key' is empty at ${this.location.logMessage()}")
         } else {
-            return Success(f.content)
+            return YamlSuccess(f.content)
         }
     }
 
@@ -117,7 +117,7 @@ fun YamlNode.getScalar(key: String): YamlResult<String> {
         return YamlEmpty("key '$key' is null at ${this.location.logMessage()}")
     }
 
-    return Error("expected string but found '${f.contentToString()}'")
+    return YamlError("expected string but found '${f.contentToString()}'")
 }
 
 fun YamlNode.getNonNullOrEmptyScalar(key: String): Result<String> {
@@ -148,28 +148,28 @@ fun YamlNode.getNonNullOrEmptyScalar(key: String): Result<String> {
 
 fun YamlNode.getString(key: String): YamlResult<String> = when (val scalar = getScalar(key)) {
     is YamlEmpty<String> -> YamlEmpty(scalar.message)
-    is Error<String> -> Error(scalar.error)
-    is Success<String> -> Success(scalar.data)
+    is YamlError<String> -> YamlError(scalar.error)
+    is YamlSuccess<String> -> YamlSuccess(scalar.data)
 }
 
 fun YamlNode.getNonNullOrEmptyString(key: String) = getNonNullOrEmptyScalar(key)
 
 fun YamlNode.getOptionalString(key: String, default: String): Result<String> = when (val scalar = getScalar(key)) {
     is YamlEmpty<String> -> Success(default)
-    is Error<String> -> Error<String>(scalar.error)
-    is Success<String> -> Success(scalar.data)
+    is YamlError<String> -> Error<String>(scalar.error)
+    is YamlSuccess<String> -> Success(scalar.data)
 }
 
 fun YamlNode.getOptionalString(key: String): Result<String?> = when (val scalar = getScalar(key)) {
     is YamlEmpty<String> -> Success<String?>(null)
-    is Error<String> -> Error<String?>(scalar.error)
-    is Success<String> -> Success(scalar.data)
+    is YamlError<String> -> Error<String?>(scalar.error)
+    is YamlSuccess<String> -> Success(scalar.data)
 }
 
 fun YamlNode.getOptionalBoolean(key: String): Result<Boolean?> = when (val scalar = getScalar(key)) {
     is YamlEmpty<String> -> Success<Boolean?>(null)
-    is Error<String> -> Error<Boolean?>(scalar.error)
-    is Success<String> ->
+    is YamlError<String> -> Error<Boolean?>(scalar.error)
+    is YamlSuccess<String> ->
         when (scalar.data) {
             "true" -> Success(true)
             "false" -> Success(false)
@@ -182,13 +182,13 @@ fun YamlNode.getOptionalBoolean(key: String): Result<Boolean?> = when (val scala
 }
 
 fun YamlNode.getBoolean(key: String): YamlResult<Boolean> = when (val scalar = getNonNullOrEmptyString(key)) {
-    is Error<String> -> Error(scalar.error)
+    is Error<String> -> YamlError(scalar.error)
     is Success<String> ->
         when (scalar.data) {
-            "true" -> Success(true)
-            "false" -> Success(false)
+            "true" -> YamlSuccess(true)
+            "false" -> YamlSuccess(false)
             else -> {
-                Error(
+                YamlError(
                     "expected 'true' or 'false' but got '${scalar.data}' at ${this.location.logMessage()}",
                 )
             }
@@ -197,8 +197,8 @@ fun YamlNode.getBoolean(key: String): YamlResult<Boolean> = when (val scalar = g
 
 fun YamlNode.getOptionalNumber(key: String): Result<Int?> = when (val scalar = getScalar(key)) {
     is YamlEmpty<String> -> Success<Int?>(null)
-    is Error<String> -> Error<Int?>(scalar.error)
-    is Success<String> -> {
+    is YamlError<String> -> Error<Int?>(scalar.error)
+    is YamlSuccess<String> -> {
         try {
             Success(scalar.data.toInt())
         } catch (e: NumberFormatException) {
@@ -208,12 +208,12 @@ fun YamlNode.getOptionalNumber(key: String): Result<Int?> = when (val scalar = g
 }
 
 fun YamlNode.getNumber(key: String): YamlResult<Number?> = when (val scalar = getNonNullOrEmptyScalar(key)) {
-    is Error<String> -> Error(scalar.error)
+    is Error<String> -> YamlError(scalar.error)
     is Success<String> ->
         try {
-            Success(scalar.data.toInt())
+            YamlSuccess(scalar.data.toInt())
         } catch (e: NumberFormatException) {
-            Error("expected number but got '${scalar.data}' at ${this.location.logMessage()}")
+            YamlError("expected number but got '${scalar.data}' at ${this.location.logMessage()}")
         }
 }
 
@@ -231,23 +231,23 @@ fun <T> YamlNode.getList(key: String, factory: ConfigurationFactory<T>): YamlRes
     val list =
         when (val result = this.getList(key)) {
             is YamlEmpty<*> -> emptyList()
-            is Error<*> -> return Error(result.error)
-            is Success<YamlList> -> result.data.items.map { factory.parse(it) }
+            is YamlError<*> -> return YamlError(result.error)
+            is YamlSuccess<YamlList> -> result.data.items.map { factory.parse(it) }
         }
 
     if (!list.all { it is Success<*> }) {
-        return Error(list.filterIsInstance<Error<T>>().joinToString(", ") { it.error })
+        return YamlError(list.filterIsInstance<Error<T>>().joinToString(", ") { it.error })
     }
 
-    return Success(list.filterIsInstance<Success<T>>().map { it.data })
+    return YamlSuccess(list.filterIsInstance<Success<T>>().map { it.data })
 }
 
 fun <T> YamlNode.getObject(key: String, factory: ConfigurationFactory<T>): Result<T> {
     val obj =
         when (val result = this.getMap(key)) {
             is YamlEmpty<*> -> factory.parse(YamlMap(emptyMap(), this.path))
-            is Error<*> -> return Error(result.error)
-            is Success<YamlMap> -> factory.parse(result.data)
+            is YamlError<*> -> return Error(result.error)
+            is YamlSuccess<YamlMap> -> factory.parse(result.data)
         }
 
     return obj
@@ -257,8 +257,8 @@ fun <T> YamlNode.getPolymorphicList(key: String, factories: Map<String, Polymorp
     val list =
         when (val result = this.getList(key)) {
             is YamlEmpty<*> -> emptyList()
-            is Error<*> -> return Error(result.error)
-            is Success<YamlList> ->
+            is YamlError<*> -> return YamlError(result.error)
+            is YamlSuccess<YamlList> ->
                 result.data.items.map { listItem ->
                     when (val type = listItem.getNonNullOrEmptyString("type")) {
                         is Error<*> -> type
@@ -277,8 +277,8 @@ fun <T> YamlNode.getPolymorphicList(key: String, factories: Map<String, Polymorp
         }
 
     if (!list.all { it is Success<*> }) {
-        return Error(list.filterIsInstance<Error<T>>().joinToString(", ") { it.error })
+        return YamlError(list.filterIsInstance<Error<T>>().joinToString(", ") { it.error })
     }
 
-    return Success(list.filterIsInstance<Success<T>>().map { it.data })
+    return YamlSuccess(list.filterIsInstance<Success<T>>().map { it.data })
 }

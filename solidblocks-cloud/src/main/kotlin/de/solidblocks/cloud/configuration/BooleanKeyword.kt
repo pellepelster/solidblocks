@@ -6,6 +6,8 @@ import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.YamlEmpty
+import de.solidblocks.cloud.utils.YamlError
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.getBoolean
 import de.solidblocks.cloud.utils.getOptionalBoolean
 
@@ -26,8 +28,8 @@ class BooleanKeyword<T : Boolean?> internal constructor(
             } else {
                 when (val result = yaml.getBoolean(name)) {
                     is YamlEmpty<Boolean> -> return Error<T>(result.message)
-                    is Error<Boolean> -> return Error<T>(result.error)
-                    is Success<Boolean> -> result.data
+                    is YamlError<Boolean> -> return Error<T>(result.error)
+                    is YamlSuccess<Boolean> -> result.data
                 }
             }
 

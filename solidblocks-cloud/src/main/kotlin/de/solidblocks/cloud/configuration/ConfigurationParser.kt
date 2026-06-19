@@ -16,9 +16,9 @@ class ConfigurationParser<T>(val factory: ConfigurationFactory<T>) {
     fun parse(configuration: String): Result<T> {
         val yaml =
             when (val result = yamlParse(configuration)) {
-                is Error -> return Error("failed to parse cloud configuration (${result.error})")
+                is YamlError -> return Error("failed to parse cloud configuration (${result.error})")
                 is YamlEmpty -> return Error("cloud configuration was empty")
-                is Success -> result.data
+                is YamlSuccess -> result.data
             }
         return factory.parse(yaml)
     }

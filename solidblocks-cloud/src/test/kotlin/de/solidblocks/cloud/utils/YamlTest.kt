@@ -24,7 +24,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
     }
 
     @Test
@@ -35,7 +35,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Error<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlError<YamlNode>>()
         result.error shouldBe "invalid yaml document"
     }
 
@@ -55,8 +55,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val list = result.data.getList("key1").shouldBeTypeOf<Success<YamlList>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val list = result.data.getList("key1").shouldBeTypeOf<YamlSuccess<YamlList>>()
         list.data.items shouldHaveSize 2
     }
 
@@ -70,7 +70,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list = result.data.getList("key1").shouldBeTypeOf<YamlEmpty<YamlNode>>()
         list.message shouldBe "no list found for key 'key1' at line 1 column 1"
     }
@@ -85,8 +85,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val list = result.data.getList("key1").shouldBeTypeOf<Error<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val list = result.data.getList("key1").shouldBeTypeOf<YamlError<YamlNode>>()
         list.error shouldBe "key 'key1' should be a list line 1 column 1"
     }
 
@@ -98,8 +98,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getString("key1").shouldBeTypeOf<Success<String?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getString("key1").shouldBeTypeOf<YamlSuccess<String?>>()
         Assertions.assertEquals("foo", string.data)
     }
 
@@ -111,7 +111,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getString("key1").shouldBeTypeOf<YamlEmpty<String?>>()
         string.message shouldBe "key 'key1' is empty at line 1 column 1"
 
@@ -128,7 +128,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getString("key1").shouldBeTypeOf<YamlEmpty<String?>>()
         string.message shouldBe "key 'key1' is null at line 1 column 1"
 
@@ -145,7 +145,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getString("key1").shouldBeTypeOf<YamlEmpty<String>>()
         string.message shouldBe "key 'key1' is null at line 1 column 1"
 
@@ -162,7 +162,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getString("key1").shouldBeTypeOf<YamlEmpty<String?>>()
         Assertions.assertEquals("key 'key1' not found at line 1 column 1", string.message)
     }
@@ -175,8 +175,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val bool = result.data.getBoolean("key1").shouldBeTypeOf<Success<Boolean>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val bool = result.data.getBoolean("key1").shouldBeTypeOf<YamlSuccess<Boolean>>()
         bool.data shouldBe false
 
         val optionalBool = result.data.getOptionalBoolean("key1").shouldBeTypeOf<Success<Boolean?>>()
@@ -191,8 +191,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val bool = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val bool = result.data.getBoolean("key1").shouldBeTypeOf<YamlError<Boolean>>()
         bool.error shouldBe "key 'key1' is empty at line 1 column 1"
 
         val optionalBool = result.data.getOptionalBoolean("key1").shouldBeTypeOf<Success<Boolean?>>()
@@ -207,8 +207,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getBoolean("key1").shouldBeTypeOf<YamlError<Boolean?>>()
         Assertions.assertEquals("expected 'true' or 'false' but got 'yolo' at line 1 column 1", string.error)
     }
 
@@ -220,8 +220,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getBoolean("key1").shouldBeTypeOf<YamlError<Boolean?>>()
         string.error shouldBe "key 'key1' is null at line 1 column 1"
     }
 
@@ -233,8 +233,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getBoolean("key1").shouldBeTypeOf<Error<String?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getBoolean("key1").shouldBeTypeOf<YamlError<String?>>()
         string.error shouldBe "key 'key1' is null at line 1 column 1"
     }
 
@@ -246,8 +246,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getBoolean("key1").shouldBeTypeOf<YamlError<Boolean?>>()
         string.error shouldBe "key 'key1' not found at line 1 column 1"
     }
 
@@ -260,8 +260,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getMap("key1").shouldBeTypeOf<Success<YamlMap>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getMap("key1").shouldBeTypeOf<YamlSuccess<YamlMap>>()
         map.data.entries.count() shouldBe 1
     }
 
@@ -274,8 +274,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getStringMap("key1").shouldBeTypeOf<Success<Map<String, String>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getStringMap("key1").shouldBeTypeOf<YamlSuccess<Map<String, String>>>()
         map.data.entries.count() shouldBe 1
         map.data["item1"] shouldBe "string1"
     }
@@ -290,8 +290,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getStringMap("key1").shouldBeTypeOf<Error<Map<String, String>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getStringMap("key1").shouldBeTypeOf<YamlError<Map<String, String>>>()
         map.error shouldBe "found non string value in map 'key1' at key(s) item1"
     }
 
@@ -305,8 +305,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getMap("key1").shouldBeTypeOf<Error<YamlMap>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getMap("key1").shouldBeTypeOf<YamlError<YamlMap>>()
         map.error shouldBe "key 'key1' should be a map line 1 column 1"
     }
 
@@ -318,8 +318,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getMap("key1").shouldBeTypeOf<Error<YamlMap>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getMap("key1").shouldBeTypeOf<YamlError<YamlMap>>()
         map.error shouldBe "key 'key1' should be a map line 1 column 1"
     }
 
@@ -331,8 +331,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        result.data.getMap("key1").shouldBeTypeOf<Success<YamlMap>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        result.data.getMap("key1").shouldBeTypeOf<YamlSuccess<YamlMap>>()
     }
 
     @Test
@@ -343,7 +343,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val map = result.data.getMap("key1").shouldBeTypeOf<YamlEmpty<YamlMap>>()
         map.message shouldBe "no map found for key 'key1' at line 1 column 1"
     }
@@ -356,8 +356,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val number = result.data.getNumber("key1").shouldBeTypeOf<Error<Number?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val number = result.data.getNumber("key1").shouldBeTypeOf<YamlError<Number?>>()
         number.error shouldBe "key 'key1' is null at line 1 column 1"
     }
 
@@ -369,8 +369,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getBoolean("key1").shouldBeTypeOf<YamlError<Boolean?>>()
         string.error shouldBe "key 'key1' is null at line 1 column 1"
     }
 
@@ -382,8 +382,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val number = result.data.getNumber("key1").shouldBeTypeOf<Error<Number?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val number = result.data.getNumber("key1").shouldBeTypeOf<YamlError<Number?>>()
         number.error shouldBe "key 'key1' is empty at line 1 column 1"
     }
 
@@ -395,8 +395,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val number = result.data.getNumber("key1").shouldBeTypeOf<Success<Number?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val number = result.data.getNumber("key1").shouldBeTypeOf<YamlSuccess<Number?>>()
         number.data shouldBe 123
     }
 
@@ -408,8 +408,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val number = result.data.getNumber("key1").shouldBeTypeOf<Error<Number?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val number = result.data.getNumber("key1").shouldBeTypeOf<YamlError<Number?>>()
         Assertions.assertEquals("key 'key1' not found at line 1 column 1", number.error)
     }
 
@@ -474,14 +474,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data.getPolymorphicList(
                 "list1",
                 mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
             )
 
-        list.shouldBeTypeOf<Success<List<BaseType>>>()
+        list.shouldBeTypeOf<YamlSuccess<List<BaseType>>>()
         list.data shouldHaveSize 2
     }
 
@@ -495,14 +495,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList(
                     "list1",
                     mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
                 )
-                .shouldBeTypeOf<Error<YamlNode>>()
+                .shouldBeTypeOf<YamlError<YamlNode>>()
 
         list.error shouldBe "key 'type' not found at line 2 column 7"
     }
@@ -517,14 +517,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList(
                     "list1",
                     mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
                 )
-                .shouldBeTypeOf<Error<YamlNode>>()
+                .shouldBeTypeOf<YamlError<YamlNode>>()
 
         list.error shouldBe
             "unknown type 'type123', possible types are 'type1', 'type2' at line 2 column 7"
@@ -540,14 +540,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList(
                     "list1",
                     mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
                 )
-                .shouldBeTypeOf<Error<YamlNode>>()
+                .shouldBeTypeOf<YamlError<YamlNode>>()
 
         list.error shouldBe "key 'type' is null at line 2 column 7"
     }
@@ -566,8 +566,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val number = result.data.getNumber("key1").shouldBeTypeOf<Error<Number?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val number = result.data.getNumber("key1").shouldBeTypeOf<YamlError<Number?>>()
         number.error shouldBe "expected number but got 'abc' at line 1 column 1"
     }
 
@@ -579,8 +579,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val number = result.data.getNumber("key1").shouldBeTypeOf<Error<Number?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val number = result.data.getNumber("key1").shouldBeTypeOf<YamlError<Number?>>()
         number.error shouldBe "expected number but got '1.5' at line 1 column 1"
     }
 
@@ -592,8 +592,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val number = result.data.getNumber("key1").shouldBeTypeOf<Success<Number?>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val number = result.data.getNumber("key1").shouldBeTypeOf<YamlSuccess<Number?>>()
         number.data shouldBe -42
     }
 
@@ -605,7 +605,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val number = result.data.getNumber("key1", 5).shouldBeTypeOf<Success<Number>>()
         number.data shouldBe 7
     }
@@ -618,7 +618,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val number = result.data.getNumber("key1", 5).shouldBeTypeOf<Success<Number>>()
         number.data shouldBe 5
     }
@@ -631,7 +631,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val number = result.data.getNumber("key1", 5).shouldBeTypeOf<Success<Number>>()
         number.data shouldBe 5
     }
@@ -644,7 +644,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val number = result.data.getNumber("key1", 5).shouldBeTypeOf<Error<Number>>()
         number.error shouldBe "expected number but got 'abc' at line 1 column 1"
     }
@@ -657,7 +657,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val number = result.data.getOptionalNumber("key1").shouldBeTypeOf<Success<Int?>>()
         number.data shouldBe 123
     }
@@ -670,7 +670,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val number = result.data.getOptionalNumber("key1").shouldBeTypeOf<Success<Int?>>()
         number.data shouldBe null
     }
@@ -683,7 +683,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val number = result.data.getOptionalNumber("key1").shouldBeTypeOf<Error<Int?>>()
         number.error shouldBe "expected number but got 'abc' at line 1 column 1"
     }
@@ -696,7 +696,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getOptionalString("key1").shouldBeTypeOf<Success<String?>>()
         string.data shouldBe "foo"
     }
@@ -709,7 +709,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getOptionalString("key1").shouldBeTypeOf<Success<String?>>()
         string.data shouldBe null
     }
@@ -722,7 +722,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getOptionalString("key1").shouldBeTypeOf<Success<String?>>()
         string.data shouldBe null
     }
@@ -735,7 +735,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getOptionalString("key1", "default1").shouldBeTypeOf<Success<String>>()
         string.data shouldBe "foo"
     }
@@ -748,7 +748,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getOptionalString("key1", "default1").shouldBeTypeOf<Success<String>>()
         string.data shouldBe "default1"
     }
@@ -761,7 +761,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getOptionalString("key1", "default1").shouldBeTypeOf<Success<String>>()
         string.data shouldBe "default1"
     }
@@ -774,7 +774,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val bool = result.data.getOptionalBoolean("key1").shouldBeTypeOf<Success<Boolean?>>()
         bool.data shouldBe null
     }
@@ -787,7 +787,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val bool = result.data.getOptionalBoolean("key1").shouldBeTypeOf<Error<Boolean?>>()
         bool.error shouldBe "expected 'true' or 'false' but got 'yolo' at line 1 column 1"
     }
@@ -800,7 +800,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val bool = result.data.getBoolean("key1", true).shouldBeTypeOf<Success<Boolean>>()
         bool.data shouldBe false
     }
@@ -813,7 +813,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val bool = result.data.getBoolean("key1", true).shouldBeTypeOf<Success<Boolean>>()
         bool.data shouldBe true
     }
@@ -826,7 +826,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val bool = result.data.getBoolean("key1", true).shouldBeTypeOf<Error<Boolean>>()
         bool.error shouldBe "expected 'true' or 'false' but got 'yolo' at line 1 column 1"
     }
@@ -839,42 +839,42 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val bool = result.data.getBoolean("key1").shouldBeTypeOf<Error<Boolean>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val bool = result.data.getBoolean("key1").shouldBeTypeOf<YamlError<Boolean>>()
         bool.error shouldBe "expected 'true' or 'false' but got 'True' at line 1 column 1"
     }
 
     @Test
     fun `get string on scalar document returns error`() {
-        val result = yamlParse("foo").shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getString("key1").shouldBeTypeOf<Error<String>>()
+        val result = yamlParse("foo").shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getString("key1").shouldBeTypeOf<YamlError<String>>()
         string.error shouldBe "expected a map, got ''foo''"
     }
 
     @Test
     fun `get list on scalar document returns error`() {
-        val result = yamlParse("foo").shouldBeTypeOf<Success<YamlNode>>()
-        val list = result.data.getList("key1").shouldBeTypeOf<Error<YamlList>>()
+        val result = yamlParse("foo").shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val list = result.data.getList("key1").shouldBeTypeOf<YamlError<YamlList>>()
         list.error shouldBe "expected a list at 'key1' but got ''foo''"
     }
 
     @Test
     fun `get map on scalar document returns error`() {
-        val result = yamlParse("foo").shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getMap("key1").shouldBeTypeOf<Error<YamlMap>>()
+        val result = yamlParse("foo").shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getMap("key1").shouldBeTypeOf<YamlError<YamlMap>>()
         map.error shouldBe "expected a map at 'key1' but got ''foo''"
     }
 
     @Test
     fun `get string map on scalar document returns error`() {
-        val result = yamlParse("foo").shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getStringMap("key1").shouldBeTypeOf<Error<Map<String, String>>>()
+        val result = yamlParse("foo").shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getStringMap("key1").shouldBeTypeOf<YamlError<Map<String, String>>>()
         map.error shouldBe "expected a map at 'key1' but got ''foo''"
     }
 
     @Test
     fun `get keys on scalar document returns error`() {
-        val result = yamlParse("foo").shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse("foo").shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val keys = result.data.getKeys().shouldBeTypeOf<Error<List<String>>>()
         keys.error shouldBe "'foo' is not a map"
     }
@@ -888,7 +888,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val keys = result.data.getKeys().shouldBeTypeOf<Success<List<String>>>()
         keys.data shouldBe listOf("key1", "key2")
     }
@@ -902,8 +902,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getString("key1").shouldBeTypeOf<Error<String>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getString("key1").shouldBeTypeOf<YamlError<String>>()
         string.error shouldBe "expected string but found '{'item1': 'string1'}'"
     }
 
@@ -916,8 +916,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val string = result.data.getString("key1").shouldBeTypeOf<Error<String>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val string = result.data.getString("key1").shouldBeTypeOf<YamlError<String>>()
         string.error shouldBe "expected string but found '['string1']'"
     }
 
@@ -929,7 +929,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val string = result.data.getNonNullOrEmptyString("key1").shouldBeTypeOf<Error<String>>()
         string.error shouldBe "key 'key1' not found at line 1 column 1"
     }
@@ -942,7 +942,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         result.data.getMapString("key1") shouldBe "foo"
     }
 
@@ -954,7 +954,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         result.data.getMapString("key1") shouldBe null
     }
 
@@ -967,13 +967,13 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         result.data.getMapString("key1") shouldBe null
     }
 
     @Test
     fun `get map string returns null when node is not a map`() {
-        val result = yamlParse("foo").shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse("foo").shouldBeTypeOf<YamlSuccess<YamlNode>>()
         result.data.getMapString("key1") shouldBe null
     }
 
@@ -986,7 +986,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val map = result.data.getStringMap("key1").shouldBeTypeOf<YamlEmpty<Map<String, String>>>()
         map.message shouldBe "'key1' not set"
     }
@@ -1000,8 +1000,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getStringMap("key1").shouldBeTypeOf<Error<Map<String, String>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getStringMap("key1").shouldBeTypeOf<YamlError<Map<String, String>>>()
         map.error shouldBe "key 'key1' should be a map line 1 column 1"
     }
 
@@ -1013,8 +1013,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getStringMap("key1").shouldBeTypeOf<Success<Map<String, String>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getStringMap("key1").shouldBeTypeOf<YamlSuccess<Map<String, String>>>()
         map.data.entries.count() shouldBe 0
     }
 
@@ -1031,8 +1031,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val map = result.data.getStringMap("key1").shouldBeTypeOf<Error<Map<String, String>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val map = result.data.getStringMap("key1").shouldBeTypeOf<YamlError<Map<String, String>>>()
         map.error shouldBe "found non string value in map 'key1' at key(s) item1, item3"
     }
 
@@ -1046,8 +1046,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val list = result.data.getList("key1", ItemFactory()).shouldBeTypeOf<Success<List<Item>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val list = result.data.getList("key1", ItemFactory()).shouldBeTypeOf<YamlSuccess<List<Item>>>()
         list.data shouldBe listOf(Item("name1"), Item("name2"))
     }
 
@@ -1060,8 +1060,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val list = result.data.getList("key1", ItemFactory()).shouldBeTypeOf<Success<List<Item>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val list = result.data.getList("key1", ItemFactory()).shouldBeTypeOf<YamlSuccess<List<Item>>>()
         list.data shouldHaveSize 0
     }
 
@@ -1076,8 +1076,8 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
-        val list = result.data.getList("key1", ItemFactory()).shouldBeTypeOf<Error<List<Item>>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
+        val list = result.data.getList("key1", ItemFactory()).shouldBeTypeOf<YamlError<List<Item>>>()
         list.error shouldBe
             "key 'name' not found at line 3 column 5, key 'name' not found at line 4 column 5"
     }
@@ -1091,7 +1091,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val obj = result.data.getObject("key1", ItemFactory()).shouldBeTypeOf<Success<Item>>()
         obj.data shouldBe Item("name1")
     }
@@ -1105,7 +1105,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val obj = result.data.getObject("key1", EntryCountFactory()).shouldBeTypeOf<Success<Int>>()
         obj.data shouldBe 0
     }
@@ -1119,7 +1119,7 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val obj = result.data.getObject("key1", ItemFactory()).shouldBeTypeOf<Error<Item>>()
         obj.error shouldBe "key 'key1' should be a map line 1 column 1"
     }
@@ -1133,14 +1133,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList(
                     "list1",
                     mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
                 )
-                .shouldBeTypeOf<Success<List<BaseType>>>()
+                .shouldBeTypeOf<YamlSuccess<List<BaseType>>>()
 
         list.data shouldHaveSize 0
     }
@@ -1154,14 +1154,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList(
                     "list1",
                     mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
                 )
-                .shouldBeTypeOf<Error<List<BaseType>>>()
+                .shouldBeTypeOf<YamlError<List<BaseType>>>()
 
         list.error shouldBe "key 'list1' should be a list line 1 column 1"
     }
@@ -1175,14 +1175,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList(
                     "list1",
                     mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
                 )
-                .shouldBeTypeOf<Error<List<BaseType>>>()
+                .shouldBeTypeOf<YamlError<List<BaseType>>>()
 
         list.error shouldBe "expected a map, got ''type1''"
     }
@@ -1197,14 +1197,14 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList(
                     "list1",
                     mapOf("type1" to Type1Factory(), "type2" to Type2Factory()),
                 )
-                .shouldBeTypeOf<Error<List<BaseType>>>()
+                .shouldBeTypeOf<YamlError<List<BaseType>>>()
 
         list.error shouldBe
             "unknown type 'type123', possible types are 'type1', 'type2' at line 2 column 7, " +
@@ -1220,11 +1220,11 @@ class YamlTest {
         """
                 .trimIndent()
 
-        val result = yamlParse(rawYaml).shouldBeTypeOf<Success<YamlNode>>()
+        val result = yamlParse(rawYaml).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val list =
             result.data
                 .getPolymorphicList("list1", emptyMap<String, PolymorphicConfigurationFactory<BaseType>>())
-                .shouldBeTypeOf<Error<List<BaseType>>>()
+                .shouldBeTypeOf<YamlError<List<BaseType>>>()
 
         list.error shouldBe "unknown type 'type1', possible types are <none> at line 2 column 7"
     }

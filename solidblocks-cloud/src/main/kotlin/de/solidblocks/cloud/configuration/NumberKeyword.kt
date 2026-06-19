@@ -30,8 +30,8 @@ class NumberKeyword<T : Int?> internal constructor(
             } else {
                 when (val result = yaml.getNumber(name)) {
                     is YamlEmpty<Number?> -> return Error<T>(result.message)
-                    is Error<Number?> -> return Error<T>(result.error)
-                    is Success<Number?> -> result.data?.toInt()
+                    is YamlError<Number?> -> return Error<T>(result.error)
+                    is YamlSuccess<Number?> -> result.data?.toInt()
                 }
             }
 

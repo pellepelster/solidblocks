@@ -2,9 +2,9 @@ package de.solidblocks.cloud.utils
 
 sealed interface Result<T>
 
-data class Success<T>(val data: T) : YamlResult<T>, Result<T>
+data class Success<T>(val data: T) : Result<T>
 
-data class Error<T>(val error: String, val cause: Throwable? = null) : YamlResult<T>, Result<T>
+data class Error<T>(val error: String, val cause: Throwable? = null) : Result<T>
 
 fun Collection<Result<*>>.hasError() = this.any { it is Error<*> }
 
