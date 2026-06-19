@@ -9,9 +9,9 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.garagefs.BucketKeyPermChangeRequest
 import de.solidblocks.garagefs.BucketKeyPermRequest
 import de.solidblocks.garagefs.GarageFsApi
@@ -98,12 +98,13 @@ class GarageFsPermissionProvisioner :
         when (val result = lookupInternal(resource.asLookup(), context)) {
             is Error<GarageFsPermissionRuntime?> -> ResourceDiff(resource, unknown)
             is Success<GarageFsPermissionRuntime?> -> {
-                if (result.data == null) {
+                val runtime = result.data
+                if (runtime == null) {
                     ResourceDiff(resource, missing)
                 } else {
                     val changes = mutableListOf<ResourceDiffItem>()
 
-                    if (result.data.owner != resource.owner) {
+                    if (runtime.owner != resource.owner) {
                         changes.add(
                             ResourceDiffItem(
                                 "owner",
@@ -111,12 +112,12 @@ class GarageFsPermissionProvisioner :
                                 false,
                                 false,
                                 resource.owner,
-                                result.data.owner,
+                                runtime.owner,
                             ),
                         )
                     }
 
-                    if (result.data.read != resource.read) {
+                    if (runtime.read != resource.read) {
                         changes.add(
                             ResourceDiffItem(
                                 "read",
@@ -124,12 +125,12 @@ class GarageFsPermissionProvisioner :
                                 false,
                                 false,
                                 resource.read,
-                                result.data.read,
+                                runtime.read,
                             ),
                         )
                     }
 
-                    if (result.data.write != resource.write) {
+                    if (runtime.write != resource.write) {
                         changes.add(
                             ResourceDiffItem(
                                 "owner",
@@ -137,7 +138,7 @@ class GarageFsPermissionProvisioner :
                                 false,
                                 false,
                                 resource.write,
-                                result.data.write,
+                                runtime.write,
                             ),
                         )
                     }

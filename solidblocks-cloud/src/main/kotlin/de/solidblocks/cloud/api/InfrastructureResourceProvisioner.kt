@@ -2,7 +2,6 @@ package de.solidblocks.cloud.api
 
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
-import de.solidblocks.cloud.utils.Result
 import kotlin.reflect.KClass
 
 interface InfrastructureResourceProvisioner<ResourceType, RuntimeType, LookupType> {

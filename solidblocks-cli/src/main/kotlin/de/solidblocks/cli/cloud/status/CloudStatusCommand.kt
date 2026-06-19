@@ -8,8 +8,8 @@ import com.github.ajalt.clikt.parameters.types.file
 import de.solidblocks.cli.cloud.help.CloudHelpCommand
 import de.solidblocks.cloud.CloudManager
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.utils.logError
 
 class CloudStatusCommand : CliktCommand(name = "status") {

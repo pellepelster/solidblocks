@@ -5,9 +5,9 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.mordant.markdown.Markdown
 import de.solidblocks.cli.utils.createTerminal
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.utils.logError
 
 class CloudHelpCommand : CliktCommand(name = "help") {

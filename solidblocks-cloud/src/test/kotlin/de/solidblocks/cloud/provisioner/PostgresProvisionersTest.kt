@@ -22,7 +22,7 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataResult
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.hetzner.cloud.resources.ServerStatus

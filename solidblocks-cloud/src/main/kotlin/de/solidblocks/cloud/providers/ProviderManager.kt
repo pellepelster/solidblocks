@@ -3,7 +3,7 @@ package de.solidblocks.cloud.providers
 import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
 import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
-import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.api.Result
 import de.solidblocks.utils.LogContext
 import java.nio.file.Path
 import kotlin.reflect.KClass

@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.interpolation
 
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.aggregate
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.aggregate
 
 class StringInterpolationRegistry(val factories: List<StringInterpolationFactory>) {
 

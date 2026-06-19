@@ -7,8 +7,8 @@ import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.result
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 
 class S3BackupProviderConfigurationFactory : PolymorphicConfigurationFactory<S3BackupProviderConfiguration>() {
 

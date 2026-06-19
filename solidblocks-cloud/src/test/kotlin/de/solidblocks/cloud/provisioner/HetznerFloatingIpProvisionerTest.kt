@@ -5,7 +5,7 @@ import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIp
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpRuntime
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.resources.FloatingIpType
 import de.solidblocks.infra.test.SolidblocksTest

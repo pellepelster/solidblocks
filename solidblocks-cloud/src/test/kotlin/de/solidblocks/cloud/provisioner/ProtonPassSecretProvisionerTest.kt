@@ -8,7 +8,7 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.protonPassItemDelete
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe

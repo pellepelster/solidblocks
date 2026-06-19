@@ -17,8 +17,8 @@ import de.solidblocks.cloud.provisioner.mock.Resource1
 import de.solidblocks.cloud.provisioner.mock.Resource1Provisioner
 import de.solidblocks.cloud.provisioner.mock.Resource2
 import de.solidblocks.cloud.provisioner.mock.Resource2Provisioner
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.WaitConfig
 import io.kotest.assertions.assertSoftly
 import io.kotest.common.runBlocking

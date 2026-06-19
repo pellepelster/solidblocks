@@ -10,8 +10,8 @@ import de.solidblocks.cloud.services.docker.DockerServiceRegistration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfiguration
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import io.kotest.matchers.collections.shouldHaveSize

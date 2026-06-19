@@ -11,8 +11,8 @@ import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.result
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 
 class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<PostgresSqlServiceConfiguration>() {
 

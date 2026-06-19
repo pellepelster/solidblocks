@@ -1,5 +1,8 @@
 package de.solidblocks.cloud.utils
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import java.io.InputStreamReader
 import java.time.Duration
 import java.time.Instant

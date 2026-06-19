@@ -9,9 +9,9 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.garagefs.*
 import kotlin.reflect.KClass
@@ -25,13 +25,14 @@ class GarageFsBucketProvisioner :
         when (val result = lookupInternal(resource.asLookup(), context)) {
             is Error<GarageFsBucketRuntime?> -> ResourceDiff(resource, unknown)
             is Success<GarageFsBucketRuntime?> -> {
-                if (result.data == null) {
+                val runtime = result.data
+                if (runtime == null) {
                     ResourceDiff(resource, missing)
                 } else {
                     val changes = mutableListOf<ResourceDiffItem>()
 
                     val globalAliasesWithOutOwnName =
-                        result.data.globalAliases.filter { it != resource.name }
+                        runtime.globalAliases.filter { it != resource.name }
                     if (!(resource.websiteAccessDomains equalsIgnoreOrder globalAliasesWithOutOwnName)) {
                         changes.add(
                             ResourceDiffItem(
@@ -45,7 +46,7 @@ class GarageFsBucketProvisioner :
                         )
                     }
 
-                    if (resource.websiteAccess != result.data.websiteAccess) {
+                    if (resource.websiteAccess != runtime.websiteAccess) {
                         changes.add(
                             ResourceDiffItem(
                                 "public access",
@@ -53,7 +54,7 @@ class GarageFsBucketProvisioner :
                                 false,
                                 false,
                                 resource.websiteAccess,
-                                result.data.websiteAccess,
+                                runtime.websiteAccess,
                             ),
                         )
                     }

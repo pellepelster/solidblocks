@@ -12,9 +12,9 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 
@@ -29,12 +29,13 @@ class PostgresDatabaseGrantProvisioner :
         when (val result = lookupInternal(resource.asLookup(), context)) {
             is Error<PostgresDatabaseGrantRuntime?> -> ResourceDiff(resource, unknown)
             is Success<PostgresDatabaseGrantRuntime?> -> {
-                if (result.data == null) {
+                val runtime = result.data
+                if (runtime == null) {
                     ResourceDiff(resource, missing)
                 } else {
                     val changes = mutableListOf<ResourceDiffItem>()
 
-                    if (result.data.admin != resource.admin) {
+                    if (runtime.admin != resource.admin) {
                         changes.add(
                             ResourceDiffItem(
                                 "admin",
@@ -42,13 +43,13 @@ class PostgresDatabaseGrantProvisioner :
                                 false,
                                 false,
                                 resource.admin,
-                                result.data.admin,
+                                runtime.admin,
                             ),
                         )
                     }
 
                     // admin implies full read/write access on all tables
-                    if (result.data.read != (resource.read || resource.admin)) {
+                    if (runtime.read != (resource.read || resource.admin)) {
                         changes.add(
                             ResourceDiffItem(
                                 "read",
@@ -56,12 +57,12 @@ class PostgresDatabaseGrantProvisioner :
                                 false,
                                 false,
                                 resource.read || resource.admin,
-                                result.data.read,
+                                runtime.read,
                             ),
                         )
                     }
 
-                    if (result.data.write != (resource.write || resource.admin)) {
+                    if (runtime.write != (resource.write || resource.admin)) {
                         changes.add(
                             ResourceDiffItem(
                                 "write",
@@ -69,7 +70,7 @@ class PostgresDatabaseGrantProvisioner :
                                 false,
                                 false,
                                 resource.write || resource.admin,
-                                result.data.write,
+                                runtime.write,
                             ),
                         )
                     }

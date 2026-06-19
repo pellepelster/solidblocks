@@ -9,8 +9,8 @@ import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.configuration.optional
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.result
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 
 object BackupConfigurationFactory {
 

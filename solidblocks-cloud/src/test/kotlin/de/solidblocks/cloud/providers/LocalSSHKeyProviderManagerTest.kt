@@ -6,8 +6,8 @@ import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfiguration
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationRuntime
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderManager
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.keyType
 import io.kotest.matchers.shouldBe

@@ -15,11 +15,11 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.asResult
-import de.solidblocks.cloud.utils.onError
+import de.solidblocks.cloud.api.onError
 import de.solidblocks.cloud.utils.parseProtonPassItem
 import de.solidblocks.cloud.utils.protonPassItemCreateNote
 import de.solidblocks.cloud.utils.protonPassItemDelete

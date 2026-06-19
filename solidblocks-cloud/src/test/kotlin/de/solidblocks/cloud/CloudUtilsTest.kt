@@ -1,5 +1,8 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.catchingResult
 import de.solidblocks.cloud.mocks.MockResource1
 import de.solidblocks.cloud.mocks.MockResource1Lookup
 import de.solidblocks.cloud.mocks.MockResource2Lookup

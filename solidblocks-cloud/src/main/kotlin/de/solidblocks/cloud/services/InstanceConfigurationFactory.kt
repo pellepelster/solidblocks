@@ -11,8 +11,8 @@ import de.solidblocks.cloud.providers.hetzner.HETZNER_INSTANCE_TYPE
 import de.solidblocks.cloud.providers.hetzner.HETZNER_LOCATIONS
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRuntime
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.result
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 

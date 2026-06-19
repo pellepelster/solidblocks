@@ -23,10 +23,10 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.services.ServiceRegistration
-import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.LONG_WAIT
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.ssh.SSHClient

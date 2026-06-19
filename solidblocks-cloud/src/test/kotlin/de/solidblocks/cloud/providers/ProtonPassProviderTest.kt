@@ -5,7 +5,7 @@ import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.providers.protonpass.ProtonPassProviderConfiguration
 import de.solidblocks.cloud.providers.protonpass.ProtonPassProviderManager
 import de.solidblocks.cloud.providers.protonpass.ProtonPassProviderRuntime
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Success
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test

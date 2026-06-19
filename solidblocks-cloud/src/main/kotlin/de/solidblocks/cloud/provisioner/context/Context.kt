@@ -8,10 +8,10 @@ import de.solidblocks.cloud.interpolation.StringInterpolationRegistry
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.catchingResult
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.catchingResult
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext
 import java.security.KeyPair

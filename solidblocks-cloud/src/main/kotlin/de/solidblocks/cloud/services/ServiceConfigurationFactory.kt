@@ -10,11 +10,11 @@ import de.solidblocks.cloud.configuration.constraints
 import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.interpolation.validateInterpolatedString
 import de.solidblocks.cloud.services.InstanceConfigurationFactory.parseInstanceConfig
-import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.result
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.result
 
 object ServiceConfigurationFactory {
 

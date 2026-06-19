@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.utils
+package de.solidblocks.cloud.api
 
 sealed interface Result<T>
 

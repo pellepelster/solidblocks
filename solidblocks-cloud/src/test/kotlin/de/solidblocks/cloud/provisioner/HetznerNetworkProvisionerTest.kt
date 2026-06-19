@@ -10,7 +10,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProv
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvisioner
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly

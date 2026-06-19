@@ -1,6 +1,14 @@
 package de.solidblocks.cloud.utils
 
-import de.solidblocks.cloud.utils.ResultScope.bind
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.catchingResult
+import de.solidblocks.cloud.api.flatMap
+import de.solidblocks.cloud.api.fold
+import de.solidblocks.cloud.api.getOrElse
+import de.solidblocks.cloud.api.onError
+import de.solidblocks.cloud.api.result
+import de.solidblocks.cloud.api.retype
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test

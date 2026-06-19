@@ -1,5 +1,8 @@
 package de.solidblocks.cloud.providers.pass
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner

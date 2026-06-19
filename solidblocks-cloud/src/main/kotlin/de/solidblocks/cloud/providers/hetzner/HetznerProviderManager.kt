@@ -13,9 +13,9 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvi
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.getPropertyOrEnv
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.utils.LogContext

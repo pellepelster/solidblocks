@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.interpolation
 
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.shell.systemd.Unit
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf

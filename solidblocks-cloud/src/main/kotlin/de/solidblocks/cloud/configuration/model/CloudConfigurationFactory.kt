@@ -12,8 +12,8 @@ import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.result
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 
 class CloudConfigurationFactory(
     providerRegistrations: List<

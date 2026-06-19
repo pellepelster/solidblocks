@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.providers
 
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 
 /**
  * Declares how many providers of a given category may be configured. Which category a provider

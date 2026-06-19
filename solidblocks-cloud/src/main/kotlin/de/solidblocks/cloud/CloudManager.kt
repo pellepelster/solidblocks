@@ -13,11 +13,11 @@ import de.solidblocks.cloud.provisioner.ProvisionersRegistry.Companion.createReg
 import de.solidblocks.cloud.provisioner.context.ValidationContextImpl
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.services.*
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
-import de.solidblocks.cloud.utils.fold
-import de.solidblocks.cloud.utils.result
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.fold
+import de.solidblocks.cloud.api.result
 import de.solidblocks.utils.*
 import java.io.Closeable
 import java.io.File

@@ -9,8 +9,8 @@ import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurat
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationFactory
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.yamlParse
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType

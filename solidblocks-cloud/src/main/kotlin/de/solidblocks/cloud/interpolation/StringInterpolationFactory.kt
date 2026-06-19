@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.interpolation
 
-import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.api.Result
 
 interface StringInterpolationFactory {
     val interpolationType: String

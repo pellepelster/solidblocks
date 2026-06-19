@@ -5,8 +5,8 @@ import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.providers.pass.PassProviderConfiguration
 import de.solidblocks.cloud.providers.pass.PassProviderManager
 import de.solidblocks.cloud.providers.pass.PassProviderRuntime
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeTypeOf

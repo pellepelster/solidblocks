@@ -1,5 +1,7 @@
 package de.solidblocks.cloud.configuration
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.utils.*
 import java.io.File
 

@@ -3,9 +3,9 @@ package de.solidblocks.cloud.provisioner.garagefs
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
-import de.solidblocks.cloud.utils.Error
-import de.solidblocks.cloud.utils.Result
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.ssh.SSHClient
 import io.github.oshai.kotlinlogging.KotlinLogging

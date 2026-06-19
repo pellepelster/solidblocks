@@ -5,7 +5,7 @@ import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKey
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyRuntime
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly

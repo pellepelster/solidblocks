@@ -26,11 +26,11 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.ByteSize
-import de.solidblocks.cloud.utils.Error
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.LONG_WAIT
-import de.solidblocks.cloud.utils.Result
+import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.utils.SHORT_WAIT
-import de.solidblocks.cloud.utils.Success
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.resources.FloatingIpType
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
