@@ -7,6 +7,7 @@ import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
@@ -15,7 +16,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.NetworkCreateRequest
 import de.solidblocks.hetzner.cloud.resources.NetworkUpdateRequest
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -27,7 +27,9 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerNetworkLookup, context: SSHProvisionerContext) = api.networks.get(lookup.name)?.let { network ->
+    override suspend fun lookup(lookup: HetznerNetworkLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+
+    suspend fun lookupInternal(lookup: HetznerNetworkLookup) = api.networks.get(lookup.name)?.let { network ->
         HetznerNetworkRuntime(
             network.id,
             network.name,
@@ -38,7 +40,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun apply(resource: HetznerNetwork, context: ProvisionerApplyContext, log: LogContext): Result<HetznerNetworkRuntime> {
+    override suspend fun apply(resource: HetznerNetwork, context: ProvisionerApplyContext): Result<HetznerNetworkRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
         val network =
@@ -103,7 +105,7 @@ class HetznerNetworkProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun destroy(lookup: HetznerNetworkLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let { api.networks.delete(it.id) } ?: false
+    override suspend fun destroy(lookup: HetznerNetworkLookup, context: ProvisionerDestroyContext) = lookupInternal(lookup)?.let { api.networks.delete(it.id) } ?: false
 
     override val supportedLookupType: KClass<*> = HetznerNetworkLookup::class
 

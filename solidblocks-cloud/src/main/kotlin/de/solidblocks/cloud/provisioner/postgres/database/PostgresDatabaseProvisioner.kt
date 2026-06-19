@@ -16,7 +16,6 @@ import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 
@@ -66,12 +65,12 @@ class PostgresDatabaseProvisioner :
                     }
         }
 
-    override suspend fun apply(resource: PostgresDatabase, context: ProvisionerApplyContext, log: LogContext): Result<PostgresDatabaseRuntime> {
+    override suspend fun apply(resource: PostgresDatabase, context: ProvisionerApplyContext): Result<PostgresDatabaseRuntime> {
         val user = context.ensureLookup(resource.user)
 
         when (
             val result =
-                context.waitForAdminConnection(resource.server, resource.superUserPassword, log)
+                context.waitForAdminConnection(resource.server, resource.superUserPassword, context.log)
         ) {
             is Error<Connection> -> Error<PostgresDatabaseRuntime?>(result.error)
             is Success<Connection> -> {

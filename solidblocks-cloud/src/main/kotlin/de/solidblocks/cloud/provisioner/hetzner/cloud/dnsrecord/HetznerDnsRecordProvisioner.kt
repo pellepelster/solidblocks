@@ -13,7 +13,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.cloud.utils.joinToStringOrEmpty
 import de.solidblocks.hetzner.cloud.resources.*
-import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.logError
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -80,7 +79,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
         } ?: ResourceDiff(resource, missing),
     )
 
-    override suspend fun apply(resource: HetznerDnsRecord, context: ProvisionerApplyContext, log: LogContext): Result<HetznerDnsRecordRuntime> {
+    override suspend fun apply(resource: HetznerDnsRecord, context: ProvisionerApplyContext): Result<HetznerDnsRecordRuntime> {
         val current = lookup(resource.asLookup(), context)
         val zone =
             context.lookup(resource.asLookup().zone)
@@ -95,7 +94,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                 }
 
                 if (runtime?.publicIpv4 == null) {
-                    log.warning("server ${it.logText()} has no public ip address")
+                    context.log.warning("server ${it.logText()} has no public ip address")
                 }
 
                 runtime?.publicIpv4
@@ -121,7 +120,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                     api.dnsRrSets(zone.name)
                         .updateTTL(resource.name, resource.type, DnsRRSetsTTLUpdateRequest(resource.ttl))
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
-                    log.info("waiting for TTL update on ${resource.logText()}")
+                    context.log.info("waiting for TTL update on ${resource.logText()}")
                 }
             }
 
@@ -145,7 +144,7 @@ class HetznerDnsRecordProvisioner(hcloudToken: String) :
                             ),
                         )
                 api.dnsRrSets(zone.name).waitForAction(ttlUpdateResult.action) {
-                    log.info("waiting for record update on ${resource.logText()}")
+                    context.log.info("waiting for record update on ${resource.logText()}")
                 }
             }
         } else {

@@ -17,7 +17,6 @@ import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.postgresql.util.PSQLException
 import java.sql.Connection
@@ -104,12 +103,12 @@ class PostgresUserProvisioner :
                     }
         }
 
-    override suspend fun apply(resource: PostgresUser, context: ProvisionerApplyContext, log: LogContext): Result<PostgresUserRuntime> {
+    override suspend fun apply(resource: PostgresUser, context: ProvisionerApplyContext): Result<PostgresUserRuntime> {
         val password = context.ensureLookup(resource.password)
 
         when (
             val result =
-                context.waitForAdminConnection(resource.server, resource.superUserPassword, log)
+                context.waitForAdminConnection(resource.server, resource.superUserPassword, context.log)
         ) {
             is Error<Connection> -> Error<PostgresUserRuntime?>(result.error)
             is Success<Connection> -> {

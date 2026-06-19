@@ -11,7 +11,6 @@ import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource1Provisioner :
@@ -22,14 +21,14 @@ class Resource1Provisioner :
 
     val resources = mutableMapOf<String, Resource1>()
 
-    override suspend fun lookup(lookup: Resource1Lookup, context: SSHProvisionerContext) = resources[lookup.name]?.let { Resource1Runtime(lookup.name, listOf()) }
+    override suspend fun lookup(lookup: Resource1Lookup, context: SSHProvisionerContext) = resources[lookup.name]?.let { Resource1Runtime(lookup.name) }
 
     override suspend fun diff(resource: Resource1, context: ProvisionerDiffContext): Result<ResourceDiff> = Success(
         lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
             ?: ResourceDiff(resource, missing),
     )
 
-    override suspend fun apply(resource: Resource1, context: ProvisionerApplyContext, log: LogContext): Result<Resource1Runtime> {
+    override suspend fun apply(resource: Resource1, context: ProvisionerApplyContext): Result<Resource1Runtime> {
         resources[resource.name] = resource
 
         return lookup(resource.asLookup(), context)?.let { Success(it) }

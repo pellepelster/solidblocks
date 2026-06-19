@@ -12,7 +12,9 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
@@ -30,7 +32,6 @@ import de.solidblocks.hetzner.cloud.model.HetznerApiException
 import de.solidblocks.hetzner.cloud.resources.ServerCreateRequest
 import de.solidblocks.hetzner.cloud.resources.ServerNetworkAttachRequest
 import de.solidblocks.hetzner.cloud.resources.ServerUpdateRequest
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.seconds
@@ -46,9 +47,11 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     override suspend fun lookup(lookup: HetznerServerLookup, context: SSHProvisionerContext) = api.servers.get(lookup.name)?.toRuntime(api, context)
 
-    override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext, log: LogContext): Result<HetznerServerRuntime> {
+    suspend fun lookupInternal(lookup: HetznerServerLookup, context: ProvisionerLookupContext) = api.servers.get(lookup.name)?.toRuntime(api, context)
+
+    override suspend fun apply(resource: HetznerServer, context: ProvisionerApplyContext): Result<HetznerServerRuntime> {
         if (resource.preApplyHook != null) {
-            resource.preApplyHook(log).onError { return Error(it.error, it.cause) }
+            resource.preApplyHook(context.log).onError { return Error(it.error, it.cause) }
         }
 
         var server = lookup(resource.asLookup(), context)
@@ -75,7 +78,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
         if (server == null) {
             logger.info { "server '${resource.name}' not found, creating" }
 
-            log.debug(
+            context.log.debug(
                 "using ssh key(s): ${
                     sshKeys.let {
                         if (it.isEmpty()) {
@@ -86,7 +89,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
                     }
                 }",
             )
-            log.debug(
+            context.log.debug(
                 "using volume(s): ${
                     volumes.let {
                         if (it.isEmpty()) {
@@ -126,7 +129,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
             if (
                 !api.servers.waitForAction(createRequest.action) {
-                    log.info("waiting for creation of ${resource.logText()}")
+                    context.log.info("waiting for creation of ${resource.logText()}")
                 }
             ) {
                 return Error(
@@ -156,7 +159,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
                             ServerNetworkAttachRequest(subnet.network, resource.privateIp),
                         )
                     api.networks.waitForAction(action) {
-                        log.info("waiting for attachment to ${subnet.logText()}")
+                        context.log.info("waiting for attachment to ${subnet.logText()}")
                     }
                 } catch (e: HetznerApiException) {
                     if (e.error.code != HetznerApiErrorType.SERVER_ALREADY_ATTACHED) {
@@ -174,13 +177,13 @@ class HetznerServerProvisioner(hcloudToken: String) :
             if (floatingIp.assigneeId != server.id) {
                 val action = api.floatingIps.assign(floatingIp.id, server.id)
                 api.floatingIps.waitForAction(action) {
-                    log.info("waiting for assignment of ${resource.floatingIp.logText()} to ${resource.logText()}")
+                    context.log.info("waiting for assignment of ${resource.floatingIp.logText()} to ${resource.logText()}")
                 }
             }
         }
 
         return lookup(resource.asLookup(), context)?.let {
-            log.debug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}")
+            context.log.debug("${resource.logText()} has public ip ${it.publicIpv4 ?: "<none>"}")
             Success(it)
         } ?: Error<HetznerServerRuntime>("error creating ${resource.logText()}")
     }
@@ -339,14 +342,14 @@ class HetznerServerProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun destroy(lookup: HetznerServerLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let {
+    override suspend fun destroy(lookup: HetznerServerLookup, context: ProvisionerDestroyContext) = lookupInternal(lookup, context)?.let {
         val delete = api.servers.delete(it.id)
         api.servers.waitForAction(delete) {
-            log.info("waiting for deletion of ${lookup.logText()}")
+            context.log.info("waiting for deletion of ${lookup.logText()}")
         }
 
         WaitConfig(10, 2.seconds).waitForCondition {
-            log.info("waiting for deletion of ${lookup.logText()}")
+            context.log.info("waiting for deletion of ${lookup.logText()}")
             api.volumes.list().none { it.server == it.id }
         }
     } ?: false

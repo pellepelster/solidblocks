@@ -1,5 +1,4 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
 import de.solidblocks.cloud.diffData
@@ -169,7 +168,7 @@ class PostgresProvisionersTest {
             }
 
             userProvisioner
-                .apply(user, context, TEST_LOG_CONTEXT)
+                .apply(user, context)
                 .shouldBeInstanceOf<Success<PostgresUserRuntime?>>()
                 .data
                 ?.name shouldBe username
@@ -183,7 +182,7 @@ class PostgresProvisionersTest {
             }
 
             userProvisioner
-                .apply(userWithPassword2, context, TEST_LOG_CONTEXT)
+                .apply(userWithPassword2, context)
                 .shouldBeInstanceOf<Success<PostgresUserRuntime?>>()
                 .data
                 ?.name shouldBe username
@@ -207,7 +206,7 @@ class PostgresProvisionersTest {
 
             assertSoftly(
                 databaseProvisioner
-                    .apply(database, context, TEST_LOG_CONTEXT)
+                    .apply(database, context)
                     .shouldBeInstanceOf<Success<PostgresDatabaseRuntime>>(),
             ) {
                 it.data.name shouldBe database.name
@@ -228,7 +227,7 @@ class PostgresProvisionersTest {
                     superUserPassword.asLookup(),
                 )
             userProvisioner
-                .apply(grantUser, context, TEST_LOG_CONTEXT)
+                .apply(grantUser, context)
                 .shouldBeInstanceOf<Success<PostgresUserRuntime?>>()
 
             val readGrant = PostgresDatabaseGrant(grantUser, database, false, true, false, server.asLookup(), superUserPassword.asLookup())
@@ -241,7 +240,7 @@ class PostgresProvisionersTest {
 
             assertSoftly(
                 grantProvisioner
-                    .apply(readGrant, context, TEST_LOG_CONTEXT)
+                    .apply(readGrant, context)
                     .shouldBeInstanceOf<Success<PostgresDatabaseGrantRuntime>>(),
             ) {
                 it.data.admin shouldBe false
@@ -280,7 +279,7 @@ class PostgresProvisionersTest {
             }
 
             grantProvisioner
-                .apply(writeGrant, context, TEST_LOG_CONTEXT)
+                .apply(writeGrant, context)
                 .shouldBeInstanceOf<Success<PostgresDatabaseGrantRuntime>>()
             assertSoftly(grantProvisioner.diff(writeGrant, context).diffData()) {
                 it.status shouldBe up_to_date
@@ -300,7 +299,7 @@ class PostgresProvisionersTest {
             }
             assertSoftly(
                 grantProvisioner
-                    .apply(adminGrant, context, TEST_LOG_CONTEXT)
+                    .apply(adminGrant, context)
                     .shouldBeInstanceOf<Success<PostgresDatabaseGrantRuntime>>(),
             ) {
                 it.data.admin shouldBe true

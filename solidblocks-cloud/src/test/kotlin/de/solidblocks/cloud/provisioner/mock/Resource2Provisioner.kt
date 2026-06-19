@@ -10,12 +10,12 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource2Provisioner :
@@ -37,6 +37,7 @@ class Resource2Provisioner :
                 ResourceDiffStatus.unknown,
             ),
         )
+
         DiffBehaviour.throw_exception_on_diff -> throw RuntimeException()
         DiffBehaviour.duplicate_on_diff -> Success(
             ResourceDiff(
@@ -45,6 +46,7 @@ class Resource2Provisioner :
                 duplicateErrorMessage = "duplicate error for ${resource.logText()}",
             ),
         )
+
         DiffBehaviour.force_recreate_change -> Success(
             ResourceDiff(
                 resource,
@@ -59,7 +61,7 @@ class Resource2Provisioner :
         )
     }
 
-    override suspend fun apply(resource: Resource2, context: ProvisionerApplyContext, log: LogContext): Result<Resource2Runtime> {
+    override suspend fun apply(resource: Resource2, context: ProvisionerApplyContext): Result<Resource2Runtime> {
         when (resource.applyBehaviour) {
             ApplyBehaviour.error_on_apply -> return Error("apply error for ${resource.logText()}")
             ApplyBehaviour.throw_exception_on_apply -> throw RuntimeException("apply exception for ${resource.logText()}")
@@ -85,7 +87,7 @@ class Resource2Provisioner :
 
     fun applyCount(name: String) = appliedResources.count { it == name }
 
-    override suspend fun destroy(lookup: Resource2Lookup, context: SSHProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(lookup: Resource2Lookup, context: ProvisionerDestroyContext): Boolean {
         destroyedResources.add(lookup.name)
         return destroyResult
     }

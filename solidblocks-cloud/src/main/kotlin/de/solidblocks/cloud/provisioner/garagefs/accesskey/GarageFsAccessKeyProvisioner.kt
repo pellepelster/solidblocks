@@ -13,7 +13,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.garagefs.CreateKeyRequest
 import de.solidblocks.garagefs.GarageFsApi
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -67,7 +66,7 @@ class GarageFsAccessKeyProvisioner :
         }
     }
 
-    override suspend fun apply(resource: GarageFsAccessKey, context: ProvisionerApplyContext, log: LogContext): Result<GarageFsAccessKeyRuntime> {
+    override suspend fun apply(resource: GarageFsAccessKey, context: ProvisionerApplyContext): Result<GarageFsAccessKeyRuntime> {
         val runtime =
             when (val result = lookupInternal(resource.asLookup(), context)) {
                 is Error<GarageFsAccessKeyRuntime?> ->

@@ -19,7 +19,6 @@ import de.solidblocks.garagefs.ApplyClusterLayoutRequest
 import de.solidblocks.garagefs.ClusterLayoutNodeRequest
 import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.garagefs.UpdateClusterLayoutRequest
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -83,7 +82,7 @@ class GarageFsLayoutProvisioner :
         }
     }
 
-    override suspend fun apply(resource: GarageFsLayout, context: ProvisionerApplyContext, log: LogContext): Result<GarageFsLayoutRuntime> {
+    override suspend fun apply(resource: GarageFsLayout, context: ProvisionerApplyContext): Result<GarageFsLayoutRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
         context.withApiClients(resource.server, resource.adminToken) {

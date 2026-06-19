@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.api
 
-import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
-import de.solidblocks.utils.LogContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 
 /**
  * Optional capability for provisioners that can destroy a resource. Provisioners that do not
@@ -9,5 +8,5 @@ import de.solidblocks.utils.LogContext
  * clearly instead of failing with a [NotImplementedError].
  */
 interface DestroyableResourceProvisioner<LookupType> {
-    suspend fun destroy(lookup: LookupType, context: SSHProvisionerContext, log: LogContext): Boolean
+    suspend fun destroy(lookup: LookupType, context: ProvisionerDestroyContext): Boolean
 }

@@ -141,8 +141,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         val diffResult = if (diffs.entries.flatMap { it.value }.any { it.status != up_to_date }) {
             provisioner.apply(
                 diffs,
-                ProvisionerApplyContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, context.environment, context.registry, context.serviceRegistrations, taintedResources),
-                log.indent(),
+                ProvisionerApplyContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, context.environment, context.registry, context.serviceRegistrations, log.indent(), taintedResources),
             )
         } else {
             log.indent().info("no pending changes")

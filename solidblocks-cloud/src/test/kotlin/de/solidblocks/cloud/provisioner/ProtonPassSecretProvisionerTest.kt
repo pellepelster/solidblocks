@@ -1,5 +1,4 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
@@ -52,7 +51,7 @@ class ProtonPassSecretProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
-            val runtimeAfterCreation = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
+            val runtimeAfterCreation = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             val runtimeAfterLookup = provisioner.lookup(randomSecret.asLookup(), TEST_PROVISIONER_CONTEXT)!!
             runtimeAfterLookup.secret shouldHaveLength 13
             runtimeAfterLookup.secret shouldBe runtimeAfterCreation.secret
@@ -62,7 +61,7 @@ class ProtonPassSecretProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
-            val runtimeAfterSecondApply = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
+            val runtimeAfterSecondApply = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterSecondApply.secret shouldBe runtimeAfterCreation.secret
 
             // a static secret with a different value reports pending changes
@@ -72,7 +71,7 @@ class ProtonPassSecretProvisionerTest {
 
             // tainting forces a new ephemeral secret
             TEST_PROVISIONER_CONTEXT.taintedResources.add(randomSecret)
-            val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
+            val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterCreation.secret shouldNotBe secretAfterTaint.secret
 
             assertSoftly(provisioner.diff(oneTimeSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
@@ -80,7 +79,7 @@ class ProtonPassSecretProvisionerTest {
             }
 
             // overwrite secret with a static value
-            provisioner.apply(staticSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.apply(staticSecret, TEST_PROVISIONER_CONTEXT)
             provisioner.lookup(staticSecret.asLookup(), TEST_PROVISIONER_CONTEXT)?.secret shouldBe "static-secret"
 
             // clean up

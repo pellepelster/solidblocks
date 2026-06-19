@@ -24,12 +24,12 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager
 import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager.Companion.accessKeySecretPath
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Error
 import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
-import de.solidblocks.utils.LogContext
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 import kotlin.reflect.KClass
@@ -98,7 +98,7 @@ class AwsIamUserProvisioner(
         )
     }
 
-    override suspend fun apply(resource: AwsIamUser, context: ProvisionerApplyContext, log: LogContext): Result<AwsIamUserRuntime> = iamClient().use { client ->
+    override suspend fun apply(resource: AwsIamUser, context: ProvisionerApplyContext): Result<AwsIamUserRuntime> = iamClient().use { client ->
         val exists = try {
             client.getUser(GetUserRequest { userName = resource.name })
             true
@@ -108,7 +108,7 @@ class AwsIamUserProvisioner(
 
         // TODO handle tainting
         if (!exists) {
-            log.info("creating IAM user '${resource.name}'")
+            context.log.info("creating IAM user '${resource.name}'")
             client.createUser(CreateUserRequest { userName = resource.name })
 
             val keys = client.createAccessKey(
@@ -130,7 +130,7 @@ class AwsIamUserProvisioner(
             }
         }
 
-        log.info("updating inline policy '${resource.policyName}' for IAM user '${resource.name}'")
+        context.log.info("updating inline policy '${resource.policyName}' for IAM user '${resource.name}'")
         client.putUserPolicy(
             PutUserPolicyRequest {
                 userName = resource.name
@@ -143,7 +143,7 @@ class AwsIamUserProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(lookup: AwsIamUserLookup, context: SSHProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(lookup: AwsIamUserLookup, context: ProvisionerDestroyContext): Boolean {
         iamClient().use { client ->
             try {
                 val policies = client.listUserPolicies(ListUserPoliciesRequest { userName = lookup.name }).policyNames

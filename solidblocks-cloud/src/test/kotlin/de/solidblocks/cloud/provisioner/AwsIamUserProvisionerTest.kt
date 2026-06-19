@@ -1,5 +1,4 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
@@ -67,7 +66,7 @@ class AwsIamUserProvisionerTest {
                 it.changes.shouldBeEmpty()
             }
 
-            provisioner.apply(AwsIamUser(name, readOnlyPolicy(bucketArn)), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.apply(AwsIamUser(name, readOnlyPolicy(bucketArn)), TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<*>>()
 
             TEST_PROVISIONER_CONTEXT.secrets.entries shouldHaveSize 2
@@ -91,7 +90,7 @@ class AwsIamUserProvisionerTest {
                 it.changes[0].name shouldBe "policy"
             }
 
-            provisioner.apply(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.apply(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<*>>()
 
             assertSoftly(provisioner.diff(AwsIamUser(name, readWritePolicy(bucketArn)), TEST_PROVISIONER_CONTEXT).diffData()) {
@@ -106,7 +105,7 @@ class AwsIamUserProvisionerTest {
                 it.changes.shouldBeEmpty()
             }
 
-            provisioner.destroy(AwsIamUser(name, readWritePolicy(bucketArn)).asLookup(), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT) shouldBe true
+            provisioner.destroy(AwsIamUser(name, readWritePolicy(bucketArn)).asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe true
             provisioner.lookup(AwsIamUser(name, readWritePolicy(bucketArn)).asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
         }
     }

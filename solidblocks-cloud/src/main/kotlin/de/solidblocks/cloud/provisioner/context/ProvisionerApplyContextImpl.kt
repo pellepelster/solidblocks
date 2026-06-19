@@ -19,6 +19,7 @@ class ProvisionerApplyContextImpl(
     environment: EnvironmentContext,
     registry: ProvisionersRegistry,
     serviceRegistrations: List<ServiceRegistration<*, *>>,
+    override val log: LogContext,
     private val taintedResources: Set<BaseResource> = emptySet(),
 ) : ProvisionerContextImpl(sshKeyPair, sshKeyAbsolutePath, environment, registry, serviceRegistrations), ProvisionerApplyContext {
 

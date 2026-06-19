@@ -24,7 +24,6 @@ import de.solidblocks.cloud.utils.parseProtonPassItem
 import de.solidblocks.cloud.utils.protonPassItemCreateNote
 import de.solidblocks.cloud.utils.protonPassItemDelete
 import de.solidblocks.cloud.utils.protonPassItemView
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ProtonPassSecretProvisioner(val vaultName: String) :
@@ -95,14 +94,14 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
         return null
     }
 
-    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext, log: LogContext): Result<GenericSecretRuntime> {
+    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext): Result<GenericSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !context.isTainted(resource) && resource.secretGenerator.isEphemeral()) {
             return Success(current)
         }
 
-        log.debug("creating secret at '${resource.name}' in vault '$vaultName'")
+        context.log.debug("creating secret at '${resource.name}' in vault '$vaultName'")
         val secret = resource.secretGenerator.generate(context)
 
         // proton pass note items cannot be updated via stdin, so an existing item is removed and recreated

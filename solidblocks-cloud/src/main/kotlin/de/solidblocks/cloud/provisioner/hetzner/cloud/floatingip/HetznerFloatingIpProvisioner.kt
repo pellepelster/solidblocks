@@ -9,6 +9,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
@@ -17,7 +18,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.FloatingIpCreateRequest
 import de.solidblocks.hetzner.cloud.resources.FloatingIpUpdateRequest
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -29,7 +29,9 @@ class HetznerFloatingIpProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerFloatingIpLookup, context: SSHProvisionerContext) = api.floatingIps.get(lookup.name)?.let {
+    override suspend fun lookup(lookup: HetznerFloatingIpLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+
+    suspend fun lookupInternal(lookup: HetznerFloatingIpLookup) = api.floatingIps.get(lookup.name)?.let {
         HetznerFloatingIpRuntime(
             it.id,
             it.name,
@@ -41,7 +43,7 @@ class HetznerFloatingIpProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun apply(resource: HetznerFloatingIp, context: ProvisionerApplyContext, log: LogContext): Result<HetznerFloatingIpRuntime> {
+    override suspend fun apply(resource: HetznerFloatingIp, context: ProvisionerApplyContext): Result<HetznerFloatingIpRuntime> {
         val runtime = lookup(resource.asLookup(), context)
 
         logger.info { "creating ${resource.logText()} (${resource.type}) in '${resource.homeLocation}'" }
@@ -112,7 +114,7 @@ class HetznerFloatingIpProvisioner(hcloudToken: String) :
         )
     }
 
-    override suspend fun destroy(lookup: HetznerFloatingIpLookup, context: SSHProvisionerContext, log: LogContext) = lookup(lookup, context)?.let {
+    override suspend fun destroy(lookup: HetznerFloatingIpLookup, context: ProvisionerDestroyContext) = lookupInternal(lookup)?.let {
         if (it.deleteProtected) {
             val unprotect = api.floatingIps.changeDeleteProtection(it.id, false)
             api.floatingIps.waitForAction(unprotect)

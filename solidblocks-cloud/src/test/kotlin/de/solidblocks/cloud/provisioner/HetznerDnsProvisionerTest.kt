@@ -1,5 +1,4 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
@@ -107,7 +106,7 @@ class HetznerDnsProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
-            recordProvisioner.apply(record, context, TEST_LOG_CONTEXT) shouldNotBe null
+            recordProvisioner.apply(record, context) shouldNotBe null
 
             assertSoftly(recordProvisioner.lookup(record.asLookup(), context)!!) {
                 it.name shouldBe recordName

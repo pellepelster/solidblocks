@@ -19,6 +19,7 @@ import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.providers.managerForRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.Error
@@ -72,7 +73,7 @@ class ProvisionersRegistry(
             "creating ${resource.logText()} using provisioner ${provisioner::class.qualifiedName}"
         }
 
-        return provisioner.apply(resource, context, log) as Result<RuntimeType>
+        return provisioner.apply(resource, context) as Result<RuntimeType>
     }
 
     suspend fun <ResourceType : BaseResource> diff(resource: ResourceType, context: ProvisionerDiffContext): Result<ResourceDiff> = provisioner(resource).diff(resource, context)
@@ -81,7 +82,15 @@ class ProvisionersRegistry(
     suspend fun <LookupType : InfrastructureResourceLookup<*>> destroy(lookup: LookupType, context: SSHProvisionerContext, log: LogContext): Boolean {
         val provisioner = provisioner(lookup)
         return if (provisioner is DestroyableResourceProvisioner<*>) {
-            (provisioner as DestroyableResourceProvisioner<InfrastructureResourceLookup<*>>).destroy(lookup, context, log)
+            (provisioner as DestroyableResourceProvisioner<InfrastructureResourceLookup<*>>).destroy(
+                lookup,
+                object : ProvisionerDestroyContext {
+                    override val log: LogContext
+                        get() = log
+
+                    override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = context.lookup(lookup)
+                },
+            )
         } else {
             logger.warn { "${lookup.logText()} does not support destroy (${provisioner::class.qualifiedName})" }
             false

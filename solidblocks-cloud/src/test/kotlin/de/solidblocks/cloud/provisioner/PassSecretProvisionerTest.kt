@@ -1,5 +1,4 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
@@ -50,7 +49,7 @@ class PassSecretProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
-            val runtimeAfterCreation = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
+            val runtimeAfterCreation = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             val runtimeAfterLookup = provisioner.lookup(randomSecret.asLookup(), TEST_PROVISIONER_CONTEXT)!!
             runtimeAfterLookup.secret shouldHaveLength 13
             runtimeAfterLookup.secret shouldBe runtimeAfterCreation.secret
@@ -59,7 +58,7 @@ class PassSecretProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.up_to_date
             }
 
-            val runtimeAfterSecondApply = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
+            val runtimeAfterSecondApply = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT).shouldBeInstanceOf<Success<GenericSecretRuntime>>().data
             runtimeAfterSecondApply.secret shouldBe runtimeAfterCreation.secret
 
             assertSoftly(provisioner.diff(staticSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
@@ -68,7 +67,7 @@ class PassSecretProvisionerTest {
 
             TEST_PROVISIONER_CONTEXT.taintedResources.add(randomSecret)
 
-            val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            val secretAfterTaint = provisioner.apply(randomSecret, TEST_PROVISIONER_CONTEXT)
             runtimeAfterCreation.secret shouldNotBe secretAfterTaint.shouldBeTypeOf<Success<GarageFsBucketRuntime>>().data
 
             assertSoftly(provisioner.diff(randomSecret, TEST_PROVISIONER_CONTEXT).diffData()) {
@@ -81,7 +80,7 @@ class PassSecretProvisionerTest {
             /**
              * overwrite secret
              */
-            provisioner.apply(staticSecret, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.apply(staticSecret, TEST_PROVISIONER_CONTEXT)
             provisioner.lookup(staticSecret.asLookup(), TEST_PROVISIONER_CONTEXT)?.secret shouldBe "static-secret"
         }
     }

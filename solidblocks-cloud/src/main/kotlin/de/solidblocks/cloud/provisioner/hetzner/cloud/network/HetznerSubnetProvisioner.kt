@@ -13,7 +13,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.hetzner.cloud.resources.NetworkType
 import de.solidblocks.hetzner.cloud.resources.NetworkZone
 import de.solidblocks.hetzner.cloud.resources.NetworksSubnetCreateRequest
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -37,7 +36,7 @@ class HetznerSubnetProvisioner(hcloudToken: String) :
         return network.subnets.singleOrNull { it.subnet == lookup.name }
     }
 
-    override suspend fun apply(resource: HetznerSubnet, context: ProvisionerApplyContext, log: LogContext): Result<HetznerSubnetRuntime> {
+    override suspend fun apply(resource: HetznerSubnet, context: ProvisionerApplyContext): Result<HetznerSubnetRuntime> {
         val network =
             context.lookup(resource.network) ?: return Error("${resource.network.logText()} not found")
 

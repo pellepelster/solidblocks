@@ -21,6 +21,8 @@ tasks.named("compileKotlin") {
 
 
 dependencies {
+    api(project(":solidblocks-api"))
+
     implementation(project(":solidblocks-utils"))
     implementation(project(":solidblocks-ssh"))
     implementation(project(":solidblocks-shell"))

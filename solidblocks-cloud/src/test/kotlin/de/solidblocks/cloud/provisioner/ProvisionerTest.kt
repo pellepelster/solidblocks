@@ -73,7 +73,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<Unit>>()
 
             assertSoftly(
@@ -161,7 +161,6 @@ class ProvisionerTest {
                 .apply(
                     listOf(resource2),
                     TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -185,7 +184,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe true
@@ -269,7 +268,6 @@ class ProvisionerTest {
                 .apply(
                     listOf(resource2),
                     TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -290,7 +288,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe false
@@ -317,7 +315,6 @@ class ProvisionerTest {
                 .apply(
                     listOf(resource2),
                     TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -337,7 +334,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe true
@@ -364,7 +361,6 @@ class ProvisionerTest {
                 .apply(
                     listOf(resource2),
                     TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -406,7 +402,6 @@ class ProvisionerTest {
                 .apply(
                     listOf(parent, child),
                     TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -448,7 +443,7 @@ class ProvisionerTest {
 
             assertSoftly(
                 provisioner
-                    .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                    .apply(diffs, TEST_PROVISIONER_CONTEXT)
                     .shouldBeTypeOf<Error<Unit>>(),
             ) {
                 it.error shouldBe "duplicate error"
@@ -473,7 +468,6 @@ class ProvisionerTest {
                 .apply(
                     listOf(Resource2(resourceName, up_to_date_or_missing)),
                     TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -490,7 +484,7 @@ class ProvisionerTest {
             resource2Provisioner.destroyResult = false
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Error<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe true
@@ -523,7 +517,7 @@ class ProvisionerTest {
                     .data
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe false
@@ -556,7 +550,7 @@ class ProvisionerTest {
 
             assertSoftly(
                 provisioner
-                    .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                    .apply(diffs, TEST_PROVISIONER_CONTEXT)
                     .shouldBeTypeOf<Error<Unit>>(),
             ) {
                 it.error shouldBe "apply error for ${resource.logText()}"
@@ -588,7 +582,7 @@ class ProvisionerTest {
                     .data
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Error<Unit>>()
         }
     }
@@ -607,7 +601,7 @@ class ProvisionerTest {
 
             assertSoftly(
                 provisioner
-                    .apply(listOf(resource), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                    .apply(listOf(resource), TEST_PROVISIONER_CONTEXT)
                     .shouldBeTypeOf<Error<Unit>>(),
             ) {
                 it.error shouldBe "failed to apply 1 resource(s): ${resource.logText()}"
@@ -634,7 +628,6 @@ class ProvisionerTest {
                 .apply(
                     listOf(resource2),
                     TEST_PROVISIONER_CONTEXT,
-                    TEST_LOG_CONTEXT,
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -653,7 +646,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(diffs, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.applyCount(resourceName) shouldBe 1

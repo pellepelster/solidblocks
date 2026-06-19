@@ -10,6 +10,7 @@ import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.provisioner.Provisioner
 import de.solidblocks.cloud.provisioner.ProvisionersRegistry
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
@@ -39,7 +40,7 @@ fun Result<ResourceDiff>.diffData(): ResourceDiff = when (this) {
     is Error<ResourceDiff> -> throw AssertionError("expected diff to succeed but was error: $error")
 }
 
-class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: SSHClient? = null) : ProvisionerDiffContext, ValidationContext, ProvisionerApplyContext {
+class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: SSHClient? = null) : ProvisionerDiffContext, ValidationContext, ProvisionerDestroyContext, ProvisionerApplyContext {
 
     override val sshKeyPair =
         SSHKeyUtils.loadKey(
@@ -77,6 +78,9 @@ class TestProvisionerContext(val registry: ProvisionersRegistry, val sshClient: 
     }
 
     override fun hasPendingChange(resource: BaseResource) = false
+
+    override val log: LogContext
+        get() = TEST_LOG_CONTEXT
 }
 
 val TEST_PROVISIONER_CONTEXT = TestProvisionerContext(ProvisionersRegistry())

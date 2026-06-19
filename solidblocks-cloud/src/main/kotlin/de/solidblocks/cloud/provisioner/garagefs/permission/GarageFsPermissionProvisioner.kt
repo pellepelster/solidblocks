@@ -15,7 +15,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.garagefs.BucketKeyPermChangeRequest
 import de.solidblocks.garagefs.BucketKeyPermRequest
 import de.solidblocks.garagefs.GarageFsApi
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -58,7 +57,7 @@ class GarageFsPermissionProvisioner :
         is Success<GarageFsPermissionRuntime?> -> result.data
     }
 
-    override suspend fun apply(resource: GarageFsPermission, context: ProvisionerApplyContext, log: LogContext): Result<GarageFsPermissionRuntime> {
+    override suspend fun apply(resource: GarageFsPermission, context: ProvisionerApplyContext): Result<GarageFsPermissionRuntime> {
         val bucket =
             context.lookup(resource.bucket.asLookup())
                 ?: return Error<GarageFsPermissionRuntime>("${resource.bucket.logText()} not found")

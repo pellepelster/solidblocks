@@ -1,5 +1,4 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
@@ -65,7 +64,7 @@ class HetznerFirewallProvisionerTest {
             }
 
             provisioner
-                .apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resource, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerFirewallRuntime>>()
                 .data
                 .name shouldBe name
@@ -90,7 +89,7 @@ class HetznerFirewallProvisionerTest {
             }
 
             provisioner
-                .apply(resourceWithNewRules, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resourceWithNewRules, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerFirewallRuntime>>()
                 .data
                 .name shouldBe name
@@ -113,7 +112,7 @@ class HetznerFirewallProvisionerTest {
                 it.changes[0].name shouldBe "label 'foo'"
             }
 
-            provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)
 
             assertSoftly(provisioner.diff(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
@@ -130,14 +129,14 @@ class HetznerFirewallProvisionerTest {
                 it.changes[0].actualValue shouldBe "bar"
             }
 
-            provisioner.apply(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.apply(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)
 
             assertSoftly(provisioner.diff(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes.shouldBeEmpty()
             }
 
-            provisioner.destroy(resourceWithUpdatedLabel.asLookup(), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.destroy(resourceWithUpdatedLabel.asLookup(), TEST_PROVISIONER_CONTEXT)
             provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
         }
     }

@@ -16,6 +16,7 @@ import de.solidblocks.cloud.api.logText
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
+import de.solidblocks.cloud.api.resources.EndpointResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -191,14 +192,14 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
         }
     }
 
-    suspend fun apply(resources: List<BaseResource>, context: ProvisionerApplyContext, log: LogContext): Result<Unit> {
+    suspend fun apply(resources: List<BaseResource>, context: ProvisionerApplyContext): Result<Unit> {
         val failures =
             resources.mapNotNull { resource ->
                 try {
                     registry.apply<BaseInfrastructureResourceRuntime>(
                         resource,
                         context,
-                        log,
+                        context.log,
                     )
                     null
                 } catch (e: Exception) {
@@ -214,7 +215,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
         }
     }
 
-    fun apply(resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>, context: ProvisionerApplyContext, log: LogContext): Result<Unit> {
+    fun apply(resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>, context: ProvisionerApplyContext): Result<Unit> {
         return runBlocking {
             resourceGroupDiffs.map { (resourceGroup, diffs) ->
                 logger.info { "rolling out changes for ${resourceGroup.logText()}" }
@@ -222,10 +223,10 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                 for (diffToDestroy in diffs.filter { it.needsRecreate() }) {
                     val resource = diffToDestroy.resource
                     logger.info { "destroying ${resource.logText()}" }
-                    log.info("destroying ${resource.logText()}")
+                    context.log.info("destroying ${resource.logText()}")
 
                     if (registry.lookup(resource.asLookup(), context) != null) {
-                        val result = registry.destroy(resource.asLookup(), context, log)
+                        val result = registry.destroy(resource.asLookup(), context, context.log)
                         if (!result) {
                             return@runBlocking Error("destroying ${resource.logText()} failed")
                         }
@@ -247,8 +248,8 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                         .filterIsInstance<BaseInfrastructureResource<*>>()
 
                 for (resource in resourcesToApply) {
-                    log.info("applying ${resource.logText()}")
-                    val applyLog = log.indent()
+                    context.log.info("applying ${resource.logText()}")
+                    val applyLog = context.log.indent()
 
                     val result =
                         try {
@@ -270,71 +271,73 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                             is Success<BaseInfrastructureResourceRuntime> -> result.data
                         }
 
-                    runtime.endpoints.forEach {
-                        when (it.protocol) {
-                            EndpointProtocol.ssh -> {
-                                val sshPortOpen =
-                                    waitConfig.waitForSSH(it, context.sshKeyPair, applyLog)
+                    if (runtime is EndpointResourceRuntime) {
+                        runtime.endpoints.forEach {
+                            when (it.protocol) {
+                                EndpointProtocol.ssh -> {
+                                    val sshPortOpen =
+                                        waitConfig.waitForSSH(it, context.sshKeyPair, applyLog)
 
-                                if (!sshPortOpen) {
-                                    return@runBlocking Error<Unit>(
-                                        "error waiting for SSH on ${it.address}:${it.port}",
-                                    )
-                                }
+                                    if (!sshPortOpen) {
+                                        return@runBlocking Error<Unit>(
+                                            "error waiting for SSH on ${it.address}:${it.port}",
+                                        )
+                                    }
 
-                                val cloudInitFinished =
-                                    waitConfig.waitForCondition {
+                                    val cloudInitFinished =
+                                        waitConfig.waitForCondition {
+                                            try {
+                                                val sshClient = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
+                                                applyLog.info("waiting for cloud-init to finish on '${it.address}:${it.port}'")
+                                                sshClient
+                                                    .command("test -f /var/lib/cloud/instance/boot-finished")
+                                                    .exitCode == 0
+                                            } catch (e: Exception) {
+                                                false
+                                            }
+                                        }
+
+                                    if (!cloudInitFinished) {
+                                        return@runBlocking Error<Unit>(
+                                            "error waiting for cloud-init to finish on ${it.address}:${it.port}",
+                                        )
+                                    }
+
+                                    val sshClient = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
+                                    val result = sshClient.command("cat /var/lib/cloud/data/status.json")
+
+                                    if (result.exitCode != 0) {
+                                        return@runBlocking Error<Unit>(
+                                            "error fetching cloud-init result from ${it.address}:${it.port}",
+                                        )
+                                    }
+
+                                    val cloudInitResultHasErrors =
                                         try {
-                                            val sshClient = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
-                                            applyLog.info("waiting for cloud-init to finish on '${it.address}:${it.port}'")
-                                            sshClient
-                                                .command("test -f /var/lib/cloud/instance/boot-finished")
-                                                .exitCode == 0
+                                            val json = Json { this.ignoreUnknownKeys = true }
+
+                                            val cloudInitResult: CloudInitResultWrapper? =
+                                                json.decodeFromString(result.stdOut)
+                                            if (cloudInitResult == null) {
+                                                return@runBlocking Error<Unit>(
+                                                    "error deserializing cloud-init result from ${it.address}:${it.port}",
+                                                )
+                                            }
+
+                                            cloudInitResult.hasErrors
                                         } catch (e: Exception) {
+                                            logger.error(e) { "failed to deserialize cloud-init status" }
+                                            logError("failed to deserialize cloud-init status")
                                             false
                                         }
+
+                                    if (cloudInitResultHasErrors) {
+                                        val cloudInitOutputLog = sshClient.download("/var/log/cloud-init-output.log")
+
+                                        return@runBlocking Error<Unit>(
+                                            "cloud-init has errors on ${it.address}:${it.port}, '/var/log/cloud-init-output.log' was:\n---\n${cloudInitOutputLog?.toString(Charsets.UTF_8)}---\n",
+                                        )
                                     }
-
-                                if (!cloudInitFinished) {
-                                    return@runBlocking Error<Unit>(
-                                        "error waiting for cloud-init to finish on ${it.address}:${it.port}",
-                                    )
-                                }
-
-                                val sshClient = SSHClient(it.address, context.sshKeyPair, null, port = it.port)
-                                val result = sshClient.command("cat /var/lib/cloud/data/status.json")
-
-                                if (result.exitCode != 0) {
-                                    return@runBlocking Error<Unit>(
-                                        "error fetching cloud-init result from ${it.address}:${it.port}",
-                                    )
-                                }
-
-                                val cloudInitResultHasErrors =
-                                    try {
-                                        val json = Json { this.ignoreUnknownKeys = true }
-
-                                        val cloudInitResult: CloudInitResultWrapper? =
-                                            json.decodeFromString(result.stdOut)
-                                        if (cloudInitResult == null) {
-                                            return@runBlocking Error<Unit>(
-                                                "error deserializing cloud-init result from ${it.address}:${it.port}",
-                                            )
-                                        }
-
-                                        cloudInitResult.hasErrors
-                                    } catch (e: Exception) {
-                                        logger.error(e) { "failed to deserialize cloud-init status" }
-                                        logError("failed to deserialize cloud-init status")
-                                        false
-                                    }
-
-                                if (cloudInitResultHasErrors) {
-                                    val cloudInitOutputLog = sshClient.download("/var/log/cloud-init-output.log")
-
-                                    return@runBlocking Error<Unit>(
-                                        "cloud-init has errors on ${it.address}:${it.port}, '/var/log/cloud-init-output.log' was:\n---\n${cloudInitOutputLog?.toString(Charsets.UTF_8)}---\n",
-                                    )
                                 }
                             }
                         }

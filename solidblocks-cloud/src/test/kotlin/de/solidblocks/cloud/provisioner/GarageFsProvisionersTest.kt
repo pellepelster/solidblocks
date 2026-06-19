@@ -1,5 +1,5 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
+
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
@@ -173,13 +173,13 @@ class GarageFsProvisionersTest {
                 it.changes shouldHaveSize 1
             }
 
-            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+            layoutProvisioner.apply(layout, context) shouldNotBe null
             assertSoftly(layoutProvisioner.diff(layout, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes shouldHaveSize 0
             }
 
-            layoutProvisioner.apply(layout, context, TEST_LOG_CONTEXT) shouldNotBe null
+            layoutProvisioner.apply(layout, context) shouldNotBe null
             assertSoftly(layoutProvisioner.diff(layout, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date
                 it.changes shouldHaveSize 0
@@ -198,23 +198,23 @@ class GarageFsProvisionersTest {
             }
 
             bucketProvisioner
-                .apply(bucket, context, TEST_LOG_CONTEXT)
+                .apply(bucket, context)
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
                 .name shouldBe bucket.name
             bucketProvisioner
-                .apply(bucket, context, TEST_LOG_CONTEXT)
+                .apply(bucket, context)
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
                 .name shouldBe bucket.name
 
             accessKeyProvisioner
-                .apply(accessKey, context, TEST_LOG_CONTEXT)
+                .apply(accessKey, context)
                 .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
                 .data
                 .name shouldBe accessKey.name
             accessKeyProvisioner
-                .apply(accessKey, context, TEST_LOG_CONTEXT)
+                .apply(accessKey, context)
                 .shouldBeTypeOf<Success<GarageFsAccessKeyRuntime>>()
                 .data
                 .name shouldBe accessKey.name
@@ -240,7 +240,6 @@ class GarageFsProvisionersTest {
                 .apply(
                     bucketWithWebsiteAccess,
                     context,
-                    TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
@@ -274,7 +273,6 @@ class GarageFsProvisionersTest {
                 .apply(
                     bucketWithWebsiteAccessDomains,
                     context,
-                    TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data
@@ -314,7 +312,7 @@ class GarageFsProvisionersTest {
                 it?.write shouldBe false
             }
             permissionProvisioner
-                .apply(allPermission, context, TEST_LOG_CONTEXT)
+                .apply(allPermission, context)
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data shouldNotBe null
 
@@ -343,7 +341,6 @@ class GarageFsProvisionersTest {
                 .apply(
                     noOwnerPermission,
                     context,
-                    TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsBucketRuntime>>()
                 .data shouldNotBe null
@@ -360,7 +357,6 @@ class GarageFsProvisionersTest {
             permissionProvisioner.apply(
                 noOwnerNoReadPermission,
                 context,
-                TEST_LOG_CONTEXT,
             ) shouldNotBe null
             assertSoftly(permissionProvisioner.lookup(allPermission.asLookup(), context)!!) {
                 it.name shouldBe "${bucket.name}.${accessKey.name}"
@@ -376,7 +372,6 @@ class GarageFsProvisionersTest {
                 .apply(
                     noOwnerNoReadNoWritePermission,
                     context,
-                    TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
                 .data shouldNotBe null
@@ -387,7 +382,7 @@ class GarageFsProvisionersTest {
                 it?.write shouldBe false
             }
             permissionProvisioner
-                .apply(allPermission, context, TEST_LOG_CONTEXT)
+                .apply(allPermission, context)
                 .shouldBeTypeOf<Success<GarageFsPermissionRuntime>>()
                 .data shouldNotBe null
 

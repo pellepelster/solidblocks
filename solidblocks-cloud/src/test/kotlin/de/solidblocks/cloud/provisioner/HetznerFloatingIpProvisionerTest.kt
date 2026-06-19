@@ -1,5 +1,4 @@
 package de.solidblocks.cloud.provisioner
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
@@ -44,7 +43,7 @@ class HetznerFloatingIpProvisionerTest {
 
             // create
             provisioner
-                .apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resource, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerFloatingIpRuntime>>()
                 .data
                 .name shouldBe name
@@ -85,7 +84,7 @@ class HetznerFloatingIpProvisionerTest {
                 it.changes[0].name shouldBe "label 'foo'"
             }
             provisioner
-                .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerFloatingIpRuntime>>()
                 .data
                 .name shouldBe name
@@ -110,7 +109,7 @@ class HetznerFloatingIpProvisionerTest {
                 it.changes[0].actualValue shouldBe "bar"
             }
             provisioner
-                .apply(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resourceWithUpdatedLabel, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerFloatingIpRuntime>>()
                 .data
                 .name shouldBe name
@@ -136,7 +135,7 @@ class HetznerFloatingIpProvisionerTest {
                 it.changes[0].actualValue shouldBe "true"
             }
             provisioner
-                .apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerFloatingIpRuntime>>()
                 .data
                 .name shouldBe name
@@ -146,7 +145,7 @@ class HetznerFloatingIpProvisionerTest {
             }
 
             // delete
-            provisioner.destroy(resourceWithNewDeleteProtection.asLookup(), TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+            provisioner.destroy(resourceWithNewDeleteProtection.asLookup(), TEST_PROVISIONER_CONTEXT)
             provisioner.lookup(resource.asLookup(), TEST_PROVISIONER_CONTEXT) shouldBe null
         }
     }

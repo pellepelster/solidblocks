@@ -22,7 +22,6 @@ import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.asResult
 import de.solidblocks.cloud.utils.passInsert
 import de.solidblocks.cloud.utils.passShow
-import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
@@ -65,14 +64,14 @@ class PassSecretProvisioner(val passwordStoreDir: String) :
 
     override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
 
-    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext, log: LogContext): Result<GenericSecretRuntime> {
+    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext): Result<GenericSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !context.isTainted(resource) && resource.secretGenerator.isEphemeral()) {
             return Success(current)
         }
 
-        log.debug("creating secret at '${resource.name}'")
+        context.log.debug("creating secret at '${resource.name}'")
         val secret = resource.secretGenerator.generate(context)
         when (val result = passInsert(resource.name, secret, passwordStoreDir).asResult("pass insert")) {
             is Error<CommandResult> -> Error<GenericSecretRuntime>(result.error)

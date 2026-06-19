@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.HetznerTestContext
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
@@ -66,7 +65,6 @@ class HetznerServerProvisionerTest {
                 .apply(
                     listOf(sshKey1, sshKey2, volume, network, subnet),
                     testContext.context,
-                    TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Success<Unit>>()
 
@@ -90,7 +88,6 @@ class HetznerServerProvisionerTest {
                 testContext.serverProvisioner.apply(
                     server,
                     testContext.context,
-                    TEST_LOG_CONTEXT,
                 ) shouldNotBe null
 
                 assertSoftly(testContext.serverProvisioner.diff(server, testContext.context).diffData()) {
@@ -174,7 +171,6 @@ class HetznerServerProvisionerTest {
                 testContext.serverProvisioner.apply(
                     serverWithPrivateNetwork,
                     testContext.context,
-                    TEST_LOG_CONTEXT,
                 ) shouldNotBe null
 
                 assertSoftly(
@@ -186,7 +182,7 @@ class HetznerServerProvisionerTest {
                     it.privateIpv4 shouldBe "10.0.1.1"
                 }
 
-                testContext.serverProvisioner.destroy(server.asLookup(), testContext.context, TEST_LOG_CONTEXT)
+                testContext.serverProvisioner.destroy(server.asLookup(), testContext.context)
             }
         }
     }

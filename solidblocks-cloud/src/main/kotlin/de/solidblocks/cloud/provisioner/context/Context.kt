@@ -17,16 +17,24 @@ import de.solidblocks.utils.LogContext
 import java.security.KeyPair
 import kotlin.reflect.KClass
 
+interface ProvisionerLookupContext {
+    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType?
+}
+
+interface ProvisionerLogContext {
+    val log: LogContext
+}
+
+interface ProvisionerDestroyContext : ProvisionerLookupContext, ProvisionerLogContext
+
 interface SSHProvisionerContext : ProvisionerContext {
     val sshKeyPair: KeyPair
     val sshKeyAbsolutePath: String
     fun createOrGetSshClient(serverName: String): Result<SSHClient>
 }
 
-interface ProvisionerContext {
+interface ProvisionerContext : ProvisionerLookupContext {
     val environment: EnvironmentContext
-
-    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType?
 
     suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType>
 
@@ -41,7 +49,7 @@ interface ValidationContext {
     suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType>
 }
 
-interface ProvisionerApplyContext : SSHProvisionerContext {
+interface ProvisionerApplyContext : ProvisionerLogContext, SSHProvisionerContext {
     suspend fun createSecret(path: String, secret: String, taintable: Boolean): Result<Unit>
 
     fun isTainted(resource: BaseResource): Boolean

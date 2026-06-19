@@ -3,7 +3,8 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 import de.solidblocks.cloud.api.endpoint.Endpoint
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResourceRuntime
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.api.resources.EndpointResourceRuntime
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeRuntime
 import de.solidblocks.hetzner.cloud.HetznerApi
@@ -23,13 +24,13 @@ class HetznerServerRuntime(
     val volumes: List<HetznerVolumeRuntime>,
     val privateIpv4: String?,
     val publicIpv4: String?,
-    endpoints: List<Endpoint>,
+    override val endpoints: List<Endpoint>,
     val sshPort: Int = 22,
-) : BaseLabeledInfrastructureResourceRuntime(labels, endpoints) {
+) : EndpointResourceRuntime, BaseLabeledInfrastructureResourceRuntime(labels) {
     override fun logText() = "server '$name'"
 }
 
-suspend fun ServerResponse.toRuntime(api: HetznerApi, context: ProvisionerContext) = HetznerServerRuntime(
+suspend fun ServerResponse.toRuntime(api: HetznerApi, context: ProvisionerLookupContext) = HetznerServerRuntime(
     this.id,
     this.name,
     this.status,

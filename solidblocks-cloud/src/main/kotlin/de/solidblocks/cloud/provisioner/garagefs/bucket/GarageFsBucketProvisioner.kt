@@ -14,7 +14,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.garagefs.*
-import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 
 class GarageFsBucketProvisioner :
@@ -95,7 +94,7 @@ class GarageFsBucketProvisioner :
         }
     }
 
-    override suspend fun apply(resource: GarageFsBucket, context: ProvisionerApplyContext, log: LogContext): Result<GarageFsBucketRuntime> {
+    override suspend fun apply(resource: GarageFsBucket, context: ProvisionerApplyContext): Result<GarageFsBucketRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         context.withApiClients(resource.server, resource.adminToken) {

@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.Constants.defaultNetwork
 import de.solidblocks.cloud.Constants.defaultServiceSubnet
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
@@ -59,7 +58,7 @@ class HetznerNetworkProvisionerTest {
 
             // create
             networkProvisioner
-                .apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resource, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerNetworkRuntime>>()
                 .data
                 .name shouldBe name
@@ -81,7 +80,7 @@ class HetznerNetworkProvisionerTest {
                 it.changes[0].name shouldBe "label 'foo'"
             }
             networkProvisioner
-                .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resourceWithNewLabel, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerNetworkRuntime>>()
                 .data
                 .name shouldBe name
@@ -97,7 +96,7 @@ class HetznerNetworkProvisionerTest {
                 it.changes[0].name shouldBe "label 'foo'"
             }
             networkProvisioner
-                .apply(resource, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resource, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerNetworkRuntime>>()
                 .data
                 .name shouldBe name
@@ -116,7 +115,7 @@ class HetznerNetworkProvisionerTest {
             }
 
             networkProvisioner
-                .apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT, TEST_LOG_CONTEXT)
+                .apply(resourceWithNewDeleteProtection, TEST_PROVISIONER_CONTEXT)
                 .shouldBeTypeOf<Success<HetznerNetworkRuntime>>()
                 .data
                 .name shouldBe name
@@ -131,7 +130,7 @@ class HetznerNetworkProvisionerTest {
                 it.status shouldBe ResourceDiffStatus.missing
             }
 
-            subnetProvisioner.apply(subnet, context, TEST_LOG_CONTEXT)
+            subnetProvisioner.apply(subnet, context)
 
             assertSoftly(subnetProvisioner.diff(subnet, context).diffData()) {
                 it.status shouldBe ResourceDiffStatus.up_to_date

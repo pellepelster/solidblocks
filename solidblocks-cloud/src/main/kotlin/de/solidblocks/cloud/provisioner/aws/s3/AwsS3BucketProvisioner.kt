@@ -24,6 +24,7 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.DEFAULT_WAIT
@@ -32,7 +33,6 @@ import de.solidblocks.cloud.utils.Result
 import de.solidblocks.cloud.utils.Success
 import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.waitForConsecutive
-import de.solidblocks.utils.LogContext
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.seconds
 
@@ -45,7 +45,9 @@ class AwsS3BucketProvisioner(
     InfrastructureResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime, AwsS3BucketLookup>,
     DestroyableResourceProvisioner<AwsS3BucketLookup> {
 
-    override suspend fun lookup(lookup: AwsS3BucketLookup, context: SSHProvisionerContext): AwsS3BucketRuntime? = s3Client().use { client ->
+    override suspend fun lookup(lookup: AwsS3BucketLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+
+    suspend fun lookupInternal(lookup: AwsS3BucketLookup): AwsS3BucketRuntime? = s3Client().use { client ->
         try {
             client.headBucket(HeadBucketRequest { bucket = lookup.name })
         } catch (e: NotFound) {
@@ -74,7 +76,7 @@ class AwsS3BucketProvisioner(
         )
     }
 
-    override suspend fun apply(resource: AwsS3Bucket, context: ProvisionerApplyContext, log: LogContext): Result<AwsS3BucketRuntime> = s3Client().use { client ->
+    override suspend fun apply(resource: AwsS3Bucket, context: ProvisionerApplyContext): Result<AwsS3BucketRuntime> = s3Client().use { client ->
         val exists = try {
             client.headBucket(HeadBucketRequest { bucket = resource.name })
             true
@@ -85,7 +87,7 @@ class AwsS3BucketProvisioner(
         }
 
         if (!exists) {
-            log.info("creating S3 bucket '${resource.name}' in region '$region'")
+            context.log.info("creating S3 bucket '${resource.name}' in region '$region'")
             client.createBucket(
                 CreateBucketRequest {
                     bucket = resource.name
@@ -99,7 +101,7 @@ class AwsS3BucketProvisioner(
 
             waitConfig.waitForConsecutive(5) {
                 try {
-                    log.info("waiting for creation of bucket '${resource.name}'...")
+                    context.log.info("waiting for creation of bucket '${resource.name}'...")
                     lookup(resource.asLookup(), context)
                 } catch (e: Exception) {
                     null
@@ -123,7 +125,7 @@ class AwsS3BucketProvisioner(
             ?: Error("error applying ${resource.logText()}")
     }
 
-    override suspend fun destroy(lookup: AwsS3BucketLookup, context: SSHProvisionerContext, log: LogContext): Boolean {
+    override suspend fun destroy(lookup: AwsS3BucketLookup, context: ProvisionerDestroyContext): Boolean {
         s3Client().use { client ->
             try {
                 var truncated = true
@@ -157,8 +159,8 @@ class AwsS3BucketProvisioner(
 
                 WaitConfig(60, 2.seconds).waitForConsecutive(3) {
                     try {
-                        log.info("waiting for deletion of bucket '${lookup.name}'...")
-                        lookup(lookup, context)
+                        context.log.info("waiting for deletion of bucket '${lookup.name}'...")
+                        lookupInternal(lookup)
                     } catch (e: Exception) {
                         null
                     }
