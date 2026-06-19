@@ -1,10 +1,10 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUser
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUserProvisioner
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.infra.test.SolidblocksTest
 import de.solidblocks.infra.test.SolidblocksTestContext
 import io.kotest.assertions.assertSoftly

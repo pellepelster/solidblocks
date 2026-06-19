@@ -1,5 +1,6 @@
 package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.duplicate
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
@@ -9,6 +10,8 @@ import de.solidblocks.cloud.api.ResourceDiffStatus.tainted
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.endpoint.waitForSSH
 import de.solidblocks.cloud.api.hierarchicalResourceList
@@ -23,10 +26,7 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.services.ServiceRegistration
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.LONG_WAIT
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.ssh.SSHClient

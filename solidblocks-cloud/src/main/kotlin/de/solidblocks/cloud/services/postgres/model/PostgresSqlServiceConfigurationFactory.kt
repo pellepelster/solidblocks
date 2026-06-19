@@ -1,6 +1,8 @@
 package de.solidblocks.cloud.services.postgres.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.NumberConstraints
 import de.solidblocks.cloud.configuration.NumberKeyword
@@ -11,8 +13,6 @@ import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.*
 import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 
 class PostgresSqlServiceConfigurationFactory : PolymorphicConfigurationFactory<PostgresSqlServiceConfiguration>() {
 

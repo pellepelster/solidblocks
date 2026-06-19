@@ -1,11 +1,11 @@
 package de.solidblocks.cloud.services.postgres.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PostgresSqlServiceDatabaseUserConfigurationFactory : ConfigurationFactory<PostgresSqlServiceDatabaseUserConfiguration> {

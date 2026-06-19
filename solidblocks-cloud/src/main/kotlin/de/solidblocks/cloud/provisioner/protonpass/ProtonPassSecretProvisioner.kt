@@ -1,11 +1,15 @@
 package de.solidblocks.cloud.provisioner.protonpass
 
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.onError
 import de.solidblocks.cloud.interpolation.StringInterpolationFactory
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -15,11 +19,7 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.asResult
-import de.solidblocks.cloud.api.onError
 import de.solidblocks.cloud.utils.parseProtonPassItem
 import de.solidblocks.cloud.utils.protonPassItemCreateNote
 import de.solidblocks.cloud.utils.protonPassItemDelete
@@ -27,7 +27,7 @@ import de.solidblocks.cloud.utils.protonPassItemView
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ProtonPassSecretProvisioner(val vaultName: String) :
-    InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
+    ResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
     GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup>,
     StringInterpolationFactory {
 

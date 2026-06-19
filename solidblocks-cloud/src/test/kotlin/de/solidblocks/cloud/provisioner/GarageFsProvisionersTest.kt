@@ -2,6 +2,7 @@ package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.TestProvisionerContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKeyProvisioner
@@ -25,7 +26,6 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataResult
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.garagefs.GarageFsApi
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType

@@ -2,6 +2,8 @@ package de.solidblocks.cloud.services
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.services.postgres.PostgresSqlServiceManager
@@ -10,8 +12,6 @@ import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurat
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseUserConfiguration
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.yamlParse
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType

@@ -10,7 +10,7 @@ import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.map
@@ -313,7 +313,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     fun defaultDatabaseUserName(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) = database.name
 
-    override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()
+    override fun createProvisioners(runtime: PostgresSqlServiceConfigurationRuntime) = listOf<ResourceProvisioner<*, *, *>>()
 
     override fun validateConfiguration(
         index: Int,

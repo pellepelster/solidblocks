@@ -1,16 +1,16 @@
 package de.solidblocks.cloud.providers.backup.aws
 
 import de.solidblocks.cloud.Constants.secretPath
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.types.backup.BackupProviderManager
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUserProvisioner
 import de.solidblocks.cloud.provisioner.aws.s3.AwsS3BucketProvisioner
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.getEnvOrProperty
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -53,7 +53,7 @@ class S3BackupProviderManager :
     override fun createProvisioners(runtime: S3BackupProviderConfigurationRuntime) = listOf(
         AwsS3BucketProvisioner(runtime.accessKey, runtime.secretKey, runtime.region),
         AwsIamUserProvisioner(runtime.accessKey, runtime.secretKey),
-    ) as List<InfrastructureResourceProvisioner<*, *, *>>
+    ) as List<ResourceProvisioner<*, *, *>>
 
     override val supportedConfiguration = S3BackupProviderConfiguration::class
 }

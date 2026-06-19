@@ -1,6 +1,8 @@
 package de.solidblocks.cloud.services.s3.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.BooleanKeyword
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.ListKeyword
@@ -11,8 +13,6 @@ import de.solidblocks.cloud.configuration.constraints
 import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class S3ServiceBucketConfigurationFactory : ConfigurationFactory<S3ServiceBucketConfiguration> {

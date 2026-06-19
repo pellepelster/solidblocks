@@ -1,13 +1,13 @@
 package de.solidblocks.cloud.providers.github
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 
 class GithubProviderConfigurationFactory : PolymorphicConfigurationFactory<GithubProviderConfiguration>() {
 

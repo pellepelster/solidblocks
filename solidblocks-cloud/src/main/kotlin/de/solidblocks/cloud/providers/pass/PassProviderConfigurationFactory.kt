@@ -1,16 +1,16 @@
 package de.solidblocks.cloud.providers.pass
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.configuration.optional
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.services.PROVIDER_NAME_KEYWORD
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 
 class PassProviderConfigurationFactory : PolymorphicConfigurationFactory<PassProviderConfiguration>() {
 

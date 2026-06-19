@@ -1,6 +1,8 @@
 package de.solidblocks.cloud.services.docker.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringKeyword
@@ -10,8 +12,6 @@ import de.solidblocks.cloud.services.BackupConfigurationFactory
 import de.solidblocks.cloud.services.ServiceConfigurationFactory
 import de.solidblocks.cloud.services.ServiceConfigurationFactory.parseServiceCommonConfig
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 
 class DockerServiceConfigurationFactory : PolymorphicConfigurationFactory<DockerServiceConfiguration>() {
 

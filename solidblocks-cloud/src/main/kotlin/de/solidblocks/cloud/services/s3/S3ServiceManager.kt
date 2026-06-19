@@ -10,7 +10,7 @@ import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -271,7 +271,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
         return Success(listOf(s3HostSecret, firewall, server, adminToken, rpcSecret, metricsToken, layout) + bucketResources + dnsResources + defaultResources.list())
     }
 
-    override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()
+    override fun createProvisioners(runtime: S3ServiceConfigurationRuntime) = listOf<ResourceProvisioner<*, *, *>>()
 
     override fun validateConfiguration(
         index: Int,

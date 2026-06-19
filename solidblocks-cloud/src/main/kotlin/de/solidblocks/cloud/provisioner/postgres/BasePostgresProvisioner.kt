@@ -1,12 +1,12 @@
 package de.solidblocks.cloud.provisioner.postgres
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.LONG_WAIT
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.waitForResult
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.utils.LogContext

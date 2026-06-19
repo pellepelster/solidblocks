@@ -8,7 +8,7 @@ import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.map
@@ -187,7 +187,7 @@ class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerSe
         return Success(listOf(server) + optionalResources + setOfNotNull(backupResources.second) + defaultResources.list())
     }
 
-    override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()
+    override fun createProvisioners(runtime: DockerServiceConfigurationRuntime) = listOf<ResourceProvisioner<*, *, *>>()
 
     override fun validateConfiguration(
         index: Int,

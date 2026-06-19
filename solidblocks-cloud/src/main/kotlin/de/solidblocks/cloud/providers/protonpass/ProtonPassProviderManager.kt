@@ -1,12 +1,12 @@
 package de.solidblocks.cloud.providers.protonpass
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.provisioner.protonpass.ProtonPassSecretProvisioner
 import de.solidblocks.cloud.utils.CommandResult
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.asResult
 import de.solidblocks.cloud.utils.commandExists
 import de.solidblocks.cloud.utils.getEnvOrProperty

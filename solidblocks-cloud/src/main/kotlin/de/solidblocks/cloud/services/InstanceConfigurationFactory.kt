@@ -1,6 +1,8 @@
 package de.solidblocks.cloud.services
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.NumberConstraints.Companion.VOLUME_SIZE
 import de.solidblocks.cloud.configuration.NumberKeyword
@@ -11,8 +13,6 @@ import de.solidblocks.cloud.providers.hetzner.HETZNER_INSTANCE_TYPE
 import de.solidblocks.cloud.providers.hetzner.HETZNER_LOCATIONS
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRuntime
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 

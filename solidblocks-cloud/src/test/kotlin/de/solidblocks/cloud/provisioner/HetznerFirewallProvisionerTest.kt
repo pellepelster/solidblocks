@@ -1,11 +1,11 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewall
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.firewall.HetznerFirewallRuntime
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule

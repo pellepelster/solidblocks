@@ -1,5 +1,5 @@
 package de.solidblocks.cloud.provisioner.secret
 
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceLookupProvider
 
-interface GenericSecretLookupProvider : InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>
+interface GenericSecretLookupProvider : ResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>

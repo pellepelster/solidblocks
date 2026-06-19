@@ -1,17 +1,17 @@
 package de.solidblocks.cloud.provisioner.garagefs.permission
 
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.garagefs.BucketKeyPermChangeRequest
 import de.solidblocks.garagefs.BucketKeyPermRequest
 import de.solidblocks.garagefs.GarageFsApi
@@ -20,8 +20,8 @@ import kotlin.reflect.KClass
 
 class GarageFsPermissionProvisioner :
     BaseGarageFsProvisioner(),
-    InfrastructureResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
-    InfrastructureResourceProvisioner<GarageFsPermission, GarageFsPermissionRuntime, GarageFsPermissionLookup> {
+    ResourceLookupProvider<GarageFsPermissionLookup, GarageFsPermissionRuntime>,
+    ResourceProvisioner<GarageFsPermission, GarageFsPermissionRuntime, GarageFsPermissionLookup> {
 
     private val logger = KotlinLogging.logger {}
 

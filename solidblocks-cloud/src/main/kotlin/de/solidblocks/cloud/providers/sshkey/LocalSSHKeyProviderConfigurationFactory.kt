@@ -1,15 +1,15 @@
 package de.solidblocks.cloud.providers.sshkey
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.configuration.optional
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.getOptionalString
 
 class LocalSSHKeyProviderConfigurationFactory : PolymorphicConfigurationFactory<LocalSSHKeyProviderConfiguration>() {

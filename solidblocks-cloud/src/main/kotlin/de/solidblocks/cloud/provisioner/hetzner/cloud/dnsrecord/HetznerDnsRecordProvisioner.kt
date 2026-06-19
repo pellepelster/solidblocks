@@ -1,15 +1,15 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord
 
 import de.solidblocks.cloud.api.*
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneRuntime
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.cloud.utils.joinToStringOrEmpty
 import de.solidblocks.hetzner.cloud.resources.*
@@ -18,8 +18,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class HetznerDnsRecordProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    InfrastructureResourceLookupProvider<HetznerDnsRecordLookup, HetznerDnsRecordRuntime>,
-    InfrastructureResourceProvisioner<HetznerDnsRecord, HetznerDnsRecordRuntime, HetznerDnsRecordLookup> {
+    ResourceLookupProvider<HetznerDnsRecordLookup, HetznerDnsRecordRuntime>,
+    ResourceProvisioner<HetznerDnsRecord, HetznerDnsRecordRuntime, HetznerDnsRecordLookup> {
 
     private val logger = KotlinLogging.logger {}
 

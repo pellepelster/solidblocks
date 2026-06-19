@@ -1,6 +1,8 @@
 package de.solidblocks.cloud.services
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.NumberConstraints.Companion.VOLUME_SIZE
 import de.solidblocks.cloud.configuration.NumberKeyword
@@ -9,8 +11,6 @@ import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.configuration.optional
 import de.solidblocks.cloud.utils.ByteSize
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 
 object BackupConfigurationFactory {
 

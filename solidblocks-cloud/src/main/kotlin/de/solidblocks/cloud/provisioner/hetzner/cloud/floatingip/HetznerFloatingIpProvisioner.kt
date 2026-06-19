@@ -1,21 +1,21 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip
 
 import de.solidblocks.cloud.api.DestroyableResourceProvisioner
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.resources.FloatingIpCreateRequest
 import de.solidblocks.hetzner.cloud.resources.FloatingIpUpdateRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -23,8 +23,8 @@ import kotlin.reflect.KClass
 
 class HetznerFloatingIpProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    InfrastructureResourceLookupProvider<HetznerFloatingIpLookup, HetznerFloatingIpRuntime>,
-    InfrastructureResourceProvisioner<HetznerFloatingIp, HetznerFloatingIpRuntime, HetznerFloatingIpLookup>,
+    ResourceLookupProvider<HetznerFloatingIpLookup, HetznerFloatingIpRuntime>,
+    ResourceProvisioner<HetznerFloatingIp, HetznerFloatingIpRuntime, HetznerFloatingIpLookup>,
     DestroyableResourceProvisioner<HetznerFloatingIpLookup> {
 
     private val logger = KotlinLogging.logger {}

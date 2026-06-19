@@ -1,19 +1,19 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.network
 
 import de.solidblocks.cloud.api.DestroyableResourceProvisioner
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.resources.NetworkCreateRequest
 import de.solidblocks.hetzner.cloud.resources.NetworkUpdateRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -21,8 +21,8 @@ import kotlin.reflect.KClass
 
 class HetznerNetworkProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    InfrastructureResourceLookupProvider<HetznerNetworkLookup, HetznerNetworkRuntime>,
-    InfrastructureResourceProvisioner<HetznerNetwork, HetznerNetworkRuntime, HetznerNetworkLookup>,
+    ResourceLookupProvider<HetznerNetworkLookup, HetznerNetworkRuntime>,
+    ResourceProvisioner<HetznerNetwork, HetznerNetworkRuntime, HetznerNetworkLookup>,
     DestroyableResourceProvisioner<HetznerNetworkLookup> {
 
     private val logger = KotlinLogging.logger {}

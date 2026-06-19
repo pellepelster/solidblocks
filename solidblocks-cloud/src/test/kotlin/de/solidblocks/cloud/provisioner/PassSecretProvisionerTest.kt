@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucketRuntime
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
@@ -9,7 +10,6 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.defaultPassDir
 import de.solidblocks.cloud.utils.runCommand
 import io.kotest.assertions.assertSoftly

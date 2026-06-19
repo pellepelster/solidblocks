@@ -2,6 +2,8 @@ package de.solidblocks.cloud.services
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.provisioner.context.ValidationContext
 import de.solidblocks.cloud.services.s3.S3ServiceManager
@@ -9,8 +11,6 @@ import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurat
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationFactory
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.yamlParse
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType

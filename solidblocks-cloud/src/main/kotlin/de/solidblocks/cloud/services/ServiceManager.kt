@@ -5,7 +5,10 @@ import de.solidblocks.cloud.Constants.dnsRecordLabels
 import de.solidblocks.cloud.Constants.serverName
 import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.volumeLabels
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.endpoint.waitForNoSSH
 import de.solidblocks.cloud.api.endpoint.waitForSSH
@@ -26,11 +29,8 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.ByteSize
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.LONG_WAIT
-import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.utils.SHORT_WAIT
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.resources.FloatingIpType
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
@@ -48,7 +48,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 
     fun cleanupResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext, log: LogContext): Result<Unit> = Success(Unit)
 
-    fun createProvisioners(runtime: R): List<InfrastructureResourceProvisioner<*, *, *>>
+    fun createProvisioners(runtime: R): List<ResourceProvisioner<*, *, *>>
 
     fun validateConfiguration(
         index: Int,

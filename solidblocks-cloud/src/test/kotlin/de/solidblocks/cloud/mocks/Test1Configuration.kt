@@ -2,13 +2,13 @@ package de.solidblocks.cloud.mocks
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.TEST_KEYWORD_HELP
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.SimpleKeyword
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.getBoolean
 import de.solidblocks.cloud.utils.getNonNullOrEmptyString
 import de.solidblocks.cloud.utils.logMessage

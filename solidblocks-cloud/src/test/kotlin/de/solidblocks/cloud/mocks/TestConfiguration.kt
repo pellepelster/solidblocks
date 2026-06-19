@@ -1,14 +1,14 @@
 package de.solidblocks.cloud.mocks
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.ObjectKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 
 data class TestConfiguration(val test1: List<Test1Configuration>, val test2: Test2Configuration)
 

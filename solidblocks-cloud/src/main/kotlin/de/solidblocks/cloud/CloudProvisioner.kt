@@ -9,11 +9,20 @@ import de.solidblocks.cloud.Constants.sshConfigFilePath
 import de.solidblocks.cloud.Constants.sshHostPrivateKeySecretPath
 import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.Constants.sshKnownHosts
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.tainted
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.ResourceGroup
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.aggregate
+import de.solidblocks.cloud.api.aggregateErrorMessage
+import de.solidblocks.cloud.api.getOrElse
+import de.solidblocks.cloud.api.hasError
+import de.solidblocks.cloud.api.map
+import de.solidblocks.cloud.api.mapSuccess
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -43,15 +52,6 @@ import de.solidblocks.cloud.provisioner.postgres.user.PostgresUserProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.provisioner.userdata.UserDataLookupProvider
 import de.solidblocks.cloud.services.*
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
-import de.solidblocks.cloud.api.aggregate
-import de.solidblocks.cloud.api.aggregateErrorMessage
-import de.solidblocks.cloud.api.getOrElse
-import de.solidblocks.cloud.api.hasError
-import de.solidblocks.cloud.api.map
-import de.solidblocks.cloud.api.mapSuccess
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleDirection
 import de.solidblocks.hetzner.cloud.resources.FirewallRuleProtocol
 import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
@@ -250,7 +250,7 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         )
 
         val lookups = providerLookups + listOf(UserDataLookupProvider()) + (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-            InfrastructureResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>,
+            ResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>,
             >()
 
         return ProvisionersRegistry(

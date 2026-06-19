@@ -1,21 +1,21 @@
 package de.solidblocks.cloud.provisioner.postgres.user
 
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.ssh.SSHClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.postgresql.util.PSQLException
@@ -24,8 +24,8 @@ import java.sql.DriverManager
 
 class PostgresUserProvisioner :
     BasePostgresProvisioner(),
-    InfrastructureResourceLookupProvider<PostgresUserLookup, PostgresUserRuntime>,
-    InfrastructureResourceProvisioner<PostgresUser, PostgresUserRuntime, PostgresUserLookup> {
+    ResourceLookupProvider<PostgresUserLookup, PostgresUserRuntime>,
+    ResourceProvisioner<PostgresUser, PostgresUserRuntime, PostgresUserLookup> {
 
     private val logger = KotlinLogging.logger {}
 

@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.api
+package de.solidblocks.cloud.api.lookup
 
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 

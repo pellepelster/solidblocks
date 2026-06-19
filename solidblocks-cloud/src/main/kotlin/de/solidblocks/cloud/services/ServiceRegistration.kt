@@ -1,12 +1,12 @@
 package de.solidblocks.cloud.services
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.providers.ProviderCategory
 import de.solidblocks.cloud.providers.ProviderConfiguration
 import de.solidblocks.cloud.providers.ProviderRegistration
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import kotlin.reflect.KClass
 
 interface ServiceRegistration<C : ServiceConfiguration, R : ServiceConfigurationRuntime> {

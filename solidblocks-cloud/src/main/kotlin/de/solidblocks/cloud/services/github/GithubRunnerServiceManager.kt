@@ -9,7 +9,13 @@ import de.solidblocks.cloud.Constants.serverNamePrefix
 import de.solidblocks.cloud.Constants.serverPrivateIp
 import de.solidblocks.cloud.Constants.serviceLabels
 import de.solidblocks.cloud.Constants.sshKeyName
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.aggregate
+import de.solidblocks.cloud.api.aggregateErrorMessage
+import de.solidblocks.cloud.api.hasError
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
@@ -42,13 +48,7 @@ import de.solidblocks.cloud.services.sshConnectCommand
 import de.solidblocks.cloud.services.toRuntime
 import de.solidblocks.cloud.status.serverStatusMarkdown
 import de.solidblocks.cloud.status.withServerStatus
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.VERY_LONG_WAIT
-import de.solidblocks.cloud.api.aggregate
-import de.solidblocks.cloud.api.aggregateErrorMessage
-import de.solidblocks.cloud.api.hasError
 import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.cloudinit.Distributor
@@ -243,7 +243,7 @@ class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfigurati
         return Success(Unit)
     }
 
-    override fun createProvisioners(runtime: GithubRunnerServiceConfigurationRuntime) = listOf<InfrastructureResourceProvisioner<*, *, *>>()
+    override fun createProvisioners(runtime: GithubRunnerServiceConfigurationRuntime) = listOf<ResourceProvisioner<*, *, *>>()
 
     override fun validateConfiguration(
         index: Int,

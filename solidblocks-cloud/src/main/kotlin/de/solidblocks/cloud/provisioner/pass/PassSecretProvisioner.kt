@@ -1,11 +1,14 @@
 package de.solidblocks.cloud.provisioner.pass
 
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.interpolation.StringInterpolationFactory
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -16,16 +19,13 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.utils.CommandResult
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.asResult
 import de.solidblocks.cloud.utils.passInsert
 import de.solidblocks.cloud.utils.passShow
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
-    InfrastructureResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
+    ResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
     GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup>,
     StringInterpolationFactory {
 

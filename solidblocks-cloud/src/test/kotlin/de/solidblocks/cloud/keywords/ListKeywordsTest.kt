@@ -2,12 +2,12 @@ package de.solidblocks.cloud.keywords
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.TEST_KEYWORD_HELP
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.mocks.Test2Configuration
 import de.solidblocks.cloud.mocks.Test2ConfigurationFactory
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe

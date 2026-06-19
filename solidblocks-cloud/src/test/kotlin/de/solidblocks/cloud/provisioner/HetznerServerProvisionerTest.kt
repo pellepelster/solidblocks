@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.HetznerTestContext
 import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnet
@@ -10,7 +11,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.cloud.provisioner.userdata.UserDataResult
 import de.solidblocks.cloud.utils.ByteSize
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import de.solidblocks.infra.test.SolidblocksTest

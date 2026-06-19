@@ -1,19 +1,19 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.ssh
 
 import de.solidblocks.cloud.api.DestroyableResourceProvisioner
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.resources.SSHKeysCreateRequest
 import de.solidblocks.hetzner.cloud.resources.SSHKeysUpdateRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -23,8 +23,8 @@ import kotlin.reflect.KClass
 
 class HetznerSSHKeyProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    InfrastructureResourceLookupProvider<HetznerSSHKeyLookup, HetznerSSHKeyRuntime>,
-    InfrastructureResourceProvisioner<HetznerSSHKey, HetznerSSHKeyRuntime, HetznerSSHKeyLookup>,
+    ResourceLookupProvider<HetznerSSHKeyLookup, HetznerSSHKeyRuntime>,
+    ResourceProvisioner<HetznerSSHKey, HetznerSSHKeyRuntime, HetznerSSHKeyLookup>,
     DestroyableResourceProvisioner<HetznerSSHKeyLookup> {
 
     private val logger = KotlinLogging.logger {}

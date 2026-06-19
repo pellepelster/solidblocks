@@ -1,12 +1,12 @@
 package de.solidblocks.cloud.services.docker.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.NumberConstraints.Companion.IP_PORTS
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class DockerServiceEndpointConfigurationFactory : ConfigurationFactory<DockerServiceEndpointConfiguration> {

@@ -1,7 +1,10 @@
 package de.solidblocks.cloud.providers.hetzner
 
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.CloudResourceProviderManager
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
@@ -13,9 +16,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetProvi
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvisioner
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.getPropertyOrEnv
 import de.solidblocks.hetzner.cloud.HetznerApi
 import de.solidblocks.utils.LogContext
@@ -62,7 +62,7 @@ class HetznerProviderManager :
         }
     }
 
-    override fun createLookupProviders(runtime: HetznerProviderRuntime) = listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<InfrastructureResourceLookupProvider<*, *>>
+    override fun createLookupProviders(runtime: HetznerProviderRuntime) = listOf(HetznerDnsZoneProvisioner(runtime.cloudToken)) as List<ResourceLookupProvider<*, *>>
 
     override fun createProvisioners(runtime: HetznerProviderRuntime) = listOf(
         HetznerDnsRecordProvisioner(runtime.cloudToken),
@@ -74,7 +74,7 @@ class HetznerProviderManager :
         HetznerSubnetProvisioner(runtime.cloudToken),
         HetznerFirewallProvisioner(runtime.cloudToken),
     )
-        as List<InfrastructureResourceProvisioner<*, *, *>>
+        as List<ResourceProvisioner<*, *, *>>
 
     override val supportedConfiguration = HetznerProviderConfiguration::class
 }

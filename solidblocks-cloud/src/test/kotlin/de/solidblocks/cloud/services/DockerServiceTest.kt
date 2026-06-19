@@ -2,6 +2,8 @@ package de.solidblocks.cloud.services
 
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.ConfigurationParser
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationFactory
@@ -10,8 +12,6 @@ import de.solidblocks.cloud.services.docker.DockerServiceRegistration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfiguration
 import de.solidblocks.cloud.services.docker.model.DockerServiceConfigurationRuntime
 import de.solidblocks.cloud.services.docker.model.DockerServiceEndpointConfiguration
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import io.kotest.matchers.collections.shouldHaveSize

@@ -1,6 +1,10 @@
 package de.solidblocks.cloud.services
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.BooleanKeyword
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.OptionalStringMapKeyword
@@ -10,11 +14,7 @@ import de.solidblocks.cloud.configuration.constraints
 import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.interpolation.validateInterpolatedString
 import de.solidblocks.cloud.services.InstanceConfigurationFactory.parseInstanceConfig
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
-import de.solidblocks.cloud.api.result
 
 object ServiceConfigurationFactory {
 

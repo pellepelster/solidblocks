@@ -1,6 +1,8 @@
 package de.solidblocks.cloud.configuration.model
 
 import com.charleskorn.kaml.YamlNode
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.*
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.DOMAIN_NAME
 import de.solidblocks.cloud.configuration.StringConstraints.Companion.RFC_1123_NAME
@@ -12,8 +14,6 @@ import de.solidblocks.cloud.providers.ProviderRegistration
 import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceRegistration
 import de.solidblocks.cloud.utils.KeywordHelp
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.result
 
 class CloudConfigurationFactory(
     providerRegistrations: List<

@@ -1,11 +1,14 @@
 package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.api.DestroyableResourceProvisioner
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.ListableResourceLookupProvider
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceGroup
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -21,17 +24,14 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.utils.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 
 class ProvisionersRegistry(
-    val resourceLookupProviders: List<InfrastructureResourceLookupProvider<*, *>> = emptyList(),
-    val resourceProvisioners: List<InfrastructureResourceProvisioner<*, *, *>> = emptyList(),
+    val resourceLookupProviders: List<ResourceLookupProvider<*, *>> = emptyList(),
+    val resourceProvisioners: List<ResourceProvisioner<*, *, *>> = emptyList(),
 ) {
     val interpolationRegistry = StringInterpolationRegistry(this.resourceProvisioners.filterIsInstance<StringInterpolationFactory>() + listOf(EnvironmentVariableInterpolationFactory()))
 
@@ -42,7 +42,7 @@ class ProvisionersRegistry(
     private val provisionersByLookupType by lazy { resourceProvisioners.indexByUnique { it.supportedLookupType } }
 
     private val lookupProvidersByType by lazy {
-        (resourceProvisioners.filterIsInstance<InfrastructureResourceLookupProvider<*, *>>() + resourceLookupProviders)
+        (resourceProvisioners.filterIsInstance<ResourceLookupProvider<*, *>>() + resourceLookupProviders)
             .distinctBy { it::class }
             .indexByUnique { it.supportedLookupType }
     }
@@ -58,11 +58,11 @@ class ProvisionersRegistry(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun provisioner(resource: BaseResource): InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>> {
+    private fun provisioner(resource: BaseResource): ResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>> {
         val provisioner = provisionersByResourceType[resource::class] ?: provisionersByLookupType[resource::class]
             ?: throw RuntimeException("no provisioner found for '${resource::class.qualifiedName}'")
 
-        return provisioner as InfrastructureResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>>
+        return provisioner as ResourceProvisioner<BaseResource, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<*>>
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -101,7 +101,7 @@ class ProvisionersRegistry(
             ?: throw RuntimeException("no lookup found for '${lookup::class.qualifiedName}'")
 
         @Suppress("UNCHECKED_CAST")
-        (provider as InfrastructureResourceLookupProvider<ResourceLookupType, BaseInfrastructureResourceRuntime>).lookup(lookup, context) as RuntimeType?
+        (provider as ResourceLookupProvider<ResourceLookupType, BaseInfrastructureResourceRuntime>).lookup(lookup, context) as RuntimeType?
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -166,7 +166,7 @@ class ProvisionersRegistry(
 
         fun List<ProviderRegistration<*, *, *>>.createRegistry(providers: List<ProviderConfigurationRuntime>) = ProvisionersRegistry(this.createLookups(providers), this.createProvisioners(providers))
 
-        fun List<ProviderRegistration<*, *, *>>.createProvisioners(providers: List<ProviderConfigurationRuntime>): List<InfrastructureResourceProvisioner<*, *, *>> = providers.flatMap {
+        fun List<ProviderRegistration<*, *, *>>.createProvisioners(providers: List<ProviderConfigurationRuntime>): List<ResourceProvisioner<*, *, *>> = providers.flatMap {
             val manager:
                 ProviderManager<ProviderConfiguration, ProviderConfigurationRuntime> =
                 this.managerForRuntime(it)

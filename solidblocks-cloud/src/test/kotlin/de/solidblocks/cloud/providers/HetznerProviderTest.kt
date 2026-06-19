@@ -2,10 +2,10 @@ package de.solidblocks.cloud.providers
 
 import de.solidblocks.cloud.TEST_CLOUD_CONFIGURATION_CONTEXT
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderConfiguration
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderManager
 import de.solidblocks.cloud.providers.hetzner.HetznerProviderRuntime
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
 import io.kotest.matchers.string.shouldContain

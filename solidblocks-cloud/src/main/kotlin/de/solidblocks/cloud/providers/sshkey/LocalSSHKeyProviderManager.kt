@@ -1,12 +1,12 @@
 package de.solidblocks.cloud.providers.sshkey
 
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationFactory.Companion.defaultSSHKeyNames
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderManager
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.keyType
 import de.solidblocks.utils.LogContext
@@ -141,7 +141,7 @@ class LocalSSHKeyProviderManager :
         return Success(sshKey)
     }
 
-    override fun createProvisioners(runtime: LocalSSHKeyProviderConfigurationRuntime) = emptyList<InfrastructureResourceProvisioner<*, *, *>>()
+    override fun createProvisioners(runtime: LocalSSHKeyProviderConfigurationRuntime) = emptyList<ResourceProvisioner<*, *, *>>()
 
     override val supportedConfiguration = LocalSSHKeyProviderConfiguration::class
 }

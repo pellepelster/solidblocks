@@ -3,14 +3,18 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 import de.solidblocks.cloud.Constants.sshKeysLabel
 import de.solidblocks.cloud.Constants.userDataLabel
 import de.solidblocks.cloud.api.DestroyableResourceProvisioner
-import de.solidblocks.cloud.api.InfrastructureResourceLookupProvider
-import de.solidblocks.cloud.api.InfrastructureResourceProvisioner
-import de.solidblocks.cloud.api.ListableResourceLookupProvider
+import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceDiff
 import de.solidblocks.cloud.api.ResourceDiffItem
 import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.ResourceLookupProvider
+import de.solidblocks.cloud.api.ResourceProvisioner
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
+import de.solidblocks.cloud.api.onError
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -18,14 +22,10 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.utils.HetznerLabels
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.equalsIgnoreOrder
 import de.solidblocks.cloud.utils.joinToStringOrEmpty
-import de.solidblocks.cloud.api.onError
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType
 import de.solidblocks.hetzner.cloud.model.HetznerApiException
@@ -38,8 +38,8 @@ import kotlin.time.Duration.Companion.seconds
 
 class HetznerServerProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
-    InfrastructureResourceLookupProvider<HetznerServerLookup, HetznerServerRuntime>,
-    InfrastructureResourceProvisioner<HetznerServer, HetznerServerRuntime, HetznerServerLookup>,
+    ResourceLookupProvider<HetznerServerLookup, HetznerServerRuntime>,
+    ResourceProvisioner<HetznerServer, HetznerServerRuntime, HetznerServerLookup>,
     DestroyableResourceProvisioner<HetznerServerLookup>,
     ListableResourceLookupProvider<HetznerServerLookup> {
 

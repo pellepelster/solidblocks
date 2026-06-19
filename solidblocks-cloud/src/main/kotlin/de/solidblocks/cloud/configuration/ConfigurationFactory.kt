@@ -1,8 +1,8 @@
 package de.solidblocks.cloud.configuration
 
 import com.charleskorn.kaml.YamlNode
-import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 
 interface ConfigurationFactory<T> {
     val help: ConfigurationHelp

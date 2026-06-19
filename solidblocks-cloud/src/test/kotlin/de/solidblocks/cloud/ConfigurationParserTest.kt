@@ -1,10 +1,10 @@
 package de.solidblocks.cloud
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.ConfigurationParser
 import de.solidblocks.cloud.mocks.TestConfiguration
 import de.solidblocks.cloud.mocks.TestConfigurationFactory
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Success
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf

@@ -2,13 +2,13 @@ package de.solidblocks.cloud.keywords
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.TEST_KEYWORD_HELP
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.StringConstraints
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.configuration.constraints
 import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.configuration.optional
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf

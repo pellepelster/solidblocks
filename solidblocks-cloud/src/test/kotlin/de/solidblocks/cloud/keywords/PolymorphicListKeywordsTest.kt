@@ -2,13 +2,13 @@ package de.solidblocks.cloud.keywords
 
 import com.charleskorn.kaml.YamlNode
 import de.solidblocks.cloud.TEST_KEYWORD_HELP
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.PolymorphicListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
-import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
