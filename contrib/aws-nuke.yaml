@@ -34,6 +34,11 @@ resource-types:
     - IAMUserAccessKey
     - IAMUser
     - ECRRepository
+    - RDSInstance
+    - EC2Instance
+    - EC2SecurityGroup
+    - RDSDBSubnetGroup
+    - EC2KeyPair
 
 accounts:
   938746843258:
