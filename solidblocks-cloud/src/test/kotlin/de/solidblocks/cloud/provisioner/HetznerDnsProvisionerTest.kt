@@ -1,6 +1,6 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TestProvisionerContext
-import de.solidblocks.cloud.api.ResourceDiffStatus
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecord
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner

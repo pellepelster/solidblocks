@@ -1,9 +1,9 @@
 package de.solidblocks.cloud.provisioner.garagefs.permission
 
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceDiffItem
-import de.solidblocks.cloud.api.ResourceDiffStatus.*
+import de.solidblocks.cloud.api.diff.ResourceDiff
+import de.solidblocks.cloud.api.diff.ResourceDiffItem
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result

@@ -1,6 +1,6 @@
 package de.solidblocks.cloud
 
-import de.solidblocks.cloud.api.hierarchicalResourceList
+import de.solidblocks.cloud.api.resources.hierarchicalResourceList
 import de.solidblocks.cloud.mocks.MockResource1
 import de.solidblocks.cloud.mocks.MockResource1Lookup
 import de.solidblocks.cloud.mocks.MockResource2

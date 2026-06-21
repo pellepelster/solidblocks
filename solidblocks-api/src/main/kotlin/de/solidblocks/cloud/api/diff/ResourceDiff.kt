@@ -1,6 +1,6 @@
-package de.solidblocks.cloud.api
+package de.solidblocks.cloud.api.diff
 
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import java.io.StringWriter
 

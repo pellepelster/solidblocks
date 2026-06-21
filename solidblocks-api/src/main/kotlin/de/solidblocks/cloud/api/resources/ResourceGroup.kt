@@ -1,11 +1,9 @@
-package de.solidblocks.cloud.api
+package de.solidblocks.cloud.api.resources
 
-import de.solidblocks.cloud.api.ResourceDiffStatus.has_changes
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.diff.ResourceDiff
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus.has_changes
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.health.HealthCheck
-import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
-import de.solidblocks.cloud.api.resources.BaseResource
-import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import org.jgrapht.Graph
 import org.jgrapht.graph.DefaultDirectedGraph
 import org.jgrapht.graph.DefaultEdge

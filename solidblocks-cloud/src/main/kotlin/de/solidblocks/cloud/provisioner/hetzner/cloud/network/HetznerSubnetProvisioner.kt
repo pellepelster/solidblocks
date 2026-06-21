@@ -2,10 +2,11 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.network
 
 import de.solidblocks.cloud.api.*
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.ResourceDiffStatus.missing
-import de.solidblocks.cloud.api.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext

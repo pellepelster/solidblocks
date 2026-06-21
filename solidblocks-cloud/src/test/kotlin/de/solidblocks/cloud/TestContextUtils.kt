@@ -1,7 +1,7 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.ResourceDiff
+import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime

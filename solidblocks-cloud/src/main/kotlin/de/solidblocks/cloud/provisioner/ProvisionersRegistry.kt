@@ -2,8 +2,8 @@ package de.solidblocks.cloud.provisioner
 
 import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.ResourceDiff
-import de.solidblocks.cloud.api.ResourceGroup
+import de.solidblocks.cloud.api.diff.ResourceDiff
+import de.solidblocks.cloud.api.resources.ResourceGroup
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result

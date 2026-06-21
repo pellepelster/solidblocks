@@ -1,4 +1,4 @@
-package de.solidblocks.cloud.api
+package de.solidblocks.cloud.api.diff
 
 import kotlin.reflect.KProperty0
 

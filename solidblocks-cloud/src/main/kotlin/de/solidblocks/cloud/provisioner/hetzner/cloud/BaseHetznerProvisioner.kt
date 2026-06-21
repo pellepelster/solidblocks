@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud
 
 import de.solidblocks.cloud.Constants
-import de.solidblocks.cloud.api.ResourceDiffItem
+import de.solidblocks.cloud.api.diff.ResourceDiffItem
 import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResourceRuntime
 import de.solidblocks.hetzner.cloud.HetznerApi
