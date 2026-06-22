@@ -23,6 +23,7 @@ include(
     "solidblocks-ssh",
     "solidblocks-cloud-init",
     "solidblocks-api",
+    "solidblocks-provisioner",
     "solidblocks-cloud",
     "solidblocks-utils",
     "solidblocks-web-s3-docker-hetzner",

@@ -27,7 +27,7 @@ class ProvisionerApplyContextImpl(
     override fun isTainted(resource: BaseResource) = taintedResources.contains(resource)
 
     override suspend fun createSecret(path: String, secret: String, taintable: Boolean): Result<Unit> {
-        val genericSecret = GenericSecret<GenericSecretRuntime>(
+        val genericSecret = GenericSecret(
             path,
             OneTimeGeneratedSecret(secret = {
                 secret
@@ -37,7 +37,7 @@ class ProvisionerApplyContextImpl(
 
         return when (
             val result: Result<GenericSecretRuntime> =
-                registry.apply(genericSecret, this, ConsoleLogContext.default())
+                registry.apply(genericSecret, this)
         ) {
             is Error<GenericSecretRuntime> -> Error(result.error)
             is Success<GenericSecretRuntime> -> Success(Unit)

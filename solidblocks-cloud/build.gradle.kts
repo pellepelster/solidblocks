@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":solidblocks-hetzner-cloud"))
     implementation(project(":solidblocks-cloud-init"))
     implementation(project(":solidblocks-garagefs"))
+    implementation(project(":solidblocks-provisioner"))
 
     implementation("dnsjava:dnsjava:3.6.3")
 

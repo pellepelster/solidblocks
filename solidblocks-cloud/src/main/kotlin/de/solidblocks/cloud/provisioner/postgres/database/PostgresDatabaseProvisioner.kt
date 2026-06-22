@@ -13,6 +13,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
@@ -87,7 +88,7 @@ class PostgresDatabaseProvisioner :
         return Success(lookup(resource.asLookup(), context)!!)
     }
 
-    override suspend fun lookup(lookup: PostgresDatabaseLookup, context: SSHProvisionerContext): PostgresDatabaseRuntime? = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: PostgresDatabaseLookup, context: ProvisionerLookupContext): PostgresDatabaseRuntime? = when (val result = lookupInternal(lookup, context)) {
         is Error<PostgresDatabaseRuntime?> -> null
         is Success<PostgresDatabaseRuntime?> -> result.data
     }

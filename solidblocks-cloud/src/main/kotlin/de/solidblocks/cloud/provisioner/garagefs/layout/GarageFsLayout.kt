@@ -6,7 +6,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 
 class GarageFsLayout(val capacity: Long, val server: HetznerServerLookup, val adminToken: GenericSecretLookup) :
-    BaseInfrastructureResource<GarageFsPermissionRuntime>(
+    BaseInfrastructureResource<GarageFsLayoutRuntime>(
         "GarageFsLayout",
         setOf(server, adminToken),
     ) {

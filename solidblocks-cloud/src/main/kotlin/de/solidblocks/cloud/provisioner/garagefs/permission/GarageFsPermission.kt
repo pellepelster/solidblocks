@@ -12,7 +12,7 @@ class GarageFsPermission(
     val bucket: GarageFsBucket,
     val accessKey: GarageFsAccessKey,
     val server: HetznerServer,
-    val adminToken: GenericSecret<GenericSecretRuntime>,
+    val adminToken: GenericSecret,
     val owner: Boolean,
     val read: Boolean,
     val write: Boolean,

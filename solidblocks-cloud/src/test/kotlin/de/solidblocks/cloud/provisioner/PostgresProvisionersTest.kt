@@ -140,9 +140,9 @@ class PostgresProvisionersTest {
                 sshClient,
             )
 
-        val superUserPassword = GenericSecret<GenericSecretRuntime>("super_user_password", RandomSecret(), true)
-        val password1 = GenericSecret<GenericSecretRuntime>("password1", RandomSecret(), true)
-        val password2 = GenericSecret<GenericSecretRuntime>("password2", RandomSecret(), true)
+        val superUserPassword = GenericSecret("super_user_password", RandomSecret(), true)
+        val password1 = GenericSecret("password1", RandomSecret(), true)
+        val password2 = GenericSecret("password2", RandomSecret(), true)
 
         runBlocking {
             val username = UUID.randomUUID().toString()

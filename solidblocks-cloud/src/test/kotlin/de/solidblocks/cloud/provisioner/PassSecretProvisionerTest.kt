@@ -29,9 +29,9 @@ class PassSecretProvisionerTest {
     fun testFlow() {
         val secretPath = "testCloudName/some/extra/path/secret1"
 
-        val randomSecret = GenericSecret<GenericSecretRuntime>(secretPath, RandomSecret(13), true)
-        val staticSecret = GenericSecret<GenericSecretRuntime>(secretPath, StaticSecret { "static-secret" }, true)
-        val oneTimeSecret = GenericSecret<GenericSecretRuntime>(
+        val randomSecret = GenericSecret(secretPath, RandomSecret(13), true)
+        val staticSecret = GenericSecret(secretPath, StaticSecret { "static-secret" }, true)
+        val oneTimeSecret = GenericSecret(
             secretPath,
             OneTimeGeneratedSecret {
                 "onetime-secret"

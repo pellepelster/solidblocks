@@ -33,6 +33,8 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLook
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
+import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeRuntime
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
@@ -82,7 +84,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
 
         val backupResources = createBackupResources(cloud.backupProviderRuntime(), cloud, serverName, runtime, context.environment)
 
-        val adminToken = GenericSecret<GenericSecretRuntime>(
+        val adminToken = GenericSecret(
             secretPath(cloud.environmentContext, runtime, listOf("garage", "admin_token")),
             RandomSecret(
                 length = 64,
@@ -91,7 +93,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             true,
         )
 
-        val rpcSecret = GenericSecret<GenericSecretRuntime>(
+        val rpcSecret = GenericSecret(
             secretPath(cloud.environmentContext, runtime, listOf("garage", "rpc_secret")),
             RandomSecret(
                 length = 64,
@@ -100,7 +102,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             true,
         )
 
-        val metricsToken = GenericSecret<GenericSecretRuntime>(
+        val metricsToken = GenericSecret(
             secretPath(cloud.environmentContext, runtime, listOf("garage", "metrics_token")),
             RandomSecret(
                 length = 64,
@@ -181,7 +183,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             listOf(server.asLookup()),
             emptyList(),
             labels =
-            dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
+                dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
         )
         val dnsResources = runtime.buckets.flatMap { it.managedPublicWebAccessDomains.entries }.map {
             if (it.key.isEmpty()) {
@@ -231,7 +233,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 bucketResources.add(accessKey)
 
                 bucketResources.add(
-                    GenericSecret<GenericSecretRuntime>(
+                    GenericSecret(
                         secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "secret_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).secretAccessKey },
                         true,
@@ -240,7 +242,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
                 )
 
                 bucketResources.add(
-                    GenericSecret<GenericSecretRuntime>(
+                    GenericSecret(
                         secretPath(cloud.environmentContext, runtime, listOf("buckets", bucket.name, accessKeyRuntime.name, "access_key")),
                         StaticSecret { it.ensureLookup(accessKey.asLookup()).id },
                         true,
@@ -262,7 +264,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             }
         }
 
-        val s3HostSecret = GenericSecret<GenericSecretRuntime>(
+        val s3HostSecret = GenericSecret(
             secretPath(cloud.environmentContext, runtime, listOf("endpoints", "s3_host")),
             StaticSecret { s3Host(serviceRootDomain(cloud, runtime)) },
             true,

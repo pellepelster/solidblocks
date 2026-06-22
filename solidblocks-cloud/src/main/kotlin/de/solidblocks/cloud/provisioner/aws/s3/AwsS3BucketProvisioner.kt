@@ -29,6 +29,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.utils.DEFAULT_WAIT
 import de.solidblocks.cloud.utils.WaitConfig
@@ -45,7 +46,7 @@ class AwsS3BucketProvisioner(
     ResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime, AwsS3BucketLookup>,
     DestroyableResourceProvisioner<AwsS3BucketLookup> {
 
-    override suspend fun lookup(lookup: AwsS3BucketLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+    override suspend fun lookup(lookup: AwsS3BucketLookup, context: ProvisionerLookupContext) = lookupInternal(lookup)
 
     suspend fun lookupInternal(lookup: AwsS3BucketLookup): AwsS3BucketRuntime? = s3Client().use { client ->
         try {

@@ -13,6 +13,7 @@ import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.endpoint.waitForNoSSH
 import de.solidblocks.cloud.api.endpoint.waitForSSH
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
@@ -44,7 +45,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 
     fun linkedEnvironmentVariables(cloud: CloudConfigurationRuntime, runtime: R): List<BaseEnvironmentVariable> = emptyList()
 
-    fun createResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<List<BaseInfrastructureResource<*>>>
+    fun createResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<List<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>>
 
     fun cleanupResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext, log: LogContext): Result<Unit> = Success(Unit)
 
@@ -111,14 +112,14 @@ fun ServiceManager<*, *>.createDefaultServerResources(cloud: CloudConfigurationR
     return DefaultServerResources(serverVolumes, serverSSHIdentity, floatingIp)
 }
 
-data class ServerSSHIdentityResources(val rsaSecret: GenericSecret<GenericSecretRuntime>, val ed25519Secret: GenericSecret<GenericSecretRuntime>) {
+data class ServerSSHIdentityResources(val rsaSecret: GenericSecret, val ed25519Secret: GenericSecret) {
     fun list() = listOf(rsaSecret, ed25519Secret)
 }
 
 fun createDefaultSSHIdentity(cloud: CloudConfigurationRuntime, runtime: ServiceConfigurationRuntime, index: Int): ServerSSHIdentityResources {
     val serverName = serverName(cloud.environmentContext, runtime.name, index)
 
-    val sshIdentityRsaSecret = GenericSecret<GenericSecretRuntime>(
+    val sshIdentityRsaSecret = GenericSecret(
         sshHostPrivateKeySecretPath(cloud.environmentContext, serverName, KeyType.rsa),
         OneTimeGeneratedSecret {
             val keyPair = SSHKeyUtils.RSA.generate()
@@ -128,7 +129,7 @@ fun createDefaultSSHIdentity(cloud: CloudConfigurationRuntime, runtime: ServiceC
         true,
     )
 
-    val sshIdentityED25519Secret = GenericSecret<GenericSecretRuntime>(
+    val sshIdentityED25519Secret = GenericSecret(
         sshHostPrivateKeySecretPath(cloud.environmentContext, serverName, KeyType.ed25519),
         OneTimeGeneratedSecret {
             val keyPair = SSHKeyUtils.ED25519.generate()

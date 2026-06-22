@@ -27,7 +27,7 @@ class StaticSecret(val secret: (ProvisionerContext) -> String) : SecretGenerator
     override fun isEphemeral() = false
 }
 
-open class GenericSecret<RuntimeType : GenericSecretRuntime>(
+open class GenericSecret(
     name: String,
     val secretGenerator: SecretGenerator,
     taintable: Boolean,

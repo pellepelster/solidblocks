@@ -14,6 +14,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.hetzner.cloud.resources.VolumeCreateRequest
@@ -30,7 +31,7 @@ class HetznerVolumeProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerVolumeLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+    override suspend fun lookup(lookup: HetznerVolumeLookup, context: ProvisionerLookupContext) = lookupInternal(lookup)
 
     suspend fun lookupInternal(lookup: HetznerVolumeLookup) = api.volumes.get(lookup.name)?.let {
         HetznerVolumeRuntime(

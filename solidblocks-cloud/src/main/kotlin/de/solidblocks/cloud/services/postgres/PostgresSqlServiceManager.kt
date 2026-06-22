@@ -58,7 +58,7 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
 
     fun sanitizeEnvironmentVariables(input: String) = input.replace(Regex("[^a-zA-Z0-9]"), "_").uppercase()
 
-    private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): GenericSecret<GenericSecretRuntime> = GenericSecret<GenericSecretRuntime>(
+    private fun superUserPasswordSecret(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime): GenericSecret = GenericSecret(
         secretPath(cloud.environmentContext, runtime, listOf("superuser", "password")),
         RandomSecret(),
         true,
@@ -302,14 +302,14 @@ class PostgresSqlServiceManager : ServiceManager<PostgresSqlServiceConfiguration
     }
 
     fun defaultDatabaseUserPassword(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) =
-        GenericSecret<GenericSecretRuntime>(secretPath(cloud.environmentContext, runtime, listOf(database.name, "password")), RandomSecret(), true)
+        GenericSecret(secretPath(cloud.environmentContext, runtime, listOf(database.name, "password")), RandomSecret(), true)
 
     fun databaseUserPassword(
         cloud: CloudConfigurationRuntime,
         runtime: PostgresSqlServiceConfigurationRuntime,
         database: PostgresSqlServiceDatabaseConfigurationRuntime,
         user: PostgresSqlServiceDatabaseUsersConfigurationRuntime,
-    ) = GenericSecret<GenericSecretRuntime>(secretPath(cloud.environmentContext, runtime, listOf(database.name, user.name, "password")), RandomSecret(), true)
+    ) = GenericSecret(secretPath(cloud.environmentContext, runtime, listOf(database.name, user.name, "password")), RandomSecret(), true)
 
     fun defaultDatabaseUserName(cloud: CloudConfigurationRuntime, runtime: PostgresSqlServiceConfigurationRuntime, database: PostgresSqlServiceDatabaseConfigurationRuntime) = database.name
 

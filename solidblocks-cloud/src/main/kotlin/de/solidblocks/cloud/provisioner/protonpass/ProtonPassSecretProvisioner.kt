@@ -13,6 +13,7 @@ import de.solidblocks.cloud.api.onError
 import de.solidblocks.cloud.interpolation.StringInterpolationFactory
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
@@ -28,12 +29,12 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ProtonPassSecretProvisioner(val vaultName: String) :
     ResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
-    GenericSecretProvisioner<GenericSecret<GenericSecretRuntime>, GenericSecretRuntime, GenericSecretLookup>,
+    GenericSecretProvisioner<GenericSecret, GenericSecretRuntime, GenericSecretLookup>,
     StringInterpolationFactory {
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun diff(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerDiffContext): Result<ResourceDiff> {
+    override suspend fun diff(resource: GenericSecret, context: ProvisionerDiffContext): Result<ResourceDiff> {
         val runtime = lookup(resource.asLookup(), context)
 
         return Success(
@@ -64,7 +65,7 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
         )
     }
 
-    override suspend fun lookup(lookup: GenericSecretLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+    override suspend fun lookup(lookup: GenericSecretLookup, context: ProvisionerLookupContext) = lookupInternal(lookup)
 
     private fun lookupInternal(lookup: GenericSecretLookup): ProtonPassSecretRuntime? {
         val result = protonPassItemView(vaultName, lookup.name)
@@ -94,7 +95,7 @@ class ProtonPassSecretProvisioner(val vaultName: String) :
         return null
     }
 
-    override suspend fun apply(resource: GenericSecret<GenericSecretRuntime>, context: ProvisionerApplyContext): Result<GenericSecretRuntime> {
+    override suspend fun apply(resource: GenericSecret, context: ProvisionerApplyContext): Result<GenericSecretRuntime> {
         val current = lookup(resource.asLookup(), context)
 
         if (current != null && !context.isTainted(resource) && resource.secretGenerator.isEphemeral()) {

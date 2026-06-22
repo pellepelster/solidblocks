@@ -22,6 +22,7 @@ import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.api.resources.ResourceGroup
 import de.solidblocks.cloud.api.resources.hierarchicalResourceList
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContextImpl
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -157,7 +158,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                 }
             } else {
                 val diffResult = try {
-                    registry.diff<BaseResource>(resource, context)
+                    registry.diff<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>(resource, context)
                 } catch (e: Exception) {
                     logger.error(e) { "diff failed for ${resource.logText()}" }
                     return@runBlocking Error<List<ResourceDiff>>("diff failed for ${resource.logText()} (${e.message})", e)
@@ -192,14 +193,14 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
         }
     }
 
-    suspend fun apply(resources: List<BaseResource>, context: ProvisionerApplyContext): Result<Unit> {
+    suspend fun apply(resources: List<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>, context: ProvisionerApplyContext): Result<Unit> {
         val failures =
             resources.mapNotNull { resource ->
                 try {
                     registry.apply<BaseInfrastructureResourceRuntime>(
                         resource,
                         context,
-                        context.log,
+                        context,
                     )
                     null
                 } catch (e: Exception) {
@@ -226,7 +227,15 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                     context.log.info("destroying ${resource.logText()}")
 
                     if (registry.lookup(resource.asLookup(), context) != null) {
-                        val result = registry.destroy(resource.asLookup(), context, context.log)
+                        val result = registry.destroy(
+                            resource.asLookup(),
+                            object : ProvisionerDestroyContext {
+                                override val log: LogContext
+                                    get() = log
+
+                                override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = context.lookup(lookup)
+                            },
+                        )
                         if (!result) {
                             return@runBlocking Error("destroying ${resource.logText()} failed")
                         }
@@ -245,7 +254,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                         .filter { it.status != up_to_date && it.status != duplicate }
                         .map { it.resource }
                         .hierarchicalResourceList()
-                        .filterIsInstance<BaseInfrastructureResource<*>>()
+                        .filterIsInstance<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>()
 
                 for (resource in resourcesToApply) {
                     context.log.info("applying ${resource.logText()}")

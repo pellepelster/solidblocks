@@ -29,6 +29,7 @@ import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager.Compani
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
@@ -43,7 +44,7 @@ class AwsIamUserProvisioner(
 
     private val json = Json { prettyPrint = false }
 
-    override suspend fun lookup(lookup: AwsIamUserLookup, context: SSHProvisionerContext): AwsIamUserRuntime? = iamClient().use { client ->
+    override suspend fun lookup(lookup: AwsIamUserLookup, context: ProvisionerLookupContext): AwsIamUserRuntime? = iamClient().use { client ->
         val user = try {
             client.getUser(GetUserRequest { userName = lookup.name }).user
         } catch (e: NoSuchEntityException) {

@@ -3,6 +3,9 @@ package de.solidblocks.cloud.providers
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
 import de.solidblocks.utils.log.LogContext
 import java.nio.file.Path
@@ -13,9 +16,9 @@ data class CloudConfigurationContext(val environment: EnvironmentContext, val co
 interface ProviderManager<C : ProviderConfiguration, R : ProviderConfigurationRuntime> {
     fun validateConfiguration(configuration: C, context: CloudConfigurationContext, log: LogContext): Result<R>
 
-    fun createProvisioners(runtime: R): List<ResourceProvisioner<*, *, *>>
+    fun createProvisioners(runtime: R): List<ResourceProvisioner<out BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>>>
 
-    fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
+    fun createLookupProviders(runtime: R): List<ResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>> = emptyList()
 
     val supportedConfiguration: KClass<C>
 }

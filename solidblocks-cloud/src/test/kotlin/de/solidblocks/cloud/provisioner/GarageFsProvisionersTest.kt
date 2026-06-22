@@ -160,7 +160,7 @@ class GarageFsProvisionersTest {
                 sshClient,
             )
 
-        val adminToken = GenericSecret<GenericSecretRuntime>("admin_token", RandomSecret(), true)
+        val adminToken = GenericSecret("admin_token", RandomSecret(), true)
         val bucketName = UUID.randomUUID().toString()
         val bucket = GarageFsBucket(bucketName, server.asLookup(), adminToken.asLookup(), false)
         val accessKey = GarageFsAccessKey(UUID.randomUUID().toString(), server, adminToken)

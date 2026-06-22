@@ -31,7 +31,7 @@ interface BackupProviderManager<
     R : ProviderConfigurationRuntime,
     > : ProviderManager<C, R>
 
-fun backupSecretResource(runtime: CloudConfigurationRuntime) = GenericSecret<GenericSecretRuntime>(
+fun backupSecretResource(runtime: CloudConfigurationRuntime) = GenericSecret(
     secretPath(runtime.environmentContext, listOf("backup", "password")),
     RandomSecret(
         length = 32,
