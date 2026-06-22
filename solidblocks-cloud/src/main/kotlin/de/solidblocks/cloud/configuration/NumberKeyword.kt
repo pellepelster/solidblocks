@@ -27,8 +27,9 @@ class NumberKeyword<T : Int?> internal constructor(
         val number =
             if (optional) {
                 when (val result = yaml.getOptionalNumber(name)) {
-                    is Error<Int?> -> return Error<T>(result.error)
-                    is Success<Int?> -> result.data ?: default
+                    is YamlEmpty<Int?> -> default
+                    is YamlError<Int?> -> return Error<T>(result.error)
+                    is YamlSuccess<Int?> -> result.data ?: default
                 }
             } else {
                 when (val result = yaml.getNumber(name)) {

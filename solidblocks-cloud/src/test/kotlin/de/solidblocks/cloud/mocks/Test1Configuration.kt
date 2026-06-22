@@ -9,6 +9,9 @@ import de.solidblocks.cloud.configuration.ConfigurationFactory
 import de.solidblocks.cloud.configuration.SimpleKeyword
 import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
+import de.solidblocks.cloud.utils.YamlEmpty
+import de.solidblocks.cloud.utils.YamlError
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.getBoolean
 import de.solidblocks.cloud.utils.getNonNullOrEmptyString
 import de.solidblocks.cloud.utils.logMessage
@@ -30,8 +33,9 @@ class Test1ConfigurationFactory : ConfigurationFactory<Test1Configuration> {
     override fun parse(yaml: YamlNode): Result<Test1Configuration> {
         val name =
             when (val string = yaml.getNonNullOrEmptyString("name")) {
-                is Error<String> -> return Error(string.error)
-                is Success<String> -> string.data
+                is YamlEmpty<String> -> return Error(string.message)
+                is YamlError<String> -> return Error(string.error)
+                is YamlSuccess<String> -> string.data
             }
 
         if (name == "forbidden") {
@@ -40,8 +44,9 @@ class Test1ConfigurationFactory : ConfigurationFactory<Test1Configuration> {
 
         val flag1 =
             when (val flag = yaml.getBoolean("flag1", false)) {
-                is Error<Boolean> -> return Error(flag.error)
-                is Success<Boolean> -> flag.data
+                is YamlEmpty<Boolean> -> return Error(flag.message)
+                is YamlError<Boolean> -> return Error(flag.error)
+                is YamlSuccess<Boolean> -> flag.data
             }
 
         return Success(Test1Configuration(name, flag1))

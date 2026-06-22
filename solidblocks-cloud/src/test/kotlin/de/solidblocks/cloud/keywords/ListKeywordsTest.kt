@@ -8,6 +8,7 @@ import de.solidblocks.cloud.configuration.ListKeyword
 import de.solidblocks.cloud.configuration.StringListKeyword
 import de.solidblocks.cloud.mocks.Test2Configuration
 import de.solidblocks.cloud.mocks.Test2ConfigurationFactory
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -29,7 +30,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             ListKeyword(
@@ -56,7 +57,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringListKeyword(
@@ -82,7 +83,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringListKeyword(
@@ -104,7 +105,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             ListKeyword(
@@ -125,7 +126,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             ListKeyword(
@@ -147,7 +148,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             ListKeyword(
@@ -171,7 +172,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             ListKeyword(
@@ -195,7 +196,7 @@ class ListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringListKeyword(

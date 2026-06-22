@@ -10,6 +10,9 @@ import de.solidblocks.cloud.configuration.optional
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
 import de.solidblocks.cloud.providers.DEFAULT_NAME
 import de.solidblocks.cloud.utils.KeywordHelp
+import de.solidblocks.cloud.utils.YamlEmpty
+import de.solidblocks.cloud.utils.YamlError
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.getOptionalString
 
 class LocalSSHKeyProviderConfigurationFactory : PolymorphicConfigurationFactory<LocalSSHKeyProviderConfiguration>() {
@@ -48,8 +51,9 @@ class LocalSSHKeyProviderConfigurationFactory : PolymorphicConfigurationFactory<
     override fun parse(yaml: YamlNode): Result<LocalSSHKeyProviderConfiguration> {
         val name =
             when (val name = yaml.getOptionalString("name", DEFAULT_NAME)) {
-                is Error<String> -> return Error(name.error)
-                is Success<String> -> name.data
+                is YamlEmpty<String> -> DEFAULT_NAME
+                is YamlError<String> -> return Error(name.error)
+                is YamlSuccess<String> -> name.data
             }
 
         val privateKey =

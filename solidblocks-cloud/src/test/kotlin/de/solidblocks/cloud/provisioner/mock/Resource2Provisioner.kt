@@ -15,7 +15,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
-import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource2Provisioner :
@@ -27,7 +27,7 @@ class Resource2Provisioner :
 
     val resources = mutableMapOf<String, Resource2>()
 
-    override suspend fun lookup(lookup: Resource2Lookup, context: SSHProvisionerContext) = resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
+    override suspend fun lookup(lookup: Resource2Lookup, context: ProvisionerLookupContext) = resources[lookup.name]?.let { Resource2Runtime(lookup.name) }
 
     override suspend fun diff(resource: Resource2, context: ProvisionerDiffContext): Result<ResourceDiff> = when (resource.diffBehaviour) {
         DiffBehaviour.error_on_diff -> Error("diff error for ${resource.logText()}")

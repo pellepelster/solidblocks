@@ -9,6 +9,7 @@ import de.solidblocks.cloud.configuration.Keyword
 import de.solidblocks.cloud.configuration.PolymorphicConfigurationFactory
 import de.solidblocks.cloud.configuration.PolymorphicListKeyword
 import de.solidblocks.cloud.documentation.model.ConfigurationHelp
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -60,7 +61,7 @@ class PolymorphicListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val list = keyword().parse(yaml.data).shouldBeTypeOf<Success<List<BaseType>>>().data
 
@@ -79,7 +80,7 @@ class PolymorphicListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         keyword().parse(yaml.data).shouldBeTypeOf<Success<List<BaseType>>>().data shouldHaveSize 0
     }
@@ -94,7 +95,7 @@ class PolymorphicListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         keyword().parse(yaml.data).shouldBeTypeOf<Error<List<BaseType>>>().error shouldBe
             "unknown type 'type123', possible types are 'type1', 'type2' at line 2 column 7"
@@ -110,7 +111,7 @@ class PolymorphicListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         keyword().parse(yaml.data).shouldBeTypeOf<Error<List<BaseType>>>().error shouldBe
             "key 'type' not found at line 2 column 7"
@@ -126,7 +127,7 @@ class PolymorphicListKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         keyword().parse(yaml.data).shouldBeTypeOf<Error<List<BaseType>>>().error shouldBe
             "key 'list1' should be a list line 1 column 1"

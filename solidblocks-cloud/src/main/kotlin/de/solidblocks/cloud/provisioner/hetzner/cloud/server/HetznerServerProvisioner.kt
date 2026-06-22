@@ -45,7 +45,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerServerLookup, context: SSHProvisionerContext) = api.servers.get(lookup.name)?.toRuntime(api, context)
+    override suspend fun lookup(lookup: HetznerServerLookup, context: ProvisionerLookupContext) = lookupInternal(lookup, context)
 
     suspend fun lookupInternal(lookup: HetznerServerLookup, context: ProvisionerLookupContext) = api.servers.get(lookup.name)?.toRuntime(api, context)
 

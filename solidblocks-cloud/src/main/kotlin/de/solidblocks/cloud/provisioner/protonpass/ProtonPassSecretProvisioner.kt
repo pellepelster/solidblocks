@@ -29,7 +29,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class ProtonPassSecretProvisioner(val vaultName: String) :
     ResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
-    GenericSecretProvisioner<GenericSecret, GenericSecretRuntime, GenericSecretLookup>,
+    GenericSecretProvisioner,
     StringInterpolationFactory {
 
     private val logger = KotlinLogging.logger {}

@@ -9,6 +9,7 @@ import de.solidblocks.cloud.configuration.NumberKeyword
 import de.solidblocks.cloud.configuration.constraints
 import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.configuration.optional
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -25,7 +26,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 123
@@ -40,7 +41,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -56,7 +57,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -72,7 +73,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int?>>().data shouldBe null
@@ -87,7 +88,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int?>>().data shouldBe 123
@@ -102,7 +103,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).default(124)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 124
@@ -117,7 +118,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).default(124)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 123
@@ -132,7 +133,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).constraints(NumberConstraints(min = 22))
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -148,7 +149,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).constraints(NumberConstraints(max = 12))
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -164,7 +165,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             NumberKeyword("number1", TEST_KEYWORD_HELP).constraints(NumberConstraints(max = 12)).optional()
@@ -181,7 +182,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             NumberKeyword("number1", TEST_KEYWORD_HELP).constraints(NumberConstraints(max = 12)).default(10)
@@ -218,7 +219,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -234,7 +235,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -250,7 +251,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int?>>().data shouldBe null
@@ -265,7 +266,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).default(124)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 124
@@ -280,7 +281,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).default(124)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 124
@@ -296,7 +297,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -312,7 +313,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).constraints(NumberConstraints(max = 1024, min = 16))
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 16
@@ -327,7 +328,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP).constraints(NumberConstraints(max = 1024, min = 16))
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 1024
@@ -342,7 +343,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe -42
@@ -357,7 +358,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Int>>().error shouldBe
@@ -373,7 +374,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = NumberKeyword("number1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Int>>().data shouldBe 123
@@ -388,7 +389,7 @@ class NumberKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             NumberKeyword("number1", TEST_KEYWORD_HELP).constraints(NumberConstraints(max = 12)).default(20)

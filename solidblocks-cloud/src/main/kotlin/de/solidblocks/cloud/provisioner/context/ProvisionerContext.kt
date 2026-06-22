@@ -88,16 +88,24 @@ abstract class BaseSSHProvisionerContextImpl(
     override suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<out InfrastructureResourceLookup<*>>): List<LookupType> =
         registry.list(clazz)
 
-    override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext) = registry.destroy(lookup, this, log)
+    override suspend fun destroy(lookup: InfrastructureResourceLookup<*>, log: LogContext): Boolean {
+        val outerLog = log
+        val destroyContext = object : ProvisionerDestroyContext {
+            override val log: LogContext = outerLog
+            override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? =
+                this@BaseSSHProvisionerContextImpl.lookup(lookup)
+        }
+        return registry.destroy(lookup, destroyContext)
+    }
 
     override fun <C : ServiceConfiguration, R : ServiceConfigurationRuntime> managerForService(runtime: R): ServiceManager<C, R> = serviceRegistrations.managerForService(runtime)
 }
 
-fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ProvisionerContext.ensureLookup(lookup: ResourceLookupType): RuntimeType = this.lookup(lookup).let {
+fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ProvisionerLookupContext.ensureLookup(lookup: ResourceLookupType): RuntimeType = this.lookup(lookup).let {
     it ?: throw RuntimeException("could not find resource ${lookup.logText()}")
 }
 
-fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ProvisionerContext.ensureOptionalLookup(lookup: ResourceLookupType?): RuntimeType? = if (lookup == null) {
+fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> ProvisionerLookupContext.ensureOptionalLookup(lookup: ResourceLookupType?): RuntimeType? = if (lookup == null) {
     return null
 } else {
     this.ensureLookup(lookup)

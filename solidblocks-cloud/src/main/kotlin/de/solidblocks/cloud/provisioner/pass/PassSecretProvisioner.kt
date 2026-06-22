@@ -27,7 +27,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class PassSecretProvisioner(val passwordStoreDir: String) :
     ResourceLookupProvider<GenericSecretLookup, GenericSecretRuntime>,
-    GenericSecretProvisioner<GenericSecret, GenericSecretRuntime, GenericSecretLookup>,
+    GenericSecretProvisioner,
     StringInterpolationFactory {
 
     private val logger = KotlinLogging.logger {}

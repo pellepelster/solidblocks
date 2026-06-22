@@ -16,9 +16,9 @@ data class CloudConfigurationContext(val environment: EnvironmentContext, val co
 interface ProviderManager<C : ProviderConfiguration, R : ProviderConfigurationRuntime> {
     fun validateConfiguration(configuration: C, context: CloudConfigurationContext, log: LogContext): Result<R>
 
-    fun createProvisioners(runtime: R): List<ResourceProvisioner<out BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>>>
+    fun createProvisioners(runtime: R): List<ResourceProvisioner<*, *, *>>
 
-    fun createLookupProviders(runtime: R): List<ResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>> = emptyList()
+    fun createLookupProviders(runtime: R): List<ResourceLookupProvider<*, *>> = emptyList()
 
     val supportedConfiguration: KClass<C>
 }

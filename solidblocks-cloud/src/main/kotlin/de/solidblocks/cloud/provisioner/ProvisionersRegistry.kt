@@ -10,6 +10,7 @@ import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.lookup.BaseResourceLookupProvider
 import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
+import de.solidblocks.cloud.api.provisioner.BaseResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
@@ -35,10 +36,12 @@ import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 
 class ProvisionersRegistry(
-    resourceLookupProviders: List<ResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>> = emptyList(),
-    resourceProvisioners: List<ResourceProvisioner<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>>> = emptyList(),
+    resourceLookupProviders: List<ResourceLookupProvider<*, *>> = emptyList(),
+    resourceProvisioners: List<ResourceProvisioner<*, *, *>> = emptyList(),
 ) : BaseProvisionersRegistry<ProvisionerDiffContext, ProvisionerApplyContext, ProvisionerDestroyContext, ProvisionerLookupContext>(
-    resourceLookupProviders, resourceProvisioners
+    (resourceLookupProviders as List<BaseResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, ProvisionerLookupContext>>),
+    @Suppress("UNCHECKED_CAST")
+    (resourceProvisioners as List<BaseResourceProvisioner<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, ProvisionerDiffContext, ProvisionerApplyContext>>),
 ) {
     val interpolationRegistry = StringInterpolationRegistry(this.resourceProvisioners.filterIsInstance<StringInterpolationFactory>() + listOf(EnvironmentVariableInterpolationFactory()))
 

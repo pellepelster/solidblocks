@@ -1,7 +1,6 @@
 package de.solidblocks.cloud.api
 
 import de.solidblocks.cloud.api.diff.ResourceDiff
-import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.lookup.BaseResourceLookupProvider
 import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
 import de.solidblocks.cloud.api.provisioner.BaseDestroyableResourceProvisioner
@@ -58,7 +57,8 @@ abstract class BaseProvisionersRegistry<DiffContextType, ApplyContextType, Destr
         return provisioner.apply(resource as BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, context) as Result<RuntimeType>
     }
 
-    suspend fun <ResourceType : BaseInfrastructureResource<BaseInfrastructureResourceRuntime>> diff(resource: ResourceType, context: DiffContextType): Result<ResourceDiff> = provisioner(resource).diff(resource, context)
+    @Suppress("UNCHECKED_CAST")
+    suspend fun <ResourceType : BaseInfrastructureResource<*>> diff(resource: ResourceType, context: DiffContextType): Result<ResourceDiff> = provisioner(resource).diff(resource as BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, context)
 
     @Suppress("UNCHECKED_CAST")
     suspend fun <LookupType : InfrastructureResourceLookup<*>> destroy(lookup: LookupType, context: DestroyContextType): Boolean {
@@ -74,7 +74,7 @@ abstract class BaseProvisionersRegistry<DiffContextType, ApplyContextType, Destr
         }
     }
 
-    fun <RuntimeType : BaseInfrastructureResourceRuntime, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: LookupContextType): RuntimeType? =
+    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: LookupContextType): RuntimeType? =
         runBlocking {
             val provider = lookupProvidersByType[lookup::class]
                 ?: throw RuntimeException("no lookup found for '${lookup::class.qualifiedName}'")

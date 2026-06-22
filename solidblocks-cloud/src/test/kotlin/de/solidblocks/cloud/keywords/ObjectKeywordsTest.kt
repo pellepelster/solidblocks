@@ -7,6 +7,7 @@ import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.ObjectKeyword
 import de.solidblocks.cloud.mocks.Test2Configuration
 import de.solidblocks.cloud.mocks.Test2ConfigurationFactory
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -25,7 +26,7 @@ class ObjectKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = ObjectKeyword("object1", Test2ConfigurationFactory(), TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Test2Configuration>>().data shouldBe
@@ -42,7 +43,7 @@ class ObjectKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = ObjectKeyword("object1", Test2ConfigurationFactory(), TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Test2Configuration>>().data shouldBe
@@ -59,7 +60,7 @@ class ObjectKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = ObjectKeyword("object1", Test2ConfigurationFactory(), TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Test2Configuration>>().error shouldBe
@@ -76,7 +77,7 @@ class ObjectKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = ObjectKeyword("object1", Test2ConfigurationFactory(), TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Test2Configuration>>().error shouldBe

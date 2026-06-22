@@ -26,7 +26,7 @@ fun ResourceGroup.logText() = "resource group '$name'"
 
 data class ResourceGroup(
     val name: String = UUID.randomUUID().toString(),
-    val resources: List<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>> = ArrayList(),
+    val resources: List<BaseInfrastructureResource<*>> = ArrayList(),
     val dependsOn: Set<ResourceGroup> = emptySet(),
     val readinessHealthChecks: List<HealthCheck> = emptyList(),
 ) {

@@ -74,8 +74,9 @@ data class ObjectKeyword<T>(override val name: String, override val factory: Con
     fun parse(yaml: YamlNode): Result<T> {
         val obj =
             when (val list = yaml.getObject(name, factory)) {
-                is Error<T> -> return Error(list.error)
-                is Success<T> -> list.data
+                is YamlEmpty<T> -> return Error(list.message)
+                is YamlError<T> -> return Error(list.error)
+                is YamlSuccess<T> -> list.data
             }
 
         return Success(obj)

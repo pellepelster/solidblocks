@@ -88,7 +88,7 @@ class PostgresDatabaseProvisioner :
         return Success(lookup(resource.asLookup(), context)!!)
     }
 
-    override suspend fun lookup(lookup: PostgresDatabaseLookup, context: ProvisionerLookupContext): PostgresDatabaseRuntime? = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: PostgresDatabaseLookup, context: ProvisionerLookupContext): PostgresDatabaseRuntime? = when (val result = lookupInternal(lookup, context as SSHProvisionerContext)) {
         is Error<PostgresDatabaseRuntime?> -> null
         is Success<PostgresDatabaseRuntime?> -> result.data
     }

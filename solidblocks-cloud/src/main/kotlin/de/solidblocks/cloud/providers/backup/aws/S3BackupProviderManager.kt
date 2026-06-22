@@ -50,7 +50,7 @@ class S3BackupProviderManager :
         return Success(S3BackupProviderConfigurationRuntime(configuration.region, awsAccessKey, awsSecretKey))
     }
 
-    override fun createProvisioners(runtime: S3BackupProviderConfigurationRuntime) = listOf(
+    override fun createProvisioners(runtime: S3BackupProviderConfigurationRuntime): List<ResourceProvisioner<*, *, *>> = listOf(
         AwsS3BucketProvisioner(runtime.accessKey, runtime.secretKey, runtime.region),
         AwsIamUserProvisioner(runtime.accessKey, runtime.secretKey),
     )

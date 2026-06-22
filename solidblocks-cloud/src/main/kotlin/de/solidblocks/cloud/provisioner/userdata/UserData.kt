@@ -15,10 +15,9 @@ class UserDataRuntime(val userData: String, val ephemeralUserData: String) : Bas
 
 data class UserDataResult(val userData: String, val ephemeralUserData: String)
 
-class UserData(dependsOn: Set<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>, val block: ((ProvisionerLookupContext) -> UserDataResult?)) :
-    InfrastructureResourceLookup<UserDataRuntime>(UUID.randomUUID().toString(), dependsOn)
+class UserData(dependsOn: Set<BaseInfrastructureResource<*>>, val block: ((ProvisionerLookupContext) -> UserDataResult?)) : InfrastructureResourceLookup<UserDataRuntime>(UUID.randomUUID().toString(), dependsOn)
 
-fun ServiceUserData.toResult(context: ProvisionerContext, sshIdentity: ServerSSHIdentityResources): UserDataResult {
+fun ServiceUserData.toResult(context: ProvisionerLookupContext, sshIdentity: ServerSSHIdentityResources): UserDataResult {
     val script = this.shellScript()
         .toCloudInit(
             context.ensureLookup(sshIdentity.rsaSecret.asLookup()).secret,

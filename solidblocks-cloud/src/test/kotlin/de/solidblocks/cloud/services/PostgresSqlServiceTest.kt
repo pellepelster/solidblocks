@@ -12,6 +12,7 @@ import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurat
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceConfigurationRuntime
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseConfiguration
 import de.solidblocks.cloud.services.postgres.model.PostgresSqlServiceDatabaseUserConfiguration
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
@@ -52,7 +53,7 @@ class PostgresSqlServiceTest {
         """
                 .trimIndent()
 
-        val yaml = yamlParse(ymlRaw).shouldBeTypeOf<Success<YamlNode>>()
+        val yaml = yamlParse(ymlRaw).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val result = PostgresSqlServiceConfigurationFactory().parse(yaml.data)
         val configuration = result.shouldBeTypeOf<Success<PostgresSqlServiceConfiguration>>()
         configuration.data.name shouldBe "name1"

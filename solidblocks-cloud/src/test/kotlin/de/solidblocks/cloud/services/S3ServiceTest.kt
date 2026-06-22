@@ -11,6 +11,7 @@ import de.solidblocks.cloud.services.s3.model.S3ServiceBucketAccessKeyConfigurat
 import de.solidblocks.cloud.services.s3.model.S3ServiceBucketConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfiguration
 import de.solidblocks.cloud.services.s3.model.S3ServiceConfigurationFactory
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
@@ -32,7 +33,7 @@ class S3ServiceTest {
         """
                 .trimIndent()
 
-        val yaml = yamlParse(ymlRaw).shouldBeTypeOf<Success<YamlNode>>()
+        val yaml = yamlParse(ymlRaw).shouldBeTypeOf<YamlSuccess<YamlNode>>()
         val result = S3ServiceConfigurationFactory().parse(yaml.data)
         val configuration = result.shouldBeTypeOf<Success<S3ServiceConfiguration>>()
         configuration.data.name shouldBe "name1"

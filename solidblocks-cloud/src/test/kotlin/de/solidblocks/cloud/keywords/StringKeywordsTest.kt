@@ -9,6 +9,7 @@ import de.solidblocks.cloud.configuration.StringKeyword
 import de.solidblocks.cloud.configuration.constraints
 import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.configuration.optional
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -25,7 +26,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String>>().data shouldBe "foo-bar"
@@ -40,7 +41,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
@@ -56,7 +57,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String?>>().data shouldBe null
@@ -71,7 +72,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String?>>().data shouldBe "foo-bar"
@@ -86,7 +87,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).default("yolo2000")
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String>>().data shouldBe "yolo2000"
@@ -101,7 +102,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).default("yolo2000")
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String>>().data shouldBe "foo-bar"
@@ -116,7 +117,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).constraints(StringConstraints(12, 0))
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
@@ -132,7 +133,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringKeyword("string1", TEST_KEYWORD_HELP)
@@ -150,7 +151,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringKeyword("string1", TEST_KEYWORD_HELP)
@@ -167,7 +168,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).constraints(StringConstraints(12, 4))
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
@@ -183,7 +184,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringKeyword("string1", TEST_KEYWORD_HELP)
@@ -201,7 +202,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringKeyword("string1", TEST_KEYWORD_HELP)
@@ -218,7 +219,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).constraints(StringConstraints.RFC_1123_NAME).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String?>>().error shouldBe
@@ -234,7 +235,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).constraints(StringConstraints.RFC_1123_NAME).default("foo-bar")
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
@@ -269,7 +270,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
@@ -285,7 +286,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
@@ -301,7 +302,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String?>>().data shouldBe null
@@ -316,7 +317,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String?>>().data shouldBe null
@@ -331,7 +332,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).default("yolo2000")
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String>>().data shouldBe "yolo2000"
@@ -346,7 +347,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).default("yolo2000")
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String>>().data shouldBe "yolo2000"
@@ -362,7 +363,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<String>>().error shouldBe
@@ -378,7 +379,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).constraints(StringConstraints(12, 4))
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String>>().data shouldBe "abcd"
@@ -393,7 +394,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = StringKeyword("string1", TEST_KEYWORD_HELP).constraints(StringConstraints(12, 4))
         keyword.parse(yaml.data).shouldBeTypeOf<Success<String>>().data shouldBe "abcdefghijkl"
@@ -408,7 +409,7 @@ class StringKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword =
             StringKeyword("string1", TEST_KEYWORD_HELP)

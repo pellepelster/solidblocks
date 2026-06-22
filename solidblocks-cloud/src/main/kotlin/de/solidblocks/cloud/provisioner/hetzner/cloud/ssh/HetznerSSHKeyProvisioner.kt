@@ -10,6 +10,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.diff.ResourceDiffItem
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -29,7 +30,7 @@ class HetznerSSHKeyProvisioner(hcloudToken: String) :
 
     private val logger = KotlinLogging.logger {}
 
-    override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+    override suspend fun lookup(lookup: HetznerSSHKeyLookup, context: ProvisionerLookupContext) = lookupInternal(lookup)
 
     suspend fun lookupInternal(lookup: HetznerSSHKeyLookup) = api.sshKeys.get(lookup.name)?.let {
         HetznerSSHKeyRuntime(it.id, it.name, it.fingerprint, it.publicKey, it.labels)

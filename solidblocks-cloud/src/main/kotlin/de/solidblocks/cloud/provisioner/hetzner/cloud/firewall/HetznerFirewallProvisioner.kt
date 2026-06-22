@@ -12,6 +12,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
@@ -34,7 +35,7 @@ class HetznerFirewallProvisioner(hcloudToken: String) :
     ResourceProvisioner<HetznerFirewall, HetznerFirewallRuntime, HetznerFirewallLookup>,
     DestroyableResourceProvisioner<HetznerFirewallLookup> {
 
-    override suspend fun lookup(lookup: HetznerFirewallLookup, context: SSHProvisionerContext) = lookupInternal(lookup)
+    override suspend fun lookup(lookup: HetznerFirewallLookup, context: ProvisionerLookupContext) = lookupInternal(lookup)
 
     suspend fun lookupInternal(lookup: HetznerFirewallLookup) = api.firewalls.get(lookup.name)?.let {
         val appliedToLabels = it.appliedTo.flatMap {

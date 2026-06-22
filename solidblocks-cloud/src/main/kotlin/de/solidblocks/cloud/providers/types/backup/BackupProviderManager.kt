@@ -14,7 +14,7 @@ import de.solidblocks.cloud.providers.backup.aws.S3BackupProviderManager
 import de.solidblocks.cloud.providers.backup.local.LocalBackupProviderConfigurationRuntime
 import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUser
 import de.solidblocks.cloud.provisioner.aws.s3.AwsS3Bucket
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
@@ -75,12 +75,12 @@ fun createBackupConfiguration(
     runtime: BackupProviderConfigurationRuntime,
     cloud: CloudConfigurationRuntime,
     service: ServiceConfigurationRuntime,
-    context: ProvisionerContext,
+    context: ProvisionerLookupContext,
     backupVolume: HetznerVolume?,
 ): BackupConfiguration {
     val backupPassword = backupSecretResource(cloud).asLookup()
-    val bucketName = S3BackupProviderManager.bucketName(context.environment, service)
-    val iamUserName = S3BackupProviderManager.iamUserName(context.environment, service)
+    val bucketName = S3BackupProviderManager.bucketName(cloud.environmentContext, service)
+    val iamUserName = S3BackupProviderManager.iamUserName(cloud.environmentContext, service)
 
     return when (runtime) {
         is S3BackupProviderConfigurationRuntime -> {
@@ -88,8 +88,8 @@ fun createBackupConfiguration(
                 context.ensureLookup(backupPassword).secret,
                 S3BackupTarget(
                     bucketName,
-                    context.ensureLookup(GenericSecretLookup(S3BackupProviderManager.accessKeySecretPath(context.environment, iamUserName))).secret,
-                    context.ensureLookup(GenericSecretLookup(S3BackupProviderManager.secretKeySecretPath(context.environment, iamUserName))).secret,
+                    context.ensureLookup(GenericSecretLookup(S3BackupProviderManager.accessKeySecretPath(cloud.environmentContext, iamUserName))).secret,
+                    context.ensureLookup(GenericSecretLookup(S3BackupProviderManager.secretKeySecretPath(cloud.environmentContext, iamUserName))).secret,
                 ),
             )
         }

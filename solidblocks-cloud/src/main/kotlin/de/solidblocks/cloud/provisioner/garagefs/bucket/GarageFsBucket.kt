@@ -13,7 +13,7 @@ class GarageFsBucket(
     val websiteAccess: Boolean = false,
     val websiteAccessDomains: List<String> = emptyList(),
     dependsOn: Set<BaseResource> = emptySet(),
-) : BaseInfrastructureResource<GarageFsPermissionRuntime>(name, setOf(server) + dependsOn) {
+) : BaseInfrastructureResource<GarageFsBucketRuntime>(name, setOf(server) + dependsOn) {
 
     override fun asLookup() = GarageFsBucketLookup(name, server, adminToken)
 

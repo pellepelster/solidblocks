@@ -158,7 +158,7 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                 }
             } else {
                 val diffResult = try {
-                    registry.diff<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>(resource, context)
+                    registry.diff(resource, context)
                 } catch (e: Exception) {
                     logger.error(e) { "diff failed for ${resource.logText()}" }
                     return@runBlocking Error<List<ResourceDiff>>("diff failed for ${resource.logText()} (${e.message})", e)
@@ -193,13 +193,13 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
         }
     }
 
-    suspend fun apply(resources: List<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>, context: ProvisionerApplyContext): Result<Unit> {
+    suspend fun apply(resources: List<BaseInfrastructureResource<*>>, context: ProvisionerApplyContext): Result<Unit> {
         val failures =
             resources.mapNotNull { resource ->
                 try {
-                    registry.apply<BaseInfrastructureResourceRuntime>(
-                        resource,
-                        context,
+                    @Suppress("UNCHECKED_CAST")
+                    registry.apply(
+                        resource as BaseInfrastructureResource<BaseInfrastructureResourceRuntime>,
                         context,
                     )
                     null
@@ -265,7 +265,6 @@ class Provisioner(val registry: ProvisionersRegistry, val serviceRegistrations: 
                             registry.apply(
                                 resource,
                                 context,
-                                applyLog,
                             )
                         } catch (e: Exception) {
                             logger.error(e) { "creating ${resource.logText()} failed" }

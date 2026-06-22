@@ -22,8 +22,9 @@ class BooleanKeyword<T : Boolean?> internal constructor(
         val bool =
             if (optional) {
                 when (val result = yaml.getOptionalBoolean(name)) {
-                    is Error<Boolean?> -> return Error<T>(result.error)
-                    is Success<Boolean?> -> result.data ?: default
+                    is YamlEmpty<Boolean?> -> default
+                    is YamlError<Boolean?> -> return Error<T>(result.error)
+                    is YamlSuccess<Boolean?> -> result.data ?: default
                 }
             } else {
                 when (val result = yaml.getBoolean(name)) {

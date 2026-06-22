@@ -45,7 +45,7 @@ interface ServiceManager<C : ServiceConfiguration, R : ServiceConfigurationRunti
 
     fun linkedEnvironmentVariables(cloud: CloudConfigurationRuntime, runtime: R): List<BaseEnvironmentVariable> = emptyList()
 
-    fun createResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<List<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>>
+    fun createResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext): Result<List<BaseInfrastructureResource<*>>>
 
     fun cleanupResources(cloud: CloudConfigurationRuntime, runtime: R, context: ProvisionerContext, log: LogContext): Result<Unit> = Success(Unit)
 

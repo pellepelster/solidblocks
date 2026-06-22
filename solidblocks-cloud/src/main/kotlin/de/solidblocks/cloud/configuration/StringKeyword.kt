@@ -5,6 +5,9 @@ import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.utils.KeywordHelp
+import de.solidblocks.cloud.utils.YamlEmpty
+import de.solidblocks.cloud.utils.YamlError
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.getNonNullOrEmptyString
 import de.solidblocks.cloud.utils.getOptionalString
 import de.solidblocks.cloud.utils.logMessage
@@ -30,13 +33,15 @@ class StringKeyword<T : String?> internal constructor(
         val string =
             if (optional) {
                 when (val result = yaml.getOptionalString(name)) {
-                    is Error<String?> -> return Error<T>(result.error)
-                    is Success<String?> -> result.data ?: default
+                    is YamlEmpty<String?> -> default
+                    is YamlError<String?> -> return Error<T>(result.error)
+                    is YamlSuccess<String?> -> result.data ?: default
                 }
             } else {
                 when (val result = yaml.getNonNullOrEmptyString(name)) {
-                    is Error<String> -> return Error<T>(result.error)
-                    is Success<String> -> result.data
+                    is YamlEmpty<String> -> return Error<T>(result.message)
+                    is YamlError<String> -> return Error<T>(result.error)
+                    is YamlSuccess<String> -> result.data
                 }
             }
 

@@ -35,8 +35,8 @@ class UserDataLookupProviderTest {
             val resource1 = Resource1("resource1")
             val resource2 = Resource2("resource2", DiffBehaviour.up_to_date_or_missing)
 
-            registry.apply<Resource1Runtime>(resource1, context, TEST_LOG_CONTEXT)
-            registry.apply<Resource2Runtime>(resource2, context, TEST_LOG_CONTEXT)
+            registry.apply(resource1, context)
+            registry.apply(resource2, context)
 
             val userData =
                 UserData(

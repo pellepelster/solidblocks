@@ -5,6 +5,7 @@ import de.solidblocks.cloud.TEST_KEYWORD_HELP
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.OptionalStringMapKeyword
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -23,7 +24,7 @@ class OptionalStringMapKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = OptionalStringMapKeyword("map1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Map<String, String>?>>().data shouldBe
@@ -40,7 +41,7 @@ class OptionalStringMapKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = OptionalStringMapKeyword("map1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Map<String, String>?>>().data shouldBe null
@@ -55,7 +56,7 @@ class OptionalStringMapKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = OptionalStringMapKeyword("map1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Map<String, String>?>>().data shouldBe
@@ -73,7 +74,7 @@ class OptionalStringMapKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = OptionalStringMapKeyword("map1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Map<String, String>?>>().error shouldBe

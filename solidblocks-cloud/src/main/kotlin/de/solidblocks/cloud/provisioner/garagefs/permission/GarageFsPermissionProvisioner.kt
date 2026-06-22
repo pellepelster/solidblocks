@@ -9,6 +9,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.diff.ResourceDiffItem
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.garagefs.BaseGarageFsProvisioner
@@ -52,7 +53,7 @@ class GarageFsPermissionProvisioner :
         }
     }
 
-    override suspend fun lookup(lookup: GarageFsPermissionLookup, context: SSHProvisionerContext) = when (val result = lookupInternal(lookup, context)) {
+    override suspend fun lookup(lookup: GarageFsPermissionLookup, context: ProvisionerLookupContext) = when (val result = lookupInternal(lookup, context as SSHProvisionerContext)) {
         is Error<GarageFsPermissionRuntime?> -> null
         is Success<GarageFsPermissionRuntime?> -> result.data
     }

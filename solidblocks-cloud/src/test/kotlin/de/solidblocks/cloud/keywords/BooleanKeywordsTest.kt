@@ -7,6 +7,7 @@ import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.configuration.BooleanKeyword
 import de.solidblocks.cloud.configuration.default
 import de.solidblocks.cloud.configuration.optional
+import de.solidblocks.cloud.utils.YamlSuccess
 import de.solidblocks.cloud.utils.yamlParse
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -23,7 +24,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean>>().data shouldBe true
@@ -38,7 +39,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Boolean>>().error shouldBe
@@ -54,7 +55,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Boolean>>().error shouldBe
@@ -70,7 +71,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean?>>().data shouldBe null
@@ -85,7 +86,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean?>>().data shouldBe false
@@ -100,7 +101,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).default(true)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean>>().data shouldBe true
@@ -115,7 +116,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).default(true)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean>>().data shouldBe false
@@ -130,7 +131,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).default(true)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Boolean>>().error shouldBe
@@ -161,7 +162,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Boolean>>().error shouldBe
@@ -177,7 +178,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Boolean>>().error shouldBe
@@ -193,7 +194,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).optional()
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean?>>().data shouldBe null
@@ -208,7 +209,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).default(true)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean>>().data shouldBe true
@@ -223,7 +224,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP).default(true)
         keyword.parse(yaml.data).shouldBeTypeOf<Success<Boolean>>().data shouldBe true
@@ -238,7 +239,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Boolean>>().error shouldBe
@@ -254,7 +255,7 @@ class BooleanKeywordsTest {
                 """
                     .trimIndent(),
             )
-                .shouldBeTypeOf<Success<YamlNode>>()
+                .shouldBeTypeOf<YamlSuccess<YamlNode>>()
 
         val keyword = BooleanKeyword("flag1", TEST_KEYWORD_HELP)
         keyword.parse(yaml.data).shouldBeTypeOf<Error<Boolean>>().error shouldBe
