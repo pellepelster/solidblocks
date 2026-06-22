@@ -35,8 +35,8 @@ import de.solidblocks.hetzner.cloud.resources.FloatingIpType
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.toPem
-import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
+import de.solidblocks.utils.log.LogContext
 import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 

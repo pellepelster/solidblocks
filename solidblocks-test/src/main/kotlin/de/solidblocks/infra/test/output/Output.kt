@@ -1,6 +1,6 @@
 package de.solidblocks.infra.test.output
 
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.SendChannel

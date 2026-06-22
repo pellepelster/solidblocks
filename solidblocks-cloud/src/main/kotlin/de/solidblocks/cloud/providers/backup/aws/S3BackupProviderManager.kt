@@ -12,7 +12,7 @@ import de.solidblocks.cloud.provisioner.aws.iam.AwsIamUserProvisioner
 import de.solidblocks.cloud.provisioner.aws.s3.AwsS3BucketProvisioner
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.utils.getEnvOrProperty
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class S3BackupProviderManager :

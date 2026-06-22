@@ -1,9 +1,9 @@
 package de.solidblocks.cloud
 
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -28,7 +28,8 @@ import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.ConsoleLogContext
+import de.solidblocks.utils.log.LogContext
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
@@ -126,6 +127,6 @@ data class HetznerTestContext(val provisioner: Provisioner, val serverProvisione
     }
 }
 
-val TEST_LOG_CONTEXT = LogContext()
+val TEST_LOG_CONTEXT = ConsoleLogContext.default()
 
 val TEST_KEYWORD_HELP = KeywordHelp("TODO")

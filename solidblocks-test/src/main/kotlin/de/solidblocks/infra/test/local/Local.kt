@@ -7,7 +7,7 @@ import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.local.LocalScriptBuilder
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.ConsoleLogContext
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -62,7 +62,7 @@ class LocalCommandBuilder(command: Array<String>, timeout: Duration = TestConsta
                 val process = processBuilder.start()
                 val stdinWriter = process.outputWriter()
 
-                val context = LogContext.withTiming()
+                val context = ConsoleLogContext.withTiming()
                 logInfo("starting command '${command.joinToString(" ")}'")
 
                 launch {

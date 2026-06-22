@@ -20,7 +20,7 @@ import de.solidblocks.cloud.utils.protonPassItemView
 import de.solidblocks.cloud.utils.protonPassTest
 import de.solidblocks.cloud.utils.protonPassVaultCreate
 import de.solidblocks.cloud.utils.protonPassVaultList
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import java.util.*
 
 class ProtonPassProviderManager : ProviderManager<ProtonPassProviderConfiguration, ProtonPassProviderRuntime> {

@@ -16,8 +16,10 @@ import org.bouncycastle.openssl.PEMParser
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import org.bouncycastle.util.io.pem.PemObject
 import org.bouncycastle.util.io.pem.PemWriter
+import java.io.ByteArrayOutputStream
 import java.io.StringReader
 import java.io.StringWriter
+import java.math.BigInteger
 import java.security.*
 import java.security.interfaces.RSAPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
@@ -108,7 +110,14 @@ abstract class SSHKeyFactory {
             }
 
         val privateKey = PrivateKeyFactory.createKey(privateKeyInfo)
-        val opensshPrivateKey = OpenSSHPrivateKeyUtil.encodePrivateKey(privateKey)
+        val opensshPrivateKey =
+            when (privateKey) {
+                // BouncyCastle's OpenSSHPrivateKeyUtil only emits the openssh-key-v1 container for
+                // Ed25519 keys; for RSA it falls back to a raw PKCS#1 body that ssh tooling cannot
+                // read under an "OPENSSH PRIVATE KEY" header, so we encode the container ourselves.
+                is RSAPrivateCrtKeyParameters -> encodeRsaOpenSshV1(privateKey)
+                else -> OpenSSHPrivateKeyUtil.encodePrivateKey(privateKey)
+            }
 
         return toPemString("OPENSSH PRIVATE KEY", opensshPrivateKey)
     }
@@ -133,6 +142,66 @@ abstract class SSHKeyFactory {
         PemWriter(sw).use { pw -> pw.writeObject(PemObject(type, encoded)) }
         sw.toString()
     }
+}
+
+private fun ByteArrayOutputStream.writeSshUInt32(value: Int) {
+    write((value ushr 24) and 0xff)
+    write((value ushr 16) and 0xff)
+    write((value ushr 8) and 0xff)
+    write(value and 0xff)
+}
+
+private fun ByteArrayOutputStream.writeSshString(bytes: ByteArray) {
+    writeSshUInt32(bytes.size)
+    write(bytes)
+}
+
+private fun ByteArrayOutputStream.writeSshString(value: String) = writeSshString(value.toByteArray(Charsets.UTF_8))
+
+// ssh mpint matches BigInteger's two's-complement big-endian encoding: a leading 0x00 is prepended
+// whenever the high bit of the top byte is set, which is exactly what BigInteger.toByteArray() produces.
+private fun ByteArrayOutputStream.writeSshMpint(value: BigInteger) = writeSshString(value.toByteArray())
+
+// Encodes an RSA private key into the openssh-key-v1 container (unencrypted, "none" cipher) as
+// specified by PROTOCOL.key, so the result is readable by OpenSSH tooling such as ssh-keygen.
+private fun encodeRsaOpenSshV1(key: RSAPrivateCrtKeyParameters): ByteArray {
+    val publicBlob = ByteArrayOutputStream().apply {
+        writeSshString("ssh-rsa")
+        writeSshMpint(key.publicExponent)
+        writeSshMpint(key.modulus)
+    }
+        .toByteArray()
+
+    val checkInt = 0
+    val privateSection = ByteArrayOutputStream().apply {
+        writeSshUInt32(checkInt)
+        writeSshUInt32(checkInt)
+        writeSshString("ssh-rsa")
+        writeSshMpint(key.modulus)
+        writeSshMpint(key.publicExponent)
+        writeSshMpint(key.exponent)
+        writeSshMpint(key.qInv)
+        writeSshMpint(key.p)
+        writeSshMpint(key.q)
+        writeSshString("") // comment
+        var pad = 1
+        while (size() % 8 != 0) {
+            write(pad++)
+        }
+    }
+        .toByteArray()
+
+    return ByteArrayOutputStream().apply {
+        write("openssh-key-v1".toByteArray(Charsets.US_ASCII))
+        write(0)
+        writeSshString("none") // ciphername
+        writeSshString("none") // kdfname
+        writeSshString("") // kdfoptions
+        writeSshUInt32(1) // number of keys
+        writeSshString(publicBlob)
+        writeSshString(privateSection)
+    }
+        .toByteArray()
 }
 
 fun KeyPair.toPem() = when (this.private) {

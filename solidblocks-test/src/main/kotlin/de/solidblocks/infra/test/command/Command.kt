@@ -3,8 +3,8 @@ package de.solidblocks.infra.test.command
 import de.solidblocks.infra.test.output.OutputLine
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
-import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.LogSource
+import de.solidblocks.utils.log.ConsoleLogContext
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -61,7 +61,7 @@ abstract class CommandBuilder(protected var command: Array<String>, var timeout:
 
         val commandRunner = createCommandRunner()
 
-        val context = LogContext.withTiming()
+        val context = ConsoleLogContext.default().withTiming()
         val assertionsResult = async {
             assertions.map {
                 it.invoke(

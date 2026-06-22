@@ -3,10 +3,10 @@ package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_LOG_CONTEXT
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.resources.ResourceGroup
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.provisioner.mock.ApplyBehaviour.error_on_apply
 import de.solidblocks.cloud.provisioner.mock.ApplyBehaviour.throw_exception_on_apply
 import de.solidblocks.cloud.provisioner.mock.DiffBehaviour.duplicate_on_diff

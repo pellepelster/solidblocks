@@ -1,6 +1,7 @@
 package de.solidblocks.infra.test.files
 
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.ConsoleLogContext
+import de.solidblocks.utils.log.LogContext
 import de.solidblocks.utils.logInfo
 import java.io.File
 import java.io.FileOutputStream
@@ -41,7 +42,7 @@ class FileBuilder(private val path: Path, private val name: String) {
 
 data class ZipFile(val file: Path)
 
-class ZipFileBuilder(private val path: Path, private val name: String, private val context: LogContext = LogContext.withTiming()) {
+class ZipFileBuilder(private val path: Path, private val name: String, private val context: LogContext = ConsoleLogContext.withTiming()) {
     private val entries = mutableMapOf<String, ByteArray>()
 
     fun entry(file: String, content: String) = entry(file, content.toByteArray())

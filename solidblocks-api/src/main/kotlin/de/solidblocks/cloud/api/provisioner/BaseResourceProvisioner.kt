@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.api.provisioner
 
-import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.diff.ResourceDiff
 import kotlin.reflect.KClass
 
 interface BaseResourceProvisioner<ResourceType, RuntimeType, DiffContextType, ApplyContextType> {

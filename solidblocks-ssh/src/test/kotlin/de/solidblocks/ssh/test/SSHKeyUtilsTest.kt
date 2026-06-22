@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.images.builder.ImageFromDockerfile
 import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.writeText
 
 class SSHKeyUtilsTest {
@@ -338,6 +339,64 @@ class SSHKeyUtilsTest {
 
         rsa.keyType() shouldBe KeyType.rsa
         ed25519.keyType() shouldBe KeyType.ed25519
+    }
+
+    @Test
+    fun `privateKeyToOpenSsh creates an openssh private key readable by ssh-keygen`() {
+        val keyPair = SSHKeyUtils.ED25519.generate()
+        val openSshPrivateKey = SSHKeyUtils.ED25519.privateKeyToOpenSsh(keyPair.private)
+
+        openSshPrivateKey shouldStartWith "-----BEGIN OPENSSH PRIVATE KEY-----"
+
+        val privateKeyFile =
+            Files.createTempFile(
+                "openssh_private_key",
+                ".key",
+                PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")),
+            )
+                .also { it.writeText(openSshPrivateKey) }
+
+        val process =
+            ProcessBuilder("ssh-keygen", "-y", "-f", privateKeyFile.toString())
+                .redirectErrorStream(true)
+                .start()
+
+        val output = process.inputStream.bufferedReader().readText()
+        val exitCode = process.waitFor()
+
+        assertSoftly {
+            exitCode shouldBe 0
+            output shouldStartWith "ssh-ed25519 "
+        }
+    }
+
+    @Test
+    fun `RSA privateKeyToOpenSsh creates an openssh private key readable by ssh-keygen`() {
+        val keyPair = SSHKeyUtils.RSA.generate()
+        val openSshPrivateKey = SSHKeyUtils.RSA.privateKeyToOpenSsh(keyPair.private)
+
+        openSshPrivateKey shouldStartWith "-----BEGIN OPENSSH PRIVATE KEY-----"
+
+        val privateKeyFile =
+            Files.createTempFile(
+                "openssh_private_key",
+                ".key",
+                PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")),
+            )
+                .also { it.writeText(openSshPrivateKey) }
+
+        val process =
+            ProcessBuilder("ssh-keygen", "-y", "-f", privateKeyFile.toString())
+                .redirectErrorStream(true)
+                .start()
+
+        val output = process.inputStream.bufferedReader().readText()
+        val exitCode = process.waitFor()
+
+        assertSoftly {
+            exitCode shouldBe 0
+            output shouldStartWith "ssh-rsa "
+        }
     }
 
     @Test

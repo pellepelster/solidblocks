@@ -13,7 +13,7 @@ import de.solidblocks.cloud.services.ServiceConfiguration
 import de.solidblocks.cloud.services.ServiceConfigurationRuntime
 import de.solidblocks.cloud.services.ServiceManager
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import java.security.KeyPair
 import kotlin.reflect.KClass
 

@@ -1,5 +1,7 @@
 package de.solidblocks.utils
 
+import de.solidblocks.utils.log.ConsoleLogContext
+import de.solidblocks.utils.log.LogContext
 import org.junit.jupiter.api.Test
 import java.lang.Thread.sleep
 import kotlin.time.Duration.Companion.seconds
@@ -41,7 +43,7 @@ class LogTest {
 
     @Test
     fun testLogContextIndentation() {
-        var context = LogContext.default()
+        var context: LogContext = ConsoleLogContext.default()
 
         logInfo("indent 0", context = context)
 
@@ -81,7 +83,7 @@ class LogTest {
 
     @Test
     fun testLogContextTiming() {
-        val context = LogContext.withTiming()
+        val context = ConsoleLogContext.withTiming()
         logInfo("some info message with start 1", context = context)
         logDebug("some debug message with start 1", context = context)
         logError("some error message with start 1", context = context)

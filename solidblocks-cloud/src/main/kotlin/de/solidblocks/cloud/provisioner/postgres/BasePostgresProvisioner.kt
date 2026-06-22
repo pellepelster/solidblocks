@@ -9,7 +9,7 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 import de.solidblocks.cloud.utils.LONG_WAIT
 import de.solidblocks.cloud.utils.waitForResult
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.DriverManager

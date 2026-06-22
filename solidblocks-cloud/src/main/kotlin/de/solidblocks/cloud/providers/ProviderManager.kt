@@ -4,7 +4,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.configuration.model.EnvironmentContext
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import java.nio.file.Path
 import kotlin.reflect.KClass
 

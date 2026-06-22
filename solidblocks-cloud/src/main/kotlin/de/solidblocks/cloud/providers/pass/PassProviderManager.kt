@@ -7,7 +7,7 @@ import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.utils.*
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.exists

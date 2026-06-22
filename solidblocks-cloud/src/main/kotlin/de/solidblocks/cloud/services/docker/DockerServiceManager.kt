@@ -42,7 +42,7 @@ import de.solidblocks.cloudinit.RESTIC_STATUS_COMMAND
 import de.solidblocks.shell.restic.ResticSnapshots
 import de.solidblocks.shell.restic.parseResticSnapshotsOutput
 import de.solidblocks.ssh.ensureCommand
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import java.time.Duration
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {

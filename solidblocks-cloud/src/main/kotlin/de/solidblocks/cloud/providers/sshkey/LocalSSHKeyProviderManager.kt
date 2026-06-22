@@ -9,7 +9,7 @@ import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationFac
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderManager
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.keyType
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path

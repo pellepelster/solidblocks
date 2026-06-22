@@ -1,7 +1,7 @@
 package de.solidblocks.cloud.provisioner
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
-import de.solidblocks.cloud.api.diff.ResourceDiffStatus
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.protonpass.ProtonPassSecretProvisioner
 import de.solidblocks.cloud.provisioner.secret.GenericSecret

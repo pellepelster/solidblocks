@@ -47,7 +47,7 @@ import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMA
 import de.solidblocks.shell.pgbackrest.PgBackRestInfo
 import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
 import de.solidblocks.ssh.ensureCommand
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import java.nio.file.Path
 import java.time.Duration
 

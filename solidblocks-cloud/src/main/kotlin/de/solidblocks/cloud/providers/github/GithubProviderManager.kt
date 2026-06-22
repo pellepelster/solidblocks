@@ -8,7 +8,7 @@ import de.solidblocks.cloud.github.GitHubApiException
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.utils.getPropertyOrEnv
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 

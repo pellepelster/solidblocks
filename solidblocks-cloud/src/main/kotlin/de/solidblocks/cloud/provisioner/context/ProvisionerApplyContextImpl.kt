@@ -10,7 +10,8 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.services.ServiceRegistration
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.ConsoleLogContext
+import de.solidblocks.utils.log.LogContext
 import java.security.KeyPair
 
 class ProvisionerApplyContextImpl(
@@ -36,7 +37,7 @@ class ProvisionerApplyContextImpl(
 
         return when (
             val result: Result<GenericSecretRuntime> =
-                registry.apply(genericSecret, this, LogContext())
+                registry.apply(genericSecret, this, ConsoleLogContext.default())
         ) {
             is Error<GenericSecretRuntime> -> Error(result.error)
             is Success<GenericSecretRuntime> -> Success(Unit)

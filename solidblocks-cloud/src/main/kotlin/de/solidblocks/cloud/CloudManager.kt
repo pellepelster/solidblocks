@@ -2,11 +2,11 @@ package de.solidblocks.cloud
 
 import de.solidblocks.cloud.Constants.DEFAULT_ENVIRONMENT
 import de.solidblocks.cloud.api.Error
-import de.solidblocks.cloud.api.diff.ResourceDiff
-import de.solidblocks.cloud.api.resources.ResourceGroup
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.fold
+import de.solidblocks.cloud.api.resources.ResourceGroup
 import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.ConfigurationParser
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
@@ -19,6 +19,8 @@ import de.solidblocks.cloud.provisioner.context.ValidationContextImpl
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLookup
 import de.solidblocks.cloud.services.*
 import de.solidblocks.utils.*
+import de.solidblocks.utils.log.ConsoleLogContext
+import de.solidblocks.utils.log.LogContext
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
@@ -35,7 +37,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
     }
 
     fun validate(): Result<CloudConfigurationRuntime> = result {
-        val log = LogContext.default()
+        val log = ConsoleLogContext.default()
         log.info(bold("validating cloud configuration '${cloudConfigFile.absolutePath}'"))
         val validateLog = log.indent()
 
@@ -214,7 +216,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
     private fun <T> withProvisioner(runtime: CloudConfigurationRuntime, block: (CloudProvisioner) -> T): T = block(provisionerFor(runtime))
 
     fun apply(runtime: CloudConfigurationRuntime, tainSecrets: Boolean): Result<String> {
-        val log = LogContext.default()
+        val log = ConsoleLogContext.default()
         return withProvisioner(runtime) { provisioner ->
             val applyResult = provisioner.apply(tainSecrets, log)
             writeSshConfig(provisioner)
@@ -248,7 +250,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
     fun status(runtime: CloudConfigurationRuntime): Result<String> = withProvisioner(runtime) { it.status(runtime) }
 
     fun maintenance(runtime: CloudConfigurationRuntime): Result<Unit> {
-        val log = LogContext()
+        val log = ConsoleLogContext.default()
         log.info(bold("running maintenance"))
 
         return withProvisioner(runtime) {
@@ -261,7 +263,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
     }
 
     fun debugInterpolation(runtime: CloudConfigurationRuntime, interpolated: String): Result<Unit> {
-        val log = LogContext()
+        val log = ConsoleLogContext.default()
         log.info(bold("debugging interpolation for '$interpolated'"))
 
         return withProvisioner(runtime) {
@@ -283,7 +285,7 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
     fun infoJson(runtime: CloudConfigurationRuntime): Result<CloudInfo> = withProvisioner(runtime) { it.infoJson(runtime) }
 
     fun plan(runtime: CloudConfigurationRuntime): Result<Map<ResourceGroup, List<ResourceDiff>>> {
-        val log = LogContext.default()
+        val log = ConsoleLogContext.default()
         return withProvisioner(runtime) { it.plan({ false }, log) }
     }
 }

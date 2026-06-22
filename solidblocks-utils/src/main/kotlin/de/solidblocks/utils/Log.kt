@@ -1,6 +1,8 @@
 package de.solidblocks.utils
 
 import de.solidblocks.utils.Constants.durationFormatter
+import de.solidblocks.utils.log.LogContext
+import de.solidblocks.utils.log.TimingLogContext
 import java.text.DecimalFormat
 import kotlin.time.Duration
 import kotlin.time.TimeSource

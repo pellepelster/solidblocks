@@ -53,8 +53,8 @@ import de.solidblocks.cloud.utils.markdown
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.cloudinit.Distributor
 import de.solidblocks.cloudinit.GithubRunnerUserData
-import de.solidblocks.utils.LogContext
 import de.solidblocks.utils.bold
+import de.solidblocks.utils.log.LogContext
 import kotlinx.coroutines.runBlocking
 
 class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfiguration, GithubRunnerServiceConfigurationRuntime> {

@@ -18,7 +18,7 @@ import de.solidblocks.infra.test.command.ProcessResult
 import de.solidblocks.infra.test.createDockerClient
 import de.solidblocks.infra.test.files.tempDir
 import de.solidblocks.infra.test.output.TimestampedOutputLine
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.ConsoleLogContext
 import de.solidblocks.utils.logInfo
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -142,7 +142,7 @@ class DockerCommandBuilder(private val image: DockerTestImage, command: Array<St
                             .withTty(false)
                             .exec()
 
-                    val context = LogContext.withTiming()
+                    val context = ConsoleLogContext.withTiming()
                     logInfo("starting command '${command.joinToString(" ")}'")
 
                     launch {

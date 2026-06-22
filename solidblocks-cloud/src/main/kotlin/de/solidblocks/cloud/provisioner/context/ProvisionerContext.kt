@@ -14,7 +14,7 @@ import de.solidblocks.cloud.services.*
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
-import de.solidblocks.utils.LogContext
+import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.utils.io.core.*
 import java.security.KeyPair

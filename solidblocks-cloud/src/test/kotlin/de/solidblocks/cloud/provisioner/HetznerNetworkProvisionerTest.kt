@@ -3,8 +3,8 @@ import de.solidblocks.cloud.Constants.defaultNetwork
 import de.solidblocks.cloud.Constants.defaultServiceSubnet
 import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.TestProvisionerContext
-import de.solidblocks.cloud.api.diff.ResourceDiffStatus
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.diff.ResourceDiffStatus
 import de.solidblocks.cloud.diffData
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetwork
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkProvisioner
