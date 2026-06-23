@@ -6,7 +6,6 @@ import de.solidblocks.cloud.provisioner.garagefs.accesskey.GarageFsAccessKey
 import de.solidblocks.cloud.provisioner.garagefs.bucket.GarageFsBucket
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
-import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 
 class GarageFsPermission(
     val bucket: GarageFsBucket,

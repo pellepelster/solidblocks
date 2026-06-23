@@ -16,7 +16,6 @@ import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.endpoint.waitForSSH
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
-import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.EndpointResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
 import de.solidblocks.cloud.api.resources.ResourceGroup

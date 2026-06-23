@@ -10,10 +10,9 @@ import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.diff.ResourceDiffItem
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.*
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
-import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.hetzner.cloud.resources.NetworkCreateRequest
 import de.solidblocks.hetzner.cloud.resources.NetworkUpdateRequest

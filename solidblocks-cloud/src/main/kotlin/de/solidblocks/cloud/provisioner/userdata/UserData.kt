@@ -3,7 +3,6 @@ package de.solidblocks.cloud.provisioner.userdata
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
-import de.solidblocks.cloud.provisioner.context.ProvisionerContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ensureLookup
 import de.solidblocks.cloud.services.ServerSSHIdentityResources

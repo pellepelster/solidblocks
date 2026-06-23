@@ -30,7 +30,6 @@ import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
-import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 import kotlin.reflect.KClass

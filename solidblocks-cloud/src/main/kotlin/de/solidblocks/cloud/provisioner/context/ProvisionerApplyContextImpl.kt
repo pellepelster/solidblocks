@@ -10,7 +10,6 @@ import de.solidblocks.cloud.provisioner.secret.GenericSecret
 import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.services.ServiceRegistration
-import de.solidblocks.utils.log.ConsoleLogContext
 import de.solidblocks.utils.log.LogContext
 import java.security.KeyPair
 

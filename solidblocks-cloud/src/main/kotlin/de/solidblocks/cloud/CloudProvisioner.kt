@@ -11,7 +11,6 @@ import de.solidblocks.cloud.Constants.sshKeyName
 import de.solidblocks.cloud.Constants.sshKnownHosts
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceLookupProvider
-import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.aggregate
@@ -251,12 +250,12 @@ class CloudProvisioner(val runtime: CloudConfigurationRuntime, val serviceRegist
         )
 
         val lookups = providerLookups + listOf(UserDataLookupProvider()) + (providerProvisioners + serviceProvisioners + defaultProvisioners).filterIsInstance<
-                ResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>,
-                >()
+            ResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>,
+            >()
 
         return ProvisionersRegistry(
-            lookups as List<ResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime>>,
-            ((providerProvisioners + defaultProvisioners + serviceProvisioners) as List<ResourceProvisioner<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>>>)
+            lookups,
+            ((providerProvisioners + defaultProvisioners + serviceProvisioners)),
         )
     }
 

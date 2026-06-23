@@ -13,7 +13,6 @@ import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.endpoint.waitForNoSSH
 import de.solidblocks.cloud.api.endpoint.waitForSSH
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
-import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
 import de.solidblocks.cloud.provisioner.context.ProvisionerContext
@@ -26,7 +25,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloating
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolume
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
-import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.OneTimeGeneratedSecret
 import de.solidblocks.cloud.status.withServerStatus
 import de.solidblocks.cloud.utils.ByteSize

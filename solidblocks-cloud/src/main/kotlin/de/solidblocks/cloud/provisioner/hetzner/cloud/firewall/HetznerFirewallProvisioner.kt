@@ -12,10 +12,9 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
-import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.hetzner.cloud.BaseHetznerProvisioner
 import de.solidblocks.cloud.utils.joinToStringOrEmpty
 import de.solidblocks.hetzner.cloud.model.HetznerApiErrorType

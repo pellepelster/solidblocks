@@ -1,11 +1,18 @@
-package de.solidblocks.cloud.api
+package de.solidblocks.cloud.provisioner
 
+import de.solidblocks.cloud.api.Error
+import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.lookup.BaseResourceLookupProvider
 import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
 import de.solidblocks.cloud.api.provisioner.BaseDestroyableResourceProvisioner
 import de.solidblocks.cloud.api.provisioner.BaseResourceProvisioner
-import de.solidblocks.cloud.api.resources.*
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.BaseResource
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
+import de.solidblocks.cloud.api.resources.ResourceGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
@@ -40,7 +47,9 @@ abstract class BaseProvisionersRegistry<DiffContextType, ApplyContextType, Destr
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun provisioner(resource: BaseResource): BaseResourceProvisioner<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, DiffContextType, ApplyContextType> {
+    private fun provisioner(
+        resource: BaseResource,
+    ): BaseResourceProvisioner<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, DiffContextType, ApplyContextType> {
         val provisioner = provisionersByResourceType[resource::class] ?: provisionersByLookupType[resource::class]
             ?: throw RuntimeException("no provisioner found for '${resource::class.qualifiedName}'")
 
@@ -48,7 +57,7 @@ abstract class BaseProvisionersRegistry<DiffContextType, ApplyContextType, Destr
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime, ResourceType: BaseInfrastructureResource<RuntimeType>> apply(resource: ResourceType, context: ApplyContextType): Result<RuntimeType> {
+    suspend fun <RuntimeType : BaseInfrastructureResourceRuntime, ResourceType : BaseInfrastructureResource<RuntimeType>> apply(resource: ResourceType, context: ApplyContextType): Result<RuntimeType> {
         val provisioner = provisioner(resource)
         logger.info {
             "creating ${resource.logText()} using provisioner ${provisioner::class.qualifiedName}"
@@ -58,7 +67,8 @@ abstract class BaseProvisionersRegistry<DiffContextType, ApplyContextType, Destr
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <ResourceType : BaseInfrastructureResource<*>> diff(resource: ResourceType, context: DiffContextType): Result<ResourceDiff> = provisioner(resource).diff(resource as BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, context)
+    suspend fun <ResourceType : BaseInfrastructureResource<*>> diff(resource: ResourceType, context: DiffContextType): Result<ResourceDiff> =
+        provisioner(resource).diff(resource as BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, context)
 
     @Suppress("UNCHECKED_CAST")
     suspend fun <LookupType : InfrastructureResourceLookup<*>> destroy(lookup: LookupType, context: DestroyContextType): Boolean {
@@ -74,14 +84,16 @@ abstract class BaseProvisionersRegistry<DiffContextType, ApplyContextType, Destr
         }
     }
 
-    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: LookupContextType): RuntimeType? =
-        runBlocking {
-            val provider = lookupProvidersByType[lookup::class]
-                ?: throw RuntimeException("no lookup found for '${lookup::class.qualifiedName}'")
+    fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType, context: LookupContextType): RuntimeType? = runBlocking {
+        val provider = lookupProvidersByType[lookup::class]
+            ?: throw RuntimeException("no lookup found for '${lookup::class.qualifiedName}'")
 
-            @Suppress("UNCHECKED_CAST")
-            provider.lookup(lookup as InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, context) as RuntimeType?
-        }
+        @Suppress("UNCHECKED_CAST")
+        provider.lookup(
+            lookup as InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>,
+            context,
+        ) as RuntimeType?
+    }
 
     @Suppress("UNCHECKED_CAST")
     suspend fun <LookupType : InfrastructureResourceLookup<RuntimeType>, RuntimeType : BaseInfrastructureResourceRuntime> list(clazz: KClass<*>): List<LookupType> {

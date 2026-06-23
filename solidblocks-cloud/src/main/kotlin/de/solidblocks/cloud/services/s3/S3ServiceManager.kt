@@ -33,10 +33,7 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerNetworkLook
 import de.solidblocks.cloud.provisioner.hetzner.cloud.network.HetznerSubnetLookup
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
-import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeRuntime
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
-import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 import de.solidblocks.cloud.provisioner.secret.RandomSecret
 import de.solidblocks.cloud.provisioner.secret.StaticSecret
 import de.solidblocks.cloud.provisioner.userdata.UserData
@@ -183,7 +180,7 @@ class S3ServiceManager : ServiceManager<S3ServiceConfiguration, S3ServiceConfigu
             listOf(server.asLookup()),
             emptyList(),
             labels =
-                dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
+            dnsRecordLabels(runtime) + cloudLabels(cloud.environmentContext),
         )
         val dnsResources = runtime.buckets.flatMap { it.managedPublicWebAccessDomains.entries }.map {
             if (it.key.isEmpty()) {

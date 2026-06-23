@@ -92,8 +92,7 @@ abstract class BaseSSHProvisionerContextImpl(
         val outerLog = log
         val destroyContext = object : ProvisionerDestroyContext {
             override val log: LogContext = outerLog
-            override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? =
-                this@BaseSSHProvisionerContextImpl.lookup(lookup)
+            override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = this@BaseSSHProvisionerContextImpl.lookup(lookup)
         }
         return registry.destroy(lookup, destroyContext)
     }

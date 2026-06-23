@@ -12,8 +12,8 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.unknown
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
-import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
+import de.solidblocks.cloud.provisioner.context.ProvisionerLookupContext
 import de.solidblocks.cloud.provisioner.context.SSHProvisionerContext
 import de.solidblocks.cloud.provisioner.postgres.BasePostgresProvisioner
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -188,10 +188,11 @@ class PostgresDatabaseGrantProvisioner :
         return Success(lookup(resource.asLookup(), context)!!)
     }
 
-    override suspend fun lookup(lookup: PostgresDatabaseGrantLookup, context: ProvisionerLookupContext): PostgresDatabaseGrantRuntime? = when (val result = lookupInternal(lookup, context as SSHProvisionerContext)) {
-        is Error<PostgresDatabaseGrantRuntime?> -> null
-        is Success<PostgresDatabaseGrantRuntime?> -> result.data
-    }
+    override suspend fun lookup(lookup: PostgresDatabaseGrantLookup, context: ProvisionerLookupContext): PostgresDatabaseGrantRuntime? =
+        when (val result = lookupInternal(lookup, context as SSHProvisionerContext)) {
+            is Error<PostgresDatabaseGrantRuntime?> -> null
+            is Success<PostgresDatabaseGrantRuntime?> -> result.data
+        }
 
     override val supportedLookupType = PostgresDatabaseGrantLookup::class
 

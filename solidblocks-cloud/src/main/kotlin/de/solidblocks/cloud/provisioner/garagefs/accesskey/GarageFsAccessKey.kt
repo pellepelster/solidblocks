@@ -2,10 +2,8 @@ package de.solidblocks.cloud.provisioner.garagefs.accesskey
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseResource
-import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServer
 import de.solidblocks.cloud.provisioner.secret.GenericSecret
-import de.solidblocks.cloud.provisioner.secret.GenericSecretRuntime
 
 class GarageFsAccessKey(name: String, val server: HetznerServer, val adminToken: GenericSecret, dependsOn: Set<BaseResource> = emptySet()) :
     BaseInfrastructureResource<GarageFsAccessKeyRuntime>(name, dependsOn + setOf(server)) {

@@ -2,7 +2,6 @@ package de.solidblocks.cloud.provisioner.garagefs.bucket
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseResource
-import de.solidblocks.cloud.provisioner.garagefs.permission.GarageFsPermissionRuntime
 import de.solidblocks.cloud.provisioner.hetzner.cloud.server.HetznerServerLookup
 import de.solidblocks.cloud.provisioner.secret.GenericSecretLookup
 
