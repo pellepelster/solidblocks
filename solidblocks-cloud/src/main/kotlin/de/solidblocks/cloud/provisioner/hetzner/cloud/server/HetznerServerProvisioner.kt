@@ -2,7 +2,6 @@ package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
 import de.solidblocks.cloud.Constants.sshKeysLabel
 import de.solidblocks.cloud.Constants.userDataLabel
-import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
@@ -15,6 +14,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
 import de.solidblocks.cloud.api.onError
+import de.solidblocks.cloud.api.resources.DestroyableResourceProvisioner
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -39,7 +39,7 @@ class HetznerServerProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerServerLookup, HetznerServerRuntime>,
     ResourceProvisioner<HetznerServer, HetznerServerRuntime, HetznerServerLookup>,
-    DestroyableResourceProvisioner<HetznerServerLookup>,
+    DestroyableResourceProvisioner<HetznerServerLookup, ProvisionerDestroyContext>,
     ListableResourceLookupProvider<HetznerServerLookup> {
 
     private val logger = KotlinLogging.logger {}

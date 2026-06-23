@@ -1,6 +1,5 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip
 
-import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
@@ -11,6 +10,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffItem
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.resources.DestroyableResourceProvisioner
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -25,7 +25,7 @@ class HetznerFloatingIpProvisioner(hcloudToken: String) :
     BaseHetznerProvisioner(hcloudToken),
     ResourceLookupProvider<HetznerFloatingIpLookup, HetznerFloatingIpRuntime>,
     ResourceProvisioner<HetznerFloatingIp, HetznerFloatingIpRuntime, HetznerFloatingIpLookup>,
-    DestroyableResourceProvisioner<HetznerFloatingIpLookup> {
+    DestroyableResourceProvisioner<HetznerFloatingIpLookup, ProvisionerDestroyContext> {
 
     private val logger = KotlinLogging.logger {}
 

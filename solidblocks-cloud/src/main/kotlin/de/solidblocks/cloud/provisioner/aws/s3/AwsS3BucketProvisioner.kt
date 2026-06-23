@@ -15,7 +15,6 @@ import aws.sdk.kotlin.services.s3.model.NotFound
 import aws.sdk.kotlin.services.s3.model.ObjectIdentifier
 import aws.sdk.kotlin.services.s3.model.PublicAccessBlockConfiguration
 import aws.sdk.kotlin.services.s3.model.PutPublicAccessBlockRequest
-import de.solidblocks.cloud.api.DestroyableResourceProvisioner
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
@@ -26,6 +25,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffItem
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
+import de.solidblocks.cloud.api.resources.DestroyableResourceProvisioner
 import de.solidblocks.cloud.provisioner.context.ProvisionerApplyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDestroyContext
 import de.solidblocks.cloud.provisioner.context.ProvisionerDiffContext
@@ -43,7 +43,7 @@ class AwsS3BucketProvisioner(
     val waitConfig: WaitConfig = DEFAULT_WAIT,
 ) : ResourceLookupProvider<AwsS3BucketLookup, AwsS3BucketRuntime>,
     ResourceProvisioner<AwsS3Bucket, AwsS3BucketRuntime, AwsS3BucketLookup>,
-    DestroyableResourceProvisioner<AwsS3BucketLookup> {
+    DestroyableResourceProvisioner<AwsS3BucketLookup, ProvisionerDestroyContext> {
 
     override suspend fun lookup(lookup: AwsS3BucketLookup, context: ProvisionerLookupContext) = lookupInternal(lookup)
 

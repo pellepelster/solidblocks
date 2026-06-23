@@ -1,8 +1,6 @@
 package de.solidblocks.cloud.provisioner
 
-import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Result
-import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.lookup.BaseResourceLookupProvider
 import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
@@ -12,7 +10,6 @@ import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
-import de.solidblocks.cloud.api.resources.ResourceGroup
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
@@ -105,51 +102,5 @@ abstract class BaseProvisionersRegistry<DiffContextType, ApplyContextType, Destr
         }
 
         return (provider as ListableResourceLookupProvider<LookupType>).list()
-    }
-
-    /**
-     * Validates once, up-front, that the registered provisioners and lookup providers can serve
-     * every resource that will be planned. This converts what would otherwise be RuntimeExceptions
-     * thrown deep inside diff/apply into a single, actionable error during configuration validation.
-     */
-    fun validateWiring(resourceGroups: List<ResourceGroup>): Result<Unit> {
-        // accessing the lazy indexes surfaces duplicate-registration problems eagerly
-        try {
-            provisionersByResourceType
-            provisionersByLookupType
-            lookupProvidersByType
-        } catch (e: Exception) {
-            return Error(e.message ?: "invalid provisioner registry wiring")
-        }
-
-        val resources = resourceGroups.flatMap { it.hierarchicalResourceList() }
-
-        /*
-        val resourceTypesWithoutProvisioner = resources
-            .filterIsInstance<BaseInfrastructureResource<*>>()
-            .map { it::class }
-            .distinct()
-            .filter { it !in provisionersByResourceType && it !in provisionersByLookupType }
-
-        if (resourceTypesWithoutProvisioner.isNotEmpty()) {
-            return Error(
-                "no provisioner registered for resource type(s): ${resourceTypesWithoutProvisioner.joinToString(", ") { "'${it.qualifiedName}'" }}",
-            )
-        }*/
-
-        /*
-        val lookupTypesWithoutProvider = resources
-            .filterIsInstance<InfrastructureResourceLookup<*>>()
-            .map { it::class }
-            .distinct()
-            .filter { it !in lookupProvidersByType }
-
-        if (lookupTypesWithoutProvider.isNotEmpty()) {
-            return Error(
-                "no lookup provider registered for lookup type(s): ${lookupTypesWithoutProvider.joinToString(", ") { "'${it.qualifiedName}'" }}",
-            )
-        }*/
-
-        return Success(Unit)
     }
 }

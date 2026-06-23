@@ -74,7 +74,6 @@ class CloudManager(val cloudConfigFile: File) : BaseCloudManager(), Closeable {
                 services,
             )
 
-        withProvisioner(runtime) { it.validateWiring() }.bind()
         validateDnsZone(runtime).bind()
 
         logSuccess("cloud configuration '${cloud.name}' is valid", context = validateLog)
