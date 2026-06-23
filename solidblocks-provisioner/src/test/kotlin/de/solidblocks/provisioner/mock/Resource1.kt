@@ -1,8 +1,16 @@
 package de.solidblocks.provisioner.mock
 
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseResource
 
-class Resource1(name: String) : BaseInfrastructureResource<Resource1Runtime>(name, emptySet()) {
+class Resource1(
+    name: String,
+    val diffBehaviour: DiffBehaviour,
+    dependsOn: Set<BaseResource> = emptySet(),
+    val applyBehaviour: ApplyBehaviour = ApplyBehaviour.succeed,
+    taintable: Boolean = true,
+    taintRequiresRecreate: Boolean = false,
+) : BaseInfrastructureResource<Resource1Runtime>(name, emptySet()) {
 
     override fun asLookup() = Resource1Lookup(name)
 

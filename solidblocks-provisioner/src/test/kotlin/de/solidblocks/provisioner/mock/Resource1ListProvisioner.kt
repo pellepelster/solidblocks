@@ -1,8 +1,6 @@
 package de.solidblocks.provisioner.mock
 
 import de.solidblocks.cloud.api.lookup.ListableResourceLookupProvider
-import de.solidblocks.provisioner.TestLookupContext
-import de.solidblocks.provisioner.TestResourceLookupProvider
 
 class Resource1ListProvisioner(
     val items: List<Resource1Lookup> = emptyList(),

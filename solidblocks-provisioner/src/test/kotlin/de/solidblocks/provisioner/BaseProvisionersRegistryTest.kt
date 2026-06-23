@@ -4,17 +4,13 @@ import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus
-import de.solidblocks.provisioner.mock.ApplyBehaviour
-import de.solidblocks.provisioner.mock.DiffBehaviour
-import de.solidblocks.provisioner.mock.Resource1
-import de.solidblocks.provisioner.mock.Resource1ListProvisioner
-import de.solidblocks.provisioner.mock.Resource1Lookup
-import de.solidblocks.provisioner.mock.Resource1Provisioner
-import de.solidblocks.provisioner.mock.Resource1Runtime
-import de.solidblocks.provisioner.mock.Resource2
-import de.solidblocks.provisioner.mock.Resource2Lookup
-import de.solidblocks.provisioner.mock.Resource2Provisioner
-import de.solidblocks.provisioner.mock.Resource2Runtime
+import de.solidblocks.cloud.api.lookup.BaseResourceLookupProvider
+import de.solidblocks.cloud.api.provisioner.BaseResourceProvisioner
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
+import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
+import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
+import de.solidblocks.cloud.provisioner.BaseProvisionersRegistry
+import de.solidblocks.provisioner.mock.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
@@ -199,7 +195,7 @@ class BaseProvisionersRegistryTest {
 
     @Test
     fun `lookup resolves a standalone lookup provider`() {
-        val provider = Resource1Provisioner().apply { resources["a"] = Resource1("a") }
+        val provider = Resource1Provisioner().apply { resources["a"] = Resource1("aaa", DiffBehaviour.up_to_date_or_missing) }
         val registry = TestProvisionersRegistry(resourceLookupProviders = listOf(provider))
 
         registry.lookup(Resource1Lookup("a"), lookupContext)?.name shouldBe "a"
@@ -244,3 +240,12 @@ class BaseProvisionersRegistryTest {
         items.map { it.name } shouldBe listOf("a", "b")
     }
 }
+
+class TestProvisionersRegistry(
+    resourceLookupProviders: List<TestResourceLookupProvider<*, *>> = emptyList(),
+    resourceProvisioners: List<TestResourceProvisioner<*, *, *>> = emptyList(),
+) : BaseProvisionersRegistry<TestDiffContext, TestApplyContext, TestDestroyContext, TestLookupContext>(
+    (resourceLookupProviders as List<BaseResourceLookupProvider<InfrastructureResourceLookup<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, TestLookupContext>>),
+    @Suppress("UNCHECKED_CAST")
+    (resourceProvisioners as List<BaseResourceProvisioner<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>, BaseInfrastructureResourceRuntime, TestDiffContext, TestApplyContext>>),
+)

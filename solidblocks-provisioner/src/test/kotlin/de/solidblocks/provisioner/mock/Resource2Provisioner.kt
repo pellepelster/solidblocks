@@ -8,7 +8,6 @@ import de.solidblocks.cloud.api.diff.ResourceDiffItem
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.resources.DestroyableResourceProvisioner
-import de.solidblocks.provisioner.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource2Provisioner :

@@ -33,108 +33,29 @@ class Provisioner(val registry1: ProvisionersRegistry, val serviceRegistrations:
             ProvisionerDiffContextImpl(context.sshKeyPair, context.sshKeyAbsolutePath, it, context.environment, registry1, serviceRegistrations)
         })
 
-    suspend fun apply(resources: List<BaseInfrastructureResource<*>>, context: ProvisionerApplyContext): Result<Unit> {
-        val failures =
-            resources.mapNotNull { resource ->
-                try {
-                    @Suppress("UNCHECKED_CAST")
-                    registry.apply(
-                        resource as BaseInfrastructureResource<BaseInfrastructureResourceRuntime>,
-                        context,
-                    )
-                    null
-                } catch (e: Exception) {
-                    logger.error(e) { "creating ${resource.logText()} failed" }
-                    resource.logText()
-                }
-            }
+    suspend fun apply(resources: List<BaseInfrastructureResource<*>>, context: ProvisionerApplyContext) = super.apply(resources, {
+        context
+    })
 
-        return if (failures.isEmpty()) {
-            Success(Unit)
-        } else {
-            Error("failed to apply ${failures.size} resource(s): ${failures.joinToString(", ")}")
-        }
+    fun apply(
+        resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>,
+        context: ProvisionerApplyContext
+    ): Result<Unit> {
+        return super.apply(
+            resourceGroupDiffs, {
+                context
+            }, {
+                context
+            }, {
+                object : ProvisionerDestroyContext {
+                    override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType) = context.lookup(lookup)
+                    override val log: LogContext = context.log
+                }
+            }, context.log
+        )
     }
 
-    fun apply(resourceGroupDiffs: Map<ResourceGroup, List<ResourceDiff>>, context: ProvisionerApplyContext): Result<Unit> {
-        return runBlocking {
-            resourceGroupDiffs.map { (resourceGroup, diffs) ->
-                logger.info { "rolling out changes for ${resourceGroup.logText()}" }
-
-                for (diffToDestroy in diffs.filter { it.needsRecreate() }) {
-                    val resource = diffToDestroy.resource
-                    logger.info { "destroying ${resource.logText()}" }
-                    context.log.info("destroying ${resource.logText()}")
-
-                    if (registry.lookup(resource.asLookup(), context) != null) {
-                        val result = registry.destroy(
-                            resource.asLookup(),
-                            object : ProvisionerDestroyContext {
-                                override val log: LogContext
-                                    get() = log
-
-                                override fun <RuntimeType, ResourceLookupType : InfrastructureResourceLookup<RuntimeType>> lookup(lookup: ResourceLookupType): RuntimeType? = context.lookup(lookup)
-                            },
-                        )
-                        if (!result) {
-                            return@runBlocking Error("destroying ${resource.logText()} failed")
-                        }
-                    }
-                }
-
-                val duplicatesDiff = diffs.firstOrNull { it.status == duplicate }
-                if (duplicatesDiff != null) {
-                    return@runBlocking Error<Unit>(
-                        duplicatesDiff.duplicateErrorMessage ?: "<unknown error message>",
-                    )
-                }
-
-                val resourcesToApply =
-                    diffs
-                        .filter { it.status != up_to_date && it.status != duplicate }
-                        .map { it.resource }
-                        .hierarchicalResourceList()
-                        .filterIsInstance<BaseInfrastructureResource<BaseInfrastructureResourceRuntime>>()
-
-                for (resource in resourcesToApply) {
-                    context.log.info("applying ${resource.logText()}")
-                    val applyLog = context.log.indent()
-
-                    val result =
-                        try {
-                            registry.apply(
-                                resource,
-                                context,
-                            )
-                        } catch (e: Exception) {
-                            logger.error(e) { "creating ${resource.logText()} failed" }
-                            Error<BaseInfrastructureResourceRuntime>(e.message ?: "<unknown>")
-                        }
-
-                    val runtime =
-                        when (result) {
-                            is Error<BaseInfrastructureResourceRuntime> ->
-                                return@runBlocking Error<Unit>(result.error)
-
-                            is Success<BaseInfrastructureResourceRuntime> -> result.data
-                        }
-
-                    if (runtime is EndpointResourceRuntime) {
-                        runtime.endpoints.forEach {
-                            when (val result = waitForEndpoint(it, context, applyLog)) {
-                                is Error<Unit> -> return@runBlocking result
-                                is Success<*> -> {}
-                            }
-                        }
-                    }
-                }
-            }
-
-            return@runBlocking Success(Unit)
-        }
-    }
-
-    private suspend fun waitForEndpoint(it: Endpoint, context: SSHProvisionerContext, log: LogContext): Result<Unit> {
+    override suspend fun waitForEndpoint(it: Endpoint, context: ProvisionerApplyContext, log: LogContext): Result<Unit> {
         when (it.protocol) {
             EndpointProtocol.ssh -> {
                 val sshPortOpen =

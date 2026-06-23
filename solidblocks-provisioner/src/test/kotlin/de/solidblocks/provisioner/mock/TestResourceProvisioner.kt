@@ -1,4 +1,4 @@
-package de.solidblocks.provisioner
+package de.solidblocks.provisioner.mock
 
 import de.solidblocks.cloud.api.provisioner.BaseResourceProvisioner
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource

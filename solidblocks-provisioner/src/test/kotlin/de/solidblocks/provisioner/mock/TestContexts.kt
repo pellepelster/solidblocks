@@ -1,4 +1,4 @@
-package de.solidblocks.provisioner
+package de.solidblocks.provisioner.mock
 
 open class TestLookupContext
 
