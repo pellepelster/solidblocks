@@ -4,6 +4,7 @@ import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResourceRuntime
 import de.solidblocks.cloud.api.resources.BaseResource
 import de.solidblocks.cloud.api.resources.InfrastructureResourceLookup
@@ -29,7 +30,6 @@ import de.solidblocks.cloud.utils.KeywordHelp
 import de.solidblocks.ssh.SSHClient
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.log.ConsoleLogContext
-import de.solidblocks.utils.log.LogContext
 import java.nio.file.Path
 import kotlin.reflect.KClass
 

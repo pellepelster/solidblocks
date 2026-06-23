@@ -13,6 +13,7 @@ import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
@@ -49,7 +50,6 @@ import de.solidblocks.cloud.utils.*
 import de.solidblocks.cloudinit.GarageFsUserData
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3AdminHost
 import de.solidblocks.cloudinit.GarageFsUserData.Companion.s3Host
-import de.solidblocks.utils.log.LogContext
 import de.solidblocks.utils.logError
 import kotlinx.coroutines.runBlocking
 

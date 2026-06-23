@@ -3,6 +3,7 @@ package de.solidblocks.cloud.providers.protonpass
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.provisioner.protonpass.ProtonPassSecretProvisioner
@@ -20,7 +21,6 @@ import de.solidblocks.cloud.utils.protonPassItemView
 import de.solidblocks.cloud.utils.protonPassTest
 import de.solidblocks.cloud.utils.protonPassVaultCreate
 import de.solidblocks.cloud.utils.protonPassVaultList
-import de.solidblocks.utils.log.LogContext
 import java.util.*
 
 class ProtonPassProviderManager : ProviderManager<ProtonPassProviderConfiguration, ProtonPassProviderRuntime> {

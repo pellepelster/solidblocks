@@ -1,9 +1,9 @@
 package de.solidblocks.infra.test.command
 
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.infra.test.output.OutputMatcher
 import de.solidblocks.infra.test.output.TimestampedOutputLine
 import de.solidblocks.infra.test.output.waitForOutputMatcher
-import de.solidblocks.utils.log.LogContext
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking

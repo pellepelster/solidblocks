@@ -16,6 +16,7 @@ import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.aggregate
 import de.solidblocks.cloud.api.aggregateErrorMessage
 import de.solidblocks.cloud.api.hasError
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
@@ -54,7 +55,6 @@ import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.cloudinit.Distributor
 import de.solidblocks.cloudinit.GithubRunnerUserData
 import de.solidblocks.utils.bold
-import de.solidblocks.utils.log.LogContext
 import kotlinx.coroutines.runBlocking
 
 class GithubRunnerServiceManager : ServiceManager<GithubRunnerServiceConfiguration, GithubRunnerServiceConfigurationRuntime> {

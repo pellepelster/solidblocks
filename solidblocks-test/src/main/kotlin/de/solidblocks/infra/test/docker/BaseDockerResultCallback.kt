@@ -3,9 +3,9 @@ package de.solidblocks.infra.test.docker
 import com.github.dockerjava.api.async.ResultCallback
 import com.github.dockerjava.api.model.Frame
 import com.github.dockerjava.api.model.StreamType
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.infra.test.output.OutputType
 import de.solidblocks.infra.test.output.TimestampedOutputLine
-import de.solidblocks.utils.log.LogContext
 import java.io.Closeable
 import kotlin.time.TimeSource
 

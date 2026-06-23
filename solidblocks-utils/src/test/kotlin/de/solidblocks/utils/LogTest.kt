@@ -1,7 +1,7 @@
 package de.solidblocks.utils
 
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.utils.log.ConsoleLogContext
-import de.solidblocks.utils.log.LogContext
 import org.junit.jupiter.api.Test
 import java.lang.Thread.sleep
 import kotlin.time.Duration.Companion.seconds

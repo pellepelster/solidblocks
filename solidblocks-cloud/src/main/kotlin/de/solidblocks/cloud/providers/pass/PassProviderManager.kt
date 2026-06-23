@@ -3,11 +3,11 @@ package de.solidblocks.cloud.providers.pass
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.provisioner.pass.PassSecretProvisioner
 import de.solidblocks.cloud.utils.*
-import de.solidblocks.utils.log.LogContext
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.exists

@@ -3,12 +3,12 @@ package de.solidblocks.cloud.providers.github
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.github.GitHubApi
 import de.solidblocks.cloud.github.GitHubApiException
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.ProviderManager
 import de.solidblocks.cloud.utils.getPropertyOrEnv
-import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 
@@ -60,6 +60,7 @@ class GithubProviderManager : ProviderManager<GithubProviderConfiguration, Githu
                     runBlocking { api.org(gitHubUrl.org) }
                     log.info("GitHub organization '${gitHubUrl.org}' is accessible")
                 }
+
                 is GitHubUrlRuntime.Repository -> {
                     runBlocking { api.repo(gitHubUrl.username, gitHubUrl.repo) }
                     log.info("GitHub repository '${gitHubUrl.username}/${gitHubUrl.repo}' is accessible")

@@ -13,6 +13,7 @@ import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.map
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
@@ -46,7 +47,6 @@ import de.solidblocks.cloudinit.PostgresqlUserData.Companion.BACKUP_STATUS_COMMA
 import de.solidblocks.shell.pgbackrest.PgBackRestInfo
 import de.solidblocks.shell.pgbackrest.parsePgBackRestInfoOutput
 import de.solidblocks.ssh.ensureCommand
-import de.solidblocks.utils.log.LogContext
 import java.nio.file.Path
 import java.time.Duration
 

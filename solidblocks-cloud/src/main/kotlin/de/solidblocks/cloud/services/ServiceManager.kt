@@ -12,6 +12,7 @@ import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.endpoint.EndpointProtocol
 import de.solidblocks.cloud.api.endpoint.waitForNoSSH
 import de.solidblocks.cloud.api.endpoint.waitForSSH
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
 import de.solidblocks.cloud.configuration.model.CloudConfigurationRuntime
@@ -35,7 +36,6 @@ import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.toPem
 import de.solidblocks.utils.bold
-import de.solidblocks.utils.log.LogContext
 import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
 

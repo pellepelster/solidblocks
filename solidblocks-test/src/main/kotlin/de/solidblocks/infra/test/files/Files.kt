@@ -1,7 +1,7 @@
 package de.solidblocks.infra.test.files
 
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.utils.log.ConsoleLogContext
-import de.solidblocks.utils.log.LogContext
 import de.solidblocks.utils.logInfo
 import java.io.File
 import java.io.FileOutputStream

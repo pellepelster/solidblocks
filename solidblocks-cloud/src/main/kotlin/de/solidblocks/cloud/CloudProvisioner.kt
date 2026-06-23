@@ -20,6 +20,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.tainted
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
 import de.solidblocks.cloud.api.getOrElse
 import de.solidblocks.cloud.api.hasError
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.map
 import de.solidblocks.cloud.api.mapSuccess
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
@@ -58,7 +59,6 @@ import de.solidblocks.hetzner.cloud.resources.HetznerFirewallRule
 import de.solidblocks.ssh.KeyType
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.utils.bold
-import de.solidblocks.utils.log.LogContext
 import de.solidblocks.utils.logWarning
 import kotlinx.coroutines.runBlocking
 import java.io.Closeable

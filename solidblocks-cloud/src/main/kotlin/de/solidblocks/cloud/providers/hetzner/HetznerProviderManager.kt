@@ -5,6 +5,7 @@ import de.solidblocks.cloud.api.ResourceLookupProvider
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.CloudResourceProviderManager
 import de.solidblocks.cloud.provisioner.hetzner.cloud.dnsrecord.HetznerDnsRecordProvisioner
@@ -18,7 +19,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.ssh.HetznerSSHKeyProvision
 import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeProvisioner
 import de.solidblocks.cloud.utils.getPropertyOrEnv
 import de.solidblocks.hetzner.cloud.HetznerApi
-import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
 

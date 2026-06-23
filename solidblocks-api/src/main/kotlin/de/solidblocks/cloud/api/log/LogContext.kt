@@ -15,6 +15,9 @@ interface LogContext {
     fun debug(message: String)
     fun error(message: String)
     fun success(message: String)
+
+    fun bold(message: String): String
+    fun dim(message: String): String
 }
 
 interface TimingLogContext : LogContext {

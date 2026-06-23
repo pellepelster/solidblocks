@@ -1,5 +1,7 @@
 package de.solidblocks.utils.log
 
+import de.solidblocks.cloud.api.log.LogContext
+import de.solidblocks.cloud.api.log.TimingLogContext
 import de.solidblocks.utils.logDebug
 import de.solidblocks.utils.logError
 import de.solidblocks.utils.logInfo
@@ -23,6 +25,10 @@ open class ConsoleLogContext(override val indent: Int = 0) : LogContext {
     override fun error(message: String) = logError(message, context = this)
 
     override fun success(message: String) = logSuccess(message, context = this)
+
+    override fun bold(message: String) = de.solidblocks.utils.bold(message)
+
+    override fun dim(message: String) = de.solidblocks.utils.dim(message)
 
     companion object {
         fun default() = ConsoleLogContext(0)

@@ -6,6 +6,7 @@ import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.fold
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.resources.ResourceGroup
 import de.solidblocks.cloud.api.result
 import de.solidblocks.cloud.configuration.ConfigurationParser
@@ -20,7 +21,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.dnszone.HetznerDnsZoneLook
 import de.solidblocks.cloud.services.*
 import de.solidblocks.utils.*
 import de.solidblocks.utils.log.ConsoleLogContext
-import de.solidblocks.utils.log.LogContext
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Path

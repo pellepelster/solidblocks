@@ -11,6 +11,7 @@ import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.map
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.configuration.model.CloudConfiguration
@@ -42,7 +43,6 @@ import de.solidblocks.cloudinit.RESTIC_STATUS_COMMAND
 import de.solidblocks.shell.restic.ResticSnapshots
 import de.solidblocks.shell.restic.parseResticSnapshotsOutput
 import de.solidblocks.ssh.ensureCommand
-import de.solidblocks.utils.log.LogContext
 import java.time.Duration
 
 class DockerServiceManager : ServiceManager<DockerServiceConfiguration, DockerServiceConfigurationRuntime> {

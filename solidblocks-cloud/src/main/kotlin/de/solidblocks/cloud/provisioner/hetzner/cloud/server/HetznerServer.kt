@@ -1,6 +1,7 @@
 package de.solidblocks.cloud.provisioner.hetzner.cloud.server
 
 import de.solidblocks.cloud.api.Result
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.api.resources.BaseInfrastructureResource
 import de.solidblocks.cloud.api.resources.BaseLabeledInfrastructureResource
 import de.solidblocks.cloud.provisioner.hetzner.cloud.floatingip.HetznerFloatingIpLookup
@@ -10,7 +11,6 @@ import de.solidblocks.cloud.provisioner.hetzner.cloud.volume.HetznerVolumeLookup
 import de.solidblocks.cloud.provisioner.userdata.UserData
 import de.solidblocks.hetzner.cloud.model.HetznerLocation
 import de.solidblocks.hetzner.cloud.model.HetznerServerType
-import de.solidblocks.utils.log.LogContext
 
 class HetznerServer(
     name: String,

@@ -4,12 +4,12 @@ import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.ResourceProvisioner
 import de.solidblocks.cloud.api.Result
 import de.solidblocks.cloud.api.Success
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.providers.CloudConfigurationContext
 import de.solidblocks.cloud.providers.sshkey.LocalSSHKeyProviderConfigurationFactory.Companion.defaultSSHKeyNames
 import de.solidblocks.cloud.providers.types.ssh.SSHKeyProviderManager
 import de.solidblocks.ssh.SSHKeyUtils
 import de.solidblocks.ssh.keyType
-import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path

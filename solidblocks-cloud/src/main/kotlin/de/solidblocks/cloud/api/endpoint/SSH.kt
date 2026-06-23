@@ -1,9 +1,9 @@
 package de.solidblocks.cloud.api.endpoint
 
+import de.solidblocks.cloud.api.log.LogContext
 import de.solidblocks.cloud.utils.WaitConfig
 import de.solidblocks.cloud.utils.waitForCondition
 import de.solidblocks.ssh.SSHClient
-import de.solidblocks.utils.log.LogContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.security.KeyPair
 
