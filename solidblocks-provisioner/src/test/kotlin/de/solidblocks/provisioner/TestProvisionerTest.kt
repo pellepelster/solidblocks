@@ -1,25 +1,24 @@
-package de.solidblocks.cloud.provisioner
+package de.solidblocks.provisioner
 
-import de.solidblocks.cloud.TEST_LOG_CONTEXT
-import de.solidblocks.cloud.TEST_PROVISIONER_CONTEXT
 import de.solidblocks.cloud.api.Error
 import de.solidblocks.cloud.api.Success
 import de.solidblocks.cloud.api.diff.ResourceDiff
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.*
 import de.solidblocks.cloud.api.resources.ResourceGroup
-import de.solidblocks.cloud.provisioner.mock.ApplyBehaviour.error_on_apply
-import de.solidblocks.cloud.provisioner.mock.ApplyBehaviour.throw_exception_on_apply
-import de.solidblocks.cloud.provisioner.mock.DiffBehaviour.duplicate_on_diff
-import de.solidblocks.cloud.provisioner.mock.DiffBehaviour.error_on_diff
-import de.solidblocks.cloud.provisioner.mock.DiffBehaviour.force_recreate_change
-import de.solidblocks.cloud.provisioner.mock.DiffBehaviour.throw_exception_on_diff
-import de.solidblocks.cloud.provisioner.mock.DiffBehaviour.unknown_on_diff
-import de.solidblocks.cloud.provisioner.mock.DiffBehaviour.up_to_date_or_missing
-import de.solidblocks.cloud.provisioner.mock.Resource1
-import de.solidblocks.cloud.provisioner.mock.Resource1Provisioner
-import de.solidblocks.cloud.provisioner.mock.Resource2
-import de.solidblocks.cloud.provisioner.mock.Resource2Provisioner
-import de.solidblocks.cloud.utils.WaitConfig
+import de.solidblocks.provisioner.mock.ApplyBehaviour.error_on_apply
+import de.solidblocks.provisioner.mock.ApplyBehaviour.throw_exception_on_apply
+import de.solidblocks.provisioner.mock.DiffBehaviour.duplicate_on_diff
+import de.solidblocks.provisioner.mock.DiffBehaviour.error_on_diff
+import de.solidblocks.provisioner.mock.DiffBehaviour.force_recreate_change
+import de.solidblocks.provisioner.mock.DiffBehaviour.throw_exception_on_diff
+import de.solidblocks.provisioner.mock.DiffBehaviour.unknown_on_diff
+import de.solidblocks.provisioner.mock.DiffBehaviour.up_to_date_or_missing
+import de.solidblocks.provisioner.mock.Resource1
+import de.solidblocks.provisioner.mock.Resource1Provisioner
+import de.solidblocks.provisioner.mock.Resource2
+import de.solidblocks.provisioner.mock.Resource2Provisioner
+import de.solidblocks.provisioner.mock.TestApplyContext
+import de.solidblocks.provisioner.mock.TestDiffContext
 import io.kotest.assertions.assertSoftly
 import io.kotest.common.runBlocking
 import io.kotest.matchers.collections.shouldHaveSize
@@ -28,28 +27,24 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeTypeOf
 import org.junit.jupiter.api.Test
 import java.util.UUID
-import kotlin.time.Duration.Companion.seconds
 
-class ProvisionerTest {
+class TestProvisionerTest {
 
     @Test
     fun `resource is missing if parent is missing`() {
         val resource1Provisioner = Resource1Provisioner()
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(
-                        emptyList(),
-                        listOf(resource1Provisioner, Resource2Provisioner()),
+                TestProvisioner(
+                    TestProvisionersRegistry(
+                        resourceProvisioners = listOf(resource1Provisioner, Resource2Provisioner()),
                     ),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
                 )
 
-            val resource1 = Resource1("test1")
+            val resource1 = Resource1("test1", up_to_date_or_missing)
             val resource2 = Resource2("test2", up_to_date_or_missing, setOf(resource1))
 
-            assertSoftly(resource1Provisioner.diff(resource1, TEST_PROVISIONER_CONTEXT).shouldBeInstanceOf<Success<ResourceDiff>>()) {
+            assertSoftly(resource1Provisioner.diff(resource1, TestDiffContext()).shouldBeInstanceOf<Success<ResourceDiff>>()) {
                 it.data.status shouldBe missing
             }
 
@@ -58,7 +53,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource1, resource2))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -73,7 +67,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Success<Unit>>()
 
             assertSoftly(
@@ -83,7 +77,6 @@ class ProvisionerTest {
                             ResourceGroup("common", listOf(resource1, resource2)),
                         ),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>(),
@@ -99,10 +92,8 @@ class ProvisionerTest {
     fun `error on diff aborts the plan`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("error_on_diff", error_on_diff)
@@ -111,7 +102,6 @@ class ProvisionerTest {
                 .diff(
                     listOf(ResourceGroup("common", listOf(resource))),
                     { false },
-                    TEST_PROVISIONER_CONTEXT,
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Error<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -122,10 +112,8 @@ class ProvisionerTest {
     fun `unexpected exception during diff aborts plan`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("throw_exception_on_diff", throw_exception_on_diff)
@@ -134,7 +122,6 @@ class ProvisionerTest {
                 .diff(
                     listOf(ResourceGroup("common", listOf(resource))),
                     { false },
-                    TEST_PROVISIONER_CONTEXT,
                     TEST_LOG_CONTEXT,
                 )
                 .shouldBeTypeOf<Error<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -148,10 +135,8 @@ class ProvisionerTest {
             val resourceName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             val resource2 = Resource2(resourceName, up_to_date_or_missing)
@@ -160,7 +145,7 @@ class ProvisionerTest {
             provisioner
                 .apply(
                     listOf(resource2),
-                    TEST_PROVISIONER_CONTEXT,
+                    TestApplyContext(),
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -170,7 +155,6 @@ class ProvisionerTest {
                             ResourceGroup("common", listOf(resource2ForceRecreateChange)),
                         ),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -184,7 +168,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe true
@@ -196,10 +180,8 @@ class ProvisionerTest {
     fun `unknown diff status does not abort the plan`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("unknown_on_diff", unknown_on_diff)
@@ -209,7 +191,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -226,10 +207,8 @@ class ProvisionerTest {
     fun `duplicate diff status aborts the plan`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("duplicate_on_diff", duplicate_on_diff)
@@ -239,7 +218,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Error<Map<ResourceGroup, List<ResourceDiff>>>>(),
@@ -256,10 +234,8 @@ class ProvisionerTest {
             val resourceName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             val resource2 = Resource2(resourceName, up_to_date_or_missing)
@@ -267,7 +243,7 @@ class ProvisionerTest {
             provisioner
                 .apply(
                     listOf(resource2),
-                    TEST_PROVISIONER_CONTEXT,
+                    TestApplyContext(),
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -275,7 +251,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource2))),
                         { true },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -288,7 +263,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe false
@@ -303,10 +278,8 @@ class ProvisionerTest {
             val resourceName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             val resource2 = Resource2(resourceName, up_to_date_or_missing, taintRequiresRecreate = true)
@@ -314,7 +287,7 @@ class ProvisionerTest {
             provisioner
                 .apply(
                     listOf(resource2),
-                    TEST_PROVISIONER_CONTEXT,
+                    TestApplyContext(),
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -322,7 +295,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource2))),
                         { true },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -334,7 +306,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe true
@@ -349,10 +321,8 @@ class ProvisionerTest {
             val resourceName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             val resource2 = Resource2(resourceName, up_to_date_or_missing, taintable = false)
@@ -360,7 +330,7 @@ class ProvisionerTest {
             provisioner
                 .apply(
                     listOf(resource2),
-                    TEST_PROVISIONER_CONTEXT,
+                    TestApplyContext(),
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -368,7 +338,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource2))),
                         { true },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -389,10 +358,8 @@ class ProvisionerTest {
             val childName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             val parent = Resource2(parentName, up_to_date_or_missing)
@@ -401,7 +368,7 @@ class ProvisionerTest {
             provisioner
                 .apply(
                     listOf(parent, child),
-                    TEST_PROVISIONER_CONTEXT,
+                    TestApplyContext(),
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -409,7 +376,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(parent, child))),
                         { it.name == parentName },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -429,10 +395,8 @@ class ProvisionerTest {
     fun `duplicate diff aborts apply`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("duplicate", up_to_date_or_missing)
@@ -443,7 +407,7 @@ class ProvisionerTest {
 
             assertSoftly(
                 provisioner
-                    .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                    .apply(diffs, TestApplyContext())
                     .shouldBeTypeOf<Error<Unit>>(),
             ) {
                 it.error shouldBe "duplicate error"
@@ -458,16 +422,14 @@ class ProvisionerTest {
             val resourceName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             provisioner
                 .apply(
                     listOf(Resource2(resourceName, up_to_date_or_missing)),
-                    TEST_PROVISIONER_CONTEXT,
+                    TestApplyContext(),
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -475,7 +437,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(Resource2(resourceName, force_recreate_change)))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -484,7 +445,7 @@ class ProvisionerTest {
             resource2Provisioner.destroyResult = false
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Error<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe true
@@ -499,10 +460,8 @@ class ProvisionerTest {
             val resourceName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             val diffs =
@@ -510,14 +469,13 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(Resource2(resourceName, force_recreate_change)))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
                     .data
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.isDestroyed(resourceName) shouldBe false
@@ -529,10 +487,8 @@ class ProvisionerTest {
     fun `error during apply aborts rollout`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("error_on_apply", up_to_date_or_missing, applyBehaviour = error_on_apply)
@@ -542,7 +498,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -550,7 +505,7 @@ class ProvisionerTest {
 
             assertSoftly(
                 provisioner
-                    .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                    .apply(diffs, TestApplyContext())
                     .shouldBeTypeOf<Error<Unit>>(),
             ) {
                 it.error shouldBe "apply error for ${resource.logText()}"
@@ -562,10 +517,8 @@ class ProvisionerTest {
     fun `unexpected exception during apply aborts rollout`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("throw_exception_on_apply", up_to_date_or_missing, applyBehaviour = throw_exception_on_apply)
@@ -575,14 +528,13 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
                     .data
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Error<Unit>>()
         }
     }
@@ -591,17 +543,15 @@ class ProvisionerTest {
     fun `exception during apply of resource list is reported as error`() {
         runBlocking {
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(Resource2Provisioner())),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(Resource2Provisioner())),
                 )
 
             val resource = Resource2("throw_exception_on_apply", up_to_date_or_missing, applyBehaviour = throw_exception_on_apply)
 
             assertSoftly(
                 provisioner
-                    .apply(listOf(resource), TEST_PROVISIONER_CONTEXT)
+                    .apply(listOf(resource), TestApplyContext())
                     .shouldBeTypeOf<Error<Unit>>(),
             ) {
                 it.error shouldBe "failed to apply 1 resource(s): ${resource.logText()}"
@@ -616,10 +566,8 @@ class ProvisionerTest {
             val resourceName = UUID.randomUUID().toString()
 
             val provisioner =
-                Provisioner(
-                    ProvisionersRegistry(emptyList(), listOf(resource2Provisioner)),
-                    emptyList(),
-                    WaitConfig(1, 1.seconds),
+                TestProvisioner(
+                    TestProvisionersRegistry(resourceProvisioners = listOf(resource2Provisioner)),
                 )
 
             val resource2 = Resource2(resourceName, up_to_date_or_missing)
@@ -627,7 +575,7 @@ class ProvisionerTest {
             provisioner
                 .apply(
                     listOf(resource2),
-                    TEST_PROVISIONER_CONTEXT,
+                    TestApplyContext(),
                 ).shouldBeInstanceOf<Success<Unit>>()
 
             val diffs =
@@ -635,7 +583,6 @@ class ProvisionerTest {
                     .diff(
                         listOf(ResourceGroup("common", listOf(resource2))),
                         { false },
-                        TEST_PROVISIONER_CONTEXT,
                         TEST_LOG_CONTEXT,
                     )
                     .shouldBeTypeOf<Success<Map<ResourceGroup, List<ResourceDiff>>>>()
@@ -646,7 +593,7 @@ class ProvisionerTest {
             }
 
             provisioner
-                .apply(diffs, TEST_PROVISIONER_CONTEXT)
+                .apply(diffs, TestApplyContext())
                 .shouldBeTypeOf<Success<Unit>>()
 
             resource2Provisioner.applyCount(resourceName) shouldBe 1

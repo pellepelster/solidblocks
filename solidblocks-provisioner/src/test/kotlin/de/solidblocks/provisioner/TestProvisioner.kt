@@ -16,7 +16,7 @@ import de.solidblocks.provisioner.mock.TestLookupContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.mockk.mockk
 
-val TEST_LOG_CONTEXT = mockk<LogContext>()
+val TEST_LOG_CONTEXT = mockk<LogContext>(relaxed = true)
 
 class TestProvisioner(val registry1: TestProvisionersRegistry) : BaseProvisioner<TestDiffContext, TestApplyContext, TestDestroyContext, TestLookupContext>(registry1) {
 
