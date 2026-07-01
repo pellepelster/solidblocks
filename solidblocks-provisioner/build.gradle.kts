@@ -12,7 +12,7 @@ dependencies {
 }
 
 mavenPublishing {
-    coordinates("de.solidblocks", "api", "${version}")
+    coordinates("de.solidblocks", "provisioner", "${version}")
 
     pom {
         name.set("Solidblocks API")
