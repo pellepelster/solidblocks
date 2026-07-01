@@ -10,7 +10,7 @@ class Resource1(
     val applyBehaviour: ApplyBehaviour = ApplyBehaviour.succeed,
     taintable: Boolean = true,
     taintRequiresRecreate: Boolean = false,
-) : BaseInfrastructureResource<Resource1Runtime>(name, emptySet()) {
+) : BaseInfrastructureResource<Resource1Runtime>(name, dependsOn, taintable, taintRequiresRecreate) {
 
     override fun asLookup() = Resource1Lookup(name)
 

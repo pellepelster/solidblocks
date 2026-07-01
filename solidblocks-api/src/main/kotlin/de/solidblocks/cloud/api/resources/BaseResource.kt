@@ -19,9 +19,12 @@ abstract class BaseResource(val name: String, val dependsOn: Set<BaseResource>) 
     }
 
     private fun collectDependsOn(resource: BaseResource, dependsOn: MutableSet<BaseResource>) {
-        dependsOn.addAll(resource.dependsOn)
         resource.dependsOn.forEach {
-            collectDependsOn(it, dependsOn)
+            // only recurse into newly seen dependencies, otherwise cyclic or diamond
+            // dependency graphs would loop forever / be re-traversed exponentially
+            if (dependsOn.add(it)) {
+                collectDependsOn(it, dependsOn)
+            }
         }
     }
 }

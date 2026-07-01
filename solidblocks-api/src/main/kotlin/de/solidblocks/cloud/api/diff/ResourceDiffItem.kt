@@ -5,12 +5,16 @@ import kotlin.reflect.KProperty0
 fun Any?.logText() = this?.toString() ?: "<empty>"
 
 fun ResourceDiffItem.logText(): String {
+    if (missing) {
+        return "$name is missing"
+    }
+
     if (expectedValue != null || actualValue != null) {
         return "$name should be '${expectedValue.logText()}' but was '${actualValue.logText()}'"
     }
 
-    if (missing) {
-        return "$name is missing"
+    if (triggersRecreate) {
+        return "$name changed and requires recreate"
     }
 
     if (changed) {
@@ -27,7 +31,6 @@ data class ResourceDiffItem(val name: String, val changed: Boolean = false, val 
         triggersRecreate: Boolean = false,
         missing: Boolean = false,
         changed: Boolean = false,
-        unknown: Boolean = false,
         expectedValue: Any? = null,
         actualValue: Any? = null,
     ) : this(
@@ -39,5 +42,5 @@ data class ResourceDiffItem(val name: String, val changed: Boolean = false, val 
         actualValue = actualValue,
     )
 
-    fun hasChanges(): Boolean = missing || changed
+    fun hasChanges(): Boolean = missing || changed || triggersRecreate
 }

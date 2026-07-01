@@ -5,6 +5,7 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.health.HealthCheck
 import org.jgrapht.Graph
+import org.jgrapht.alg.cycle.CycleDetector
 import org.jgrapht.graph.DefaultDirectedGraph
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.traverse.TopologicalOrderIterator
@@ -40,6 +41,14 @@ data class ResourceGroup(
 
 fun List<BaseResource>.hierarchicalResourceList(): List<BaseResource> {
     val graph = this.createResourceGraph()
+
+    val cycleDetector = CycleDetector(graph)
+    if (cycleDetector.detectCycles()) {
+        throw RuntimeException(
+            "dependency cycle detected between resources: ${cycleDetector.findCycles().joinToString(", ") { it.logText() }}",
+        )
+    }
+
     val orderIterator = TopologicalOrderIterator(graph)
 
     val result = ArrayList<BaseResource>()

@@ -47,8 +47,10 @@ class TestProvisioner(val registry1: TestProvisionersRegistry) : BaseProvisioner
     }
 
 
+    var waitForEndpointResult: (Endpoint) -> Result<Unit> = { Success(Unit) }
+
     override suspend fun waitForEndpoint(
         it: Endpoint, context: TestApplyContext, log: LogContext
-    ) = Success<Unit>(Unit)
+    ) = waitForEndpointResult(it)
 
 }

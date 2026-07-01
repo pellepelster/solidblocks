@@ -9,13 +9,11 @@ import de.solidblocks.cloud.api.diff.ResourceDiffStatus
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.has_changes
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.missing
 import de.solidblocks.cloud.api.diff.ResourceDiffStatus.up_to_date
-import de.solidblocks.cloud.api.resources.DestroyableResourceProvisioner
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class Resource1Provisioner :
     TestResourceLookupProvider<Resource1Lookup, Resource1Runtime>,
-    TestResourceProvisioner<Resource1, Resource1Runtime, Resource1Lookup>,
-    DestroyableResourceProvisioner<Resource1Lookup, TestDestroyContext> {
+    TestResourceProvisioner<Resource1, Resource1Runtime, Resource1Lookup> {
 
     private val logger = KotlinLogging.logger {}
 
@@ -49,6 +47,18 @@ class Resource1Provisioner :
             ),
         )
 
+        DiffBehaviour.change_no_recreate -> Success(
+            ResourceDiff(
+                resource,
+                has_changes,
+                changes = listOf(ResourceDiffItem("change_no_recreate", changed = true)),
+            ),
+        )
+
+        DiffBehaviour.parent_missing_on_diff -> Success(
+            ResourceDiff(resource, ResourceDiffStatus.parent_missing),
+        )
+
         DiffBehaviour.up_to_date_or_missing -> Success(
             lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
                 ?: ResourceDiff(resource, missing),
@@ -69,22 +79,11 @@ class Resource1Provisioner :
             ?: Error<Resource1Runtime>("creation error")
     }
 
-    val destroyedResources = mutableListOf<String>()
-
     val appliedResources = mutableListOf<String>()
-
-    var destroyResult = true
-
-    fun isDestroyed(name: String) = destroyedResources.contains(name)
 
     fun isApplied(name: String) = appliedResources.contains(name)
 
     fun applyCount(name: String) = appliedResources.count { it == name }
-
-    override suspend fun destroy(lookup: Resource1Lookup, context: TestDestroyContext): Boolean {
-        destroyedResources.add(lookup.name)
-        return destroyResult
-    }
 
     override val supportedLookupType = Resource1Lookup::class
 

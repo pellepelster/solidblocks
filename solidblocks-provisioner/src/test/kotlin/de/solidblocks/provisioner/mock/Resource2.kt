@@ -8,6 +8,8 @@ enum class DiffBehaviour {
     unknown_on_diff,
     throw_exception_on_diff,
     force_recreate_change,
+    change_no_recreate,
+    parent_missing_on_diff,
     duplicate_on_diff,
     up_to_date_or_missing,
 }

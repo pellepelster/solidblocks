@@ -47,6 +47,18 @@ class Resource2Provisioner :
             ),
         )
 
+        DiffBehaviour.change_no_recreate -> Success(
+            ResourceDiff(
+                resource,
+                has_changes,
+                changes = listOf(ResourceDiffItem("change_no_recreate", changed = true)),
+            ),
+        )
+
+        DiffBehaviour.parent_missing_on_diff -> Success(
+            ResourceDiff(resource, ResourceDiffStatus.parent_missing),
+        )
+
         DiffBehaviour.up_to_date_or_missing -> Success(
             lookup(resource.asLookup(), context)?.let { ResourceDiff(resource, up_to_date) }
                 ?: ResourceDiff(resource, missing),

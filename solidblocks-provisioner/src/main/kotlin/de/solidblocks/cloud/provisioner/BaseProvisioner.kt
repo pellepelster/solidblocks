@@ -115,7 +115,6 @@ abstract class BaseProvisioner<
         val result = mutableListOf<ResourceDiff>()
 
         val missingResources = mutableSetOf<BaseInfrastructureResource<*>>()
-        val resourcesNeedingRecreate = mutableSetOf<BaseInfrastructureResource<*>>()
 
         for (resource in resources) {
             log.info("creating diff for ${resource.logText()}")
@@ -155,10 +154,6 @@ abstract class BaseProvisioner<
                 missingResources.add(resource)
             }
 
-            if (diff.status == has_changes || diff.needsRecreate()) {
-                resourcesNeedingRecreate.add(resource)
-            }
-
             diffLog.debug("diff status for ${diff.resource.logText()} is '${diff.status}' (needsRecreate: ${diff.needsRecreate()})")
             result.add(diff)
             diffLog.debug("finished diff for ${resource.logText()}")
@@ -173,11 +168,18 @@ abstract class BaseProvisioner<
 
         val failures = resources.mapNotNull { resource ->
             try {
-                @Suppress("UNCHECKED_CAST") registry.apply(
+                @Suppress("UNCHECKED_CAST") val result = registry.apply(
                     resource as BaseInfrastructureResource<BaseInfrastructureResourceRuntime>,
                     createApplyContext(),
                 )
-                null
+                when (result) {
+                    is Error<*> -> {
+                        logger.error { "creating ${resource.logText()} failed: ${result.error}" }
+                        resource.logText()
+                    }
+
+                    is Success<*> -> null
+                }
             } catch (e: Exception) {
                 logger.error(e) { "creating ${resource.logText()} failed" }
                 resource.logText()
@@ -203,6 +205,14 @@ abstract class BaseProvisioner<
             resourceGroupDiffs.map { (resourceGroup, diffs) ->
                 logger.info { "rolling out changes for ${resourceGroup.logText()}" }
 
+                // abort before any destructive action if the group contains a duplicate
+                val duplicatesDiff = diffs.firstOrNull { it.status == duplicate }
+                if (duplicatesDiff != null) {
+                    return@runBlocking Error<Unit>(
+                        duplicatesDiff.duplicateErrorMessage ?: "<unknown error message>",
+                    )
+                }
+
                 for (diffToDestroy in diffs.filter { it.needsRecreate() }) {
                     val resource = diffToDestroy.resource
                     logger.info { "destroying ${resource.logText()}" }
@@ -217,13 +227,6 @@ abstract class BaseProvisioner<
                             return@runBlocking Error("destroying ${resource.logText()} failed")
                         }
                     }
-                }
-
-                val duplicatesDiff = diffs.firstOrNull { it.status == duplicate }
-                if (duplicatesDiff != null) {
-                    return@runBlocking Error<Unit>(
-                        duplicatesDiff.duplicateErrorMessage ?: "<unknown error message>",
-                    )
                 }
 
                 val resourcesToApply = diffs.filter { it.status != up_to_date && it.status != duplicate }.map { it.resource }.hierarchicalResourceList()
