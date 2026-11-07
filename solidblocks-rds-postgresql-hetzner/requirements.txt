@@ -1,4 +1,4 @@
 pytest-testinfra==7.0.0
 coloredlogs==15.0.1
-paramiko==3.4.0
+paramiko==5.0.0
 pytest==9.0.3
